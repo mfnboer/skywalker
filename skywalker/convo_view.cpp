@@ -26,6 +26,9 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
 
     if (convo.mLastMessage)
         mLastMessage = MessageView{*convo.mLastMessage};
+
+    if (convo.mLastReaction)
+        mLastReaction = MessageAndReactionView{*convo.mLastReaction};
 }
 
 ChatBasicProfile ConvoView::getMember(const QString& did) const

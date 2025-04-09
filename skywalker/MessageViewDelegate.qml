@@ -186,10 +186,42 @@ Rectangle {
         }
     }
 
+    Rectangle {
+        id: reactionsRect
+        x: messageRect.x + (senderIsUser ? messageRect.width - 5 - width : 5);
+        anchors.top: messageRect.bottom
+        anchors.topMargin: -3
+        width: reactionsRow.width + 6
+        height: reactionsRow.height
+        radius: height / 2
+        color: guiSettings.backgroundColor
+        visible: message.reactions.length > 0
+
+        Row {
+            property var uniqueReactions: message.getUniqueReactions(5)
+
+            id: reactionsRow
+            anchors.centerIn: parent
+
+            Repeater {
+                model: parent.uniqueReactions
+
+                AccessibleText {
+                    text: modelData.emoji
+                }
+            }
+
+            AccessibleText {
+                text: ` ${message.reactions.length} `
+                visible: parent.uniqueReactions.length < message.reactions.length
+            }
+        }
+    }
+
     AccessibleText {
         id: messageTimeText
         anchors.left: messageRect.left
-        anchors.top: messageRect.bottom
+        anchors.top: reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom
         anchors.topMargin: visible ? 5 : 0
         width: messageRect.width
         height: visible ? contentHeight : 0

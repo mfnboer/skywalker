@@ -6,7 +6,6 @@
 
 namespace Skywalker {
 
-// TODO: reactions
 MessageView::MessageView(const ATProto::ChatBskyConvo::MessageView& msg) :
     mId(msg.mId),
     mRev(msg.mRev),
@@ -16,6 +15,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::MessageView& msg) :
     mSenderDid(msg.mSender->mDid),
     mSentAt(msg.mSentAt)
 {
+    initReactions(msg.mReactions);
 }
 
 MessageView::MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg) :
@@ -55,7 +55,6 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
     qWarning() << "Should not get here";
 }
 
-// TODO: reactions
 void MessageView::init(const ATProto::ChatBskyConvo::MessageView::SharedPtr& view)
 {
     mId = view->mId;
@@ -65,6 +64,7 @@ void MessageView::init(const ATProto::ChatBskyConvo::MessageView::SharedPtr& vie
     mEmbed = view->mEmbed;
     mSenderDid = view->mSender->mDid;
     mSentAt = view->mSentAt;
+    initReactions(view->mReactions);
 }
 
 void MessageView::init(const ATProto::ChatBskyConvo::DeletedMessageView::SharedPtr& view)
@@ -74,6 +74,52 @@ void MessageView::init(const ATProto::ChatBskyConvo::DeletedMessageView::SharedP
     mSenderDid = view->mSender->mDid;
     mSentAt = view->mSentAt;
     mDeleted = true;
+}
+
+void MessageView::initReactions(const ATProto::ChatBskyConvo::ReactionView::List& reactions)
+{
+    for (const auto& reaction : reactions)
+    {
+        const ReactionView reactionView(reaction);
+        mReactions.push_back(reactionView);
+    }
+
+    // TODO TEST
+#if 0
+    for (int i = 0; i < 4; ++i)
+    {
+        auto reaction = std::make_shared<ATProto::ChatBskyConvo::ReactionView>();
+        reaction->mValue = "😀";
+        reaction->mSender = std::make_shared<ATProto::ChatBskyConvo::ReactionViewSender>();
+        mReactions.push_back(ReactionView(reaction));
+    }
+
+    auto reaction = std::make_shared<ATProto::ChatBskyConvo::ReactionView>();
+    reaction->mValue = "❤️";
+    reaction->mSender = std::make_shared<ATProto::ChatBskyConvo::ReactionViewSender>();
+    mReactions.push_back(ReactionView(reaction));
+#endif
+}
+
+ReactionView::List MessageView::getUniqueReactions(int maxReactions) const
+{
+    ReactionView::List result;
+    std::unordered_set<QString> seenEmoji;
+
+    for (const auto& reaction : mReactions)
+    {
+        if (seenEmoji.contains(reaction.getEmoji()))
+            continue;
+
+        result.push_back(reaction);
+
+        if (result.size() >= maxReactions)
+            break;
+
+        seenEmoji.insert(reaction.getEmoji());
+    }
+
+    return result;
 }
 
 const RecordView MessageView::getEmbed() const

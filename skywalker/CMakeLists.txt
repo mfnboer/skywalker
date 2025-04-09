@@ -515,6 +515,10 @@ qt_add_qml_module(libskywalker
         SOURCES post_thread_cache.cpp
         QML_FILES ReactionsMenu.qml
         QML_FILES ReactionButton.qml
+        SOURCES reaction_view.h
+        SOURCES reaction_view.cpp
+        SOURCES message_and_reaction_view.h
+        SOURCES message_and_reaction_view.cpp
 )
 
 if (NOT ANDROID)
