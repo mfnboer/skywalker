@@ -51,6 +51,7 @@ SkyPage {
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
             onOpeningEmbed: page.lastIndex = index
+            onPickEmoji: utils.showEmojiPicker()
         }
 
         FlickableRefresher {
@@ -344,6 +345,10 @@ SkyPage {
 
         //     newMessageText.quoteFeed = feed
         // }
+    }
+
+    Utils {
+        id: utils
     }
 
     VirtualKeyboardHandler {

@@ -513,6 +513,8 @@ qt_add_qml_module(libskywalker
         QML_FILES HashtagContextMenu.qml
         SOURCES post_thread_cache.h
         SOURCES post_thread_cache.cpp
+        QML_FILES ReactionsMenu.qml
+        QML_FILES ReactionButton.qml
 )
 
 if (NOT ANDROID)

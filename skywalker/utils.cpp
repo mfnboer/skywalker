@@ -2,11 +2,22 @@
 // License: GPLv3
 #include "utils.h"
 #include "android_utils.h"
+#include "jni_callback.h"
 #include "QDebug"
 
 namespace Skywalker {
 
 bool Utils::sEmojiPickerShown = false;
+
+Utils::Utils(QObject* parent) :
+    QObject(parent)
+{
+    auto& jniCallbackListener = JNICallbackListener::getInstance();
+
+    connect(&jniCallbackListener, &JNICallbackListener::emojiPicked, this,
+        [this](QString emoji){ handleEmojiPicked(emoji); }
+    );
+}
 
 std::optional<QString> Utils::makeOptionalString(const QString& str)
 {
@@ -50,6 +61,12 @@ void Utils::dismissEmojiPicker()
         AndroidUtils::dismissEmojiPicker();
         sEmojiPickerShown = false;
     }
+}
+
+void Utils::handleEmojiPicked(const QString& emoji)
+{
+    sEmojiPickerShown = false;
+    emit emojiPicked(emoji);
 }
 
 }

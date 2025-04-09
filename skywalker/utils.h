@@ -15,6 +15,8 @@ class Utils : public QObject
     QML_ELEMENT
 
 public:
+    explicit Utils(QObject* parent = nullptr);
+
     static std::optional<QString> makeOptionalString(const QString& str);
     Q_INVOKABLE static QColor determineForegroundColor(const QColor& background, const QColor& lightColor, const QColor& darkColor);
     Q_INVOKABLE static bool similarColors(const QColor& lhs, const QColor& rhs);
@@ -23,7 +25,12 @@ public:
     Q_INVOKABLE static void dismissEmojiPicker();
     Q_INVOKABLE static bool isEmojiPickerShown() { return sEmojiPickerShown; }
 
+signals:
+    void emojiPicked(QString emoji);
+
 private:
+    void handleEmojiPicked(const QString& emoji);
+
     static bool sEmojiPickerShown;
 };
 
