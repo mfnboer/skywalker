@@ -420,6 +420,11 @@ ApplicationWindow {
         onShowNotifications: viewNotifications()
         onShowDirectMessages: viewChat()
 
+        onShowLinkReceived: (uri) => {
+            console.debug("Got the ShowLinkReceived Signal for:", uri)
+            linkUtils.openLink(uri)
+        }
+
         onAnniversary: {
             const years = skywalker.getAnniversary().getAnniversaryYears()
             guiSettings.notice(root,

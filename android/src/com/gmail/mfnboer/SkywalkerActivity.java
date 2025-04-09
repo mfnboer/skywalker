@@ -34,6 +34,7 @@ public class SkywalkerActivity extends QtActivity {
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
     public static final String INTENT_ACTION_SHOW_DIRECT_MESSAGES = "com.gmail.mfnboer.skywalker.showDirectMessages";
     public static final String INTENT_EXTRA_DIRECT_MESSAGE = "com.gmail.mfnboer.skywalker.directMessage";
+    public static final String INTENT_ACTION_SHOW_LINK = "com.gmail.mfnboer.skywalker.showLink";
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
@@ -41,6 +42,7 @@ public class SkywalkerActivity extends QtActivity {
     public static native void emitSharedDmTextReceived(String text);
     public static native void emitShowNotifications();
     public static native void emitShowDirectMessages();
+    public static native void emitShowLink(String uri);
 
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
@@ -117,6 +119,8 @@ public class SkywalkerActivity extends QtActivity {
             handleActionShowNotifications(intent);
         else if (action.equals(INTENT_ACTION_SHOW_DIRECT_MESSAGES))
             handleActionShowDirectMessages(intent);
+        else if (action.equals(Intent.ACTION_VIEW))
+            handleActionShowLink(intent);
         else
             Log.d(LOGTAG, "Unsupported intent action: " + intent.getAction());
     }
@@ -129,6 +133,21 @@ public class SkywalkerActivity extends QtActivity {
     private void handleActionShowDirectMessages(Intent intent) {
         Log.d(LOGTAG, "Handle SHOW_DIRECT_MESSAGES");
         emitShowDirectMessages();
+    }
+
+    private void handleActionShowLink(Intent intent) {
+        Log.d(LOGTAG, "Handle SHOW_LINK");
+
+        Uri data = getIntent().getData();
+        if (data == null) {
+            Log.d(LOGTAG, "Empty data received");
+        }
+        // Android helpfully strips off the beginning of the link. Since the QML link code
+        // expects the prefix, we just stick it back on here before sending it along.
+        String path = "https://bsky.app" + data.getPath();
+        Log.d(LOGTAG, "Handling the link: " + path);
+
+        emitShowLink(path);
     }
 
     private void handleActionSend(Intent intent) {
