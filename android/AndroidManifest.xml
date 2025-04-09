@@ -64,6 +64,29 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <activity
+                android:name="com.gmail.mfnboer.LinkHandlerActivity"
+                android:theme="@style/Theme.AppCompat.Light"
+                android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
+                android:launchMode="singleTask"
+                android:screenOrientation="unspecified"
+                android:windowSoftInputMode="adjustNothing"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+                <data android:host="*.bsky.app" />
+                <data android:host="bsky.app" />
+                <data android:pathPrefix="/profile/" />
+                <data android:pathPrefix="/messages/" />
+                <data android:pathPrefix="/notifications/" />
+                <data android:pathPrefix="/lists/" />
+            </intent-filter>
+         </activity>
+
 
         <!-- Prompt Google Play services to install the backported photo picker module -->
         <service android:name="com.google.android.gms.metadata.ModuleDependencies" android:enabled="false" android:exported="false">

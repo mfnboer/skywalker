@@ -194,6 +194,17 @@ void _handleShowDirectMessages(JNIEnv*)
         instance->handleShowDirectMessages();
 }
 
+void _handleShowLink(JNIEnv* env, jobject, jstring jUri)
+{
+    QString uri = jUri ? env->GetStringUTFChars(jUri, nullptr) : QString();
+    qDebug() << "Handling a show link request for: " << uri;
+    auto& instance = *gTheInstance;
+
+    if (instance) {
+        instance->handleShowLink(uri);
+    }
+}
+
 void _handleKeyboardHeightChanged(JNIEnv*, jobject, jint height)
 {
     auto& instance = *gTheInstance;
@@ -273,9 +284,10 @@ JNICallbackListener::JNICallbackListener() : QObject()
         { "emitSharedVideoReceived", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedVideoReceived) },
         { "emitSharedDmTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedDmTextReceived) },
         { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
-        { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) }
+        { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) },
+        { "emitShowLink", "(Ljava/lang/String;)V",  reinterpret_cast<void *>(_handleShowLink) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 6);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 7);
 #endif
 }
 
@@ -367,6 +379,11 @@ void JNICallbackListener::handleShowNotifications()
 void JNICallbackListener::handleShowDirectMessages()
 {
     emit showDirectMessages();
+}
+
+void JNICallbackListener::handleShowLink(const QString& uri)
+{
+    emit showLink(uri);
 }
 
 void JNICallbackListener::handleKeyboardHeightChanged(int height)

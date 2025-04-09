@@ -104,6 +104,8 @@ Skywalker::Skywalker(QObject* parent) :
             [this]{ emit showNotifications(); });
     connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,
             [this]{ emit showDirectMessages(); });
+    connect(&jniCallbackListener, &JNICallbackListener::showLink, this,
+            [this](const QString& uri) { emit showLinkReceived(uri); });
 
     auto* app = (QGuiApplication*)QGuiApplication::instance();
     Q_ASSERT(app);
