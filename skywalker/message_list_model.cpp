@@ -126,6 +126,26 @@ void MessageListModel::updateMessages(const ATProto::ChatBskyConvo::GetMessagesO
     }
 }
 
+void MessageListModel::updateMessage(const MessageView& msg)
+{
+    qDebug() << "Update message:" << msg.getId();
+
+    for (int i = 0; i < (int)mMessages.size(); ++i)
+    {
+        MessageView& storedMsg = mMessages[i];
+
+        if (storedMsg.getId() == msg.getId())
+        {
+            qDebug() << "Found message:" << msg.getId();
+            storedMsg = msg;
+            changeData({}, i, i);
+            return;
+        }
+    }
+
+    qWarning() << "Message not found:" << msg.getId();
+}
+
 const MessageView* MessageListModel::getLastMessage() const
 {
     if (mMessages.empty())

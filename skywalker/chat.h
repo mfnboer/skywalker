@@ -72,6 +72,9 @@ public:
                                  const WebLink::List& embeddedLinks);
     Q_INVOKABLE void deleteMessage(const QString& convoId, const QString& messageId);
 
+    Q_INVOKABLE void addReaction(const QString& convoId, const QString& messageId, const QString& emoji);
+    Q_INVOKABLE void deleteReaction(const QString& convoId, const QString& messageId, const QString& emoji);
+
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
 

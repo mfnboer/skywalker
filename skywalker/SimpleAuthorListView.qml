@@ -129,5 +129,4 @@ ListView {
             onClicked: authorClicked(author)
         }
     }
-
 }

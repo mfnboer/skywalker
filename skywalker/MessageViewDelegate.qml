@@ -20,7 +20,9 @@ Rectangle {
     signal deleteMessage(string messageId)
     signal reportMessage(messageview message)
     signal openingEmbed
-    signal pickEmoji
+    signal addEmoji(string messageId, string emoji)
+    signal pickEmoji(string messageId)
+    signal showReactions(messageview message)
 
     id: view
     width: viewWidth
@@ -179,9 +181,15 @@ Rectangle {
             z: 1
             color: moreMenu.background.color
             visible: moreMenu.opened && !senderIsUser
+
+            onEmojiSelected: (emoji) => {
+                moreMenu.close()
+                addEmoji(message.id, emoji)
+            }
+
             onMoreEmoji: {
                 moreMenu.close()
-                pickEmoji()
+                pickEmoji(message.id)
             }
         }
     }
@@ -215,6 +223,11 @@ Rectangle {
                 text: ` ${message.reactions.length} `
                 visible: parent.uniqueReactions.length < message.reactions.length
             }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: showReactions(message)
         }
     }
 

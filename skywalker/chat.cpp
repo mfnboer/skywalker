@@ -893,6 +893,62 @@ void Chat::deleteMessage(const QString& convoId, const QString& messageId)
         });
 }
 
+void Chat::addReaction(const QString& convoId, const QString& messageId, const QString& emoji)
+{
+    qDebug() << "Add reaction, convoId:" << convoId << "messageId:" << messageId << "emoji:" << emoji;
+
+    if (!mBsky)
+        return;
+
+    mBsky->addReaction(convoId, messageId, emoji,
+        [this, presence=*mPresence, convoId](auto messageOutput){
+            if (!presence)
+                return;
+
+            qDebug() << "Reaction added";
+            const MessageView msg(*messageOutput->mMessage);
+            auto* model = getMessageListModel(convoId);
+
+            if (model)
+                model->updateMessage(msg);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addReaction failed:" << error << " - " << msg;
+            emit failure(msg);
+        });
+}
+
+void Chat::deleteReaction(const QString& convoId, const QString& messageId, const QString& emoji)
+{
+    qDebug() << "Delete reaction, convoId:" << convoId << "messageId:" << messageId << "emoji:" << emoji;
+
+    if (!mBsky)
+        return;
+
+    mBsky->removeReaction(convoId, messageId, emoji,
+        [this, presence=*mPresence, convoId](auto messageOutput){
+            if (!presence)
+                return;
+
+            qDebug() << "Reaction deleted";
+            const MessageView msg(*messageOutput->mMessage);
+            auto* model = getMessageListModel(convoId);
+
+            if (model)
+                model->updateMessage(msg);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addReaction failed:" << error << " - " << msg;
+            emit failure(msg);
+        });
+}
+
 void Chat::startMessagesUpdateTimer()
 {
     if (!mMessagesUpdateTimer.isActive())

@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 Rectangle {
     signal moreEmoji
+    signal emojiSelected(string emoji)
 
     width: 50
     radius: width / 2
@@ -15,18 +16,23 @@ Rectangle {
 
         ReactionButton {
             text: "🙂"
+            onClicked: emojiSelected(text)
         }
         ReactionButton {
             text: "😂"
+            onClicked: emojiSelected(text)
         }
         ReactionButton {
             text: "❤️"
+            onClicked: emojiSelected(text)
         }
         ReactionButton {
             text: "👍"
+            onClicked: emojiSelected(text)
         }
         ReactionButton {
             text: "👎"
+            onClicked: emojiSelected(text)
         }
         SvgButton {
             width: 40

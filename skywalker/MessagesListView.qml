@@ -51,7 +51,9 @@ SkyPage {
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
             onOpeningEmbed: page.lastIndex = index
-            onPickEmoji: utils.showEmojiPicker()
+            onAddEmoji: (messageId, emoji) => page.addReaction(messageId, emoji)
+            onPickEmoji: (messageId) => utils.pickEmoji(messageId)
+            onShowReactions: (msg) => page.showReactionList(msg)
         }
 
         FlickableRefresher {
@@ -348,7 +350,16 @@ SkyPage {
     }
 
     Utils {
+        property string msgId
+
         id: utils
+
+        onEmojiPicked: (emoji) => page.addReaction(msgId, emoji)
+
+        function pickEmoji(messageId) {
+            msgId = messageId
+            showEmojiPicker()
+        }
     }
 
     VirtualKeyboardHandler {
@@ -374,6 +385,14 @@ SkyPage {
         let msgText = newMessageText.text
         console.debug("Send message:", convo.id, msgText)
         chat.sendMessage(convo.id, msgText, qUri, qCid, newMessageText.embeddedLinks)
+    }
+
+    function addReaction(messageId, emoji) {
+        chat.addReaction(convo.id, messageId, emoji)
+    }
+
+    function deleteReaction(messageId, emoji) {
+        chat.deleteReaction(convo.id, messageId, emoji)
     }
 
     function deleteMessage(messageId) {
@@ -451,6 +470,17 @@ SkyPage {
                 newMessageText.forceActiveFocus()
         })
         linkPage.open()
+    }
+
+    function showReactionList(msg) {
+        let component = guiSettings.createComponent("ReactionListView.qml")
+        let view = component.createObject(page, { convo: page.convo, model: msg.reactions })
+        view.onDeleteEmoji.connect((emoji) => {
+            page.deleteReaction(msg.id, emoji)
+            root.popStack()
+        })
+        view.onClosed.connect(() => root.popStack())
+        root.pushStack(view)
     }
 
     function sendMessageOkHandler() {
