@@ -8,8 +8,8 @@ namespace Skywalker {
 class MessageAndReactionView
 {
     Q_GADGET
-    Q_PROPERTY(MessageView messageView READ getMessageView FINAL)
-    Q_PROPERTY(ReactionView reactionView READ getReactionView FINAL)
+    Q_PROPERTY(MessageView message READ getMessageView FINAL)
+    Q_PROPERTY(ReactionView reaction READ getReactionView FINAL)
     QML_VALUE_TYPE(messageandreactionview)
 
 public:

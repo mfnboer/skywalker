@@ -237,12 +237,17 @@ const ConvoView* ConvoListModel::getConvo(const QString& convoId) const
     return &mConvos[index];
 }
 
-QString ConvoListModel::getLastRev() const
+QString ConvoListModel::getLastRevIncludingReactions() const
 {
-    if (mConvos.empty())
-        return "";
+    QString rev = "";
 
-    return mConvos.front().getRev();
+    for (const auto& convo : mConvos)
+    {
+        if (convo.getRevIncludingReactions() > rev)
+            rev = convo.getRevIncludingReactions();
+    }
+
+    return rev;
 }
 
 void ConvoListModel::setGetConvosInProgress(bool inProgress)

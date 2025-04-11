@@ -112,6 +112,7 @@ private:
     void setUnreadCount(QEnums::ConvoStatus status, int unread);
     void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output);
     QString getLastReadMessageId(const ConvoView& convo) const;
+    QString getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatBskyConvo::ConvoViewList& convos);
     void updateMessages();
     void startMessagesUpdateTimer();
     void stopMessagesUpdateTimer();

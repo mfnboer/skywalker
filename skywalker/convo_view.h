@@ -30,6 +30,7 @@ public:
 
     const QString& getId() const { return mId; }
     const QString& getRev() const { return mRev; }
+    const QString& getRevIncludingReactions() const;
     const ChatBasicProfileList& getMembers() const { return mMembers; }
     const QString getMemberNames() const { return mMemberNames.join(", "); }
     bool isMuted() const { return mMuted; }

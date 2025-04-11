@@ -38,7 +38,7 @@ public:
     bool hasConvo(const QString& convoId) const { return getConvo(convoId) != nullptr; }
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
-    QString getLastRev() const;
+    QString getLastRevIncludingReactions() const;
     BasicProfileList getAllConvoMembers() const;
 
     void setGetConvosInProgress(bool inProgress);

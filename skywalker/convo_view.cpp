@@ -55,4 +55,15 @@ bool ConvoView::updateMemberBlocked(const QString& did, const QString& blockingU
     return true;
 }
 
+// The rev of a convo does not get updated when a new reaction is added.
+// The rev of the message on which a reaction is give, is updated however!
+const QString& ConvoView::getRevIncludingReactions() const
+{
+    if (mLastReaction.isNull())
+        return mRev;
+
+    const QString& lastReactionRev = mLastReaction.getMessageView().getRev();
+    return std::max(mRev, lastReactionRev);
+}
+
 }
