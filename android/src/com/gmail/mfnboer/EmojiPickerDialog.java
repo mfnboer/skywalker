@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.view.Gravity;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
@@ -41,6 +42,7 @@ public class EmojiPickerDialog {
                 container.setBackgroundColor(Color.WHITE);
 
                 EmojiPickerView picker = new EmojiPickerView(activity);
+                picker.setEmojiGridColumns(7);
                 picker.setOnEmojiPickedListener(new Consumer<EmojiViewItem>() {
                     @Override
                     public void accept(@NonNull EmojiViewItem emojiViewItem) {

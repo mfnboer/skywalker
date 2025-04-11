@@ -83,22 +83,6 @@ void MessageView::initReactions(const ATProto::ChatBskyConvo::ReactionView::List
         const ReactionView reactionView(reaction);
         mReactions.push_back(reactionView);
     }
-
-    // TODO TEST
-    // for (int i = 0; i < 4; ++i)
-    // {
-    //     auto reaction = std::make_shared<ATProto::ChatBskyConvo::ReactionView>();
-    //     reaction->mValue = "😀";
-    //     reaction->mSender = std::make_shared<ATProto::ChatBskyConvo::ReactionViewSender>();
-    //     reaction->mSender->mDid = mSenderDid;
-    //     mReactions.push_back(ReactionView(reaction));
-    // }
-
-    // auto reaction = std::make_shared<ATProto::ChatBskyConvo::ReactionView>();
-    // reaction->mValue = "❤️";
-    // reaction->mSender = std::make_shared<ATProto::ChatBskyConvo::ReactionViewSender>();
-    // reaction->mSender->mDid = mSenderDid;
-    // mReactions.push_back(ReactionView(reaction));
 }
 
 ReactionView::List MessageView::getUniqueReactions(int maxReactions) const

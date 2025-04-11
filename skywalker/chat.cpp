@@ -244,6 +244,7 @@ QString Chat::getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatB
         if (convo->mLastReaction)
         {
             auto msgAndReaction = std::get<ATProto::ChatBskyConvo::MessageAndReactionView::SharedPtr>(*convo->mLastReaction);
+
             if (msgAndReaction->mMessageView->mRev > lastRev)
                 lastRev = msgAndReaction->mMessageView->mRev;
 

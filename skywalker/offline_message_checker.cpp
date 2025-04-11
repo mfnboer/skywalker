@@ -436,7 +436,9 @@ void OffLineMessageChecker::getChatNotifications()
         getAvatars();
     }
 
-    mBsky->listConvos({}, true, {}, {},
+    // We used to list only unread convos, but that will not get convos with
+    // new reactions.
+    mBsky->listConvos({}, false, {}, {},
         [this](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             const QString lastRev = mUserSettings.getOffLineChatCheckRev(mUserDid);
             const QString rev = mNotificationListModel.addNotifications(std::move(output), lastRev, mUserDid);
@@ -575,6 +577,16 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         iconType = IconType::CHAT;
         msg = notification.getDirectMessage().getFormattedText();
         break;
+    case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION:
+    {
+        channelId = CHANNEL_CHAT;
+        iconType = IconType::CHAT;
+        const auto& msgAndReaction = notification.getDirectMessageAndReaction();
+        msg = QObject::tr("Reacts with %1 to: %2").arg(
+                msgAndReaction.getReactionView().getEmoji(),
+                msgAndReaction.getMessageView().getFormattedText());
+        break;
+    }
     case Notification::Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
     case Notification::Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:

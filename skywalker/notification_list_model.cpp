@@ -158,6 +158,15 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
     return true;
 }
 
+static const QString& getConvoLastRevIncludingReactions(const ATProto::ChatBskyConvo::ConvoView& convo)
+{
+    if (!convo.mLastReaction)
+        return convo.mRev;
+
+    auto msgAndReaction = std::get<ATProto::ChatBskyConvo::MessageAndReactionView::SharedPtr>(*convo.mLastReaction);
+    return std::max(convo.mRev, msgAndReaction->mMessageView->mRev);
+}
+
 QString NotificationListModel::addNotifications(
     ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput, const QString& lastRev, const QString& userDid)
 {
@@ -166,46 +175,94 @@ QString NotificationListModel::addNotifications(
     if (convoListOutput->mConvos.empty())
     {
         qDebug() << "No conversations";
-        return {};
+        return lastRev;
     }
+
+    QString newRev = lastRev;
 
     for (const auto& convo : convoListOutput->mConvos)
     {
-        if (convo->mRev <= lastRev)
+        const QString& convoRev = getConvoLastRevIncludingReactions(*convo);
+
+        if (convoRev <= lastRev)
         {
             qDebug() << "Messages already seen, rev:" << convo->mRev << "last:" << lastRev;
-            break;
-        }
-
-        if (!convo->mLastMessage)
-        {
-            qDebug() << "Convo has no last message:" << convo->mId << convo->mRev;
             continue;
         }
 
-        const ConvoView convoView(*convo, userDid);
-        const ChatBasicProfile sender = convoView.getMember(convoView.getLastMessage().getSenderDid());
-        const BasicProfile profile = sender.getBasicProfile();
-
-        if (profile.isNull())
-        {
-            qWarning() << "Unknown message sender:" << convo->mId << convo->mRev;
-            continue;
-        }
-
-        const MessageView messageView(*convo->mLastMessage);
-
-        if (messageView.isDeleted())
-        {
-            qDebug() << "Last message is deleted";
-            continue;
-        }
-
-        const Notification notification(messageView, profile);
-        mList.push_back(notification);
+        newRev = std::max(newRev, convoRev);
+        addConvoLastMessage(*convo, lastRev, userDid);
+        addConvoLastReaction(*convo, lastRev, userDid);
     }
 
     return convoListOutput->mConvos.front()->mRev;
+}
+
+void NotificationListModel::addConvoLastMessage(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& lastRev, const QString& userDid)
+{
+    if (!convo.mLastMessage)
+    {
+        qDebug() << "Convo has no last message:" << convo.mId << convo.mRev;
+        return;
+    }
+
+    if (convo.mRev <= lastRev)
+    {
+        qDebug() << "Last message already seen:" << convo.mId << convo.mRev;
+        return;
+    }
+
+    const MessageView messageView(*convo.mLastMessage);
+
+    if (messageView.isDeleted())
+    {
+        qDebug() << "Last message is deleted";
+        return;
+    }
+
+    const ConvoView convoView(convo, userDid);
+    const ChatBasicProfile sender = convoView.getMember(convoView.getLastMessage().getSenderDid());
+    const BasicProfile profile = sender.getBasicProfile();
+
+    if (profile.isNull())
+    {
+        qWarning() << "Unknown message sender:" << convo.mId << convo.mRev;
+        return;
+    }
+
+    const Notification notification(messageView, profile);
+    mList.push_back(notification);
+}
+
+void NotificationListModel::addConvoLastReaction(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& lastRev, const QString& userDid)
+{
+    if (!convo.mLastReaction)
+    {
+        qDebug() << "Convo has no last reaction:" << convo.mId << convo.mRev;
+        return;
+    }
+
+    auto msgAndReaction = std::get<ATProto::ChatBskyConvo::MessageAndReactionView::SharedPtr>(*convo.mLastReaction);
+
+    if (msgAndReaction->mMessageView->mRev <= lastRev)
+    {
+        qDebug() << "Last reaction already seen:" << convo.mId << msgAndReaction->mMessageView->mRev;
+        return;
+    }
+
+    const ConvoView convoView(convo, userDid);
+    const ChatBasicProfile sender = convoView.getMember(msgAndReaction->mReactionView->mSender->mDid);
+    const BasicProfile profile = sender.getBasicProfile();
+
+    if (profile.isNull())
+    {
+        qWarning() << "Unknown reaction sender:" << convo.mId << convo.mRev;
+        return;
+    }
+
+    const MessageAndReactionView messageAndReactionView(*convo.mLastReaction);
+    const Notification notification(messageAndReactionView, profile);
+    mList.push_back(notification);
 }
 
 void NotificationListModel::filterNotificationList(NotificationList& list) const
