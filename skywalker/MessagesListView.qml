@@ -76,6 +76,7 @@ SkyPage {
         function moveToEnd() {
             positionViewAtEnd()
 
+            // HACK
             // positionViewAtEnd not always gets completely to the end...
             // This seems to fix it...
             contentY = Math.max(originY, originY + contentHeight - height)
@@ -402,7 +403,22 @@ SkyPage {
     }
 
     function reportDirectMessage(msg) {
-        root.reportDirectMessage(msg, convo.id, convo.getMember(msg.senderDid).basicProfile)
+        const lastVisible = messagesView.getLastVisibleIndex()
+        const lastOffset = messagesView.calcVisibleOffsetY(lastVisible)
+
+        let component = guiSettings.createComponent("Report.qml")
+        let form = component.createObject(page, {
+                skywalker: skywalker,
+                message: msg,
+                convoId: convo.id,
+                author: convo.getMember(msg.senderDid).basicProfile })
+
+        form.onClosed.connect(() => {
+            root.popStack()
+            moveToMessageTimer.moveTo(lastVisible, lastOffset)
+        })
+
+        root.pushStack(form)
     }
 
     function addEmbeddedLink() {
@@ -473,13 +489,23 @@ SkyPage {
     }
 
     function showReactionList(msg) {
+        const lastVisible = messagesView.getLastVisibleIndex()
+        const lastOffset = messagesView.calcVisibleOffsetY(lastVisible)
+
         let component = guiSettings.createComponent("ReactionListView.qml")
         let view = component.createObject(page, { convo: page.convo, model: msg.reactions })
+
         view.onDeleteEmoji.connect((emoji) => {
             page.deleteReaction(msg.id, emoji)
             root.popStack()
+            moveToMessageTimer.moveTo(lastVisible, lastOffset)
         })
-        view.onClosed.connect(() => root.popStack())
+
+        view.onClosed.connect(() => {
+            root.popStack();
+            moveToMessageTimer.moveTo(lastVisible, lastOffset)
+        })
+
         root.pushStack(view)
     }
 
@@ -524,12 +550,33 @@ SkyPage {
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", messagesView.count)
         messagesView.positionViewAtIndex(Math.max(index, 0), ListView.End)
 
-        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+        return (lastVisibleIndex >= index && firstVisibleIndex <= index)
     }
 
-    function moveToMessage(index) {
+    // HACK
+    // When another page opens over this page, then the list position changes??
+    // Immediately changing it back to the previous position does not work.
+    // With a delay of 100ms it seems to work??
+    Timer
+    {
+        property int msgIndex: 0
+        property int msgOffset: 0
+
+        id: moveToMessageTimer
+        interval: 100
+
+        onTriggered: page.moveToMessage(msgIndex, () => { messagesView.contentY -= msgOffset })
+
+        function moveTo(index, offset) {
+            msgIndex = index
+            msgOffset = offset
+            start()
+        }
+    }
+
+    function moveToMessage(index, afterMoveCb = () => {}) {
         const destination = index >= 0 ? index : messagesView.count - 1
-        messagesView.moveToIndex(destination, doMoveToMessage)
+        messagesView.moveToIndex(destination, doMoveToMessage, afterMoveCb)
     }
 
     function rowsInsertedHandler(parent, start, end) {

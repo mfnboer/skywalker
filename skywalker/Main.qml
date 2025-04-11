@@ -1887,17 +1887,6 @@ ApplicationWindow {
         pushStack(form)
     }
 
-    function reportDirectMessage(message, convoId, sender) {
-        let component = guiSettings.createComponent("Report.qml")
-        let form = component.createObject(root, {
-                skywalker: skywalker,
-                message: message,
-                convoId: convoId,
-                author: sender })
-        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
-        pushStack(form)
-    }
-
     function translateText(text) {
         if (Qt.platform.os === "android") {
             if (utils.translate(text))

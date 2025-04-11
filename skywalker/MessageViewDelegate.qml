@@ -27,7 +27,7 @@ Rectangle {
     id: view
     width: viewWidth
     color: guiSettings.backgroundColor
-    height: messageTimeText.y + messageTimeText.height
+    height: endMarker.y
 
     AccessibleText {
         id: conversationStartText
@@ -243,6 +243,13 @@ Rectangle {
         font.pointSize: guiSettings.scaledFont(6/8)
         text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
         visible: !sameSenderAsNext || !sameTimeAsNext
+    }
+
+    Item {
+        id: endMarker
+        anchors.top: messageTimeText.visible ?
+                         messageTimeText.bottom :
+                         (reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom)
     }
 
     function getMessageDateIndication() {
