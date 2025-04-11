@@ -63,6 +63,7 @@ void MessageListModel::clear()
     {
         beginRemoveRows({}, 0, mMessages.size() - 1);
         mMessages.clear();
+        mMessageIdToPosIndex.clear();
         endRemoveRows();
     }
 
@@ -94,6 +95,8 @@ void MessageListModel::addMessages(const ATProto::ChatBskyConvo::GetMessagesOutp
         mMessages.emplace_front(message);
     }
 
+    rebuildIndex();
+
     endInsertRows();
     qDebug() << "New messages size:" << mMessages.size();
 }
@@ -124,26 +127,52 @@ void MessageListModel::updateMessages(const ATProto::ChatBskyConvo::GetMessagesO
         addMessages(messages, cursor);
         return;
     }
+
+    // No new messages, but existing messages could be updated, e.g. reactions
+    for (const auto& msg : messages)
+    {
+        const auto* messageView = std::get_if<ATProto::ChatBskyConvo::MessageView::SharedPtr>(&msg);
+
+        if (!messageView)
+            continue;
+
+        const QString& msgId = (*messageView)->mId;
+        const int index = getMessageIndexById(msgId);
+
+        if (index < 0)
+            continue;
+
+        MessageView& storedMsg = mMessages[index];
+
+        if (storedMsg.isDeleted())
+            continue;
+
+        const QString& msgRev = (*messageView)->mRev;
+
+        if (msgRev <= storedMsg.getRev())
+            continue;
+
+        qDebug() << "Update existing message:" << storedMsg.getId() << "oldRev:" << storedMsg.getRev() << "newRev:" << msgRev;
+        const MessageView updatedMsg(**messageView);
+        storedMsg = updatedMsg;
+        changeData({}, index, index);
+    }
 }
 
 void MessageListModel::updateMessage(const MessageView& msg)
 {
-    qDebug() << "Update message:" << msg.getId();
+    qDebug() << "Update message:" << msg.getId() << "rev:" << msg.getRev();
+    const int index = getMessageIndexById(msg.getId());
 
-    for (int i = 0; i < (int)mMessages.size(); ++i)
-    {
-        MessageView& storedMsg = mMessages[i];
-
-        if (storedMsg.getId() == msg.getId())
-        {
-            qDebug() << "Found message:" << msg.getId();
-            storedMsg = msg;
-            changeData({}, i, i);
-            return;
-        }
+    if (index < 0) {
+        qWarning() << "Message not found:" << msg.getId();
+        return;
     }
 
-    qWarning() << "Message not found:" << msg.getId();
+    MessageView& storedMsg = mMessages[index];
+    qDebug() << "Found message:" << storedMsg.getId() << "rev:" << storedMsg.getRev();
+    storedMsg = msg;
+    changeData({}, index, index);
 }
 
 const MessageView* MessageListModel::getLastMessage() const
@@ -167,6 +196,35 @@ QHash<int, QByteArray> MessageListModel::roleNames() const
     };
 
     return roles;
+}
+
+int MessageListModel::getMessageIndexById(const QString& id) const
+{
+    auto it = mMessageIdToPosIndex.find(id);
+
+    if (it == mMessageIdToPosIndex.end())
+        return -1;
+
+    const int index = it->second;
+
+    if (index < 0 || index >= (int)mMessages.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mMessages.size();
+        return -1;
+    }
+
+    return index;
+}
+
+void MessageListModel::rebuildIndex()
+{
+    mMessageIdToPosIndex.clear();
+
+    for (int i = 0; i < (int)mMessages.size(); ++i)
+    {
+        const auto& msg = mMessages[i];
+        mMessageIdToPosIndex[msg.getId()] = i;
+    }
 }
 
 void MessageListModel::changeData(const QList<int>& roles, int begin, int end)

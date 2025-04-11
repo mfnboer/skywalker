@@ -41,12 +41,15 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    int getMessageIndexById(const QString& id) const;
+    void rebuildIndex();
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
 
     const QString& mUserDid;
 
     // Ordered from oldest to newest
     std::deque<MessageView> mMessages;
+    std::unordered_map<QString, int> mMessageIdToPosIndex; // to position in mMessages
     QString mCursor;
 };
 
