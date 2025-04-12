@@ -687,7 +687,9 @@ void UserSettings::setVideoStreamingEnabled(bool enabled)
 
 bool UserSettings::getVideoStreamingEnabled() const
 {
-    return mSettings.value("videoStreamingEnabled", true).toBool();
+    // Disable as video streaming is broken in Qt6.8.2
+    // return mSettings.value("videoStreamingEnabled", true).toBool();
+    return false;
 }
 
 void UserSettings::setVideoQuality(QEnums::VideoQuality quality)

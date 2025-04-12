@@ -215,6 +215,7 @@ Rectangle {
                 model: parent.uniqueReactions
 
                 AccessibleText {
+                    font.family: UnicodeFonts.getEmojiFontFamily()
                     text: modelData.emoji
                 }
             }

@@ -25,6 +25,7 @@ Dialog {
             height: visible ? implicitHeight : 0
             verticalAlignment: Text.AlignVCenter
             font.pointSize: guiSettings.scaledFont(6)
+            font.family: UnicodeFonts.getEmojiFontFamily()
             text: emoji
             visible: emoji
         }

@@ -65,6 +65,7 @@ Rectangle {
             AccessibleText {
                 id: emojiText
                 font.pointSize: guiSettings.scaledFont(2)
+                font.family: UnicodeFonts.getEmojiFontFamily()
                 text: reaction.emoji
             }
         }

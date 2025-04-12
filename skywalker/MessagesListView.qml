@@ -557,14 +557,14 @@ SkyPage {
     // HACK
     // When another page opens over this page, then the list position changes??
     // Immediately changing it back to the previous position does not work.
-    // With a delay of 100ms it seems to work??
+    // With a delay of 200ms it seems to work??
     Timer
     {
         property int msgIndex: 0
         property int msgOffset: 0
 
         id: moveToMessageTimer
-        interval: 100
+        interval: 200
 
         onTriggered: page.moveToMessage(msgIndex, () => { messagesView.contentY -= msgOffset })
 

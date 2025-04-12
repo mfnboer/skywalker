@@ -3,6 +3,11 @@ next
 * Chat reactions (emoji)
 * Show thread symbol for a post if it is the start of a thread
 * Fix bug that made some videos invisible
+* Revert to Qt6.8.2 to fix white/black screen issue after waking
+  up from background.
+Known issues:
+- Video streaming disabled (as it was before v4.3)
+- Copy/paste anchors in odd location
 
 4.3.2
 =====
