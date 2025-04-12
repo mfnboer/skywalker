@@ -9,7 +9,6 @@ SkyListView {
     property bool showFavorites: false
     property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : feedUnreadPosts
     property int feedUnreadPosts: 0
-    property int calibrationDy: 0
     property bool inSync: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
@@ -51,11 +50,6 @@ SkyListView {
         width: postFeedView.width
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
-
-        onCalibratedPosition: (dy) => {
-            calibrationDy += dy
-            Qt.callLater(calibratePosition)
-        }
 
         onActivateSwipe: {
             let view = postFeedView
@@ -314,16 +308,6 @@ SkyListView {
                 mediaTilesLoader.item.goToIndex(newIndex)
             }
         }
-    }
-
-    function calibratePosition() {
-        if (calibrationDy === 0)
-            return
-
-        console.debug("Calibration, calibrationDy:", calibrationDy)
-        contentY += calibrationDy
-        calibrationDy = 0
-        resetHeaderPosition()
     }
 
     function updateFeedUnreadPosts() {

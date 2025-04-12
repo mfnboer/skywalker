@@ -8,7 +8,6 @@ SkyListView {
     property bool inSync: false
     property bool isView: false
     property int unreadPosts: 0
-    property int calibrationDy: 0
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
     property var userSettings: skywalker.getUserSettings()
@@ -58,11 +57,6 @@ SkyListView {
     delegate: PostFeedViewDelegate {
         width: timelineView.width
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
-
-        onCalibratedPosition: (dy) => {
-            calibrationDy += dy
-            Qt.callLater(calibratePosition)
-        }
 
         onUnfoldPosts: model.unfoldPosts(index)
         onActivateSwipe: root.viewMediaFeed(model, index, (newIndex) => { moveToPost(newIndex) })
@@ -140,17 +134,6 @@ SkyListView {
         return 0
     }
 
-    function calibratePosition() {
-        if (calibrationDy === 0)
-            return
-
-        console.debug("Calibration, calibrationDy:", calibrationDy)
-        timelineView.contentY += calibrationDy
-        calibrationDy = 0
-        calibrateUnreadPosts()
-        resetHeaderPosition()
-    }
-
     function updateUnreadPosts(firstIndex) {
         timelineView.unreadPosts = Math.max(firstIndex, 0)
     }
@@ -215,10 +198,6 @@ SkyListView {
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
-        // The Qt.callLater may still be pending when this code executes.
-        // Incoming network events have higher prio than callLater.
-        calibratePosition()
-
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
@@ -242,7 +221,6 @@ SkyListView {
     }
 
     function rowsAboutToBeRemovedHandler(parent, start, end) {
-        calibratePosition()
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows to be removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)

@@ -141,8 +141,6 @@ ListView {
         if (index < 0)
             return
 
-        console.debug("PD Calibration anchor index:", index)
-
         if (anchorItem)
             anchorItem.isAnchorItem = false
 
