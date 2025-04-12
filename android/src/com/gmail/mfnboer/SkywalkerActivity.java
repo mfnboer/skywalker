@@ -34,7 +34,6 @@ public class SkywalkerActivity extends QtActivity {
     public static final String INTENT_ACTION_SHOW_NOTIFICATIONS = "com.gmail.mfnboer.skywalker.showNotifications";
     public static final String INTENT_ACTION_SHOW_DIRECT_MESSAGES = "com.gmail.mfnboer.skywalker.showDirectMessages";
     public static final String INTENT_EXTRA_DIRECT_MESSAGE = "com.gmail.mfnboer.skywalker.directMessage";
-    public static final String INTENT_ACTION_SHOW_LINK = "com.gmail.mfnboer.skywalker.showLink";
 
     public static native void emitSharedTextReceived(String text);
     public static native void emitSharedImageReceived(String uri, String text);
