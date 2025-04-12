@@ -20,11 +20,14 @@ Rectangle {
     signal deleteMessage(string messageId)
     signal reportMessage(messageview message)
     signal openingEmbed
+    signal addEmoji(string messageId, string emoji)
+    signal pickEmoji(string messageId)
+    signal showReactions(messageview message)
 
     id: view
     width: viewWidth
     color: guiSettings.backgroundColor
-    height: messageTimeText.y + messageTimeText.height
+    height: endMarker.y
 
     AccessibleText {
         id: conversationStartText
@@ -103,6 +106,7 @@ Rectangle {
             LinkCatcher {
                 z: parent.z - 1
                 containingText: message.text
+                onLongPress: moreMenu.open()
             }
         }
 
@@ -131,51 +135,106 @@ Rectangle {
             anchors.fill: parent
             z: -2
             onPressAndHold: moreMenu.open()
+        }
 
-            Menu {
-                id: moreMenu
-                modal: true
+        Menu {
+            id: moreMenu
 
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
+            onAboutToShow: root.enablePopupShield(true)
+            onAboutToHide: root.enablePopupShield(false)
 
-                CloseMenuItem {
-                    text: qsTr("<b>Message</b>")
-                    Accessible.name: qsTr("close messages menu")
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Translate")
-                    onTriggered: root.translateText(message.text)
+            CloseMenuItem {
+                text: qsTr("<b>Message</b>")
+                Accessible.name: qsTr("close messages menu")
+            }
+            AccessibleMenuItem {
+                text: qsTr("Translate")
+                onTriggered: root.translateText(message.text)
 
-                    MenuItemSvg { svg: SvgOutline.googleTranslate }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Copy message")
-                    onTriggered: skywalker.copyToClipboard(message.text)
+                MenuItemSvg { svg: SvgOutline.googleTranslate }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Copy message")
+                onTriggered: skywalker.copyToClipboard(message.text)
 
-                    MenuItemSvg { svg: SvgOutline.copy }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Delete")
-                    onTriggered: deleteMessage(message.id)
+                MenuItemSvg { svg: SvgOutline.copy }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Delete")
+                onTriggered: deleteMessage(message.id)
 
-                    MenuItemSvg { svg: SvgOutline.delete }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Report message")
-                    visible: !senderIsUser
-                    onTriggered: reportMessage(message)
+                MenuItemSvg { svg: SvgOutline.delete }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Report message")
+                visible: !senderIsUser
+                onTriggered: reportMessage(message)
 
-                    MenuItemSvg { svg: SvgOutline.report }
+                MenuItemSvg { svg: SvgOutline.report }
+            }
+        }
+
+        ReactionsMenu {
+            parent: Overlay.overlay
+            x: messageRect.x + moreMenu.x + moreMenu.width + 10
+            y: view.y - view.ListView.view.contentY + view.ListView.view.parent.y + messageRect.y + moreMenu.y
+            z: 1
+            color: moreMenu.background.color
+            visible: moreMenu.opened && !senderIsUser
+
+            onEmojiSelected: (emoji) => {
+                moreMenu.close()
+                addEmoji(message.id, emoji)
+            }
+
+            onMoreEmoji: {
+                moreMenu.close()
+                pickEmoji(message.id)
+            }
+        }
+    }
+
+    Rectangle {
+        id: reactionsRect
+        x: messageRect.x + (senderIsUser ? messageRect.width - 5 - width : 5);
+        anchors.top: messageRect.bottom
+        anchors.topMargin: -3
+        width: reactionsRow.width + 6
+        height: reactionsRow.height
+        radius: height / 2
+        color: guiSettings.backgroundColor
+        visible: message.reactions.length > 0
+
+        Row {
+            property var uniqueReactions: message.getUniqueReactions(5)
+
+            id: reactionsRow
+            anchors.centerIn: parent
+
+            Repeater {
+                model: parent.uniqueReactions
+
+                AccessibleText {
+                    text: modelData.emoji
                 }
             }
+
+            AccessibleText {
+                text: ` ${message.reactions.length} `
+                visible: parent.uniqueReactions.length < message.reactions.length
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: showReactions(message)
         }
     }
 
     AccessibleText {
         id: messageTimeText
         anchors.left: messageRect.left
-        anchors.top: messageRect.bottom
+        anchors.top: reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom
         anchors.topMargin: visible ? 5 : 0
         width: messageRect.width
         height: visible ? contentHeight : 0
@@ -184,6 +243,13 @@ Rectangle {
         font.pointSize: guiSettings.scaledFont(6/8)
         text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
         visible: !sameSenderAsNext || !sameTimeAsNext
+    }
+
+    Item {
+        id: endMarker
+        anchors.top: messageTimeText.visible ?
+                         messageTimeText.bottom :
+                         (reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom)
     }
 
     function getMessageDateIndication() {

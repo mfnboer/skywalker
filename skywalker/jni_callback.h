@@ -19,6 +19,7 @@ public:
 
     void handlePhotoPicked(int fd, const QString& mimeType);
     void handlePhotoPickCanceled();
+    void handleEmojiPicked(const QString& emoji);
     void handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName);
     void handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error);
     void handleExtractTextAvailabilityOk(QEnums::Script script, bool available);
@@ -40,6 +41,7 @@ public:
 signals:
     void photoPicked(int fd, QString mimeType);
     void photoPickCanceled();
+    void emojiPicked(QString emoji);
     void videoTranscodingOk(QString inputFileName, FileSignal::SharedPtr outputFile);
     void videoTranscodingFailed(QString inputFileName, FileSignal::SharedPtr outputFile, QString error);
     void extractTextAvailabilityOk(QEnums::Script script, bool available);

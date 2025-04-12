@@ -19,6 +19,7 @@ RoundButton {
         verticalAlignment: Text.AlignVCenter
         color: textColor
         text: button.text
+        font: button.font
     }
 
     Accessible.role: Accessible.Button

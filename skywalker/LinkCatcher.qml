@@ -4,6 +4,8 @@ import QtQuick
 MouseArea {
     property string containingText
 
+    signal longPress
+
     anchors.fill: parent
     propagateComposedEvents: true
 
@@ -22,9 +24,11 @@ MouseArea {
         if (link) {
             if (UnicodeFonts.isHashtag(link))
                 hashtagContextMenuLoader.activate(link)
+            else
+                longPress()
         }
         else {
-            mouse.accepted = false
+            longPress()
         }
     }
 
@@ -47,9 +51,5 @@ MouseArea {
             hashtagContextMenuLoader.hashtag = hashtag
             active = true
         }
-    }
-
-    function showHashtagMenu() {
-
     }
 }

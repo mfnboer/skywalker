@@ -26,7 +26,11 @@ ApplicationWindow {
 
         // This catches the back-button on Android
 
-        if (currentStack().depth > 1) {
+        if (utils.isEmojiPickerShown()) {
+            utils.dismissEmojiPicker()
+            event.accepted = false
+        }
+        else if (currentStack().depth > 1) {
             let item = currentStackItem()
 
             if (item instanceof SignIn || item instanceof Login || item instanceof StartupStatus) {
@@ -1023,6 +1027,7 @@ ApplicationWindow {
 
     Utils {
         id: utils
+        skywalker: skywalker
     }
 
     // InviteCodeStore {
@@ -1879,17 +1884,6 @@ ApplicationWindow {
     function reportStarterPack(starterPack) {
         let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, { skywalker: skywalker, starterPack: starterPack })
-        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
-        pushStack(form)
-    }
-
-    function reportDirectMessage(message, convoId, sender) {
-        let component = guiSettings.createComponent("Report.qml")
-        let form = component.createObject(root, {
-                skywalker: skywalker,
-                message: message,
-                convoId: convoId,
-                author: sender })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }

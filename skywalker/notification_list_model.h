@@ -167,6 +167,8 @@ private:
     NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
     void filterNotificationList(NotificationList& list) const;
     void addNotificationList(const NotificationList& list, bool clearFirst);
+    void addConvoLastMessage(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& lastRev, const QString& userDid);
+    void addConvoLastReaction(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& lastRev, const QString& userDid);
 
     // Get the posts for LIKE, FOLLOW and REPOST notifications
     void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);

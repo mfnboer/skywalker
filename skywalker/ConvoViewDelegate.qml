@@ -12,6 +12,7 @@ Rectangle {
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
     readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember.labels)
     readonly property int margin: 10
+    readonly property bool showLastReaction: !convo.lastReaction.isNull() && convo.lastReaction.reaction.createdAt > convo.lastMessageDate
 
     signal viewConvo(convoview convo)
     signal deleteConvo(convoview convo)
@@ -183,6 +184,7 @@ Rectangle {
                         }
                     }
 
+                    // Last message
                     SkyCleanedText {
                         readonly property string deletedText: qsTr("message deleted")
                         readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
@@ -193,6 +195,19 @@ Rectangle {
                         textFormat: Text.RichText
                         font.italic: convo.lastMessage.deleted
                         plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.text : deletedText)}`)
+                        visible: !showLastReaction
+                    }
+
+                    // Last reaction
+                    SkyCleanedText {
+                        readonly property bool sentByUser: convo.lastReaction.reaction.senderDid === skywalker.getUserDid()
+
+                        width: parent.width
+                        topPadding: 10
+                        elide: Text.ElideRight
+                        textFormat: Text.RichText
+                        plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}${convo.lastReaction.reaction.emoji} to: ${convo.lastReaction.message.text}`)
+                        visible: showLastReaction
                     }
                 }
 

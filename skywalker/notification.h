@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "message_and_reaction_view.h"
 #include "message_view.h"
 #include "post.h"
 #include "post_record.h"
@@ -20,6 +21,7 @@ public:
     explicit Notification(const ATProto::AppBskyNotification::Notification::SharedPtr& notification);
     Notification(const QString& inviteCode, const BasicProfile& usedBy);
     Notification(const MessageView& messageView, const BasicProfile& messageSender);
+    Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender);
     explicit Notification(const BasicProfileList& labelersWithLabels);
 
     QString getUri() const;
@@ -47,6 +49,7 @@ public:
 
     void addOtherAuthor(const BasicProfile& author);
     const MessageView& getDirectMessage() const { return mDirectMessage; }
+    const MessageAndReactionView& getDirectMessageAndReaction() const { return mDirectMessageAndRection; }
 
     bool updateNewLabels(const ContentFilter* contentFilter);
 
@@ -58,7 +61,8 @@ private:
     QString mInviteCode;
     BasicProfile mInviteCodeUsedBy;
     MessageView mDirectMessage;
-    BasicProfile mMessageSender;
+    MessageAndReactionView mDirectMessageAndRection;
+    BasicProfile mMessageSender; // sender of reaction in case of MessageAndReactionView
     BasicProfile mLabelerWithNewLabels;
     bool mIsRead = false;
     bool mEndOfList = false;

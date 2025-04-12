@@ -2,9 +2,22 @@
 // License: GPLv3
 #include "utils.h"
 #include "android_utils.h"
-#include "QDebug"
+#include "jni_callback.h"
+#include "skywalker.h"
 
 namespace Skywalker {
+
+bool Utils::sEmojiPickerShown = false;
+
+Utils::Utils(QObject* parent) :
+    WrappedSkywalker(parent)
+{
+    auto& jniCallbackListener = JNICallbackListener::getInstance();
+
+    connect(&jniCallbackListener, &JNICallbackListener::emojiPicked, this,
+        [this](QString emoji){ handleEmojiPicked(emoji); }
+    );
+}
 
 std::optional<QString> Utils::makeOptionalString(const QString& str)
 {
@@ -30,6 +43,32 @@ bool Utils::similarColors(const QColor& lhs, const QColor& rhs)
 bool Utils::translate(const QString& text)
 {
     return AndroidUtils::translate(text);
+}
+
+void Utils::showEmojiPicker()
+{
+    if (!sEmojiPickerShown)
+    {
+        Q_ASSERT(mSkywalker);
+        const auto displayMode = mSkywalker->getUserSettings()->getActiveDisplayMode();
+        AndroidUtils::showEmojiPicker(displayMode);
+        sEmojiPickerShown = true;
+    }
+}
+
+void Utils::dismissEmojiPicker()
+{
+    if (sEmojiPickerShown)
+    {
+        AndroidUtils::dismissEmojiPicker();
+        sEmojiPickerShown = false;
+    }
+}
+
+void Utils::handleEmojiPicked(const QString& emoji)
+{
+    sEmojiPickerShown = false;
+    emit emojiPicked(emoji);
 }
 
 }

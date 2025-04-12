@@ -26,6 +26,9 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
 
     if (convo.mLastMessage)
         mLastMessage = MessageView{*convo.mLastMessage};
+
+    if (convo.mLastReaction)
+        mLastReaction = MessageAndReactionView{*convo.mLastReaction};
 }
 
 ChatBasicProfile ConvoView::getMember(const QString& did) const
@@ -50,6 +53,17 @@ bool ConvoView::updateMemberBlocked(const QString& did, const QString& blockingU
     BasicProfile& profile = chatProfile.getBasicProfile();
     profile.getViewer().setBlocking(blockingUri);
     return true;
+}
+
+// The rev of a convo does not get updated when a new reaction is added.
+// The rev of the message on which a reaction is give, is updated however!
+const QString& ConvoView::getRevIncludingReactions() const
+{
+    if (mLastReaction.isNull())
+        return mRev;
+
+    const QString& lastReactionRev = mLastReaction.getMessageView().getRev();
+    return std::max(mRev, lastReactionRev);
 }
 
 }

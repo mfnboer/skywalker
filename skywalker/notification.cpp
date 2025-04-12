@@ -24,6 +24,12 @@ Notification::Notification(const MessageView& messageView, const BasicProfile& m
 {
 }
 
+Notification::Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender) :
+    mDirectMessageAndRection(messageAndReactionView),
+    mMessageSender(reactionSender)
+{
+}
+
 Notification::Notification(const BasicProfileList& labelersWithNewLabels) :
     mLabelerWithNewLabels(labelersWithNewLabels.front())
 {
@@ -50,6 +56,9 @@ Notification::Reason Notification::getReason() const
 
     if (!mDirectMessage.isNull())
         return Reason::NOTIFICATION_REASON_DIRECT_MESSAGE;
+
+    if (!mDirectMessageAndRection.isNull())
+        return Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION;
 
     if (!mLabelerWithNewLabels.isNull())
         return Reason::NOTIFICATION_REASON_NEW_LABELS;
@@ -169,6 +178,7 @@ QString Notification::getPostUri() const
         return getUri();
     case Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
+    case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION:
     case Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Reason::NOTIFICATION_REASON_UNKNOWN:
         return {};

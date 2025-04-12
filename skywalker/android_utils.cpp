@@ -174,4 +174,25 @@ bool AndroidUtils::translate(const QString& text)
     return false;
 }
 
+void AndroidUtils::showEmojiPicker(QEnums::DisplayMode displayMode)
+{
+    qDebug() << "Show emoji picker";
+#if defined(Q_OS_ANDROID)
+    const bool isLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/EmojiPickerDialog",
+        "show", "(Z)V", (jboolean)isLightMode);
+#else
+    Q_UNUSED(displayMode)
+#endif
+}
+
+void AndroidUtils::dismissEmojiPicker()
+{
+    qDebug() << "Dismiss emoji picker";
+#if defined(Q_OS_ANDROID)
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/EmojiPickerDialog", "dismiss", "()V");
+#endif
+}
+
 }

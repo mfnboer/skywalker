@@ -32,6 +32,15 @@ void _handlePhotoPickCanceled(JNIEnv*, jobject)
         instance->handlePhotoPickCanceled();
 }
 
+void _handleEmojiPicked(JNIEnv* env, jobject, jstring jsEmoji)
+{
+    QString emoji = jsEmoji ? env->GetStringUTFChars(jsEmoji, nullptr) : QString();
+    qDebug() << "Emoji picked:" << emoji;
+    auto& instance = *gTheInstance;
+    if (instance)
+        instance->handleEmojiPicked(emoji);
+}
+
 void _handleVideoTranscodingOk(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName)
 {
     QString inputFileName = jsInputFileName ? env->GetStringUTFChars(jsInputFileName, nullptr) : QString();
@@ -240,6 +249,11 @@ JNICallbackListener::JNICallbackListener() : QObject()
     };
     jni.registerNativeMethods("com/gmail/mfnboer/QPhotoPicker", photoPickerCallbacks, 2);
 
+    const JNINativeMethod emojiPickerCallbacks[] = {
+        { "emitEmojiPicked", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleEmojiPicked) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/EmojiPickerDialog", emojiPickerCallbacks, 1);
+
     const JNINativeMethod videoTranscoderCallbacks[] = {
         { "emitTranscodingOk", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingOk) },
         { "emitTranscodingFailed", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingFailed) }
@@ -287,6 +301,11 @@ void JNICallbackListener::handlePhotoPicked(int fd, const QString& mimeType)
 void JNICallbackListener::handlePhotoPickCanceled()
 {
     emit photoPickCanceled();
+}
+
+void JNICallbackListener::handleEmojiPicked(const QString& emoji)
+{
+    emit emojiPicked(emoji);
 }
 
 void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName)

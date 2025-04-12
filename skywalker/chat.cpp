@@ -134,8 +134,8 @@ ATProto::PostMaster* Chat::postMaster()
 
 QString Chat::getLastRev() const
 {
-    const auto lastRevAccepted = mAcceptedConvoListModel.getLastRev();
-    const auto lastRevRequested = mRequestConvoListModel.getLastRev();
+    const auto lastRevAccepted = mAcceptedConvoListModel.getLastRevIncludingReactions();
+    const auto lastRevRequested = mRequestConvoListModel.getLastRevIncludingReactions();
 
     return std::max(lastRevAccepted, lastRevRequested);
 }
@@ -232,6 +232,38 @@ void Chat::getConvosNextPage(QEnums::ConvoStatus status)
     getConvos(status, cursor);
 }
 
+QString Chat::getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatBskyConvo::ConvoViewList& convos)
+{
+    QString lastRev = "";
+
+    for (auto& convo : convos)
+    {
+        if (convo->mRev > lastRev)
+            lastRev = convo->mRev;
+
+        if (convo->mLastReaction)
+        {
+            auto msgAndReaction = std::get<ATProto::ChatBskyConvo::MessageAndReactionView::SharedPtr>(*convo->mLastReaction);
+
+            if (msgAndReaction->mMessageView->mRev > lastRev)
+                lastRev = msgAndReaction->mMessageView->mRev;
+
+            if (msgAndReaction->mMessageView->mRev > convo->mRev)
+            {
+                const ConvoView* existingConvo = model->getConvo(convo->mId);
+
+                // HACK: Bluesky does not update the rev of the convo on a new reaction,
+                // nor does it keep track of unseen reactions. By incrementing the unread
+                // count here we can alert the user.
+                if (existingConvo && msgAndReaction->mMessageView->mRev > existingConvo->getRevIncludingReactions())
+                    convo->mUnreadCount++;
+            }
+        }
+    }
+
+    return lastRev;
+}
+
 void Chat::updateConvos(QEnums::ConvoStatus status)
 {
     Q_ASSERT(mBsky);
@@ -253,9 +285,13 @@ void Chat::updateConvos(QEnums::ConvoStatus status)
             if (!model)
                 return;
 
-            const QString rev = output->mConvos.front()->mRev;
+            // Before reactions we could simply compare the revisions of the first convo
+            // in the list with the first convo in the model.
+            // As Bluesky does not update the rev of the convo on new reactions, we have
+            // to compare all convos...
+            const QString rev = getLastRevIncludingReactions(model, output->mConvos);
 
-            if (rev == model->getLastRev())
+            if (rev == model->getLastRevIncludingReactions())
             {
                 qDebug() << "No updated convos, rev:" << rev << "status:" << status;
                 return;
@@ -890,6 +926,62 @@ void Chat::deleteMessage(const QString& convoId, const QString& messageId)
 
             qDebug() << "deleteMessage failed:" << error << " - " << msg;
             emit deleteMessageFailed(msg);
+        });
+}
+
+void Chat::addReaction(const QString& convoId, const QString& messageId, const QString& emoji)
+{
+    qDebug() << "Add reaction, convoId:" << convoId << "messageId:" << messageId << "emoji:" << emoji;
+
+    if (!mBsky)
+        return;
+
+    mBsky->addReaction(convoId, messageId, emoji,
+        [this, presence=*mPresence, convoId](auto messageOutput){
+            if (!presence)
+                return;
+
+            qDebug() << "Reaction added";
+            const MessageView msg(*messageOutput->mMessage);
+            auto* model = getMessageListModel(convoId);
+
+            if (model)
+                model->updateMessage(msg);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addReaction failed:" << error << " - " << msg;
+            emit failure(msg);
+        });
+}
+
+void Chat::deleteReaction(const QString& convoId, const QString& messageId, const QString& emoji)
+{
+    qDebug() << "Delete reaction, convoId:" << convoId << "messageId:" << messageId << "emoji:" << emoji;
+
+    if (!mBsky)
+        return;
+
+    mBsky->removeReaction(convoId, messageId, emoji,
+        [this, presence=*mPresence, convoId](auto messageOutput){
+            if (!presence)
+                return;
+
+            qDebug() << "Reaction deleted";
+            const MessageView msg(*messageOutput->mMessage);
+            auto* model = getMessageListModel(convoId);
+
+            if (model)
+                model->updateMessage(msg);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addReaction failed:" << error << " - " << msg;
+            emit failure(msg);
         });
 }
 
