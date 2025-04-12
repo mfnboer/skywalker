@@ -25,7 +25,7 @@ public:
     static void installVirtualKeyboardListener();
     static bool translate(const QString& text);
 
-    static void showEmojiPicker();
+    static void showEmojiPicker(QEnums::DisplayMode displayMode);
     static void dismissEmojiPicker();
 
 private:

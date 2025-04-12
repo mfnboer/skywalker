@@ -5,6 +5,7 @@ SkyListView {
     required property int modelId
     required property int postEntryIndex
     property bool syncToEntry: true
+    property var skywalker: root.getSkywalker()
 
     signal closed
 
@@ -158,6 +159,7 @@ SkyListView {
 
     Utils {
         id: utils
+        skywalker: view.skywalker
     }
 
     function getReplyToAuthor() {

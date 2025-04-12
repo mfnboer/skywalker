@@ -8,10 +8,10 @@ import com.gmail.mfnboer.SkywalkerApplication;
 import android.app.Activity;
 import android.graphics.Color;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.ViewGroup;
 import android.view.Gravity;
 import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
@@ -25,7 +25,7 @@ public class EmojiPickerDialog {
 
     public static native void emitEmojiPicked(String emoji);
 
-    public static void show() {
+    public static void show(boolean isLightMode) {
         SkywalkerActivity activity = SkywalkerActivity.getInstance();
 
         activity.runOnUiThread(new Runnable() {
@@ -39,9 +39,12 @@ public class EmojiPickerDialog {
                 );
                 params.gravity = Gravity.BOTTOM;
                 container.setLayoutParams(params);
-                container.setBackgroundColor(Color.WHITE);
+                container.setBackgroundColor(isLightMode ? Color.WHITE : Color.BLACK);
 
-                EmojiPickerView picker = new EmojiPickerView(activity);
+                ContextThemeWrapper pickerContext = new ContextThemeWrapper(
+                    activity, isLightMode ? android.R.style.Theme_Light : android.R.style.Theme_Black);
+
+                EmojiPickerView picker = new EmojiPickerView(pickerContext);
                 picker.setEmojiGridColumns(7);
                 picker.setOnEmojiPickedListener(new Consumer<EmojiViewItem>() {
                     @Override

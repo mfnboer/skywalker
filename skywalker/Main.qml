@@ -1027,6 +1027,7 @@ ApplicationWindow {
 
     Utils {
         id: utils
+        skywalker: skywalker
     }
 
     // InviteCodeStore {

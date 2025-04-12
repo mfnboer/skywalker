@@ -354,6 +354,7 @@ SkyPage {
         property string msgId
 
         id: utils
+        skywalker: page.skywalker // qmllint disable missing-type
 
         onEmojiPicked: (emoji) => page.addReaction(msgId, emoji)
 

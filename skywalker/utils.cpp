@@ -3,14 +3,14 @@
 #include "utils.h"
 #include "android_utils.h"
 #include "jni_callback.h"
-#include "QDebug"
+#include "skywalker.h"
 
 namespace Skywalker {
 
 bool Utils::sEmojiPickerShown = false;
 
 Utils::Utils(QObject* parent) :
-    QObject(parent)
+    WrappedSkywalker(parent)
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
@@ -49,7 +49,9 @@ void Utils::showEmojiPicker()
 {
     if (!sEmojiPickerShown)
     {
-        AndroidUtils::showEmojiPicker();
+        Q_ASSERT(mSkywalker);
+        const auto displayMode = mSkywalker->getUserSettings()->getActiveDisplayMode();
+        AndroidUtils::showEmojiPicker(displayMode);
         sEmojiPickerShown = true;
     }
 }

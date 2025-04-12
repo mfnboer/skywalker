@@ -8,6 +8,8 @@ ColumnLayout {
     property var userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
 
+    id: settings
+
     HeaderText {
         Layout.topMargin: 10
         text: qsTr("Appearance")
@@ -373,6 +375,7 @@ ColumnLayout {
 
     Utils {
         id: utils
+        skywalker: settings.skywalker
     }
 
     function selectThreadColor() {
