@@ -22,6 +22,9 @@ ThumbImageView {
     onMaxHeightChanged: Qt.callLater(resize)
 
     function resize() {
+        if (sourceSize.width === 0 || sourceSize.height === 0)
+            return
+
         const scale = Math.min(maxWidth / sourceSize.width, maxHeight / sourceSize.height)
         const idealHeight = sourceSize.height * scale
         const idealWidth = sourceSize.width * scale
