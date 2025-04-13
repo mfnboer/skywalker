@@ -1,5 +1,5 @@
-next
-====
+4.4
+===
 * Chat reactions (emoji)
 * Show thread symbol for a post if it is the start of a thread
 * Fix bug that made some videos invisible
