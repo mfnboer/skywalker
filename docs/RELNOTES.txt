@@ -1,3 +1,7 @@
+next
+====
+* Improved full image zoom (double click)
+
 4.4
 ===
 * Chat reactions (emoji)

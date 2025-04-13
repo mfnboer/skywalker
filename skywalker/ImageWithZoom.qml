@@ -3,6 +3,7 @@ import QtQuick
 
 ImageAutoRetry {
     property bool zooming: false
+    property real autoScale: 1.0
 
     id: img
     transform: Translate { id: imgTranslation }
@@ -77,24 +78,54 @@ ImageAutoRetry {
         return Qt.point(width / 2, height / 2)
     }
 
+
+    NumberAnimation {
+        property real autoScaleStart: 1.0
+        property real autoScaleEnd: 1.0
+        property int scaleX
+        property int scaleY
+        readonly property point imgCenter: img.getCenter()
+
+        id: autoScaleAnimation
+        target: img
+        property: "autoScale"
+        from: autoScaleStart
+        to: autoScaleEnd
+        duration: 300
+        easing.type: Easing.InOutQuad
+
+        onStopped: img.keepInScreen()
+    }
+
+    onAutoScaleChanged: {
+        img.scale = autoScale
+        imgTranslation.x = (autoScaleAnimation.imgCenter.x - autoScaleAnimation.scaleX) * (autoScale - 1)
+        imgTranslation.y = (autoScaleAnimation.imgCenter.y - autoScaleAnimation.scaleY) * (autoScale - 1)
+    }
+
     function toggleFullScale(scaleX, scaleY) {
-        if (!img.zooming) {
+        if (!zooming) {
             const fullScale = img.sourceSize.width / img.width
 
             if (fullScale > 1) {
-                const imgCenter = img.getCenter()
-                imgTranslation.x = (imgCenter.x - scaleX) * fullScale
-                imgTranslation.y = (imgCenter.y - scaleY) * fullScale
-                img.scale = fullScale
+                autoScaleAnimation.autoScaleStart = img.scale
+                autoScaleAnimation.autoScaleEnd = fullScale
+                autoScaleAnimation.scaleX = scaleX
+                autoScaleAnimation.scaleY = scaleY
+                autoScaleAnimation.start()
                 img.zooming = true
-                img.keepInScreen()
             }
         }
         else {
-            img.scale = 1
+            if (img.scale !== 1) {
+                autoScaleAnimation.autoScaleStart = img.scale
+                autoScaleAnimation.autoScaleEnd = 1
+                autoScaleAnimation.scaleX = autoScaleAnimation.imgCenter.x - imgTranslation.x / (img.scale - 1)
+                autoScaleAnimation.scaleY = autoScaleAnimation.imgCenter.y - imgTranslation.y / (img.scale - 1)
+                autoScaleAnimation.start()
+            }
+
             img.zooming = false
-            imgTranslation.x = 0
-            imgTranslation.y = 0
         }
     }
 }
