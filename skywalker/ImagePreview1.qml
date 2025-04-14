@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 Item {
@@ -21,7 +22,8 @@ Item {
     RoundCornerMask {
         id: frame
         cornerRadius: swipeMode ? 0 : 10
-        anchors.horizontalCenter: parent.horizontalCenter
+        //anchors.horizontalCenter: parent.horizontalCenter
+        x: (parent.width - width) / 2
         width: filter.imageVisible() ? (img.item ? img.item.width : 0) : parent.width
         height: filter.imageVisible() ? (img.item ? img.item.height : 0) : filter.height
         maskColor: preview.maskColor
@@ -45,7 +47,7 @@ Item {
                 else if (swipeMode)
                     activateSwipe()
                 else
-                    root.viewFullImage(images, 0)
+                    fullImageLoader.show(0)
             }
         }
 
@@ -57,6 +59,12 @@ Item {
             contentWarning: preview.contentWarning
             images: preview.images
         }
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [img.item]
+        images: preview.images
     }
 
     Component {

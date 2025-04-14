@@ -6,6 +6,7 @@ import skywalker
 SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
+    property var previewImage
     property bool showControls: true
 
     signal closed
@@ -15,7 +16,6 @@ SkyPage {
     id: page
     width: parent.width
     height: parent.height
-    padding: 10
     background: Rectangle { color: guiSettings.fullScreenColor }
 
     SwipeView {
@@ -49,8 +49,9 @@ SkyPage {
                 Flickable {
                     id: altFlick
                     anchors.bottom: parent.bottom
+                    anchors.bottomMargin: altText.bottomMargin
                     width: parent.width
-                    height: Math.min(contentHeight, 6 * 21)
+                    height: Math.min(contentHeight, altText.maxHeight)
                     clip: true
                     contentWidth: parent.width
                     contentHeight: altText.contentHeight
@@ -66,24 +67,27 @@ SkyPage {
                         altScrollBar.contentItem.color = "#1d3030"
                     }
 
-                    SkyCleanedText {
+                    ImageAltText {
                         id: altText
-                        leftPadding: 10
-                        width: parent.width - 15
-                        wrapMode: Text.Wrap
-                        color: "white"
-                        plainText: images[index].alt
-                        visible: images[index].alt && isCurrentItem
+                        alt: images[index].alt
+                        visible: alt && isCurrentItem
                     }
                 }
                 ImageWithZoom {
+                    property int altHeight: altText.visible ? altFlick.height + 10 : 0
+
                     id: img
-                    y: (parent.height - altFlick.height - height) / 2
+                    y: (parent.height - altHeight - height) / 2
                     width: parent.width
-                    height: parent.height - altFlick.height
+                    height: parent.height - altHeight
                     fillMode: Image.PreserveAspectFit
                     source: images[index].fullSizeUrl
                     reloadIconColor: "white"
+
+                    onStatusChanged: {
+                        if (status == Image.Ready)
+                            previewLoader.active = false
+                    }
                 }
             }
         }
@@ -138,9 +142,28 @@ SkyPage {
         }
     }
 
+    Loader {
+        id: previewLoader
+        active: Boolean(previewImage)
+
+        sourceComponent: Image {
+            parent: Overlay.overlay
+            x: previewImage.x
+            y: previewImage.y
+            width: previewImage.width
+            height: previewImage.height
+            fillMode: previewImage.fillMode
+            source: previewImage.source
+        }
+    }
+
     DisplayUtils {
         id: displayUtils
         skywalker: root.getSkywalker()
+    }
+
+    function getAltHeight() {
+        return img.altHeight
     }
 
     function setSystemBarsColor() {

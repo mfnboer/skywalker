@@ -107,7 +107,7 @@ RoundCornerMask {
                 if (swipeMode)
                     activateSwipe()
                 else
-                    root.viewFullImage(images, index)
+                    fullImageLoader.show(index)
             }
         }
     }
@@ -118,6 +118,12 @@ RoundCornerMask {
         width: parent.width - x * 2
         contentVisibility: frame.contentVisibility
         contentWarning: frame.contentWarning
+        images: frame.images
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [img1, img2, img3, img4]
         images: frame.images
     }
 }

@@ -521,6 +521,9 @@ qt_add_qml_module(libskywalker
         SOURCES message_and_reaction_view.cpp
         QML_FILES ReactionListView.qml
         QML_FILES ReactionViewDelegate.qml
+        QML_FILES AnimateToFullImage.qml
+        QML_FILES ImageAltText.qml
+        QML_FILES FullImageViewLoader.qml
 )
 
 if (NOT ANDROID)

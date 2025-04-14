@@ -1554,13 +1554,13 @@ ApplicationWindow {
         postUtils.sharePhotoToApp(sourceUrl)
     }
 
-    function viewFullImage(imageList, currentIndex) {
+    function viewFullImage(imageList, currentIndex, previewImage) {
         let component = guiSettings.createComponent("FullImageView.qml")
-        let view = component.createObject(root, { images: imageList, imageIndex: currentIndex })
+        let view = component.createObject(root, { images: imageList, imageIndex: currentIndex, previewImage: previewImage })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })
-        pushStack(view)
+        pushStack(view, StackView.Immediate)
     }
 
     function viewFullAnimatedImage(imageUrl, imageTitle) {
@@ -1965,13 +1965,13 @@ ApplicationWindow {
         favoritesTabBar.update()
     }
 
-    function pushStack(item, operation) {
+    function pushStack(item, operation = StackView.PushTransition) {
         let current = currentStackItem()
 
         if (current && typeof current.cover === 'function')
             current.cover()
 
-        currentStack().push(item, operation)
+        currentStack().pushItem(item, {}, operation)
 
         // TODO: delete? if so, do we still need that activate/deactivate stuff?
         // if (item instanceof PostFeedView && item.showAsHome) {
