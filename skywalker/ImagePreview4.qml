@@ -7,6 +7,7 @@ RoundCornerMask {
     required property string contentWarning
     property list<imageview> images
     property bool swipeMode: false
+    readonly property list<var> imgList: [img1, img2, img3, img4]
 
     signal activateSwipe
 
@@ -22,52 +23,64 @@ RoundCornerMask {
         columns: 2
         spacing: 4
 
-        ThumbImageView {
-            id: img1
+        Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            Layout.fillWidth: true
-            fillMode: Image.PreserveAspectCrop
-            imageView: filter.getImage(0)
-            sourceSize.width: width * Screen.devicePixelRatio
-            sourceSize.height: height * Screen.devicePixelRatio
-            smooth: false
+
+            ThumbImageView {
+                id: img1
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+                imageView: filter.getImage(0)
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
+            }
         }
 
-        ThumbImageView {
-            id: img2
+        Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            Layout.fillWidth: true
-            fillMode: Image.PreserveAspectCrop
-            imageView: filter.getImage(1)
-            sourceSize.width: width * Screen.devicePixelRatio
-            sourceSize.height: height * Screen.devicePixelRatio
-            smooth: false
+
+            ThumbImageView {
+                id: img2
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+                imageView: filter.getImage(1)
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
+            }
         }
 
-        ThumbImageView {
-            id: img3
+        Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            Layout.fillWidth: true
-            fillMode: Image.PreserveAspectCrop
-            imageView: filter.getImage(2)
-            sourceSize.width: width * Screen.devicePixelRatio
-            sourceSize.height: height * Screen.devicePixelRatio
-            smooth: false
+
+            ThumbImageView {
+                id: img3
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+                imageView: filter.getImage(2)
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
+            }
         }
 
-        ThumbImageView {
-            id: img4
+        Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            Layout.fillWidth: true
-            fillMode: Image.PreserveAspectCrop
-            imageView: filter.getImage(3)
-            sourceSize.width: width * Screen.devicePixelRatio
-            sourceSize.height: height * Screen.devicePixelRatio
-            smooth: false
+
+            ThumbImageView {
+                id: img4
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+                imageView: filter.getImage(3)
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
+            }
         }
     }
     MouseArea {
@@ -78,29 +91,15 @@ RoundCornerMask {
             let p = Qt.point(mouseX, mouseY)
             let index = -1
 
-            if (img1.contains(mapToItem(img1, p))) {
-                if (img1.failedCanReload)
-                    img1.reload()
-                else
-                    index = 0
-            }
-            else if (img2.contains(mapToItem(img2, p))) {
-                if (img2.failedCanReload)
-                    img2.reload()
-                else
-                    index = 1
-            }
-            else if (img3.contains(mapToItem(img3, p))) {
-                if (img3.failedCanReload)
-                    img3.reload()
-                else
-                    index = 2
-            }
-            else if (img4.contains(mapToItem(img4, p))) {
-                if (img4.failedCanReload)
-                    img4.reload()
-                else
-                    index = 3
+            for (let i = 0; i < imgList.length; ++i) {
+                const img = imgList[i]
+
+                if (img.contains(mapToItem(img, p))) {
+                    if (img.failedCanReload)
+                        img.reload()
+                    else
+                        index = i
+                }
             }
 
             if (index >= 0) {
@@ -123,7 +122,7 @@ RoundCornerMask {
 
     FullImageViewLoader {
         id: fullImageLoader
-        thumbImageViewList: [img1, img2, img3, img4]
+        thumbImageViewList: imgList
         images: frame.images
     }
 }

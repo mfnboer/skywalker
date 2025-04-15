@@ -18,6 +18,21 @@ SkyPage {
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
 
+    Loader {
+        id: previewLoader
+        active: Boolean(previewImage)
+
+        sourceComponent: Image {
+            parent: Overlay.overlay
+            x: previewImage.x
+            y: previewImage.y
+            width: previewImage.width
+            height: previewImage.height
+            fillMode: previewImage.fillMode
+            source: previewImage.source
+        }
+    }
+
     SwipeView {
         property bool zooming: currentItem ? currentItem.zooming : false // qmllint disable missing-property
 
@@ -85,7 +100,7 @@ SkyPage {
                     reloadIconColor: "white"
 
                     onStatusChanged: {
-                        if (status == Image.Ready)
+                        if (status == Image.Ready && isCurrentItem)
                             previewLoader.active = false
                     }
                 }
@@ -139,21 +154,6 @@ SkyPage {
 
                 MenuItemSvg { svg: SvgOutline.googleTranslate }
             }
-        }
-    }
-
-    Loader {
-        id: previewLoader
-        active: Boolean(previewImage)
-
-        sourceComponent: Image {
-            parent: Overlay.overlay
-            x: previewImage.x
-            y: previewImage.y
-            width: previewImage.width
-            height: previewImage.height
-            fillMode: previewImage.fillMode
-            source: previewImage.source
         }
     }
 

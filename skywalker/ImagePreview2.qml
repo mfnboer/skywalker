@@ -7,6 +7,7 @@ RoundCornerMask {
     required property string contentWarning
     property list<imageview> images
     property bool swipeMode: false
+    readonly property list<var> imgList: [img1, img2]
 
     signal activateSwipe
 
@@ -21,28 +22,43 @@ RoundCornerMask {
         anchors.fill: parent
         spacing: 4
 
-        ThumbImageView {
-            id: img1
+        // The rectangle is here to keep an empty space when the image is made invisble
+        // by AnimateToFullImage
+        Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            Layout.fillWidth: true
-            fillMode: Image.PreserveAspectCrop
-            imageView: filter.getImage(0)
-            sourceSize.width: width * Screen.devicePixelRatio
-            sourceSize.height: height * Screen.devicePixelRatio
-            smooth: false
+            color: "transparent"
+
+            ThumbImageView {
+                id: img1
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+                imageView: filter.getImage(0)
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
+
+                onStatusChanged: {
+                    if (status == Image.Ready)
+                        console.debug("SIZE:", width, height, "SOURCE SIZE:", sourceSize, "IMPLICIT:", implicitWidth, implicitHeight)
+                }
+            }
         }
 
-        ThumbImageView {
-            id: img2
+        Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            Layout.fillWidth: true
-            fillMode: Image.PreserveAspectCrop
-            imageView: filter.getImage(1)
-            sourceSize.width: width * Screen.devicePixelRatio
-            sourceSize.height: height * Screen.devicePixelRatio
-            smooth: false
+            color: "transparent"
+
+            ThumbImageView {
+                id: img2
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectCrop
+                imageView: filter.getImage(1)
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
+                smooth: false
+            }
         }
     }
     MouseArea {
@@ -53,17 +69,15 @@ RoundCornerMask {
             let p = Qt.point(mouseX, mouseY)
             let index = -1
 
-            if (img1.contains(mapToItem(img1, p))) {
-                if (img1.failedCanReload)
-                    img1.reload()
-                else
-                    index = 0
-            }
-            else if (img2.contains(mapToItem(img2, p))) {
-                if (img2.failedCanReload)
-                    img2.reload()
-                else
-                    index = 1
+            for (let i = 0; i < imgList.length; ++i) {
+                const img = imgList[i]
+
+                if (img.contains(mapToItem(img, p))) {
+                    if (img.failedCanReload)
+                        img.reload()
+                    else
+                        index = i
+                }
             }
 
             if (index >= 0) {
@@ -86,7 +100,7 @@ RoundCornerMask {
 
     FullImageViewLoader {
         id: fullImageLoader
-        thumbImageViewList: [img1, img2]
+        thumbImageViewList: imgList
         images: frame.images
     }
 }
