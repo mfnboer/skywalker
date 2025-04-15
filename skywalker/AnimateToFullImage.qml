@@ -5,6 +5,7 @@ Item {
     required property var thumbImage
 
     signal done(var img)
+    signal reverseDone()
 
     id: animator
 
@@ -54,8 +55,12 @@ Item {
         easing.type: Easing.InOutQuad
 
         onStopped: {
-            done(zoomImage.item)
-            zoomImage.active = false
+            if (from < to)
+                done(zoomImage.item)
+            else
+                reverseDone()
+
+            zoomImage.item.visible = false
             thumbImage.visible = true
         }
 
@@ -77,6 +82,14 @@ Item {
             zoomImage.active = true
             start()
         }
+
+        function reverseRun() {
+            zoomImage.item.visible = true
+            thumbImage.visible = false
+            from = 1.0
+            to = 0.0
+            start()
+        }
     }
 
     ImageAltText {
@@ -84,6 +97,10 @@ Item {
         parent: Overlay.overlay
         alt: thumbImage.imageView.alt
         visible: false
+    }
+
+    function reverseRun() {
+        zoomAnimation.reverseRun()
     }
 
     Component.onCompleted: {

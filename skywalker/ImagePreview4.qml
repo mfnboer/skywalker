@@ -26,6 +26,7 @@ RoundCornerMask {
         Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
+            color: "transparent"
 
             ThumbImageView {
                 id: img1
@@ -41,6 +42,7 @@ RoundCornerMask {
         Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
+            color: "transparent"
 
             ThumbImageView {
                 id: img2
@@ -56,6 +58,7 @@ RoundCornerMask {
         Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
+            color: "transparent"
 
             ThumbImageView {
                 id: img3
@@ -71,6 +74,7 @@ RoundCornerMask {
         Rectangle {
             width: parent.width / 2 - parent.spacing / 2
             height: width
+            color: "transparent"
 
             ThumbImageView {
                 id: img4

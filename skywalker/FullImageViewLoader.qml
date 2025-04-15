@@ -10,10 +10,15 @@ Loader {
     active: false
 
     sourceComponent: AnimateToFullImage {
+        id: animation
         thumbImage: thumbImageViewList[imageIndex]
 
         onDone: (fullImg) => {
-            root.viewFullImage(images, imageIndex, fullImg)
+            root.viewFullImage(images, imageIndex, fullImg, () => { animation.reverseRun() })
+            //fullImageLoader.active = false
+        }
+
+        onReverseDone: {
             fullImageLoader.active = false
         }
     }

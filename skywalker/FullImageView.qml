@@ -7,6 +7,7 @@ SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
     property var previewImage
+    property var closeCb
     property bool showControls: true
 
     signal closed
@@ -178,6 +179,9 @@ SkyPage {
 
     Component.onDestruction: {
         resetSystemBarsColor()
+
+        if (closeCb)
+            closeCb()
     }
 
     Component.onCompleted: {

@@ -27,7 +27,7 @@ RoundCornerMask {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: parent.width / 1.5 - frame.spacing / 2
-            //height: parent.height
+            color: "transparent"
 
             ThumbImageView {
                 id: img1
@@ -45,6 +45,7 @@ RoundCornerMask {
             anchors.top: parent.top
             width: parent.width / 3 - frame.spacing / 2
             height: width
+            color: "transparent"
 
             ThumbImageView {
                 id: img2
@@ -62,6 +63,7 @@ RoundCornerMask {
             anchors.bottom: parent.bottom
             width: parent.width / 3 - frame.spacing / 2
             height: width
+            color: "transparent"
 
             ThumbImageView {
                 id: img3

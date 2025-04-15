@@ -50,7 +50,11 @@ ApplicationWindow {
                 return
             }
 
-            popStack()
+            // TODO: better way to determine StackView operation
+            if (item instanceof FullImageView)
+                popStack(null, StackView.Immediate)
+            else
+                popStack()
         }
         else if (stackLayout.currentIndex === stackLayout.searchIndex ||
                  stackLayout.currentIndex === stackLayout.feedsIndex) {
@@ -1554,10 +1558,15 @@ ApplicationWindow {
         postUtils.sharePhotoToApp(sourceUrl)
     }
 
-    function viewFullImage(imageList, currentIndex, previewImage) {
+    function viewFullImage(imageList, currentIndex, previewImage, closeCb) {
         let component = guiSettings.createComponent("FullImageView.qml")
-        let view = component.createObject(root, { images: imageList, imageIndex: currentIndex, previewImage: previewImage })
-        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        let view = component.createObject(root, {
+                images: imageList,
+                imageIndex: currentIndex,
+                previewImage: previewImage,
+                closeCb: closeCb
+        })
+        view.onClosed.connect(() => { popStack(null, StackView.Immediate) }) // qmllint disable missing-property
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })
         pushStack(view, StackView.Immediate)
@@ -1937,11 +1946,11 @@ ApplicationWindow {
         return stackLayout.currentIndex === stackLayout.chatIndex
     }
 
-    function popStack(stack = null) {
+    function popStack(stack = null, operation = StackView.PopTransition) {
         if (!stack)
             stack = currentStack()
 
-        let item = stack.pop()
+        let item = stack.pop(operation)
 
         // TODO: can we delete this?
         // PostFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
