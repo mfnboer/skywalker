@@ -81,6 +81,7 @@ SkyPage {
                     AccessibleText {
                         anchors.verticalCenter: parent.verticalCenter
                         color: guiSettings.textColor
+                        elide: Text.ElideRight
                         text: modelData.name
                     }
                 }

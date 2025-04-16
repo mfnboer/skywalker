@@ -183,8 +183,11 @@ TextEdit {
         interval: 0
         onTriggered: {
             editText.textChangeInProgress = true
-            editText.applyFont(numChars)
+            const changesMade = editText.applyFont(numChars)
             editText.textChangeInProgress = false
+
+            if (changesMade)
+                editText.textUpdated()
         }
 
         function set(num) {
@@ -198,7 +201,7 @@ TextEdit {
 
     function applyFont(numChars) {
         if (!fontSelectorCombo)
-            return
+            return false
 
         const modifiedTillCursor = facetUtils.applyFontToLastTypedChars(
                                      editText.text, editText.preeditText,
@@ -210,7 +213,10 @@ TextEdit {
             editText.clear()
             editText.text = fullText
             editText.cursorPosition = modifiedTillCursor.length
+            return true
         }
+
+        return false
     }
 
     function highlightFacets() {

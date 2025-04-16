@@ -666,6 +666,12 @@ SkyPage {
                             Layout.preferredHeight: 1
                             color: guiSettings.separatorColor
                         }
+
+                        EmptyListIndication {
+                            svg: SvgOutline.noLabels
+                            text: qsTr("No labels")
+                            list: labelList
+                        }
                     }
 
                     delegate: ContentGroupDelegate {
@@ -675,12 +681,6 @@ SkyPage {
                     }
 
                     FlickableRefresher {}
-
-                    EmptyListIndication {
-                        svg: SvgOutline.noLabels
-                        text: qsTr("No labels")
-                        list: labelList
-                    }
 
                     function refresh() {}
                     function clear() {}

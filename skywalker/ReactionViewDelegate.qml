@@ -68,6 +68,11 @@ Rectangle {
                 font.family: UnicodeFonts.getEmojiFontFamily()
                 text: reaction.emoji
             }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: skywalker.showStatusMessage(emojiNames.getEmojiName(reaction.emoji), QEnums.STATUS_LEVEL_INFO)
+            }
         }
 
         Text {
@@ -118,5 +123,9 @@ Rectangle {
         anchors.fill: parent
         enabled: guiSettings.isUserDid(reaction.senderDid)
         onClicked: reactionRect.clicked()
+    }
+
+    EmojiNames {
+        id: emojiNames
     }
 }
