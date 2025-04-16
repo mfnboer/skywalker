@@ -4,6 +4,7 @@ import QtQuick.Controls.Material
 import skywalker
 
 SkyPage {
+    readonly property int closeTransition: StackView.Immediate
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
     property var previewImage

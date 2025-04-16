@@ -49,24 +49,34 @@ SkyPage {
             color: "transparent"
         }
 
-        FeedAvatar {
+        Rectangle {
             x: 8
             y: 5
-            width: 100
-            avatarUrl: !contentVisible() ? "" : feed.avatar
-            unknownSvg: guiSettings.feedDefaultAvatar(feed)
-            contentMode: feed.contentMode
-            onClicked: {
-                if (feed.avatar)
-                    root.viewFullImage([feed.imageView], 0)
-            }
+            Layout.preferredWidth: 100
+            Layout.preferredHeight: 100
+            color: "transparent"
 
-            Accessible.role: Accessible.StaticText
-            Accessible.name: qsTr("feed avatar") + (isPinnedFeed ? qsTr(", one of your favorites") : "")
+            FeedAvatar {
+                id: feedAvatar
+                width: parent.width
+                height: parent.height
+                avatarUrl: !contentVisible() ? "" : feed.avatar
+                unknownSvg: guiSettings.feedDefaultAvatar(feed)
+                contentMode: feed.contentMode
+                onClicked: {
+                    if (feed.avatar) {
+                        fullImageLoader.show(0)
+                        feedAvatar.visible = false
+                    }
+                }
 
-            FavoriteStar {
-                width: 30
-                visible: isPinnedFeed
+                Accessible.role: Accessible.StaticText
+                Accessible.name: qsTr("feed avatar") + (isPinnedFeed ? qsTr(", one of your favorites") : "")
+
+                FavoriteStar {
+                    width: 30
+                    visible: isPinnedFeed
+                }
             }
         }
 
@@ -289,6 +299,13 @@ SkyPage {
                 authorListHeader: qsTr("Liked by")
             }
         }
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [feedAvatar.getImage()]
+        images: [feed.imageView]
+        onFinished: feedAvatar.visible = true
     }
 
     FeedUtils {

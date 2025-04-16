@@ -93,16 +93,26 @@ SkyPage {
             color: guiSettings.backgroundColor
 
             Avatar {
+                id: avatarImg
                 anchors.centerIn: parent
                 width: parent.width - 4
                 height: parent.height - 4
                 author: page.author
                 showWarnedMedia: page.showWarnedMedia
                 onClicked:  {
-                    if (authorAvatar)
-                        root.viewFullImage([author.imageView], 0)
+                    if (authorAvatar) {
+                        fullImageLoader.show(0)
+                        avatarImg.visible = false
+                    }
                 }
             }
+        }
+
+        FullImageViewLoader {
+            id: fullImageLoader
+            thumbImageViewList: [avatarImg.getImage()]
+            images: [author.imageView]
+            onFinished: avatarImg.visible = true
         }
     }
 

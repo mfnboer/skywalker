@@ -1,8 +1,11 @@
 import QtQuick
 import QtQuick.Controls
+import skywalker
 
 Item {
     required property var thumbImage
+    required property string imageAlt
+    property bool thumbImageVisible: true
 
     signal done(var img)
     signal reverseDone()
@@ -61,7 +64,7 @@ Item {
                 reverseDone()
 
             zoomImage.item.visible = false
-            thumbImage.visible = true
+            thumbImage.visible = thumbImageVisible
         }
 
         onZoomChanged: {
@@ -95,7 +98,7 @@ Item {
     ImageAltText {
         id: altText
         parent: Overlay.overlay
-        alt: thumbImage.imageView.alt
+        alt: imageAlt
         visible: false
     }
 
@@ -105,5 +108,8 @@ Item {
 
     Component.onCompleted: {
         zoomAnimation.run()
+
+        // An image in a RoundedFrame has its visible property set to false
+        thumbImageVisible = thumbImage.visible
     }
 }

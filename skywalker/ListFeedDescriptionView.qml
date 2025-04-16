@@ -56,24 +56,32 @@ SkyPage {
             color: "transparent"
         }
 
-        ListAvatar {
+        Rectangle {
             Layout.leftMargin: 8
             Layout.topMargin: 5
             Layout.preferredWidth: 100
             Layout.preferredHeight: 100
             Layout.alignment: Qt.AlignTop
-            avatarUrl: !contentVisible() ? "" : list.avatar
-            onClicked: {
-                if (list.avatar)
-                    root.viewFullImage([list.imageView], 0)
-            }
 
-            Accessible.role: Accessible.StaticText
-            Accessible.name: qsTr("list avatar") + (isPinnedList ? qsTr(", one of your favorites") : "")
+            ListAvatar {
+                id: listAvatar
+                width: parent.width
+                height: parent.height
+                avatarUrl: !contentVisible() ? "" : list.avatar
+                onClicked: {
+                    if (list.avatar) {
+                        fullImageLoader.show(0)
+                        listAvatar.visible = false
+                    }
+                }
 
-            FavoriteStar {
-                width: 30
-                visible: isPinnedList
+                Accessible.role: Accessible.StaticText
+                Accessible.name: qsTr("list avatar") + (isPinnedList ? qsTr(", one of your favorites") : "")
+
+                FavoriteStar {
+                    width: 30
+                    visible: isPinnedList
+                }
             }
         }
 
@@ -381,6 +389,13 @@ SkyPage {
                 onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
             }
         }
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [listAvatar.getImage()]
+        images: [list.imageView]
+        onFinished: listAvatar.visible = true
     }
 
     GraphUtils {

@@ -6,19 +6,22 @@ Loader {
     required property list<imageview> images
     property int imageIndex: 0
 
+    signal finished
+
     id: fullImageLoader
     active: false
 
     sourceComponent: AnimateToFullImage {
         id: animation
         thumbImage: thumbImageViewList[imageIndex]
+        imageAlt: images[imageIndex].alt
 
         onDone: (fullImg) => {
             root.viewFullImage(images, imageIndex, fullImg, () => { animation.reverseRun() })
-            //fullImageLoader.active = false
         }
 
         onReverseDone: {
+            finished()
             fullImageLoader.active = false
         }
     }

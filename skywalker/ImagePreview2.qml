@@ -37,11 +37,6 @@ RoundCornerMask {
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
-
-                onStatusChanged: {
-                    if (status == Image.Ready)
-                        console.debug("SIZE:", width, height, "SOURCE SIZE:", sourceSize, "IMPLICIT:", implicitWidth, implicitHeight)
-                }
             }
         }
 

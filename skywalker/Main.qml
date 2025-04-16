@@ -50,9 +50,8 @@ ApplicationWindow {
                 return
             }
 
-            // TODO: better way to determine StackView operation
-            if (item instanceof FullImageView)
-                popStack(null, StackView.Immediate)
+            if (typeof item.closeTransition == 'number')
+                popStack(null, item.closeTransition)
             else
                 popStack()
         }

@@ -28,7 +28,10 @@ Item {
         ImageAutoRetry {
             id: avatarImg
             width: parent.width
+            height: parent.height
             source: avatarUrl
+            sourceSize.width: width * Screen.devicePixelRatio
+            sourceSize.height: height * Screen.devicePixelRatio
             fillMode: Image.PreserveAspectFit
             maxRetry: 60
             indicateLoading: false
@@ -65,8 +68,11 @@ Item {
         visible: author.associated.isLabeler && showModeratorIcon
     }
 
-
     function contentVisible() {
         return showWarnedMedia || guiSettings.contentVisible(author)
+    }
+
+    function getImage() {
+        return avatarImg
     }
 }
