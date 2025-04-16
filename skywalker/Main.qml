@@ -1717,9 +1717,9 @@ ApplicationWindow {
         view.onClosed.connect(() => {
             console.debug("Close media feed:", model.feedName, "index:", view.currentIndex)
             closeCb(view.currentIndex)
-            popStack()
+            popStack(null, StackView.Immediate)
         })
-        root.pushStack(view)
+        root.pushStack(view, StackView.Immediate)
     }
 
     function viewQuotePostFeed(quoteUri) {

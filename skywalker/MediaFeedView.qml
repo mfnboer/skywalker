@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 SkyListView {
+    readonly property int closeTransition: StackView.Immediate
     required property var skywalker
     property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
     property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
