@@ -72,7 +72,7 @@ SkyPage {
                     FeedAvatar {
                         id: avatar
                         anchors.verticalCenter: parent.verticalCenter
-                        width: visible ? parent.height : 0
+                        width: parent.height
                         avatarUrl: modelData.avatarThumb
                         unknownSvg: guiSettings.favoriteDefaultAvatar(modelData)
                         contentMode: modelData.contentMode
@@ -80,6 +80,7 @@ SkyPage {
 
                     AccessibleText {
                         anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width - avatar.width - parent.spacing
                         color: guiSettings.textColor
                         elide: Text.ElideRight
                         text: modelData.name
