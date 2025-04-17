@@ -18,6 +18,7 @@ Rectangle {
     property bool showMoreOptions: false
     property bool showViewOptions: false
     property bool showFavoritesPlaceHolder: false
+    property bool isSideBar: false
     property int bottomMargin: 0
     readonly property int favoritesY: favoritesPlaceHolder.y
 
@@ -41,7 +42,7 @@ Rectangle {
     RowLayout {
         id: headerRow
         width: parent.width
-        height: guiSettings.headerHeight
+        height: header.visible ? guiSettings.headerHeight : 0
         spacing: 0
 
         SvgPlainButton {
@@ -163,7 +164,7 @@ Rectangle {
             svg: SvgOutline.language
             iconColor: guiSettings.headerTextColor
             accessibleName: qsTr("language filter active")
-            visible: showLanguageFilter
+            visible: showLanguageFilter && !isSideBar
             onClicked: showLanguageFilterDetails()
         }
 
@@ -171,64 +172,24 @@ Rectangle {
             svg: guiSettings.getContentModeSvg(contentMode)
             iconColor: guiSettings.headerTextColor
             accessibleName: qsTr("view mode")
-            visible: showViewOptions
+            visible: showViewOptions && !isSideBar
 
-            onClicked: viewMenu.open()
+            onClicked: viewMenuLoader.open()
 
-            Menu {
-                id: viewMenu
-                modal: true
-
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
-
-                CloseMenuItem {
-                    text: qsTr("<b>View</b>")
-                    Accessible.name: qsTr("close view menu")
+            Loader {
+                id: viewMenuLoader
+                active: false
+                sourceComponent: viewMenuComponent
+                onStatusChanged: {
+                    if (status == Component.Ready)
+                        item.open()
                 }
 
-                AccessibleMenuItem {
-                    text: qsTr("Post view")
-                    visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                    onTriggered: {
-                        contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
-                        viewChanged(contentMode)
-                    }
-                    MenuItemSvg { svg: SvgOutline.chat }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Media view")
-                    visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                    onTriggered: {
-                        contentMode = QEnums.CONTENT_MODE_MEDIA
-                        viewChanged(contentMode)
-                    }
-                    MenuItemSvg { svg: SvgOutline.image }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Media gallery")
-                    visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                    onTriggered: {
-                        contentMode = QEnums.CONTENT_MODE_MEDIA_TILES
-                        viewChanged(contentMode)
-                    }
-                    MenuItemSvg { svg: SvgOutline.gallery }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Video view")
-                    onTriggered: {
-                        contentMode = QEnums.CONTENT_MODE_VIDEO
-                        viewChanged(contentMode)
-                    }
-                    MenuItemSvg { svg: SvgOutline.film }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Video gallery")
-                    onTriggered: {
-                        contentMode = QEnums.CONTENT_MODE_VIDEO_TILES
-                        viewChanged(contentMode)
-                    }
-                    MenuItemSvg { svg: SvgOutline.videoGallery }
+                function open() {
+                    if (!active)
+                        active = true
+                    else
+                        item.open()
                 }
             }
         }
@@ -252,11 +213,12 @@ Rectangle {
             Accessible.onPressAction: header.feedAvatarClicked()
         }
         Item {
+            id: userAvatar
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             height: parent.height - 10
             width: height
-            visible: showAsHome
+            visible: showAsHome && !isSideBar
             Accessible.role: Accessible.Pane
 
             Avatar {
@@ -271,6 +233,130 @@ Rectangle {
                 Accessible.name: qsTr("Skywalker menu")
                 Accessible.description: Accessible.name
                 Accessible.onPressAction: clicked()
+            }
+        }
+    }
+
+    Loader {
+        anchors.top: headerRow.bottom
+        width: parent.width
+        active: isSideBar
+
+        sourceComponent: RowLayout {
+            width: parent.width
+            spacing: 0
+
+            Rectangle {
+                Layout.fillWidth: true
+                color: "transparent"
+            }
+
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignRight
+                svg: SvgOutline.language
+                iconColor: guiSettings.headerTextColor
+                accessibleName: qsTr("language filter active")
+                visible: showLanguageFilter && isSideBar
+                onClicked: showLanguageFilterDetails()
+            }
+
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignRight
+                svg: guiSettings.getContentModeSvg(contentMode)
+                iconColor: guiSettings.headerTextColor
+                accessibleName: qsTr("view mode")
+                visible: showViewOptions && isSideBar
+
+                onClicked: viewMenuLoaderSideBar.open()
+
+                Loader {
+                    id: viewMenuLoaderSideBar
+                    active: false
+                    sourceComponent: viewMenuComponent
+
+                    onStatusChanged: {
+                        if (status == Component.Ready)
+                            item.open()
+                    }
+
+                    function open() {
+                        if (!active)
+                            active = true
+                        else
+                            item.open()
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: viewMenuComponent
+
+        Menu {
+            id: viewMenu
+            modal: true
+
+            onAboutToShow: root.enablePopupShield(true)
+            onAboutToHide: root.enablePopupShield(false)
+
+            CloseMenuItem {
+                text: qsTr("<b>View</b>")
+                Accessible.name: qsTr("close view menu")
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Post view")
+                visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
+                onTriggered: {
+                    if (!isSideBar)
+                        contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
+
+                    viewChanged(QEnums.CONTENT_MODE_UNSPECIFIED)
+                }
+                MenuItemSvg { svg: SvgOutline.chat }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Media view")
+                visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
+                onTriggered: {
+                    if (!isSideBar)
+                        contentMode = QEnums.CONTENT_MODE_MEDIA
+
+                    viewChanged(QEnums.CONTENT_MODE_MEDIA)
+                }
+                MenuItemSvg { svg: SvgOutline.image }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Media gallery")
+                visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
+                onTriggered: {
+                    if (!isSideBar)
+                        contentMode = QEnums.CONTENT_MODE_MEDIA_TILES
+
+                    viewChanged(QEnums.CONTENT_MODE_MEDIA_TILES)
+                }
+                MenuItemSvg { svg: SvgOutline.gallery }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Video view")
+                onTriggered: {
+                    if (!isSideBar)
+                        contentMode = QEnums.CONTENT_MODE_VIDEO
+
+                    viewChanged(QEnums.CONTENT_MODE_VIDEO)
+                }
+                MenuItemSvg { svg: SvgOutline.film }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Video gallery")
+                onTriggered: {
+                    if (!isSideBar)
+                        contentMode = QEnums.CONTENT_MODE_VIDEO_TILES
+
+                    viewChanged(QEnums.CONTENT_MODE_VIDEO_TILES)
+                }
+                MenuItemSvg { svg: SvgOutline.videoGallery }
             }
         }
     }

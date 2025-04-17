@@ -31,6 +31,7 @@ SkyListView {
         showMoreOptions: true
         showFavoritesPlaceHolder: root.isFavoritesTabBarVisible() && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
         bottomMargin: headerMargin
+        visible: root.isPortrait
 
         onAddUserView: page.addUserView()
         onAddHashtagView: page.addHashtagView()

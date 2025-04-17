@@ -106,6 +106,7 @@ ApplicationWindow {
         width: parent.width - x
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
+        clip: true
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
 
         onCurrentIndexChanged: {

@@ -21,10 +21,65 @@ Pane {
     signal messagesClicked()
     signal addConvoClicked()
 
+    id: sideBar
     padding: 0
 
     ColumnLayout {
         width: parent.width
+
+        PostFeedHeader {
+            id: timelineHeader
+            width: undefined
+            height: undefined
+            Layout.preferredHeight: 100
+            Layout.fillWidth: true
+            skywalker: sideBar.skywalker
+            feedName: skywalker.timelineModel.feedName
+            showAsHome: true
+            isHomeFeed: true
+            showMoreOptions: true
+            isSideBar: true
+            visible: root.currentStackItem() instanceof FavoritesSwipeView && root.currentStackItem().currentView instanceof TimelinePage
+
+            onAddUserView: root.getTimelineView().addUserView()
+            onAddHashtagView: root.getTimelineView().addHashtagView()
+            onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
+            onAddMediaView: root.getTimelineView().showMediaView()
+            onAddVideoView: root.getTimelineView().showVideoView()
+        }
+
+        PostFeedHeader {
+            property var postFeedView: (root.currentStackItem() instanceof FavoritesSwipeView && root.currentStackItem().currentView instanceof PostFeedView) ? root.currentStackItem().currentView : null
+
+            id: postFeedHeader
+            width: undefined
+            height: undefined
+            Layout.preferredHeight: 100
+            Layout.fillWidth: true
+            skywalker: sideBar.skywalker
+            feedName: postFeedView ? postFeedView.headerItem.feedName : ""
+            feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
+            defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
+            contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+            underlyingContentMode: postFeedView ? postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+            showAsHome: postFeedView ? postFeedView.showAsHome : false
+            showLanguageFilter: postFeedView ? postFeedView.headerItem.showLanguageFilter : false
+            filteredLanguages: postFeedView ? postFeedView.headerItem.filteredLanguages : []
+            showPostWithMissingLanguage: postFeedView ? postFeedView.headerItem.showPostWithMissingLanguage : true
+            showViewOptions: true
+            isSideBar: true
+            visible: Boolean(postFeedView)
+
+            onViewChanged: (newContentMode) => {
+                postFeedView.headerItem.contentMode = newContentMode
+                postFeedView.headerItem.viewChanged(newContentMode)
+            }
+        }
+
+        Item {
+            Layout.preferredHeight: 100
+            visible: !timelineHeader.visible && !postFeedHeader.visible
+        }
 
         RowLayout {
             Layout.fillWidth: true
