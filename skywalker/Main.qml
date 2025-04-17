@@ -6,6 +6,7 @@ import skywalker
 
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
+    readonly property bool isPortrait: width < height
 
     id: root
     width: 480
@@ -99,9 +100,10 @@ ApplicationWindow {
         property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
+        x: sideBar.visible ? sideBar.width : 0
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
         z: guiSettings.headerZLevel - 1
-        width: parent.width
+        width: parent.width - x
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
@@ -142,7 +144,7 @@ ApplicationWindow {
         onSearchClicked: viewSearchView()
         onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
-        visible: favoritesTabBar.favoritesSwipeViewVisible
+        visible: favoritesTabBar.favoritesSwipeViewVisible && isPortrait
 
         function getExtraFooterMargin() {
             if (favoritesTabBar.position == TabBar.Footer)
@@ -511,6 +513,50 @@ ApplicationWindow {
         }
     }
 
+    SideBar {
+        property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+
+        id: sideBar
+        width: parent.width * 0.25
+        height: parent.height
+        timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+        skywalker: root.getSkywalker()
+        homeActive: stackLayout.currentIndex === stackLayout.timelineIndex
+        notificationsActive: stackLayout.currentIndex === stackLayout.notificationIndex
+        searchActive: stackLayout.currentIndex === stackLayout.searchIndex
+        feedsActive: stackLayout.currentIndex === stackLayout.feedsIndex
+        messagesActive: stackLayout.currentIndex === stackLayout.chatIndex
+        onHomeClicked: {
+            if (homeActive)
+                favoritesSwipeView.currentView.moveToHome()
+            else
+                root.viewTimeline()
+        }
+        onNotificationsClicked: {
+            if (!notificationsActive)
+                viewNotifications()
+            else if (currentStackItem() instanceof NotificationListView)
+                currentStackItem().positionViewAtBeginning()
+        }
+        onSearchClicked: {
+            if (!searchActive)
+                viewSearchView()
+        }
+        onFeedsClicked: {
+            if (!feedsActive)
+                viewFeedsView()
+            else if (currentStackItem() instanceof SearchFeeds)
+                currentStackItem().positionViewAtBeginning()
+        }
+        onMessagesClicked: {
+            if (!messagesActive)
+                viewChat()
+            else if (currentStackItem() instanceof ConvoListView)
+                currentStackItem().positionViewAtBeginning()
+        }
+        visible: !isPortrait
+    }
+
     StackLayout {
         readonly property int timelineIndex: 0
         readonly property int notificationIndex: 1
@@ -520,8 +566,11 @@ ApplicationWindow {
         property int prevIndex: timelineIndex
 
         id: stackLayout
-        anchors.fill: parent
+        x: sideBar.visible ? sideBar.width : 0
+        width: parent.width - x
+        height: parent.height
         currentIndex: timelineIndex
+        clip: true
 
         onCurrentIndexChanged: {
             let prevStack = stackLayout.children[prevIndex]

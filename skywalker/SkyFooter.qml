@@ -23,7 +23,7 @@ Rectangle {
     signal addConvoClicked()
 
     width: parent.width
-    height: guiSettings.footerHeight
+    height: visible ? guiSettings.footerHeight : 0
     z: guiSettings.footerZLevel
     color: floatingButtons ? "transparent" : guiSettings.backgroundColor
 

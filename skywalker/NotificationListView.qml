@@ -58,6 +58,7 @@ SkyPage {
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
+        visible: root.isPortrait
     }
 
     SkyTabBar {
@@ -88,6 +89,7 @@ SkyPage {
     }
 
     SwipeView {
+        id: swipeView
         anchors.top: tabSeparator.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -193,5 +195,9 @@ SkyPage {
             mentionList.moveToIndex(index, mentionList.doMoveToMention)
         else
             allList.moveToIndex(index, allList.doMoveToNotification)
+    }
+
+    function positionViewAtBeginning() {
+        swipeView.currentItem.positionViewAtBeginning()
     }
 }

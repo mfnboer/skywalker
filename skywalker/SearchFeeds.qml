@@ -42,8 +42,9 @@ SkyPage {
         onHomeClicked: root.viewTimeline()
         onSearchClicked: root.viewSearchView()
         onNotificationsClicked: root.viewNotifications()
-        onFeedsClicked: feedListView.positionViewAtBeginning()
+        onFeedsClicked: positionViewAtBeginning()
         onMessagesClicked: root.viewChat()
+        visible: root.isPortrait
     }
 
     SkyTabBar {
@@ -59,6 +60,7 @@ SkyPage {
     }
 
     SwipeView {
+        id: swipeView
         anchors.top: feedsBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -182,6 +184,10 @@ SkyPage {
         feedListView.positionViewAtBeginning()
         const text = page.header.getDisplayText(page.header.getDisplayText()) // qmllint disable missing-property
         searchUtils.searchFeeds(text)
+    }
+
+    function positionViewAtBeginning() {
+        swipeView.currentItem.positionViewAtBeginning()
     }
 
     function forceDestroy() {
