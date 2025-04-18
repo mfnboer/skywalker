@@ -7,6 +7,7 @@ import skywalker
 Rectangle {
     required property string text
     property bool backIsCancel: false
+    property bool headerVisible: true
 
     signal back
 
@@ -22,6 +23,7 @@ Rectangle {
     {
         id: headerRow
         width: parent.width
+        visible: headerVisible
         Accessible.role: Accessible.Pane
 
         SvgPlainButton {

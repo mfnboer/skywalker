@@ -246,13 +246,9 @@ Rectangle {
             width: parent.width
             spacing: 0
 
-            Rectangle {
-                Layout.fillWidth: true
-                color: "transparent"
-            }
-
             SvgPlainButton {
-                Layout.alignment: Qt.AlignRight
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignCenter
                 svg: SvgOutline.language
                 iconColor: guiSettings.headerTextColor
                 accessibleName: qsTr("language filter active")
@@ -261,7 +257,8 @@ Rectangle {
             }
 
             SvgPlainButton {
-                Layout.alignment: Qt.AlignRight
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignCenter
                 svg: guiSettings.getContentModeSvg(contentMode)
                 iconColor: guiSettings.headerTextColor
                 accessibleName: qsTr("view mode")

@@ -6,6 +6,7 @@ SkyListView {
     required property int postEntryIndex
     property bool syncToEntry: true
     property var skywalker: root.getSkywalker()
+    readonly property string sideBarTitle: qsTr("Post thread")
 
     signal closed
 
@@ -14,8 +15,9 @@ SkyListView {
     model: skywalker.getPostThreadModel(modelId)
 
     header: SimpleHeader {
-        height: restrictionRow.visible ? guiSettings.headerHeight + restrictionRow.height : guiSettings.headerHeight
-        text: qsTr("Post thread")
+        height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
+        text: sideBarTitle
+        headerVisible: root.isPortrait
         onBack: view.closed()
 
         Rectangle {
@@ -39,6 +41,7 @@ SkyListView {
 
                 SkySvg {
                     id: restrictionIcon
+                    y: height + 5
                     width: 20
                     height: 20
                     color: utils.determineForegroundColor(restrictionRect.color, "black", "white")
@@ -48,6 +51,7 @@ SkyListView {
                     id: restrictionText
                     anchors.left: restrictionIcon.right
                     anchors.right: parent.right
+                    topPadding: 5
                     leftPadding: 5
                     color: restrictionIcon.color
                     ellipsisBackgroundColor: restrictionRect.color.toString()

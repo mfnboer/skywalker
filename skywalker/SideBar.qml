@@ -13,6 +13,8 @@ Pane {
     property bool messagesActive: false
     property bool showHomeFeedBadge: false
     property bool floatingButtons: false
+    property var rootItem: root.currentStackItem()
+    property bool showMenu: typeof rootItem.sideBarTitle == 'undefined' // TODO: something better
 
     signal homeClicked()
     signal notificationsClicked()
@@ -31,7 +33,7 @@ Pane {
             id: timelineHeader
             width: undefined
             height: undefined
-            Layout.preferredHeight: 100
+            Layout.preferredHeight: 2 * guiSettings.headerHeight
             Layout.fillWidth: true
             skywalker: sideBar.skywalker
             feedName: skywalker.timelineModel.feedName
@@ -39,7 +41,7 @@ Pane {
             isHomeFeed: true
             showMoreOptions: true
             isSideBar: true
-            visible: root.currentStackItem() instanceof FavoritesSwipeView && root.currentStackItem().currentView instanceof TimelinePage
+            visible: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
 
             onAddUserView: root.getTimelineView().addUserView()
             onAddHashtagView: root.getTimelineView().addHashtagView()
@@ -49,12 +51,14 @@ Pane {
         }
 
         PostFeedHeader {
-            property var postFeedView: (root.currentStackItem() instanceof FavoritesSwipeView && root.currentStackItem().currentView instanceof PostFeedView) ? root.currentStackItem().currentView : null
+            property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof PostFeedView) ?
+                    rootItem.currentView :
+                    (rootItem instanceof PostFeedView ? rootItem : null)
 
             id: postFeedHeader
             width: undefined
             height: undefined
-            Layout.preferredHeight: 100
+            Layout.preferredHeight: 2 * guiSettings.headerHeight
             Layout.fillWidth: true
             skywalker: sideBar.skywalker
             feedName: postFeedView ? postFeedView.headerItem.feedName : ""
@@ -70,22 +74,92 @@ Pane {
             isSideBar: true
             visible: Boolean(postFeedView)
 
+            onClosed: postFeedView.closed()
+            onFeedAvatarClicked: postFeedView.showFeed()
+
             onViewChanged: (newContentMode) => {
                 postFeedView.headerItem.contentMode = newContentMode
                 postFeedView.headerItem.viewChanged(newContentMode)
             }
         }
 
+        FeedAvatar {
+            property var postFeedView: rootItem instanceof PostFeedView ? rootItem : null
+
+            Layout.topMargin: 20
+            Layout.preferredWidth: 80
+            Layout.preferredHeight: Layout.preferredWidth
+            Layout.alignment: Qt.AlignHCenter
+            avatarUrl: postFeedView ? postFeedView.headerItem.feedAvatar : ""
+            contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+            badgeOutlineColor: guiSettings.headerColor
+            unknownSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
+            visible: Boolean(postFeedView)
+
+            onClicked: postFeedView.headerItem.feedAvatarClicked()
+
+            Accessible.role: Accessible.Button
+            Accessible.name: postFeedView ? postFeedView.headerItem.feedName : ""
+            Accessible.description: Accessible.name
+            Accessible.onPressAction: postFeedView.headerItem.feedAvatarClicked()
+        }
+
+        PostFeedHeader {
+            property var searchFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
+
+            id: searchFeedHeader
+            width: undefined
+            height: undefined
+            Layout.preferredHeight: 2 * guiSettings.headerHeight
+            Layout.fillWidth: true
+            skywalker: sideBar.skywalker
+            feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
+            defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
+            feedAvatar: ""
+            showAsHome: searchFeedView ? searchFeedView.showAsHome : false
+            showLanguageFilter: searchFeedView ? searchFeedView.headerItem.showLanguageFilter : false
+            filteredLanguages: searchFeedView ? searchFeedView.headerItem.filteredLanguages : []
+            showPostWithMissingLanguage: false
+            isSideBar: true
+            visible: Boolean(searchFeedView)
+
+            onFeedAvatarClicked: root.viewSearchViewFeed(searchFeedView.searchFeed)
+        }
+
         Item {
-            Layout.preferredHeight: 100
-            visible: !timelineHeader.visible && !postFeedHeader.visible
+            Layout.preferredHeight: 2 * guiSettings.headerHeight
+            visible: !timelineHeader.visible && !postFeedHeader.visible && !searchFeedHeader.visible && showMenu
+        }
+
+        SimpleHeader {
+            width: undefined
+            height: undefined
+            Layout.preferredHeight: guiSettings.headerHeight
+            Layout.fillWidth: true
+            text: visible ? rootItem.sideBarTitle : ""
+            visible: typeof rootItem.sideBarTitle == 'string' && !(rootItem instanceof PostFeedView)
+
+            onBack: rootItem.closed()
+        }
+
+        Avatar {
+            property basicprofile nullAuthor
+
+            Layout.topMargin: 20
+            Layout.preferredWidth: 80
+            Layout.preferredHeight: Layout.preferredWidth
+            Layout.alignment: Qt.AlignHCenter
+            author: visible ? rootItem.sideBarAuthor : nullAuthor
+            visible: typeof rootItem.sideBarAuthor != 'undefined'
+
         }
 
         RowLayout {
             Layout.fillWidth: true
+            visible: showMenu
 
             SkyFooterButton {
-                Layout.preferredHeight: 50
+                Layout.preferredHeight: guiSettings.headerHeight
                 Layout.preferredWidth: 50
                 svg: homeActive ? SvgFilled.home : SvgOutline.home
                 counter: homeActive && timeline ? timeline.unreadPosts : 0
@@ -112,10 +186,11 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
+            visible: showMenu
 
             SkyFooterButton {
-                Layout.preferredHeight: 50
-                Layout.preferredWidth: 50
+                Layout.preferredHeight: guiSettings.headerHeight
+                Layout.preferredWidth: Layout.preferredHeight
                 svg: searchActive ? SvgFilled.search : SvgOutline.search
                 Accessible.name: qsTr("search")
                 onClicked: searchClicked()
@@ -136,10 +211,11 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
+            visible: showMenu
 
             SkyFooterButton {
-                Layout.preferredHeight: 50
-                Layout.preferredWidth: 50
+                Layout.preferredHeight: guiSettings.headerHeight
+                Layout.preferredWidth: Layout.preferredHeight
                 svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
                 Accessible.name: qsTr("feeds")
                 onClicked: feedsClicked()
@@ -160,10 +236,11 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
+            visible: showMenu
 
             SkyFooterButton {
-                Layout.preferredHeight: 50
-                Layout.preferredWidth: 50
+                Layout.preferredHeight: guiSettings.headerHeight
+                Layout.preferredWidth: Layout.preferredHeight
                 svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
                 counter: skywalker.chat.unreadCount
                 Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
@@ -185,10 +262,11 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
+            visible: showMenu
 
             SkyFooterButton {
-                Layout.preferredHeight: 50
-                Layout.preferredWidth: 50
+                Layout.preferredHeight: guiSettings.headerHeight
+                Layout.preferredWidth: Layout.preferredHeight
                 svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
                 counter: root.getSkywalker().unreadNotificationCount
                 Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
@@ -214,6 +292,8 @@ Pane {
             Layout.preferredHeight: Layout.preferredWidth
             Layout.alignment: Qt.AlignHCenter
             author: skywalker.user
+            visible: showMenu
+
             onClicked: root.showSettingsDrawer()
             onPressAndHold: root.showSwitchUserDrawer()
 

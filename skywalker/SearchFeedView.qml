@@ -32,6 +32,7 @@ SkyListView {
         filteredLanguages: searchFeed.languageList
         showPostWithMissingLanguage: false
         showFavoritesPlaceHolder: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
+        visible: root.isPortrait
 
         onClosed: feedView.closed()
         onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
