@@ -16,6 +16,8 @@ SkyPage {
     property bool listHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
+    readonly property string sideBarTitle: guiSettings.listTypeName(list.purpose)
+    readonly property SvgImage sideBarSvg: SvgOutline.list
 
     signal closed
     signal listUpdated(listview list)
@@ -39,6 +41,7 @@ SkyPage {
 
     header: SimpleHeader {
         text: guiSettings.listTypeName(list.purpose)
+        visible: root.isPortrait
         onBack: closed()
     }
 

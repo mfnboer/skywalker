@@ -7,46 +7,16 @@ SkyPage {
     required property var skywalker
     required property var timeline
     readonly property int margin: 10
+    readonly property string sideBarTitle: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
 
     signal closed
 
     id: page
 
     header: SimpleHeader {
-        text: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
+        text: sideBarTitle
+        visible: root.isPortrait
         onBack: page.closed()
-
-        SvgPlainButton {
-            id: moreOptions
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            svg: SvgOutline.moreVert
-            accessibleName: qsTr("notification options")
-            onClicked: moreMenu.open()
-
-            Menu {
-                id: moreMenu
-                modal: true
-
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
-
-                CloseMenuItem {
-                    text: qsTr("<b>Options</b>")
-                    Accessible.name: qsTr("close options menu")
-                }
-                MenuWithInfoItem {
-                    text: qsTr("Priority only")
-                    info: qsTr("When priority only is enabled, replies and quotes from users you do not follow will not be shown.")
-                    checkable: true
-                    checked: skywalker.notificationListModel.priority
-
-                    onToggled: {
-                        skywalker.updateNotificationPreferences(checked)
-                    }
-                }
-            }
-        }
     }
 
     footer: SkyFooter {
@@ -186,6 +156,40 @@ SkyPage {
                 console.debug("Move to mention:", index, "last:", lastVisibleIndex)
                 positionViewAtIndex(index, ListView.End)
                 return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+            }
+        }
+    }
+
+    SvgPlainButton {
+        id: moreOptions
+        parent: page.header.visible ? page.header : page
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.rightMargin: page.margin
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("notification options")
+        onClicked: moreMenu.open()
+
+        Menu {
+            id: moreMenu
+            modal: true
+
+            onAboutToShow: root.enablePopupShield(true)
+            onAboutToHide: root.enablePopupShield(false)
+
+            CloseMenuItem {
+                text: qsTr("<b>Options</b>")
+                Accessible.name: qsTr("close options menu")
+            }
+            MenuWithInfoItem {
+                text: qsTr("Priority only")
+                info: qsTr("When priority only is enabled, replies and quotes from users you do not follow will not be shown.")
+                checkable: true
+                checked: skywalker.notificationListModel.priority
+
+                onToggled: {
+                    skywalker.updateNotificationPreferences(checked)
+                }
             }
         }
     }

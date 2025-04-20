@@ -15,6 +15,7 @@ SkyPage {
     property int textInputToolbarHeight: (keyboardHandler.keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
+    readonly property alias sideBarAuthor: page.firstMember
 
     signal closed
     signal acceptConvo(convoview convo)
@@ -25,6 +26,7 @@ SkyPage {
 
     header: MessagesListHeader {
         convo: page.convo
+        visible: root.isPortrait
         onBack: page.closed()
     }
 

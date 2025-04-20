@@ -7,6 +7,7 @@ SkyListView {
     property bool syncToEntry: true
     property var skywalker: root.getSkywalker()
     readonly property string sideBarTitle: qsTr("Post thread")
+    readonly property SvgImage sideBarSvg: SvgOutline.chat
 
     signal closed
 

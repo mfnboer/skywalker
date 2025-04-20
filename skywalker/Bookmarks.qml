@@ -5,6 +5,9 @@ import skywalker
 
 SkyListView {
     required property var skywalker
+    readonly property string sideBarTitle: qsTr("Bookmarks")
+    readonly property string sideBarSubTitle: `${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize}`
+    readonly property SvgImage sideBarSvg: SvgOutline.bookmark
 
     signal closed
 
@@ -12,7 +15,9 @@ SkyListView {
     model: skywalker.createBookmarksModel()
 
     header: SimpleHeader {
-        text: qsTr("Bookmarks") + ` (${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize})`
+        text: sideBarTitle
+        subTitle: sideBarSubTitle
+        visible: root.isPortrait
         onBack: bookmarksView.closed()
     }
     headerPositioning: ListView.OverlayHeader

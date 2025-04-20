@@ -9,6 +9,8 @@ SkyPage {
     property var skywalker: root.getSkywalker()
     property var contentFilter: skywalker.getContentFilter()
     property int margin: 10
+    readonly property string sideBarTitle: qsTr("Content Filtering")
+    readonly property SvgImage sideBarSvg: SvgOutline.visibility
 
     signal closed()
 
@@ -18,7 +20,8 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: qsTr("Content Filtering")
+        text: sideBarTitle
+        visible: root.isPortrait
         onBack: page.closed()
     }
 

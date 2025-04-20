@@ -6,6 +6,9 @@ import skywalker
 
 ListView {
     required property var skywalker
+    readonly property string sideBarTitle: qsTr("Muted words")
+    readonly property string sideBarSubTitle: `${view.count} / ${skywalker.mutedWords.maxSize}`
+    readonly property SvgImage sideBarSvg: SvgOutline.mutedWords
 
     signal closed
 
@@ -22,7 +25,9 @@ ListView {
     Accessible.role: Accessible.List
 
     header: SimpleHeader {
-        text: qsTr("Muted words") + ` (${view.count} / ${skywalker.mutedWords.maxSize})`
+        text: sideBarTitle
+        subTitle: sideBarSubTitle
+        headerVisible: root.isPortrait
         onBack: view.closed()
 
         SvgPlainButton {

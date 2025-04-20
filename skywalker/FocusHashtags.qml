@@ -6,6 +6,9 @@ import skywalker
 
 ListView {
     property var skywalker: root.getSkywalker()
+    readonly property string sideBarTitle: qsTr("Focus hashtags")
+    readonly property string sideBarSubTitle: `${view.count} / ${skywalker.focusHashtags.maxSize}`
+    readonly property SvgImage sideBarSvg: SvgOutline.hashtag
 
     signal closed
 
@@ -22,7 +25,9 @@ ListView {
     Accessible.role: Accessible.List
 
     header: SimpleHeader {
-        text: qsTr("Focus hashtags") + ` (${view.count} / ${skywalker.focusHashtags.maxSize})`
+        text: sideBarTitle
+        subTitle: sideBarSubTitle
+        headerVisible: root.isPortrait
         onBack: view.closed()
 
         SvgPlainButton {

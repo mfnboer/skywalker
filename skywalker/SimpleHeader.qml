@@ -6,6 +6,7 @@ import skywalker
 // Header with a back button and title text
 Rectangle {
     required property string text
+    property string subTitle
     property bool backIsCancel: false
     property bool headerVisible: true
 
@@ -13,7 +14,7 @@ Rectangle {
 
     id: headerRect
     width: parent.width
-    height: guiSettings.headerHeight
+    height: visible ? guiSettings.headerHeight : 0
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
@@ -32,19 +33,30 @@ Rectangle {
             accessibleName: backIsCancel ? qsTr("cancel") : qsTr("go back")
             onClicked: headerRect.back()
         }
-        Text {
-            id: headerTexts
+
+        Column {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
-            font.bold: true
-            font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.headerTextColor
-            elide: Text.ElideRight
-            text: headerRect.text
 
-            Accessible.role: Accessible.TitleBar
-            Accessible.name: text
-            Accessible.description: Accessible.name
+            Text {
+                width: parent.width
+                font.bold: true
+                font.pointSize: Boolean(subTitle) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
+                color: guiSettings.headerTextColor
+                elide: Text.ElideRight
+                text: headerRect.text
+
+                Accessible.role: Accessible.TitleBar
+                Accessible.name: text
+                Accessible.description: Accessible.name
+            }
+            AccessibleText {
+                width: parent.width
+                color: guiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                text: subTitle
+                visible: Boolean(subTitle)
+            }
         }
     }
 

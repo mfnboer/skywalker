@@ -7,6 +7,7 @@ Rectangle {
     required property convoview convo
     property var skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
+    property bool isSideBar: false
     readonly property int margin: 10
 
     signal back
@@ -39,6 +40,7 @@ Rectangle {
             width: parent.height - 10
             height: width
             author: firstMember
+            visible: !isSideBar
             onClicked: skywalker.getDetailedProfile(firstMember.did)
         }
 

@@ -203,7 +203,7 @@ Rectangle {
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
             unknownSvg: defaultSvg
-            visible: !showAsHome && !isHomeFeed
+            visible: !showAsHome && !isHomeFeed && !isSideBar
 
             onClicked: header.feedAvatarClicked()
 

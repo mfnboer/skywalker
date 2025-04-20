@@ -11,7 +11,7 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: headerColumn.height
+    height: visible ? headerColumn.height : 0
     z: guiSettings.headerZLevel
     color: "transparent"
 
@@ -73,12 +73,6 @@ Rectangle {
 
                 Accessible.ignored: true
             }
-        }
-        Rectangle {
-            width: parent.width
-            height: 1
-            color: guiSettings.separatorColor
-            visible: description
         }
     }
 }

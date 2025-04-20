@@ -7,42 +7,16 @@ SkyPage {
     required property var chat
     property var skywalker: root.getSkywalker()
     readonly property int margin: 10
+    readonly property string sideBarTitle: qsTr("Conversations")
 
     signal closed
 
     id: page
 
     header: SimpleHeader {
-        text: qsTr("Conversations")
+        text: sideBarTitle
+        visible: root.isPortrait
         onBack: page.closed()
-
-        SvgPlainButton {
-            id: moreOptions
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            svg: SvgOutline.moreVert
-            accessibleName: qsTr("chat options")
-            onClicked: moreMenu.open()
-
-            Menu {
-                id: moreMenu
-                modal: true
-
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
-
-                CloseMenuItem {
-                    text: qsTr("<b>Options</b>")
-                    Accessible.name: qsTr("close options menu")
-                }
-
-                AccessibleMenuItem {
-                    text: qsTr("Permissions")
-                    onTriggered: root.editChatSettings()
-                    MenuItemSvg { svg: SvgOutline.key }
-                }
-            }
-        }
     }
 
     footer: SkyFooter {
@@ -187,6 +161,36 @@ SkyPage {
             BusyIndicator {
                 anchors.centerIn: parent
                 running: chat.acceptConvoInProgress
+            }
+        }
+    }
+
+    SvgPlainButton {
+        id: moreOptions
+        parent: page.header.visible ? page.header : page
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.rightMargin: page.margin
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("chat options")
+        onClicked: moreMenu.open()
+
+        Menu {
+            id: moreMenu
+            modal: true
+
+            onAboutToShow: root.enablePopupShield(true)
+            onAboutToHide: root.enablePopupShield(false)
+
+            CloseMenuItem {
+                text: qsTr("<b>Options</b>")
+                Accessible.name: qsTr("close options menu")
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Permissions")
+                onTriggered: root.editChatSettings()
+                MenuItemSvg { svg: SvgOutline.key }
             }
         }
     }

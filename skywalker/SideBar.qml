@@ -14,7 +14,7 @@ Pane {
     property bool showHomeFeedBadge: false
     property bool floatingButtons: false
     property var rootItem: root.currentStackItem()
-    property bool showMenu: typeof rootItem.sideBarTitle == 'undefined' // TODO: something better
+    property bool isBasePage: root.currentStack().depth === 1
 
     signal homeClicked()
     signal notificationsClicked()
@@ -126,20 +126,52 @@ Pane {
             onFeedAvatarClicked: root.viewSearchViewFeed(searchFeedView.searchFeed)
         }
 
-        Item {
-            Layout.preferredHeight: 2 * guiSettings.headerHeight
-            visible: !timelineHeader.visible && !postFeedHeader.visible && !searchFeedHeader.visible && showMenu
+        MessagesListHeader {
+            property var messagesListView: rootItem instanceof MessagesListView ? rootItem : null
+            property convoview nullConvo
+
+            width: undefined
+            height: undefined
+            Layout.preferredHeight: guiSettings.headerHeight
+            Layout.fillWidth: true
+            convo: visible ? messagesListView.convo : nullConvo
+            isSideBar: true
+            visible: Boolean(messagesListView)
+
+            onBack: rootItem.closed()
         }
 
         SimpleHeader {
             width: undefined
             height: undefined
-            Layout.preferredHeight: guiSettings.headerHeight
+            Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
             Layout.fillWidth: true
             text: visible ? rootItem.sideBarTitle : ""
-            visible: typeof rootItem.sideBarTitle == 'string' && !(rootItem instanceof PostFeedView)
+            subTitle: typeof rootItem.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
+            visible: typeof rootItem.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
 
             onBack: rootItem.closed()
+        }
+
+        SimpleDescriptionHeader {
+            width: undefined
+            height: undefined
+            Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
+            Layout.fillWidth: true
+            title: visible ? rootItem.sideBarTitle : ""
+            description: visible ? rootItem.sideBarDescription : ""
+            visible: typeof rootItem.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
+
+            onClosed: rootItem.closed()
+        }
+
+        SkySvg {
+            Layout.topMargin: 20 + Layout.preferredHeight
+            Layout.preferredWidth: 80
+            Layout.preferredHeight: Layout.preferredWidth
+            Layout.alignment: Qt.AlignHCenter
+            svg: visible ? rootItem.sideBarSvg : SvgOutline.add
+            visible: typeof rootItem.sideBarSvg != 'undefined' && !isBasePage
         }
 
         Avatar {
@@ -152,11 +184,16 @@ Pane {
             author: visible ? rootItem.sideBarAuthor : nullAuthor
             visible: typeof rootItem.sideBarAuthor != 'undefined'
 
+            onClicked: {
+                if (!(rootItem instanceof AuthorView) || rootItem.author.did !== author.did)
+                skywalker.getDetailedProfile(author.did)
+            }
         }
 
         RowLayout {
             Layout.fillWidth: true
-            visible: showMenu
+            spacing: 10
+            visible: isBasePage
 
             SkyFooterButton {
                 Layout.preferredHeight: guiSettings.headerHeight
@@ -186,7 +223,8 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
-            visible: showMenu
+            spacing: 10
+            visible: isBasePage
 
             SkyFooterButton {
                 Layout.preferredHeight: guiSettings.headerHeight
@@ -211,7 +249,8 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
-            visible: showMenu
+            spacing: 10
+            visible: isBasePage
 
             SkyFooterButton {
                 Layout.preferredHeight: guiSettings.headerHeight
@@ -236,7 +275,8 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
-            visible: showMenu
+            spacing: 10
+            visible: isBasePage
 
             SkyFooterButton {
                 Layout.preferredHeight: guiSettings.headerHeight
@@ -262,7 +302,8 @@ Pane {
 
         RowLayout {
             Layout.fillWidth: true
-            visible: showMenu
+            spacing: 10
+            visible: isBasePage
 
             SkyFooterButton {
                 Layout.preferredHeight: guiSettings.headerHeight
@@ -292,7 +333,7 @@ Pane {
             Layout.preferredHeight: Layout.preferredWidth
             Layout.alignment: Qt.AlignHCenter
             author: skywalker.user
-            visible: showMenu
+            visible: isBasePage
 
             onClicked: root.showSettingsDrawer()
             onPressAndHold: root.showSwitchUserDrawer()

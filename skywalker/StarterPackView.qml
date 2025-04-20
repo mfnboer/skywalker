@@ -9,64 +9,17 @@ SkyPage {
     readonly property int postFeedModelId: skywalker.createPostFeedModel(starterPack.list)
     readonly property int feedListModelId: skywalker.createFeedListModel()
     readonly property int margin: 10
+    readonly property string sideBarTitle: qsTr("Starter pack")
+    readonly property SvgImage sideBarSvg: SvgOutline.starterpack
 
     signal closed
 
     id: page
 
     header: SimpleHeader {
-        text: qsTr("Starter pack")
+        text: sideBarTitle
+        visible: root.isPortrait
         onBack: page.closed()
-
-        SvgPlainButton {
-            id: moreButton
-            anchors.right: parent.right
-            svg: SvgOutline.moreVert
-            accessibleName: qsTr("more options")
-            onClicked: moreMenu.open()
-
-            Menu {
-                id: moreMenu
-                modal: true
-
-                CloseMenuItem {
-                    text: qsTr("<b>Starter pack</b>")
-                    Accessible.name: qsTr("close more options menu")
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Translate")
-                    enabled: starterPack.description
-                    onTriggered: root.translateText(starterPack.description)
-
-                    MenuItemSvg { svg: SvgOutline.googleTranslate }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Share")
-                    onTriggered: skywalker.shareStarterPack(starterPack)
-
-                    MenuItemSvg { svg: SvgOutline.share }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Copy to list")
-                    onTriggered: copyStarterPackToList()
-
-                    MenuItemSvg { svg: SvgOutline.list }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Report starter pack")
-                    onTriggered: root.reportStarterPack(starterPack)
-
-                    MenuItemSvg { svg: SvgOutline.report }
-                }
-                AccessibleMenuItem {
-                    text: qsTr("Emoji names")
-                    visible: UnicodeFonts.hasEmoji(starterPack.description)
-                    onTriggered: root.showEmojiNamesList(starterPack.description)
-
-                    MenuItemSvg { svg: SvgOutline.smiley }
-                }
-            }
-        }
     }
 
     Column {
@@ -242,6 +195,59 @@ SkyPage {
         Component.onCompleted: {
             if (starterPack.feeds.length === 0)
                 removeItem(feedListView)
+        }
+    }
+
+    SvgPlainButton {
+        id: moreButton
+        parent: page.header.visible ? page.header : page
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.rightMargin: page.margin
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("more options")
+        onClicked: moreMenu.open()
+
+        Menu {
+            id: moreMenu
+            modal: true
+
+            CloseMenuItem {
+                text: qsTr("<b>Starter pack</b>")
+                Accessible.name: qsTr("close more options menu")
+            }
+            AccessibleMenuItem {
+                text: qsTr("Translate")
+                enabled: starterPack.description
+                onTriggered: root.translateText(starterPack.description)
+
+                MenuItemSvg { svg: SvgOutline.googleTranslate }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Share")
+                onTriggered: skywalker.shareStarterPack(starterPack)
+
+                MenuItemSvg { svg: SvgOutline.share }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Copy to list")
+                onTriggered: copyStarterPackToList()
+
+                MenuItemSvg { svg: SvgOutline.list }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Report starter pack")
+                onTriggered: root.reportStarterPack(starterPack)
+
+                MenuItemSvg { svg: SvgOutline.report }
+            }
+            AccessibleMenuItem {
+                text: qsTr("Emoji names")
+                visible: UnicodeFonts.hasEmoji(starterPack.description)
+                onTriggered: root.showEmojiNamesList(starterPack.description)
+
+                MenuItemSvg { svg: SvgOutline.smiley }
+            }
         }
     }
 

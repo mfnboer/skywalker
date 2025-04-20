@@ -555,7 +555,7 @@ ApplicationWindow {
             else if (currentStackItem() instanceof ConvoListView)
                 currentStackItem().positionViewAtBeginning()
         }
-        visible: !isPortrait
+        visible: !isPortrait && typeof currentStackItem().noSideBar === 'undefined'
     }
 
     StackLayout {
@@ -630,7 +630,7 @@ ApplicationWindow {
     SettingsDrawer {
         id: settingsDrawer
         height: parent.height
-        edge: Qt.RightEdge
+        edge: isPortrait ? Qt.RightEdge : Qt.LeftEdge
         dragMargin: 0
         modal: true
 

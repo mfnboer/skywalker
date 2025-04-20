@@ -7,6 +7,7 @@ SkyPage {
 
     required property var skywalker
     property var timeline
+    readonly property string sideBarTitle: qsTr("Feeds")
 
     signal closed
 
@@ -17,6 +18,7 @@ SkyPage {
 
     header: SearchHeader {
         placeHolderText: qsTr("Search feeds")
+        showBackButton: root.isPortrait
 
         onBack: page.closed()
 
