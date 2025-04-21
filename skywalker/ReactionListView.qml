@@ -4,6 +4,8 @@ import skywalker
 
 SkyListView {
     required property convoview convo
+    readonly property string sideBarTitle: qsTr("Reactions")
+    readonly property SvgImage sideBarSvg: SvgOutline.like
 
     signal closed
     signal deleteEmoji(string emoji)
@@ -11,7 +13,8 @@ SkyListView {
     id: view
 
     header: SimpleHeader {
-        text: qsTr("Reactions")
+        text: sideBarTitle
+        visible: root.isPortrait
         onBack: view.closed()
     }
     headerPositioning: ListView.OverlayHeader

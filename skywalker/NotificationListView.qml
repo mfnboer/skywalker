@@ -28,7 +28,7 @@ SkyPage {
         onSearchClicked: root.viewSearchView()
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
-        visible: root.isPortrait
+        footerVisible: root.isPortrait
     }
 
     SkyTabBar {

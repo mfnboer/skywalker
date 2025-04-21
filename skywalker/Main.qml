@@ -91,7 +91,9 @@ ApplicationWindow {
 
     StatusPopup {
         id: statusPopup
+        x: stackLayout.x
         y: guiSettings.headerHeight
+        width: stackLayout.width
     }
 
     FavoritesTabBar {
@@ -145,7 +147,8 @@ ApplicationWindow {
         onSearchClicked: viewSearchView()
         onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
-        visible: favoritesTabBar.favoritesSwipeViewVisible && isPortrait
+        footerVisible: isPortrait
+        visible: favoritesTabBar.favoritesSwipeViewVisible
 
         function getExtraFooterMargin() {
             if (favoritesTabBar.position == TabBar.Footer)
@@ -168,7 +171,7 @@ ApplicationWindow {
 
     function showEmojiNamesList(txt) {
         let component = guiSettings.createComponent("EmojiNamesList.qml")
-        let page = component.createObject(root, { txt: txt })
+        let page = component.createObject(stackLayout, { txt: txt })
         page.onAccepted.connect(() => { page.destroy() })
         page.onRejected.connect(() => { page.destroy() })
         page.open()
@@ -1442,7 +1445,7 @@ ApplicationWindow {
         const index = hidden.indexOf(uri)
 
         if (index < 0) {
-            guiSettings.askYesNoQuestion(root,
+            guiSettings.askYesNoQuestion(stackLayout,
                 qsTr("Do you want to move this reply to the hidden section at the bottom of your thread (in next post thread views), and mute notifications both for yourself and others?"),
                 () => {
                     hidden.push(uri)

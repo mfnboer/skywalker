@@ -4,6 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
+    readonly property string sideBarTitle: qsTr("Add GIF")
+    readonly property SvgImage sideBarSvg: SvgOutline.addGif
+
     signal closed
     signal selected(tenorgif gif)
 
@@ -15,6 +18,7 @@ SkyPage {
     header: SearchHeader {
         minSearchTextLength: 2
         placeHolderText: qsTr("Search Tenor")
+        showBackButton: root.isPortrait
 
         onBack: {
             if (!viewStack.isCategoriesShowing())

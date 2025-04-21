@@ -84,7 +84,7 @@ SkyPage {
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
-        visible: root.isPortrait
+        footerVisible: root.isPortrait
     }
 
     SimpleAuthorListView {

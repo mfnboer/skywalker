@@ -26,6 +26,10 @@ Pane {
     id: sideBar
     padding: 0
 
+    background: Rectangle {
+        color: guiSettings.sideBarColor
+    }
+
     ColumnLayout {
         width: parent.width
 
@@ -35,6 +39,7 @@ Pane {
             height: undefined
             Layout.preferredHeight: 2 * guiSettings.headerHeight
             Layout.fillWidth: true
+            color: guiSettings.sideBarColor
             skywalker: sideBar.skywalker
             feedName: skywalker.timelineModel.feedName
             showAsHome: true
@@ -60,6 +65,7 @@ Pane {
             height: undefined
             Layout.preferredHeight: 2 * guiSettings.headerHeight
             Layout.fillWidth: true
+            color: guiSettings.sideBarColor
             skywalker: sideBar.skywalker
             feedName: postFeedView ? postFeedView.headerItem.feedName : ""
             feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
@@ -112,6 +118,7 @@ Pane {
             height: undefined
             Layout.preferredHeight: 2 * guiSettings.headerHeight
             Layout.fillWidth: true
+            color: guiSettings.sideBarColor
             skywalker: sideBar.skywalker
             feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
             defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
@@ -134,6 +141,7 @@ Pane {
             height: undefined
             Layout.preferredHeight: guiSettings.headerHeight
             Layout.fillWidth: true
+            color: guiSettings.sideBarColor
             convo: visible ? messagesListView.convo : nullConvo
             isSideBar: true
             visible: Boolean(messagesListView)
@@ -146,11 +154,17 @@ Pane {
             height: undefined
             Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
             Layout.fillWidth: true
+            color: guiSettings.sideBarColor
             text: visible ? rootItem.sideBarTitle : ""
             subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
             visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
 
-            onBack: rootItem.closed()
+            onBack: {
+                if (typeof rootItem.cancel == 'function')
+                    rootItem.cancel()
+                else
+                    rootItem.closed()
+            }
         }
 
         SimpleDescriptionHeader {
@@ -158,6 +172,7 @@ Pane {
             height: undefined
             Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
             Layout.fillWidth: true
+            color: guiSettings.sideBarColor
             title: visible ? rootItem.sideBarTitle : ""
             description: visible ? rootItem.sideBarDescription : ""
             visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
@@ -200,7 +215,8 @@ Pane {
                 Layout.preferredWidth: 50
                 svg: homeActive ? SvgFilled.home : SvgOutline.home
                 counter: homeActive && timeline ? timeline.unreadPosts : 0
-                counterBackgroundColor: guiSettings.backgroundColor
+                counterBackgroundColor: guiSettings.sideBarColor
+                counterBorderColor: guiSettings.sideBarColor
                 counterTextColor: guiSettings.textColor
                 showAltBadge: showHomeFeedBadge
                 altBadgeSvg: SvgOutline.feed
@@ -283,6 +299,7 @@ Pane {
                 Layout.preferredWidth: Layout.preferredHeight
                 svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
                 counter: skywalker.chat.unreadCount
+                counterBorderColor: guiSettings.sideBarColor
                 Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
                 onClicked: messagesClicked()
             }
@@ -310,6 +327,7 @@ Pane {
                 Layout.preferredWidth: Layout.preferredHeight
                 svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
                 counter: root.getSkywalker().unreadNotificationCount
+                counterBorderColor: guiSettings.sideBarColor
                 Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
                 onClicked: notificationsClicked()
             }

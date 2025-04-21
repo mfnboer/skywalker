@@ -6,6 +6,8 @@ import skywalker
 SkyPage {
     required property var skywalker
     required property int modelId
+    readonly property string sideBarTitle: qsTr("User lists")
+    readonly property SvgImage sideBarSvg: SvgOutline.list
 
     id: page
 
@@ -14,7 +16,8 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: qsTr("User lists")
+        text: sideBarTitle
+        visible: root.isPortrait
         onBack: page.closed()
     }
 

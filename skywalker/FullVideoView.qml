@@ -7,6 +7,7 @@ SkyPage {
     property Skywalker skywalker: root.getSkywalker()
     readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     required property var videoView // videoview
+    readonly property bool noSideBar: true
 
     signal closed
 

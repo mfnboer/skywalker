@@ -44,6 +44,7 @@ Rectangle {
 
         BadgeCounter {
             color: button.counterBackgroundColor
+            border.color: button.counterBorderColor
             counterColor: button.counterTextColor
             counter: button.counter
         }

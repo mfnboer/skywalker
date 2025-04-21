@@ -5,7 +5,8 @@ import skywalker
 
 SkyPage {
     required property var timelineModel
-
+    readonly property string sideBarTitle: qsTr("Sort timeline views")
+    readonly property string sideBarDescription: qsTr("To change the order, keep a view pushed till its background changes color, then drag it to the desired position.")
     signal closed
 
     id: page
@@ -13,8 +14,9 @@ SkyPage {
     height: parent.height
 
     header: SimpleDescriptionHeader {
-        title: qsTr("Sort timeline views")
-        description: qsTr("To change the order, keep a view pushed till its background changes color, then drag it to the desired position.")
+        title: sideBarTitle
+        description: sideBarDescription
+        visible: root.isPortrait
         onClosed: page.closed()
     }
 

@@ -4,6 +4,10 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
+    readonly property string sideBarTitle: qsTr("Drafts")
+    readonly property string sideBarSubTitle: `${view.count} / ${view.model.getMaxDrafts()}`
+    readonly property SvgImage sideBarSvg: SvgOutline.chat
+
     signal closed
     signal selected(int index)
     signal deleted(int index)
@@ -12,7 +16,9 @@ SkyListView {
     boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {
-        text: qsTr(`Drafts ${view.count} / ${view.model.getMaxDrafts()}`)
+        text: sideBarTitle
+        subTitle: sideBarSubTitle
+        visible: root.isPortrait
         onBack: view.closed()
     }
     headerPositioning: ListView.OverlayHeader

@@ -29,7 +29,7 @@ SkyPage {
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: positionViewAtBeginning()
         onAddConvoClicked: addConvo()
-        visible: root.isPortrait
+        footerVisible: root.isPortrait
     }
 
     SkyTabBar {

@@ -10,6 +10,7 @@ SkyPage {
     property var previewImage
     property var closeCb
     property bool showControls: true
+    readonly property bool noSideBar: true
 
     signal closed
     signal saveImage(string sourceUrl)

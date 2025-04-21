@@ -14,6 +14,7 @@ Rectangle {
     property bool showHomeFeedBadge: false
     property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
     property int extraFooterMargin: 0
+    property bool footerVisible: true
 
     signal homeClicked()
     signal notificationsClicked()
@@ -23,7 +24,7 @@ Rectangle {
     signal addConvoClicked()
 
     width: parent.width
-    height: visible ? guiSettings.footerHeight : 0
+    height: (visible && footerVisible) ? guiSettings.footerHeight : 0
     z: guiSettings.footerZLevel
     color: floatingButtons ? "transparent" : guiSettings.backgroundColor
 
@@ -31,6 +32,7 @@ Rectangle {
         width: parent.width
         height: parent.height
         spacing: 0
+        visible: footerVisible
 
         SkyFooterButton {
             Layout.preferredHeight: parent.height

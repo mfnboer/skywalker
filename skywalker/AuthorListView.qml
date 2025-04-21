@@ -14,6 +14,7 @@ SkyListView {
     property int prevModelId: -1
     readonly property string sideBarTitle: authorListView.title
     readonly property string sideBarDescription: authorListView.description
+    readonly property SvgImage sideBarSvg: SvgOutline.group
 
     signal closed
 

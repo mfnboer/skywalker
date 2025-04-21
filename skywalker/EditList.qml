@@ -10,6 +10,8 @@ SkyPage {
     property bool pickingImage: false
     property string createdAvatarSource
     readonly property int avatarSize: 1000
+    readonly property string sideBarTitle: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
+    readonly property SvgImage sideBarSvg: SvgOutline.list
 
     signal closed
     signal listCreated(listview list)
@@ -22,28 +24,10 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
+        text: sideBarTitle
         backIsCancel: true
+        visible: root.isPortrait
         onBack: editListPage.cancel()
-
-        SvgPlainButton {
-            id: createListButton
-            anchors.right: parent.right
-            anchors.top: parent.top
-            svg: SvgOutline.check
-            iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
-            accessibleName: qsTr("save list")
-            enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
-
-            onClicked: {
-                createListButton.enabled = false
-
-                if (list.isNull())
-                    createList()
-                else
-                    updateList()
-            }
-        }
     }
 
     footer: Rectangle {
@@ -234,6 +218,27 @@ SkyPage {
                     fontSelectorCombo: fontSelector
                 }
             }
+        }
+    }
+
+    SvgPlainButton {
+        id: createListButton
+        parent: editListPage.header.visible ? editListPage.header : editListPage
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        anchors.top: parent.top
+        svg: SvgOutline.check
+        iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
+        accessibleName: qsTr("save list")
+        enabled: nameField.text.length > 0 && !nameField.maxGraphemeLengthExceeded() && changesMade()
+
+        onClicked: {
+            createListButton.enabled = false
+
+            if (list.isNull())
+                createList()
+            else
+                updateList()
         }
     }
 

@@ -5,6 +5,8 @@ import skywalker
 
 SkyPage {
     required property var favoriteFeeds
+    readonly property string sideBarTitle: qsTr("Sort favorites")
+    readonly property string sideBarDescription: qsTr("To change the order, keep a favorite pushed till its background changes color, then drag it to the desired position.")
 
     signal closed
 
@@ -13,34 +15,10 @@ SkyPage {
     height: parent.height
 
     header: SimpleDescriptionHeader {
-        title: qsTr("Sort favorites")
-        description: qsTr("To change the order, keep a favorite pushed till its background changes color, then drag it to the desired position.")
+        title: sideBarTitle
+        description: sideBarDescription
+        visible: root.isPortrait
         onClosed: page.closed()
-
-        SvgPlainButton {
-            anchors.rightMargin: 10
-            anchors.right: parent.right
-            y: (guiSettings.headerHeight - height) / 2
-            svg: SvgOutline.moreVert
-            accessibleName: qsTr("Favorites options")
-            onClicked: moreMenu.open()
-
-            Menu {
-                id: moreMenu
-                modal: true
-
-                CloseMenuItem {
-                    text: qsTr("<b>Favorites</b>")
-                    Accessible.name: qsTr("close more options menu")
-                }
-
-                AccessibleMenuItem {
-                    text: qsTr("Sort alphabetically")
-                    onTriggered: alphaSort()
-                    MenuItemSvg { svg: SvgOutline.sortByAlpha }
-                }
-            }
-        }
     }
 
     SkyListView {
@@ -86,6 +64,33 @@ SkyPage {
                         text: modelData.name
                     }
                 }
+            }
+        }
+    }
+
+    SvgPlainButton {
+        parent: page.header.visible ? page.header : page
+        anchors.top: parent.top
+        anchors.rightMargin: 10
+        anchors.right: parent.right
+        y: (guiSettings.headerHeight - height) / 2
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("Favorites options")
+        onClicked: moreMenu.open()
+
+        Menu {
+            id: moreMenu
+            modal: true
+
+            CloseMenuItem {
+                text: qsTr("<b>Favorites</b>")
+                Accessible.name: qsTr("close more options menu")
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Sort alphabetically")
+                onTriggered: alphaSort()
+                MenuItemSvg { svg: SvgOutline.sortByAlpha }
             }
         }
     }

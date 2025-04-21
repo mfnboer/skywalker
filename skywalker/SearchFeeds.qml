@@ -46,7 +46,7 @@ SkyPage {
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: positionViewAtBeginning()
         onMessagesClicked: root.viewChat()
-        visible: root.isPortrait
+        footerVisible: root.isPortrait
     }
 
     SkyTabBar {
