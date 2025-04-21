@@ -579,7 +579,7 @@ SkyPage {
                     required property basicprofile modelData
 
                     width: 80
-                    height: parent.height
+                    height: parent ? parent.height : 0
                     spacing: 10
 
                     Avatar {

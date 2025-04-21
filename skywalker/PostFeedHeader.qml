@@ -197,8 +197,8 @@ Rectangle {
         FeedAvatar {
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-            height: parent.height - 10
-            width: height
+            Layout.preferredHeight: parent.height - 10
+            Layout.preferredWidth: Layout.preferredHeight
             avatarUrl: header.feedAvatar
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
@@ -216,8 +216,8 @@ Rectangle {
             id: userAvatar
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-            height: parent.height - 10
-            width: height
+            Layout.preferredHeight: parent.height - 10
+            Layout.preferredWidth: Layout.preferredHeight
             visible: showAsHome && !isSideBar
             Accessible.role: Accessible.Pane
 
@@ -246,8 +246,12 @@ Rectangle {
             width: parent.width
             spacing: 0
 
+            Rectangle {
+                Layout.preferredWidth: backButton.width
+                color: "transparent"
+            }
+
             SvgPlainButton {
-                Layout.fillWidth: true
                 Layout.alignment: Qt.AlignCenter
                 svg: SvgOutline.language
                 iconColor: guiSettings.headerTextColor
@@ -257,7 +261,6 @@ Rectangle {
             }
 
             SvgPlainButton {
-                Layout.fillWidth: true
                 Layout.alignment: Qt.AlignCenter
                 svg: guiSettings.getContentModeSvg(contentMode)
                 iconColor: guiSettings.headerTextColor
@@ -283,6 +286,11 @@ Rectangle {
                             item.open()
                     }
                 }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                color: "transparent"
             }
         }
     }

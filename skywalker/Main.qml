@@ -555,7 +555,7 @@ ApplicationWindow {
             else if (currentStackItem() instanceof ConvoListView)
                 currentStackItem().positionViewAtBeginning()
         }
-        visible: !isPortrait && typeof currentStackItem().noSideBar === 'undefined'
+        visible: !isPortrait && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
     }
 
     StackLayout {

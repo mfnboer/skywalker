@@ -147,8 +147,8 @@ Pane {
             Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
             Layout.fillWidth: true
             text: visible ? rootItem.sideBarTitle : ""
-            subTitle: typeof rootItem.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
-            visible: typeof rootItem.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
+            subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
+            visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
 
             onBack: rootItem.closed()
         }
@@ -160,7 +160,7 @@ Pane {
             Layout.fillWidth: true
             title: visible ? rootItem.sideBarTitle : ""
             description: visible ? rootItem.sideBarDescription : ""
-            visible: typeof rootItem.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
+            visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
 
             onClosed: rootItem.closed()
         }
@@ -171,7 +171,7 @@ Pane {
             Layout.preferredHeight: Layout.preferredWidth
             Layout.alignment: Qt.AlignHCenter
             svg: visible ? rootItem.sideBarSvg : SvgOutline.add
-            visible: typeof rootItem.sideBarSvg != 'undefined' && !isBasePage
+            visible: typeof rootItem?.sideBarSvg != 'undefined' && !isBasePage
         }
 
         Avatar {
@@ -182,7 +182,7 @@ Pane {
             Layout.preferredHeight: Layout.preferredWidth
             Layout.alignment: Qt.AlignHCenter
             author: visible ? rootItem.sideBarAuthor : nullAuthor
-            visible: typeof rootItem.sideBarAuthor != 'undefined'
+            visible: typeof rootItem?.sideBarAuthor != 'undefined'
 
             onClicked: {
                 if (!(rootItem instanceof AuthorView) || rootItem.author.did !== author.did)
