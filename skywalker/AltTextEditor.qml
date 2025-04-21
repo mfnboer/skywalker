@@ -19,7 +19,7 @@ SkyPage {
     bottomPadding: 10
 
     header: SimpleButtonHeader {
-        title: root.isPortrait ? sideBarTitle : ""
+        title: !root.showSideBar ? sideBarTitle : ""
         buttonSvg: SvgOutline.check
         enabled: !altText.maxGraphemeLengthExceeded()
         onButtonClicked: altTextChanged(page.text)

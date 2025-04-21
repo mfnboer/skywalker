@@ -73,7 +73,7 @@ Pane {
                 id: postFeedHeader
                 width: undefined
                 height: undefined
-                Layout.preferredHeight: 2 * guiSettings.sideBarHeaderHeight
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 skywalker: sideBar.skywalker
@@ -167,6 +167,7 @@ Pane {
                 color: guiSettings.sideBarColor
                 text: visible ? rootItem.sideBarTitle : ""
                 subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
+                isSideBar: true
                 visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
 
                 onBack: {
@@ -185,6 +186,7 @@ Pane {
                 color: guiSettings.sideBarColor
                 title: visible ? rootItem.sideBarTitle : ""
                 description: visible ? rootItem.sideBarDescription : ""
+                isSideBar: true
                 visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
 
                 onClosed: rootItem.closed()

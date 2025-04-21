@@ -40,7 +40,7 @@ SkyListView {
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
         showViewOptions: true
         showFavoritesPlaceHolder: showFavorites && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
-        visible: root.isPortrait
+        visible: !root.showSideBar
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()

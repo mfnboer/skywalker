@@ -41,7 +41,7 @@ SkyPage {
 
     header: SimpleHeader {
         text: guiSettings.listTypeName(list.purpose)
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onBack: closed()
     }
 

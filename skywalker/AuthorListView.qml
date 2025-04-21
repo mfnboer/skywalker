@@ -26,7 +26,7 @@ SkyListView {
     header: SimpleDescriptionHeader {
         title: sideBarTitle
         description: sideBarDescription
-        visible: authorListView.title && root.isPortrait
+        visible: authorListView.title && !root.showSideBar
         onClosed: authorListView.closed()
     }
     headerPositioning: ListView.OverlayHeader

@@ -34,7 +34,7 @@ SkyPage {
 
     header: SimpleHeader {
         text: sideBarTitle
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onBack: closed()
     }
 

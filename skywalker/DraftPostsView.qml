@@ -18,7 +18,7 @@ SkyListView {
     header: SimpleHeader {
         text: sideBarTitle
         subTitle: sideBarSubTitle
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onBack: view.closed()
     }
     headerPositioning: ListView.OverlayHeader

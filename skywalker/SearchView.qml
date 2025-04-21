@@ -42,7 +42,7 @@ SkyPage {
     header: SearchHeader {
         minSearchTextLength: 0
         placeHolderText: isPostSearch ? qsTr("Search posts") : qsTr("Search users")
-        showBackButton: root.isPortrait
+        showBackButton: !root.showSideBar
         onBack: page.closed()
 
         onSearchTextChanged: (text) => {
@@ -84,7 +84,7 @@ SkyPage {
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
-        footerVisible: root.isPortrait
+        footerVisible: !root.showSideBar
     }
 
     SimpleAuthorListView {

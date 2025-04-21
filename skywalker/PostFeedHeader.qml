@@ -248,7 +248,7 @@ Rectangle {
             spacing: 0
 
             Rectangle {
-                Layout.preferredWidth: backButton.width
+                Layout.fillWidth: true
                 color: "transparent"
             }
 
@@ -287,11 +287,6 @@ Rectangle {
                             item.open()
                     }
                 }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                color: "transparent"
             }
         }
     }
@@ -397,6 +392,6 @@ Rectangle {
         else
             msg += qsTr("Posts without language tags will be shown.")
 
-        guiSettings.notice(root, msg)
+        guiSettings.notice(rootContent, msg)
     }
 }

@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     required property string title
     property string description
+    property bool isSideBar: false
 
     signal closed
 
@@ -42,7 +43,7 @@ Rectangle {
                     Layout.fillWidth: true
                     leftPadding: 10
                     font.bold: true
-                    font.pointSize: guiSettings.scaledFont(10/8)
+                    font.pointSize: isSideBar ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
                     color: guiSettings.headerTextColor
                     text: title
 

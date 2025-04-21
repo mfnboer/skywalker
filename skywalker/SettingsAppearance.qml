@@ -113,7 +113,7 @@ ColumnLayout {
                 imageMargin: 4
                 svg: SvgOutline.info
                 accessibleName: qsTr("info")
-                onClicked: guiSettings.notice(root, qsTr("Accent color is used for buttons, default avatar and counter badges"))
+                onClicked: guiSettings.notice(rootContent, qsTr("Accent color is used for buttons, default avatar and counter badges"))
             }
         }
 

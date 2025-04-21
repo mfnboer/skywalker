@@ -18,7 +18,7 @@ SkyPage {
 
     header: SearchHeader {
         placeHolderText: qsTr("Search feeds")
-        showBackButton: root.isPortrait
+        showBackButton: !root.showSideBar
 
         onBack: page.closed()
 
@@ -46,7 +46,7 @@ SkyPage {
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: positionViewAtBeginning()
         onMessagesClicked: root.viewChat()
-        footerVisible: root.isPortrait
+        footerVisible: !root.showSideBar
     }
 
     SkyTabBar {

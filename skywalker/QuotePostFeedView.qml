@@ -19,7 +19,7 @@ SkyListView {
         skywalker: postFeedView.skywalker
         feedName: sideBarTitle
         defaultSvg: SvgFilled.repost
-        visible: root.isPortrait
+        visible: !root.showSideBar
 
         onClosed: postFeedView.closed()
     }

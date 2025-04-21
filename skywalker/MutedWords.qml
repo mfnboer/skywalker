@@ -27,7 +27,7 @@ ListView {
     header: SimpleHeader {
         text: sideBarTitle
         subTitle: sideBarSubTitle
-        headerVisible: root.isPortrait
+        headerVisible: !root.showSideBar
         onBack: view.closed()
 
         SvgPlainButton {

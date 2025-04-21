@@ -18,7 +18,7 @@ SkyPage {
     header: SearchHeader {
         minSearchTextLength: 2
         placeHolderText: qsTr("Search Tenor")
-        showBackButton: root.isPortrait
+        showBackButton: !root.showSideBar
 
         onBack: {
             if (!viewStack.isCategoriesShowing())

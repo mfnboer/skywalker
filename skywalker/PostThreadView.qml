@@ -18,7 +18,7 @@ SkyListView {
     header: SimpleHeader {
         height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
-        headerVisible: root.isPortrait
+        headerVisible: !root.showSideBar
         onBack: view.closed()
 
         Rectangle {

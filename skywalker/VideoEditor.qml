@@ -27,7 +27,7 @@ SkyPage {
     header: SimpleHeader {
         text: sideBarTitle
         backIsCancel: true
-        headerVisible: root.isPortrait
+        headerVisible: !root.showSideBar
         onBack: page.cancel()
 
         SvgPlainButton {

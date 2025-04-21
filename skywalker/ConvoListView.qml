@@ -15,7 +15,7 @@ SkyPage {
 
     header: SimpleHeader {
         text: sideBarTitle
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onBack: page.closed()
     }
 
@@ -29,7 +29,7 @@ SkyPage {
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: positionViewAtBeginning()
         onAddConvoClicked: addConvo()
-        footerVisible: root.isPortrait
+        footerVisible: !root.showSideBar
     }
 
     SkyTabBar {

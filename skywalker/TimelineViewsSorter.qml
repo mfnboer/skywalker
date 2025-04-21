@@ -16,7 +16,7 @@ SkyPage {
     header: SimpleDescriptionHeader {
         title: sideBarTitle
         description: sideBarDescription
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onClosed: page.closed()
     }
 

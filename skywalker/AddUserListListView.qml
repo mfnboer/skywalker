@@ -24,7 +24,7 @@ ListView {
     header: SimpleDescriptionHeader {
         title: sideBarTitle
         description: sideBarDescription
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onClosed: view.closed()
     }
     headerPositioning: ListView.OverlayHeader

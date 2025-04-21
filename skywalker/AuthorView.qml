@@ -82,7 +82,7 @@ SkyPage {
             opacity: 0.5
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
-            visible: root.isPortrait
+            visible: !root.showSideBar
             onClicked: page.closed()
         }
 

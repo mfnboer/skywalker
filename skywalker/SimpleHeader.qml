@@ -9,6 +9,7 @@ Rectangle {
     property string subTitle
     property bool backIsCancel: false
     property bool headerVisible: true
+    property bool isSideBar: false
 
     signal back
 
@@ -41,7 +42,7 @@ Rectangle {
             Text {
                 width: parent.width
                 font.bold: true
-                font.pointSize: Boolean(subTitle) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
+                font.pointSize: (Boolean(subTitle) || isSideBar) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
                 elide: Text.ElideRight
                 text: headerRect.text

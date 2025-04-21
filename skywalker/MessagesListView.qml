@@ -26,7 +26,7 @@ SkyPage {
 
     header: MessagesListHeader {
         convo: page.convo
-        visible: root.isPortrait
+        visible: !root.showSideBar
         onBack: page.closed()
     }
 
