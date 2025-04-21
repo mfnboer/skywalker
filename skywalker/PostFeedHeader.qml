@@ -42,7 +42,7 @@ Rectangle {
     RowLayout {
         id: headerRow
         width: parent.width
-        height: header.visible ? guiSettings.headerHeight : 0
+        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight) : 0
         spacing: 0
 
         SvgPlainButton {
@@ -131,7 +131,7 @@ Rectangle {
             rightPadding: showAsHome ? expandFeedsButton.width : 0
             elide: Text.ElideRight
             font.bold: true
-            font.pointSize: guiSettings.scaledFont(10/8)
+            font.pointSize: isSideBar ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
             plainText: header.feedName
 
@@ -240,6 +240,7 @@ Rectangle {
     Loader {
         anchors.top: headerRow.bottom
         width: parent.width
+        height: guiSettings.sideBarHeaderHeight
         active: isSideBar
 
         sourceComponent: RowLayout {

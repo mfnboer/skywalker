@@ -17,6 +17,7 @@ Item {
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
+    readonly property int sideBarHeaderHeight: 44
     readonly property int statsHeight: appFontHeight + 4
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60

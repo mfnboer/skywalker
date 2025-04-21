@@ -30,336 +30,348 @@ Pane {
         color: guiSettings.sideBarColor
     }
 
-    ColumnLayout {
-        width: parent.width
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentWidth: parent.width
+        contentHeight: sideBarColumn.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
-        PostFeedHeader {
-            id: timelineHeader
-            width: undefined
-            height: undefined
-            Layout.preferredHeight: 2 * guiSettings.headerHeight
-            Layout.fillWidth: true
-            color: guiSettings.sideBarColor
-            skywalker: sideBar.skywalker
-            feedName: skywalker.timelineModel.feedName
-            showAsHome: true
-            isHomeFeed: true
-            showMoreOptions: true
-            isSideBar: true
-            visible: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
+        ColumnLayout {
+            id: sideBarColumn
+            width: parent.width
+            spacing: 0
 
-            onAddUserView: root.getTimelineView().addUserView()
-            onAddHashtagView: root.getTimelineView().addHashtagView()
-            onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
-            onAddMediaView: root.getTimelineView().showMediaView()
-            onAddVideoView: root.getTimelineView().showVideoView()
-        }
-
-        PostFeedHeader {
-            property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof PostFeedView) ?
-                    rootItem.currentView :
-                    (rootItem instanceof PostFeedView ? rootItem : null)
-
-            id: postFeedHeader
-            width: undefined
-            height: undefined
-            Layout.preferredHeight: 2 * guiSettings.headerHeight
-            Layout.fillWidth: true
-            color: guiSettings.sideBarColor
-            skywalker: sideBar.skywalker
-            feedName: postFeedView ? postFeedView.headerItem.feedName : ""
-            feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
-            defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
-            contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-            underlyingContentMode: postFeedView ? postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-            showAsHome: postFeedView ? postFeedView.showAsHome : false
-            showLanguageFilter: postFeedView ? postFeedView.headerItem.showLanguageFilter : false
-            filteredLanguages: postFeedView ? postFeedView.headerItem.filteredLanguages : []
-            showPostWithMissingLanguage: postFeedView ? postFeedView.headerItem.showPostWithMissingLanguage : true
-            showViewOptions: true
-            isSideBar: true
-            visible: Boolean(postFeedView)
-
-            onClosed: postFeedView.closed()
-            onFeedAvatarClicked: postFeedView.showFeed()
-
-            onViewChanged: (newContentMode) => {
-                postFeedView.headerItem.contentMode = newContentMode
-                postFeedView.headerItem.viewChanged(newContentMode)
-            }
-        }
-
-        FeedAvatar {
-            property var postFeedView: rootItem instanceof PostFeedView ? rootItem : null
-
-            Layout.topMargin: 20
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: Layout.preferredWidth
-            Layout.alignment: Qt.AlignHCenter
-            avatarUrl: postFeedView ? postFeedView.headerItem.feedAvatar : ""
-            contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-            badgeOutlineColor: guiSettings.headerColor
-            unknownSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
-            visible: Boolean(postFeedView)
-
-            onClicked: postFeedView.headerItem.feedAvatarClicked()
-
-            Accessible.role: Accessible.Button
-            Accessible.name: postFeedView ? postFeedView.headerItem.feedName : ""
-            Accessible.description: Accessible.name
-            Accessible.onPressAction: postFeedView.headerItem.feedAvatarClicked()
-        }
-
-        PostFeedHeader {
-            property var searchFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
-
-            id: searchFeedHeader
-            width: undefined
-            height: undefined
-            Layout.preferredHeight: 2 * guiSettings.headerHeight
-            Layout.fillWidth: true
-            color: guiSettings.sideBarColor
-            skywalker: sideBar.skywalker
-            feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
-            defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
-            feedAvatar: ""
-            showAsHome: searchFeedView ? searchFeedView.showAsHome : false
-            showLanguageFilter: searchFeedView ? searchFeedView.headerItem.showLanguageFilter : false
-            filteredLanguages: searchFeedView ? searchFeedView.headerItem.filteredLanguages : []
-            showPostWithMissingLanguage: false
-            isSideBar: true
-            visible: Boolean(searchFeedView)
-
-            onFeedAvatarClicked: root.viewSearchViewFeed(searchFeedView.searchFeed)
-        }
-
-        MessagesListHeader {
-            property var messagesListView: rootItem instanceof MessagesListView ? rootItem : null
-            property convoview nullConvo
-
-            width: undefined
-            height: undefined
-            Layout.preferredHeight: guiSettings.headerHeight
-            Layout.fillWidth: true
-            color: guiSettings.sideBarColor
-            convo: visible ? messagesListView.convo : nullConvo
-            isSideBar: true
-            visible: Boolean(messagesListView)
-
-            onBack: rootItem.closed()
-        }
-
-        SimpleHeader {
-            width: undefined
-            height: undefined
-            Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
-            Layout.fillWidth: true
-            color: guiSettings.sideBarColor
-            text: visible ? rootItem.sideBarTitle : ""
-            subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
-            visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
-
-            onBack: {
-                if (typeof rootItem.cancel == 'function')
-                    rootItem.cancel()
-                else
-                    rootItem.closed()
-            }
-        }
-
-        SimpleDescriptionHeader {
-            width: undefined
-            height: undefined
-            Layout.preferredHeight: guiSettings.headerHeight * (isBasePage ? 2 : 1)
-            Layout.fillWidth: true
-            color: guiSettings.sideBarColor
-            title: visible ? rootItem.sideBarTitle : ""
-            description: visible ? rootItem.sideBarDescription : ""
-            visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
-
-            onClosed: rootItem.closed()
-        }
-
-        SkySvg {
-            Layout.topMargin: 20 + Layout.preferredHeight
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: Layout.preferredWidth
-            Layout.alignment: Qt.AlignHCenter
-            svg: visible ? rootItem.sideBarSvg : SvgOutline.add
-            visible: typeof rootItem?.sideBarSvg != 'undefined' && !isBasePage
-        }
-
-        Avatar {
-            property basicprofile nullAuthor
-
-            Layout.topMargin: 20
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: Layout.preferredWidth
-            Layout.alignment: Qt.AlignHCenter
-            author: visible ? rootItem.sideBarAuthor : nullAuthor
-            visible: typeof rootItem?.sideBarAuthor != 'undefined'
-
-            onClicked: {
-                if (!(rootItem instanceof AuthorView) || rootItem.author.did !== author.did)
-                skywalker.getDetailedProfile(author.did)
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            visible: isBasePage
-
-            SkyFooterButton {
-                Layout.preferredHeight: guiSettings.headerHeight
-                Layout.preferredWidth: 50
-                svg: homeActive ? SvgFilled.home : SvgOutline.home
-                counter: homeActive && timeline ? timeline.unreadPosts : 0
-                counterBackgroundColor: guiSettings.sideBarColor
-                counterBorderColor: guiSettings.sideBarColor
-                counterTextColor: guiSettings.textColor
-                showAltBadge: showHomeFeedBadge
-                altBadgeSvg: SvgOutline.feed
-                Accessible.name: getHomeSpeech()
-                onClicked: homeClicked()
-            }
-
-            AccessibleText {
+            PostFeedHeader {
+                id: timelineHeader
+                width: undefined
+                height: undefined
+                Layout.preferredHeight: 2 * guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                font.bold: homeActive
-                text: qsTr("Home")
+                color: guiSettings.sideBarColor
+                skywalker: sideBar.skywalker
+                feedName: skywalker.timelineModel.feedName
+                showAsHome: true
+                isHomeFeed: true
+                showMoreOptions: true
+                isSideBar: true
+                visible: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
 
-                MouseArea {
-                    anchors.fill: parent
+                onAddUserView: root.getTimelineView().addUserView()
+                onAddHashtagView: root.getTimelineView().addHashtagView()
+                onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
+                onAddMediaView: root.getTimelineView().showMediaView()
+                onAddVideoView: root.getTimelineView().showVideoView()
+            }
+
+            PostFeedHeader {
+                property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof PostFeedView) ?
+                        rootItem.currentView :
+                        (rootItem instanceof PostFeedView ? rootItem : null)
+
+                id: postFeedHeader
+                width: undefined
+                height: undefined
+                Layout.preferredHeight: 2 * guiSettings.sideBarHeaderHeight
+                Layout.fillWidth: true
+                color: guiSettings.sideBarColor
+                skywalker: sideBar.skywalker
+                feedName: postFeedView ? postFeedView.headerItem.feedName : ""
+                feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
+                defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
+                contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: postFeedView ? postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                showAsHome: postFeedView ? postFeedView.showAsHome : false
+                showLanguageFilter: postFeedView ? postFeedView.headerItem.showLanguageFilter : false
+                filteredLanguages: postFeedView ? postFeedView.headerItem.filteredLanguages : []
+                showPostWithMissingLanguage: postFeedView ? postFeedView.headerItem.showPostWithMissingLanguage : true
+                showViewOptions: true
+                isSideBar: true
+                visible: Boolean(postFeedView)
+
+                onClosed: postFeedView.closed()
+                onFeedAvatarClicked: postFeedView.showFeed()
+
+                onViewChanged: (newContentMode) => {
+                    postFeedView.headerItem.contentMode = newContentMode
+                    postFeedView.headerItem.viewChanged(newContentMode)
+                }
+            }
+
+            FeedAvatar {
+                property var postFeedView: rootItem instanceof PostFeedView ? rootItem : null
+
+                Layout.topMargin: 20
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: Layout.preferredWidth
+                Layout.alignment: Qt.AlignHCenter
+                avatarUrl: postFeedView ? postFeedView.headerItem.feedAvatar : ""
+                contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                badgeOutlineColor: guiSettings.headerColor
+                unknownSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
+                visible: Boolean(postFeedView)
+
+                onClicked: postFeedView.headerItem.feedAvatarClicked()
+
+                Accessible.role: Accessible.Button
+                Accessible.name: postFeedView ? postFeedView.headerItem.feedName : ""
+                Accessible.description: Accessible.name
+                Accessible.onPressAction: postFeedView.headerItem.feedAvatarClicked()
+            }
+
+            PostFeedHeader {
+                property var searchFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
+
+                id: searchFeedHeader
+                width: undefined
+                height: undefined
+                Layout.preferredHeight: 2 * guiSettings.sideBarHeaderHeight
+                Layout.fillWidth: true
+                color: guiSettings.sideBarColor
+                skywalker: sideBar.skywalker
+                feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
+                defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
+                feedAvatar: ""
+                showAsHome: searchFeedView ? searchFeedView.showAsHome : false
+                showLanguageFilter: searchFeedView ? searchFeedView.headerItem.showLanguageFilter : false
+                filteredLanguages: searchFeedView ? searchFeedView.headerItem.filteredLanguages : []
+                showPostWithMissingLanguage: false
+                isSideBar: true
+                visible: Boolean(searchFeedView)
+
+                onFeedAvatarClicked: root.viewSearchViewFeed(searchFeedView.searchFeed)
+            }
+
+            MessagesListHeader {
+                property var messagesListView: rootItem instanceof MessagesListView ? rootItem : null
+                property convoview nullConvo
+
+                width: undefined
+                height: undefined
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                Layout.fillWidth: true
+                color: guiSettings.sideBarColor
+                convo: visible ? messagesListView.convo : nullConvo
+                isSideBar: true
+                visible: Boolean(messagesListView)
+
+                onBack: rootItem.closed()
+            }
+
+            SimpleHeader {
+                width: undefined
+                height: undefined
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight * (isBasePage ? 2 : 1)
+                Layout.fillWidth: true
+                color: guiSettings.sideBarColor
+                text: visible ? rootItem.sideBarTitle : ""
+                subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
+                visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
+
+                onBack: {
+                    if (typeof rootItem.cancel == 'function')
+                        rootItem.cancel()
+                    else
+                        rootItem.closed()
+                }
+            }
+
+            SimpleDescriptionHeader {
+                width: undefined
+                height: undefined
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight * (isBasePage ? 2 : 1)
+                Layout.fillWidth: true
+                color: guiSettings.sideBarColor
+                title: visible ? rootItem.sideBarTitle : ""
+                description: visible ? rootItem.sideBarDescription : ""
+                visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
+
+                onClosed: rootItem.closed()
+            }
+
+            SkySvg {
+                Layout.topMargin: 20 + Layout.preferredHeight
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: Layout.preferredWidth
+                Layout.alignment: Qt.AlignHCenter
+                svg: visible ? rootItem.sideBarSvg : SvgOutline.add
+                visible: typeof rootItem?.sideBarSvg != 'undefined' && !isBasePage
+            }
+
+            Avatar {
+                property basicprofile nullAuthor
+
+                Layout.topMargin: 20
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: Layout.preferredWidth
+                Layout.alignment: Qt.AlignHCenter
+                author: visible ? rootItem.sideBarAuthor : nullAuthor
+                visible: typeof rootItem?.sideBarAuthor != 'undefined'
+
+                onClicked: {
+                    if (!(rootItem instanceof AuthorView) || rootItem.author.did !== author.did)
+                    skywalker.getDetailedProfile(author.did)
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                visible: isBasePage
+
+                SkyFooterButton {
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                    Layout.preferredWidth: Layout.preferredHeight
+                    svg: homeActive ? SvgFilled.home : SvgOutline.home
+                    counter: homeActive && timeline ? timeline.unreadPosts : 0
+                    counterBackgroundColor: guiSettings.sideBarColor
+                    counterBorderColor: guiSettings.sideBarColor
+                    counterTextColor: guiSettings.textColor
+                    showAltBadge: showHomeFeedBadge
+                    altBadgeSvg: SvgOutline.feed
+                    Accessible.name: getHomeSpeech()
                     onClicked: homeClicked()
                 }
-            }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            visible: isBasePage
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    font.bold: homeActive
+                    text: qsTr("Home")
 
-            SkyFooterButton {
-                Layout.preferredHeight: guiSettings.headerHeight
-                Layout.preferredWidth: Layout.preferredHeight
-                svg: searchActive ? SvgFilled.search : SvgOutline.search
-                Accessible.name: qsTr("search")
-                onClicked: searchClicked()
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: homeClicked()
+                    }
+                }
             }
 
-            AccessibleText {
+            RowLayout {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                font.bold: searchActive
-                text: qsTr("Search")
+                spacing: 12
+                visible: isBasePage
 
-                MouseArea {
-                    anchors.fill: parent
+                SkyFooterButton {
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                    Layout.preferredWidth: Layout.preferredHeight
+                    svg: searchActive ? SvgFilled.search : SvgOutline.search
+                    Accessible.name: qsTr("search")
                     onClicked: searchClicked()
                 }
-            }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            visible: isBasePage
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    font.bold: searchActive
+                    text: qsTr("Search")
 
-            SkyFooterButton {
-                Layout.preferredHeight: guiSettings.headerHeight
-                Layout.preferredWidth: Layout.preferredHeight
-                svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
-                Accessible.name: qsTr("feeds")
-                onClicked: feedsClicked()
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: searchClicked()
+                    }
+                }
             }
 
-            AccessibleText {
+            RowLayout {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                font.bold: feedsActive
-                text: qsTr("Feeds")
+                spacing: 12
+                visible: isBasePage
 
-                MouseArea {
-                    anchors.fill: parent
+                SkyFooterButton {
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                    Layout.preferredWidth: Layout.preferredHeight
+                    svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
+                    Accessible.name: qsTr("feeds")
                     onClicked: feedsClicked()
                 }
-            }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            visible: isBasePage
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    font.bold: feedsActive
+                    text: qsTr("Feeds")
 
-            SkyFooterButton {
-                Layout.preferredHeight: guiSettings.headerHeight
-                Layout.preferredWidth: Layout.preferredHeight
-                svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
-                counter: skywalker.chat.unreadCount
-                counterBorderColor: guiSettings.sideBarColor
-                Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
-                onClicked: messagesClicked()
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: feedsClicked()
+                    }
+                }
             }
 
-            AccessibleText {
+            RowLayout {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                font.bold: messagesActive
-                text: qsTr("Direct messages")
+                spacing: 12
+                visible: isBasePage
 
-                MouseArea {
-                    anchors.fill: parent
+                SkyFooterButton {
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                    Layout.preferredWidth: Layout.preferredHeight
+                    svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
+                    counter: skywalker.chat.unreadCount
+                    counterBorderColor: guiSettings.sideBarColor
+                    Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
                     onClicked: messagesClicked()
                 }
-            }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 10
-            visible: isBasePage
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    font.bold: messagesActive
+                    text: qsTr("Direct messages")
 
-            SkyFooterButton {
-                Layout.preferredHeight: guiSettings.headerHeight
-                Layout.preferredWidth: Layout.preferredHeight
-                svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
-                counter: root.getSkywalker().unreadNotificationCount
-                counterBorderColor: guiSettings.sideBarColor
-                Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
-                onClicked: notificationsClicked()
-            }
-
-            AccessibleText {
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-                font.bold: notificationsActive
-                text: qsTr("Notifications")
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: notificationsClicked()
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: messagesClicked()
+                    }
                 }
             }
-        }
 
-        Avatar {
-            Layout.topMargin: 20
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: Layout.preferredWidth
-            Layout.alignment: Qt.AlignHCenter
-            author: skywalker.user
-            visible: isBasePage
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 12
+                visible: isBasePage
 
-            onClicked: root.showSettingsDrawer()
-            onPressAndHold: root.showSwitchUserDrawer()
+                SkyFooterButton {
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                    Layout.preferredWidth: Layout.preferredHeight
+                    svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
+                    counter: root.getSkywalker().unreadNotificationCount
+                    counterBorderColor: guiSettings.sideBarColor
+                    Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
+                    onClicked: notificationsClicked()
+                }
 
-            Accessible.role: Accessible.ButtonMenu
-            Accessible.name: qsTr("Skywalker menu")
-            Accessible.description: Accessible.name
-            Accessible.onPressAction: clicked()
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    font.bold: notificationsActive
+                    text: qsTr("Notifications")
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: notificationsClicked()
+                    }
+                }
+            }
+
+            Avatar {
+                Layout.topMargin: 10
+                Layout.bottomMargin: 10
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: Layout.preferredWidth
+                Layout.alignment: Qt.AlignHCenter
+                author: skywalker.user
+                visible: isBasePage
+
+                onClicked: root.showSettingsDrawer()
+                onPressAndHold: root.showSwitchUserDrawer()
+
+                Accessible.role: Accessible.ButtonMenu
+                Accessible.name: qsTr("Skywalker menu")
+                Accessible.description: Accessible.name
+                Accessible.onPressAction: clicked()
+            }
         }
     }
 

@@ -107,9 +107,9 @@ Item {
     }
 
     Component.onCompleted: {
-        zoomAnimation.run()
-
         // An image in a RoundedFrame has its visible property set to false
         thumbImageVisible = thumbImage.visible
+
+        zoomAnimation.run()
     }
 }
