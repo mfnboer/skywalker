@@ -58,6 +58,8 @@ qt_add_qml_module(appskywalker
         images/buycoffee.png
         images/thats_all_folks.png
         images/dont_panic.png
+        images/verified_check.svg
+        images/verifier_check.svg
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java

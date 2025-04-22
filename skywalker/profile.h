@@ -13,6 +13,55 @@ namespace Skywalker {
 
 class BasicProfile;
 
+class VerificationView
+{
+    Q_GADGET
+    Q_PROPERTY(QString issuer READ getIssuer FINAL)
+    Q_PROPERTY(QString uri READ getUri FINAL)
+    Q_PROPERTY(bool isValid READ isValid FINAL)
+    Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
+    QML_VALUE_TYPE(verificationview)
+
+public:
+    using List = QList<VerificationView>;
+
+    VerificationView() = default;
+    explicit VerificationView(const ATProto::AppBskyActor::VerificationView::SharedPtr& view);
+
+    Q_INVOKABLE bool isNull() const { return mView == nullptr; }
+    const QString& getIssuer() const; // DID
+    const QString& getUri() const; // Verification record at-uri
+    bool isValid() const;
+    QDateTime getCreatedAt() const;
+
+private:
+    ATProto::AppBskyActor::VerificationView::SharedPtr mView;
+};
+
+class VerificationState
+{
+    Q_GADGET
+    Q_PROPERTY(VerificationView::List verifications READ getVerifications FINAL)
+    Q_PROPERTY(QEnums::VerifiedStatus verifiedStatus READ getVerifiedStatus FINAL)
+    Q_PROPERTY(QEnums::VerifiedStatus trustedVerifierStatus READ getTrustedVerifierStatus FINAL)
+    QML_VALUE_TYPE(verificationstate)
+
+public:
+    VerificationState() = default;
+    explicit VerificationState(const ATProto::AppBskyActor::VerificationState& verificationState);
+
+    Q_INVOKABLE bool isNull() const { return !mSet; }
+    const VerificationView::List& getVerifications() const { return mVerifications; }
+    QEnums::VerifiedStatus getVerifiedStatus() const { return mVerifiedStatus; }
+    QEnums::VerifiedStatus getTrustedVerifierStatus() const { return mTrustedVerifierStatus; }
+
+private:
+    bool mSet = false;
+    VerificationView::List mVerifications;
+    QEnums::VerifiedStatus mVerifiedStatus = QEnums::VERIFIED_STATUS_NONE;
+    QEnums::VerifiedStatus mTrustedVerifierStatus = QEnums::VERIFIED_STATUS_NONE;
+};
+
 class KnownFollowers
 {
     Q_GADGET
@@ -131,6 +180,7 @@ class BasicProfile
     Q_PROPERTY(ProfileAssociated associated READ getAssociated FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
+    Q_PROPERTY(VerificationState verificationState READ getVerificationState FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -158,6 +208,8 @@ public:
     ProfileViewerState& getViewer();
     const ProfileViewerState& getViewer() const;
     const ContentLabelList& getContentLabels() const;
+    VerificationState& getVerificationState();
+    const VerificationState& getVerificationState() const;
 
     Q_INVOKABLE bool hasInvalidHandle() const;
 
@@ -194,6 +246,7 @@ private:
         std::optional<ProfileAssociated> mAssociated;
         std::optional<ProfileViewerState> mViewer;
         std::optional<ContentLabelList> mContentLabels;
+        std::optional<VerificationState> mVerificationState;
     };
     std::shared_ptr<PrivateData> mPrivate;
 };

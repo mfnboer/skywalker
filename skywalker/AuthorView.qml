@@ -20,6 +20,8 @@ SkyPage {
     property string authorDescription
     property string authorAvatar
     property string authorBanner
+    property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
+    property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property bool authorMuted: author.viewer.muted
@@ -361,18 +363,54 @@ SkyPage {
                 }
             }
 
-            SkyCleanedText {
-                id: nameText
+            Rectangle {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                elide: Text.ElideRight
-                wrapMode: Text.Wrap
-                maximumLineCount: 3
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(12/8)
-                color: guiSettings.textColor
-                plainText: authorName
+                height: nameText.height
 
-                Accessible.ignored: true
+                color: "transparent"
+                SkyCleanedText {
+                    id: nameText
+                    width: parent.width - (authorVerified ? verificationStatusLoader.item.width + 10 : 0) - (isTrustedVerifier ? verifierStatusLoader.item.width + 10 : 0)
+                    elide: Text.ElideRight
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 3
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(12/8)
+                    color: guiSettings.textColor
+                    plainText: authorName
+
+                    Accessible.ignored: true
+                }
+
+                Loader {
+                    id: verificationStatusLoader
+                    active: authorVerified
+
+                    sourceComponent: Image {
+                        id: verifiedStatus
+                        x: nameText.contentWidth + 10
+                        y: 5
+                        width: 20
+                        height: width
+                        fillMode: Image.PreserveAspectFit
+                        source: "/images/verified_check.svg"
+                    }
+                }
+
+                Loader {
+                    id: verifierStatusLoader
+                    active: isTrustedVerifier
+
+                    sourceComponent: Image {
+                        id: verifierStatus
+                        x: nameText.contentWidth + 10 + (authorVerified ? verificationStatusLoader.item.width + 10 : 0)
+                        y: 5
+                        width: 20
+                        height: width
+                        fillMode: Image.PreserveAspectFit
+                        source: "/images/verifier_check.svg"
+                    }
+                }
             }
 
             RowLayout {

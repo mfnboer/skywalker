@@ -357,6 +357,15 @@ public:
         FAVORITES_BAR_POSITION_LAST = FAVORITES_BAR_POSITION_NONE
     };
     Q_ENUM(FavoritesBarPosition)
+
+    enum VerifiedStatus
+    {
+        VERIFIED_STATUS_VALID = (int)ATProto::AppBskyActor::VerifiedStatus::VALID,
+        VERIFIED_STATUS_INVALID = (int)ATProto::AppBskyActor::VerifiedStatus::INVALID,
+        VERIFIED_STATUS_NONE = (int)ATProto::AppBskyActor::VerifiedStatus::NONE,
+        VERIFIED_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::VerifiedStatus::UNKNOWN
+    };
+    Q_ENUM(VerifiedStatus)
 };
 
 }

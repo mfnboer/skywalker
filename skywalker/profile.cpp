@@ -8,6 +8,40 @@ namespace Skywalker {
 
 static const QString NULL_STRING;
 
+VerificationView::VerificationView(const ATProto::AppBskyActor::VerificationView::SharedPtr& view) :
+    mView(view)
+{
+}
+
+const QString& VerificationView::getIssuer() const
+{
+    return mView ? mView->mIssuer : NULL_STRING;
+}
+
+const QString& VerificationView::getUri() const
+{
+    return mView ? mView->mUri : NULL_STRING;
+}
+
+bool VerificationView::isValid() const
+{
+    return mView ? mView->mIsValid : false;
+}
+
+QDateTime VerificationView::getCreatedAt() const
+{
+    return mView ? mView->mCreatedAt : QDateTime{};
+}
+
+VerificationState::VerificationState(const ATProto::AppBskyActor::VerificationState& verificationState) :
+    mSet(true),
+    mVerifiedStatus(QEnums::VerifiedStatus((int)verificationState.mVerifiedStatus)),
+    mTrustedVerifierStatus(QEnums::VerifiedStatus((int)verificationState.mTrustedVerifierStatus))
+{
+    for (const auto& verificationView : verificationState.mVerifications)
+        mVerifications.push_back(VerificationView(verificationView));
+}
+
 KnownFollowers::KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers)
 {
     if (!knownFollowers)
@@ -364,7 +398,7 @@ ProfileViewerState& BasicProfile::getViewer()
     }
     else
     {
-        const_cast<BasicProfile*>(this)->mPrivate = std::make_shared<PrivateData>();
+        mPrivate = std::make_shared<PrivateData>();
     }
 
     if (mProfileView)
@@ -406,6 +440,41 @@ const ContentLabelList& BasicProfile::getContentLabels() const
         mPrivate->mContentLabels = ContentLabelList{};
 
     return *mPrivate->mContentLabels;
+}
+
+VerificationState& BasicProfile::getVerificationState()
+{
+    if (mPrivate)
+    {
+        if (mPrivate->mVerificationState)
+            return *mPrivate->mVerificationState;
+
+        if (mPrivate->mProfileBasicView)
+            mPrivate->mVerificationState = mPrivate->mProfileBasicView->mVerification ? VerificationState(*mPrivate->mProfileBasicView->mVerification) : VerificationState{};
+        else
+            mPrivate->mVerificationState = VerificationState{};
+
+        return *mPrivate->mVerificationState;
+    }
+    else
+    {
+        mPrivate = std::make_shared<PrivateData>();
+    }
+
+    if (mProfileView)
+        mPrivate->mVerificationState = mProfileView->mVerification ? VerificationState(*mProfileView->mVerification) : VerificationState{};
+    else if (mProfileDetailedView)
+        mPrivate->mVerificationState = mProfileDetailedView->mVerification ? VerificationState(*mProfileDetailedView->mVerification) : VerificationState{};
+    else
+        mPrivate->mVerificationState = VerificationState{};
+
+    return *mPrivate->mVerificationState;
+}
+
+const VerificationState& BasicProfile::getVerificationState() const
+{
+    VerificationState& state = const_cast<BasicProfile*>(this)->getVerificationState();
+    return state;
 }
 
 void BasicProfile::setDisplayName(const QString& displayName)
