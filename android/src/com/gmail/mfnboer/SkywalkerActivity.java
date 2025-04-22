@@ -140,6 +140,7 @@ public class SkywalkerActivity extends QtActivity {
         Uri data = getIntent().getData();
         if (data == null) {
             Log.d(LOGTAG, "Empty data received");
+            return;
         }
         // Android helpfully strips off the beginning of the link. Since the QML link code
         // expects the prefix, we just stick it back on here before sending it along.
