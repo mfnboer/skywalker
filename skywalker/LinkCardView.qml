@@ -38,12 +38,12 @@ RoundedFrame {
             height: filter.height
             color: "transparent"
         }
-        ImageAutoRetry {
-            id: thumbImg
+        ThumbImageUnknownSizeView {
             x: 1
-            width: parent.width - 2
-            source: filter.imageVisible() ? card.thumbUrl : ""
-            fillMode: Image.PreserveAspectFit
+            maxWidth: parent.width - 2
+            maxHeight: guiSettings.maxImageHeight
+            image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
+            noCrop: true
             indicateLoading: false
         }
         Text {
@@ -79,5 +79,9 @@ RoundedFrame {
             maximumLineCount: 5
             elide: Text.ElideRight
         }
+    }
+
+    ImageUtils {
+        id: imageUtils
     }
 }

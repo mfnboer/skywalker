@@ -213,4 +213,9 @@ void ImageUtils::handleExtractTextFailed(const QString& source, const QString& e
     emit extractTextFailed(source, error);
 }
 
+ImageView ImageUtils::createImageView(const QString& url, const QString& alt)
+{
+    return ImageView(url, alt);
+}
+
 }
