@@ -52,9 +52,8 @@
                 <data android:host="*.bsky.app"/>
                 <data android:host="bsky.app"/>
                 <data android:pathPrefix="/profile/"/>
-                <data android:pathPrefix="/messages/"/>
+                <data android:pathPrefix="/starter-pack/"/>
                 <data android:pathPrefix="/notifications/"/>
-                <data android:pathPrefix="/lists/"/>
             </intent-filter>
         </activity>
         <activity
