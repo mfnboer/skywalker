@@ -7,7 +7,7 @@ import skywalker
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
     readonly property bool isPortrait: width < height
-    readonly property bool showSideBar: !isPortrait && sideBar.width >= guiSettings.sideBarMinWidth
+    readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
 
     id: root
     width: 480

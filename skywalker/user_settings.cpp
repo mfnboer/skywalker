@@ -666,6 +666,20 @@ double UserSettings::getPostButtonRelativeX() const
     return mSettings.value("postButtonRelativeX", 1.0).toDouble();
 }
 
+void UserSettings::setLandscapeSideBar(bool enabled)
+{
+    if (enabled == getLandscapeSideBar())
+        return;
+
+    mSettings.setValue("landscapeSideBar", enabled);
+    emit landscapeSideBarChanged();
+}
+
+bool UserSettings::getLandscapeSideBar() const
+{
+    return mSettings.value("landscapeSideBar", true).toBool();
+}
+
 void UserSettings::setGifAutoPlay(bool autoPlay)
 {
     mSettings.setValue("gifAutoPlay", autoPlay);

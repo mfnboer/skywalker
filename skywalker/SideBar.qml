@@ -47,7 +47,7 @@ Pane {
                 id: timelineHeader
                 width: undefined
                 height: undefined
-                Layout.preferredHeight: 2 * guiSettings.sideBarHeaderHeight
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 skywalker: sideBar.skywalker
@@ -102,10 +102,11 @@ Pane {
             FeedAvatar {
                 property var postFeedView: rootItem instanceof PostFeedView ? rootItem : null
 
-                Layout.topMargin: 20
+                Layout.topMargin: 10
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: Layout.preferredWidth
-                Layout.alignment: Qt.AlignHCenter
+                Layout.leftMargin: 50
+                //Layout.alignment: Qt.AlignHCenter
                 avatarUrl: postFeedView ? postFeedView.headerItem.feedAvatar : ""
                 contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
                 badgeOutlineColor: guiSettings.headerColor
@@ -126,7 +127,7 @@ Pane {
                 id: searchFeedHeader
                 width: undefined
                 height: undefined
-                Layout.preferredHeight: 2 * guiSettings.sideBarHeaderHeight
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 skywalker: sideBar.skywalker
@@ -162,7 +163,7 @@ Pane {
             SimpleHeader {
                 width: undefined
                 height: undefined
-                Layout.preferredHeight: guiSettings.sideBarHeaderHeight * (isBasePage ? 2 : 1)
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 text: visible ? rootItem.sideBarTitle : ""
@@ -181,7 +182,7 @@ Pane {
             SimpleDescriptionHeader {
                 width: undefined
                 height: undefined
-                Layout.preferredHeight: guiSettings.sideBarHeaderHeight * (isBasePage ? 2 : 1)
+                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 title: visible ? rootItem.sideBarTitle : ""

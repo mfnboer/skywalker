@@ -280,6 +280,12 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Sidebar in landscape mode")
+        checked: userSettings.landscapeSideBar
+        onCheckedChanged: userSettings.landscapeSideBar = checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Floating navigation buttons")
         checked: userSettings.floatingNavigationButtons
         onCheckedChanged: userSettings.floatingNavigationButtons = checked
