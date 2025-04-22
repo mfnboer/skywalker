@@ -38,13 +38,18 @@ RoundedFrame {
             height: filter.height
             color: "transparent"
         }
-        ThumbImageUnknownSizeView {
-            x: 1
-            maxWidth: parent.width - 2
-            maxHeight: guiSettings.maxImageHeight
-            image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
-            noCrop: true
-            indicateLoading: false
+        Loader {
+            active: filter.imageVisible() && Boolean(card.thumbUrl)
+            width: parent.width
+
+            sourceComponent: ThumbImageUnknownSizeView {
+                x: 1
+                maxWidth: parent.width - 2
+                maxHeight: guiSettings.maxImageHeight
+                image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
+                noCrop: true
+                indicateLoading: false
+            }
         }
         Text {
             id: linkText
