@@ -6,7 +6,7 @@ Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property list<imageview> images
-    readonly property int maxHeight: 1200
+    readonly property int maxHeight: guiSettings.maxImageHeight
     property bool settingSize: false
     property bool swipeMode: false
     property string maskColor: guiSettings.backgroundColor
@@ -25,6 +25,11 @@ Item {
         x: (parent.width - width) / 2
         width: filter.imageVisible() ? (img.item ? img.item.width : 0) : parent.width
         height: filter.imageVisible() ? (img.item ? img.item.height : 0) : filter.height
+
+        // Due to scaling the painted size can be smaller than the image size
+        maskWidth: filter.imageVisible() ? (img.item ? img.item.paintedWidth : 0) : parent.width
+        maskHeight: filter.imageVisible() ? (img.item ? img.item.paintedHeight : 0) : filter.height
+
         maskColor: preview.maskColor
 
         Loader {
@@ -73,6 +78,7 @@ Item {
             maxWidth: frame.parent.width
             maxHeight: preview.maxHeight
             image: images[0]
+            noCrop: true
         }
     }
 
@@ -83,6 +89,7 @@ Item {
             maxWidth: frame.parent.width
             maxHeight: preview.maxHeight
             image: images[0]
+            noCrop: true
         }
     }
 }

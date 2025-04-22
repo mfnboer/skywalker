@@ -2390,7 +2390,7 @@ void Skywalker::removeSearchPostFeedModel(int id)
 
 int Skywalker::createFeedListModel()
 {
-    auto model = std::make_unique<FeedListModel>(mFavoriteFeeds, this);
+    auto model = std::make_unique<FeedListModel>(mFavoriteFeeds, this, this);
     const int id = mFeedListModels.put(std::move(model));
     return id;
 }

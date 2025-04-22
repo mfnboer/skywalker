@@ -8,18 +8,21 @@ RoundCornerMask {
     property list<imageview> images
     property bool swipeMode: false
     readonly property list<var> imgList: [img1, img2]
+    readonly property int maxWidth: (guiSettings.maxImageHeight) * 2
 
     signal activateSwipe
 
     id: frame
     width: parent.width
-    height: filter.imageVisible() ? width / 2 : filter.height
+    height: filter.imageVisible() ? Math.min(width, maxWidth) / 2 : filter.height
+    maskWidth: imgRow.width
     cornerRadius: swipeMode ? 0 : 10
 
     Row {
         id: imgRow
+        x: (parent.width - width) / 2
         z: parent.z - 1
-        anchors.fill: parent
+        width: Math.min(parent.width, maxWidth)
         spacing: 4
 
         // The rectangle is here to keep an empty space when the image is made invisble

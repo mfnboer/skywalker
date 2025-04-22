@@ -3,6 +3,9 @@ import skywalker
 
 SkyPage {
     property var skywalker: root.getSkywalker()
+    readonly property string sideBarTitle: qsTr("Add user view")
+    readonly property SvgImage sideBarSvg: SvgOutline.user
+
 
     signal closed
     signal selected(basicprofile profile)
@@ -11,8 +14,9 @@ SkyPage {
     clip: true
 
     header: SimpleHeader {
-        text: qsTr("Add user view")
+        text: sideBarTitle
         backIsCancel: true
+        visible: !root.showSideBar
         onBack: closed()
     }
 

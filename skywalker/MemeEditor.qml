@@ -8,6 +8,7 @@ SkyPage {
     required property string memeTopText
     required property string memeBottomText
     readonly property int margin: 10
+    readonly property string sideBarTitle: qsTr("Meme maker")
 
     signal cancel
     signal meme(string topText, string bottomText)
@@ -18,8 +19,9 @@ SkyPage {
     bottomPadding: 10
 
     header: SimpleHeader {
-        text: qsTr("Meme maker")
+        text: sideBarTitle
         backIsCancel: true
+        headerVisible: !root.showSideBar
         onBack: page.cancel()
 
         SvgButton {

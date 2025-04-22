@@ -4,7 +4,7 @@ import skywalker
 
 Shape {
     required property SvgImage svg
-    property string color
+    property string color: guiSettings.textColor
     property string outlineColor: color
 
     id: shape

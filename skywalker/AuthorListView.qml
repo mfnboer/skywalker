@@ -12,6 +12,9 @@ SkyListView {
     property bool allowDeleteItem: false
     property string listUri // set when the author list is a list of members from listUri
     property int prevModelId: -1
+    readonly property string sideBarTitle: authorListView.title
+    readonly property string sideBarDescription: authorListView.description
+    readonly property SvgImage sideBarSvg: SvgOutline.group
 
     signal closed
 
@@ -21,15 +24,10 @@ SkyListView {
     Accessible.role: Accessible.List
 
     header: SimpleDescriptionHeader {
-        title: authorListView.title
-        description: authorListView.description
-        visible: authorListView.title
+        title: sideBarTitle
+        description: sideBarDescription
+        visible: authorListView.title && !root.showSideBar
         onClosed: authorListView.closed()
-
-        Component.onCompleted: {
-            if (!visible)
-                height = 0
-        }
     }
     headerPositioning: ListView.OverlayHeader
 

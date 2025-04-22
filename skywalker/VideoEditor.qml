@@ -13,6 +13,8 @@ SkyPage {
     readonly property int maxDurationMs: 3 * 60000
     readonly property int margin: 10
     property var userSettings: root.getSkywalker().getUserSettings()
+    readonly property string sideBarTitle: qsTr("Video editor")
+    readonly property SvgImage sideBarSvg: SvgOutline.film
 
     id: page
     width: parent.width
@@ -23,8 +25,9 @@ SkyPage {
     signal videoEdited(int height, int startMs, int endMs, bool removeAudio)
 
     header: SimpleHeader {
-        text: qsTr("Video editor")
+        text: sideBarTitle
         backIsCancel: true
+        headerVisible: !root.showSideBar
         onBack: page.cancel()
 
         SvgPlainButton {

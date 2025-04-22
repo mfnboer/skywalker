@@ -26,6 +26,7 @@ SkyPage {
     property bool firstSearch: true
     readonly property int margin: 10
     property date nullDate
+    readonly property string sideBarTitle: qsTr("Search")
 
     signal closed
 
@@ -41,6 +42,7 @@ SkyPage {
     header: SearchHeader {
         minSearchTextLength: 0
         placeHolderText: isPostSearch ? qsTr("Search posts") : qsTr("Search users")
+        showBackButton: !root.showSideBar
         onBack: page.closed()
 
         onSearchTextChanged: (text) => {
@@ -82,6 +84,7 @@ SkyPage {
         onNotificationsClicked: root.viewNotifications()
         onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
+        footerVisible: !root.showSideBar
     }
 
     SimpleAuthorListView {
@@ -576,7 +579,7 @@ SkyPage {
                     required property basicprofile modelData
 
                     width: 80
-                    height: parent.height
+                    height: parent ? parent.height : 0
                     spacing: 10
 
                     Avatar {

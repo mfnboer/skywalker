@@ -3,6 +3,8 @@ import skywalker
 
 SkyPage {
     property var skywalker: root.getSkywalker()
+    readonly property string sideBarTitle: qsTr("Add hashtag view")
+    readonly property SvgImage sideBarSvg: SvgOutline.hashtag
 
     signal closed
     signal selected(string hashtag)
@@ -11,8 +13,9 @@ SkyPage {
     clip: true
 
     header: SimpleHeader {
-        text: qsTr("Add hashtag view")
+        text: sideBarTitle
         backIsCancel: true
+        visible: !root.showSideBar
         onBack: closed()
 
         SvgPlainButton {

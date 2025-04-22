@@ -3,6 +3,8 @@ import QtQuick.Controls
 import skywalker
 
 SkyPage {
+    readonly property bool noSideBar: true
+
     signal closed()
 
     width: parent.width

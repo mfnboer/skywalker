@@ -9,18 +9,22 @@ RoundCornerMask {
     property int spacing: 4
     property bool swipeMode: false
     readonly property list<var> imgList: [img1, img2, img3]
+    readonly property int maxWidth: (guiSettings.maxImageHeight) * 1.5
 
     signal activateSwipe
 
     id: frame
     width: parent.width
-    height: filter.imageVisible() ? parent.width / 1.5 : filter.height
+    height: filter.imageVisible() ? Math.min(width, maxWidth) / 1.5 : filter.height
+    maskWidth: imgGrid.width
     cornerRadius: swipeMode ? 0 : 10
 
     Item {
         id: imgGrid
+        x: (parent.width - width) / 2
         z: parent.z - 1
-        anchors.fill: parent
+        width: Math.min(parent.width, maxWidth)
+        height: width / 1.5
 
         Rectangle {
             anchors.left: parent.left

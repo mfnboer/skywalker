@@ -4,6 +4,8 @@ import skywalker
 SkyPage {
     property var skywalker: root.getSkywalker()
     property bool isTyping: false
+    readonly property string sideBarTitle: qsTr("Start conversation")
+    readonly property SvgImage sideBarSvg: SvgOutline.directMessage
 
     signal closed
     signal selected(string did)
@@ -12,8 +14,9 @@ SkyPage {
     clip: true
 
     header: SimpleHeader {
-        text: qsTr("Start conversation")
+        text: sideBarTitle
         backIsCancel: true
+        visible: !root.showSideBar
         onBack: closed()
 
         Avatar {

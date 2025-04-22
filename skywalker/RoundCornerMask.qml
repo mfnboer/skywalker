@@ -4,14 +4,16 @@ import QtQuick.Shapes
 Rectangle {
     property int cornerRadius: 10
     property string maskColor: guiSettings.backgroundColor
+    property int maskWidth: width
+    property int maskHeight: height
 
     id: maskRect
     color: "transparent"
 
     Shape {
         id: topLeftMask
-        x: 0
-        y: 0
+        x: (maskRect.width - maskRect.maskWidth) / 2 - 0.5
+        y: (maskRect.height - maskRect.maskHeight) / 2 - 0.5
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
         visible: cornerRadius > 0
@@ -32,8 +34,8 @@ Rectangle {
 
     Shape {
         id: topRightMask
-        x: maskRect.width - width
-        y: 0
+        x: maskRect.maskWidth + topLeftMask.x - width + 1
+        y: topLeftMask.y
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
         visible: cornerRadius > 0
@@ -54,8 +56,8 @@ Rectangle {
 
     Shape {
         id: bottomLeftMask
-        x: 0
-        y: maskRect.height - height
+        x: topLeftMask.x
+        y: maskRect.maskHeight + topLeftMask.y - height + 1
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
         visible: cornerRadius > 0
@@ -76,8 +78,8 @@ Rectangle {
 
     Shape {
         id: bottomRightMask
-        x: maskRect.width - width
-        y: maskRect.height - height
+        x: topRightMask.x
+        y: bottomLeftMask.y
         width: maskRect.cornerRadius
         height: maskRect.cornerRadius
         visible: cornerRadius > 0

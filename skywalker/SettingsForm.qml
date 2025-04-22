@@ -9,6 +9,8 @@ SkyPage {
     property var userPrefs: skywalker.getEditUserPreferences()
     property bool allVisible: true
     property bool onlyChatVisible: false
+    readonly property string sideBarTitle: qsTr("Settings")
+    readonly property SvgImage sideBarSvg: SvgOutline.settings
 
     id: page
     padding: 10
@@ -17,32 +19,10 @@ SkyPage {
 
     Accessible.role: Accessible.Pane
 
-    header: Rectangle {
-        width: parent.width
-        height: guiSettings.headerHeight
-        z: guiSettings.headerZLevel
-        color: guiSettings.headerColor
-
-        RowLayout
-        {
-            id: headerRow
-
-            SvgPlainButton {
-                id: backButton
-                iconColor: guiSettings.headerTextColor
-                svg: SvgOutline.arrowBack
-                accessibleName: qsTr("go back")
-                onClicked: page.closed()
-            }
-            AccessibleText {
-                id: headerTexts
-                Layout.alignment: Qt.AlignVCenter
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(10/8)
-                color: guiSettings.headerTextColor
-                text: qsTr("Settings")
-            }
-        }
+    header: SimpleHeader {
+        text: sideBarTitle
+        visible: !root.showSideBar
+        onBack: closed()
     }
 
     Flickable {

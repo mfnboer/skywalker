@@ -6,6 +6,7 @@ import skywalker
 SkyPage {
     required property string imageUrl
     property string imageTitle
+    readonly property bool noSideBar: true
 
     signal closed
 

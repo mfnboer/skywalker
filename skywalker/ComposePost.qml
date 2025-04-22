@@ -76,6 +76,8 @@ SkyPage {
     property list<string> postedUris: []
 
     property bool isAnniversary: skywalker.getAnniversary().isAnniversary()
+    readonly property string sideBarTitle: qsTr("Compose post")
+    readonly property SvgImage sideBarSvg: SvgOutline.chat
 
     // Cache
     property list<string> tmpImages: []

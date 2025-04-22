@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
+    readonly property bool noSideBar: true
+
     signal signIn()
 
     width: parent.width

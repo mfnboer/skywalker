@@ -9,6 +9,7 @@ SkyPage {
     property var skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
     readonly property int margin: 10
+    readonly property string sideBarTitle: qsTr("ALT text")
 
     signal altTextChanged(string text)
 
@@ -18,7 +19,7 @@ SkyPage {
     bottomPadding: 10
 
     header: SimpleButtonHeader {
-        title: qsTr("ALT text")
+        title: !root.showSideBar ? sideBarTitle : ""
         buttonSvg: SvgOutline.check
         enabled: !altText.maxGraphemeLengthExceeded()
         onButtonClicked: altTextChanged(page.text)

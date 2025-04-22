@@ -6,6 +6,8 @@ import skywalker
 
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
+    readonly property bool isPortrait: width < height
+    readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
 
     id: root
     width: 480
@@ -55,15 +57,15 @@ ApplicationWindow {
             else
                 popStack()
         }
-        else if (stackLayout.currentIndex === stackLayout.searchIndex ||
-                 stackLayout.currentIndex === stackLayout.feedsIndex) {
+        else if (rootContent.currentIndex === rootContent.searchIndex ||
+                 rootContent.currentIndex === rootContent.feedsIndex) {
             // Hack to hide the selection anchor on Android that should not have been
             // there at all.
             currentStackItem().hide()
             event.accepted = false
             viewTimeline()
         }
-        else if (stackLayout.currentIndex !== stackLayout.timelineIndex) {
+        else if (rootContent.currentIndex !== rootContent.timelineIndex) {
             event.accepted = false
             viewTimeline()
         }
@@ -90,7 +92,9 @@ ApplicationWindow {
 
     StatusPopup {
         id: statusPopup
+        x: rootContent.x
         y: guiSettings.headerHeight
+        width: rootContent.width
     }
 
     FavoritesTabBar {
@@ -99,11 +103,13 @@ ApplicationWindow {
         property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
+        x: sideBar.visible ? sideBar.width : 0
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
         z: guiSettings.headerZLevel - 1
-        width: parent.width
+        width: parent.width - x
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
+        clip: true
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
 
         onCurrentIndexChanged: {
@@ -124,7 +130,6 @@ ApplicationWindow {
         }
 
         function update() {
-            let userSettings = skywalker.getUserSettings()
             let view = currentStackItem()
             favoritesSwipeViewVisible = (view instanceof FavoritesSwipeView)
         }
@@ -142,6 +147,7 @@ ApplicationWindow {
         onSearchClicked: viewSearchView()
         onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
+        footerVisible: !showSideBar
         visible: favoritesTabBar.favoritesSwipeViewVisible
 
         function getExtraFooterMargin() {
@@ -149,6 +155,16 @@ ApplicationWindow {
                 return favoritesTabBar.visible ? y - favoritesTabBar.y : 0
             else
                 return favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0
+        }
+    }
+
+    onShowSideBarChanged: {
+        if (!showSideBar) {
+            // HACK to make the footer appear again.
+            // Without the hack the footer height gets reset correctly, but the
+            // footer stays invisible??
+            favoritesTabBar.favoritesSwipeViewVisible = false
+            Qt.callLater(() => { favoritesTabBar.update() })
         }
     }
 
@@ -165,7 +181,7 @@ ApplicationWindow {
 
     function showEmojiNamesList(txt) {
         let component = guiSettings.createComponent("EmojiNamesList.qml")
-        let page = component.createObject(root, { txt: txt })
+        let page = component.createObject(rootContent, { txt: txt })
         page.onAccepted.connect(() => { page.destroy() })
         page.onRejected.connect(() => { page.destroy() })
         page.open()
@@ -377,7 +393,7 @@ ApplicationWindow {
             }
 
             guiSettings.askConvertGif(
-                root,
+                rootContent,
                 "file://" + gifTempFileName,
                 () => gifToVideoConverter.start(gifTempFileName, text),
                 () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
@@ -429,7 +445,7 @@ ApplicationWindow {
 
         onAnniversary: {
             const years = skywalker.getAnniversary().getAnniversaryYears()
-            guiSettings.notice(root,
+            guiSettings.notice(rootContent,
                 qsTr(`Today is your ${years} year Bluesky anniversary. On this day you can send an anniversary card. You can find it on the post page, when you click the button to send a post.`),
                 "🥳")
         }
@@ -501,7 +517,7 @@ ApplicationWindow {
         function start(fileName, text) {
             postText = text
             gifFileName = fileName
-            progressDialog = guiSettings.showProgress(root, qsTr("Converting GIF to Video"), () => doCancel())
+            progressDialog = guiSettings.showProgress(rootContent, qsTr("Converting GIF to Video"), () => doCancel())
             gifToVideoConverter.convert(fileName)
         }
 
@@ -509,6 +525,50 @@ ApplicationWindow {
             gifToVideoConverter.cancel()
             postUtils.dropVideo("file://" + gifFileName)
         }
+    }
+
+    SideBar {
+        property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+
+        id: sideBar
+        width: Math.min(parent.width * 0.25, guiSettings.sideBarMaxWidth)
+        height: parent.height
+        timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+        skywalker: root.getSkywalker()
+        homeActive: rootContent.currentIndex === rootContent.timelineIndex
+        notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
+        searchActive: rootContent.currentIndex === rootContent.searchIndex
+        feedsActive: rootContent.currentIndex === rootContent.feedsIndex
+        messagesActive: rootContent.currentIndex === rootContent.chatIndex
+        onHomeClicked: {
+            if (homeActive)
+                favoritesSwipeView.currentView.moveToHome()
+            else
+                root.viewTimeline()
+        }
+        onNotificationsClicked: {
+            if (!notificationsActive)
+                viewNotifications()
+            else if (currentStackItem() instanceof NotificationListView)
+                currentStackItem().positionViewAtBeginning()
+        }
+        onSearchClicked: {
+            if (!searchActive)
+                viewSearchView()
+        }
+        onFeedsClicked: {
+            if (!feedsActive)
+                viewFeedsView()
+            else if (currentStackItem() instanceof SearchFeeds)
+                currentStackItem().positionViewAtBeginning()
+        }
+        onMessagesClicked: {
+            if (!messagesActive)
+                viewChat()
+            else if (currentStackItem() instanceof ConvoListView)
+                currentStackItem().positionViewAtBeginning()
+        }
+        visible: showSideBar && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
     }
 
     StackLayout {
@@ -519,12 +579,15 @@ ApplicationWindow {
         readonly property int chatIndex: 4
         property int prevIndex: timelineIndex
 
-        id: stackLayout
-        anchors.fill: parent
+        id: rootContent
+        x: sideBar.visible ? sideBar.width : 0
+        width: parent.width - x
+        height: parent.height
         currentIndex: timelineIndex
+        clip: true
 
         onCurrentIndexChanged: {
-            let prevStack = stackLayout.children[prevIndex]
+            let prevStack = rootContent.children[prevIndex]
 
             if (prevStack.depth > 0) {
                 let prevItem = prevStack.get(prevStack.depth - 1)
@@ -580,7 +643,7 @@ ApplicationWindow {
     SettingsDrawer {
         id: settingsDrawer
         height: parent.height
-        edge: Qt.RightEdge
+        edge: !showSideBar ? Qt.RightEdge : Qt.LeftEdge
         dragMargin: 0
         modal: true
 
@@ -960,7 +1023,7 @@ ApplicationWindow {
             }
 
             const linkText = `<font color="${guiSettings.linkColor}">${link}</font>`
-            guiSettings.noticeOkCancel(root,
+            guiSettings.noticeOkCancel(rootContent,
                 qsTr("This link will open the following website:") + "<br><br>" + linkText,
                 () => Qt.openUrlExternally(link))
         }
@@ -1392,7 +1455,7 @@ ApplicationWindow {
         const index = hidden.indexOf(uri)
 
         if (index < 0) {
-            guiSettings.askYesNoQuestion(root,
+            guiSettings.askYesNoQuestion(rootContent,
                 qsTr("Do you want to move this reply to the hidden section at the bottom of your thread (in next post thread views), and mute notifications both for yourself and others?"),
                 () => {
                     hidden.push(uri)
@@ -1599,11 +1662,11 @@ ApplicationWindow {
     }
 
     function viewTimeline() {
-        stackLayout.currentIndex = stackLayout.timelineIndex
+        rootContent.currentIndex = rootContent.timelineIndex
     }
 
     function viewNotifications() {
-        stackLayout.currentIndex = stackLayout.notificationIndex
+        rootContent.currentIndex = rootContent.notificationIndex
 
         let loadCount = 25
         if (skywalker.unreadNotificationCount > 0) {
@@ -1620,7 +1683,7 @@ ApplicationWindow {
     }
 
     function viewChat() {
-        stackLayout.currentIndex = stackLayout.chatIndex
+        rootContent.currentIndex = rootContent.chatIndex
 
         if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_REQUEST))
             skywalker.chat.getConvos(QEnums.CONVO_STATUS_REQUEST)
@@ -1638,7 +1701,7 @@ ApplicationWindow {
         let searchComponent = guiSettings.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView(), })
-        searchView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        searchView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
         searchStack.push(searchView)
     }
 
@@ -1651,7 +1714,7 @@ ApplicationWindow {
     }
 
     function viewSearchView(searchText = "", searchScope = "") {
-        stackLayout.currentIndex = stackLayout.searchIndex
+        rootContent.currentIndex = rootContent.searchIndex
 
         if (searchStack.depth === 0)
             createSearchView()
@@ -1661,7 +1724,7 @@ ApplicationWindow {
     }
 
     function viewSearchViewFeed(searchFeed) {
-        stackLayout.currentIndex = stackLayout.searchIndex
+        rootContent.currentIndex = rootContent.searchIndex
 
         if (searchStack.depth === 0)
             createSearchView()
@@ -1674,7 +1737,7 @@ ApplicationWindow {
         let feedsComponent = guiSettings.createComponent("SearchFeeds.qml")
         let feedsView = feedsComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView() })
-        feedsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        feedsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
         feedsStack.push(feedsView)
     }
 
@@ -1687,7 +1750,7 @@ ApplicationWindow {
     }
 
     function viewFeedsView() {
-        stackLayout.currentIndex = stackLayout.feedsIndex
+        rootContent.currentIndex = rootContent.feedsIndex
 
         if (feedsStack.depth === 0)
             createFeedsView()
@@ -1926,7 +1989,7 @@ ApplicationWindow {
     }
 
     function currentStack() {
-        return stackLayout.children[stackLayout.currentIndex]
+        return rootContent.children[rootContent.currentIndex]
     }
 
     function currentStackItem() {
@@ -1942,7 +2005,7 @@ ApplicationWindow {
     }
 
     function currentStackIsChat() {
-        return stackLayout.currentIndex === stackLayout.chatIndex
+        return rootContent.currentIndex === rootContent.chatIndex
     }
 
     function popStack(stack = null, operation = StackView.PopTransition) {
@@ -2077,12 +2140,12 @@ ApplicationWindow {
         let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
                 { skywalker: skywalker, timeline: timelinePage })
-        notificationsView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        notificationsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
         notificationStack.push(notificationsView)
 
         let chatComponent = guiSettings.createComponent("ConvoListView.qml")
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
-        chatView.onClosed.connect(() => { stackLayout.currentIndex = stackLayout.timelineIndex })
+        chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
         chatStack.push(chatView)
 
         favoritesTabBar.update()

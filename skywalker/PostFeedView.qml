@@ -15,6 +15,7 @@ SkyListView {
     property var userSettings: skywalker.getUserSettings()
     readonly property int favoritesY: getFavoritesY()
     readonly property int extraFooterMargin: 0
+    readonly property string feedName: underlyingModel ? underlyingModel.feedName : ""
 
     signal closed
 
@@ -24,11 +25,11 @@ SkyListView {
     cacheBuffer: 2000
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
-    Accessible.name: underlyingModel ? underlyingModel.feedName : ""
+    Accessible.name: feedName
 
     header: PostFeedHeader {
         skywalker: postFeedView.skywalker
-        feedName: underlyingModel ? underlyingModel.feedName : ""
+        feedName: postFeedView.feedName
         feedAvatar: postFeedView.getFeedAvatar()
         defaultSvg: postFeedView.getFeedDefaultAvatar()
         contentMode: initialContentMode
@@ -39,6 +40,7 @@ SkyListView {
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
         showViewOptions: true
         showFavoritesPlaceHolder: showFavorites && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
+        visible: !root.showSideBar
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()

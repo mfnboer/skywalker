@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 SkyListView {
@@ -8,6 +9,7 @@ SkyListView {
     property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
     property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
     property int rightMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
+    readonly property bool noSideBar: true
 
     signal closed
 

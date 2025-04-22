@@ -7,6 +7,8 @@ ListView {
     required property var skywalker
     required property int modelId
     required property detailedprofile author
+    readonly property string sideBarTitle: qsTr("Update lists")
+    readonly property string sideBarDescription: qsTr(`Add/remove ${author.name}`)
 
     signal closed
 
@@ -20,8 +22,9 @@ ListView {
     ScrollIndicator.vertical: ScrollIndicator {}
 
     header: SimpleDescriptionHeader {
-        title: qsTr("Update lists")
-        description: qsTr(`Add/remove ${author.name}`)
+        title: sideBarTitle
+        description: sideBarDescription
+        visible: !root.showSideBar
         onClosed: view.closed()
     }
     headerPositioning: ListView.OverlayHeader

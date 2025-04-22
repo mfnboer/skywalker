@@ -7,6 +7,7 @@ SkyPage {
 
     required property var skywalker
     property var timeline
+    readonly property string sideBarTitle: qsTr("Feeds")
 
     signal closed
 
@@ -17,6 +18,7 @@ SkyPage {
 
     header: SearchHeader {
         placeHolderText: qsTr("Search feeds")
+        showBackButton: !root.showSideBar
 
         onBack: page.closed()
 
@@ -42,8 +44,9 @@ SkyPage {
         onHomeClicked: root.viewTimeline()
         onSearchClicked: root.viewSearchView()
         onNotificationsClicked: root.viewNotifications()
-        onFeedsClicked: feedListView.positionViewAtBeginning()
+        onFeedsClicked: positionViewAtBeginning()
         onMessagesClicked: root.viewChat()
+        footerVisible: !root.showSideBar
     }
 
     SkyTabBar {
@@ -59,6 +62,7 @@ SkyPage {
     }
 
     SwipeView {
+        id: swipeView
         anchors.top: feedsBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -182,6 +186,10 @@ SkyPage {
         feedListView.positionViewAtBeginning()
         const text = page.header.getDisplayText(page.header.getDisplayText()) // qmllint disable missing-property
         searchUtils.searchFeeds(text)
+    }
+
+    function positionViewAtBeginning() {
+        swipeView.currentItem.positionViewAtBeginning()
     }
 
     function forceDestroy() {

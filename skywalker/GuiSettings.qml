@@ -17,6 +17,10 @@ Item {
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
+    readonly property int maxImageHeight: root.height - headerHeight
+    readonly property int sideBarHeaderHeight: 44
+    readonly property int sideBarMinWidth: 175
+    readonly property int sideBarMaxWidth: 325
     readonly property int statsHeight: appFontHeight + 4
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60
@@ -68,6 +72,7 @@ Item {
     readonly property string separatorColor: isLightMode ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
     readonly property string separatorHighLightColor: isLightMode ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
     readonly property string settingsHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.05) : Qt.lighter(backgroundColor, 1.4)
+    readonly property string sideBarColor: isLightMode ? Qt.darker(backgroundColor, 1.01) : Qt.lighter(backgroundColor, 1.2)
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)

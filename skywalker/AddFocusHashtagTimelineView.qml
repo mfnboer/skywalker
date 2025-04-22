@@ -3,6 +3,8 @@ import skywalker
 
 SkyPage {
     property var skywalker: root.getSkywalker()
+    readonly property string sideBarTitle: qsTr("Add focus hashtag view")
+    readonly property SvgImage sideBarSvg: SvgOutline.hashtag
 
     signal closed
     signal selected(var focusHashtag)
@@ -11,8 +13,9 @@ SkyPage {
     clip: true
 
     header: SimpleHeader {
-        text: qsTr("Add focus hashtag view")
+        text: sideBarTitle
         backIsCancel: true
+        visible: !root.showSideBar
         onBack: closed()
     }
 

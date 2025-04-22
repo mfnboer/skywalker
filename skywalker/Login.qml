@@ -12,6 +12,7 @@ SkyPage {
     property string errorMsg
     property string password
     property var userSettings: root.getSkywalker().getUserSettings()
+    readonly property string sideBarTitle: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
 
     signal accepted(string host, string handle, string password, string did, bool rememberPassword, string authFactorTokenField)
     signal canceled
@@ -22,7 +23,8 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
-        text: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
+        text: sideBarTitle
+        visible: !root.showSideBar
         onBack: loginPage.canceled()
     }
 
@@ -201,6 +203,10 @@ SkyPage {
 
     function authFactorTokenRequired() {
         return errorCode === ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED || errorCode === ATProtoErrorMsg.INVALID_TOKEN
+    }
+
+    function closed() {
+        canceled()
     }
 
     Component.onCompleted: {

@@ -7,6 +7,7 @@ Rectangle {
     property int minSearchTextLength: 1
     property string placeHolderText: qsTr("Search")
     property bool showSearchButton: true
+    property bool showBackButton: true
     property string prevDisplayText
 
     signal back
@@ -29,6 +30,7 @@ Rectangle {
             iconColor: guiSettings.headerTextColor
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
+            visible: showBackButton
             onClicked: headerRect.back()
         }
 

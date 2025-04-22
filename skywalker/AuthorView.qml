@@ -10,6 +10,8 @@ SkyPage {
     required property var rootProfileUtils
     required property detailedprofile author
     required property int modelId
+    readonly property string sideBarTitle: author.name
+    readonly property alias sideBarAuthor: page.author
 
     // Initialize properties in onCompleted.
     // For some weird reason description and banner are not available here.
@@ -80,6 +82,7 @@ SkyPage {
             opacity: 0.5
             svg: SvgOutline.arrowBack
             accessibleName: qsTr("go back")
+            visible: !root.showSideBar
             onClicked: page.closed()
         }
 

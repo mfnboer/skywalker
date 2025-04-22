@@ -524,6 +524,7 @@ qt_add_qml_module(libskywalker
         QML_FILES AnimateToFullImage.qml
         QML_FILES ImageAltText.qml
         QML_FILES FullImageViewLoader.qml
+        QML_FILES SideBar.qml
 )
 
 if (NOT ANDROID)
