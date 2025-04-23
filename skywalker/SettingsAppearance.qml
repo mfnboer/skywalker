@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 ColumnLayout {
+    required property var userPrefs
     property var skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
@@ -277,6 +278,12 @@ ColumnLayout {
                 }
             }
         }
+    }
+
+    AccessibleCheckBox {
+        text: qsTr("Show verification badges")
+        checked: !userPrefs.hideVerificationBadges
+        onCheckedChanged: userPrefs.hideVerificationBadges = !checked
     }
 
     AccessibleCheckBox {

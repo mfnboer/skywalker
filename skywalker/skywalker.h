@@ -62,6 +62,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(BasicProfile user READ getUser NOTIFY userChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(FavoriteFeeds* favoriteFeeds READ getFavoriteFeeds CONSTANT FINAL)
+    Q_PROPERTY(bool hideVerificationBadges READ getHideVerificationBadges NOTIFY hideVerificationBadgesChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -243,6 +244,7 @@ public:
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
     DraftPostsModel::Ptr createDraftPostsModel();
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
+    bool getHideVerificationBadges() const { return mUserPreferences.getVerificationPrefs().mHideBadges; };
 
 signals:
     void loginOk();
@@ -284,6 +286,7 @@ signals:
     void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
     void getStarterPackViewOk(StarterPackView starterPack);
     void getPostThreadInProgressChanged();
+    void hideVerificationBadgesChanged();
     void sharedTextReceived(QString text); // Shared from another app
     void sharedImageReceived(QString source, QString gifTempFileName, QString text); // Shared from another app
     void sharedVideoReceived(QUrl url, QString text); // Shared from another app

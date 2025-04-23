@@ -23,6 +23,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool hideReposts READ getHideReposts WRITE setHideReposts NOTIFY hideRepostsChanged FINAL)
     Q_PROPERTY(bool hideQuotePosts READ getHideQuotePosts WRITE setHideQuotePosts NOTIFY hideQuotePostsChanged FINAL)
     Q_PROPERTY(QEnums::AllowIncomingChat allowIncomingChat READ getAllowIncomingChat WRITE setAllowIncomingChat NOTIFY allowIncomingChatChanged FINAL)
+    Q_PROPERTY(bool hideVerificationBadges READ getHideVerificationBadges WRITE setHideVerificationBadges NOTIFY hideVerificationBadgesChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -63,6 +64,9 @@ public:
     bool getHideQuotePosts() const { return mHomeFeedPref.mHideQuotePosts; }
     void setHideQuotePosts(bool hide);
 
+    bool getHideVerificationBadges() const { return mVerificationPrefs.mHideBadges; }
+    void setHideVerificationBadges(bool hide);
+
     bool isModified() const { return mModified; }
 
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
@@ -75,6 +79,7 @@ signals:
     void hideRepostsChanged();
     void hideQuotePostsChanged();
     void allowIncomingChatChanged();
+    void hideVerificationBadgesChanged();
 
 private:
     QString mEmail;
@@ -86,6 +91,7 @@ private:
     bool mLoggedOutVisibility = true;
 
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;
+    ATProto::UserPreferences::VerificationPrefs mVerificationPrefs;
     QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 
     // Content filtering

@@ -27,7 +27,7 @@ Rectangle {
 
     Loader {
         id: verificationStatusLoader
-        active: authorVerified
+        active: authorVerified && !root.getSkywalker().hideVerificationBadges
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
@@ -41,7 +41,7 @@ Rectangle {
 
     Loader {
         id: verifierStatusLoader
-        active: isTrustedVerifier
+        active: isTrustedVerifier && !root.getSkywalker().hideVerificationBadges
 
         sourceComponent: VerifierBadge {
             id: verifierStatus

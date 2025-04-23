@@ -23,11 +23,13 @@ void EditUserPreferences::setUserPreferences(const ATProto::UserPreferences& use
 {
     mBirthDate = userPreferences.getBirthDate();
     mHomeFeedPref = userPreferences.getFeedViewPref(HOME_FEED);
+    mVerificationPrefs = userPreferences.getVerificationPrefs();
 }
 
 void EditUserPreferences::saveTo(ATProto::UserPreferences& userPreferences)
 {
     userPreferences.setFeedViewPref(mHomeFeedPref);
+    userPreferences.setVerificationPrefs(mVerificationPrefs);
 }
 
 void EditUserPreferences::setLoggedOutVisibility(bool visibility)
@@ -76,6 +78,16 @@ void EditUserPreferences::setHideQuotePosts(bool hide)
         mHomeFeedPref.mHideQuotePosts = hide;
         mModified = true;
         emit hideQuotePostsChanged();
+    }
+}
+
+void EditUserPreferences::setHideVerificationBadges(bool hide)
+{
+    if (hide != mVerificationPrefs.mHideBadges)
+    {
+        mVerificationPrefs.mHideBadges = hide;
+        mModified = true;
+        emit hideVerificationBadgesChanged();
     }
 }
 

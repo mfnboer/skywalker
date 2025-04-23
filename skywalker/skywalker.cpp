@@ -501,6 +501,7 @@ void Skywalker::getUserPreferences()
     mBsky->getPreferences(
         [this](auto prefs){
             mUserPreferences = prefs;
+            emit hideVerificationBadgesChanged();
             updateFavoriteFeeds();
             initLabelers();
             loadLabelSettings();
@@ -599,7 +600,11 @@ void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs, std::
     mBsky->putPreferences(prefs,
         [this, prefs, okCb]{
             qDebug() << "saveUserPreferences ok";
+            const bool oldHideBadges = mUserPreferences.getVerificationPrefs().mHideBadges;
             mUserPreferences = prefs;
+
+            if (mUserPreferences.getVerificationPrefs().mHideBadges != oldHideBadges)
+                emit hideVerificationBadgesChanged();
 
             if (okCb)
                 okCb();

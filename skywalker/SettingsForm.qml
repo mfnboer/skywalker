@@ -80,6 +80,7 @@ SkyPage {
             anchors.top: settingsLanguage.bottom
             width: parent.width
             height: visible ? undefined : 0
+            userPrefs: page.userPrefs
             visible: allVisible
         }
 
