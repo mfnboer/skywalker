@@ -2,6 +2,7 @@ next
 ====
 * Replace header and footer by side bar in landscape orientation
 * Better image scaling in landscape orientation
+* Show verification badges (can be disabled)
 * Improved full image zoom (double click)
 * Bug fixes
 

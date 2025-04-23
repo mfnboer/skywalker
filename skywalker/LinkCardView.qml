@@ -49,6 +49,11 @@ RoundedFrame {
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
                 noCrop: true
                 indicateLoading: false
+
+                onStatusChanged: {
+                    if (status === Image.Error)
+                        height = 0
+                }
             }
         }
         Text {
