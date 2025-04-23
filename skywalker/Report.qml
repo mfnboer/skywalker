@@ -144,15 +144,12 @@ SkyPage {
                 Column {
                     Layout.fillWidth: true
 
-                    SkyCleanedTextLine {
-                        elide: Text.ElideRight
-                        font.bold: true
-                        color: guiSettings.textColor
-                        plainText: author.name
-
-                        Accessible.ignored: true
+                    AuthorNameAndStatus {
+                        width: parent.width
+                        author: page.author
                     }
                     Text {
+                        width: parent.width
                         elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(7/8)
                         color: guiSettings.handleColor

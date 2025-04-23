@@ -525,6 +525,12 @@ qt_add_qml_module(libskywalker
         QML_FILES ImageAltText.qml
         QML_FILES FullImageViewLoader.qml
         QML_FILES SideBar.qml
+        QML_FILES VerifiedBadge.qml
+        QML_FILES VerifierBadge.qml
+        QML_FILES VerifiedDialog.qml
+        QML_FILES AuthorNameAndStatus.qml
+        QML_FILES TrustedVerifierDialog.qml
+        QML_FILES AuthorNameAndStatusMultiLine.qml
 )
 
 if (NOT ANDROID)

@@ -27,12 +27,9 @@ RowLayout {
     Column {
         Layout.fillWidth: true
 
-        SkyCleanedTextLine {
+        AuthorNameAndStatus {
             width: parent.width
-            elide: Text.ElideRight
-            font.bold: true
-            color: guiSettings.textColor
-            plainText: author.name
+            author: authorItem.author
         }
         Text {
             width: parent.width
@@ -42,5 +39,4 @@ RowLayout {
             text: `@${author.handle}`
         }
     }
-
 }

@@ -38,8 +38,24 @@ VerificationState::VerificationState(const ATProto::AppBskyActor::VerificationSt
     mVerifiedStatus(QEnums::VerifiedStatus((int)verificationState.mVerifiedStatus)),
     mTrustedVerifierStatus(QEnums::VerifiedStatus((int)verificationState.mTrustedVerifierStatus))
 {
+    mVerifications.reserve(verificationState.mVerifications.size());
+
     for (const auto& verificationView : verificationState.mVerifications)
         mVerifications.push_back(VerificationView(verificationView));
+}
+
+VerificationView::List VerificationState::getValidVerifications() const
+{
+    VerificationView::List validVerifications;
+    validVerifications.reserve(mVerifications.size());
+
+    for (const auto& verification : mVerifications)
+    {
+        if (verification.isValid())
+            validVerifications.push_back(verification);
+    }
+
+    return validVerifications;
 }
 
 KnownFollowers::KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers)

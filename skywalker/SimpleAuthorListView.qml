@@ -63,15 +63,10 @@ ListView {
                 }
             }
 
-            SkyCleanedTextLine {
-                topPadding: rowPadding
+            AuthorNameAndStatus {
+                Layout.topMargin: rowPadding
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                font.bold: true
-                color: guiSettings.textColor
-                plainText: author.name
-
-                Accessible.ignored: true
+                author: authorEntry.author
             }
 
             SvgPlainButton {

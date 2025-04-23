@@ -25,6 +25,7 @@ Item {
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
+    readonly property int verificationBadgeSize: 13
 
     // Colors
     readonly property string accentColor: userSettings ? userSettings.accentColor : (isLightMode ? "blue" : "#58a6ff")

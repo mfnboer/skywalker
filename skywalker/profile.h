@@ -54,6 +54,7 @@ public:
     const VerificationView::List& getVerifications() const { return mVerifications; }
     QEnums::VerifiedStatus getVerifiedStatus() const { return mVerifiedStatus; }
     QEnums::VerifiedStatus getTrustedVerifierStatus() const { return mTrustedVerifierStatus; }
+    Q_INVOKABLE VerificationView::List getValidVerifications() const;
 
 private:
     bool mSet = false;

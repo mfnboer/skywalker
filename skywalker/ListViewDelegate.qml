@@ -98,18 +98,16 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
+                bottomPadding: 5
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
             }
 
-            SkyCleanedTextLine {
-                topPadding: 5
+            AuthorNameAndStatus {
                 width: parent.width
-                elide: Text.ElideRight
-                color: guiSettings.textColor
-                plainText: listCreator.name
+                author: listCreator
 
                 Accessible.role: Accessible.Link
                 Accessible.name: listCreator.name

@@ -120,9 +120,4 @@ ScrollView {
         })
         infoPage.open()
     }
-
-    Component.onCompleted: {
-        for (let i = 0; i < labelsToShow.length; ++i)
-            profileUtils.getBasicProfile(labelsToShow[i].did)
-    }
 }

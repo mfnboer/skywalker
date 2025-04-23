@@ -27,14 +27,9 @@ Column {
         Column {
             Layout.fillWidth: true
 
-            SkyCleanedTextLine {
+            AuthorNameAndStatus {
                 width: parent.width
-                elide: Text.ElideRight
-                font.bold: true
-                color: guiSettings.textColor
-                plainText: labeler.creator.name
-
-                Accessible.ignored: true
+                author: labeler.creator
             }
 
             Text {

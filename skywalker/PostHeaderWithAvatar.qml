@@ -40,13 +40,9 @@ Column {
                 spacing: 10
                 width: parent.width
 
-                SkyCleanedTextLine {
+                AuthorNameAndStatus {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    plainText: author.name
-                    font.bold: true
-                    color: guiSettings.textColor
-                    Accessible.ignored: true
+                    author: postHeader.author
                 }
                 DurationLabel {
                     id: durationText

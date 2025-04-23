@@ -92,6 +92,7 @@ SkyPage {
 
             SkyCleanedText {
                 width: parent.width
+                bottomPadding: 5
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
@@ -101,12 +102,9 @@ SkyPage {
                 plainText: feed.displayName
             }
 
-            SkyCleanedTextLine {
-                topPadding: 5
+            AuthorNameAndStatus {
                 width: parent.width
-                elide: Text.ElideRight
-                color: guiSettings.textColor
-                plainText: feed.creator.name
+                author: feed.creator
 
                 Accessible.role: Accessible.Link
                 Accessible.name: feed.creator.name

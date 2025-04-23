@@ -69,18 +69,16 @@ Rectangle {
 
             SkyCleanedTextLine {
                 width: parent.width
+                bottomPadding: 5
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
                 plainText: feed.displayName
             }
 
-            SkyCleanedTextLine {
-                topPadding: 5
+            AuthorNameAndStatus {
                 width: parent.width
-                elide: Text.ElideRight
-                color: guiSettings.textColor
-                plainText: feedCreator.name
+                author: feedCreator
 
                 Accessible.role: Accessible.Link
                 Accessible.name: feedCreator.name

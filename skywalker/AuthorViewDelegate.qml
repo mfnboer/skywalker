@@ -63,14 +63,9 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 3
 
-            SkyCleanedTextLine {
+            AuthorNameAndStatus {
                 width: parent.width
-                elide: Text.ElideRight
-                font.bold: true
-                color: guiSettings.textColor
-                plainText: author.name
-
-                Accessible.ignored: true
+                author: authorRect.author
             }
             Text {
                 width: parent.width

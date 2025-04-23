@@ -58,18 +58,13 @@ Drawer {
                     Accessible.ignored: true
                 }
 
-                SkyCleanedText {
+                AuthorNameAndStatusMultiLine {
                     id: nameText
                     width: parent.width
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     maximumLineCount: 2
-                    font.bold: true
-                    color: guiSettings.textColor
                     ellipsisBackgroundColor: Material.dialogColor
-                    plainText: user.name
-
-                    Accessible.ignored: true
+                    author: user
                 }
 
                 Text {

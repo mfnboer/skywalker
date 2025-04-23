@@ -363,54 +363,12 @@ SkyPage {
                 }
             }
 
-            Rectangle {
+            AuthorNameAndStatusMultiLine {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
-                height: nameText.height
-
-                color: "transparent"
-                SkyCleanedText {
-                    id: nameText
-                    width: parent.width - (authorVerified ? verificationStatusLoader.item.width + 10 : 0) - (isTrustedVerifier ? verifierStatusLoader.item.width + 10 : 0)
-                    elide: Text.ElideRight
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 3
-                    font.bold: true
-                    font.pointSize: guiSettings.scaledFont(12/8)
-                    color: guiSettings.textColor
-                    plainText: authorName
-
-                    Accessible.ignored: true
-                }
-
-                Loader {
-                    id: verificationStatusLoader
-                    active: authorVerified
-
-                    sourceComponent: Image {
-                        id: verifiedStatus
-                        x: nameText.contentWidth + 10
-                        y: 5
-                        width: 20
-                        height: width
-                        fillMode: Image.PreserveAspectFit
-                        source: "/images/verified_check.svg"
-                    }
-                }
-
-                Loader {
-                    id: verifierStatusLoader
-                    active: isTrustedVerifier
-
-                    sourceComponent: Image {
-                        id: verifierStatus
-                        x: nameText.contentWidth + 10 + (authorVerified ? verificationStatusLoader.item.width + 10 : 0)
-                        y: 5
-                        width: 20
-                        height: width
-                        fillMode: Image.PreserveAspectFit
-                        source: "/images/verifier_check.svg"
-                    }
-                }
+                author: page.author
+                pointSize: guiSettings.scaledFont(12/8)
+                maximumLineCount: 3
+                wrapMode: Text.Wrap
             }
 
             RowLayout {
