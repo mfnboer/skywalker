@@ -31,6 +31,7 @@ public class NewMessageNotifier {
     private static final int IC_MENTION = 3;
     private static final int IC_REPOST = 4;
     private static final int IC_CHAT = 5;
+    private static final int IC_VERIFICATION = 6;
 
     // Must be the same as channel IDs in offline_message_checker.cpp
     private static final String CHANNEL_CHAT = "CHANNEL_CHAT";
@@ -51,6 +52,8 @@ public class NewMessageNotifier {
                 return R.drawable.ic_repost;
             case IC_CHAT:
                 return R.drawable.ic_chat;
+            case IC_VERIFICATION:
+                return R.drawable.ic_verification;
             default:
                 Log.w(LOGTAG, "Unknown icon type: " + iconType);
                 return R.drawable.ic_post;

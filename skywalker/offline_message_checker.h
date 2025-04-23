@@ -54,7 +54,8 @@ private:
         LIKE = 2,
         MENTION = 3,
         REPOST = 4,
-        CHAT = 5
+        CHAT = 5,
+        VERIFICATION = 6,
     };
 
     void initNetwork();

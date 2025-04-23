@@ -21,6 +21,7 @@ constexpr char const* CHANNEL_LIKE = "CHANNEL_LIKE";
 constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
 constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
 constexpr char const* CHANNEL_CHAT = "CHANNEL_CHAT";
+constexpr char const* CHANNEL_VERIFICATION = "CHANNEL_VERIFICATION";
 
 constexpr int EXIT_OK = 0;
 constexpr int EXIT_RETRY = -1;
@@ -125,6 +126,11 @@ const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNE
         CHANNEL_CHAT,
         QObject::tr("Direct messages"),
         QObject::tr("New direct messages")
+    },
+    {
+        CHANNEL_VERIFICATION,
+        QObject::tr("Verification"),
+        QObject::tr("Changes in your verification status")
     }
 };
 
@@ -587,9 +593,17 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
                 msgAndReaction.getMessageView().getFormattedText());
         break;
     }
-    case Notification::Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
-    case Notification::Reason::NOTIFICATION_REASON_VERIFIED: // TODO: new channel?
+    case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
+        channelId = CHANNEL_VERIFICATION;
+        iconType = IconType::VERIFICATION;
+        msg = QObject::tr("<b>Verified you</b>");
+        break;
     case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
+        channelId = CHANNEL_VERIFICATION;
+        iconType = IconType::VERIFICATION;
+        msg = QObject::tr("<b>Deleted your verification</b>");
+        break;
+    case Notification::Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
     case Notification::Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:
