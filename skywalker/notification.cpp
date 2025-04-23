@@ -180,6 +180,8 @@ QString Notification::getPostUri() const
     case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
     case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION:
     case Reason::NOTIFICATION_REASON_NEW_LABELS:
+    case Reason::NOTIFICATION_REASON_VERIFIED:
+    case Reason::NOTIFICATION_REASON_UNVERIFIED:
     case Reason::NOTIFICATION_REASON_UNKNOWN:
         return {};
     }

@@ -588,6 +588,8 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         break;
     }
     case Notification::Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
+    case Notification::Reason::NOTIFICATION_REASON_VERIFIED: // TODO: new channel?
+    case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
     case Notification::Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:

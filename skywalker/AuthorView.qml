@@ -1257,7 +1257,8 @@ SkyPage {
                 authorName: authorName,
                 authorDescription: authorDescription,
                 authorAvatar: authorAvatar,
-                authorBanner: authorBanner
+                authorBanner: authorBanner,
+                authorVerified: authorVerified
             })
         editPage.profileUpdated.connect((name, description, avatar, banner) => {
             statusPopup.show(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)

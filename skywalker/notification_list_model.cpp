@@ -325,6 +325,8 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
         case Notification::Reason::NOTIFICATION_REASON_LIKE:
         case Notification::Reason::NOTIFICATION_REASON_FOLLOW:
         case Notification::Reason::NOTIFICATION_REASON_REPOST:
+        case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
+        case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
         {
             const auto& uri = notification.getReasonSubjectUri();
             auto& aggregateMap = aggregate[notification.getReason()];

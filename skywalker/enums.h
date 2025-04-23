@@ -93,6 +93,8 @@ public:
         NOTIFICATION_REASON_REPLY = int(ATProto::AppBskyNotification::NotificationReason::REPLY),
         NOTIFICATION_REASON_QUOTE = int(ATProto::AppBskyNotification::NotificationReason::QUOTE),
         NOTIFICATION_REASON_STARTERPACK_JOINED = int(ATProto::AppBskyNotification::NotificationReason::STARTERPACK_JOINED),
+        NOTIFICATION_REASON_VERIFIED = int(ATProto::AppBskyNotification::NotificationReason::VERIFIED),
+        NOTIFICATION_REASON_UNVERIFIED = int(ATProto::AppBskyNotification::NotificationReason::UNVERIFIED),
         NOTIFICATION_REASON_UNKNOWN = int(ATProto::AppBskyNotification::NotificationReason::UNKNOWN),
 
         // Additional reasons

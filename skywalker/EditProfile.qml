@@ -10,6 +10,7 @@ SkyPage {
     required property string authorDescription
     required property string authorAvatar
     required property string authorBanner
+    required property bool authorVerified
     property bool pickingImage: false
     property int imageType: QEnums.PHOTO_TYPE_AVATAR
     property string createdAvatarSource
@@ -239,6 +240,15 @@ SkyPage {
                     maxLength: 64
                     fontSelectorCombo: fontSelector
                 }
+            }
+
+            AccessibleText {
+                Layout.fillWidth: true
+                topPadding: 10
+                color: guiSettings.errorColor
+                wrapMode: Text.Wrap
+                text: qsTr("⚠️ Changing your name will invalidate your verified status.")
+                visible: authorVerified
             }
 
             AccessibleText {

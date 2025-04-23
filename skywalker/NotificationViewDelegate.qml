@@ -178,6 +178,15 @@ Rectangle {
                 svg: SvgOutline.starterpack
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED
             }
+            Image {
+                x: parent.x + 14
+                y: 5
+                width: parent.width - 19
+                height: width
+                fillMode: Image.PreserveAspectFit
+                source: "/images/verified_check.svg"
+                visible: [QEnums.NOTIFICATION_REASON_VERIFIED, QEnums.NOTIFICATION_REASON_UNVERIFIED].includes(notificationReason)
+            }
             Rectangle {
                 x: parent.x + 14
                 y: parent.y + 5
@@ -577,6 +586,12 @@ Rectangle {
         case QEnums.NOTIFICATION_REASON_REPOST:
             title = qsTr("Reposted by")
             break
+        case QEnums.NOTIFICATION_REASON_VERIFIED:
+            title = qsTr("Verified by")
+            break
+        case QEnums.NOTIFICATION_REASON_UNVERIFIED:
+            title = qsTr("Unverified by")
+            break
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
             title = qsTr("Labelers")
             break
@@ -596,6 +611,8 @@ Rectangle {
         let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
                        QEnums.NOTIFICATION_REASON_FOLLOW,
                        QEnums.NOTIFICATION_REASON_REPOST,
+                       QEnums.NOTIFICATION_REASON_VERIFIED,
+                       QEnums.NOTIFICATION_REASON_UNVERIFIED,
                        QEnums.NOTIFICATION_REASON_NEW_LABELS]
         return reasons.includes(notificationReason)
     }
@@ -622,6 +639,10 @@ Rectangle {
             return qsTr("quoted you")
         case QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED:
             return qsTr("joined via starter pack")
+        case QEnums.NOTIFICATION_REASON_VERIFIED:
+            return qsTr("verified you")
+        case QEnums.NOTIFICATION_REASON_UNVERIFIED:
+            return qsTr("deleted your verification")
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
             return qsTr("published new labels. Visit the labeler profile to see which labels are new.")
         default:
