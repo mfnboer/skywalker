@@ -348,6 +348,7 @@ private:
     void pauseApp();
     void resumeApp();
     void migrateDraftPosts();
+    void setAnniversaryDate();
     void checkAnniversary();
 
     template<typename ModelType>

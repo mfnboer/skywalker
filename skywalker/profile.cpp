@@ -458,6 +458,31 @@ const ContentLabelList& BasicProfile::getContentLabels() const
     return *mPrivate->mContentLabels;
 }
 
+bool BasicProfile::hasCreatedAt() const
+{
+    return getCreatedAt().isValid();
+}
+
+QDateTime BasicProfile::getCreatedAt() const
+{
+    if (mPrivate)
+    {
+        if (mPrivate->mCreatedAt)
+            return *mPrivate->mCreatedAt;
+
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mCreatedAt.value_or(QDateTime{});
+    }
+
+    if (mProfileView)
+        return mProfileView->mCreatedAt.value_or(QDateTime{});
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mCreatedAt.value_or(QDateTime{});
+
+    return QDateTime{};
+}
+
 VerificationState& BasicProfile::getVerificationState()
 {
     if (mPrivate)

@@ -181,6 +181,8 @@ class BasicProfile
     Q_PROPERTY(ProfileAssociated associated READ getAssociated FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
+    Q_PROPERTY(bool hasCreatedAt READ hasCreatedAt FINAL)
+    Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(VerificationState verificationState READ getVerificationState FINAL)
     QML_VALUE_TYPE(basicprofile)
 
@@ -209,6 +211,8 @@ public:
     ProfileViewerState& getViewer();
     const ProfileViewerState& getViewer() const;
     const ContentLabelList& getContentLabels() const;
+    bool hasCreatedAt() const;
+    QDateTime getCreatedAt() const; // can return null datetime
     VerificationState& getVerificationState();
     const VerificationState& getVerificationState() const;
 
@@ -247,6 +251,7 @@ private:
         std::optional<ProfileAssociated> mAssociated;
         std::optional<ProfileViewerState> mViewer;
         std::optional<ContentLabelList> mContentLabels;
+        std::optional<QDateTime> mCreatedAt;
         std::optional<VerificationState> mVerificationState;
     };
     std::shared_ptr<PrivateData> mPrivate;

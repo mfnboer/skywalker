@@ -1238,9 +1238,7 @@ SkyPage {
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
-        onFirstAppearanceOk: (did, appearance) => {
-            firstAppearanceDate = appearance.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
-        }
+        onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
     }
 
 
@@ -1248,6 +1246,9 @@ SkyPage {
         id: accessibilityUtils
     }
 
+    function setFirstAppearance(appearanceDate) {
+        firstAppearanceDate = appearanceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+    }
 
     function editAuthor(author) {
         let component = guiSettings.createComponent("EditProfile.qml")
@@ -1478,7 +1479,11 @@ SkyPage {
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
         getFeed(modelId)
-        profileUtils.getFirstAppearance(author.did)
+
+        if (author.hasCreatedAt)
+            setFirstAppearance(author.createdAt)
+        else
+            profileUtils.getFirstAppearance(author.did)
 
         if (hasFeeds)
             getFeedList(feedListModelId)

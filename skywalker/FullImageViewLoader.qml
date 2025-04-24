@@ -17,7 +17,8 @@ Loader {
         imageAlt: images[imageIndex].alt
 
         onDone: (fullImg) => {
-            root.viewFullImage(images, imageIndex, fullImg, () => { animation.reverseRun() })
+            let imgAnimation = animation
+            root.viewFullImage(images, imageIndex, fullImg, () => { imgAnimation.reverseRun() })
         }
 
         onReverseDone: {

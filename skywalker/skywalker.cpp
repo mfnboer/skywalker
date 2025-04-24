@@ -433,13 +433,6 @@ void Skywalker::getUserProfileAndFollows()
             mUserFollows.clear();
             emit getUserProfileFailed(msg);
         });
-
-    mPlcDirectory->getFirstAppearance(session->mDid,
-        [this](QDateTime appearance){
-            mAnniversary.setFirstAppearance(appearance);
-            checkAnniversary();
-        },
-        {});
 }
 
 void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages)
@@ -491,6 +484,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Share
 
     emit userChanged();
     emit getUserProfileOK();
+    setAnniversaryDate();
 }
 
 void Skywalker::getUserPreferences()
@@ -3733,6 +3727,28 @@ void Skywalker::migrateDraftPosts()
             });
 
     mDraftPostsMigration->migrateFromRepoToFile();
+}
+
+void Skywalker::setAnniversaryDate()
+{
+    Q_ASSERT(!mUserProfile.isNull());
+    const auto createdAt = mUserProfile.getCreatedAt();
+
+    if (createdAt.isValid())
+    {
+        qDebug() << "First appearance set from createdAt:" << createdAt;
+        mAnniversary.setFirstAppearance(createdAt);
+        checkAnniversary();
+        return;
+    }
+
+    qDebug() << "Get first appearance from PLC directory";
+    mPlcDirectory->getFirstAppearance(mUserProfile.getDid(),
+        [this](QDateTime appearance){
+            mAnniversary.setFirstAppearance(appearance);
+            checkAnniversary();
+        },
+        {});
 }
 
 void Skywalker::checkAnniversary()
