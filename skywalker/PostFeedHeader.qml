@@ -238,31 +238,14 @@ Rectangle {
     }
 
     Loader {
+        anchors.right: parent.right
         anchors.top: headerRow.bottom
-        width: parent.width
-        height: guiSettings.sideBarHeaderHeight
         active: isSideBar
 
-        sourceComponent: RowLayout {
-            width: parent.width
+        sourceComponent: Column {
             spacing: 0
 
-            Rectangle {
-                Layout.fillWidth: true
-                color: "transparent"
-            }
-
             SvgPlainButton {
-                Layout.alignment: Qt.AlignCenter
-                svg: SvgOutline.language
-                iconColor: guiSettings.headerTextColor
-                accessibleName: qsTr("language filter active")
-                visible: showLanguageFilter && isSideBar
-                onClicked: showLanguageFilterDetails()
-            }
-
-            SvgPlainButton {
-                Layout.alignment: Qt.AlignCenter
                 svg: guiSettings.getContentModeSvg(contentMode)
                 iconColor: guiSettings.headerTextColor
                 accessibleName: qsTr("view mode")
@@ -287,6 +270,14 @@ Rectangle {
                             item.open()
                     }
                 }
+            }
+
+            SvgPlainButton {
+                svg: SvgOutline.language
+                iconColor: guiSettings.headerTextColor
+                accessibleName: qsTr("language filter active")
+                visible: showLanguageFilter && isSideBar
+                onClicked: showLanguageFilterDetails()
             }
         }
     }
