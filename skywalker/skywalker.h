@@ -7,7 +7,6 @@
 #include "bookmarks.h"
 #include "bookmarks_model.h"
 #include "content_group_list_model.h"
-#include "draft_posts_migration.h"
 #include "draft_posts_model.h"
 #include "edit_user_preferences.h"
 #include "favorite_feeds.h"
@@ -347,7 +346,6 @@ private:
     void handleAppStateChange(Qt::ApplicationState state);
     void pauseApp();
     void resumeApp();
-    void migrateDraftPosts();
     void setAnniversaryDate();
     void checkAnniversary();
 
@@ -415,7 +413,6 @@ private:
     HashtagIndex mSeenHashtags;
     FavoriteFeeds mFavoriteFeeds;
     Anniversary mAnniversary;
-    std::unique_ptr<DraftPostsMigration> mDraftPostsMigration;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
     bool mDebugLogging = false;

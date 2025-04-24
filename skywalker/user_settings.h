@@ -325,10 +325,6 @@ public:
     SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
-    void addDraftRepoToFileMigration(const QString& did);
-    void setDraftRepoToFileMigrationDone(const QString& did);
-    bool isDraftRepoToFileMigrationDone(const QString& did) const;
-
     void sync() { mSettings.sync(); }
 
 signals:

@@ -97,13 +97,8 @@ void Bookmarks::load()
 {
     qDebug() << "Load bookmarks";
     clear();
-
-    // Bookmarks are loaded (and deleted) from bsky and saved locally.
-    loadFromBsky([this]{
-        mDirty = !mBookmarkedPostUris.empty();
-        loadFromSettings();
-        emit sizeChanged();
-    });
+    loadFromSettings();
+    emit sizeChanged();
 }
 
 void Bookmarks::save()

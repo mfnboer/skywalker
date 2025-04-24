@@ -12,7 +12,6 @@
 namespace Skywalker {
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
-static constexpr int MAX_ATTEMPTS_DRAFT_MIGRATION = 10;
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sDefaultBackgroundColor("white");
@@ -1101,12 +1100,6 @@ void UserSettings::setSearchAdultOverrideVisibility(const QString& did, QEnums::
     mSettings.setValue(key(did, "searchAdultOverrideVisibility"), (int)visibility);
 }
 
-void UserSettings::addDraftRepoToFileMigration(const QString& did)
-{
-    const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();
-    mSettings.setValue(key(did, "draftRepoToFileMigration"), attempts + 1);
-}
-
 bool UserSettings::getShowTrendingTopics() const
 {
     return mSettings.value("showTrendingTopics", true).toBool();
@@ -1280,22 +1273,9 @@ void UserSettings::setPinnedSearchFeeds(const QString& did, const SearchFeed::Li
     mSettings.setValue(key(did, "pinnedSearchFeeds"), jsonArray);
 }
 
-
-void UserSettings::setDraftRepoToFileMigrationDone(const QString& did)
-{
-    mSettings.setValue(key(did, "draftRepoToFileMigration"), MAX_ATTEMPTS_DRAFT_MIGRATION);
-}
-
-bool UserSettings::isDraftRepoToFileMigrationDone(const QString& did) const
-{
-    const int attempts = mSettings.value(key(did, "draftRepoToFileMigration"), 0).toInt();
-    return attempts >= MAX_ATTEMPTS_DRAFT_MIGRATION;
-}
-
 void UserSettings::cleanup()
 {
-    // Version 1.5 erroneously saved user hashtags on app level
-    mSettings.remove("userHashtags");
+    mSettings.remove("draftRepoToFileMigration");
 }
 
 }

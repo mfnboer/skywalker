@@ -789,7 +789,9 @@ void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& di
 
 void Skywalker::dataMigration()
 {
-    migrateDraftPosts();
+    // Here data migration functions to be executed at startup can be done.
+    // dataMigrationStatus can be called to show status during startup.
+    emit dataMigrationDone();
 }
 
 void Skywalker::syncTimeline(int maxPages)
@@ -3695,38 +3697,6 @@ void Skywalker::updateTimeline(int autoGapFill, int pageSize, const std::functio
     qDebug() << "Update timeline, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
     getTimelinePrepend(autoGapFill, pageSize, cb);
     updatePostIndexedSecondsAgo();
-}
-
-void Skywalker::migrateDraftPosts()
-{
-    if (mUserSettings.isDraftRepoToFileMigrationDone(mUserDid))
-    {
-        qDebug() << "Draft posts already migrated.";
-        emit dataMigrationDone();
-        return;
-    }
-
-    emit dataMigrationStatus(tr("Migrating drafts"));
-    mDraftPostsMigration = std::make_unique<DraftPostsMigration>(this, this);
-
-    connect(mDraftPostsMigration.get(), &DraftPostsMigration::migrationOk, this,
-            [this]{
-                qDebug() << "Draft posts succesfully migrated";
-                mDraftPostsMigration = nullptr;
-                mUserSettings.setDraftRepoToFileMigrationDone(mUserDid);
-                emit dataMigrationDone();
-            });
-
-    connect(mDraftPostsMigration.get(), &DraftPostsMigration::migrationFailed, this,
-            [this]{
-                qWarning() << "Draft posts migration failed";
-                mDraftPostsMigration = nullptr;
-                mUserSettings.addDraftRepoToFileMigration(mUserDid);
-                showStatusMessage("Could not move (all) draft posts to local storage", QEnums::STATUS_LEVEL_ERROR);
-                emit dataMigrationDone();
-            });
-
-    mDraftPostsMigration->migrateFromRepoToFile();
 }
 
 void Skywalker::setAnniversaryDate()
