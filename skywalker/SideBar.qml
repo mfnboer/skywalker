@@ -202,19 +202,52 @@ Pane {
                 visible: typeof rootItem?.sideBarSvg != 'undefined' && !isBasePage
             }
 
-            Avatar {
-                property basicprofile nullAuthor
-
+            Loader {
                 Layout.topMargin: 20
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: Layout.preferredWidth
                 Layout.alignment: Qt.AlignHCenter
-                author: visible ? rootItem.sideBarAuthor : nullAuthor
-                visible: typeof rootItem?.sideBarAuthor != 'undefined'
+                active: typeof rootItem?.sideBarAuthor != 'undefined'
+                visible: active
 
-                onClicked: {
-                    if (!(rootItem instanceof AuthorView) || rootItem.author.did !== author.did)
-                    skywalker.getDetailedProfile(author.did)
+                sourceComponent: Avatar {
+                    property basicprofile nullAuthor
+
+                    author: visible ? rootItem.sideBarAuthor : nullAuthor
+                    visible: typeof rootItem?.sideBarAuthor != 'undefined'
+
+                    onClicked: {
+                        if (!(rootItem instanceof AuthorView) || rootItem.author.did !== author.did)
+                        skywalker.getDetailedProfile(author.did)
+                    }
+                }
+            }
+
+            Loader {
+                Layout.topMargin: 20
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: Layout.preferredWidth
+                Layout.alignment: Qt.AlignHCenter
+                active: typeof rootItem?.sideBarListAvatarUrl == 'string'
+                visible: active
+
+                sourceComponent: ListAvatar {
+                    avatarUrl: visible ? rootItem.sideBarListAvatarUrl : ""
+                    visible: typeof rootItem?.sideBarListAvatarUrl == 'string'
+                }
+            }
+
+            Loader {
+                Layout.topMargin: 20
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: Layout.preferredWidth
+                Layout.alignment: Qt.AlignHCenter
+                active: typeof rootItem?.sideBarFeedAvatarUrl == 'string'
+                visible: active
+
+                sourceComponent: FeedAvatar {
+                    avatarUrl: visible ? rootItem.sideBarFeedAvatarUrl : ""
+                    visible: typeof rootItem?.sideBarFeedAvatarUrl == 'string'
                 }
             }
 

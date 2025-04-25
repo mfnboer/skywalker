@@ -17,7 +17,7 @@ SkyPage {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
     readonly property string sideBarTitle: guiSettings.listTypeName(list.purpose)
-    readonly property SvgImage sideBarSvg: SvgOutline.list
+    readonly property string sideBarListAvatarUrl: !contentVisible() ? "" : list.avatar
 
     signal closed
     signal listUpdated(listview list)
@@ -45,11 +45,32 @@ SkyPage {
         onBack: closed()
     }
 
+    AuthorListView {
+        id: authorListView
+        width: parent.width
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        title: ""
+        skywalker: page.skywalker
+        modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
+        allowDeleteItem: isOwnList()
+        listUri: list.uri
+        clip: true
+
+        header: PlaceholderHeader { height: grid.height }
+        headerPositioning: ListView.InlineHeader
+        footer: PlaceholderHeader { height: page.height}
+        footerPositioning: ListView.InlineFooter
+
+        Component.onCompleted: skywalker.getAuthorList(modelId)
+    }
+
     GridLayout {
         id: grid
         rowSpacing: 0
         columns: 3
         x: 10
+        y: Math.max(authorListView.headerTopY, -height)
         width: parent.width - 20
 
         Rectangle {
@@ -200,21 +221,6 @@ SkyPage {
                 containingText: list.description
             }
         }
-    }
-
-    AuthorListView {
-        id: authorListView
-        width: parent.width
-        anchors.top: grid.bottom
-        anchors.bottom: parent.bottom
-        title: ""
-        skywalker: page.skywalker
-        modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
-        allowDeleteItem: isOwnList()
-        listUri: list.uri
-        clip: true
-
-        Component.onCompleted: skywalker.getAuthorList(modelId)
     }
 
     Menu {

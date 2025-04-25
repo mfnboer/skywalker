@@ -53,80 +53,6 @@ SkyPage {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
-    header: Rectangle {
-        width: parent.width
-        height: bannerImg.visible ? bannerImg.height : noBanner.height
-
-        ImageAutoRetry {
-            id: bannerImg
-            anchors.top: parent.top
-            width: parent.width
-            source: authorBanner
-            fillMode: Image.PreserveAspectFit
-            indicateLoading: false
-            visible: authorBanner && contentVisible() && status === Image.Ready
-        }
-
-        Rectangle {
-            id: noBanner
-            anchors.top: parent.top
-            width: parent.width
-            height: width / 3
-            color: guiSettings.bannerDefaultColor
-            visible: !bannerImg.visible
-        }
-
-        SvgButton {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            iconColor: "white"
-            Material.background: "black"
-            opacity: 0.5
-            svg: SvgOutline.arrowBack
-            accessibleName: qsTr("go back")
-            visible: !root.showSideBar
-            onClicked: page.closed()
-        }
-
-        Rectangle {
-            id: avatar
-            x: parent.width - width - 10
-            y: getAvatarY()
-            width: 104
-            height: width
-            radius: width / 2
-            color: guiSettings.backgroundColor
-
-            Avatar {
-                id: avatarImg
-                anchors.centerIn: parent
-                width: parent.width - 4
-                height: parent.height - 4
-                author: page.author
-                showWarnedMedia: page.showWarnedMedia
-                onClicked:  {
-                    if (authorAvatar) {
-                        fullImageLoader.show(0)
-                        avatarImg.visible = false
-                    }
-                }
-            }
-        }
-
-        FullImageViewLoader {
-            id: fullImageLoader
-            thumbImageViewList: [avatarImg.getImage()]
-            images: [author.imageView]
-            onFinished: avatarImg.visible = true
-        }
-    }
-
-    function getAvatarY() {
-        const contentShift = Math.max(authorFeedView.contentY + header.height, 0)
-        const shift = Math.min(contentShift, avatar.height / 2 + 10)
-        return header.height - avatar.height / 2 - shift
-    }
-
     footer: Rectangle {
         width: parent.width
 
@@ -196,6 +122,74 @@ SkyPage {
 
             Accessible.role: Accessible.StaticText
             Accessible.name: qsTr(`${author.name}\n\n@${author.handle}\n\n${author.description}`)
+
+            Rectangle {
+                width: parent.width
+                height: bannerImg.visible ? bannerImg.height : noBanner.height
+
+                ImageAutoRetry {
+                    id: bannerImg
+                    anchors.top: parent.top
+                    width: parent.width
+                    source: authorBanner
+                    fillMode: Image.PreserveAspectFit
+                    indicateLoading: false
+                    visible: authorBanner && contentVisible() && status === Image.Ready
+                }
+
+                Rectangle {
+                    id: noBanner
+                    anchors.top: parent.top
+                    width: parent.width
+                    height: width / 3
+                    color: guiSettings.bannerDefaultColor
+                    visible: !bannerImg.visible
+                }
+
+                SvgButton {
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    iconColor: "white"
+                    Material.background: "black"
+                    opacity: 0.5
+                    svg: SvgOutline.arrowBack
+                    accessibleName: qsTr("go back")
+                    visible: !root.showSideBar
+                    onClicked: page.closed()
+                }
+
+                Rectangle {
+                    id: avatar
+                    x: parent.width - width - 10
+                    y: parent.height - height / 2
+                    width: 104
+                    height: width
+                    radius: width / 2
+                    color: guiSettings.backgroundColor
+
+                    Avatar {
+                        id: avatarImg
+                        anchors.centerIn: parent
+                        width: parent.width - 4
+                        height: parent.height - 4
+                        author: page.author
+                        showWarnedMedia: page.showWarnedMedia
+                        onClicked:  {
+                            if (authorAvatar) {
+                                fullImageLoader.show(0)
+                                avatarImg.visible = false
+                            }
+                        }
+                    }
+                }
+
+                FullImageViewLoader {
+                    id: fullImageLoader
+                    thumbImageViewList: [avatarImg.getImage()]
+                    images: [author.imageView]
+                    onFinished: avatarImg.visible = true
+                }
+            }
 
             RowLayout {
                 SvgButton {
@@ -610,7 +604,7 @@ SkyPage {
             width: parent.width
 
             // -1 to make the interactive enable/disable work
-            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() + page.header.height - 1 : 0)
+            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0)
 
             currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
 
