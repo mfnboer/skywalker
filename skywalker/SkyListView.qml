@@ -6,6 +6,8 @@ ListView {
     property var anchorItem // item used to calibrate list position on insert of new posts
     readonly property string error: (model && typeof model.error != 'undefined') ? model.error : ""
 
+    readonly property int headerTopY: headerItem ? headerItem.y - contentY : 0
+
     property int prevOriginY: 0
     property int virtualFooterHeight: 0
     property int virtualFooterStartY: 0

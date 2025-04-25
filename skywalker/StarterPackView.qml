@@ -22,9 +22,106 @@ SkyPage {
         onBack: page.closed()
     }
 
+    SwipeListView {
+        id: feedStack
+        width: parent.width
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        currentIndex: feedsBar.currentIndex
+        headerHeight: starterPackHeader.height + feedsBar.height + feedsSeparator.height
+        headerScrollHeight: starterPackHeader.height
+
+        onCurrentIndexChanged: feedsBar.setCurrentIndex(currentIndex)
+
+        AuthorListView {
+            id: authorListView
+            title: ""
+            skywalker: page.skywalker
+            modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, starterPack.list.uri)
+            listUri: starterPack.list.uri
+            clip: true
+
+            header: PlaceholderHeader { height: feedStack.headerHeight }
+            headerPositioning: ListView.InlineHeader
+            footer: PlaceholderHeader { height: page.height}
+            footerPositioning: ListView.InlineFooter
+
+            Component.onCompleted: skywalker.getAuthorList(modelId)
+        }
+
+        SkyListView {
+            id: feedListView
+            model: skywalker.getFeedListModel(feedListModelId)
+            boundsBehavior: Flickable.StopAtBounds
+            clip: true
+
+            header: PlaceholderHeader { height: feedStack.headerHeight }
+            headerPositioning: ListView.InlineHeader
+            footer: PlaceholderHeader { height: page.height}
+            footerPositioning: ListView.InlineFooter
+
+            delegate: GeneratorViewDelegate {
+                width: feedListView.width
+
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+            }
+
+            EmptyListIndication {
+                svg: SvgOutline.noPosts
+                text: qsTr("No feeds")
+                list: feedListView
+            }
+        }
+
+        SkyListView {
+            id: postListView
+            model: skywalker.getPostFeedModel(postFeedModelId)
+            clip: true
+
+            header: PlaceholderHeader { height: feedStack.headerHeight }
+            headerPositioning: ListView.InlineHeader
+            footer: PlaceholderHeader { height: page.height }
+            footerPositioning: ListView.InlineFooter
+
+            delegate: PostFeedViewDelegate {
+                width: postListView.width
+            }
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
+                    cover()
+            }
+
+            FlickableRefresher {
+                inProgress: postListView.model && postListView.model.getFeedInProgress
+                topOvershootFun: () => skywalker.getListFeed(postFeedModelId)
+                bottomOvershootFun: () => skywalker.getListFeedNextPage(postFeedModelId)
+                topText: qsTr("Pull down to refresh feed")
+            }
+
+            EmptyListIndication {
+                svg: SvgOutline.noPosts
+                text: qsTr("Feed is empty")
+                list: postListView
+            }
+
+            BusyIndicator {
+                id: busyIndicator
+                anchors.centerIn: parent
+                running: postListView.model && postListView.model.getFeedInProgress
+            }
+        }
+
+        Component.onCompleted: {
+            if (starterPack.feeds.length === 0)
+                removeItem(feedListView)
+        }
+    }
+
     Column {
         id: starterPackHeader
         x: margin
+        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height)
         width: parent.width - 2 * margin
 
         GridLayout {
@@ -117,85 +214,6 @@ SkyPage {
         width: parent.width
         height: 1
         color: guiSettings.separatorColor
-    }
-
-    SwipeView {
-        id: feedStack
-        width: parent.width
-        anchors.top: feedsSeparator.bottom
-        anchors.bottom: parent.bottom
-        currentIndex: feedsBar.currentIndex
-
-        onCurrentIndexChanged: feedsBar.setCurrentIndex(currentIndex)
-
-        AuthorListView {
-            id: authorListView
-            title: ""
-            skywalker: page.skywalker
-            modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, starterPack.list.uri)
-            listUri: starterPack.list.uri
-            clip: true
-
-            Component.onCompleted: skywalker.getAuthorList(modelId)
-        }
-
-        SkyListView {
-            id: feedListView
-            model: skywalker.getFeedListModel(feedListModelId)
-            boundsBehavior: Flickable.StopAtBounds
-            clip: true
-
-            delegate: GeneratorViewDelegate {
-                width: feedListView.width
-
-                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
-            }
-
-            EmptyListIndication {
-                svg: SvgOutline.noPosts
-                text: qsTr("No feeds")
-                list: feedListView
-            }
-        }
-
-        SkyListView {
-            id: postListView
-            model: skywalker.getPostFeedModel(postFeedModelId)
-            clip: true
-
-            delegate: PostFeedViewDelegate {
-                width: postListView.width
-            }
-
-            SwipeView.onIsCurrentItemChanged: {
-                if (!SwipeView.isCurrentItem)
-                    cover()
-            }
-
-            FlickableRefresher {
-                inProgress: postListView.model && postListView.model.getFeedInProgress
-                topOvershootFun: () => skywalker.getListFeed(postFeedModelId)
-                bottomOvershootFun: () => skywalker.getListFeedNextPage(postFeedModelIds)
-                topText: qsTr("Pull down to refresh feed")
-            }
-
-            EmptyListIndication {
-                svg: SvgOutline.noPosts
-                text: qsTr("Feed is empty")
-                list: postListView
-            }
-
-            BusyIndicator {
-                id: busyIndicator
-                anchors.centerIn: parent
-                running: postListView.model && postListView.model.getFeedInProgress
-            }
-        }
-
-        Component.onCompleted: {
-            if (starterPack.feeds.length === 0)
-                removeItem(feedListView)
-        }
     }
 
     SvgPlainButton {

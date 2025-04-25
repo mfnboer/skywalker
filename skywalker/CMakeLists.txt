@@ -531,6 +531,8 @@ qt_add_qml_module(libskywalker
         QML_FILES AuthorNameAndStatus.qml
         QML_FILES TrustedVerifierDialog.qml
         QML_FILES AuthorNameAndStatusMultiLine.qml
+        QML_FILES PlaceholderHeader.qml
+        QML_FILES SwipeListView.qml
 )
 
 if (NOT ANDROID)
