@@ -17,7 +17,6 @@ SkyPage {
     property bool showWarnedMedia: false
     property bool isVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
     readonly property string sideBarTitle: isVideoFeed ? qsTr("Video feed") : qsTr("Feed")
-    //readonly property SvgImage sideBarSvg: SvgOutline.feed
     readonly property string sideBarFeedAvatarUrl: !contentVisible() ? "" : feed.avatar
 
     signal closed
