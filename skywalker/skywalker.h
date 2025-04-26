@@ -292,6 +292,7 @@ signals:
     void sharedDmTextReceived(QString text); // Shared from another app
     void showNotifications(); // Action received from clicking an app notification
     void showDirectMessages(); // Action received from clicking an app notification
+    void showLinkReceived(QString uri); // Action received from the user clicking on a bsky link outside the app
     void bskyClientDeleted();
     void anniversary();
     void oldestUnreadNotificationIndex(int index, bool mentions);

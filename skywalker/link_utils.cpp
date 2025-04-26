@@ -28,6 +28,8 @@ void LinkUtils::openLink(const QString& link, const QString& containingText)
 {
     const auto atUri = getPostUri(link);
 
+    qDebug() << "LinkUtils is opening: " << link << " with text " << containingText;
+
     if (atUri.isValid())
     {
         openPostLink(atUri);
@@ -68,6 +70,7 @@ void LinkUtils::openLink(const QString& link, const QString& containingText)
 
     const QUrl url(link);
     bool hostPresent = url.isValid() && containingText.contains(url.host(), Qt::CaseInsensitive);
+    qDebug() << "LinkUtils is emitting webLink with hostPresent: " << hostPresent;
     emit webLink(link, containingText, hostPresent);
 }
 

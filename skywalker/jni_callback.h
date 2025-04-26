@@ -36,6 +36,7 @@ public:
     void handleSharedDmTextReceived(const QString& sharedText);
     void handleShowNotifications();
     void handleShowDirectMessages();
+    void handleShowLink(const QString& uri);
     void handleKeyboardHeightChanged(int height);
 
 signals:
@@ -56,6 +57,7 @@ signals:
     void sharedImageReceived(QString contentUri, QString text);
     void sharedVideoReceived(QString contentUri, QString text);
     void sharedDmTextReceived(QString sharedText);
+    void showLink(QString uri);
     void showNotifications();
     void showDirectMessages();
     void keyboardHeightChanged(int height);
