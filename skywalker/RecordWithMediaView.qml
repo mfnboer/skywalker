@@ -81,8 +81,8 @@ Item {
             VideoView {
                 videoView: record.video
                 contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentVisibility
-                backgroundColor: backgroundColor
+                contentWarning: recordItem.contentWarning
+                backgroundColor: recordItem.backgroundColor
                 highlight: recordItem.highlight
                 swipeMode: recordItem.swipeMode
             }
