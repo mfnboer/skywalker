@@ -90,7 +90,6 @@ SkyPage {
 
     ListView {
         id: authorFeedView
-        y: 10
         width: parent.width
         height: parent.height - y
         contentHeight: parent.height * 2
@@ -104,13 +103,13 @@ SkyPage {
         Accessible.role: Accessible.List
 
         onContentYChanged: {
-            if (contentY > -headerItem.getFeedMenuBarHeight() + 10) { // qmllint disable missing-property
-                contentY = -headerItem.getFeedMenuBarHeight() + 10
+            if (contentY > -headerItem.getFeedMenuBarHeight()) { // qmllint disable missing-property
+                contentY = -headerItem.getFeedMenuBarHeight()
                 interactive = false
             }
             else if (!interactive) {
                 // When a post thread is opened, Qt changes contentY??
-                contentY = -headerItem.getFeedMenuBarHeight() + 10
+                contentY = -headerItem.getFeedMenuBarHeight()
             }
         }
 
@@ -124,7 +123,8 @@ SkyPage {
             Accessible.name: qsTr(`${author.name}\n\n@${author.handle}\n\n${author.description}`)
 
             Rectangle {
-                width: parent.width
+                x: -viewHeader.leftPadding
+                width: page.width
                 height: bannerImg.visible ? bannerImg.height : noBanner.height
 
                 ImageAutoRetry {
