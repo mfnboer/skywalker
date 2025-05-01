@@ -1,3 +1,9 @@
+next
+====
+* Options to give feedback on the Bluesky Discover and Video feed:
+  Show more/less of this
+* Bug fixes
+
 4.5
 ===
 * Replace header and footer by side bar in landscape orientation

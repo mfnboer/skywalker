@@ -315,7 +315,7 @@ SkyPage {
                                 visible: UnicodeFonts.hasEmoji(authorDescription)
                                 onTriggered: root.showEmojiNamesList(authorDescription)
 
-                                MenuItemSvg { svg: SvgOutline.smiley }
+                                MenuItemSvg { svg: SvgOutline.emojiLanguage }
                             }
                         }
                     }

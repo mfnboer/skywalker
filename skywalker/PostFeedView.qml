@@ -16,6 +16,9 @@ SkyListView {
     readonly property int favoritesY: getFavoritesY()
     readonly property int extraFooterMargin: 0
     readonly property string feedName: underlyingModel ? underlyingModel.feedName : ""
+    readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
+    readonly property string feedDid: underlyingModel ? underlyingModel.feedDid : ""
+
 
     signal closed
 
@@ -50,6 +53,8 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: postFeedView.width
+        feedAcceptsInteractions: postFeedView.acceptsInteractions
+        feedDid: postFeedView.feedDid
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
@@ -150,6 +155,8 @@ SkyListView {
             height: postFeedView.height - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
             headerHeight: postFeedView.headerItem ? postFeedView.headerItem.height : 0
             skywalker: postFeedView.skywalker
+            acceptsInteractions: postFeedView.acceptsInteractions
+            feedDid: postFeedView.feedDid
             showAsHome: postFeedView.showAsHome
             model: postFeedView.model
             virtualFooterHeight: postFeedView.virtualFooterHeight

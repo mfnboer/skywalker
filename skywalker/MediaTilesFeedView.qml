@@ -5,6 +5,8 @@ import skywalker
 
 GridView {
     required property var skywalker
+    property bool acceptsInteractions: false
+    property string feedDid: ""
     readonly property int columns: 3
     readonly property int spacing: 2
     property bool showAsHome: false
@@ -73,6 +75,8 @@ GridView {
     delegate: MediaTilesFeedViewDelegate {
         width: mediaTilesView.cellWidth
         height: mediaTilesView.cellHeight
+        feedAcceptsInteractions: mediaTilesView.acceptsInteractions
+        feedDid: mediaTilesView.feedDid
 
         onActivateSwipe: {
             let item = mediaTilesView

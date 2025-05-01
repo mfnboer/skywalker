@@ -30,6 +30,7 @@ class GeneratorView
     Q_GADGET
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
+    Q_PROPERTY(QString did READ getDid FINAL)
     Q_PROPERTY(Profile creator READ getCreator FINAL)
     Q_PROPERTY(QString displayName READ getDisplayName FINAL)
     Q_PROPERTY(QString description READ getDescription FINAL)

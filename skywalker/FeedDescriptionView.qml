@@ -210,7 +210,7 @@ SkyPage {
                     visible: UnicodeFonts.hasEmoji(feed.description)
                     onTriggered: root.showEmojiNamesList(feed.description)
 
-                    MenuItemSvg { svg: SvgOutline.smiley }
+                    MenuItemSvg { svg: SvgOutline.emojiLanguage }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Show following")

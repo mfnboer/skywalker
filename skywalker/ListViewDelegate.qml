@@ -359,7 +359,7 @@ Rectangle {
             visible: UnicodeFonts.hasEmoji(list.description)
             onTriggered: root.showEmojiNamesList(list.description)
 
-            MenuItemSvg { svg: SvgOutline.smiley }
+            MenuItemSvg { svg: SvgOutline.emojiLanguage }
         }
 
         AccessibleMenuItem {

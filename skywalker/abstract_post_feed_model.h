@@ -66,6 +66,7 @@ public:
         PostReplyRootAuthorDid,
         PostReplyRootUri,
         PostReplyRootCid,
+        PostFeedContext,
         PostReplyCount,
         PostRepostCount,
         PostLikeCount,

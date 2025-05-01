@@ -41,6 +41,7 @@ Rectangle {
     required property string postReplyRootAuthorDid
     required property string postReplyRootUri
     required property string postReplyRootCid
+    required property string postFeedContext
     required property int postReplyCount
     required property int postRepostCount
     required property int postLikeCount
@@ -68,6 +69,8 @@ Rectangle {
     required property bool postIsThread
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property bool feedAcceptsInteractions: false
+    property string feedDid: ""
     property bool swipeMode: false
     property int extraFooterHeight: 0
     property bool threadBarVisible: !swipeMode
@@ -529,6 +532,7 @@ Rectangle {
                     showViewThread: swipeMode
                     record: postRecord
                     recordWithMedia: postRecordWithMedia
+                    feedAcceptsInteractions: postEntry.feedAcceptsInteractions
 
                     onReply: {
                         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
@@ -578,6 +582,8 @@ Rectangle {
                     onUnpin: root.unpinPost(postCid)
                     onBlockAuthor: root.blockAuthor(author.did)
                     onShowEmojiNames: root.showEmojiNamesList(postPlainText)
+                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
+                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
                 }
             }
 

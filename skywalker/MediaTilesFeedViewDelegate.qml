@@ -35,6 +35,7 @@ Rectangle {
     required property string postReplyRootAuthorDid
     required property string postReplyRootUri
     required property string postReplyRootCid
+    required property string postFeedContext
     required property int postReplyCount
     required property int postRepostCount
     required property int postLikeCount
@@ -61,6 +62,8 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property bool feedAcceptsInteractions: false
+    property string feedDid: ""
 
     readonly property bool isLeftCell: index % GridView.view.columns == 0
     readonly property bool isRightCell: index % GridView.view.columns == GridView.view.columns - 1
@@ -197,6 +200,7 @@ Rectangle {
                 showViewThread: true
                 record: postRecord
                 recordWithMedia: postRecordWithMedia
+                feedAcceptsInteractions: page.feedAcceptsInteractions
                 limitedStats: true
                 color: "white"
 
@@ -248,6 +252,8 @@ Rectangle {
                 onPin: root.pinPost(postUri, postCid)
                 onUnpin: root.unpinPost(postCid)
                 onBlockAuthor: root.blockAuthor(author.did)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
+                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
             }
         }
 

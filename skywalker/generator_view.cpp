@@ -7,6 +7,8 @@
 
 namespace Skywalker {
 
+#define BSKY_DISCOVER_DID QStringLiteral("did:web:discover.bsky.app")
+
 GeneratorViewerState::GeneratorViewerState(const ATProto::AppBskyFeed::GeneratorViewerState::SharedPtr& viewerState) :
     mViewerState(viewerState)
 {
@@ -85,6 +87,11 @@ int GeneratorView::getLikeCount() const
 
 bool GeneratorView::acceptsInteractions() const
 {
+    // HACK: hardcode bsky discover feeds (whats-hot, thevids) as interactions are
+    // not implemented yet by bsky
+    if (getDid() == BSKY_DISCOVER_DID)
+        return true;
+
     return mGeneratorView ? mGeneratorView->mAcceptsInteractions : false;
 }
 

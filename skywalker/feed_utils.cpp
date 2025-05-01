@@ -127,4 +127,47 @@ void FeedUtils::hideFollowing(const QString& feedUri, bool hide)
         });
 }
 
+void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& feedDid, const QString& feedContext)
+{
+    if (!postMaster())
+        return;
+
+    mPostMaster->sendInteractionShowMoreLikeThis(postUri, feedDid, feedContext,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            qDebug() << "Show more like this ok";
+            emit interactionsSent();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Show more like this failed:" << error << " - '" << msg;
+            emit failure(msg);
+        });
+}
+
+void FeedUtils::showLessLikeThis(const QString& postUri, const QString& feedDid, const QString& feedContext)
+{
+    if (!postMaster())
+        return;
+
+    mPostMaster->sendInteractionShowLessLikeThis(postUri, feedDid, feedContext,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+            qDebug() << "Show less like this ok";
+            emit interactionsSent();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Show less like this failed:" << error << " - '" << msg;
+            emit failure(msg);
+        });
+}
+
 }

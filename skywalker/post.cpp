@@ -466,6 +466,14 @@ QString Post::getReplyRootUri() const
     return ref ? ref->mUri : QString();
 }
 
+QString Post::getFeedContext() const
+{
+    if (!mFeedViewPost)
+        return {};
+
+    return mFeedViewPost->mFeedContext.value_or(QString{});
+}
+
 bool Post::hasUnknownEmbed() const
 {
     if (!mPost || !mPost->mEmbed)

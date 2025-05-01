@@ -1015,6 +1015,8 @@ ApplicationWindow {
 
         onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
         onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onInteractionsSent: statusPopup.show(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO)
+        onFailure: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     LinkUtils {
@@ -1437,6 +1439,14 @@ ApplicationWindow {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function showMoreLikeThis(feedDid, postUri, feedContext) {
+        feedUtils.showMoreLikeThis(postUri, feedDid, feedContext)
+    }
+
+    function showLessLikeThis(feedDid, postUri, feedContext) {
+        feedUtils.showLessLikeThis(postUri, feedDid, feedContext)
     }
 
     function muteThread(uri, threadMuted) {

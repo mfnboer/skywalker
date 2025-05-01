@@ -30,6 +30,14 @@ PostFeedModel::PostFeedModel(const QString& feedName,
             [this]{ emit languageFilterConfiguredChanged(); });
 }
 
+const QString PostFeedModel::getFeedDid() const
+{
+    if (!mGeneratorView.isNull())
+        return mGeneratorView.getDid();
+
+    return {};
+}
+
 QString PostFeedModel::getFeedUri() const
 {
     if (!mListView.isNull())
@@ -44,6 +52,14 @@ QString PostFeedModel::getFeedUri() const
 QEnums::FeedType PostFeedModel::getFeedType() const
 {
     return !mListView.isNull() ? QEnums::FEED_LIST : QEnums::FEED_GENERATOR;
+}
+
+bool PostFeedModel::feedAcceptsInteractions() const
+{
+    if (!mGeneratorView.isNull())
+        return mGeneratorView.acceptsInteractions();
+
+    return false;
 }
 
 QString PostFeedModel::getPreferencesFeedKey() const

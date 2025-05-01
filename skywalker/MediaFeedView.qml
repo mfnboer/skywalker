@@ -10,6 +10,9 @@ SkyListView {
     property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
     property int rightMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
     readonly property bool noSideBar: true
+    readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
+    readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
+    readonly property string feedDid: underlyingModel ? underlyingModel.feedDid : ""
 
     signal closed
 
@@ -32,6 +35,8 @@ SkyListView {
         leftMarginWidth: postFeedView.leftMarginWidth
         rightMarginWidth: postFeedView.rightMarginWidth
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
+        feedAcceptsInteractions: postFeedView.acceptsInteractions
+        feedDid: postFeedView.feedDid
 
         onClosed: postFeedView.closed()
 

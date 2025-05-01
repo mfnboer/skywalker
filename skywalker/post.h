@@ -72,6 +72,7 @@ public:
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;
     QString getReplyRootUri() const;
+    QString getFeedContext() const;
 
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;

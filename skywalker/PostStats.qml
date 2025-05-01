@@ -25,6 +25,7 @@ Item {
     property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
+    property bool feedAcceptsInteractions: false
     property bool limitedStats: false
     property string color: guiSettings.statsColor
     property int topPadding: 0
@@ -48,6 +49,8 @@ Item {
     signal unpin()
     signal blockAuthor()
     signal showEmojiNames()
+    signal showMoreLikeThis()
+    signal showLessLikeThis()
 
     id: postStats
     height: replyIcon.height + topPadding
@@ -168,6 +171,20 @@ Item {
                     MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
+                    text: qsTr("Show more like this")
+                    visible: feedAcceptsInteractions
+                    onTriggered: showMoreLikeThis()
+
+                    MenuItemSvg { svg: SvgOutline.sentimentSatisfied }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Show less like this")
+                    visible: feedAcceptsInteractions
+                    onTriggered: showLessLikeThis()
+
+                    MenuItemSvg { svg: SvgOutline.sentimentDissatisfied }
+                }
+                AccessibleMenuItem {
                     text: qsTr("View thread")
                     visible: showViewThread
                     onTriggered: viewThread()
@@ -245,7 +262,7 @@ Item {
                     visible: UnicodeFonts.hasEmoji(plainTextForEmoji)
                     onTriggered: showEmojiNames()
 
-                    MenuItemSvg { svg: SvgOutline.smiley }
+                    MenuItemSvg { svg: SvgOutline.emojiLanguage }
                 }
 
                 Component.onCompleted: background.color = guiSettings.menuColor
