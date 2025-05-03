@@ -4,26 +4,76 @@
 
 namespace Skywalker {
 
-SonglinkInfo::SonglinkInfo(const QString& name, const QString& link, const QString& logo) :
-    mName(name),
-    mLink(link),
-    mLogo(logo)
+const std::unordered_map<QString, SonglinkLinks::SonglinkPlatform> SonglinkLinks::SONGLINK_PLATFORM_MAP = {
+    { "spotify", { "Spotify", "/images/spotify-logo.png", 1 } },
+    { "tidal", { "TIDAL", "/images/tidal-logo.png", 2 } },
+    { "youtubeMusic", { "YouTube Music", "/images/youtubemusic-logo.png", 3 } },
+    { "deezer", { "Deezer", "/images/deezer-logo.png", 4 } },
+    { "soundcloud", { "SoundCloud", "/images/soundcloud-logo.png", 5 } },
+    { "appleMusic", { "Apple Music", "/images/applemusic-logo.png", 6 } },
+    { "audiomack", { "Audiomack", "/images/audiomack-logo.png", 7 } },
+    { "anghami", { "Anghami", "/images/anghami-logo.png", 8 } },
+    { "amazonMusic", { "Amazon Music", "/images/amazonmusic-logo.png", 9 } }
+};
+
+SonglinkInfo::SonglinkInfo(const QString& jsonKey, const QString& link) :
+    mJsonKey(jsonKey),
+    mLink(link)
 {
+}
+
+const QString& SonglinkInfo::getName() const
+{
+    auto it = SonglinkLinks::SONGLINK_PLATFORM_MAP.find(mJsonKey);
+
+    if (it != SonglinkLinks::SONGLINK_PLATFORM_MAP.end())
+        return it->second.mName;
+
+    static const QString NULL_STRING;
+    return NULL_STRING;
+}
+
+const QString& SonglinkInfo::getLogo() const
+{
+    auto it = SonglinkLinks::SONGLINK_PLATFORM_MAP.find(mJsonKey);
+
+    if (it != SonglinkLinks::SONGLINK_PLATFORM_MAP.end())
+        return it->second.mLogo;
+
+    static const QString NULL_STRING;
+    return NULL_STRING;
+}
+
+int SonglinkInfo::getPrio() const
+{
+    auto it = SonglinkLinks::SONGLINK_PLATFORM_MAP.find(mJsonKey);
+
+    if (it != SonglinkLinks::SONGLINK_PLATFORM_MAP.end())
+        return it->second.mPrio;
+
+    return -1;
 }
 
 SonglinkLinks::SharedPtr SonglinkLinks::fromJson(const QJsonObject& json)
 {
     auto links = std::make_shared<SonglinkLinks>();
+    const auto keys = json.keys();
     ATProto::XJsonObject xjson(json);
-    links->mAmazonMusic = getLink(xjson, "amazonMusic");
-    links->mAudioMack = getLink(xjson, "audiomack");
-    links->mAnghami = getLink(xjson, "mAnghami");
-    links->mDeezer = getLink(xjson, "deezer");
-    links->mAppleMusic = getLink(xjson, "appleMusic");
-    links->mSoundCloud = getLink(xjson, "soundcloud");
-    links->mTidal = getLink(xjson, "tidal");
-    links->mYouTubeMusic = getLink(xjson, "youtubeMusic");
-    links->mSpotify = getLink(xjson, "spotify");
+
+    for (const auto& key : keys)
+    {
+        if (!SONGLINK_PLATFORM_MAP.contains(key))
+            continue;
+
+        const QString link = getLink(xjson, key);
+        links->mLinkInfoList.emplace_back(key, link);
+    }
+
+    std::sort(links->mLinkInfoList.begin(), links->mLinkInfoList.end(),
+        [](const SonglinkInfo& lhs, const SonglinkInfo& rhs){
+            return lhs.getPrio() < rhs.getPrio();
+        });
+
     return links;
 }
 
@@ -40,49 +90,7 @@ QString SonglinkLinks::getLink(const ATProto::XJsonObject& xjson, const QString&
 
 bool SonglinkLinks::isNull() const
 {
-    return mAmazonMusic.isEmpty() &&
-        mAudioMack.isEmpty() &&
-        mAnghami.isEmpty() &&
-        mDeezer.isEmpty() &&
-        mAppleMusic.isEmpty() &&
-        mSoundCloud.isEmpty() &&
-        mTidal.isEmpty() &&
-        mYouTubeMusic.isEmpty() &&
-        mSpotify.isEmpty();
-}
-
-SonglinkInfo::List SonglinkLinks::getLinkInfoList() const
-{
-    SonglinkInfo::List linkInfoList;
-
-    if (!mSpotify.isEmpty())
-        linkInfoList.emplace_back("Spotify", mSpotify, "/images/spotify-logo.png");
-
-    if (!mTidal.isEmpty())
-        linkInfoList.emplace_back("TIDAL", mTidal, "/images/tidal-logo.png");
-
-    if (!mYouTubeMusic.isEmpty())
-        linkInfoList.emplace_back("YouTube Music", mYouTubeMusic, "/images/youtubemusic-logo.png");
-
-    if (!mDeezer.isEmpty())
-        linkInfoList.emplace_back("Deezer", mDeezer, "/images/deezer-logo.png");
-
-    if (!mSoundCloud.isEmpty())
-        linkInfoList.emplace_back("SoundCloud", mSoundCloud, "/images/soundcloud-logo.png");
-
-    if (!mAppleMusic.isEmpty())
-        linkInfoList.emplace_back("Apple Music", mAppleMusic, "/images/applemusic-logo.png");
-
-    if (!mAudioMack.isEmpty())
-        linkInfoList.emplace_back("Audiomack", mAudioMack, "/images/audiomack-logo.png");
-
-    if (!mAnghami.isEmpty())
-        linkInfoList.emplace_back("Anghami", mAnghami, "/images/anghami-logo.png");
-
-    if (!mAmazonMusic.isEmpty())
-        linkInfoList.emplace_back("Amazon Music", mAmazonMusic, "/images/amazonmusic-logo.png");
-
-    return linkInfoList;
+    return mLinkInfoList.empty();
 }
 
 }
