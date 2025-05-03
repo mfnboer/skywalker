@@ -36,6 +36,7 @@ Item {
             contentWarning: view.contentWarning
             borderColor: view.borderColor
             maskColor: view.maskColor
+            showSonglinkWidget: true
         }
     }
 

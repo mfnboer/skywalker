@@ -5,15 +5,16 @@
 namespace Skywalker {
 
 const std::unordered_map<QString, SonglinkLinks::SonglinkPlatform> SonglinkLinks::SONGLINK_PLATFORM_MAP = {
-    { "spotify", { "Spotify", "/images/spotify-logo.png", 1 } },
-    { "tidal", { "TIDAL", "/images/tidal-logo.png", 2 } },
-    { "youtubeMusic", { "YouTube Music", "/images/youtubemusic-logo.png", 3 } },
-    { "deezer", { "Deezer", "/images/deezer-logo.png", 4 } },
-    { "soundcloud", { "SoundCloud", "/images/soundcloud-logo.png", 5 } },
-    { "appleMusic", { "Apple Music", "/images/applemusic-logo.png", 6 } },
-    { "audiomack", { "Audiomack", "/images/audiomack-logo.png", 7 } },
-    { "anghami", { "Anghami", "/images/anghami-logo.png", 8 } },
-    { "amazonMusic", { "Amazon Music", "/images/amazonmusic-logo.png", 9 } }
+    { "spotify", { "Spotify", "/images/spotify-logo.png", { "open.spotify.com" }, { "/album/", "/track/" }, 1 } },
+    { "tidal", { "TIDAL", "/images/tidal-logo.png", { "tidal.com", "listen.tidal.com" }, {}, 2 } },
+    { "youtubeMusic", { "YouTube Music", "/images/youtubemusic-logo.png", { "music.youtube.com" }, {}, 3 } },
+    { "deezer", { "Deezer", "/images/deezer-logo.png", { "www.deezer.com" }, {}, 4 } },
+    { "soundcloud", { "SoundCloud", "/images/soundcloud-logo.png", { "soundcloud.com" }, {}, 5 } },
+    { "appleMusic", { "Apple Music", "/images/applemusic-logo.png", { "geo.music.apple.com" }, {}, 6 } },
+    { "audiomack", { "Audiomack", "/images/audiomack-logo.png", { "audiomack.com" }, {}, 7 } },
+    { "anghami", { "Anghami", "/images/anghami-logo.png", { "play.anghami.com" }, {}, 8 } },
+    { "boomplay", { "Boomplay", "/images/boomplay-logo.png", { "www.boomplay.com" }, {}, 9 } },
+    { "amazonMusic", { "Amazon Music", "/images/amazonmusic-logo.png", { "music.amazon.com" }, {}, 10 } }
 };
 
 SonglinkInfo::SonglinkInfo(const QString& jsonKey, const QString& link) :
@@ -91,6 +92,19 @@ QString SonglinkLinks::getLink(const ATProto::XJsonObject& xjson, const QString&
 bool SonglinkLinks::isNull() const
 {
     return mLinkInfoList.empty();
+}
+
+std::unordered_map<QString, QStringList> SonglinkLinks::getPlatformHosts()
+{
+    std::unordered_map<QString, QStringList> hosts;
+
+    for (const auto& [_, platform] : SONGLINK_PLATFORM_MAP)
+    {
+        for (const auto& host : platform.mHosts)
+            hosts[host] = platform.mPaths;
+    }
+
+    return hosts;
 }
 
 }

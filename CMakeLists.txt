@@ -71,6 +71,7 @@ qt_add_qml_module(appskywalker
         images/deezer-logo.png
         images/soundcloud-logo.png
         images/youtubemusic-logo.png
+        images/boomplay-logo.png
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java

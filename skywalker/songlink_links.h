@@ -41,10 +41,13 @@ public:
     {
         QString mName;
         QString mLogo;
+        QStringList mHosts;
+        QStringList mPaths;
         int mPrio;
     };
 
     static const std::unordered_map<QString, SonglinkPlatform> SONGLINK_PLATFORM_MAP;
+    static std::unordered_map<QString, QStringList> getPlatformHosts();
 
     SonglinkLinks() = default;
 

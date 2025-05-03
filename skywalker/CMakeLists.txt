@@ -537,6 +537,7 @@ qt_add_qml_module(libskywalker
         SOURCES songlink_links.cpp
         SOURCES songlink.h
         SOURCES songlink.cpp
+        QML_FILES SonglinkWidget.qml
 )
 
 if (NOT ANDROID)

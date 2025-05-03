@@ -4,7 +4,6 @@
 #include <QNetworkReply>
 #include <QUrl>
 #include <QUrlQuery>
-#include <unordered_set>
 
 // API DOC: https://linktree.notion.site/API-d0ebe08a5e304a55928405eb682f6741
 
@@ -31,18 +30,7 @@ void Songlink::init()
 
 bool Songlink::isMusicLink(const QString& link)
 {
-    static std::unordered_set<QString> MUSIC_HOSTS = {
-        "music.amazon.com",
-        "audiomack.com",
-        "www.deezer.com",
-        "geo.music.apple.com",
-        "soundcloud.com",
-        "open.spotify.com",
-        "music.youtube.com",
-        "listen.tidal.com",
-        "tidal.com",
-        "play.anghami.com"
-    };
+    static std::unordered_map<QString, QStringList> MUSIC_HOSTS = SonglinkLinks::getPlatformHosts();
 
     qDebug() << "Is music link:" << link;
     const QUrl url(link);
@@ -53,10 +41,27 @@ bool Songlink::isMusicLink(const QString& link)
         return false;
     };
 
-    if (MUSIC_HOSTS.contains(url.host()))
+    if (!MUSIC_HOSTS.contains(url.host()))
     {
-        qDebug() << "Is music:" << url.host();
+        qDebug() << "Not a music link:" << link;
+        return false;
+    }
+
+    const auto& paths = MUSIC_HOSTS[url.host()];
+
+    if (paths.empty())
+    {
+        qDebug() << "Is music:" << link;
         return true;
+    }
+
+    for (const auto& path : paths)
+    {
+        if (url.path().startsWith(path))
+        {
+            qDebug() << "Is music:" << link;
+            return true;
+        }
     }
 
     qDebug() << "Not a music link:" << link;
@@ -133,9 +138,15 @@ void Songlink::processGetLinksReply(QNetworkReply* reply)
 {
     if (reply->error() != QNetworkReply::NoError)
     {
-        qWarning() << "Get links failed:" << reply->request().url() << "error:" <<
+        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        qWarning() << "Get links failed:" << reply->request().url() << "code:" << statusCode << "error:" <<
             reply->error() << reply->errorString();
-        emit failure(reply->errorString());
+
+        if (statusCode >= 400 && statusCode < 500)
+            emit linksFound(SonglinkLinks{});
+        else
+            emit failure(reply->errorString());
+
         return;
     }
 
@@ -150,6 +161,7 @@ void Songlink::processGetLinksReply(QNetworkReply* reply)
         emit linksFound(*links);
     }
     catch (ATProto::InvalidJsonException& e) {
+        qDebug() << QString::fromUtf8(data);
         qWarning() << "Invalid JSON:" << e.msg();
         emit failure(tr("Failed to process song links"));
     }
