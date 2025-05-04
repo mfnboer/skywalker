@@ -60,6 +60,19 @@ qt_add_qml_module(appskywalker
         images/dont_panic.png
         images/verified_check.svg
         images/verifier_check.svg
+        images/songlink-odesli-logo-light.png
+        images/songlink-odesli-logo-dark.png
+        images/spotify-logo.png
+        images/tidal-logo.png
+        images/amazonmusic-logo.png
+        images/anghami-logo.png
+        images/applemusic-logo.png
+        images/audiomack-logo.png
+        images/deezer-logo.png
+        images/soundcloud-logo.png
+        images/youtubemusic-logo.png
+        images/boomplay-logo.png
+        images/napster-logo.png
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java

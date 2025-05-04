@@ -7,6 +7,7 @@ Item {
     property externalview postExternal
     property bool highlight: false
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
+    property string maskColor: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
 
     id: view
@@ -26,7 +27,7 @@ Item {
         visible: status == Loader.Ready
 
         sourceComponent: LinkCardView {
-            anchors.fill: parent
+            width: parent.width
             uri: postExternal.uri
             title: postExternal.title
             description: postExternal.description
@@ -34,6 +35,8 @@ Item {
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
             borderColor: view.borderColor
+            maskColor: view.maskColor
+            showSonglinkWidget: true
         }
     }
 

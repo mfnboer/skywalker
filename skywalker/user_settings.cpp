@@ -794,6 +794,20 @@ bool UserSettings::getGiantEmojis() const
     return mSettings.value("giantEmojis", true).toBool();
 }
 
+void UserSettings::setSonglinkEnabled(bool enabled)
+{
+    if (enabled == getSonglinkEnabled())
+        return;
+
+    mSettings.setValue("songlinkEnabled", enabled);
+    emit songlinkEnabledChanged();
+}
+
+bool UserSettings::getSonglinkEnabled() const
+{
+    return mSettings.value("songlinkEnabled", true).toBool();
+}
+
 void UserSettings::setFloatingNavigationButtons(bool floating)
 {
     if (floating == getFloatingNavigationButtons())

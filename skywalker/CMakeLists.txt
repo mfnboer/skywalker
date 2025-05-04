@@ -533,6 +533,13 @@ qt_add_qml_module(libskywalker
         QML_FILES AuthorNameAndStatusMultiLine.qml
         QML_FILES PlaceholderHeader.qml
         QML_FILES SwipeListView.qml
+        SOURCES songlink_links.h
+        SOURCES songlink_links.cpp
+        SOURCES songlink.h
+        SOURCES songlink.cpp
+        QML_FILES SonglinkWidget.qml
+        SOURCES songlink_cache.h
+        SOURCES songlink_cache.cpp
 )
 
 if (NOT ANDROID)
