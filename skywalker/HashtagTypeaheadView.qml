@@ -51,7 +51,7 @@ HashtagListView {
         }
 
         const aboveY = editText.mapToItem(parentPage, 0, 0).y + editText.cursorRectangle.y - 5
-        const aboveHeight = aboveY - parentPage.header.y - 5
+        const aboveHeight = aboveY - (parentPage.header ? parentPage.header.height : 0) - 5
         y = aboveY - aboveHeight
         height = aboveHeight
     }

@@ -23,7 +23,6 @@ SimpleAuthorListView {
     }
 
     onAuthorClicked: (profile) => {
-        console.debug("AUTHOR CLICKED")
         const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
         const mentionStartIndex = facetUtils.getEditMentionIndex()
         const mentionEndIndex = mentionStartIndex + facetUtils.editMention.length
@@ -47,7 +46,7 @@ SimpleAuthorListView {
         }
 
         const aboveY = editText.mapToItem(parentPage, 0, 0).y + editText.cursorRectangle.y - 5
-        const aboveHeight = aboveY - parentPage.header.y - 5
+        const aboveHeight = aboveY - (parentPage.header ? parentPage.header.height : 0) - 5
         y = aboveY - aboveHeight
         height = aboveHeight
     }

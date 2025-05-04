@@ -8,7 +8,7 @@ ThumbImageView {
     property bool noCrop: false
 
     width: maxWidth
-    height: 50 // maxHeight TODO: does this work to avoid resizing jumps?
+    height: 50
     fillMode: Image.PreserveAspectFit
     imageView: image
     smooth: false
