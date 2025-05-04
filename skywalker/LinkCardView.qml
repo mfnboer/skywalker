@@ -19,33 +19,25 @@ RoundCornerMask {
     border.width: 1
     border.color: borderColor
 
-    FilteredImageWarning {
-        id: filter
-        width: parent.width - 2
-        contentVisibility: card.contentVisibility
-        contentWarning: card.contentWarning
-        imageUrl: card.thumbUrl
-    }
-
     Column {
         id: externalColumn
         width: parent.width
         topPadding: 1
         spacing: 3
 
-        // HACK: The filter should be in this place, but inside a rounded object links
-        // cannot be clicked.
-        Rectangle {
-            width: filter.width
-            height: filter.height
-            color: "transparent"
+        FilteredImageWarning {
+            id: filter
+            width: parent.width - 2
+            contentVisibility: card.contentVisibility
+            contentWarning: card.contentWarning
+            imageUrl: card.thumbUrl
         }
         Loader {
             active: filter.imageVisible() && Boolean(card.thumbUrl)
             width: parent.width
 
             sourceComponent: ThumbImageUnknownSizeView {
-                x: 1
+                x: (parent.width - width) / 2
                 maxWidth: parent.width - 2
                 maxHeight: guiSettings.maxImageHeight
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")

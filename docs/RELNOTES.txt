@@ -1,5 +1,6 @@
 next
 ====
+* Play shared music on streaming platform of your choice (using Songlink)
 * Options to give feedback on the Bluesky Discover and Video feed:
   Show more/less of this
 * Bug fixes

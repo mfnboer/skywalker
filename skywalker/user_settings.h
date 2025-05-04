@@ -29,6 +29,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
+    Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
     Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
@@ -209,6 +210,9 @@ public:
     void setGiantEmojis(bool giantEmojis);
     bool getGiantEmojis() const;
 
+    void setSonglinkEnabled(bool enabled);
+    bool getSonglinkEnabled() const;
+
     void setFloatingNavigationButtons(bool floating);
     bool getFloatingNavigationButtons() const;
 
@@ -336,6 +340,7 @@ signals:
     void threadColorChanged();
     void favoritesBarPositionChanged();
     void giantEmojisChanged();
+    void songlinkEnabledChanged();
     void landscapeSideBarChanged();
     void videoSoundChanged();
     void videoAutoPlayChanged();

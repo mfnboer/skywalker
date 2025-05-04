@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "songlink.h"
+#include "songlink_cache.h"
 #include <QNetworkReply>
 #include <QUrl>
 #include <QUrlQuery>
@@ -68,6 +69,11 @@ bool Songlink::isMusicLink(const QString& link)
     return false;
 }
 
+bool Songlink::isCached(const QString& link)
+{
+    return SonglinkCache::instance().contains(QUrl(link));
+}
+
 QUrl Songlink::buildUrl(const QString& musicLink) const
 {
     const QUrl musicUrl(musicLink);
@@ -94,6 +100,14 @@ void Songlink::getLinks(const QString& musicLink)
     if (!isMusicLink(musicLink))
         return;
 
+    const SonglinkLinks* links = SonglinkCache::instance().get(QUrl(musicLink));
+
+    if (links)
+    {
+        emit linksFound(*links);
+        return;
+    }
+
     init();
     const QUrl url = buildUrl(musicLink);
 
@@ -108,12 +122,12 @@ void Songlink::getLinks(const QString& musicLink)
     QNetworkRequest request(url);
     QNetworkReply* reply = mNetwork->get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, musicLink]{
         if (!presence)
             return;
 
         setInProgress(false);
-        processGetLinksReply(reply);
+        processGetLinksReply(reply, musicLink);
     });
 
         connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
@@ -134,7 +148,7 @@ void Songlink::getLinks(const QString& musicLink)
     });
 }
 
-void Songlink::processGetLinksReply(QNetworkReply* reply)
+void Songlink::processGetLinksReply(QNetworkReply* reply, const QString& musicLink)
 {
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -143,9 +157,15 @@ void Songlink::processGetLinksReply(QNetworkReply* reply)
             reply->error() << reply->errorString();
 
         if (statusCode >= 400 && statusCode < 500)
-            emit linksFound(SonglinkLinks{});
+        {
+            const SonglinkLinks noLinks;
+            SonglinkCache::instance().put(QUrl(musicLink), noLinks);
+            emit linksFound(noLinks);
+        }
         else
+        {
             emit failure(reply->errorString());
+        }
 
         return;
     }
@@ -158,6 +178,7 @@ void Songlink::processGetLinksReply(QNetworkReply* reply)
     try {
         const auto linksJson = xjson.getRequiredJsonObject("linksByPlatform");
         auto links = SonglinkLinks::fromJson(linksJson);
+        SonglinkCache::instance().put(QUrl(musicLink), *links);
         emit linksFound(*links);
     }
     catch (ATProto::InvalidJsonException& e) {

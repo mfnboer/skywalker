@@ -5,10 +5,11 @@ import skywalker
 Loader {
     required property bool showWidget
     required property string uri
+    property var skywalker: root.getSkywalker()
 
     id: songlinkLoader
     width: parent.width
-    active: showWidget && songlink.isMusicLink(uri)
+    active: showWidget && skywalker.getUserSettings().songlinkEnabled && songlink.isMusicLink(uri)
 
     sourceComponent: Rectangle {
         width: parent.width
@@ -47,10 +48,16 @@ Loader {
 
             id: songlinkFlow
             anchors.horizontalCenter: parent.horizontalCenter
-            width: Math.min(parent.width, links.linkInfoList.length * logoWidth + (links.linkInfoList.length - 1) * spacing + 2 * padding)
+            width: calcWidth()
             spacing: 10
             padding: 5
             visible: songlinkQueryDone && !links.isNull()
+
+            function calcWidth() {
+                const maxLogosInRow = Math.max(Math.floor((parent.width - logoWidth - 2 * padding) / (logoWidth + spacing) + 1), 1)
+                const numLogosInRow = Math.min(songlinkFlow.links.linkInfoList.length, maxLogosInRow)
+                return Math.min(parent.width, numLogosInRow * logoWidth + (numLogosInRow - 1) * spacing + 2 * padding)
+            }
 
             Repeater {
                 model: songlinkFlow.links.linkInfoList
@@ -126,10 +133,15 @@ Loader {
     Songlink {
         id: songlink
 
-        onFailure: (error) => root.getSkywalker().showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onFailure: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onLinksFound: (links) => {
             if (songlinkLoader.item)
                 songlinkLoader.item.showMusicLinks(links)
         }
+    }
+
+    onLoaded: {
+        if (songlink.isCached(uri))
+            songlink.getLinks(uri)
     }
 }

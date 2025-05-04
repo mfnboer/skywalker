@@ -18,6 +18,7 @@ public:
     explicit Songlink(QObject* parent = nullptr);
 
     Q_INVOKABLE static bool isMusicLink(const QString& link);
+    Q_INVOKABLE static bool isCached(const QString& link);
     Q_INVOKABLE void getLinks(const QString& musicLink);
     bool isInProgress() const { return mInProgress; }
 
@@ -30,7 +31,7 @@ private:
     void init();
     QUrl buildUrl(const QString& musicLink) const;
     void setInProgress(bool inProgress);
-    void processGetLinksReply(QNetworkReply* reply);
+    void processGetLinksReply(QNetworkReply* reply, const QString& musicLink);
 
     bool mInProgress = false;
     QString mCountryCode;

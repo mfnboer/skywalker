@@ -7,14 +7,15 @@ namespace Skywalker {
 const std::unordered_map<QString, SonglinkLinks::SonglinkPlatform> SonglinkLinks::SONGLINK_PLATFORM_MAP = {
     { "spotify", { "Spotify", "/images/spotify-logo.png", { "open.spotify.com" }, { "/album/", "/track/" }, 1 } },
     { "tidal", { "TIDAL", "/images/tidal-logo.png", { "tidal.com", "listen.tidal.com" }, {}, 2 } },
-    { "youtubeMusic", { "YouTube Music", "/images/youtubemusic-logo.png", { "music.youtube.com" }, {}, 3 } },
-    { "deezer", { "Deezer", "/images/deezer-logo.png", { "www.deezer.com" }, {}, 4 } },
-    { "soundcloud", { "SoundCloud", "/images/soundcloud-logo.png", { "soundcloud.com" }, {}, 5 } },
-    { "appleMusic", { "Apple Music", "/images/applemusic-logo.png", { "geo.music.apple.com" }, {}, 6 } },
-    { "audiomack", { "Audiomack", "/images/audiomack-logo.png", { "audiomack.com" }, {}, 7 } },
-    { "anghami", { "Anghami", "/images/anghami-logo.png", { "play.anghami.com" }, {}, 8 } },
-    { "boomplay", { "Boomplay", "/images/boomplay-logo.png", { "www.boomplay.com" }, {}, 9 } },
-    { "amazonMusic", { "Amazon Music", "/images/amazonmusic-logo.png", { "music.amazon.com" }, {}, 10 } }
+    { "youtubeMusic", { "YouTube Music", "/images/youtubemusic-logo.png", { "music.youtube.com" }, {}, 4 } },
+    { "deezer", { "Deezer", "/images/deezer-logo.png", { "www.deezer.com" }, {}, 5 } },
+    { "soundcloud", { "SoundCloud", "/images/soundcloud-logo.png", { "soundcloud.com" }, {}, 6 } },
+    { "appleMusic", { "Apple Music", "/images/applemusic-logo.png", { "geo.music.apple.com" }, {}, 7 } },
+    { "audiomack", { "Audiomack", "/images/audiomack-logo.png", { "audiomack.com" }, {}, 8 } },
+    { "anghami", { "Anghami", "/images/anghami-logo.png", { "play.anghami.com" }, {}, 9 } },
+    { "boomplay", { "Boomplay", "/images/boomplay-logo.png", { "www.boomplay.com" }, {}, 10 } },
+    { "napster", { "Napster", "/images/napster-logo.png", { "play.napster.com" }, {}, 11 } },
+    { "amazonMusic", { "Amazon Music", "/images/amazonmusic-logo.png", { "music.amazon.com" }, {}, 12 } }
 };
 
 SonglinkInfo::SonglinkInfo(const QString& jsonKey, const QString& link) :

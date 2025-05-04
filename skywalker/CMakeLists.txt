@@ -538,6 +538,8 @@ qt_add_qml_module(libskywalker
         SOURCES songlink.h
         SOURCES songlink.cpp
         QML_FILES SonglinkWidget.qml
+        SOURCES songlink_cache.h
+        SOURCES songlink_cache.cpp
 )
 
 if (NOT ANDROID)
