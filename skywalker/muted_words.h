@@ -20,6 +20,7 @@ class MutedWordEntry
     Q_PROPERTY(QString value READ getValue FINAL)
     Q_PROPERTY(QEnums::ActorTarget actorTarget READ getActorTarget FINAL)
     Q_PROPERTY(QDateTime expiresAt READ getExpiresAt FINAL)
+    Q_PROPERTY(bool isDomain READ isDomain FINAL)
     QML_VALUE_TYPE(mutedwordentry)
 
 public:
@@ -31,11 +32,14 @@ public:
     const QString& getValue() const { return mValue; }
     QEnums::ActorTarget getActorTarget() const { return mActorTarget; }
     QDateTime getExpiresAt() const { return mExpiresAt; }
+    bool isDomain() const { return mIsDomain; }
 
 private:
+
     QString mValue;
     QEnums::ActorTarget mActorTarget;
     QDateTime mExpiresAt;
+    bool mIsDomain = false;
 };
 
 class MutedWords : public QObject, public IMatchWords
@@ -91,6 +95,7 @@ private:
 
         size_t wordCount() const { return mNormalizedWords.size(); }
         bool isHashtag() const { return wordCount() == 1 && UnicodeFonts::isHashtag(mRaw); }
+        bool isDomain() const;
     };
 
     using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;
@@ -99,6 +104,9 @@ private:
     void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
     bool preAdd(const Entry& entry);
     bool mustSkip(const Entry& entry, const QString& authorDid, QDateTime now) const;
+    bool matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
+    bool matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
+    bool matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
 
     std::set<Entry> mEntries;
 
@@ -109,6 +117,7 @@ private:
     WordIndexType mFirstWordIndex;
 
     WordIndexType mHashTagIndex;
+    WordIndexType mDomainIndex;
 
     bool mDirty = false;
 

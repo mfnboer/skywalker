@@ -1,3 +1,9 @@
+next
+====
+* Add a domain as muted word, e.g. example.com, to mute posts with links on
+  that domain, e.g. www.example.com/path
+* Bug fixes
+
 4.6
 ===
 * Play shared music on streaming platform of your choice (using Songlink)

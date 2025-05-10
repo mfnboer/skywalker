@@ -24,7 +24,7 @@ Dialog {
         width: parent.width
         svgIcon: SvgOutline.mutedWords
         initialText: editWord
-        placeholderText: qsTr("Word, phrase, or hashtag to mute")
+        placeholderText: qsTr("Word, phrase or hashtag to mute")
         enabled: true
 
         onDisplayTextChanged: {
@@ -47,8 +47,19 @@ Dialog {
     }
 
     AccessibleText {
-        id: validityHeader
+        id: muteDomain
         anchors.top: textInput.bottom
+        anchors.topMargin: 10
+        width: parent.width
+        font.pointSize: guiSettings.scaledFont(7/8)
+        color: Material.color(Material.Grey)
+        text: qsTr(`Mute links with domain ${textInput.displayText}`)
+        visible: linkUtils.isDomain(textInput.displayText)
+    }
+
+    AccessibleText {
+        id: validityHeader
+        anchors.top: muteDomain.visible ? muteDomain.bottom : textInput.bottom
         anchors.topMargin: 10
         width: parent.width
         font.bold: true
@@ -162,6 +173,11 @@ Dialog {
 
     SearchUtils {
         id: searchUtils
+        skywalker: root.getSkywalker()
+    }
+
+    LinkUtils {
+        id: linkUtils
         skywalker: root.getSkywalker()
     }
 

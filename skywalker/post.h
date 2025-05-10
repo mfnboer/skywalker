@@ -132,6 +132,7 @@ public:
     bool hasLanguage() const;
 
     std::vector<QString> getHashtags() const override;
+    std::vector<QString> getWebLinks() const override;
 
     bool isBookmarkNotFound() const { return mBookmarkNotFound; }
     void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }

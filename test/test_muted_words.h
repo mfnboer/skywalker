@@ -103,6 +103,61 @@ private slots:
             << std::vector<QString>{"#sky"}
             << "The #️⃣sky is blue."
             << false;
+
+        QTest::newRow("partial link")
+            << std::vector<QString>{"thereforeiam.eu"}
+            << "Test www.thereforeiam.eu link match."
+            << true;
+
+        QTest::newRow("tld")
+            << std::vector<QString>{".eu"}
+            << "Test www.thereforeiam.eu link match."
+            << true;
+
+        QTest::newRow("tld no match")
+            << std::vector<QString>{".eu"}
+            << "Test eu should not match to the TLD."
+            << false;
+
+        QTest::newRow("partial link path")
+            << std::vector<QString>{"thereforeiam.eu"}
+            << "Test www.thereforeiam.eu/skywalker link match."
+            << true;
+
+        QTest::newRow("full link")
+            << std::vector<QString>{"www.thereforeiam.eu"}
+            << "Test www.thereforeiam.eu link match."
+            << true;
+
+        QTest::newRow("half link")
+            << std::vector<QString>{"thereforeiam.eu"}
+            << "Test ithinkthereforeiam.eu link match."
+            << false;
+
+        QTest::newRow("uppercase link 1")
+            << std::vector<QString>{"thereforeiam.eu"}
+            << "Test WWW.THEREFOREIAM.EU link match."
+            << true;
+
+        QTest::newRow("uppercase link 2")
+            << std::vector<QString>{"THEREFOREIAM.EU"}
+            << "Test www.thereforeiam.eu link match."
+            << true;
+
+        QTest::newRow("multiple links 1")
+            << std::vector<QString>{"thereforeiam.eu", "example.com"}
+            << "Test www.thereforeiam.eu link match."
+            << true;
+
+        QTest::newRow("multiple links 2")
+            << std::vector<QString>{"thereforeiam.eu", "muted.example.com"}
+            << "Test www.example.com link match."
+            << false;
+
+        QTest::newRow("multiple links 3")
+            << std::vector<QString>{"thereforeiam.eu", "muted.example.com"}
+            << "Test www.example.com link match. muted.example.com/test.html"
+            << true;
     }
 
     void matchPost()

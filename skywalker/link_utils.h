@@ -13,6 +13,8 @@ class LinkUtils : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
+    Q_INVOKABLE static bool isDomain(const QString& value);
+
     explicit LinkUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE QString toHttpsLink(const QString& atUri);

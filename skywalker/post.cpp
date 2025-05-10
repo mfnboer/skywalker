@@ -861,6 +861,30 @@ std::vector<QString> Post::getHashtags() const
     return ATProto::RichTextMaster::getFacetTags(*record);
 }
 
+std::vector<QString> Post::getWebLinks() const
+{
+    if (!mPost)
+        return {};
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
+    auto links = ATProto::RichTextMaster::getFacetLinks(*record);
+
+    const auto externalView = getExternalView();
+
+    if (externalView)
+    {
+        const auto uri = externalView->getUri();
+
+        if (!uri.isEmpty())
+            links.push_back(uri);
+    }
+
+    return links;
+}
+
 QEnums::TripleBool Post::isThread() const
 {
     if (isPlaceHolder())

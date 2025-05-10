@@ -34,6 +34,7 @@ public:
     VideoView::Ptr getVideoView() const override { return {}; }
     ExternalView::Ptr getExternalView() const override { return {}; }
     std::vector<QString> getHashtags() const override { return {}; }
+    std::vector<QString> getWebLinks() const override { return {}; }
     QString getAuthorDid() const override { return {}; }
 
 private:

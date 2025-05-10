@@ -59,7 +59,7 @@ ListView {
                     elide: Text.ElideRight
                     wrapMode: Text.Wrap
                     font.pointSize: guiSettings.scaledFont(9/8)
-                    text: modelData.value
+                    text: modelData.value + (modelData.isDomain ? " 🔗" : "")
                 }
                 AccessibleText {
                     Layout.fillWidth: true
@@ -91,7 +91,7 @@ ListView {
             SvgPlainButton {
                 svg: SvgOutline.delete
                 accessibleName: qsTr(`delete ${entryText.text}`)
-                onClicked: skywalker.mutedWords.removeEntry(entryText.text)
+                onClicked: skywalker.mutedWords.removeEntry(modelData.value)
             }
         }
 

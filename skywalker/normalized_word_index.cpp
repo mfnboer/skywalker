@@ -21,6 +21,27 @@ const std::unordered_set<QString>& NormalizedWordIndex::getUniqueHashtags() cons
     return mHashtags;
 }
 
+const std::vector<QString>& NormalizedWordIndex::getUniqueDomains() const
+{
+    if (mDomains.empty())
+    {
+        std::unordered_set<QString> uniqueDomains;
+        const auto linkList = getWebLinks();
+
+        for (const auto& link : linkList)
+        {
+            const QUrl url(link);
+
+            if (url.isValid())
+                uniqueDomains.insert(url.host());
+        }
+
+        const_cast<NormalizedWordIndex*>(this)->mDomains.assign(uniqueDomains.begin(), uniqueDomains.end());
+    }
+
+    return mDomains;
+}
+
 const std::vector<QString>& NormalizedWordIndex::getNormalizedWords() const
 {
     if (mNormalizedWords.empty())

@@ -88,6 +88,7 @@ public:
     BasicProfile getReplyToAuthor() const;
     const LanguageList& getLanguages() const;
     std::vector<QString> getHashtags() const override;
+    std::vector<QString> getWebLinks() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
     const QString& getContentWarning() const { return mContentWarning; }
     QEnums::MutedPostReason getMutedReason() const { return mMutedReason; }

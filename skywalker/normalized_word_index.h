@@ -22,13 +22,16 @@ public:
     virtual ExternalView::Ptr getExternalView() const = 0;
     virtual std::vector<QString> getHashtags() const = 0;
     virtual QString getAuthorDid() const = 0;
+    virtual std::vector<QString> getWebLinks() const = 0;
 
     const std::unordered_set<QString>& getUniqueHashtags() const;
+    const std::vector<QString>& getUniqueDomains() const;
     const std::vector<QString>& getNormalizedWords() const;
     const std::unordered_map<QString, std::vector<int>>& getUniqueNormalizedWords() const;
 
 private:
     std::unordered_set<QString> mHashtags; // normalized
+    std::vector<QString> mDomains; // unique, normalized
     std::vector<QString> mNormalizedWords;
 
     // normalized word -> indices into mNormalizedWords

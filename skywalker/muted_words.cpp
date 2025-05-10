@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "muted_words.h"
 #include "search_utils.h"
+#include "link_utils.h"
 
 namespace Skywalker {
 
@@ -10,6 +11,7 @@ MutedWordEntry::MutedWordEntry(const QString& value, QEnums::ActorTarget actorTa
     mActorTarget(actorTarget),
     mExpiresAt(expiresAt)
 {
+    mIsDomain = LinkUtils::isDomain(mValue);
 }
 
 MutedWords::MutedWords(const ProfileStore& userFollows, QObject* parent) :
@@ -46,6 +48,9 @@ void MutedWords::clear()
 // A word can be a phrase..
 static QString cleanRawWord(const QString& word)
 {
+    if (LinkUtils::isDomain(word))
+        return word.toLower();
+
     const auto& words = SearchUtils::getWords(word);
     QString cleanedWord;
 
@@ -89,6 +94,11 @@ bool MutedWords::preAdd(const Entry& entry)
     return true;
 }
 
+bool MutedWords::Entry::isDomain() const
+{
+    return LinkUtils::isDomain(mRaw);
+}
+
 void MutedWords::addEntry(const QString& word, QEnums::ActorTarget actorTarget, QDateTime expiresAt)
 {
     addEntry(word, {} , {}, actorTarget, expiresAt);
@@ -100,6 +110,28 @@ void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, cons
     Entry newEntry(cleanRawWord(word), SearchUtils::getNormalizedWords(word), bskyJson, unkwownTargets);
     newEntry.mActorTarget = actorTarget;
     newEntry.mExpiresAt = expiresAt;
+
+    if (newEntry.isDomain())
+    {
+        if (newEntry.mRaw.startsWith('.'))
+        {
+            if (newEntry.mRaw.count('.') > 1)
+            {
+                newEntry.mRaw.slice(1);
+                newEntry.mNormalizedWords = { newEntry.mRaw };
+            }
+            else
+            {
+                newEntry.mNormalizedWords = { newEntry.mRaw.sliced(1) };
+            }
+        }
+        else
+        {
+            newEntry.mNormalizedWords = { newEntry.mRaw };
+        }
+
+        qDebug() << "Domain entry:" << newEntry.mRaw;
+    }
 
     if (!preAdd(newEntry))
         return;
@@ -116,6 +148,8 @@ void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, cons
 
     if (entry.isHashtag())
         addWordToIndex(&entry, mHashTagIndex);
+    else if (entry.isDomain())
+        addWordToIndex(&entry, mDomainIndex);
     else if (entry.mNormalizedWords.size() == 1)
         addWordToIndex(&entry, mSingleWordIndex);
     else if (entry.mNormalizedWords.size() > 1)
@@ -140,6 +174,8 @@ void MutedWords::removeEntry(const QString& word)
 
     if (entry.isHashtag())
         removeWordFromIndex(&entry, mHashTagIndex);
+    else if (entry.isDomain())
+        removeWordFromIndex(&entry, mDomainIndex);
     else if (entry.mNormalizedWords.size() == 1)
         removeWordFromIndex(&entry, mSingleWordIndex);
     else if (entry.mNormalizedWords.size() > 1)
@@ -201,6 +237,55 @@ bool MutedWords::match(const NormalizedWordIndex& post) const
 
     const auto now = QDateTime::currentDateTimeUtc();
     const QString authorDid = post.getAuthorDid();
+
+    if (matchDomain(post, now, authorDid))
+        return true;
+
+    if (matchHashtag(post, now, authorDid))
+        return true;
+
+    return matchWords(post, now, authorDid);
+}
+
+bool MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+{
+    if (mDomainIndex.empty())
+        return false;
+
+    const auto& domains = post.getUniqueDomains();
+
+    for (const auto& [word, entries] : mDomainIndex)
+    {
+        Q_ASSERT(entries.size() == 1);
+        const auto* entry = *entries.begin();
+
+        if (mustSkip(*entry, authorDid, now))
+            continue;
+
+        // NOTE: the number of domains should be small, typically 1
+        for (const auto& domain : domains)
+        {
+            if (domain == word)
+            {
+                qDebug() << "Match on domain:" << word;
+                return true;
+            }
+            else if (domain.endsWith(word) && domain.at(domain.length() - word.length() - 1) == '.')
+            {
+                qDebug() << "Match on domain:" << word;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool MutedWords::matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+{
+    if (mHashTagIndex.empty())
+        return false;
+
     const auto& postHashtags = post.getUniqueHashtags();
 
     for (const auto& [word, entries] : mHashTagIndex)
@@ -215,6 +300,11 @@ bool MutedWords::match(const NormalizedWordIndex& post) const
         }
     }
 
+    return false;
+}
+
+bool MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+{
     const auto& uniquePostWords = post.getUniqueNormalizedWords();
 
     for (const auto& [word, entries] : mSingleWordIndex)

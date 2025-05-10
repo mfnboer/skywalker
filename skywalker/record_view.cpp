@@ -446,6 +446,30 @@ std::vector<QString> RecordView::getHashtags() const
     return ATProto::RichTextMaster::getFacetTags(*recordValue);
 }
 
+std::vector<QString> RecordView::getWebLinks() const
+{
+    if (!mRecord)
+        return {};
+
+    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+    auto links = ATProto::RichTextMaster::getFacetLinks(*recordValue);
+
+    if (recordValue->mEmbed && recordValue->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::EXTERNAL)
+    {
+        const auto& external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(recordValue->mEmbed->mEmbed);
+        Q_ASSERT(external);
+        Q_ASSERT(external->mExternal);
+
+        if (external && external->mExternal)
+            links.push_back(external->mExternal->mUri);
+    }
+
+    return links;
+}
+
 void RecordView::setMutedReason(const IMatchWords& mutedWords)
 {
     if (getAuthor().getViewer().isMuted())

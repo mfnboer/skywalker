@@ -3,9 +3,31 @@
 #include "link_utils.h"
 #include "at_regex.h"
 #include "skywalker.h"
+#include <atproto/lib/at_regex.h>
+#include <atproto/lib/tlds.h>
 #include <QRegularExpression>
 
 namespace Skywalker {
+
+bool LinkUtils::isDomain(const QString& value)
+{
+    const auto index = value.lastIndexOf('.');
+
+    if (index < 0)
+        return false;
+
+    const auto& lastPart = value.sliced(index + 1);
+
+    if (!ATProto::isValidTLD(lastPart))
+        return false;
+
+    if (index == 0)
+        return true;
+
+    // Handles are domains!
+    auto match = value.startsWith('.') ? ATProto::ATRegex::HANDLE.match(value) : ATProto::ATRegex::HANDLE.match(value.sliced(1));
+    return match.hasMatch();
+}
 
 LinkUtils::LinkUtils(QObject* parent) :
     WrappedSkywalker(parent)
