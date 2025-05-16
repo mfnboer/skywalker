@@ -228,6 +228,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     if (!description.isEmpty())
         card->setDescription(toPlainText(description));
 
+    qDebug() << QString(data);
     QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     qDebug() << "img url:" << imgUrlString;
     const auto& url = reply->request().url();
@@ -279,10 +280,14 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
             qDebug() << "Relative img url:" << imgUrlString << "url:" << imgUrl << "valid:" << imgUrl.isValid() << "thumb:" << card->getThumb();
         }
-        else
+        else if (imgUrl.isValid())
         {
             card->setThumb(imgUrlString);
             qDebug() << "Full img url:" << imgUrlString << "url:" << imgUrl << "valid:" << imgUrl.isValid();
+        }
+        else
+        {
+            qWarning() << "Invalid img url:" << imgUrlString << "url:" << imgUrl << "valid:" << imgUrl.isValid();
         }
     }
 
