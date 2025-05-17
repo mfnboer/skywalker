@@ -3,7 +3,9 @@
 
 package com.gmail.mfnboer;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,22 +24,42 @@ public class LanguageDetection {
 
     public static native void emitLanguageIdentified(String languageCode, int requestId);
 
-    public static void detectLanguage(String text, int requestId) {
-        Log.d(LOGTAG, "Identify language: " + text + " request: " + requestId + " length:" + text.length());
+    public static void detectLanguage(String text, String excludeLanguages, int requestId) {
+        Log.d(LOGTAG, "Identify language: " + text + " exclude languages: " + excludeLanguages + " request: " + requestId + " length:" + text.length());
         float confidenceThreshold = calcConfidenceThreshold(text);
+        String[] excludeLanguagesArray = excludeLanguages.split(",");
+        Set<String> excludeLanguagesSet = Set.copyOf(Arrays.asList(excludeLanguagesArray));
 
         LanguageIdentifier languageIdentifier = LanguageIdentification.getClient(
             new LanguageIdentificationOptions.Builder()
                 .setConfidenceThreshold(confidenceThreshold)
                 .build());
 
-        languageIdentifier.identifyLanguage(text)
+        languageIdentifier.identifyPossibleLanguages(text)
             .addOnSuccessListener(
-                new OnSuccessListener<String>() {
+                new OnSuccessListener<List<IdentifiedLanguage>>() {
                     @Override
-                    public void onSuccess(@Nullable String languageCode) {
-                        Log.d(LOGTAG, "Identified language code: " + languageCode);
-                        emitLanguageIdentified(languageCode, requestId);
+                    public void onSuccess(@Nullable List<IdentifiedLanguage> languages) {
+                        float confidence = 0.0f;
+                        String lang = null;
+
+                        for (IdentifiedLanguage language : languages) {
+                            Log.d(LOGTAG, "Identified language: " + language.getLanguageTag() + " confidence: " + language.getConfidence());
+
+                            if (excludeLanguagesSet.contains(language.getLanguageTag())) {
+                                Log.d(LOGTAG, "Excluded language: " + language.getLanguageTag());
+                                continue;
+                            }
+
+                            if (language.getConfidence() > confidence) {
+                                confidence = language.getConfidence();
+                                lang = language.getLanguageTag();
+                                Log.d(LOGTAG, "Better language: " + lang);
+                            }
+                        }
+
+                        Log.d(LOGTAG, "Best language: " + lang);
+                        emitLanguageIdentified(lang, requestId);
                     }
                 })
             .addOnFailureListener(

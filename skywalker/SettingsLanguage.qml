@@ -41,6 +41,21 @@ ColumnLayout {
         onCheckedChanged: userSettings.setShowLanguageTags(checked)
     }
 
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        color: guiSettings.textColor
+        text: qsTr("Exclude these languages from auto detection.")
+    }
+    LanguageComboCheckBox {
+        Layout.fillWidth: true
+        allLanguages: languageUtils.languages
+        usedLanguages: languageUtils.usedLanguages
+        checkedLangCodes: userSettings.getExcludeDetectLanguages(userDid)
+        noneCheckedMeansAll: false
+        onCheckedLangCodesChanged: userSettings.setExcludeDetectLanguages(userDid, checkedLangCodes)
+    }
+
     LanguageUtils {
         id: languageUtils
         skywalker: column.skywalker

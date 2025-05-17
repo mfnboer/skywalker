@@ -6,6 +6,7 @@ ComboBox {
     property list<language> allLanguages
     property list<language> usedLanguages
     property list<string> checkedLangCodes
+    property bool noneCheckedMeansAll: true
     property int radius: 0
     property string borderColor: guiSettings.buttonColor
     property string color: guiSettings.buttonColor
@@ -34,7 +35,7 @@ ComboBox {
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
         color: languageComboBox.color
-        text: checkedLangCodes.length > 0 ? checkedLangCodes.join(", ") : qsTr("all languages")
+        text: checkedLangCodes.length > 0 ? checkedLangCodes.join(", ") : (noneCheckedMeansAll ? qsTr("all languages") : qsTr("none"))
     }
 
     delegate: CheckDelegate {

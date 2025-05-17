@@ -1387,12 +1387,15 @@ void PostUtils::identifyLanguage(QString text, int index)
     auto jsText  = QJniObject::fromString(text);
     const int requestId = sNextRequestId++;
     addIndexLanguageIdentificationRequestId(index, requestId);
+    const QStringList excludeLanguages = mSkywalker->getUserSettings()->getExcludeDetectLanguages(mSkywalker->getUserDid());
+    auto jsExcludeLanguages = QJniObject::fromString(excludeLanguages.join(','));
 
     QJniObject::callStaticMethod<void>(
         "com/gmail/mfnboer/LanguageDetection",
         "detectLanguage",
-        "(Ljava/lang/String;I)V",
+        "(Ljava/lang/String;Ljava/lang/String;I)V",
         jsText,
+        jsExcludeLanguages,
         (jint)requestId);
 #else
     qDebug() << "Language identification not supported:" << index << text;

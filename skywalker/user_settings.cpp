@@ -1180,6 +1180,21 @@ void UserSettings::setContentLanguages(const QString& did, const QStringList& la
     }
 }
 
+QStringList UserSettings::getExcludeDetectLanguages(const QString& did) const
+{
+    return mSettings.value(key(did, "excludeDetectLanguages")).toStringList();
+}
+
+void UserSettings::setExcludeDetectLanguages(const QString& did, const QStringList& languages)
+{
+    const auto oldLangs = getExcludeDetectLanguages(did);
+    QStringList sortedLangs = languages;
+    std::sort(sortedLangs.begin(), sortedLangs.end());
+
+    if (oldLangs != sortedLangs)
+        mSettings.setValue(key(did, "excludeDetectLanguages"), sortedLangs);
+}
+
 bool UserSettings::getShowUnknownContentLanguage(const QString& did) const
 {
     return mSettings.value(key(did, "showUnknownContentLanguage"), true).toBool();

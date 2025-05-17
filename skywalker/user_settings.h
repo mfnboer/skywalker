@@ -306,6 +306,10 @@ public:
     Q_INVOKABLE QStringList getContentLanguages(const QString& did) const;
     Q_INVOKABLE void setContentLanguages(const QString& did, const QStringList& languages);
 
+    // Returns a sorted list
+    Q_INVOKABLE QStringList getExcludeDetectLanguages(const QString& did) const;
+    Q_INVOKABLE void setExcludeDetectLanguages(const QString& did, const QStringList& languages);
+
     Q_INVOKABLE bool getShowUnknownContentLanguage(const QString& did) const;
     Q_INVOKABLE void setShowUnknownContentLanguage(const QString& did, bool show);
 
