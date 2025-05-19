@@ -5,11 +5,10 @@ import skywalker
 
 Dialog {
     property string editWord
-    property date expiresAt
+    property alias expiresAt: durationInput.expiresAt
     property bool excludeFollows: false
     property bool isTyping: false
     property bool isHashtag: false
-    property date nullDate
 
     id: page
     width: parent.width
@@ -66,78 +65,15 @@ Dialog {
         text: qsTr('Duration:')
     }
 
-    ButtonGroup {
-        id: durationGroup
-    }
-
-    GridLayout {
-        id: durationGrid
+    DurationInput {
+        id: durationInput
         anchors.top: validityHeader.bottom
         width: parent.width
-        rowSpacing: 0
-        columns: 2
-
-        SkyRoundRadioButton {
-            id: foreverButton
-            text: qsTr("Forever")
-            ButtonGroup.group: durationGroup
-            onCheckedChanged: {
-                if (checked)
-                    expiresAt = nullDate
-            }
-        }
-        SkyRoundRadioButton {
-            text: qsTr("24 hours")
-            ButtonGroup.group: durationGroup
-            onCheckedChanged: {
-                if (checked)
-                    setExpiresAtDays(1)
-            }
-        }
-        SkyRoundRadioButton {
-            text: qsTr("7 days")
-            ButtonGroup.group: durationGroup
-            onCheckedChanged: {
-                if (checked)
-                    setExpiresAtDays(7)
-            }
-        }
-        SkyRoundRadioButton {
-            text: qsTr("30 days")
-            ButtonGroup.group: durationGroup
-            onCheckedChanged: {
-                if (checked)
-                    setExpiresAtDays(30)
-            }
-        }
-
-        RowLayout {
-            Layout.columnSpan: 2
-
-            SkyRoundRadioButton {
-                id: untilButton
-                text: qsTr("Until:")
-                ButtonGroup.group: durationGroup
-            }
-            SkyTextInput {
-                id: untilIntput
-                Layout.fillWidth: true
-                svgIcon: SvgOutline.date
-                placeholderText: qsTr("Date, time")
-                text: enabled ? expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat) : ""
-                enabled: untilButton.checked
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: selectExpiresDate()
-                }
-            }
-        }
     }
 
     AccessibleCheckBox {
         id: excludeFollowsSwitch
-        anchors.top: durationGrid.bottom
+        anchors.top: durationInput.bottom
         anchors.topMargin: 10
         width: parent.width
         text: qsTr("Exclude users you follow")
@@ -181,27 +117,6 @@ Dialog {
         skywalker: root.getSkywalker()
     }
 
-    function setExpiresAtDays(days) {
-        expiresAt = new Date()
-        expiresAt.setDate(expiresAt.getDate() + days)
-    }
-
-    function selectExpiresDate() {
-        if (isNaN(expiresAt.getTime()))
-            setExpiresAtDays(1)
-
-        let component = guiSettings.createComponent("DatePicker.qml")
-        let datePicker = component.createObject(parent, { selectedDate: expiresAt, enableTime: true })
-        datePicker.onRejected.connect(() => datePicker.destroy())
-
-        datePicker.onAccepted.connect(() => {
-            expiresAt = datePicker.selectedDate
-            datePicker.destroy()
-        })
-
-        datePicker.open()
-    }
-
     function getText() {
         return textInput.text.trim()
     }
@@ -211,11 +126,6 @@ Dialog {
     }
 
     Component.onCompleted: {
-        if (!isNaN(expiresAt.getTime()))
-            untilButton.checked = true
-        else
-            foreverButton.checked = true
-
         textInput.setFocus()
     }
 }

@@ -517,6 +517,40 @@ void UserSettings::removeMutedWords(const QString& did)
     mSettings.remove("mutedWordsNoticeSeen");
 }
 
+UriWithExpiry::Set UserSettings::getBlocksWithExpiry(const QString& did) const
+{
+    return mSettings.value(key(did, "blocksWithExpiry")).value<UriWithExpiry::Set>();
+}
+
+void UserSettings::addBlockWithExpiry(const QString& did, const UriWithExpiry& block)
+{
+    auto blocks = getBlocksWithExpiry(did);
+    blocks.insert(block);
+    mSettings.setValue(key(did, "blocksWithExpiry"), QVariant::fromValue(blocks));
+}
+
+void UserSettings::removeBlockWithExpiry(const QString& did, const UriWithExpiry& block)
+{
+    auto blocks = getBlocksWithExpiry(did);
+    blocks.erase(block);
+    mSettings.setValue(key(did, "blocksWithExpiry"), QVariant::fromValue(blocks));
+}
+
+void UserSettings::removeBlocksWithExpiry(const QString& did, const QString& blockUri)
+{
+    auto blocks = getBlocksWithExpiry(did);
+
+    for (auto it = blocks.begin(); it != blocks.end();)
+    {
+        if (it->getUri() == blockUri)
+            it = blocks.erase(it);
+        else
+            ++it;
+    }
+
+    mSettings.setValue(key(did, "blocksWithExpiry"), QVariant::fromValue(blocks));
+}
+
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)
 {
     mSettings.setValue("displayMode", (int)displayMode);

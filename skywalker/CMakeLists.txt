@@ -540,6 +540,9 @@ qt_add_qml_module(libskywalker
         QML_FILES SonglinkWidget.qml
         SOURCES songlink_cache.h
         SOURCES songlink_cache.cpp
+        SOURCES uri_with_expiry.h
+        SOURCES uri_with_expiry.cpp
+        QML_FILES DurationInput.qml
 )
 
 if (NOT ANDROID)

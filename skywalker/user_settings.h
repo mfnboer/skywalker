@@ -5,6 +5,7 @@
 #include "password_encryption.h"
 #include "profile.h"
 #include "search_feed.h"
+#include "uri_with_expiry.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>
@@ -158,6 +159,11 @@ public:
     // Legacy
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);
+
+    UriWithExpiry::Set getBlocksWithExpiry(const QString& did) const;
+    void addBlockWithExpiry(const QString& did, const UriWithExpiry& block);
+    void removeBlockWithExpiry(const QString& did, const UriWithExpiry& block);
+    void removeBlocksWithExpiry(const QString& did, const QString& blockUri);
 
     Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
