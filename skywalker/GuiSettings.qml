@@ -173,6 +173,10 @@ Item {
         return `${minutes}:${seconds}`
     }
 
+    function shortFormatDateTime(date) {
+        return date.toLocaleString(Qt.locale(), Locale.ShortFormat)
+    }
+
     function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })

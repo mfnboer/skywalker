@@ -256,7 +256,7 @@ bool MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, con
 
     for (const auto& [word, entries] : mDomainIndex)
     {
-        Q_ASSERT(entries.size() == 1);
+        Q_ASSERT(entries.size() == 1); // TODO: fires when switching from skywalker to skywalkertest
         const auto* entry = *entries.begin();
 
         if (mustSkip(*entry, authorDid, now))

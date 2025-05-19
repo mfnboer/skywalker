@@ -21,7 +21,7 @@ public:
 
     Q_INVOKABLE void follow(const BasicProfile& profile);
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
-    Q_INVOKABLE void block(const QString& did);
+    Q_INVOKABLE void block(const QString& did, QDateTime expiresAt = QDateTime{});
     Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);
     Q_INVOKABLE void mute(const QString& did);
     Q_INVOKABLE void unmute(const QString& did);
@@ -68,7 +68,7 @@ signals:
     void followFailed(QString error);
     void unfollowOk();
     void unfollowFailed(QString error);
-    void blockOk(QString uri);
+    void blockOk(QString uri, QDateTime expiresAt);
     void blockFailed(QString error);
     void unblockOk();
     void unblockFailed(QString error);

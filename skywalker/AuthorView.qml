@@ -276,10 +276,14 @@ SkyPage {
                                 text: blocking ? qsTr("Unblock account") : qsTr("Block account")
                                 visible: !guiSettings.isUser(author) && author.viewer.blockingByList.isNull()
                                 onTriggered: {
-                                    if (blocking)
+                                    if (blocking) {
                                         graphUtils.unblock(author.did, blocking)
-                                    else
-                                        graphUtils.block(author.did)
+                                    }
+                                    else {
+                                        let gu = graphUtils
+                                        let did = author.did
+                                        root.showBlockMuteDialog(true, author.handle, (expiresAt) => gu.block(did, expiresAt))
+                                    }
                                 }
 
                                 MenuItemSvg { svg: blocking ? SvgOutline.unblock : SvgOutline.block }
@@ -1151,10 +1155,14 @@ SkyPage {
         onUnfollowOk: following = ""
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
-        onBlockOk: (uri) => {
+        onBlockOk: (uri, expiresAt) => {
                        blocking = uri
                        authorFeedView.clear()
-                       statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+
+                        if (isNaN(expiresAt.getTime()))
+                            statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+                        else
+                            statusPopup.show(qsTr(`Blocked till ${guiSettings.shortFormatDateTime(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
                    }
 
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1403,7 +1411,7 @@ SkyPage {
             const listName = UnicodeFonts.toCleanedHtml(author.viewer.blockingByList.name)
             return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
         } else if (blocking) {
-            return qsTr("You blocked this account")
+            return getBlockingText()
         } else if (author.viewer.blockedBy) {
             return qsTr("You are blocked")
         } else if (!author.viewer.mutedByList.isNull()) {
@@ -1416,6 +1424,16 @@ SkyPage {
         }
 
         return qsTr("No posts")
+    }
+
+    function getBlockingText() {
+        const blocksWithExpiry = skywalker.getUserSettings().getBlocksWithExpiry(skywalker.getUserDid())
+        const expiresAt = blocksWithExpiry.getExpiry(blocking)
+
+        if (!isNaN(expiresAt.getTime()))
+            return qsTr(`You blocked this account till ${guiSettings.shortFormatDateTime(expiresAt)}`)
+
+        return qsTr("You blocked this account")
     }
 
     function setLabeler(view) {

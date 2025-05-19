@@ -543,6 +543,7 @@ qt_add_qml_module(libskywalker
         SOURCES uri_with_expiry.h
         SOURCES uri_with_expiry.cpp
         QML_FILES DurationInput.qml
+        QML_FILES BlockMuteUser.qml
 )
 
 if (NOT ANDROID)

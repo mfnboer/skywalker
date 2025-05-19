@@ -69,6 +69,7 @@ QString UserSettings::labelsKey(const QString& did, const QString& labelerDid) c
 void UserSettings::reset()
 {
     mSyncFeeds.reset();
+    mBlocksWithExpiry = nullptr;
     setActiveUserDid({});
 }
 
@@ -517,38 +518,32 @@ void UserSettings::removeMutedWords(const QString& did)
     mSettings.remove("mutedWordsNoticeSeen");
 }
 
-UriWithExpiry::Set UserSettings::getBlocksWithExpiry(const QString& did) const
+UriWithExpirySet* UserSettings::getBlocksWithExpiry(const QString& did)
 {
-    return mSettings.value(key(did, "blocksWithExpiry")).value<UriWithExpiry::Set>();
+    if (!mBlocksWithExpiry)
+    {
+        mBlocksWithExpiry.reset(new UriWithExpirySet(this));
+        const auto jsonArray = mSettings.value(key(did, "blocksWithExpiry")).toJsonArray();
+        mBlocksWithExpiry->fromJson(jsonArray);
+    }
+
+    return mBlocksWithExpiry.get();
 }
 
 void UserSettings::addBlockWithExpiry(const QString& did, const UriWithExpiry& block)
 {
-    auto blocks = getBlocksWithExpiry(did);
-    blocks.insert(block);
-    mSettings.setValue(key(did, "blocksWithExpiry"), QVariant::fromValue(blocks));
+    qDebug() << "Add block:" << block.getUri() << block.getExpiry();
+    auto* blocks = getBlocksWithExpiry(did);
+    blocks->insert(block);
+    mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
 }
 
-void UserSettings::removeBlockWithExpiry(const QString& did, const UriWithExpiry& block)
+void UserSettings::removeBlockWithExpiry(const QString& did, const QString& blockUri)
 {
-    auto blocks = getBlocksWithExpiry(did);
-    blocks.erase(block);
-    mSettings.setValue(key(did, "blocksWithExpiry"), QVariant::fromValue(blocks));
-}
-
-void UserSettings::removeBlocksWithExpiry(const QString& did, const QString& blockUri)
-{
-    auto blocks = getBlocksWithExpiry(did);
-
-    for (auto it = blocks.begin(); it != blocks.end();)
-    {
-        if (it->getUri() == blockUri)
-            it = blocks.erase(it);
-        else
-            ++it;
-    }
-
-    mSettings.setValue(key(did, "blocksWithExpiry"), QVariant::fromValue(blocks));
+    qDebug() << "Remove block:" << blockUri;
+    auto* blocks = getBlocksWithExpiry(did);
+    blocks->remove(blockUri);
+    mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
 }
 
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)

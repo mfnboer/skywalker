@@ -1616,6 +1616,17 @@ ApplicationWindow {
         profileUtils.clearPinnedPost(did, cid)
     }
 
+    function showBlockMuteDialog(blockUser, handle, okCb) {
+        let component = guiSettings.createComponent("BlockMuteUser.qml")
+        let dialog = component.createObject(root, { blockUser: blockUser, handle: handle })
+        dialog.onAccepted.connect(() => {
+            okCb(dialog.expiresAt)
+            dialog.destroy()
+        })
+        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.open()
+    }
+
     function blockAuthor(did) {
         graphUtils.block(did)
     }

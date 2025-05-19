@@ -160,10 +160,9 @@ public:
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);
 
-    UriWithExpiry::Set getBlocksWithExpiry(const QString& did) const;
+    Q_INVOKABLE UriWithExpirySet* getBlocksWithExpiry(const QString& did);
     void addBlockWithExpiry(const QString& did, const UriWithExpiry& block);
-    void removeBlockWithExpiry(const QString& did, const UriWithExpiry& block);
-    void removeBlocksWithExpiry(const QString& did, const QString& blockUri);
+    void removeBlockWithExpiry(const QString& did, const QString& blockUri);
 
     Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
@@ -375,6 +374,7 @@ private:
     QSettings mSettings;
     PasswordEncryption mEncryption;
     std::optional<std::unordered_set<QString>> mSyncFeeds;
+    std::unique_ptr<UriWithExpirySet> mBlocksWithExpiry;
 
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK

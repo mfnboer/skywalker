@@ -99,13 +99,13 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
         });
 }
 
-void GraphUtils::block(const QString& did)
+void GraphUtils::block(const QString& did, QDateTime expiresAt)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->block(did,
-        [this, presence=getPresence(), did](const auto& blockingUri, const auto&){
+        [this, presence=getPresence(), did, expiresAt](const auto& blockingUri, const auto&){
             if (!presence)
                 return;
 
@@ -120,7 +120,14 @@ void GraphUtils::block(const QString& did)
                 });
 
             mSkywalker->getChat()->updateBlockingUri(did, blockingUri);
-            emit blockOk(blockingUri);
+
+            if (expiresAt.isValid())
+            {
+                auto* settings = mSkywalker->getUserSettings();
+                settings->addBlockWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{blockingUri, expiresAt});
+            }
+
+            emit blockOk(blockingUri, expiresAt);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -137,7 +144,7 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
         return;
 
     graphMaster()->undo(blockingUri,
-        [this, presence=getPresence(), did]{
+        [this, presence=getPresence(), did, blockingUri]{
             if (!presence)
                 return;
 
@@ -152,6 +159,10 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
                 });
 
             mSkywalker->getChat()->updateBlockingUri(did, "");
+
+            auto* settings = mSkywalker->getUserSettings();
+            settings->removeBlockWithExpiry(mSkywalker->getUserDid(), blockingUri);
+
             emit unblockOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
