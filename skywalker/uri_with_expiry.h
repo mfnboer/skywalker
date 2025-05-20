@@ -45,7 +45,7 @@ public:
 
     void clear();
     void insert(const UriWithExpiry& uriWithExpiry);
-    void remove(const QString& uri);
+    bool remove(const QString& uri);
     Q_INVOKABLE QDateTime getExpiry(const QString& uri) const;
     const UriWithExpiry* getFirstExpiry() const;
 

@@ -57,6 +57,7 @@ Skywalker::Skywalker(QObject* parent) :
     mBookmarks(this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
+    mGraphUtils(this),
     mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mMentionListModel(mContentFilter, mBookmarks, mMutedWords, this),
     mChat(std::make_unique<Chat>(mBsky, mUserDid, this)),
@@ -72,6 +73,7 @@ Skywalker::Skywalker(QObject* parent) :
     mNetwork->setTransferTimeout(10000);
     mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
     mBookmarks.setSkywalker(this);
+    mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
@@ -323,6 +325,7 @@ void Skywalker::startRefreshTimers()
     mRefreshTimer.start(SESSION_REFRESH_INTERVAL);
     refreshNotificationCount();
     mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
+    mGraphUtils.startExpiryCheckTimer();
 }
 
 void Skywalker::stopRefreshTimers()
@@ -330,6 +333,7 @@ void Skywalker::stopRefreshTimers()
     qInfo() << "Refresh timers stopped";
     mRefreshTimer.stop();
     mRefreshNotificationTimer.stop();
+    mGraphUtils.stopExpiryCheckTimer();
 }
 
 void Skywalker::refreshSession(const std::function<void()>& cbDone)

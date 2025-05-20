@@ -164,7 +164,7 @@ public:
     UriWithExpirySet* getBlocksWithExpiry();
     UriWithExpirySet* getBlocksWithExpiry(const QString& did);
     void addBlockWithExpiry(const QString& did, const UriWithExpiry& block);
-    void removeBlockWithExpiry(const QString& did, const QString& blockUri);
+    bool removeBlockWithExpiry(const QString& did, const QString& blockUri);
 
     Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;

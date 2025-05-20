@@ -53,14 +53,17 @@ void UriWithExpirySet::insert(const UriWithExpiry& uriWithExpiry)
     mUriMap[uriWithExpiry.getUri()] = result.first;
 }
 
-void UriWithExpirySet::remove(const QString& uri)
+bool UriWithExpirySet::remove(const QString& uri)
 {
     if (mUriMap.contains(uri))
     {
         auto it = mUriMap[uri];
         mUriMap.erase(uri);
         mUrisByExpiry.erase(it);
+        return true;
     }
+
+    return false;
 }
 
 QDateTime UriWithExpirySet::getExpiry(const QString& uri) const

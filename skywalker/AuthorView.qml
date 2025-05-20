@@ -1426,7 +1426,7 @@ SkyPage {
     }
 
     function getBlockingText() {
-        const blocksWithExpiry = skywalker.getUserSettings().getBlocksWithExpiry(skywalker.getUserDid())
+        const blocksWithExpiry = skywalker.getUserSettings().blocksWithExpiry
         const expiresAt = blocksWithExpiry.getExpiry(blocking)
 
         if (!isNaN(expiresAt.getTime()))

@@ -378,6 +378,7 @@ private:
     MutedWords mMutedWords;
     MutedWordsNoMutes mMutedWordsNoMutes;
     std::unique_ptr<FocusHashtags> mFocusHashtags;
+    GraphUtils mGraphUtils;
 
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;

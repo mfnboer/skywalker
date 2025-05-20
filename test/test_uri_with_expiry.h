@@ -70,33 +70,34 @@ private slots:
     {
         UriWithExpirySet uriSet;
         const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
-        const UriWithExpiry bar("bar", QDateTime{QDate{2024, 5, 16}, {}});
+        const UriWithExpiry bar("zbar", QDateTime{QDate{2024, 5, 16}, {}});
         const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}});
         uriSet.insert(foo);
         uriSet.insert(bar);
         uriSet.insert(foobar);
         QCOMPARE(*uriSet.getFirstExpiry(), bar);
-        QCOMPARE(uriSet.getExpiry("bar"), bar.getExpiry());
+        QCOMPARE(uriSet.getExpiry("zbar"), bar.getExpiry());
         QCOMPARE(uriSet.getExpiry("foo"), foo.getExpiry());
         QCOMPARE(uriSet.getExpiry("foobar"), foobar.getExpiry());
 
-        uriSet.remove("bar");
+        QVERIFY(uriSet.remove("zbar"));
         QCOMPARE(*uriSet.getFirstExpiry(), foo);
-        QVERIFY(!uriSet.getExpiry("bar").isValid());
+        QVERIFY(!uriSet.getExpiry("zbar").isValid());
         QCOMPARE(uriSet.getExpiry("foo"), foo.getExpiry());
         QCOMPARE(uriSet.getExpiry("foobar"), foobar.getExpiry());
 
-        uriSet.remove("foo");
+        QVERIFY(uriSet.remove("foo"));
         QCOMPARE(*uriSet.getFirstExpiry(), foobar);
-        QVERIFY(!uriSet.getExpiry("bar").isValid());
+        QVERIFY(!uriSet.getExpiry("zbar").isValid());
         QVERIFY(!uriSet.getExpiry("foo").isValid());
         QCOMPARE(uriSet.getExpiry("foobar"), foobar.getExpiry());
 
-        uriSet.remove("foobar");
+        QVERIFY(uriSet.remove("foobar"));
         QCOMPARE(uriSet.getFirstExpiry(), nullptr);
-        QVERIFY(!uriSet.getExpiry("bar").isValid());
+        QVERIFY(!uriSet.getExpiry("zbar").isValid());
         QVERIFY(!uriSet.getExpiry("foo").isValid());
         QVERIFY(!uriSet.getExpiry("foobar").isValid());
+        QVERIFY(!uriSet.remove("foobar"));
     }
 
     void removeNonExisting()
@@ -107,7 +108,7 @@ private slots:
         QCOMPARE(*uriSet.getFirstExpiry(), foo);
         QCOMPARE(uriSet.getExpiry("foo"), foo.getExpiry());
 
-        uriSet.remove("bar");
+        QVERIFY(!uriSet.remove("bar"));
         QCOMPARE(*uriSet.getFirstExpiry(), foo);
         QCOMPARE(uriSet.getExpiry("foo"), foo.getExpiry());
     }

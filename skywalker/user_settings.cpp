@@ -545,13 +545,14 @@ void UserSettings::addBlockWithExpiry(const QString& did, const UriWithExpiry& b
     emit blocksWithExpiryChanged();
 }
 
-void UserSettings::removeBlockWithExpiry(const QString& did, const QString& blockUri)
+bool UserSettings::removeBlockWithExpiry(const QString& did, const QString& blockUri)
 {
     qDebug() << "Remove block:" << blockUri;
     auto* blocks = getBlocksWithExpiry(did);
-    blocks->remove(blockUri);
+    const bool removed = blocks->remove(blockUri);
     mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
     emit blocksWithExpiryChanged();
+    return removed;
 }
 
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)
