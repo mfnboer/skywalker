@@ -77,6 +77,7 @@ SkyListView {
         text: getEmptyListIndicationText()
         list: authorPostsList
         onLinkActivated: (link) => root.viewListByUri(link, false)
+        onRetry: retryGetFeed()
     }
     Text {
         anchors.top: noPostIndication.bottom

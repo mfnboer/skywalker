@@ -251,7 +251,7 @@ Rectangle {
                 onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
                 onPin: root.pinPost(postUri, postCid)
                 onUnpin: root.unpinPost(postCid)
-                onBlockAuthor: root.blockAuthor(author.did)
+                onBlockAuthor: root.blockAuthor(author)
                 onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
                 onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
             }

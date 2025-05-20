@@ -282,7 +282,7 @@ SkyPage {
                                     else {
                                         let gu = graphUtils
                                         let did = author.did
-                                        root.showBlockMuteDialog(true, author.handle, (expiresAt) => gu.block(did, expiresAt))
+                                        root.showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt))
                                     }
                                 }
 
@@ -1082,10 +1082,10 @@ SkyPage {
             }
 
             function refresh() {
-                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(1)
+                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0)
 
-                for (let i = 0; i < children.length; ++i) {
-                    let c = children[i]
+                for (let i = 0; i < contentChildren.length; ++i) {
+                    let c = contentChildren[i]
 
                     if (c instanceof AuthorPostsList) {
                         if (c.modelId !== page.modelId)
@@ -1093,21 +1093,20 @@ SkyPage {
                         else
                             c.refresh()
                     }
-                    else {
-                        if (c.sourceItem)
-                            c.sourceItem.refresh()
+                    else if (c.item) {
+                        c.item.refresh()
                     }
                 }
             }
 
             function clear() {
-                for (let i = 0; i < children.length; ++i) {
-                    let c = children[i]
+                for (let i = 0; i < contentChildren.length; ++i) {
+                    let c = contentChildren[i]
 
                     if (c instanceof AuthorPostsList)
                         c.clear()
-                    else if (c.sourceItem)
-                        c.sourceItem.clear()
+                    else if (c.item)
+                        c.item.clear()
                 }
             }
         }
@@ -1162,7 +1161,7 @@ SkyPage {
                         if (isNaN(expiresAt.getTime()))
                             statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
                         else
-                            statusPopup.show(qsTr(`Blocked till ${guiSettings.shortFormatDateTime(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
+                            statusPopup.show(qsTr(`Blocked till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
                    }
 
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1431,7 +1430,7 @@ SkyPage {
         const expiresAt = blocksWithExpiry.getExpiry(blocking)
 
         if (!isNaN(expiresAt.getTime()))
-            return qsTr(`You blocked this account till ${guiSettings.shortFormatDateTime(expiresAt)}`)
+            return qsTr(`You blocked this account till ${guiSettings.expiresIndication(expiresAt)}`)
 
         return qsTr("You blocked this account")
     }

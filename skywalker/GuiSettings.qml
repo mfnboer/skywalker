@@ -177,6 +177,16 @@ Item {
         return date.toLocaleString(Qt.locale(), Locale.ShortFormat)
     }
 
+    function expiresIndication(expiresAt) {
+        if (isToday(expiresAt))
+            return Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))
+
+        if (isTomorrow(expiresAt))
+            return qsTr(`tomorrow ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
+
+        return shortFormatDateTime(expiresAt)
+    }
+
     function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })

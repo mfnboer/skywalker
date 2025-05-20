@@ -42,6 +42,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
     Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
+    Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
 
 public:
     void reset();
@@ -160,7 +161,8 @@ public:
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);
 
-    Q_INVOKABLE UriWithExpirySet* getBlocksWithExpiry(const QString& did);
+    UriWithExpirySet* getBlocksWithExpiry();
+    UriWithExpirySet* getBlocksWithExpiry(const QString& did);
     void addBlockWithExpiry(const QString& did, const UriWithExpiry& block);
     void removeBlockWithExpiry(const QString& did, const QString& blockUri);
 
@@ -361,6 +363,7 @@ signals:
     void scriptRecognitionChanged();
     void showTrendingTopicsChanged();
     void showSuggestedUsersChanged();
+    void blocksWithExpiryChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;

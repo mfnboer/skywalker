@@ -518,6 +518,12 @@ void UserSettings::removeMutedWords(const QString& did)
     mSettings.remove("mutedWordsNoticeSeen");
 }
 
+UriWithExpirySet* UserSettings::getBlocksWithExpiry()
+{
+    const auto did = getActiveUserDid();
+    return getBlocksWithExpiry(did);
+}
+
 UriWithExpirySet* UserSettings::getBlocksWithExpiry(const QString& did)
 {
     if (!mBlocksWithExpiry)
@@ -536,6 +542,7 @@ void UserSettings::addBlockWithExpiry(const QString& did, const UriWithExpiry& b
     auto* blocks = getBlocksWithExpiry(did);
     blocks->insert(block);
     mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
+    emit blocksWithExpiryChanged();
 }
 
 void UserSettings::removeBlockWithExpiry(const QString& did, const QString& blockUri)
@@ -544,6 +551,7 @@ void UserSettings::removeBlockWithExpiry(const QString& did, const QString& bloc
     auto* blocks = getBlocksWithExpiry(did);
     blocks->remove(blockUri);
     mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
+    emit blocksWithExpiryChanged();
 }
 
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)

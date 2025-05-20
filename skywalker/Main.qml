@@ -1053,7 +1053,13 @@ ApplicationWindow {
         }
         onGetListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
 
-        onBlockOk: (uri) => statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+        onBlockOk: (uri, expiresAt) => {
+            if (isNaN(expiresAt.getTime()))
+                statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+            else
+                statusPopup.show(qsTr(`Blocked till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
+        }
+
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
@@ -1616,19 +1622,27 @@ ApplicationWindow {
         profileUtils.clearPinnedPost(did, cid)
     }
 
-    function showBlockMuteDialog(blockUser, handle, okCb) {
+    function showBlockMuteDialog(blockUser, author, okCb) {
         let component = guiSettings.createComponent("BlockMuteUser.qml")
-        let dialog = component.createObject(root, { blockUser: blockUser, handle: handle })
+        let dialog = component.createObject(root, { blockUser: blockUser, author: author })
         dialog.onAccepted.connect(() => {
-            okCb(dialog.expiresAt)
+            const today = new Date()
+
+            if (dialog.expiresAt <= today)
+                skywalker.showStatusMessage(qsTr("Already expired"), QEnums.STATUS_LEVEL_ERROR)
+            else
+                okCb(dialog.expiresAt)
+
             dialog.destroy()
         })
         dialog.onRejected.connect(() => dialog.destroy())
         dialog.open()
     }
 
-    function blockAuthor(did) {
-        graphUtils.block(did)
+    function blockAuthor(author) {
+        let gu = graphUtils
+        let did = author.did
+        showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt))
     }
 
     function viewPostThread(modelId, postEntryIndex) {

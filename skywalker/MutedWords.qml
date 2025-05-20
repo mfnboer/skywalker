@@ -120,13 +120,7 @@ ListView {
         if (expiresAt < today)
             return qsTr("Expired")
 
-        if (guiSettings.isToday(expiresAt))
-            return qsTr(`Expires ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
-
-        if (guiSettings.isTomorrow(expiresAt))
-            return qsTr(`Expires tomorrow ${Qt.locale().toString(expiresAt, Qt.locale().timeFormat(Locale.ShortFormat))}`)
-
-        return qsTr(`Expires ${expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+        return qsTr(`Expires ${guiSettings.expiresIndication(expiresAt)}`)
     }
 
     function addWord() {

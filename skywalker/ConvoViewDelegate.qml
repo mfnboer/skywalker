@@ -128,29 +128,12 @@ Rectangle {
                         visible: convo.members.length > 1
                     }
 
-                    Row {
-                        spacing: 5
-
-                        SkyLabel {
-                            text: qsTr("blocked")
-                            visible: firstMember.viewer.blocking && firstMember.viewer.blockingByList.isNull()
-                        }
-                        SkyLabel {
-                            text: qsTr("blocks you")
-                            visible: firstMember.viewer.blockedBy
-                        }
-                        SkyLabel {
-                            text: qsTr("list blocked")
-                            visible: !firstMember.viewer.blockingByList.isNull()
-                        }
-                        SkyLabel {
-                            text: qsTr("muted")
-                            visible: firstMember.viewer.muted && firstMember.viewer.mutedByList.isNull()
-                        }
-                        SkyLabel {
-                            text: qsTr("list muted")
-                            visible: !firstMember.viewer.mutedByList.isNull()
-                        }
+                    AuthorViewerState {
+                        blockingUri: firstMember.viewer.blocking
+                        blockingByList: !firstMember.viewer.blockingByList.isNull()
+                        blockedBy: firstMember.viewer.blockedBy
+                        muted: firstMember.viewer.muted
+                        mutedByList: !firstMember.viewer.mutedByList.isNull()
                     }
 
                     Loader {

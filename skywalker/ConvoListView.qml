@@ -95,7 +95,7 @@ SkyPage {
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) => chat.unmuteConvo(convo.id)
-                onBlockAuthor: (author) => graphUtils.block(author.did)
+                onBlockAuthor: (author) => root.blockAuthor(author)
                 onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
             }
 
@@ -133,7 +133,7 @@ SkyPage {
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
-                onBlockAuthor: (author) => graphUtils.block(author.did)
+                onBlockAuthor: (author) => root.blockAuthor(author)
                 onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
                 onAcceptConvo: (convo) => chat.acceptConvo(convo)
                 onBlockAndDeleteConvo: (convo, author) => page.blockAndDeleteConvo(convo, author)
