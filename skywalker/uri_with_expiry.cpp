@@ -2,7 +2,6 @@
 // License: GPLv3
 #include "uri_with_expiry.h"
 #include <atproto/lib/xjson.h>
-#include <QJsonObject>
 
 namespace Skywalker {
 

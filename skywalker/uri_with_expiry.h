@@ -2,6 +2,8 @@
 // License: GPLv3
 #pragma once
 #include <QDateTime>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QObject>
 #include <set>
 
