@@ -41,6 +41,7 @@ void MutedWords::clear()
     mSingleWordIndex.clear();
     mFirstWordIndex.clear();
     mHashTagIndex.clear();
+    mDomainIndex.clear();
 
     emit entriesChanged();
 }
