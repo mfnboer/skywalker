@@ -368,6 +368,13 @@ public:
         VERIFIED_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::VerifiedStatus::UNKNOWN
     };
     Q_ENUM(VerifiedStatus)
+
+    enum ActorStatus
+    {
+        ACTOR_STATUS_LIVE = (int)ATProto::AppBskyActor::ActorStatus::LIVE,
+        ACTOR_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::ActorStatus::UNKNOWN
+    };
+    Q_ENUM(ActorStatus)
 };
 
 }

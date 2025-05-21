@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 Item {
@@ -51,6 +52,34 @@ Item {
             svg: author.associated.isLabeler ? SvgFilled.moderator : avatarItem.unknownSvg
         }
     }
+    Loader {
+        active: author.actorStatus.isActive
+        sourceComponent: Rectangle {
+            id: liveRect
+            width: avatarItem.width
+            height: avatarItem.height
+            radius: avatarItem.radius
+            color: "transparent"
+            border.color: "red"
+            border.width: 2
+
+            Label {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.bottom
+                padding: 1
+                color: "white"
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(5/8 / 37 * avatarItem.width)
+                text: qsTr("LIVE")
+
+                background: Rectangle {
+                    radius: 3
+                    color: liveRect.border.color
+                }
+            }
+        }
+    }
+
     MouseArea {
         anchors.fill: parent
         onClicked: {

@@ -22,6 +22,7 @@ public:
     ExternalView() = default;
     explicit ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr& external);
 
+    Q_INVOKABLE bool isNull() { return mExternal == nullptr; }
     QString getUri() const;
     QString getTitle() const;
     QString getDescription() const;

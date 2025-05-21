@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "content_label.h"
+#include "external_view.h"
 #include "image_view.h"
 #include "list_view_include.h"
 #include "shared_image_provider.h"
@@ -61,6 +62,33 @@ private:
     VerificationView::List mVerifications;
     QEnums::VerifiedStatus mVerifiedStatus = QEnums::VERIFIED_STATUS_NONE;
     QEnums::VerifiedStatus mTrustedVerifierStatus = QEnums::VERIFIED_STATUS_NONE;
+};
+
+class ActorStatusView
+{
+    Q_GADGET
+    Q_PROPERTY(QEnums::ActorStatus actorStatus READ getActorStatus FINAL)
+    Q_PROPERTY(ExternalView externalView READ getExternalView FINAL)
+    Q_PROPERTY(QDateTime expiresAt READ getExpiresAt FINAL)
+    Q_PROPERTY(bool isActive READ isActive FINAL)
+    QML_VALUE_TYPE(actorstatusview)
+
+public:
+    ActorStatusView() = default;
+    explicit ActorStatusView(const ATProto::AppBskyActor::StatusView& statusView);
+
+    Q_INVOKABLE bool isNull() const { return !mSet; }
+    QEnums::ActorStatus getActorStatus() const { return mActorStatus; }
+    const ExternalView& getExternalView() const { return mExternalView; }
+    QDateTime getExpiresAt() const { return mExpiresAt; }
+    bool isActive() const;
+
+private:
+    bool mSet = false;
+    QEnums::ActorStatus mActorStatus;
+    ExternalView mExternalView; // may be null
+    QDateTime mExpiresAt; // may be null
+    bool mIsActive = false;
 };
 
 class KnownFollowers
@@ -184,6 +212,7 @@ class BasicProfile
     Q_PROPERTY(bool hasCreatedAt READ hasCreatedAt FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(VerificationState verificationState READ getVerificationState FINAL)
+    Q_PROPERTY(ActorStatusView actorStatus READ getActorStatus FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -215,6 +244,8 @@ public:
     QDateTime getCreatedAt() const; // can return null datetime
     VerificationState& getVerificationState();
     const VerificationState& getVerificationState() const;
+    ActorStatusView& getActorStatus();
+    const ActorStatusView& getActorStatus() const;
 
     Q_INVOKABLE bool hasInvalidHandle() const;
 
@@ -253,6 +284,7 @@ private:
         std::optional<ContentLabelList> mContentLabels;
         std::optional<QDateTime> mCreatedAt;
         std::optional<VerificationState> mVerificationState;
+        std::optional<ActorStatusView> mActorStatus;
     };
     std::shared_ptr<PrivateData> mPrivate;
 };

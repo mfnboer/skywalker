@@ -58,6 +58,33 @@ VerificationView::List VerificationState::getValidVerifications() const
     return validVerifications;
 }
 
+ActorStatusView::ActorStatusView(const ATProto::AppBskyActor::StatusView& statusView) :
+    mSet(true),
+    mActorStatus(QEnums::ActorStatus((int)statusView.mStatus)),
+    mExpiresAt(statusView.mExpiresAt.value_or(QDateTime{})),
+    mIsActive(statusView.mIsActive.value_or(true))
+{
+    if (statusView.mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*statusView.mEmbed))
+    {
+        auto view = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*statusView.mEmbed);
+        mExternalView = ExternalView(view->mExternal);
+    }
+}
+
+bool ActorStatusView::isActive() const
+{
+    if (!mSet)
+        return false;
+
+    if (!mExpiresAt.isValid())
+        return true;
+
+    if (!mIsActive)
+        return false;
+
+    return mExpiresAt >= QDateTime::currentDateTime();
+}
+
 KnownFollowers::KnownFollowers(const ATProto::AppBskyActor::KnownFollowers* knownFollowers)
 {
     if (!knownFollowers)
@@ -516,6 +543,41 @@ const VerificationState& BasicProfile::getVerificationState() const
 {
     VerificationState& state = const_cast<BasicProfile*>(this)->getVerificationState();
     return state;
+}
+
+ActorStatusView& BasicProfile::getActorStatus()
+{
+    if (mPrivate)
+    {
+        if (mPrivate->mActorStatus)
+            return *mPrivate->mActorStatus;
+
+        if (mPrivate->mProfileBasicView)
+            mPrivate->mActorStatus = mPrivate->mProfileBasicView->mStatus ? ActorStatusView(*mPrivate->mProfileBasicView->mStatus) : ActorStatusView{};
+        else
+            mPrivate->mActorStatus = ActorStatusView{};
+
+        return *mPrivate->mActorStatus;
+    }
+    else
+    {
+        mPrivate = std::make_shared<PrivateData>();
+    }
+
+    if (mProfileView)
+        mPrivate->mActorStatus = mProfileView->mStatus ? ActorStatusView(*mProfileView->mStatus) : ActorStatusView{};
+    else if (mProfileDetailedView)
+        mPrivate->mActorStatus = mProfileDetailedView->mStatus ? ActorStatusView(*mProfileDetailedView->mStatus) : ActorStatusView{};
+    else
+        mPrivate->mActorStatus = ActorStatusView{};
+
+    return *mPrivate->mActorStatus;
+}
+
+const ActorStatusView& BasicProfile::getActorStatus() const
+{
+    ActorStatusView& status = const_cast<BasicProfile*>(this)->getActorStatus();
+    return status;
 }
 
 void BasicProfile::setDisplayName(const QString& displayName)
