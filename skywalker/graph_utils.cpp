@@ -11,6 +11,10 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
+static constexpr auto EXPIRY_CHECK_INTERVAL = 59s;
+
 GraphUtils::GraphUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
@@ -25,6 +29,21 @@ GraphUtils::GraphUtils(QObject* parent) :
                     mGraphMaster = nullptr;
                 });
     });
+
+    connect(&mExpiryCheckTimer, &QTimer::timeout, this, [this]{ checkExpiry(); });
+}
+
+void GraphUtils::startExpiryCheckTimer()
+{
+    qDebug() << "Start expiry check timer";
+    mExpiryCheckTimer.start(EXPIRY_CHECK_INTERVAL);
+    checkExpiry();
+}
+
+void GraphUtils::stopExpiryCheckTimer()
+{
+    qDebug() << "Stop expiry check timer";
+    mExpiryCheckTimer.stop();
 }
 
 ATProto::GraphMaster* GraphUtils::graphMaster()
@@ -99,13 +118,13 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
         });
 }
 
-void GraphUtils::block(const QString& did)
+void GraphUtils::block(const QString& did, QDateTime expiresAt)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->block(did,
-        [this, presence=getPresence(), did](const auto& blockingUri, const auto&){
+        [this, presence=getPresence(), did, expiresAt](const auto& blockingUri, const auto&){
             if (!presence)
                 return;
 
@@ -120,7 +139,14 @@ void GraphUtils::block(const QString& did)
                 });
 
             mSkywalker->getChat()->updateBlockingUri(did, blockingUri);
-            emit blockOk(blockingUri);
+
+            if (expiresAt.isValid())
+            {
+                auto* settings = mSkywalker->getUserSettings();
+                settings->addBlockWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{blockingUri, expiresAt});
+            }
+
+            emit blockOk(blockingUri, expiresAt);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -131,13 +157,61 @@ void GraphUtils::block(const QString& did)
         });
 }
 
+void GraphUtils::unblock(const QString& blockingUri)
+{
+    if (!bskyClient())
+        return;
+
+    const auto atUri = ATProto::ATUri(blockingUri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid blockin URI:" << blockingUri;
+        auto* settings = mSkywalker->getUserSettings();
+
+        if (settings->removeBlockWithExpiry(mSkywalker->getUserDid(), blockingUri))
+            expireBlocks();
+
+        return;
+    }
+
+    bskyClient()->getRecord(atUri.getAuthority(), atUri.getCollection(), atUri.getRkey(), {},
+        [this, presence=getPresence(), blockingUri](ATProto::ComATProtoRepo::Record::SharedPtr record){
+            if (!presence)
+                return;
+
+            try {
+                auto block = ATProto::AppBskyGraph::Block::fromJson(record->mValue);
+                unblock(block->mSubject, blockingUri);
+            }
+            catch (ATProto::InvalidJsonException& e) {
+                qWarning() << e.msg();
+            }
+        },
+        [this, presence=getPresence(), blockingUri](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << error << " - " << msg;
+
+            if (error == ATProto::ATProtoErrorMsg::RECORD_NOT_FOUND)
+            {
+                qDebug() << "Block does not exist anymore:" << blockingUri;
+                auto* settings = mSkywalker->getUserSettings();
+
+                if (settings->removeBlockWithExpiry(mSkywalker->getUserDid(), blockingUri))
+                    expireBlocks();
+            }
+        });
+}
+
 void GraphUtils::unblock(const QString& did, const QString& blockingUri)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->undo(blockingUri,
-        [this, presence=getPresence(), did]{
+        [this, presence=getPresence(), did, blockingUri]{
             if (!presence)
                 return;
 
@@ -152,6 +226,12 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
                 });
 
             mSkywalker->getChat()->updateBlockingUri(did, "");
+
+            auto* settings = mSkywalker->getUserSettings();
+
+            if (settings->removeBlockWithExpiry(mSkywalker->getUserDid(), blockingUri))
+                expireBlocks();
+
             emit unblockOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -163,13 +243,13 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
         });
 }
 
-void GraphUtils::mute(const QString& did)
+void GraphUtils::mute(const QString& did, QDateTime expiresAt)
 {
     if (!bskyClient())
         return;
 
     bskyClient()->muteActor(did,
-        [this, presence=getPresence(), did]{
+        [this, presence=getPresence(), did, expiresAt]{
             if (!presence)
                 return;
 
@@ -178,7 +258,13 @@ void GraphUtils::mute(const QString& did)
                     model->updateMuted(did, true);
                 });
 
-            emit muteOk();
+            if (expiresAt.isValid())
+            {
+                auto* settings = mSkywalker->getUserSettings();
+                settings->addMuteWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{did, expiresAt});
+            }
+
+            emit muteOk(expiresAt);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -203,6 +289,13 @@ void GraphUtils::unmute(const QString& did)
                 [did](LocalAuthorModelChanges* model){
                     model->updateMuted(did, false);
                 });
+
+            auto* settings = mSkywalker->getUserSettings();
+
+            // NOTE: when a user has been unmuted already via another client
+            // we still get here, i.e. an unmute succeeds in this case.
+            if (settings->removeMuteWithExpiry(mSkywalker->getUserDid(), did))
+                expireMutes();
 
             emit unmuteOk();
         },
@@ -914,6 +1007,86 @@ bool GraphUtils::isInternalList(const QString& listUri) const
 {
     ATProto::ATUri atUri(listUri);
     return atUri.isValid() && atUri.getRkey() == RKEY_MUTED_REPOSTS;
+}
+
+void GraphUtils::expireBlocks()
+{
+    qDebug() << "Check blocks expiry";
+
+    if (!mExpiryCheckTimer.isActive())
+    {
+        qDebug() << "Expiry check is not active";
+        return;
+    }
+
+    if (!mSkywalker)
+    {
+        qWarning() << "Skywalker not set";
+        return;
+    }
+
+    auto* settings = mSkywalker->getUserSettings();
+    auto* blocks = settings->getBlocksWithExpiry();
+
+    if (!blocks)
+    {
+        qWarning() << "Blocks with expiry not available";
+        return;
+    }
+
+    const auto now = QDateTime::currentDateTime();
+    const auto* uriWithExpiry = blocks->getFirstExpiry();
+
+    if (uriWithExpiry)
+        qDebug() << "Now:" << now << "First:" << uriWithExpiry->getExpiry() << uriWithExpiry->getUri();
+    else
+        qDebug() << "No blocks with expiry";
+
+    if (uriWithExpiry && uriWithExpiry->getExpiry() <= now)
+        unblock(uriWithExpiry->getUri());
+}
+
+void GraphUtils::expireMutes()
+{
+    qDebug() << "Check mutes expiry";
+
+    if (!mExpiryCheckTimer.isActive())
+    {
+        qDebug() << "Expiry check is not active";
+        return;
+    }
+
+    if (!mSkywalker)
+    {
+        qWarning() << "Skywalker not set";
+        return;
+    }
+
+    auto* settings = mSkywalker->getUserSettings();
+    auto* mutes = settings->getMutesWithExpiry();
+
+    if (!mutes)
+    {
+        qWarning() << "Mutes with expiry not available";
+        return;
+    }
+
+    const auto now = QDateTime::currentDateTime();
+    const auto* uriWithExpiry = mutes->getFirstExpiry();
+
+    if (uriWithExpiry)
+        qDebug() << "Now:" << now << "First:" << uriWithExpiry->getExpiry() << uriWithExpiry->getUri();
+    else
+        qDebug() << "No mutes with expiry";
+
+    if (uriWithExpiry && uriWithExpiry->getExpiry() <= now)
+        unmute(uriWithExpiry->getUri());
+}
+
+void GraphUtils::checkExpiry()
+{
+    expireBlocks();
+    expireMutes();
 }
 
 }

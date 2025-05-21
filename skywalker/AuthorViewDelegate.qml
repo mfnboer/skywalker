@@ -77,41 +77,16 @@ Rectangle {
                 Accessible.ignored: true
             }
 
-            Row {
-                spacing: 5
-
-                SkyLabel {
-                    text: qsTr("follows you")
-                    visible: author.viewer.followedBy && showFollow
-                }
-                SkyLabel {
-                    text: qsTr("blocked")
-                    visible: blockingUri && author.viewer.blockingByList.isNull()
-                }
-                SkyLabel {
-                    text: qsTr("blocks you")
-                    visible: author.viewer.blockedBy
-                }
-                SkyLabel {
-                    text: qsTr("list blocked")
-                    visible: !author.viewer.blockingByList.isNull()
-                }
-                SkyLabel {
-                    text: qsTr("muted")
-                    visible: authorMuted && author.viewer.mutedByList.isNull()
-                }
-                SkyLabel {
-                    text: qsTr("list muted")
-                    visible: !author.viewer.mutedByList.isNull()
-                }
-                SkyLabel {
-                    text: qsTr("muted reposts")
-                    visible: mutedReposts
-                }
-                SkyLabel {
-                    text: qsTr("hide from timeline")
-                    visible: hideFromTimeline
-                }
+            AuthorViewerState {
+                did: author.did
+                followedBy: author.viewer.followedBy && showFollow
+                blockingUri: authorRect.blockingUri
+                blockingByList: !author.viewer.blockingByList.isNull()
+                blockedBy: author.viewer.blockedBy
+                muted: authorMuted
+                mutedByList: !author.viewer.mutedByList.isNull()
+                mutedReposts: authorRect.mutedReposts
+                hideFromTimeline: authorRect.hideFromTimeline
             }
 
             ContentLabels {
@@ -176,7 +151,6 @@ Rectangle {
             skywalker.getDetailedProfile(author.did)
         }
     }
-
 
     function confirmDelete() {
         guiSettings.askYesNoQuestion(

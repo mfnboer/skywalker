@@ -5,6 +5,7 @@
 #include "password_encryption.h"
 #include "profile.h"
 #include "search_feed.h"
+#include "uri_with_expiry.h"
 #include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>
@@ -41,6 +42,8 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
     Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
+    Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
+    Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
 
 public:
     void reset();
@@ -158,6 +161,16 @@ public:
     // Legacy
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);
+
+    UriWithExpirySet* getBlocksWithExpiry();
+    UriWithExpirySet* getBlocksWithExpiry(const QString& did);
+    void addBlockWithExpiry(const QString& did, const UriWithExpiry& block);
+    bool removeBlockWithExpiry(const QString& did, const QString& blockUri);
+
+    UriWithExpirySet* getMutesWithExpiry();
+    UriWithExpirySet* getMutesWithExpiry(const QString& did);
+    void addMuteWithExpiry(const QString& did, const UriWithExpiry& mute);
+    bool removeMuteWithExpiry(const QString& did, const QString& muteDid);
 
     Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
@@ -356,6 +369,8 @@ signals:
     void scriptRecognitionChanged();
     void showTrendingTopicsChanged();
     void showSuggestedUsersChanged();
+    void blocksWithExpiryChanged();
+    void mutesWithExpiryChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;
@@ -369,6 +384,8 @@ private:
     QSettings mSettings;
     PasswordEncryption mEncryption;
     std::optional<std::unordered_set<QString>> mSyncFeeds;
+    std::unique_ptr<UriWithExpirySet> mBlocksWithExpiry;
+    std::unique_ptr<UriWithExpirySet> mMutesWithExpiry;
 
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK

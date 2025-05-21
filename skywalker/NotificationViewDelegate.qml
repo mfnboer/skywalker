@@ -352,7 +352,7 @@ Rectangle {
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
                         onPin: root.pinPost(notificationPostUri, notificationCid)
                         onUnpin: root.unpinPost(notificationCid)
-                        onBlockAuthor: root.blockAuthor(notificationPostAuthor.did)
+                        onBlockAuthor: root.blockAuthor(notificationPostAuthor)
                         onShowEmojiNames: root.showEmojiNamesList(notificationPostPlainText)
                     }
                 }

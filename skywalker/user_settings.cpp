@@ -69,6 +69,8 @@ QString UserSettings::labelsKey(const QString& did, const QString& labelerDid) c
 void UserSettings::reset()
 {
     mSyncFeeds.reset();
+    mBlocksWithExpiry = nullptr;
+    mMutesWithExpiry = nullptr;
     setActiveUserDid({});
 }
 
@@ -515,6 +517,80 @@ void UserSettings::removeMutedWords(const QString& did)
     qDebug() << "Remove locally stored muted words";
     mSettings.remove(key(did, "mutedWords"));
     mSettings.remove("mutedWordsNoticeSeen");
+}
+
+UriWithExpirySet* UserSettings::getBlocksWithExpiry()
+{
+    const auto did = getActiveUserDid();
+    return getBlocksWithExpiry(did);
+}
+
+UriWithExpirySet* UserSettings::getBlocksWithExpiry(const QString& did)
+{
+    if (!mBlocksWithExpiry)
+    {
+        mBlocksWithExpiry.reset(new UriWithExpirySet(this));
+        const auto jsonArray = mSettings.value(key(did, "blocksWithExpiry")).toJsonArray();
+        mBlocksWithExpiry->fromJson(jsonArray);
+    }
+
+    return mBlocksWithExpiry.get();
+}
+
+void UserSettings::addBlockWithExpiry(const QString& did, const UriWithExpiry& block)
+{
+    qDebug() << "Add block:" << block.getUri() << block.getExpiry();
+    auto* blocks = getBlocksWithExpiry(did);
+    blocks->insert(block);
+    mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
+    emit blocksWithExpiryChanged();
+}
+
+bool UserSettings::removeBlockWithExpiry(const QString& did, const QString& blockUri)
+{
+    qDebug() << "Remove block:" << blockUri;
+    auto* blocks = getBlocksWithExpiry(did);
+    const bool removed = blocks->remove(blockUri);
+    mSettings.setValue(key(did, "blocksWithExpiry"), blocks->toJson());
+    emit blocksWithExpiryChanged();
+    return removed;
+}
+
+UriWithExpirySet* UserSettings::getMutesWithExpiry()
+{
+    const auto did = getActiveUserDid();
+    return getMutesWithExpiry(did);
+}
+
+UriWithExpirySet* UserSettings::getMutesWithExpiry(const QString& did)
+{
+    if (!mMutesWithExpiry)
+    {
+        mMutesWithExpiry.reset(new UriWithExpirySet(this));
+        const auto jsonArray = mSettings.value(key(did, "mutesWithExpiry")).toJsonArray();
+        mMutesWithExpiry->fromJson(jsonArray);
+    }
+
+    return mMutesWithExpiry.get();
+}
+
+void UserSettings::addMuteWithExpiry(const QString& did, const UriWithExpiry& mute)
+{
+    qDebug() << "Add mute:" << mute.getUri() << mute.getExpiry();
+    auto* mutes = getMutesWithExpiry(did);
+    mutes->insert(mute);
+    mSettings.setValue(key(did, "mutesWithExpiry"), mutes->toJson());
+    emit mutesWithExpiryChanged();
+}
+
+bool UserSettings::removeMuteWithExpiry(const QString& did, const QString& muteDid)
+{
+    qDebug() << "Remove mute:" << muteDid;
+    auto* mutes = getMutesWithExpiry(did);
+    const bool removed = mutes->remove(muteDid);
+    mSettings.setValue(key(did, "mutesWithExpiry"), mutes->toJson());
+    emit mutesWithExpiryChanged();
+    return removed;
 }
 
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)

@@ -264,10 +264,14 @@ SkyPage {
                                 text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
                                 visible: !guiSettings.isUser(author) && author.viewer.mutedByList.isNull()
                                 onTriggered: {
-                                    if (authorMuted)
+                                    if (authorMuted) {
                                         graphUtils.unmute(author.did)
-                                    else
-                                        graphUtils.mute(author.did)
+                                    }
+                                    else {
+                                        let gu = graphUtils
+                                        let did = author.did
+                                        root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt))
+                                    }
                                 }
 
                                 MenuItemSvg { svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute }
@@ -276,10 +280,14 @@ SkyPage {
                                 text: blocking ? qsTr("Unblock account") : qsTr("Block account")
                                 visible: !guiSettings.isUser(author) && author.viewer.blockingByList.isNull()
                                 onTriggered: {
-                                    if (blocking)
+                                    if (blocking) {
                                         graphUtils.unblock(author.did, blocking)
-                                    else
-                                        graphUtils.block(author.did)
+                                    }
+                                    else {
+                                        let gu = graphUtils
+                                        let did = author.did
+                                        root.showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt))
+                                    }
                                 }
 
                                 MenuItemSvg { svg: blocking ? SvgOutline.unblock : SvgOutline.block }
@@ -1078,10 +1086,10 @@ SkyPage {
             }
 
             function refresh() {
-                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(1)
+                authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0)
 
-                for (let i = 0; i < children.length; ++i) {
-                    let c = children[i]
+                for (let i = 0; i < contentChildren.length; ++i) {
+                    let c = contentChildren[i]
 
                     if (c instanceof AuthorPostsList) {
                         if (c.modelId !== page.modelId)
@@ -1089,21 +1097,20 @@ SkyPage {
                         else
                             c.refresh()
                     }
-                    else {
-                        if (c.sourceItem)
-                            c.sourceItem.refresh()
+                    else if (c.item) {
+                        c.item.refresh()
                     }
                 }
             }
 
             function clear() {
-                for (let i = 0; i < children.length; ++i) {
-                    let c = children[i]
+                for (let i = 0; i < contentChildren.length; ++i) {
+                    let c = contentChildren[i]
 
                     if (c instanceof AuthorPostsList)
                         c.clear()
-                    else if (c.sourceItem)
-                        c.sourceItem.clear()
+                    else if (c.item)
+                        c.item.clear()
                 }
             }
         }
@@ -1151,10 +1158,14 @@ SkyPage {
         onUnfollowOk: following = ""
         onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
-        onBlockOk: (uri) => {
+        onBlockOk: (uri, expiresAt) => {
                        blocking = uri
                        authorFeedView.clear()
-                       statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+
+                        if (isNaN(expiresAt.getTime()))
+                            statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+                        else
+                            statusPopup.show(qsTr(`Blocked till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
                    }
 
         onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1167,10 +1178,14 @@ SkyPage {
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
-        onMuteOk: {
+        onMuteOk: (expiresAt) => {
             authorMuted = true
             authorFeedView.clear()
-            statusPopup.show(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
+
+            if (isNaN(expiresAt.getTime()))
+                statusPopup.show(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
+            else
+                statusPopup.show(qsTr(`Muted till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
         onMuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1403,19 +1418,39 @@ SkyPage {
             const listName = UnicodeFonts.toCleanedHtml(author.viewer.blockingByList.name)
             return qsTr(`Blocked by list: <a href="${author.viewer.blockingByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
         } else if (blocking) {
-            return qsTr("You blocked this account")
+            return getBlockingText()
         } else if (author.viewer.blockedBy) {
             return qsTr("You are blocked")
         } else if (!author.viewer.mutedByList.isNull()) {
             const listName = UnicodeFonts.toCleanedHtml(author.viewer.mutedByList.name)
             return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
         } else if (authorMuted) {
-            return qsTr("You muted this account")
+            return getMutingText()
         } else if (!contentVisible()) {
             return contentWarning
         }
 
         return qsTr("No posts")
+    }
+
+    function getBlockingText() {
+        const blocksWithExpiry = skywalker.getUserSettings().blocksWithExpiry
+        const expiresAt = blocksWithExpiry.getExpiry(blocking)
+
+        if (!isNaN(expiresAt.getTime()))
+            return qsTr(`You blocked this account till ${guiSettings.expiresIndication(expiresAt)}`)
+
+        return qsTr("You blocked this account")
+    }
+
+    function getMutingText() {
+        const mutesWithExpiry = skywalker.getUserSettings().mutesWithExpiry
+        const expiresAt = mutesWithExpiry.getExpiry(author.did)
+
+        if (!isNaN(expiresAt.getTime()))
+            return qsTr(`You muted this account till ${guiSettings.expiresIndication(expiresAt)}`)
+
+        return qsTr("You mutes this account")
     }
 
     function setLabeler(view) {

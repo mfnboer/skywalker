@@ -10,6 +10,7 @@
 #include "test_text_differ.h"
 #include "test_text_splitter.h"
 #include "test_unicode_fonts.h"
+#include "test_uri_with_expiry.h"
 #include <QtTest/QTest>
 
 int main(int argc, char *argv[])
@@ -43,6 +44,9 @@ int main(int argc, char *argv[])
 
     TestUnicodeFonts testUnicodeFonts;
     QTest::qExec(&testUnicodeFonts, argc, argv);
+
+    TestUriWithExpiry testUriWithExpiry;
+    QTest::qExec(&testUriWithExpiry, argc, argv);
 
     return 0;
 }

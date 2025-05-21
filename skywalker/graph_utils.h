@@ -8,6 +8,7 @@
 #include "web_link.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/graph_master.h>
+#include <QTimer>
 
 namespace Skywalker {
 
@@ -21,9 +22,10 @@ public:
 
     Q_INVOKABLE void follow(const BasicProfile& profile);
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
-    Q_INVOKABLE void block(const QString& did);
+    Q_INVOKABLE void block(const QString& did, QDateTime expiresAt = QDateTime{});
+    void unblock(const QString& blockingUri);
     Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);
-    Q_INVOKABLE void mute(const QString& did);
+    Q_INVOKABLE void mute(const QString& did, QDateTime expiresAt = QDateTime{});
     Q_INVOKABLE void unmute(const QString& did);
 
     // avatarImgSource must be a 'file://' or 'image://' reference.
@@ -63,16 +65,19 @@ public:
     // Check if a list is a list internally used by Skywalker
     bool isInternalList(const QString& listUri) const;
 
+    void startExpiryCheckTimer();
+    void stopExpiryCheckTimer();
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);
     void unfollowOk();
     void unfollowFailed(QString error);
-    void blockOk(QString uri);
+    void blockOk(QString uri, QDateTime expiresAt);
     void blockFailed(QString error);
     void unblockOk();
     void unblockFailed(QString error);
-    void muteOk();
+    void muteOk(QDateTime expiresAt);
     void muteFailed(QString error);
     void unmuteOk();
     void unmuteFailed(QString error);
@@ -118,9 +123,13 @@ private:
                             const QString& description, const WebLink::List& embeddedLinks,
                             ATProto::Blob::SharedPtr blob, bool updateAvatar);
     void continueCreateListFromStarterPack(const StarterPackView& starterPack, const QString &listUri, const QString& listCid, int maxPages = 3, const std::optional<QString> cursor = {});
+    void expireBlocks();
+    void expireMutes();
+    void checkExpiry();
 
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;
+    QTimer mExpiryCheckTimer;
 };
 
 }
