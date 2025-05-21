@@ -43,6 +43,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
     Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
+    Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
 
 public:
     void reset();
@@ -165,6 +166,11 @@ public:
     UriWithExpirySet* getBlocksWithExpiry(const QString& did);
     void addBlockWithExpiry(const QString& did, const UriWithExpiry& block);
     bool removeBlockWithExpiry(const QString& did, const QString& blockUri);
+
+    UriWithExpirySet* getMutesWithExpiry();
+    UriWithExpirySet* getMutesWithExpiry(const QString& did);
+    void addMuteWithExpiry(const QString& did, const UriWithExpiry& mute);
+    bool removeMuteWithExpiry(const QString& did, const QString& muteDid);
 
     Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;
@@ -364,6 +370,7 @@ signals:
     void showTrendingTopicsChanged();
     void showSuggestedUsersChanged();
     void blocksWithExpiryChanged();
+    void mutesWithExpiryChanged();
 
 private:
     QString key(const QString& did, const QString& subkey) const;
@@ -378,6 +385,7 @@ private:
     PasswordEncryption mEncryption;
     std::optional<std::unordered_set<QString>> mSyncFeeds;
     std::unique_ptr<UriWithExpirySet> mBlocksWithExpiry;
+    std::unique_ptr<UriWithExpirySet> mMutesWithExpiry;
 
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK

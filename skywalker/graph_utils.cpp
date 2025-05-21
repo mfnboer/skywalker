@@ -30,14 +30,14 @@ GraphUtils::GraphUtils(QObject* parent) :
                 });
     });
 
-    connect(&mExpiryCheckTimer, &QTimer::timeout, this, [this]{ expireBlocks(); });
+    connect(&mExpiryCheckTimer, &QTimer::timeout, this, [this]{ checkExpiry(); });
 }
 
 void GraphUtils::startExpiryCheckTimer()
 {
     qDebug() << "Start expiry check timer";
     mExpiryCheckTimer.start(EXPIRY_CHECK_INTERVAL);
-    expireBlocks();
+    checkExpiry();
 }
 
 void GraphUtils::stopExpiryCheckTimer()
@@ -243,13 +243,13 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
         });
 }
 
-void GraphUtils::mute(const QString& did)
+void GraphUtils::mute(const QString& did, QDateTime expiresAt)
 {
     if (!bskyClient())
         return;
 
     bskyClient()->muteActor(did,
-        [this, presence=getPresence(), did]{
+        [this, presence=getPresence(), did, expiresAt]{
             if (!presence)
                 return;
 
@@ -258,7 +258,13 @@ void GraphUtils::mute(const QString& did)
                     model->updateMuted(did, true);
                 });
 
-            emit muteOk();
+            if (expiresAt.isValid())
+            {
+                auto* settings = mSkywalker->getUserSettings();
+                settings->addMuteWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{did, expiresAt});
+            }
+
+            emit muteOk(expiresAt);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -283,6 +289,13 @@ void GraphUtils::unmute(const QString& did)
                 [did](LocalAuthorModelChanges* model){
                     model->updateMuted(did, false);
                 });
+
+            auto* settings = mSkywalker->getUserSettings();
+
+            // NOTE: when a user has been unmuted already via another client
+            // we still get here, i.e. an unmute succeeds in this case.
+            if (settings->removeMuteWithExpiry(mSkywalker->getUserDid(), did))
+                expireMutes();
 
             emit unmuteOk();
         },
@@ -1031,6 +1044,49 @@ void GraphUtils::expireBlocks()
 
     if (uriWithExpiry && uriWithExpiry->getExpiry() <= now)
         unblock(uriWithExpiry->getUri());
+}
+
+void GraphUtils::expireMutes()
+{
+    qDebug() << "Check mutes expiry";
+
+    if (!mExpiryCheckTimer.isActive())
+    {
+        qDebug() << "Expiry check is not active";
+        return;
+    }
+
+    if (!mSkywalker)
+    {
+        qWarning() << "Skywalker not set";
+        return;
+    }
+
+    auto* settings = mSkywalker->getUserSettings();
+    auto* mutes = settings->getMutesWithExpiry();
+
+    if (!mutes)
+    {
+        qWarning() << "Mutes with expiry not available";
+        return;
+    }
+
+    const auto now = QDateTime::currentDateTime();
+    const auto* uriWithExpiry = mutes->getFirstExpiry();
+
+    if (uriWithExpiry)
+        qDebug() << "Now:" << now << "First:" << uriWithExpiry->getExpiry() << uriWithExpiry->getUri();
+    else
+        qDebug() << "No mutes with expiry";
+
+    if (uriWithExpiry && uriWithExpiry->getExpiry() <= now)
+        unmute(uriWithExpiry->getUri());
+}
+
+void GraphUtils::checkExpiry()
+{
+    expireBlocks();
+    expireMutes();
 }
 
 }

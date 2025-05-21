@@ -78,6 +78,7 @@ Rectangle {
             }
 
             AuthorViewerState {
+                did: author.did
                 followedBy: author.viewer.followedBy && showFollow
                 blockingUri: authorRect.blockingUri
                 blockingByList: !author.viewer.blockingByList.isNull()

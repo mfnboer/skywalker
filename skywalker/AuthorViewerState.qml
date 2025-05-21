@@ -1,6 +1,7 @@
 import QtQuick
 
 Row {
+    required property string did
     property bool followedBy: false
     property string blockingUri
     property bool blockingByList: false
@@ -29,7 +30,7 @@ Row {
         visible: blockingByList
     }
     SkyLabel {
-        text: qsTr("muted")
+        text: getMutingText()
         visible: muted && !mutedByList
     }
     SkyLabel {
@@ -53,5 +54,15 @@ Row {
             return qsTr(`blocked till ${expiresIndication(expiresAt)}`)
 
         return qsTr("blocked")
+    }
+
+    function getMutingText() {
+        const mutesWithExpiry = root.getSkywalker().getUserSettings().mutesWithExpiry
+        const expiresAt = mutesWithExpiry.getExpiry(did)
+
+        if (!isNaN(expiresAt.getTime()))
+            return qsTr(`muted till ${expiresIndication(expiresAt)}`)
+
+        return qsTr("muted")
     }
 }

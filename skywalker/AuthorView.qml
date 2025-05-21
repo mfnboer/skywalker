@@ -264,10 +264,14 @@ SkyPage {
                                 text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
                                 visible: !guiSettings.isUser(author) && author.viewer.mutedByList.isNull()
                                 onTriggered: {
-                                    if (authorMuted)
+                                    if (authorMuted) {
                                         graphUtils.unmute(author.did)
-                                    else
-                                        graphUtils.mute(author.did)
+                                    }
+                                    else {
+                                        let gu = graphUtils
+                                        let did = author.did
+                                        root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt))
+                                    }
                                 }
 
                                 MenuItemSvg { svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute }
@@ -1174,10 +1178,14 @@ SkyPage {
 
         onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
 
-        onMuteOk: {
+        onMuteOk: (expiresAt) => {
             authorMuted = true
             authorFeedView.clear()
-            statusPopup.show(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
+
+            if (isNaN(expiresAt.getTime()))
+                statusPopup.show(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
+            else
+                statusPopup.show(qsTr(`Muted till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
         onMuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1417,7 +1425,7 @@ SkyPage {
             const listName = UnicodeFonts.toCleanedHtml(author.viewer.mutedByList.name)
             return qsTr(`Muted by list: <a href="${author.viewer.mutedByList.uri}" style="color: ${guiSettings.linkColor}">${listName}</a>`)
         } else if (authorMuted) {
-            return qsTr("You muted this account")
+            return getMutingText()
         } else if (!contentVisible()) {
             return contentWarning
         }
@@ -1433,6 +1441,16 @@ SkyPage {
             return qsTr(`You blocked this account till ${guiSettings.expiresIndication(expiresAt)}`)
 
         return qsTr("You blocked this account")
+    }
+
+    function getMutingText() {
+        const mutesWithExpiry = skywalker.getUserSettings().mutesWithExpiry
+        const expiresAt = mutesWithExpiry.getExpiry(author.did)
+
+        if (!isNaN(expiresAt.getTime()))
+            return qsTr(`You muted this account till ${guiSettings.expiresIndication(expiresAt)}`)
+
+        return qsTr("You mutes this account")
     }
 
     function setLabeler(view) {

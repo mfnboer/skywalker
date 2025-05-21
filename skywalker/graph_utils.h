@@ -25,7 +25,7 @@ public:
     Q_INVOKABLE void block(const QString& did, QDateTime expiresAt = QDateTime{});
     void unblock(const QString& blockingUri);
     Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);
-    Q_INVOKABLE void mute(const QString& did);
+    Q_INVOKABLE void mute(const QString& did, QDateTime expiresAt = QDateTime{});
     Q_INVOKABLE void unmute(const QString& did);
 
     // avatarImgSource must be a 'file://' or 'image://' reference.
@@ -77,7 +77,7 @@ signals:
     void blockFailed(QString error);
     void unblockOk();
     void unblockFailed(QString error);
-    void muteOk();
+    void muteOk(QDateTime expiresAt);
     void muteFailed(QString error);
     void unmuteOk();
     void unmuteFailed(QString error);
@@ -124,6 +124,8 @@ private:
                             ATProto::Blob::SharedPtr blob, bool updateAvatar);
     void continueCreateListFromStarterPack(const StarterPackView& starterPack, const QString &listUri, const QString& listCid, int maxPages = 3, const std::optional<QString> cursor = {});
     void expireBlocks();
+    void expireMutes();
+    void checkExpiry();
 
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;

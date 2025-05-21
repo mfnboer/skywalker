@@ -129,6 +129,7 @@ Rectangle {
                     }
 
                     AuthorViewerState {
+                        did: firstMember.did
                         blockingUri: firstMember.viewer.blocking
                         blockingByList: !firstMember.viewer.blockingByList.isNull()
                         blockedBy: firstMember.viewer.blockedBy
