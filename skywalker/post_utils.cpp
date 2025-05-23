@@ -112,11 +112,41 @@ void PostUtils::checkPostExists(const QString& uri, const QString& cid)
 
             qDebug() << "Check post exists failed:" << error << " - " << msg;
 
-            if (error == ATProto::ATProtoErrorMsg::RECORD_NOT_FOUND)
+            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
                 emit checkPostExistsFailed(uri, cid, tr("Post is deleted"));
             else
                 emit checkPostExistsFailed(uri, cid, msg);
-    });
+        });
+}
+
+void PostUtils::canQuotePost(const QString& postUri)
+{
+    qDebug() << "Check if post can be quoted:" << postUri;
+
+    if (!postMaster())
+        return;
+
+    postMaster()->getPostgate(postUri,
+        [this, presence=getPresence(), postUri](auto postgate){
+            if (!presence)
+                return;
+
+            emit canQuotePostOk(postUri, !postgate->mDisableEmbedding);
+        },
+        [this, presence=getPresence(), postUri](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
+            {
+                qDebug() << "No postgate record exists:" << postUri;
+                emit canQuotePostOk(postUri, true);
+                return;
+            }
+
+            qWarning() << "Failed to get postgate:" << error << "-" << msg;
+            emit canQuotePostFailed(postUri, msg);
+        });
 }
 
 void PostUtils::post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
@@ -1284,7 +1314,7 @@ void PostUtils::getPostgate(const QString& postUri)
             if (!presence)
                 return;
 
-            if (error == ATProto::ATProtoErrorMsg::RECORD_NOT_FOUND)
+            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
             {
                 qDebug() << "No postgate record exists:" << postUri;
                 emit getPostgateOk(Postgate{});

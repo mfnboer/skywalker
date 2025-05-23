@@ -194,7 +194,7 @@ void GraphUtils::unblock(const QString& blockingUri)
 
             qDebug() << error << " - " << msg;
 
-            if (error == ATProto::ATProtoErrorMsg::RECORD_NOT_FOUND)
+            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
             {
                 qDebug() << "Block does not exist anymore:" << blockingUri;
                 auto* settings = mSkywalker->getUserSettings();

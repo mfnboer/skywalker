@@ -28,6 +28,7 @@ public:
 
     Q_INVOKABLE static QString extractDidFromUri(const QString& uri);
     Q_INVOKABLE void checkPostExists(const QString& uri, const QString& cid);
+    Q_INVOKABLE void canQuotePost(const QString& uri);
     Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
@@ -85,6 +86,8 @@ public:
 signals:
     void checkPostExistsOk(QString uri, QString cid);
     void checkPostExistsFailed(QString uri, QString cid, QString error);
+    void canQuotePostOk(QString uri, bool canQuote);
+    void canQuotePostFailed(QString uri, QString error);
     void postOk(QString uri, QString cid);
     void postFailed(QString error);
     void threadgateOk();

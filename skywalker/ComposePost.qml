@@ -1434,6 +1434,8 @@ SkyPage {
     PostUtils {
         property var callbackCanUploadVideo: () => {}
         property var callbackCannotUploadVideo: (error) => {}
+        property var callbackCanQuotePost: (canQuote) => {}
+        property var callbackCanQuotePostFailed: (error) => {}
 
         id: postUtils
         skywalker: page.skywalker // qmllint disable missing-type
@@ -1581,6 +1583,24 @@ SkyPage {
             callbackCannotUploadVideo(error) // qmllint disable use-proper-function
             callbackCanUploadVideo = () => {}
             callbackCannotUploadVideo = (error) => {}
+        }
+
+        function checkCanQuotePost(uri, cbOk, cbFailed) {
+            callbackCanQuotePost = cbOk
+            callbackCanQuotePostFailed = cbFailed
+            canQuotePost(uri)
+        }
+
+        onCanQuotePostOk: (uri, canQuote) => {
+            callbackCanQuotePost(canQuote)
+            callbackCanQuotePost = (canQuote) => {}
+            callbackCanQuotePostFailed = (error) => {}
+        }
+
+        onCanQuotePostFailed: (uri, error) => {
+            callbackCanQuotePostFailed(error)
+            callbackCanQuotePost = (canQuote) => {}
+            callbackCanQuotePostFailed = (error) => {}
         }
 
         onLanguageIdentified: (languageCode, postIndex) => {
@@ -2067,6 +2087,27 @@ SkyPage {
     }
 
     function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
+        const qUri = postItem.getQuoteUri()
+
+        if (Boolean(qUri)) {
+            postUtils.checkCanQuotePost(qUri,
+                (canQuote) => {
+                    if (canQuote)
+                        continueSendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount)
+                    else
+                        postFailed(qsTr("Author does not allow post to be quoted."))
+                },
+                (error) => {
+                    postFailed(error)
+                }
+            )
+        }
+        else {
+            continueSendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount)
+        }
+    }
+
+    function continueSendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
         const qUri = postItem.getQuoteUri()
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()

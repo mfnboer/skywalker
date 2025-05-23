@@ -165,7 +165,7 @@ Item {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Share")
-                    visible: !embeddingDisabled
+                    // visible: !embeddingDisabled TODO
                     onTriggered: share()
 
                     MenuItemSvg { svg: SvgOutline.share }

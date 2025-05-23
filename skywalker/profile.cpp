@@ -64,7 +64,8 @@ ActorStatusView::ActorStatusView(const ATProto::AppBskyActor::StatusView& status
     mExpiresAt(statusView.mExpiresAt.value_or(QDateTime{})),
     mIsActive(statusView.mIsActive.value_or(true))
 {
-    if (statusView.mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*statusView.mEmbed))
+    if (statusView.mEmbed && !ATProto::isNullVariant(*statusView.mEmbed) &&
+        std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*statusView.mEmbed))
     {
         auto view = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*statusView.mEmbed);
         mExternalView = ExternalView(view->mExternal);
