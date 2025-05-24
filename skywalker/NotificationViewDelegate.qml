@@ -122,7 +122,6 @@ Rectangle {
                 x: 8
                 y: 10
                 width: parent.width - 13
-                height: width
                 author: notificationAuthor
                 visible: showPost()
 
@@ -385,7 +384,6 @@ Rectangle {
                     Avatar {
                         id: authorAvatar
                         width: 34
-                        height: width
                         author: notificationAuthor
 
                         onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
@@ -401,7 +399,6 @@ Rectangle {
                             required property int index
 
                             width: authorAvatar.width
-                            height: width
                             author: notificationOtherAuthors[index]
 
                             onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
@@ -497,7 +494,6 @@ Rectangle {
                     Avatar {
                         id: usedByAvatar
                         Layout.preferredWidth: 34
-                        Layout.preferredHeight: width
                         author: notificationInviteCodeUsedBy
 
                         onClicked: skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)

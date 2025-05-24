@@ -45,6 +45,7 @@ SkyPage {
     property int labelerLikeCount: 0
     property bool labelerLikeTransient: false
     property string firstAppearanceDate: "unknown"
+    property bool feedInitialized: false
 
     signal closed
 
@@ -171,7 +172,6 @@ SkyPage {
                         id: avatarImg
                         anchors.centerIn: parent
                         width: parent.width - 4
-                        height: parent.height - 4
                         author: page.author
                         showWarnedMedia: page.showWarnedMedia
                         onClicked:  {
@@ -366,6 +366,7 @@ SkyPage {
             }
 
             AuthorNameAndStatusMultiLine {
+                topPadding: author.actorStatus.isActive ? 10 : 0
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 author: page.author
                 pointSize: guiSettings.scaledFont(12/8)
@@ -408,6 +409,32 @@ SkyPage {
                     anchors.right: undefined
                     contentLabels: author.labels
                     contentAuthorDid: author.did
+                }
+            }
+
+            // Live status
+            Rectangle {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                height: visible ? liveView.y + liveView.height : 0
+                color: "transparent"
+                visible: author.actorStatus.isActive && !author.actorStatus.externalView.isNull() && contentVisible()
+
+                LinkCardView {
+                    id: liveView
+                    y: 10
+                    width: parent.width
+                    uri: author.actorStatus.externalView.uri
+                    title: author.actorStatus.externalView.title
+                    description: author.actorStatus.externalView.description
+                    thumbUrl: author.actorStatus.externalView.thumbUrl
+                    contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
+                    contentWarning: ""
+                    isLiveExternal: true
+
+                    LiveLabel {
+                        x: 10
+                        y: 10
+                    }
                 }
             }
 
@@ -1308,6 +1335,15 @@ SkyPage {
 
     function feedOkHandler(modelId) {
         authorFeedView.feedOk(modelId)
+
+        // HACK: When a live view is present the page is sometimes not positioned at
+        // the beginning. Somehow positioning the page only works after the initial feed
+        // has been loaded??
+        if (!feedInitialized) {
+            console.debug("INIT FEED")
+            authorFeedView.positionViewAtBeginning()
+            feedInitialized = true
+        }
     }
 
     function feedFailedHandler(modelId, error, msg) {
@@ -1527,6 +1563,8 @@ SkyPage {
             profileUtils.getLabelerViewDetailed(author.did)
 
         // HACK: directly setting the current index does not work...
-        Qt.callLater(() => { authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0) })
+        Qt.callLater(() => {
+            authorFeedView.headerItem.getFeedMenuBar().setCurrentIndex(0)
+        })
     }
 }

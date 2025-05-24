@@ -119,7 +119,6 @@ SkyPage {
 
                 id: avatar
                 Layout.preferredWidth: 100
-                Layout.preferredHeight: 100
                 avatarUrl: list.avatar
 
                 onClicked: {

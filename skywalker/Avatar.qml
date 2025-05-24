@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
 Item {
@@ -16,20 +17,21 @@ Item {
     signal pressAndHold
 
     id: avatarItem
-    height: width
+    height: width + liveLoader.getExtraHeight()
+    Layout.preferredHeight: Layout.preferredWidth + liveLoader.getExtraHeight()
 
     RoundedFrame {
         id: avatarFrame
         objectToRound: avatarImg
         width: parent.width
-        height: parent.height
+        height: width
         radius: parent.radius
         visible: avatarUrl && avatarImg.status === Image.Ready
 
         ImageAutoRetry {
             id: avatarImg
             width: parent.width
-            height: parent.height
+            height: width
             source: avatarUrl
             sourceSize.width: width * Screen.devicePixelRatio
             sourceSize.height: height * Screen.devicePixelRatio
@@ -40,43 +42,45 @@ Item {
     }
     Rectangle {
         width: parent.width
-        height: parent.height
+        height: width
         radius: parent.radius
         color: guiSettings.avatarDefaultColor
         visible: !avatarFrame.visible
 
         SkySvg {
             width: parent.width
-            height: parent.height
+            height: width
             color: "white"
             svg: author.associated.isLabeler ? SvgFilled.moderator : avatarItem.unknownSvg
         }
     }
     Loader {
+        id: liveLoader
         active: author.actorStatus.isActive
+
         sourceComponent: Rectangle {
             id: liveRect
             width: avatarItem.width
-            height: avatarItem.height
+            height: width
             radius: avatarItem.radius
             color: "transparent"
-            border.color: "red"
+            border.color: guiSettings.liveColor
             border.width: 2
 
-            Label {
+            LiveLabel {
+                id: liveLabel
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.bottom
-                padding: 1
-                color: "white"
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(5/8 / 37 * avatarItem.width)
-                text: qsTr("LIVE")
-
-                background: Rectangle {
-                    radius: 3
-                    color: liveRect.border.color
-                }
+                font.pointSize: avatarItem.width > 0 ? guiSettings.scaledFont(5/8 / 37 * avatarItem.width) : guiSettings.scaledFont(5/8)
             }
+
+            function getLiveLabelHeight() {
+                return liveLabel.height
+            }
+        }
+
+        function getExtraHeight() {
+            return item ? item.getLiveLabelHeight() / 2 : 0
         }
     }
 

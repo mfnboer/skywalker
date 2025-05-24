@@ -57,7 +57,6 @@ ListView {
                     x: 8
                     y: rowPadding + 2
                     width: parent.width - 12
-                    height: width
                     author: authorEntry.author
                     onClicked: authorClicked(author)
                 }

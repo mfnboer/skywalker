@@ -395,7 +395,6 @@ Pane {
                 Layout.topMargin: 10
                 Layout.bottomMargin: 10
                 Layout.preferredWidth: 80
-                Layout.preferredHeight: Layout.preferredWidth
                 Layout.alignment: Qt.AlignHCenter
                 author: skywalker.user
                 visible: isBasePage

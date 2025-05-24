@@ -113,8 +113,7 @@ SkyPage {
 
         Avatar {
             anchors.centerIn: parent
-            height: parent.height - 10
-            width: height
+            width: parent.height - 10
             author: skywalker.user
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)

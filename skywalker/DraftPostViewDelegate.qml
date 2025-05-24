@@ -54,7 +54,6 @@ Rectangle {
                 x: parent.x + draftPostView.margin
                 y: postHeader.y + 5
                 width: parent.width - 13
-                height: width
                 author: draftPostView.author
 
                 onClicked: selectDraft()

@@ -48,7 +48,6 @@ Dialog {
                 x: parent.x + 8
                 y: parent.y + 5
                 width: parent.width - 13
-                height: width
                 author: page.author
             }
         }

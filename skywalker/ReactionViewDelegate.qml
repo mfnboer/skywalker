@@ -39,7 +39,6 @@ Rectangle {
                 x: 8
                 y: rowPadding + 2
                 width: parent.width - 12
-                height: width
                 author: reactionRect.author
                 onClicked: skywalker.getDetailedProfile(author.did)
             }

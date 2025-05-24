@@ -137,7 +137,6 @@ SkyPage {
                         x: 10
                         y: 10
                         width: 40
-                        height: width
                         author: page.author
                     }
                 }

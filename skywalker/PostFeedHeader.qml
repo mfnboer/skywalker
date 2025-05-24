@@ -224,7 +224,6 @@ Rectangle {
             Avatar {
                 id: avatar
                 width: parent.width
-                height: parent.height
                 author: skywalker.user
                 onClicked: root.showSettingsDrawer()
                 onPressAndHold: root.showSwitchUserDrawer()

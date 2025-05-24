@@ -29,8 +29,7 @@ Dialog {
             Layout.fillWidth: true
 
             Avatar {
-                Layout.preferredHeight: 20
-                Layout.preferredWidth: height
+                Layout.preferredWidth: 20
                 author: labeler
             }
 

@@ -38,7 +38,6 @@ Rectangle {
             id: avatar
             Layout.alignment: Qt.AlignVCenter
             width: parent.height - 10
-            height: width
             author: firstMember
             visible: !isSideBar
             onClicked: skywalker.getDetailedProfile(firstMember.did)
@@ -81,7 +80,6 @@ Rectangle {
                         required property chatbasicprofile modelData
 
                         width: 25
-                        height: width
                         author: modelData.basicProfile
                     }
                 }

@@ -51,7 +51,6 @@ Drawer {
                 Avatar {
                     id: avatar
                     width: 60
-                    height: width
                     author: user
                     onClicked: profile()
 

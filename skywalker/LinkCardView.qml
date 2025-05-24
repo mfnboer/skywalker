@@ -12,6 +12,7 @@ RoundCornerMask {
     property string borderColor: guiSettings.borderColor
     property int columnHeight: externalColumn.height
     property bool showSonglinkWidget: false
+    property bool isLiveExternal: false
 
     id: card
     height: columnHeight
@@ -87,6 +88,16 @@ RoundCornerMask {
         SonglinkWidget {
             showWidget: showSonglinkWidget
             uri: card.uri
+        }
+
+        Loader {
+            anchors.horizontalCenter: parent.horizontalCenter
+            active: isLiveExternal
+
+            sourceComponent: SkyButton {
+                text: qsTr("Watch now")
+                onClicked: root.openLink(card.uri)
+            }
         }
     }
 

@@ -22,7 +22,6 @@ RowLayout {
 
                 z: 5 - index
                 width: 34
-                height: width
                 author: modelData
                 onClicked: knownOthersRow.showKnownFollowers()
             }

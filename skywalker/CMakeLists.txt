@@ -545,6 +545,7 @@ qt_add_qml_module(libskywalker
         QML_FILES DurationInput.qml
         QML_FILES BlockMuteUser.qml
         QML_FILES AuthorViewerState.qml
+        QML_FILES LiveLabel.qml
 )
 
 if (NOT ANDROID)

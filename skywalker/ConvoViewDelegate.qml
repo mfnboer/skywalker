@@ -46,7 +46,6 @@ Rectangle {
                 x: parent.x + 8
                 y: parent.y + 5
                 width: parent.width - 13
-                height: width
                 author: firstMember
                 onClicked: skywalker.getDetailedProfile(firstMember.did)
 
@@ -119,7 +118,6 @@ Rectangle {
                                 required property chatbasicprofile modelData
 
                                 width: 25
-                                height: width
                                 author: modelData.basicProfile
                                 onClicked: viewConvo(convo)
                             }

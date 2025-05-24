@@ -3,6 +3,7 @@ import skywalker
 
 Rectangle {
     required property basicprofile author
+    property int topPadding: 0
     property double pointSize: guiSettings.scaledFont(1)
     property alias maximumLineCount: nameText.maximumLineCount
     property alias wrapMode: nameText.wrapMode
@@ -17,6 +18,7 @@ Rectangle {
 
     SkyCleanedText {
         id: nameText
+        topPadding: nameRect.topPadding
         width: parent.width - (verificationStatusLoader.item ? verificationStatusLoader.item.width + 5 : 0) - (verifierStatusLoader.item ? verifierStatusLoader.item.width + 5 : 0)
         elide: Text.ElideRight
         font.bold: true

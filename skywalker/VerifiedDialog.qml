@@ -80,7 +80,6 @@ Dialog {
                         x: 10
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 13
-                        height: width
                         author: issuer
                         onClicked: {
                             skywalker.getDetailedProfile(modelData.issuer)
