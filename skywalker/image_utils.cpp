@@ -3,6 +3,7 @@
 #include "image_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
+#include "songlink.h"
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
@@ -216,6 +217,21 @@ void ImageUtils::handleExtractTextFailed(const QString& source, const QString& e
 ImageView ImageUtils::createImageView(const QString& url, const QString& alt)
 {
     return ImageView(url, alt);
+}
+
+double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
+{
+    if (Songlink::isMusicLink(link))
+        return 1.0;
+
+    return 720.0 / 1280.0;
+
+    // const QUrl url(link);
+
+    // if (url.host().endsWith("youtube.com"))
+    //     return 720.0 / 1280.0;
+
+    // return 630.0 / 1280.0;
 }
 
 }

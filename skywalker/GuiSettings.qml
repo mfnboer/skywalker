@@ -27,6 +27,9 @@ Item {
     readonly property int threadLineWidth: 2
     readonly property int verificationBadgeSize: 13
 
+    // Aspect ratio (height / width)
+    readonly property double videoPreviewRatio: 2160.0 / 3840.0
+
     // Colors
     readonly property string accentColor: userSettings ? userSettings.accentColor : (isLightMode ? "blue" : "#58a6ff")
     readonly property string avatarDefaultColor: accentColor

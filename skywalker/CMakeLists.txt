@@ -546,6 +546,8 @@ qt_add_qml_module(libskywalker
         QML_FILES BlockMuteUser.qml
         QML_FILES AuthorViewerState.qml
         QML_FILES LiveLabel.qml
+        QML_FILES ThumbImageFixedSizeView.qml
+        SOURCES
 )
 
 if (NOT ANDROID)

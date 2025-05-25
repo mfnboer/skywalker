@@ -5,6 +5,7 @@ next
 * Block and mute with an expiry time
 * Show live status when a user is live
 * Setting to exclude languages from auto detection
+* Scrolling improvements
 * Bug fixes
 
 4.6

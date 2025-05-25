@@ -33,6 +33,11 @@ public:
 
     Q_INVOKABLE ImageView createImageView(const QString& url, const QString& alt);
 
+    // Link card thumbail images do not contain an aspect ratio. For smooth scrolling list
+    // views, we need an aspect ratio. This function determines a ratio based on the link.
+    // The image can be cropped to this ratio (height / width)
+    Q_INVOKABLE double getPreferredLinkCardAspectRatio(const QString& link) const;
+
 signals:
     void checkAvailabilityOk(QEnums::Script script, bool available);
     void checkAvailabilityFailed(QEnums::Script script, QString error);

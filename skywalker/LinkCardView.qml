@@ -37,18 +37,26 @@ RoundCornerMask {
             active: filter.imageVisible() && Boolean(card.thumbUrl)
             width: parent.width
 
-            sourceComponent: ThumbImageUnknownSizeView {
-                x: (parent.width - width) / 2
-                maxWidth: parent.width - 2
-                maxHeight: guiSettings.maxImageHeight
-                image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
-                noCrop: true
-                indicateLoading: false
+            // Dynamic sizing of an image of unknown size does now work well with list views
+            // sourceComponent: ThumbImageUnknownSizeView {
+            //     x: (parent.width - width) / 2
+            //     maxWidth: parent.width - 2
+            //     maxHeight: guiSettings.maxImageHeight
+            //     image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
+            //     noCrop: true
+            //     indicateLoading: false
 
-                onStatusChanged: {
-                    if (status === Image.Error)
-                        height = 0
-                }
+            //     onStatusChanged: {
+            //         if (status === Image.Error)
+            //             height = 0
+            //     }
+            // }
+            sourceComponent: ThumbImageFixedSizeView {
+                width: parent.width
+                height: imageUtils.getPreferredLinkCardAspectRatio(card.uri) * width
+                fillMode: Image.PreserveAspectCrop
+                image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
+                indicateLoading: false
             }
         }
         Text {

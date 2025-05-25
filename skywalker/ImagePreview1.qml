@@ -10,6 +10,7 @@ Item {
     property bool settingSize: false
     property bool swipeMode: false
     property string maskColor: guiSettings.backgroundColor
+    readonly property bool imgSizeKnown: images[0].width > 0 && images[0].height > 0 && frame.parent.width > 0
 
     signal activateSwipe
 
@@ -27,8 +28,8 @@ Item {
         height: filter.imageVisible() ? (img.item ? img.item.height : 0) : filter.height
 
         // Due to scaling the painted size can be smaller than the image size
-        maskWidth: filter.imageVisible() ? (img.item ? img.item.paintedWidth : 0) : parent.width
-        maskHeight: filter.imageVisible() ? (img.item ? img.item.paintedHeight : 0) : filter.height
+        maskWidth: filter.imageVisible() ? (img.item ? getImageMaskWidth() : 0) : parent.width
+        maskHeight: filter.imageVisible() ? (img.item ? getImageMakskHeight() : 0) : filter.height
 
         maskColor: preview.maskColor
 
@@ -37,8 +38,7 @@ Item {
             z: parent.z - 1
             active: filter.imageVisible()
 
-            sourceComponent: images[0].width > 0 && images[0].height > 0 && frame.parent.width > 0 ?
-                                 knownSizeComp : unknownSizeComp
+            sourceComponent: imgSizeKnown ? knownSizeComp : unknownSizeComp
         }
 
         MouseArea {
@@ -74,11 +74,10 @@ Item {
     Component {
         id: unknownSizeComp
 
-        ThumbImageUnknownSizeView {
-            maxWidth: frame.parent.width
-            maxHeight: preview.maxHeight
+        ThumbImageFixedSizeView {
+            width: frame.parent.width
+            height: width
             image: images[0]
-            noCrop: true
         }
     }
 
@@ -91,5 +90,13 @@ Item {
             image: images[0]
             noCrop: true
         }
+    }
+
+    function getImageMaskWidth() {
+        return imgSizeKnown ? img.item.paintedWidth : img.item.width
+    }
+
+    function getImageMakskHeight() {
+        return imgSizeKnown ? img.item.paintedHeight : img.item.height
     }
 }

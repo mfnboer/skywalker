@@ -108,7 +108,7 @@ Column {
                     x: (parent.width - getWidth()) / 2
                     y: moveToTop ? 0 : (parent.height - getHeight()) / 2
                     active: filter.imageVisible()
-                    sourceComponent: videoSizeIsKnown ? knownSizeComp : unknownSizeComp
+                    sourceComponent: videoSizeIsKnown ? knownSizeComp : (videoStack.isFullViewMode ? unknownSizeComp : fixedSizeComp)
 
                     function getWidth() {
                         return item ? item.width : 0
@@ -624,6 +624,17 @@ Column {
             indicateLoading: false
             tileMode: videoStack.tileMode
             noCrop: videoStack.isFullViewMode
+        }
+    }
+
+    Component {
+        id: fixedSizeComp
+
+        ThumbImageFixedSizeView {
+            width: imgPreview.width
+            height: videoStack.tileMode ? imgPreview.height : (width * guiSettings.videoPreviewRatio)
+            image: videoView.imageView
+            indicateLoading: false
         }
     }
 
