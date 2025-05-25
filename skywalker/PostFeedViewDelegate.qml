@@ -153,7 +153,9 @@ Rectangle {
             id: topLeftSpace
             Layout.leftMargin: 8 + (avatarImg.width - width) / 2
             Layout.preferredWidth: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
-            Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ? 2 : 1)
+            Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ?
+                                        2 :
+                                        ((postIsReply && (postThreadType & QEnums.THREAD_TOP) ? 3 : 1)))
 
             color: {
                 switch (postType) {
@@ -169,7 +171,7 @@ Rectangle {
                                (postThreadType & QEnums.THREAD_ENTRY)){
                         return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : guiSettings.threadEntryColor(threadColor)
                     } else if (postThreadType & QEnums.THREAD_TOP) {
-                        return "transparent"
+                        return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
                     } else if (postThreadType & QEnums.THREAD_PARENT) {
                         return guiSettings.threadStartColor(threadColor)
                     }
@@ -197,6 +199,25 @@ Rectangle {
             Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: topLeftSpace.visible ? topLeftSpace.height : postEntry.margin
             color: "transparent"
+
+            Loader {
+                width: parent.width
+                active: postIsReply && (postThreadType & QEnums.THREAD_TOP)
+                visible: status == Loader.Ready
+
+                sourceComponent: AccessibleText {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    color: guiSettings.linkColor
+                    text: qsTr("Read older...")
+
+                    // TODO
+                    // MouseArea {
+                    //     anchors.fill: parent
+                    //     onClicked: addMorePosts(postUri)
+                    // }
+                }
+            }
         }
 
         // BAR
@@ -290,7 +311,7 @@ Rectangle {
 
             Rectangle {
                 x: avatarImg.x + (avatarImg.width - width) / 2
-                y: ((postType === QEnums.POST_ROOT && !postIsReply) || (postThreadType & QEnums.THREAD_TOP)) ? avatarImg.y + avatarImg.height / 2 : 0
+                y: ((postType === QEnums.POST_ROOT && !postIsReply) || ((postThreadType & QEnums.THREAD_TOP) && !postIsReply)) ? avatarImg.y + avatarImg.height / 2 : 0
                 width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
                 height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
 
@@ -417,7 +438,7 @@ Rectangle {
             // Reply to
             Loader {
                 width: parent.width
-                active: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && postType !== QEnums.POST_THREAD
+                active: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && (postType !== QEnums.POST_THREAD || index === 0)
                 visible: status == Loader.Ready
                 sourceComponent: ReplyToRow {
                     width: parent.width
@@ -611,7 +632,7 @@ Rectangle {
 
             Loader {
                 width: parent.width
-                active: postType == QEnums.POST_THREAD &&
+                active: postType === QEnums.POST_THREAD &&
                         !(postThreadType & QEnums.THREAD_LEAF) &&
                         !(postThreadType & QEnums.THREAD_ENTRY) &&
                         postReplyCount > 1
