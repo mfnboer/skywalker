@@ -8,6 +8,7 @@ RoundedFrame {
     property string title
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property double aspectRatio: 0.0
     property alias status: img.status
 
     id: frame
@@ -17,7 +18,8 @@ RoundedFrame {
 
     ThumbAnimatedImageView {
         id: img
-        width: Math.min(implicitWidth, frame.parent.width)
+        width: aspectRatio > 0.0 ? frame.parent.width : Math.min(implicitWidth, frame.parent.width)
+        height: aspectRatio > 0.0 ? width * aspectRatio : undefined
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
         url: filter.imageVisible() ? frame.url : ""

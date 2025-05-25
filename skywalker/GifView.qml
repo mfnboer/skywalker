@@ -9,7 +9,7 @@ Item {
     required property string contentWarning
 
     id: view
-    height: Math.max(gifImage.height + tenorAttribution.height + 5, gifLoadingIndicator.height)
+    height: Math.max(gifImage.height + (tenorAttribution.visible ? tenorAttribution.height : 0) + (giphyAttribution.visible ? giphyAttribution.height : 0) + 5, gifLoadingIndicator.height)
 
     AnimatedImagePreview {
         id: gifImage
@@ -17,6 +17,7 @@ Item {
         title: view.title
         contentVisibility: view.contentVisibility
         contentWarning: view.contentWarning
+        aspectRatio: gifUtils.gitAspectRatio(url)
     }
     BusyIndicator {
         id: gifLoadingIndicator

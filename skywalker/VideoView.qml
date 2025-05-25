@@ -125,14 +125,14 @@ Column {
                         if (isFullViewMode)
                             return videoStack.width
 
-                        return item ? (videoSizeIsKnown ? item.width : item.paintedWidth) : 0
+                        return item ? item.width : 0
                     }
 
                     function getDisplayHeight() {
                         if (isFullViewMode)
                             return videoStack.height
 
-                        return item ? (videoSizeIsKnown ? item.height : item.paintedHeight) : 0
+                        return item ? item.height : 0
                     }
 
                     function getStatus() {

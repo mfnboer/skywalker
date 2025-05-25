@@ -61,6 +61,35 @@ QString GifUtils::getGifUrl(const QString& link) const
     return {};
 }
 
+double GifUtils::gitAspectRatio(const QString& link) const
+{
+    const QUrl url(link);
+
+    if (!url.hasQuery())
+        return 0.0;
+
+    const QUrlQuery query(url.query());
+
+    // These query parameters are available in Tenor links
+    if (!query.hasQueryItem("hh") || !query.hasQueryItem("ww"))
+        return 0.0;
+
+    const int width = query.queryItemValue("ww").toInt();
+
+    if (width <= 0)
+        return 0.0;
+
+    const int height = query.queryItemValue("hh").toInt();
+
+    if (height <= 0)
+        return 0.0;
+
+    const double ratio = double(height) / double(width);
+    qDebug() << "Aspect ratio:" << ratio << "GIF:" << link;
+
+    return ratio;
+}
+
 // Example: https://giphy.com/gifs/ufc-sport-297-ufc297-ycTrWycYMLlUNoHl73
 // Result:  https://i.giphy.com/ycTrWycYMLlUNoHl73.gif
 QString GifUtils::getGiphyGifUrl(const QString& link) const

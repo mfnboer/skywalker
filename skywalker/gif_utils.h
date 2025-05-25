@@ -19,6 +19,7 @@ public:
     Q_INVOKABLE bool isGiphyLink(const QString& link) const;
     Q_INVOKABLE bool isGif(const QString& link) const;
     Q_INVOKABLE QString getGifUrl(const QString& link) const;
+    Q_INVOKABLE double gitAspectRatio(const QString& link) const;
 
 private:
     QString getGiphyGifUrl(const QString& link) const;
