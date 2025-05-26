@@ -2053,17 +2053,6 @@ ApplicationWindow {
             stack = currentStack()
 
         let item = stack.pop(operation)
-
-        // TODO: can we delete this?
-        // PostFeedViews and SearchFeedViews, shown as home, are kept alive in root.feedViews
-        // if (!((item instanceof PostFeedView ||
-        //        item instanceof SearchFeedView) && item.showAsHome))
-        // {
-        //     item.destroy()
-        // }
-        // else if (item instanceof PostFeedView && item.showAsHome) {
-        //     item.deactivate()
-        // }
         item.destroy()
 
         if (stack === currentStack()) {
@@ -2083,12 +2072,6 @@ ApplicationWindow {
             current.cover()
 
         currentStack().pushItem(item, {}, operation)
-
-        // TODO: delete? if so, do we still need that activate/deactivate stuff?
-        // if (item instanceof PostFeedView && item.showAsHome) {
-        //     item.activate()
-        // }
-
         favoritesTabBar.update()
     }
 

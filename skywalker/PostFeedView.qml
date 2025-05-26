@@ -413,24 +413,6 @@ SkyListView {
         rewindStatus.updateRewindProgress(pages, timestamp)
     }
 
-    function activate() {
-        for (var i = 0; i < count; ++i) {
-            const item = itemAtIndex(i)
-
-            if (item)
-                item.activate() // qmllint disable missing-property
-        }
-    }
-
-    function deactivate() {
-        for (var i = 0; i < count; ++i) {
-            const item = itemAtIndex(i)
-
-            if (item)
-                item.deactivate() // qmllint disable missing-property
-        }
-    }
-
     function forceDestroy() {
         if (modelId !== -1) {
             postFeedView.model = null

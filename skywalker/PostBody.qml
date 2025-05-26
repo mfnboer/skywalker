@@ -464,22 +464,6 @@ Column {
         postBody.attachmentsInitialized = true
     }
 
-    function activate() {
-        if (!mediaLoader.item)
-            return
-
-        if (typeof mediaLoader.item.activate === 'function')
-            mediaLoader.item.activate()
-    }
-
-    function deactivate() {
-        if (!mediaLoader.item)
-            return
-
-        if (typeof mediaLoader.item.deactivate === 'function')
-            mediaLoader.item.deactivate()
-    }
-
     Component.onCompleted: {
         if (!postBody.visible)
             return
