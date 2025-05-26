@@ -321,8 +321,12 @@ Column {
                 // Avoid flicker when video is moved to top
                 visible: !moveToTop || contentRect.y > 0
             }
+            MediaDevices {
+                id: mediaDevices
+            }
             AudioOutput {
                 id: audioOutput
+                device: mediaDevices.defaultAudioOutput
                 muted: !userSettings.videoSound || (autoPlay && !isFullViewMode)
 
                 function toggleSound() {
