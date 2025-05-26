@@ -17,7 +17,7 @@ Item {
     id: preview
 
     // NOTE: these width/height can be overruled by the parent.
-    width: frame.width
+    width: parent.width
     height: frame.height
 
     RoundCornerMask {
@@ -75,7 +75,7 @@ Item {
         id: unknownSizeComp
 
         ThumbImageFixedSizeView {
-            width: frame.parent.width
+            width: Math.min(preview.width, preview.maxHeight)
             height: width
             image: images[0]
         }
@@ -85,7 +85,7 @@ Item {
         id: knownSizeComp
 
         ThumbImageKnownSizeView {
-            maxWidth: frame.parent.width
+            maxWidth: preview.width
             maxHeight: preview.maxHeight
             image: images[0]
             noCrop: true

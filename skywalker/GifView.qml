@@ -17,7 +17,7 @@ Item {
         title: view.title
         contentVisibility: view.contentVisibility
         contentWarning: view.contentWarning
-        aspectRatio: gifUtils.gitAspectRatio(url)
+        imgSize: gifUtils.gitGifSize(url)
     }
     BusyIndicator {
         id: gifLoadingIndicator

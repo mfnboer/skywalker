@@ -614,7 +614,7 @@ Column {
             image: videoView.imageView
             indicateLoading: false
             tileMode: videoStack.tileMode
-            noCrop: videoStack.isFullViewMode
+            noCrop: true
         }
     }
 
@@ -622,7 +622,7 @@ Column {
         id: fixedSizeComp
 
         ThumbImageFixedSizeView {
-            width: imgPreview.width
+            width: Math.min(imgPreview.width, videoStack.maxHeight / guiSettings.videoPreviewRatio)
             height: videoStack.tileMode ? imgPreview.height : (width * guiSettings.videoPreviewRatio)
             image: videoView.imageView
             indicateLoading: false
@@ -638,7 +638,7 @@ Column {
             image: videoView.imageView
             indicateLoading: false
             tileMode: videoStack.tileMode
-            noCrop: videoStack.isFullViewMode
+            noCrop: true
         }
     }
 

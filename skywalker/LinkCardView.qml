@@ -35,7 +35,6 @@ RoundCornerMask {
         }
         Loader {
             active: filter.imageVisible() && Boolean(card.thumbUrl)
-            width: parent.width
 
             // Dynamic sizing of an image of unknown size does now work well with list views
             // sourceComponent: ThumbImageUnknownSizeView {
@@ -52,11 +51,22 @@ RoundCornerMask {
             //     }
             // }
             sourceComponent: ThumbImageFixedSizeView {
-                width: parent.width
+                x: (externalColumn.width - width) / 2
+                width: calcWidth()
                 height: imageUtils.getPreferredLinkCardAspectRatio(card.uri) * width
                 fillMode: Image.PreserveAspectCrop
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
                 indicateLoading: false
+
+                function calcWidth() {
+                    let w = externalColumn.width
+                    const h = imageUtils.getPreferredLinkCardAspectRatio(card.uri) * w
+
+                    if (h > guiSettings.maxImageHeight)
+                        w *= (guiSettings.maxImageHeight / h)
+
+                    return w
+                }
             }
         }
         Text {
