@@ -6,6 +6,7 @@ next
 * Show live status when a user is live
 * Setting to exclude languages from auto detection
 * Scrolling improvements
+* "Read older" on very long threads
 * Bug fixes
 
 4.6

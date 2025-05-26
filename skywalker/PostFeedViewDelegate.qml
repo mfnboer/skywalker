@@ -90,6 +90,7 @@ Rectangle {
     signal unfoldPosts
     signal activateSwipe
     signal addMorePosts(string uri)
+    signal addOlderPosts
 
     id: postEntry
     // HACK
@@ -155,7 +156,7 @@ Rectangle {
             Layout.preferredWidth: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
             Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ?
                                         2 :
-                                        ((postIsReply && (postThreadType & QEnums.THREAD_TOP) ? 3 : 1)))
+                                        ((postIsReply && (postThreadType & QEnums.THREAD_TOP) ? 4 : 1)))
 
             color: {
                 switch (postType) {
@@ -202,20 +203,22 @@ Rectangle {
 
             Loader {
                 width: parent.width
+                height: parent.height
                 active: postIsReply && (postThreadType & QEnums.THREAD_TOP)
                 visible: status == Loader.Ready
 
                 sourceComponent: AccessibleText {
                     width: parent.width
+                    height: parent.height
                     elide: Text.ElideRight
                     color: guiSettings.linkColor
+                    verticalAlignment: Text.AlignVCenter
                     text: qsTr("Read older...")
 
-                    // TODO
-                    // MouseArea {
-                    //     anchors.fill: parent
-                    //     onClicked: addMorePosts(postUri)
-                    // }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: addOlderPosts()
+                    }
                 }
             }
         }
@@ -539,7 +542,6 @@ Rectangle {
                     likeTransient: postLikeTransient
                     threadMuted: postThreadMuted
                     replyDisabled: postReplyDisabled
-                    embeddingDisabled: postEmbeddingDisabled
                     viewerStatePinned: postViewerStatePinned
                     replyRestriction: postReplyRestriction
                     isHiddenReply: postIsHiddenReply

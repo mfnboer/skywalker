@@ -81,14 +81,17 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
         return false;
     }
 
-    // NOTE: the first page must not be inserted as it is the same as the leaf page to
+    // NOTE: the first post must not be inserted as it is the same as the leaf post to
     // which we add.
     const size_t pageInsertCount = (page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex) - 1;
 
-    beginInsertRows({}, index + 1, index + pageInsertCount);
-    auto feedInsertIt = mFeed.begin() + index + 1;
-    mFeed.insert(feedInsertIt, page->mFeed.begin() + 1, page->mFeed.begin() + 1 + pageInsertCount);
-    endInsertRows();
+    if (pageInsertCount > 0)
+    {
+        beginInsertRows({}, index + 1, index + pageInsertCount);
+        auto feedInsertIt = mFeed.begin() + index + 1;
+        mFeed.insert(feedInsertIt, page->mFeed.begin() + 1, page->mFeed.begin() + 1 + pageInsertCount);
+        endInsertRows();
+    }
 
     if (page->mFirstHiddenReplyIndex != -1)
     {
@@ -106,6 +109,49 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
     changeData({ int(Role::PostThreadType) });
 
     return true;
+}
+
+void PostThreadModel::addOlderPosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
+{
+    if (mFeed.empty())
+    {
+        qWarning() << "Cannot add older posts to an empty thread";
+        return;
+    }
+
+    setThreadgateView(thread->mThreadgate);
+    auto page = createPage(thread, false);
+
+    if (page->mFeed.size() <= 1)
+    {
+        qWarning() << "Page has no new posts:" << page->mFeed.size();
+        return;
+    }
+
+    const auto& leafPost = page->mFeed.back();
+
+    if (leafPost.getUri() != getRootUri())
+    {
+        qWarning() << "Root post mismatch:" << getRootUri() << "leaf:" << leafPost.getUri();
+        return;
+    }
+
+    // The leaf node must not be inserted as it is the same as the current root
+    const size_t pageInsertCount = page->mFeed.size() - 1;
+    Q_ASSERT(pageInsertCount > 0);
+    mFeed.front().removeThreadType(QEnums::THREAD_TOP);
+
+    beginInsertRows({}, 0, pageInsertCount - 1);
+    mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.begin() + pageInsertCount);
+    endInsertRows();
+
+    mFeed.front().addThreadType(QEnums::THREAD_TOP);
+    changeData({ int(Role::PostThreadType) });
+}
+
+QString PostThreadModel::getRootUri() const
+{
+    return !mFeed.empty() ? mFeed.front().getUri() : QString{};
 }
 
 QString PostThreadModel::getPostToAttachMore() const

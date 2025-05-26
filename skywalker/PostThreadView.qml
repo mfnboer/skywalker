@@ -14,6 +14,7 @@ SkyListView {
     id: view
     width: parent.width
     model: skywalker.getPostThreadModel(modelId)
+    boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {
         height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
@@ -150,17 +151,12 @@ SkyListView {
         width: view.width
         onShowHiddenReplies: model.showHiddenReplies()
         onAddMorePosts: (uri) => skywalker.addPostThread(uri, modelId)
+        onAddOlderPosts: skywalker.addOlderPostThread(modelId)
     }
 
     FlickableRefresher {
         inProgress: skywalker.getPostThreadInProgress
-        topOvershootFun: () => {
-            syncToEntry = false
-            skywalker.getPostThread(model.getThreadEntryUri(), modelId)
-        }
-        topText: qsTr("Pull down to refresh")
     }
-
 
     Utils {
         id: utils
@@ -203,20 +199,32 @@ SkyListView {
                                initialText, videoSource)
     }
 
-    function sync() {
+    function sync(index) {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to:", postEntryIndex, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
-        positionViewAtIndex(postEntryIndex, ListView.End)
-        return (lastVisibleIndex >= postEntryIndex - 1 && lastVisibleIndex <= postEntryIndex + 1)
+        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
+        positionViewAtIndex(index, ListView.End)
+        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+    }
+
+    function rowsInsertedHandler(parent, start, end) {
+        const inserted = end - start + 1
+        console.debug("Rows inserted, start:", start, "end:", end, "count:", count, "inserted:", inserted)
+
+        if (start === 0 && inserted !== count) {
+            moveToIndex(end + 1, sync)
+            postEntryIndex += inserted
+        }
     }
 
     Component.onDestruction: {
+        model.onRowsInserted.disconnect(rowsInsertedHandler)
         skywalker.removePostThreadModel(modelId)
     }
 
     Component.onCompleted: {
         console.debug("Entry index:", postEntryIndex);
         moveToIndex(postEntryIndex, sync)
+        model.onRowsInserted.connect(rowsInsertedHandler)
     }
 }

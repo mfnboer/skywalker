@@ -1770,7 +1770,7 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
 
     setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, 0,
-        [this, uri, modelId, maxPages](auto thread){
+        [this, modelId, maxPages](auto thread){
             setGetPostThreadInProgress(false);
             auto model = getPostThreadModel(modelId);
 
@@ -1778,10 +1778,10 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
             {
                 if (model->addMorePosts(thread))
                 {
-                    const QString uri = model->getPostToAttachMore();
+                    const QString leafUri = model->getPostToAttachMore();
 
-                    if (!uri.isEmpty())
-                        addPostThread(uri, modelId, maxPages - 1);
+                    if (!leafUri.isEmpty())
+                        addPostThread(leafUri, modelId, maxPages - 1);
                 }
                 else
                 {
@@ -1796,6 +1796,51 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
             qDebug() << "addPostThread FAILED:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::addOlderPostThread(int modelId)
+{
+    Q_ASSERT(modelId >= 0);
+    qDebug() << "Add older post thread, model:" << modelId;
+
+    if (mGetPostThreadInProgress)
+    {
+        qDebug() << "Get post thread still in progress";
+        return;
+    }
+
+    auto model = getPostThreadModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist";
+        return;
+    }
+
+    const QString rootUri = model->getRootUri();
+
+    if (rootUri.isEmpty())
+    {
+        qWarning() << "Post thread is empty";
+        return;
+    }
+
+    setGetPostThreadInProgress(true);
+    mBsky->getPostThread(rootUri, 0, {},
+        [this, modelId](auto thread){
+            setGetPostThreadInProgress(false);
+            auto model = getPostThreadModel(modelId);
+
+            if (model)
+                model->addOlderPosts(thread);
+            else
+                qWarning() << "Model does not exist:" << modelId;
+        },
+        [this](const QString& error, const QString& msg){
+            setGetPostThreadInProgress(false);
+            qDebug() << "addOlderPostThread FAILED:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }

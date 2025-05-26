@@ -290,7 +290,6 @@ Rectangle {
                         likeTransient: notificationPostLikeTransient
                         threadMuted: notificationPostThreadMuted
                         replyDisabled: notificationPostReplyDisabled
-                        embeddingDisabled: notificationPostEmbeddingDisabled
                         viewerStatePinned: notificationPostViewerStatePinned
                         replyRestriction: notificationPostReplyRestriction
                         isHiddenReply: notificationPostIsHiddenReply

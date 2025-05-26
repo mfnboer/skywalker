@@ -105,6 +105,7 @@ public:
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getPostThread(const QString& uri, int modelId = -1);
     Q_INVOKABLE void addPostThread(const QString& uri, int modelId, int maxPages = 20);
+    Q_INVOKABLE void addOlderPostThread(int modelId);
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);

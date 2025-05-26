@@ -187,7 +187,6 @@ Rectangle {
                 likeTransient: postLikeTransient
                 threadMuted: postThreadMuted
                 replyDisabled: postReplyDisabled
-                embeddingDisabled: postEmbeddingDisabled
                 viewerStatePinned: postViewerStatePinned
                 replyRestriction: postReplyRestriction
                 isHiddenReply: postIsHiddenReply

@@ -11,7 +11,6 @@ Item {
     required property bool likeTransient
     required property bool threadMuted
     required property bool replyDisabled
-    required property bool embeddingDisabled
     required property bool viewerStatePinned
     required property int replyRestriction // QEnums::ReplyRestriction flags
     required property bool isHiddenReply
@@ -165,7 +164,6 @@ Item {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Share")
-                    // visible: !embeddingDisabled TODO
                     onTriggered: share()
 
                     MenuItemSvg { svg: SvgOutline.share }
