@@ -1,12 +1,12 @@
-next
-====
+4.7
+===
 * Add a domain as muted word, e.g. example.com, to mute posts with links on
   that domain, e.g. www.example.com/path
 * Block and mute with an expiry time
 * Show live status when a user is live
 * Setting to exclude languages from auto detection
 * Scrolling improvements
-* "Read older" on very long threads
+* "Read older" indication on very long threads
 * Bug fixes
 
 4.6

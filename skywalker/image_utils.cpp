@@ -224,14 +224,14 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
     if (Songlink::isMusicLink(link))
         return 1.0;
 
+    const QUrl url(link);
+
+    if (url.host().endsWith("instagram.com"))
+        return 1.0;
+    if (url.host().endsWith("tiktok.com"))
+        return 1000.0 / 690.0;
+
     return 720.0 / 1280.0;
-
-    // const QUrl url(link);
-
-    // if (url.host().endsWith("youtube.com"))
-    //     return 720.0 / 1280.0;
-
-    // return 630.0 / 1280.0;
 }
 
 }

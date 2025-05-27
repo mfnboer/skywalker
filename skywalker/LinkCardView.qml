@@ -38,8 +38,8 @@ RoundCornerMask {
 
             // Dynamic sizing of an image of unknown size does now work well with list views
             // sourceComponent: ThumbImageUnknownSizeView {
-            //     x: (parent.width - width) / 2
-            //     maxWidth: parent.width - 2
+            //     x: (externalColumn.width - width) / 2
+            //     maxWidth: externalColumn.width - 2
             //     maxHeight: guiSettings.maxImageHeight
             //     image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
             //     noCrop: true
@@ -49,6 +49,8 @@ RoundCornerMask {
             //         if (status === Image.Error)
             //             height = 0
             //     }
+
+            //     onSourceSizeChanged: console.debug("SOURCE SIZE:", sourceSize, card.uri)
             // }
             sourceComponent: ThumbImageFixedSizeView {
                 x: (externalColumn.width - width) / 2
