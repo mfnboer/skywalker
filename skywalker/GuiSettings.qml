@@ -10,15 +10,19 @@ Item {
     readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     property bool isLightMode: Material.theme === Material.Light
 
+    // Android geometry
+    property int footerMargin: getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
+    property int headerMargin: getStatusBarSize(QEnums.INSETS_SIDE_TOP)
+
     // Geometry
-    readonly property int footerHeight: 50
+    readonly property int footerHeight: 50 + footerMargin
     readonly property int footerZLevel: 10
-    readonly property int headerHeight: 50
+    readonly property int headerHeight: 50 + headerMargin
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
     readonly property int maxImageHeight: root.height - headerHeight
-    readonly property int sideBarHeaderHeight: 44
+    readonly property int sideBarHeaderHeight: 44 + headerMargin
     readonly property int sideBarMinWidth: 175
     readonly property int sideBarMaxWidth: 325
     readonly property int statsHeight: appFontHeight + 4
@@ -111,11 +115,6 @@ Item {
     FontMetrics {
         id: fontMetrics
         font: Application.font
-    }
-
-    DisplayUtils {
-        id: displayUtils
-        skywalker: guiItem.skywalker
     }
 
     function createComponent(qmlFileName) {

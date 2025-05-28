@@ -22,8 +22,9 @@ Rectangle {
 
     RowLayout {
         id: convoRow
+        y: guiSettings.headerMargin
         width: parent.width
-        height: parent.height
+        height: parent.height - guiSettings.headerMargin
         spacing: 5
 
         SvgPlainButton {

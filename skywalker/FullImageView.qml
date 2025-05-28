@@ -92,7 +92,7 @@ SkyPage {
                     }
                 }
                 ImageWithZoom {
-                    property int altHeight: altText.visible ? altFlick.height + 10 : 0
+                    property int altHeight: altText.visible ? altFlick.height + altText.bottomMargin : 0
 
                     id: img
                     y: (parent.height - altHeight - height) / 2
@@ -112,6 +112,7 @@ SkyPage {
     }
 
     SvgButton {
+        y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
@@ -122,7 +123,7 @@ SkyPage {
     }
 
     SvgButton {
-        anchors.top: parent.top
+        y: guiSettings.headerMargin
         anchors.right: parent.right
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
@@ -158,11 +159,6 @@ SkyPage {
                 MenuItemSvg { svg: SvgOutline.googleTranslate }
             }
         }
-    }
-
-    DisplayUtils {
-        id: displayUtils
-        skywalker: root.getSkywalker()
     }
 
     function getAltHeight() {

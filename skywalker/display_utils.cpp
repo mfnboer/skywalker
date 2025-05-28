@@ -54,18 +54,21 @@ int DisplayUtils::getNavigationBarSize(QEnums::InsetsSide side)
     return AndroidUtils::getNavigationBarSize(side);
 }
 
-void DisplayUtils::setStatusBarColor(QColor color) const
+void DisplayUtils::setStatusBarColor(QColor color)
 {
     Q_ASSERT(mSkywalker);
     const auto displayMode = mSkywalker->getUserSettings()->getActiveDisplayMode();
     AndroidUtils::setStatusBarColor(color, displayMode);
+    setInternalStatusBarColor(color);
+    mIsLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
 }
 
 void DisplayUtils::setStatusBarColorAndMode(QColor color, bool isLightMode)
 {
     AndroidUtils::setStatusBarColorAndMode(color, isLightMode);
+    setInternalStatusBarColor(color);
+    mIsLightMode = isLightMode;
 }
-
 
 int DisplayUtils::getStatusBarSize(QEnums::InsetsSide side)
 {
@@ -77,12 +80,29 @@ void DisplayUtils::setStatusBarTransparent(bool transparent, QColor color)
     Q_ASSERT(mSkywalker);
     const auto displayMode = mSkywalker->getUserSettings()->getActiveDisplayMode();
     AndroidUtils::setStatusBarTransparent(transparent, color, displayMode);
-
+    setInternalStatusBarColor(transparent ? "transparent" : color);
+    mIsLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
 }
 
 void DisplayUtils::setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode)
 {
     AndroidUtils::setStatusBarTransparentAndMode(transparent, color, isLightMode);
+    setInternalStatusBarColor(transparent ? "transparent" : color);
+    mIsLightMode = isLightMode;
+}
+
+void DisplayUtils::resetStatusBarLightMode()
+{
+    AndroidUtils::setStatusBarLightMode(mIsLightMode);
+}
+
+void DisplayUtils::setInternalStatusBarColor(QColor color)
+{
+    if (color != mStatusBarColor)
+    {
+        mStatusBarColor = color;
+        emit statusBarColorChanged();
+    }
 }
 
 }

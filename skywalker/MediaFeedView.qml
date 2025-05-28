@@ -103,11 +103,6 @@ SkyListView {
         }
     }
 
-    DisplayUtils {
-        id: displayUtils
-        skywalker: postFeedView.skywalker
-    }
-
     function cancel() {
         closed()
     }

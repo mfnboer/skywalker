@@ -38,8 +38,10 @@ SkyPage {
 
         Image {
             id: tenorAttribution
-            anchors.fill: parent
-            anchors.margins: 10
+            x: 10
+            y: 10
+            width: parent.width - 20
+            height: parent.height - guiSettings.footerMargin - 20
             fillMode: Image.PreserveAspectFit
             source: "/images/PB_tenor_logo_blue_horizontal.svg"
         }

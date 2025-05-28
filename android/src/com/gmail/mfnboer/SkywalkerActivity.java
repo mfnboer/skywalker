@@ -23,7 +23,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 // For EdgeToEdge
-// import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowCompat;
 
 public class SkywalkerActivity extends QtActivity {
     private static final String LOGTAG = "SkywalkerActivity";
@@ -52,7 +52,7 @@ public class SkywalkerActivity extends QtActivity {
         sActivity = this;
 
         // Enable EdgeToEdge mode, i.e. full screen.
-        // WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         Log.d(LOGTAG, "onCreate");
         ScreenUtils.init(this);

@@ -140,6 +140,17 @@ void AndroidUtils::setStatusBarTransparentAndMode(bool transparent, QColor color
 #endif
 }
 
+void AndroidUtils::setStatusBarLightMode(bool isLightMode)
+{
+#ifdef Q_OS_ANDROID
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/ScreenUtils", "setStatusBarLightMode",
+        "(Z)V", (jboolean)isLightMode);
+#else
+    Q_UNUSED(isLightMode)
+#endif
+}
+
 void AndroidUtils::setKeepScreenOn(bool keepOn)
 {
     qDebug() << "Keep screen on:" << keepOn;

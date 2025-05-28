@@ -77,6 +77,7 @@ SkyPage {
 
     SvgButton {
         x: 10
+        y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
@@ -87,7 +88,7 @@ SkyPage {
     }
 
     SvgButton {
-        anchors.top: parent.top
+        y: guiSettings.headerMargin
         anchors.right: parent.right
         anchors.rightMargin: 10
         iconColor: "white"
@@ -121,11 +122,6 @@ SkyPage {
                 }
             }
         }
-    }
-
-    DisplayUtils {
-        id: displayUtils
-        skywalker: page.skywalker
     }
 
     GuiSettings {

@@ -33,7 +33,7 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: headerRow.height + (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : 0) + bottomMargin
+    height: headerRow.y + headerRow.height + (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : 0) + bottomMargin
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
@@ -41,8 +41,9 @@ Rectangle {
 
     RowLayout {
         id: headerRow
+        y: guiSettings.headerMargin
         width: parent.width
-        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight) : 0
+        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight) - guiSettings.headerMargin : 0
         spacing: 0
 
         SvgPlainButton {

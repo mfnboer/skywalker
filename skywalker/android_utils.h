@@ -21,6 +21,7 @@ public:
     static int getStatusBarSize(QEnums::InsetsSide side);
     static void setStatusBarTransparent(bool transparent, QColor color, QEnums::DisplayMode displayMode);
     static void setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode);
+    static void setStatusBarLightMode(bool isLightMode);
 
     static void installVirtualKeyboardListener();
     static bool translate(const QString& text);

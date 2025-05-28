@@ -30,7 +30,7 @@ Rectangle {
 
     RowLayout {
         width: parent.width
-        height: parent.height
+        height: parent.height - guiSettings.footerMargin
         spacing: 0
         visible: footerVisible
 

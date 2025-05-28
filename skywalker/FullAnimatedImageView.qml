@@ -41,17 +41,13 @@ SkyPage {
     }
 
     SvgButton {
+        y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
         onClicked: page.closed()
-    }
-
-    DisplayUtils {
-        id: displayUtils
-        skywalker: root.getSkywalker()
     }
 
     function setSystemBarsColor() {

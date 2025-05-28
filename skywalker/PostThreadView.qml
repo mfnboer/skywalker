@@ -131,10 +131,7 @@ SkyListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-    footer: Rectangle {
-        width: parent.width
-        z: guiSettings.footerZLevel
-
+    footer: DeadFooterMargin {
         PostButton {
             y: -height - 10
             svg: SvgOutline.reply

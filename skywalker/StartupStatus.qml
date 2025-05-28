@@ -21,7 +21,7 @@ SkyPage {
         AccessibleText {
             id: title
             anchors.horizontalCenter: parent.horizontalCenter
-            padding: 10
+            padding: 10 + guiSettings.headerMargin
             color: "white"
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
@@ -57,11 +57,6 @@ SkyPage {
 
             Accessible.ignored: true
         }
-    }
-
-    DisplayUtils {
-        id: displayUtils
-        skywalker: root.getSkywalker()
     }
 
     function setStatus(msg) {

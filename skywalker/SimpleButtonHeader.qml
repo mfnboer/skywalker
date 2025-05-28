@@ -17,6 +17,7 @@ Rectangle {
     Accessible.role: Accessible.Pane
 
     Text {
+        y: guiSettings.headerMargin
         anchors.leftMargin: 10
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -31,6 +32,7 @@ Rectangle {
     }
 
     SvgPlainButton {
+        y: guiSettings.headerMargin
         anchors.rightMargin: 10
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter

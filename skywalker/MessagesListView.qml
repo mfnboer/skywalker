@@ -31,8 +31,9 @@ SkyPage {
     }
 
     footer: Rectangle {
-        height: keyboardHandler.keyboardHeight
-        color: "transparent"
+        width: parent.width
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
+        color: guiSettings.backgroundColor
     }
 
     SkyListView {

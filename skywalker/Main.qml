@@ -21,6 +21,13 @@ ApplicationWindow {
         settings.setPostButtonRelativeX(postButtonRelativeX)
     }
 
+    onIsPortraitChanged: {
+        guiSettings.footerMargin = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
+
+        // HACK: the light/dark mode of the status bar gets lost when orientation changes
+        displayUtils.resetStatusBarLightMode()
+    }
+
     onClosing: (event) => {
         if (Qt.platform.os !== "android") {
             return
@@ -643,6 +650,14 @@ ApplicationWindow {
         visible: false
 
         Accessible.role: Accessible.Window
+    }
+
+    // Color the status bar on Android for edge-to-edge mode
+    Rectangle {
+        width: parent.width
+        height: guiSettings.headerMargin
+        z: guiSettings.headerZLevel
+        color: displayUtils.statusBarColor
     }
 
     SettingsDrawer {
@@ -2142,6 +2157,30 @@ ApplicationWindow {
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
+    }
+
+    Timer {
+        property int frameCount: 0
+        property int lastTime: Date.now()
+
+        id: fpsTimer
+        interval: 1000
+        repeat: true
+        running: true
+
+        onTriggered: {
+            const prev = lastTime
+            lastTime = Date.now()
+            console.log("FPS:", frameCount, "dt:", lastTime - prev)
+            frameCount = 0
+        }
+    }
+
+    Timer {
+        interval: 16
+        repeat: true
+        running: true
+        onTriggered: fpsTimer.frameCount++
     }
 
     Component.onCompleted: {

@@ -24,6 +24,7 @@ Rectangle {
     RowLayout
     {
         id: headerRow
+        y: guiSettings.headerMargin
         width: parent.width
         visible: headerVisible
         Accessible.role: Accessible.Pane

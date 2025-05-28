@@ -34,16 +34,16 @@ SkyPage {
         color: guiSettings.headerColor
 
         SvgPlainButton {
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
             svg: SvgOutline.cancel
             accessibleName: qsTr("cancel")
             onClicked: page.closed()
         }
 
         Text {
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
@@ -52,9 +52,9 @@ SkyPage {
 
         SkyButton {
             id: reportButton
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             anchors.rightMargin: 10
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Send")
             enabled: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
             onClicked: sendReport()

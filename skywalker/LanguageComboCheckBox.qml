@@ -114,7 +114,7 @@ ComboBox {
             z: guiSettings.footerZLevel
 
             SkyButton {
-                anchors.centerIn: parent
+                anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width - 20
                 text: qsTr("OK")
                 onClicked: languageComboBox.popup.close()

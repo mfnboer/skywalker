@@ -21,6 +21,8 @@ SkyPage {
         onClosed: page.closed()
     }
 
+    footer: DeadFooterMargin {}
+
     SkyListView {
         id: listView
         anchors.fill: parent
@@ -70,10 +72,9 @@ SkyPage {
 
     SvgPlainButton {
         parent: page.header.visible ? page.header : page
-        anchors.top: parent.top
         anchors.rightMargin: 10
         anchors.right: parent.right
-        y: (guiSettings.headerHeight - height) / 2
+        y: guiSettings.headerMargin + (guiSettings.headerHeight - guiSettings.headerMargin - height) / 2
         svg: SvgOutline.moreVert
         accessibleName: qsTr("Favorites options")
         onClicked: moreMenu.open()

@@ -10,13 +10,12 @@ import java.io.File;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MimeTypes;
 import androidx.media3.effect.Presentation;
-import androidx.media3.muxer.Muxer;
 import androidx.media3.transformer.Composition;
 import androidx.media3.transformer.EditedMediaItem;
 import androidx.media3.transformer.Effects;
 import androidx.media3.transformer.ExportException;
 import androidx.media3.transformer.ExportResult;
-import androidx.media3.transformer.InAppMuxer;
+import androidx.media3.transformer.InAppMp4Muxer;
 import androidx.media3.transformer.Transformer;
 import android.content.Context;
 import android.net.Uri;
@@ -67,7 +66,7 @@ public class VideoTranscoder {
         Transformer transformer = new Transformer.Builder(context)
                 .setVideoMimeType(MimeTypes.VIDEO_H264)
                 .setAudioMimeType(MimeTypes.AUDIO_AAC)
-                .setMuxerFactory(new InAppMuxer.Factory.Builder().build())
+                .setMuxerFactory(new InAppMp4Muxer.Factory())
                 .addListener(new Transformer.Listener() {
                     @Override
                     public void onCompleted(Composition composition, ExportResult result) {

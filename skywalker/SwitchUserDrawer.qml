@@ -17,7 +17,7 @@ Drawer {
         onAuthorClicked: (profile) => { selectedUser(profile) }
 
         header: Rectangle {
-            height: guiSettings.headerHeight
+            height: guiSettings.headerHeight - guiSettings.headerMargin
             width: parent.width
             z: guiSettings.headerZLevel
             color: "transparent"

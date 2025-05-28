@@ -77,11 +77,6 @@ SkyPage {
         }
     }
 
-    DisplayUtils {
-        id: displayUtils
-        skywalker: root.getSkywalker()
-    }
-
     Component.onDestruction: {
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
         displayUtils.setStatusBarColor(guiSettings.headerColor)

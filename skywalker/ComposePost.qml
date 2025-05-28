@@ -103,17 +103,18 @@ SkyPage {
         color: guiSettings.headerColor
 
         SvgPlainButton {
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             id: cancelButton
             anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
             svg: SvgOutline.cancel
             accessibleName: qsTr("cancel posting")
             onClicked: page.cancel()
         }
 
         Avatar {
-            anchors.centerIn: parent
-            width: parent.height - 10
+            y: guiSettings.headerMargin + 5
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.height - guiSettings.headerMargin - 10
             author: skywalker.user
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
@@ -127,8 +128,8 @@ SkyPage {
             property bool isPosting: false
 
             id: postButton
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             anchors.right: moreOptions.left
-            anchors.verticalCenter: parent.verticalCenter
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
             enabled: !isPosting && postsAreValid() && hasFullContent() && checkAltText()
             onClicked: sendPost()
@@ -155,8 +156,8 @@ SkyPage {
 
         SvgPlainButton {
             id: moreOptions
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
             svg: SvgOutline.moreVert
             accessibleName: qsTr("post options")
             onClicked: moreMenu.open()
@@ -1079,7 +1080,7 @@ SkyPage {
     footer: Rectangle {
         id: textFooter
         width: page.width
-        height: getFooterHeight() + keyboardHandler.keyboardHeight
+        height: getFooterHeight() + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
 
