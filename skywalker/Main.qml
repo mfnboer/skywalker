@@ -2159,6 +2159,7 @@ ApplicationWindow {
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
     }
 
+    // TODO: remove
     Timer {
         property int frameCount: 0
         property int lastTime: Date.now()

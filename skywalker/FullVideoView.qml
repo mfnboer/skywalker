@@ -18,6 +18,10 @@ SkyPage {
 
     onCover: view.pause()
 
+    footer: DeadFooterMargin {
+        color: guiSettings.fullScreenColor
+    }
+
     VideoView {
         id: view
         y: (parent.height - height) / 2

@@ -54,9 +54,7 @@ SkyPage {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
-    footer: Rectangle {
-        width: parent.width
-
+    footer: DeadFooterMargin {
         PostButton {
             y: -height - 10
             svg: (guiSettings.isUser(author) || author.hasInvalidHandle()) ? SvgOutline.chat : SvgOutline.atSign

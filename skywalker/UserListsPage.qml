@@ -21,6 +21,8 @@ SkyPage {
         onBack: page.closed()
     }
 
+    footer: DeadFooterMargin {}
+
     SkyTabBar {
         id: listsBar
         width: parent.width

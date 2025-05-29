@@ -26,8 +26,11 @@ Drawer {
     signal buyCoffee()
 
     id: drawer
-    width: Math.min(userColumn.width + 2 * padding, parent.width - 20)
-    padding: 20
+    width: Math.min(userColumn.width + leftPadding + rightPadding, parent.width - 20)
+    topPadding: guiSettings.headerMargin + 10
+    bottomPadding: guiSettings.footerMargin + 10
+    leftPadding: 20
+    rightPadding: 20
 
     Flickable {
         anchors.fill: parent

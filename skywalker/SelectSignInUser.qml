@@ -21,6 +21,8 @@ SkyPage {
         onBack: canceled()
     }
 
+    footer: DeadFooterMargin {}
+
     SimpleAuthorListView {
         anchors.fill: parent
         rowPadding: 13

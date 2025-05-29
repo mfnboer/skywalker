@@ -31,6 +31,9 @@ SkyListView {
     }
     headerPositioning: ListView.OverlayHeader
 
+    footer: DeadFooterMargin {}
+    footerPositioning: ListView.OverlayFooter
+
     delegate: AuthorViewDelegate {
         required property int index
 

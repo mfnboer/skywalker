@@ -25,6 +25,8 @@ SkyPage {
         onBack: page.closed()
     }
 
+    footer: DeadFooterMargin {}
+
     Flickable {
         anchors.fill: parent
         clip: true

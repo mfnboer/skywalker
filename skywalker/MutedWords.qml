@@ -40,6 +40,9 @@ ListView {
     }
     headerPositioning: ListView.OverlayHeader
 
+    footer: DeadFooterMargin {}
+    footerPositioning: ListView.OverlayFooter
+
     delegate: ColumnLayout {
         required property mutedwordentry modelData
 

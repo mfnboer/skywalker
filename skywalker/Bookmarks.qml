@@ -22,6 +22,9 @@ SkyListView {
     }
     headerPositioning: ListView.OverlayHeader
 
+    footer: DeadFooterMargin {}
+    footerPositioning: ListView.OverlayFooter
+
     delegate: PostFeedViewDelegate {
         width: bookmarksView.width
     }

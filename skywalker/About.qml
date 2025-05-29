@@ -12,6 +12,10 @@ SkyPage {
 
     Accessible.role: Accessible.Pane
 
+    footer: DeadFooterMargin {
+        color: guiSettings.skywalkerLogoColor
+    }
+
     Column {
         width: parent.width
         height: parent.height
@@ -19,7 +23,7 @@ SkyPage {
         AccessibleText {
             id: title
             anchors.horizontalCenter: parent.horizontalCenter
-            padding: 10
+            padding: 10 + guiSettings.headerMargin
             color: "white"
             font.bold: true
             font.pointSize: guiSettings.scaledFont(3.5)
