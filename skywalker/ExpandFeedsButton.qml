@@ -19,6 +19,8 @@ SvgButton {
     Menu {
         id: feedsMenu
         modal: true
+        topPadding: guiSettings.headerMargin
+        bottomPadding: guiSettings.bottomMargin
 
         MenuItem {
             contentItem: Text {

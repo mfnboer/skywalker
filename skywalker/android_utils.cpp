@@ -151,6 +151,17 @@ void AndroidUtils::setStatusBarLightMode(bool isLightMode)
 #endif
 }
 
+int AndroidUtils::getDisplayCutoutSize(QEnums::InsetsSide side)
+{
+#ifdef Q_OS_ANDROID
+    return (int)QJniObject::callStaticMethod<jint>(
+        "com/gmail/mfnboer/ScreenUtils", "getDisplayCutoutSize", "(I)I", (jint)side);
+#else
+    Q_UNUSED(side)
+    return 0;
+#endif
+}
+
 void AndroidUtils::setKeepScreenOn(bool keepOn)
 {
     qDebug() << "Keep screen on:" << keepOn;

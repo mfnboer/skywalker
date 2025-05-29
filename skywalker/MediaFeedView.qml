@@ -13,6 +13,7 @@ SkyListView {
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
     readonly property string feedDid: underlyingModel ? underlyingModel.feedDid : ""
+    readonly property string color: currentItem ? currentItem.color : guiSettings.fullScreenColor // for Main right margin (navbar)
 
     signal closed
 

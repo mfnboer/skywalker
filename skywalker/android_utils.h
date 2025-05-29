@@ -23,6 +23,8 @@ public:
     static void setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode);
     static void setStatusBarLightMode(bool isLightMode);
 
+    static int getDisplayCutoutSize(QEnums::InsetsSide side);
+
     static void installVirtualKeyboardListener();
     static bool translate(const QString& text);
 

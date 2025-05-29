@@ -15,6 +15,8 @@ SkyPage {
     width: parent.width
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
+    leftPadding: guiSettings.leftMargin
+    rightPadding: guiSettings.rightMargin
 
     onCover: view.pause()
 
@@ -80,7 +82,7 @@ SkyPage {
     }
 
     SvgButton {
-        x: 10
+        x: guiSettings.leftMargin
         y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
@@ -94,7 +96,6 @@ SkyPage {
     SvgButton {
         y: guiSettings.headerMargin
         anchors.right: parent.right
-        anchors.rightMargin: 10
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7

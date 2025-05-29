@@ -22,11 +22,12 @@ SkyPage {
         onBack: page.closed()
     }
 
+    footer: DeadFooterMargin {}
+
     SwipeListView {
         id: feedStack
         width: parent.width
         anchors.top: parent.top
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
         currentIndex: feedsBar.currentIndex
         headerHeight: starterPackHeader.height + feedsBar.height + feedsSeparator.height
@@ -122,7 +123,7 @@ SkyPage {
     Column {
         id: starterPackHeader
         x: margin
-        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height)
+        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height) + (!root.showSideBar ? 0 : guiSettings.headerMargin)
         width: parent.width - 2 * margin
 
         GridLayout {

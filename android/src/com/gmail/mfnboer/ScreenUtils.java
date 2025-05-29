@@ -90,6 +90,11 @@ public class ScreenUtils {
         return getInsetsSide(insets, side);
     }
 
+    public static int getDisplayCutoutSize(int side) {
+        Insets insets = getInsets(WindowInsetsCompat.Type.displayCutout());
+        return getInsetsSide(insets, side);
+    }
+
     public static void setStatusBarTransparent(boolean transparent, int color, boolean isLightMode) {
         Log.d(LOGTAG, "Set status bar transparent: " + transparent + " color: " + color + " light: " + isLightMode);
         sActivity.runOnUiThread(new StatusBarSetter(sActivity, transparent, color, isLightMode));

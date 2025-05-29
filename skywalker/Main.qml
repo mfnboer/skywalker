@@ -110,10 +110,10 @@ ApplicationWindow {
         property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
-        x: sideBar.visible ? sideBar.width : 0
+        x: sideBar.visible ? sideBar.x + sideBar.width : 0
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
         z: guiSettings.headerZLevel - 1
-        width: parent.width - x
+        width: parent.width - x - guiSettings.rightMargin
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
         clip: true
@@ -145,6 +145,7 @@ ApplicationWindow {
     footer: SkyFooter {
         property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
 
+        width: parent.width - guiSettings.rightMargin
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
         homeActive: true
@@ -595,7 +596,7 @@ ApplicationWindow {
 
         id: rootContent
         x: sideBar.visible ? sideBar.x + sideBar.width : 0
-        width: parent.width - x
+        width: parent.width - x - guiSettings.rightMargin
         height: parent.height
         currentIndex: timelineIndex
         clip: true
@@ -636,6 +637,27 @@ ApplicationWindow {
         }
         StackView {
             id: chatStack
+        }
+    }
+
+    // Right margin (navbar on Android)
+    Rectangle {
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: rootContent.right
+        anchors.right: parent.right
+        color: getBackgroundColor()
+
+        function getBackgroundColor() {
+            const item = currentStackItem()
+
+            if (typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
+                return item.background.color
+
+            if (typeof item.color !== 'undefined')
+                return item.color
+
+            return guiSettings.backgroundColor
         }
     }
 

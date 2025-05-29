@@ -41,6 +41,7 @@ SkyPage {
     }
 
     SvgButton {
+        x: guiSettings.leftMargin
         y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor

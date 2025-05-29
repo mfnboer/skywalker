@@ -96,6 +96,11 @@ void DisplayUtils::resetStatusBarLightMode()
     AndroidUtils::setStatusBarLightMode(mIsLightMode);
 }
 
+int DisplayUtils::getDisplayCutoutSize(QEnums::InsetsSide side)
+{
+    return AndroidUtils::getDisplayCutoutSize(side);
+}
+
 void DisplayUtils::setInternalStatusBarColor(QColor color)
 {
     if (color != mStatusBarColor)

@@ -30,6 +30,7 @@ public:
     Q_INVOKABLE void setStatusBarTransparent(bool transparent, QColor color);
     Q_INVOKABLE void setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode);
     Q_INVOKABLE void resetStatusBarLightMode();
+    Q_INVOKABLE static int getDisplayCutoutSize(QEnums::InsetsSide side);
 
 signals:
     void statusBarColorChanged();
