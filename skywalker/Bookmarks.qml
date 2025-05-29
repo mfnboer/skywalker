@@ -14,11 +14,22 @@ SkyListView {
     id: bookmarksView
     model: skywalker.createBookmarksModel()
 
-    header: SimpleHeader {
-        text: sideBarTitle
-        subTitle: sideBarSubTitle
-        visible: !root.showSideBar
-        onBack: bookmarksView.closed()
+    header: Item {
+        width: parent.width
+        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        z: guiSettings.headerZLevel
+
+        SimpleHeader {
+            id: portraitHeader
+            text: sideBarTitle
+            subTitle: sideBarSubTitle
+            visible: !root.showSideBar
+            onBack: bookmarksView.closed()
+        }
+        DeadHeaderMargin {
+            id: landscapeHeader
+            visible: !portraitHeader.visible
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

@@ -24,18 +24,29 @@ ListView {
 
     Accessible.role: Accessible.List
 
-    header: SimpleHeader {
-        text: sideBarTitle
-        subTitle: sideBarSubTitle
-        headerVisible: !root.showSideBar
-        onBack: view.closed()
+    header: Item {
+        width: parent.width
+        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        z: guiSettings.headerZLevel
 
-        SvgPlainButton {
-            anchors.right: parent.right
-            svg: SvgOutline.add
-            onClicked: addHashtagEntry()
-            accessibleName: qsTr(`add hashtag for focus`)
-            visible: view.count < skywalker.focusHashtags.maxSize
+        SimpleHeader {
+            id: portraitHeader
+            text: sideBarTitle
+            subTitle: sideBarSubTitle
+            headerVisible: !root.showSideBar
+            onBack: view.closed()
+
+            SvgPlainButton {
+                anchors.right: parent.right
+                svg: SvgOutline.add
+                onClicked: addHashtagEntry()
+                accessibleName: qsTr(`add hashtag for focus`)
+                visible: view.count < skywalker.focusHashtags.maxSize
+            }
+        }
+        DeadHeaderMargin {
+            id: landscapeHeader
+            visible: root.showSideBar
         }
     }
     headerPositioning: ListView.OverlayHeader

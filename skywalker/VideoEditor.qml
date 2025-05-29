@@ -42,6 +42,8 @@ SkyPage {
         }
     }
 
+    footer: DeadFooterMargin {}
+
     Video {
         readonly property var videoResolution: metaData.value(MediaMetaData.Resolution)
         readonly property int videoWidth: videoResolution ? videoResolution.width : 0
@@ -57,6 +59,7 @@ SkyPage {
         source: page.videoSource
         fillMode: VideoOutput.PreserveAspectFit
         x: (parent.width - width) / 2
+        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: maxWidth > 0 && parent.width > maxWidth ? maxWidth : parent.width
         height: width / aspectRatio
         muted: !userSettings.videoSound || page.removeAudio

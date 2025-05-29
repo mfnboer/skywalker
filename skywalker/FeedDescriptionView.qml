@@ -43,6 +43,7 @@ SkyPage {
         rowSpacing: 0
         columns: 3
         x: 10
+        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width - 20
 
         Rectangle {

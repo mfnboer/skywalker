@@ -22,7 +22,7 @@ Rectangle {
 
     RowLayout {
         id: convoRow
-        y: guiSettings.headerMargin
+        y: !isSideBar ? guiSettings.headerMargin : 0
         width: parent.width
         height: parent.height - guiSettings.headerMargin
         spacing: 5

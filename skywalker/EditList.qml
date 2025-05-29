@@ -93,6 +93,7 @@ SkyPage {
     Flickable {
         id: flick
         width: parent.width
+        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
         contentWidth: pageColumn.width

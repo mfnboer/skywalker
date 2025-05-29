@@ -24,6 +24,7 @@ SkyPage {
     footer: DeadFooterMargin {}
 
     SimpleAuthorListView {
+        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         rowPadding: 13
         allowDelete: true

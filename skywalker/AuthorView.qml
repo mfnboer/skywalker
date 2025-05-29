@@ -54,6 +54,8 @@ SkyPage {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
+    header: DeadHeaderMargin {}
+
     footer: DeadFooterMargin {
         PostButton {
             y: -height - 10

@@ -26,6 +26,7 @@ SkyPage {
         id: feedStack
         width: parent.width
         anchors.top: parent.top
+        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
         currentIndex: feedsBar.currentIndex
         headerHeight: starterPackHeader.height + feedsBar.height + feedsSeparator.height

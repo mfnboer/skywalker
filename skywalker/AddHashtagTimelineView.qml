@@ -32,6 +32,7 @@ SkyPage {
 
     SkyTextInput {
         id: searchInput
+        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
         svgIcon: SvgOutline.hashtag
         placeholderText: qsTr("Search hashtag")

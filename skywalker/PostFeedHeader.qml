@@ -41,9 +41,9 @@ Rectangle {
 
     RowLayout {
         id: headerRow
-        y: guiSettings.headerMargin
+        y: !isSideBar ? guiSettings.headerMargin : 0
         width: parent.width
-        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight) - guiSettings.headerMargin : 0
+        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight - guiSettings.headerMargin) : 0
         spacing: 0
 
         SvgPlainButton {

@@ -549,6 +549,7 @@ qt_add_qml_module(libskywalker
         QML_FILES ThumbImageFixedSizeView.qml
         SOURCES
         QML_FILES DeadFooterMargin.qml
+        QML_FILES DeadHeaderMargin.qml
 )
 
 if (NOT ANDROID)

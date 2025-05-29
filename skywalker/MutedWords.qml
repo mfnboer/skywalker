@@ -31,6 +31,8 @@ ListView {
         onBack: view.closed()
 
         SvgPlainButton {
+            anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
             anchors.right: parent.right
             svg: SvgOutline.add
             onClicked: addWord()

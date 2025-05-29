@@ -23,11 +23,22 @@ SkyListView {
 
     Accessible.role: Accessible.List
 
-    header: SimpleDescriptionHeader {
-        title: sideBarTitle
-        description: sideBarDescription
-        visible: authorListView.title && !root.showSideBar
-        onClosed: authorListView.closed()
+    header: Item {
+        width: parent.width
+        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        z: guiSettings.headerZLevel
+
+        SimpleDescriptionHeader {
+            id: portraitHeader
+            title: sideBarTitle
+            description: sideBarDescription
+            visible: authorListView.title && !root.showSideBar
+            onClosed: authorListView.closed()
+        }
+        DeadHeaderMargin {
+            id: landscapeHeader
+            visible: !portraitHeader.visible
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

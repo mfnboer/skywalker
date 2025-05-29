@@ -33,6 +33,7 @@ SkyPage {
 
     SkyTabBar {
         id: tabBar
+        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin

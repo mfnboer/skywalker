@@ -21,11 +21,22 @@ ListView {
     clip: true
     ScrollIndicator.vertical: ScrollIndicator {}
 
-    header: SimpleDescriptionHeader {
-        title: sideBarTitle
-        description: sideBarDescription
-        visible: !root.showSideBar
-        onClosed: view.closed()
+    header: Item {
+        width: parent.width
+        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        z: guiSettings.headerZLevel
+
+        SimpleDescriptionHeader {
+            id: portraitHeader
+            title: sideBarTitle
+            description: sideBarDescription
+            visible: !root.showSideBar
+            onClosed: view.closed()
+        }
+        DeadHeaderMargin {
+            id: landscapeHeader
+            visible: root.showSideBar
+        }
     }
     headerPositioning: ListView.OverlayHeader
 

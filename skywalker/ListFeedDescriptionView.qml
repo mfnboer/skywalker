@@ -49,6 +49,7 @@ SkyPage {
         id: authorListView
         width: parent.width
         anchors.top: parent.top
+        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
         title: ""
         skywalker: page.skywalker

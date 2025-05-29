@@ -22,7 +22,7 @@ ApplicationWindow {
     }
 
     onIsPortraitChanged: {
-        guiSettings.footerMargin = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
+        guiSettings.updateScreenMargins()
 
         // HACK: the light/dark mode of the status bar gets lost when orientation changes
         displayUtils.resetStatusBarLightMode()
@@ -543,8 +543,10 @@ ApplicationWindow {
         property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
 
         id: sideBar
+        x: guiSettings.leftMargin
+        y: guiSettings.headerMargin
         width: Math.min(parent.width * 0.25, guiSettings.sideBarMaxWidth)
-        height: parent.height
+        height: parent.height - guiSettings.headerMargin - guiSettings.footerMargin
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
         homeActive: rootContent.currentIndex === rootContent.timelineIndex
@@ -592,7 +594,7 @@ ApplicationWindow {
         property int prevIndex: timelineIndex
 
         id: rootContent
-        x: sideBar.visible ? sideBar.width : 0
+        x: sideBar.visible ? sideBar.x + sideBar.width : 0
         width: parent.width - x
         height: parent.height
         currentIndex: timelineIndex

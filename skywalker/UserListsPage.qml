@@ -25,6 +25,7 @@ SkyPage {
 
     SkyTabBar {
         id: listsBar
+        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
 
         AccessibleTabButton {

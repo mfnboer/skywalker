@@ -17,7 +17,7 @@ SkyListView {
     boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {
-        height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
+        height: (headerVisible ? guiSettings.headerHeight : guiSettings.headerMargin) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
         headerVisible: !root.showSideBar
         onBack: view.closed()

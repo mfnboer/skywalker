@@ -12,12 +12,26 @@ SkyListView {
 
     id: view
 
-    header: SimpleHeader {
-        text: sideBarTitle
-        visible: !root.showSideBar
-        onBack: view.closed()
+    header: Item {
+        width: parent.width
+        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        z: guiSettings.headerZLevel
+
+        SimpleHeader {
+            id: portraitHeader
+            text: sideBarTitle
+            visible: !root.showSideBar
+            onBack: view.closed()
+        }
+        DeadHeaderMargin {
+            id: landscapeHeader
+            visible: root.showSideBar
+        }
     }
     headerPositioning: ListView.OverlayHeader
+
+    footer: DeadFooterMargin {}
+    footerPositioning: ListView.OverlayFooter
 
     delegate: ReactionViewDelegate {
         required property reactionview modelData

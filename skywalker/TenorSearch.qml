@@ -49,6 +49,7 @@ SkyPage {
 
     StackLayout {
         id: viewStack
+        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
 
         // Categories

@@ -38,6 +38,7 @@ SkyPage {
 
     SkyListView {
         id: messagesView
+        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
         height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
