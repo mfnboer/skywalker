@@ -817,6 +817,7 @@ ApplicationWindow {
         height: parent.height * 0.7
         edge: Qt.BottomEdge
         dragMargin: 0
+        bottomPadding: guiSettings.footerMargin
         modal: true
 
         onAboutToShow: enablePopupShield(true)
@@ -868,6 +869,7 @@ ApplicationWindow {
         width: parent.width
         edge: Qt.BottomEdge
         dragMargin: 0
+        bottomPadding: guiSettings.footerMargin
         modal: true
 
         onAboutToShow: enablePopupShield(true)

@@ -141,6 +141,7 @@ Item {
             sourceComponent: Menu {
                 id: moreMenu
                 modal: true
+                bottomMargin: guiSettings.footerMargin
 
                 onAboutToShow: root.enablePopupShield(true)
                 onAboutToHide: { root.enablePopupShield(false); parent.active = false }
