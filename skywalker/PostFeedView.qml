@@ -25,7 +25,7 @@ SkyListView {
     id: postFeedView
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
-    cacheBuffer: 2000
+    cacheBuffer: 6000
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: feedName
@@ -89,6 +89,20 @@ SkyListView {
         }
 
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
+        updateFeedUnreadPosts()
+    }
+
+    onContentYChanged: {
+        if (!inSync)
+            return
+
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && Boolean(model) && !model.getFeedInProgress) {
+            console.debug("Get next feed page")
+            model.getFeedNextPage(skywalker)
+        }
+
         updateFeedUnreadPosts()
     }
 
@@ -321,7 +335,9 @@ SkyListView {
 
     function updateFeedUnreadPosts() {
         const firstIndex = getFirstVisibleIndex()
-        postFeedView.feedUnreadPosts = Math.max(firstIndex, 0)
+
+        if (firstIndex >= 0)
+            postFeedView.feedUnreadPosts = firstIndex
     }
 
     function moveToHome() {

@@ -85,7 +85,6 @@ Rectangle {
     property bool isAnchorItem: false
     property bool onScreen: false
 
-    signal calibratedPosition(int dy)
     signal showHiddenReplies
     signal unfoldPosts
     signal activateSwipe
@@ -125,7 +124,7 @@ Rectangle {
         const relY = y - ListView.view.contentY
         const anchorIndex = ListView.view.getAnchorIndex()
 
-        if (index < anchorIndex && y !== 0 && dh != -lastDY) {
+        if (!ListView.view.flicking && index < anchorIndex && y !== 0 && dh != -lastDY) {
             ListView.view.contentY += dh
         }
 

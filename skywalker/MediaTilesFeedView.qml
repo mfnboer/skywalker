@@ -58,6 +58,7 @@ GridView {
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
+    cacheBuffer: 3000
     interactive: enclosingView ? !enclosingView.interactive : true
     ScrollIndicator.vertical: ScrollIndicator {}
 
@@ -104,8 +105,19 @@ GridView {
         const lastIndex = getBottomRightVisibleIndex()
         console.debug("Move:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
 
-        if (lastIndex >= 0 && count - lastIndex < columns * 6) {
+        if (lastIndex >= 0 && count - lastIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD) {
             console.debug("Prefetch next page:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
+            model.getFeedNextPage(skywalker)
+        }
+
+        updateUnreadPosts()
+    }
+
+    onContentYChanged: {
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+
+        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD * 2 && Boolean(model) && !feedLoading) {
+            console.debug("Get next tiles feed page")
             model.getFeedNextPage(skywalker)
         }
 
@@ -193,7 +205,9 @@ GridView {
 
     function updateUnreadPosts() {
         const firstIndex = getTopLeftVisibleIndex()
-        mediaTilesView.unreadPosts = Math.max(firstIndex, 0)
+
+        if (firstIndex >= 0)
+            mediaTilesView.unreadPosts = firstIndex
     }
 
     function moveToHome() {

@@ -19,6 +19,7 @@ SkyListView {
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
+    cacheBuffer: 6000
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""
@@ -97,6 +98,22 @@ SkyListView {
 
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
+    }
+
+    onContentYChanged: {
+        if (!inSync)
+            return
+
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !skywalker.getTimelineInProgress) {
+            console.debug("Get next timeline page")
+            skywalker.getTimelineNextPage()
+        }
+
+        if (firstVisibleIndex >= 0)
+            updateUnreadPosts(firstVisibleIndex)
     }
 
     FlickableRefresher {

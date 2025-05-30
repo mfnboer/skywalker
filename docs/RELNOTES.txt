@@ -1,3 +1,7 @@
+next
+====
+* Increase flick velocity
+
 4.7
 ===
 * Add a domain as muted word, e.g. example.com, to mute posts with links on
