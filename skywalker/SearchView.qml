@@ -275,7 +275,6 @@ SkyPage {
             }
 
             FlickableRefresher {
-                scrollToTopButtonMargin: pageFooter.height
                 inProgress: postsViewTop.model && postsViewTop.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
@@ -312,7 +311,6 @@ SkyPage {
             }
 
             FlickableRefresher {
-                scrollToTopButtonMargin: pageFooter.height
                 inProgress: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
                 topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
@@ -349,7 +347,6 @@ SkyPage {
             }
 
             FlickableRefresher {
-                scrollToTopButtonMargin: pageFooter.height
                 inProgress: searchUtils.searchActorsInProgress
                 bottomOvershootFun: () => searchUtils.getNextPageSearchActors(header.getDisplayText())
             }
@@ -505,7 +502,6 @@ SkyPage {
                 }
 
                 FlickableRefresher {
-                    scrollToTopButtonMargin: pageFooter.height
                     inProgress: searchUtils.searchSuggestedActorsInProgress
                     bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
                 }
