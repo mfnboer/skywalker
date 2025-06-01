@@ -5,6 +5,7 @@
 #include "content_filter.h"
 #include "focus_hashtags.h"
 #include "post_thread_cache.h"
+#include "scoped_handle.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -369,12 +370,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             const QString did = record->getReplyToAuthorDid();
 
             if (!did.isEmpty() && !AuthorCache::instance().contains(did))
-                AuthorCache::instance().putProfile(did);
+                QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
         }
         else
         {
             if (record->isThread() == QEnums::TRIPLE_BOOL_UNKNOWN)
-                PostThreadCache::instance().putPost(record->getUri());
+                QTimer::singleShot(0, this, [postUri=record->getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
@@ -388,7 +389,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         auto recordWithMedia = post.getRecordWithMediaView();
 
         if (!recordWithMedia)
-            return QVariant();
+            return QVariant{};
 
         if (change)
         {
@@ -405,12 +406,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             const QString did = record.getReplyToAuthorDid();
 
             if (!did.isEmpty() && !AuthorCache::instance().contains(did))
-                AuthorCache::instance().putProfile(did);
+                QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
         }
         else
         {
             if (record.isThread() == QEnums::TRIPLE_BOOL_UNKNOWN)
-                PostThreadCache::instance().putPost(record.getUri());
+                QTimer::singleShot(0, this, [postUri=record.getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
@@ -457,7 +458,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             const QString did = post.getReplyToAuthorDid();
 
             if (!did.isEmpty())
-                AuthorCache::instance().putProfile(did);
+                QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
 
             return {};
         }
@@ -587,7 +588,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         case QEnums::TRIPLE_BOOL_YES:
             return true;
         case QEnums::TRIPLE_BOOL_UNKNOWN:
-            PostThreadCache::instance().putPost(post.getUri());
+            QTimer::singleShot(0, this, [postUri=post.getUri()]{ PostThreadCache::instance().putPost(postUri); });
             return false;
         }
 

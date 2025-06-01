@@ -19,9 +19,9 @@ namespace Skywalker {
 RecordView::SharedPtr RecordView::makeDetachedRecord(const QString postUri)
 {
     auto record = std::make_shared<RecordView>();
-    record->mDetachedPostUri = postUri;
-    record->mDetachedByDid = PostUtils::extractDidFromUri(postUri);
-    record->mDetached = true;
+    record->mPrivate->mDetachedPostUri = postUri;
+    record->mPrivate->mDetachedByDid = PostUtils::extractDidFromUri(postUri);
+    record->mPrivate->mDetached = true;
     record->mValid = true;
 
     return record;
@@ -33,49 +33,49 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     {
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND:
     {
-        mNotFound = true;
+        mPrivate->mNotFound = true;
         break;
     }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_BLOCKED:
     {
-        mBlocked = true;
+        mPrivate->mBlocked = true;
         break;
     }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_DETACHED:
     {
         const auto record = std::get<ATProto::AppBskyEmbed::RecordViewDetached::SharedPtr>(view.mRecord);
-        mDetachedByDid = PostUtils::extractDidFromUri(record->mUri);
-        mDetachedPostUri = record->mUri;
-        mDetached = true;
+        mPrivate->mDetachedByDid = PostUtils::extractDidFromUri(record->mUri);
+        mPrivate->mDetachedPostUri = record->mUri;
+        mPrivate->mDetached = true;
         break;
     }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
     {
-        mRecord = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
+        mPrivate->mRecord = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
-        mFeed = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(view.mRecord);
+        mPrivate->mFeed = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
     {
-        mList = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(view.mRecord);
+        mPrivate->mList = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
     {
-        mLabeler = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord);
+        mPrivate->mLabeler = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_GRAPH_STARTER_PACK_VIEW_BASIC:
-        mStarterPack = std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(view.mRecord);
+        mPrivate->mStarterPack = std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(view.mRecord);
         break;
     default:
         qWarning() << "Record type not supported:" << view.mUnsupportedType;
-        mNotSupported = true;
-        mUnsupportedType = view.mUnsupportedType;
+        mPrivate->mNotSupported = true;
+        mPrivate->mUnsupportedType = view.mUnsupportedType;
         break;
     }
 
@@ -84,24 +84,24 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
 
 QString RecordView::getUri() const
 {
-    return mRecord ? mRecord->mUri : QString();
+    return mPrivate->mRecord ? mPrivate->mRecord->mUri : QString();
 }
 
 QString RecordView::getCid() const
 {
-    return mRecord ? mRecord->mCid : QString();
+    return mPrivate->mRecord ? mPrivate->mRecord->mCid : QString();
 }
 
 QString RecordView::getText() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return {};
 
-    switch (mRecord->mValueType)
+    switch (mPrivate->mRecord->mValueType)
     {
     case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
 
         if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
             return UnicodeFonts::toPlainText(*recordValue->mBridgyOriginalText);
@@ -110,17 +110,17 @@ QString RecordView::getText() const
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue);
         return recordValue->mDescription.value_or("");
     }
     case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue);
         return recordValue->mDescription.value_or("");
     }
     case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mPrivate->mRecord->mValue);
         return recordValue->mCreator->mDescription.value_or("");
     }
     default:
@@ -132,14 +132,14 @@ QString RecordView::getText() const
 
 QString RecordView::getFormattedText() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return {};
 
-    switch (mRecord->mValueType)
+    switch (mPrivate->mRecord->mValueType)
     {
     case ATProto::RecordType::APP_BSKY_FEED_POST:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
 
         if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
             return *recordValue->mBridgyOriginalText;
@@ -148,17 +148,17 @@ QString RecordView::getFormattedText() const
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedFeedDescription(*recordValue, UserSettings::getCurrentLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedListDescription(*recordValue, UserSettings::getCurrentLinkColor());
     }
     case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
     {
-        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord->mValue);
+        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mPrivate->mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedLabelerDescription(*recordValue, UserSettings::getCurrentLinkColor());
 
     }
@@ -171,23 +171,23 @@ QString RecordView::getFormattedText() const
 
 BasicProfile RecordView::getAuthor() const
 {
-    return mRecord ? BasicProfile(mRecord->mAuthor) : BasicProfile();
+    return mPrivate->mRecord ? BasicProfile(mPrivate->mRecord->mAuthor) : BasicProfile();
 }
 
 QDateTime RecordView::getIndexedAt() const
 {
-    return mRecord ? mRecord->mIndexedAt : QDateTime();
+    return mPrivate->mRecord ? mPrivate->mRecord->mIndexedAt : QDateTime();
 
     return {};
 }
 
 ATProto::AppBskyEmbed::EmbedView::SharedPtr RecordView::getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const
 {
-    if (!mRecord || mRecord->mEmbeds.empty())
+    if (!mPrivate->mRecord || mPrivate->mRecord->mEmbeds.empty())
         return nullptr;
 
     // There is a list of embeds; can there be more than 1?
-    const auto& embed = mRecord->mEmbeds[0];
+    const auto& embed = mPrivate->mRecord->mEmbeds[0];
     if (embed->mType != embedViewType)
         return nullptr;
 
@@ -312,59 +312,59 @@ ExternalView::Ptr RecordView::getExternalView() const
 
 const ContentLabelList& RecordView::getContentLabels() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
     {
         static const ContentLabelList NO_LABELS;
         return NO_LABELS;
     }
 
-    if (mContentLabels)
-        return *mContentLabels;
+    if (mPrivate->mContentLabels)
+        return *mPrivate->mContentLabels;
 
-    const_cast<RecordView*>(this)->mContentLabels = ContentFilter::getContentLabels(mRecord->mLabels);
-    return *mContentLabels;
+    const_cast<RecordView*>(this)->mPrivate->mContentLabels = ContentFilter::getContentLabels(mPrivate->mRecord->mLabels);
+    return *mPrivate->mContentLabels;
 }
 
 const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& RecordView::getLabels() const
 {
     static const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr> NO_LABELS;
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return NO_LABELS;
 
-    return mRecord->mLabels;
+    return mPrivate->mRecord->mLabels;
 }
 
 const ContentLabelList& RecordView::getLabelsIncludingAuthorLabels() const
 {
-    if (mLabelsIncludingAuthorLabels)
-        return *mLabelsIncludingAuthorLabels;
+    if (mPrivate->mLabelsIncludingAuthorLabels)
+        return *mPrivate->mLabelsIncludingAuthorLabels;
 
     const auto& author = getAuthor();
     ContentLabelList contentLabels = author.getContentLabels();
     ContentFilter::addContentLabels(contentLabels, getLabels());
-    const_cast<RecordView*>(this)->mLabelsIncludingAuthorLabels = contentLabels;
+    mPrivate->mLabelsIncludingAuthorLabels = contentLabels;
 
-    return *mLabelsIncludingAuthorLabels;
+    return *mPrivate->mLabelsIncludingAuthorLabels;
 }
 
 bool RecordView::isReply() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return false;
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return false;
 
-    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
     return post->mReply != nullptr;
 }
 
 QEnums::TripleBool RecordView::isThread() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return QEnums::TRIPLE_BOOL_NO;
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return QEnums::TRIPLE_BOOL_NO;;
 
     if (isReply())
@@ -385,13 +385,13 @@ QEnums::TripleBool RecordView::isThread() const
 
 QString RecordView::getReplyToAuthorDid() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
-    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
 
     if (!post->mReply)
         return {};
@@ -420,41 +420,41 @@ BasicProfile RecordView::getReplyToAuthor() const
 
 const LanguageList& RecordView::getLanguages() const
 {
-    if (!mLanguages.empty())
-        return mLanguages;
+    if (!mPrivate->mLanguages.empty())
+        return mPrivate->mLanguages;
 
-    if (!mRecord)
-        return mLanguages;
+    if (!mPrivate->mRecord)
+        return mPrivate->mLanguages;
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return mLanguages;
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return mPrivate->mLanguages;
 
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
-    const_cast<RecordView*>(this)->mLanguages = LanguageUtils::getLanguages(recordValue->mLanguages);
-    return mLanguages;
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
+    const_cast<RecordView*>(this)->mPrivate->mLanguages = LanguageUtils::getLanguages(recordValue->mLanguages);
+    return mPrivate->mLanguages;
 }
 
 std::vector<QString> RecordView::getHashtags() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
     return ATProto::RichTextMaster::getFacetTags(*recordValue);
 }
 
 std::vector<QString> RecordView::getWebLinks() const
 {
-    if (!mRecord)
+    if (!mPrivate->mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
         return {};
 
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
     auto links = ATProto::RichTextMaster::getFacetLinks(*recordValue);
 
     if (recordValue->mEmbed && recordValue->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::EXTERNAL)
@@ -482,34 +482,34 @@ void RecordView::setMutedReason(const IMatchWords& mutedWords)
 
 GeneratorView RecordView::getFeed() const
 {
-    if (!mFeed)
+    if (!mPrivate->mFeed)
         return {};
 
-    return GeneratorView(mFeed);
+    return GeneratorView(mPrivate->mFeed);
 }
 
 ListView RecordView::getList() const
 {
-    if (!mList)
+    if (!mPrivate->mList)
         return {};
 
-    return ListView(mList);
+    return ListView(mPrivate->mList);
 }
 
 LabelerView RecordView::getLabeler() const
 {
-    if (!mLabeler)
+    if (!mPrivate->mLabeler)
         return {};
 
-    return LabelerView(mLabeler);
+    return LabelerView(mPrivate->mLabeler);
 }
 
 StarterPackViewBasic RecordView::getStarterPack() const
 {
-    if (!mStarterPack)
+    if (!mPrivate->mStarterPack)
         return {};
 
-    return StarterPackViewBasic(mStarterPack);
+    return StarterPackViewBasic(mPrivate->mStarterPack);
 }
 
 }

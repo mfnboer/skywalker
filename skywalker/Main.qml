@@ -2198,7 +2198,8 @@ ApplicationWindow {
         onTriggered: {
             const prev = lastTime
             lastTime = Date.now()
-            console.log("FPS:", frameCount, "dt:", lastTime - prev)
+            const dt = lastTime - prev
+            console.log("FPS:", Math.floor(frameCount / dt * 1000), "dt:", dt)
             frameCount = 0
         }
     }

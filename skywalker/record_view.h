@@ -89,55 +89,60 @@ public:
     const LanguageList& getLanguages() const;
     std::vector<QString> getHashtags() const override;
     std::vector<QString> getWebLinks() const override;
-    QEnums::ContentVisibility getContentVisibility() const { return mContentVisibility; }
-    const QString& getContentWarning() const { return mContentWarning; }
-    QEnums::MutedPostReason getMutedReason() const { return mMutedReason; }
+    QEnums::ContentVisibility getContentVisibility() const { return mPrivate->mContentVisibility; }
+    const QString& getContentWarning() const { return mPrivate->mContentWarning; }
+    QEnums::MutedPostReason getMutedReason() const { return mPrivate->mMutedReason; }
     QEnums::TripleBool isThread() const;
 
-    bool getNotFound() const { return mNotFound; }
-    bool getBlocked() const { return mBlocked; }
-    bool getDetached() const { return mDetached; }
-    const QString& getDetachedByDid() const { return mDetachedByDid; }
-    const QString& getDetachedPostUri() const { return mDetachedPostUri; }
-    bool getNotSupported() const { return mNotSupported; }
-    const QString& getUnsupportedType() const { return mUnsupportedType; }
-    bool getAvailable() const { return mRecord != nullptr; }
-    bool getFeedAvailable()  const { return mFeed != nullptr; }
+    bool getNotFound() const { return mPrivate->mNotFound; }
+    bool getBlocked() const { return mPrivate->mBlocked; }
+    bool getDetached() const { return mPrivate->mDetached; }
+    const QString& getDetachedByDid() const { return mPrivate->mDetachedByDid; }
+    const QString& getDetachedPostUri() const { return mPrivate->mDetachedPostUri; }
+    bool getNotSupported() const { return mPrivate->mNotSupported; }
+    const QString& getUnsupportedType() const { return mPrivate->mUnsupportedType; }
+    bool getAvailable() const { return mPrivate->mRecord != nullptr; }
+    bool getFeedAvailable()  const { return mPrivate->mFeed != nullptr; }
     GeneratorView getFeed() const;
-    bool getListAvailable() const { return mList != nullptr; }
+    bool getListAvailable() const { return mPrivate->mList != nullptr; }
     ListView getList() const;
-    bool getLabelerAvailable() const { return mLabeler != nullptr; }
+    bool getLabelerAvailable() const { return mPrivate->mLabeler != nullptr; }
     LabelerView getLabeler() const;
-    bool getStarterPackAvailable() const { return mStarterPack != nullptr; }
+    bool getStarterPackAvailable() const { return mPrivate->mStarterPack != nullptr; }
     StarterPackViewBasic getStarterPack() const;
 
-    void setContentVisibility(QEnums::ContentVisibility visibility) { mContentVisibility = visibility; }
-    void setContentWarning(const QString& warning) { mContentWarning = warning; }
-    void setMutedReason(const QEnums::MutedPostReason mutedReason) { mMutedReason = mutedReason; }
+    void setContentVisibility(QEnums::ContentVisibility visibility) { mPrivate->mContentVisibility = visibility; }
+    void setContentWarning(const QString& warning) { mPrivate->mContentWarning = warning; }
+    void setMutedReason(const QEnums::MutedPostReason mutedReason) { mPrivate->mMutedReason = mutedReason; }
     void setMutedReason(const IMatchWords& mutedWords);
 
 private:
     ATProto::AppBskyEmbed::EmbedView::SharedPtr getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const;
 
     bool mValid = false;
-    ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
-    ATProto::AppBskyFeed::GeneratorView::SharedPtr mFeed;
-    ATProto::AppBskyGraph::ListView::SharedPtr mList;
-    ATProto::AppBskyLabeler::LabelerView::SharedPtr mLabeler;
-    ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
-    bool mNotFound = false;
-    bool mBlocked = false;
-    bool mDetached = false;
-    QString mDetachedByDid;
-    QString mDetachedPostUri;
-    bool mNotSupported = false;
-    QString mUnsupportedType;
-    QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
-    QString mContentWarning = "NOT INITIALIZED";
-    QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
-    LanguageList mLanguages;
-    std::optional<ContentLabelList> mContentLabels;
-    std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
+
+    struct PrivateData
+    {
+        ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
+        ATProto::AppBskyFeed::GeneratorView::SharedPtr mFeed;
+        ATProto::AppBskyGraph::ListView::SharedPtr mList;
+        ATProto::AppBskyLabeler::LabelerView::SharedPtr mLabeler;
+        ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
+        bool mNotFound = false;
+        bool mBlocked = false;
+        bool mDetached = false;
+        QString mDetachedByDid;
+        QString mDetachedPostUri;
+        bool mNotSupported = false;
+        QString mUnsupportedType;
+        QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
+        QString mContentWarning = "NOT INITIALIZED";
+        QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
+        LanguageList mLanguages;
+        std::optional<ContentLabelList> mContentLabels;
+        std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
+    };
+    std::shared_ptr<PrivateData> mPrivate = std::make_shared<PrivateData>();
 };
 
 }
