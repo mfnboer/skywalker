@@ -1,6 +1,7 @@
 next
 ====
 * Increase flick velocity
+* Translucent post age indicator turning opaque over time
 
 4.7
 ===
