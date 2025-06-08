@@ -316,7 +316,7 @@ private:
         if (error.error != QJsonParseError::NoError)
             qFatal() << "Failed to parse json:" << error.errorString() << "offset:" << error.offset;
 
-        auto feed = ATProto::AppBskyFeed::OutputFeed::fromJson(json);
+        auto feed = ATProto::AppBskyFeed::OutputFeed::fromJson(json.object());
         feed->mCursor = cursor;
         return feed;
     }

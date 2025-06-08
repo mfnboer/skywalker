@@ -116,7 +116,7 @@ SkyPage {
                 checked: !isNewAccount() && userSettings.getRememberPassword(did)
                 onCheckedChanged: {
                     if (!isNewAccount())
-                        userSettings.setRememberPassword(did)
+                        userSettings.setRememberPassword(did, checked)
                 }
             }
 

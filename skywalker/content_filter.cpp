@@ -302,6 +302,9 @@ std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWa
 
         visibility = v;
         warning = getWarning(label);
+
+        if (visibility == QEnums::CONTENT_VISIBILITY_LAST)
+            break;
     }
 
     return {visibility, warning};

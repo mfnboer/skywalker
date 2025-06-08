@@ -4,6 +4,8 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 std::unique_ptr<AuthorCache> AuthorCache::sInstance;
 
 AuthorCache::Entry::Entry(const BasicProfile& profile) :

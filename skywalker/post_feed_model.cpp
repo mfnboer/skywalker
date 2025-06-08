@@ -4,10 +4,17 @@
 #include "definitions.h"
 #include "skywalker.h"
 #include "user_settings.h"
+#include <atproto/lib/time_monitor.h>
 #include <algorithm>
 #include <ranges>
 
+#ifndef Q_OS_ANDROID
+#include <valgrind/callgrind.h>
+#endif
+
 namespace Skywalker {
+
+using namespace std::chrono_literals;
 
 PostFeedModel::PostFeedModel(const QString& feedName,
                              const QString& userDid, const IProfileStore& following,
@@ -334,10 +341,25 @@ void PostFeedModel::reset()
     clear();
 }
 
+// TODO: profile createPage()
 void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
+    ATProto::TimeMonitor timeMon("REPLY FEED ADD DT");
+
     qDebug() << "Add raw posts:" << feed->mFeed.size();
+
+#ifndef Q_OS_ANDROID
+    CALLGRIND_START_INSTRUMENTATION;
+    CALLGRIND_TOGGLE_COLLECT;
+#endif
+
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
+
+#ifndef Q_OS_ANDROID
+    CALLGRIND_TOGGLE_COLLECT;
+    CALLGRIND_STOP_INSTRUMENTATION;
+#endif
+
     addPage(std::move(page));
 }
 
@@ -1118,6 +1140,8 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
+    ATProto::TimeMonitor timeMon("REPLY FEED CREATE DT");
+
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
     const bool assembleThreads = mUserSettings.getAssembleThreads(mUserDid);
     auto page = std::make_unique<Page>();
@@ -1252,6 +1276,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
     page->setThreadgates();
     page->foldThreads();
+
     return page;
 }
 

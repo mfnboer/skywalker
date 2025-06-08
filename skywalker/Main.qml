@@ -9,12 +9,39 @@ ApplicationWindow {
     readonly property bool isPortrait: width < height
     readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
 
+    property double frameIntervalStart: Date.now()
+    property double prevFrame: frameIntervalStart
+    property double minFrameMs: 1000
+    property double maxFrameMs: 0
+    property int frameCount: 0
+
     id: root
     width: 480
     height: 960
     visible: true
     title: skywalker.APP_NAME // qmllint disable missing-property
     color: guiSettings.backgroundColor
+
+    // TODO: remove
+    onFrameSwapped: {
+        const nextFrame = Date.now()
+        const frameDt = nextFrame - prevFrame
+        const dt = nextFrame - frameIntervalStart
+
+        minFrameMs = Math.min(frameDt, minFrameMs)
+        maxFrameMs = Math.max(frameDt, maxFrameMs)
+        prevFrame = nextFrame
+        ++frameCount
+
+        if (dt > 1000) {
+            const fps = Math.round(frameCount / dt * 1000)
+            console.debug("FPS:", fps, "DT:", dt, "MIN:", minFrameMs, "MAX:", maxFrameMs)
+            frameCount = 0
+            frameIntervalStart = nextFrame
+            minFrameMs = 1000
+            maxFrameMs = 0
+        }
+    }
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
@@ -2183,32 +2210,6 @@ ApplicationWindow {
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
-    }
-
-    // TODO: remove
-    Timer {
-        property int frameCount: 0
-        property int lastTime: Date.now()
-
-        id: fpsTimer
-        interval: 1000
-        repeat: true
-        running: true
-
-        onTriggered: {
-            const prev = lastTime
-            lastTime = Date.now()
-            const dt = lastTime - prev
-            console.log("FPS:", Math.floor(frameCount / dt * 1000), "dt:", dt)
-            frameCount = 0
-        }
-    }
-
-    Timer {
-        interval: 16
-        repeat: true
-        running: true
-        onTriggered: fpsTimer.frameCount++
     }
 
     Component.onCompleted: {

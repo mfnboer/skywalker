@@ -391,6 +391,11 @@ private:
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK
     static QString sDefaultBackgroundColor;
     static QString sCurrentLinkColor;
+
+    // Cache
+    mutable std::optional<bool> mFeedHideReplies;
+    mutable std::optional<bool> mHideRepliesInThreadFromUnfollowed;
+    mutable std::optional<bool> mFeedHideFollowing;
 };
 
 }

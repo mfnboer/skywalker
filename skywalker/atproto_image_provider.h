@@ -50,7 +50,6 @@ private:
     void loadImage(const QString& did, const QString& cid);
     void handleDone(QImage img);
 
-    QNetworkAccessManager* mNetwork;
     QString mProviderName;
     QString mId;
     QSize mRequestedSize;

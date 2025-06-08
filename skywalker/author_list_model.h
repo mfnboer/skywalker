@@ -48,7 +48,7 @@ public:
 
     void clear();
     void addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor);
-    void addAuthors(ATProto::AppBskyActor::ProfileViewDetailedList authors, const QString& cursor);
+    void addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
     void addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor);
     Q_INVOKABLE void prependAuthor(const Profile& author, const QString& listItemUri);
     Q_INVOKABLE void deleteEntry(int index);
@@ -82,7 +82,7 @@ private:
 
     AuthorList mList;
     std::deque<ATProto::AppBskyActor::ProfileViewList> mRawLists;
-    std::deque<ATProto::AppBskyActor::ProfileViewDetailedList> mRawDetailedLists;
+    std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
     std::deque<ATProto::AppBskyGraph::ListItemViewList> mRawItemLists;
 
     QString mCursor;

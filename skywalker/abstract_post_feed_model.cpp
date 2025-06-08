@@ -4,13 +4,35 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "focus_hashtags.h"
+#include "muted_words.h"
 #include "post_thread_cache.h"
-#include "scoped_handle.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
 
 using namespace std::chrono_literals;
+
+static const QString NULL_STRING;
+static const ProfileStore NULL_PROFILE_STORE;
+static const ContentFilterShowAll NULL_CONTENT_FILTER;
+static const Bookmarks NULL_BOOKMARKS;
+static const MutedWordsNoMutes NULL_MATCH_WORDS;
+static const FocusHashtags NULL_FOCUS_HASHTAGS;
+static HashtagIndex NULL_HASHTAG_INDEX(0);
+
+AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
+    QAbstractListModel(parent),
+    mUserDid{NULL_STRING},
+    mFollowing(NULL_PROFILE_STORE),
+    mMutedReposts(NULL_PROFILE_STORE),
+    mFeedHide(NULL_PROFILE_STORE),
+    mContentFilter(NULL_CONTENT_FILTER),
+    mBookmarks(NULL_BOOKMARKS),
+    mMutedWords(NULL_MATCH_WORDS),
+    mFocusHashtags(NULL_FOCUS_HASHTAGS),
+    mHashtags(NULL_HASHTAG_INDEX)
+{
+}
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
@@ -30,11 +52,11 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mFocusHashtags(focusHashtags),
     mHashtags(hashtags)
 {
-    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
+    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); }, Qt::QueuedConnection);
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this](const QString&){ changeData({ int(Role::PostReplyToAuthor), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
+            [this](const QString& did){ replyToAuthorAdded(did); }, Qt::QueuedConnection);
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
-            [this](const QString&){ changeData({ int(Role::PostIsThread), int(Role::PostRecord), int(Role::PostRecordWithMedia) }); });
+            [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
 }
 
 void AbstractPostFeedModel::setOverrideLinkColor(const QString& color)
@@ -140,8 +162,6 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
     }
 
     const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
-
-    qDebug() << "RECORD:" << (record != nullptr) << post.getText();
 
     if (record && mMutedWords.match(*record))
     {
@@ -815,6 +835,70 @@ void AbstractPostFeedModel::postBookmarkedChanged()
 void AbstractPostFeedModel::changeData(const QList<int>& roles)
 {
     emit dataChanged(createIndex(0, 0), createIndex(mFeed.size() - 1, 0), roles);
+}
+
+// Easier would be to do this:
+//
+// changeData({ int(Role::PostIsThread), int(Role::PostRecord), int(Role::PostRecordWithMedia) });
+//
+// However the code below is faster as it will not trigger a redraw of all posts.
+void AbstractPostFeedModel::postIsThreadChanged(const QString& postUri)
+{
+    const bool* isThread = PostThreadCache::instance().getIsThread(postUri);
+
+    // If the post is not a thread, then model assumed correctly it is not a thread,
+    // so no change in the GUI.
+    if (!isThread || *isThread == false)
+        return;
+
+    for (int i = 0; i < (int)mFeed.size(); ++i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.getUri() == postUri)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostIsThread) });
+
+        const auto postRecord = post.getRecordView();
+
+        if (postRecord && postRecord->getUri() == postUri)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecord) });
+
+        const auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (recordWithMedia)
+        {
+            const auto record = recordWithMedia->getRecordPtr();
+
+            if (record && record->getUri() == postUri)
+                emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
+        }
+    }
+}
+
+void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
+{
+    for (int i = 0; i < (int)mFeed.size(); ++i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.getReplyToAuthorDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostReplyToAuthor) });
+
+        const auto postRecord = post.getRecordView();
+
+        if (postRecord && postRecord->getReplyToAuthorDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecord) });
+
+        const auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (recordWithMedia)
+        {
+            const auto record = recordWithMedia->getRecordPtr();
+
+            if (record && record->getReplyToAuthorDid() == did)
+                emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
+        }
+    }
 }
 
 }

@@ -274,6 +274,8 @@ void Chat::updateConvos(QEnums::ConvoStatus status)
             if (!presence)
                 return;
 
+            qDebug() << "Got convos";
+
             if (output->mConvos.empty())
             {
                 qDebug() << "No convos:" << status;

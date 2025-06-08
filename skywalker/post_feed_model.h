@@ -194,6 +194,7 @@ private:
     const ATProto::UserPreferences& mUserPreferences;
     UserSettings& mUserSettings;
     bool mLanguageFilterEnabled = false;
+    bool mFeedHideFollowing = false;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.

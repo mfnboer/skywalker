@@ -99,6 +99,8 @@ public:
 
     using Ptr = std::unique_ptr<AbstractPostFeedModel>;
 
+    explicit AbstractPostFeedModel(QObject* parent = nullptr);
+
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
                           const IProfileStore& feedHide,
@@ -208,6 +210,8 @@ private:
     void identifyThreadPost(const Post& post);
 
     void postBookmarkedChanged();
+    void postIsThreadChanged(const QString& postUri);
+    void replyToAuthorAdded(const QString& did);
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;

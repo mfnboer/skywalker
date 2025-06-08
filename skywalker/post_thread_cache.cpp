@@ -71,7 +71,7 @@ void PostThreadCache::putPost(const QString& uri)
 }
 
 bool PostThreadCache::putThread(const ATProto::AppBskyFeed::ThreadElement::SharedPtr& thread)
-{
+{   
     if (thread->mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
         return false;
 

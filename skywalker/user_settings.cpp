@@ -71,6 +71,11 @@ void UserSettings::reset()
     mSyncFeeds.reset();
     mBlocksWithExpiry = nullptr;
     mMutesWithExpiry = nullptr;
+
+    mFeedHideReplies.reset();
+    mHideRepliesInThreadFromUnfollowed.reset();
+    mFeedHideFollowing.reset();
+
     setActiveUserDid({});
 }
 
@@ -247,7 +252,8 @@ void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    mSettings.sync();
+    QTimer::singleShot(0, this, [this]{ mSettings.sync(); });
+    qDebug() << "Session saved";
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -427,11 +433,16 @@ Q_INVOKABLE void UserSettings::setFeedHideReplies(const QString& did, const QStr
         mSettings.setValue(uriKey(did, "feedhideReplies", feedUri), hide);
     else
         mSettings.remove(uriKey(did, "feedhideReplies", feedUri));
+
+    mFeedHideReplies = hide;
 }
 
 Q_INVOKABLE bool UserSettings::getFeedHideReplies(const QString& did, const QString& feedUri) const
 {
-    return mSettings.value(uriKey(did, "feedhideReplies", feedUri), false).toBool();
+    if (!mFeedHideReplies)
+        mFeedHideReplies = mSettings.value(uriKey(did, "feedhideReplies", feedUri), false).toBool();
+
+    return *mFeedHideReplies;
 }
 
 QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
@@ -445,11 +456,16 @@ Q_INVOKABLE void UserSettings::setFeedHideFollowing(const QString& did, const QS
         mSettings.setValue(uriKey(did, "feedhideFollowing", feedUri), hide);
     else
         mSettings.remove(uriKey(did, "feedhideFollowing", feedUri));
+
+    mFeedHideFollowing = hide;
 }
 
 Q_INVOKABLE bool UserSettings::getFeedHideFollowing(const QString& did, const QString& feedUri) const
 {
-    return mSettings.value(uriKey(did, "feedhideFollowing", feedUri), false).toBool();
+    if (!mFeedHideFollowing)
+        mFeedHideFollowing = mSettings.value(uriKey(did, "feedhideFollowing", feedUri), false).toBool();
+
+    return *mFeedHideFollowing;
 }
 
 QStringList UserSettings::getFeedHideFollowingUris(const QString& did) const
@@ -1090,12 +1106,16 @@ void UserSettings::setShowSelfReposts(const QString& did, bool show)
 
 bool UserSettings::getHideRepliesInThreadFromUnfollowed(const QString did) const
 {
-    return mSettings.value(key(did, "hideRepliesInThreadFromUnfollowed"), false).toBool();
+    if (!mHideRepliesInThreadFromUnfollowed)
+        mHideRepliesInThreadFromUnfollowed = mSettings.value(key(did, "hideRepliesInThreadFromUnfollowed"), false).toBool();
+
+    return *mHideRepliesInThreadFromUnfollowed;
 }
 
 void UserSettings::setHideRepliesInThreadFromUnfollowed(const QString& did, bool hide)
 {
     mSettings.setValue(key(did, "hideRepliesInThreadFromUnfollowed"), hide);
+    mHideRepliesInThreadFromUnfollowed = hide;
 }
 
 bool UserSettings::getAssembleThreads(const QString& did) const

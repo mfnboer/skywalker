@@ -300,7 +300,7 @@ void OffLineMessageChecker::resumeSession(bool retry)
     }
 
     mUserDid = session->mDid;
-    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork);
+    auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 

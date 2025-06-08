@@ -145,7 +145,7 @@ Skywalker::~Skywalker()
 // NOTE: user can be handle or DID
 void Skywalker::login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken)
 {
-    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork, host);
+    auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
@@ -212,7 +212,7 @@ bool Skywalker::resumeSession(bool retry)
 
     qInfo() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
-    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork);
+    auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
@@ -640,7 +640,7 @@ void Skywalker::loadTimelineHide(QStringList uris)
             loadTimelineHide(uris);
         },
         [this, uri, uris](const QString& error, const QString& msg){
-            if (ATProto::Client::isListNotFoundError(error))
+            if (ATProto::ATProtoErrorMsg::isListNotFound(error))
             {
                 qDebug() << "Hide list not found:" << uri << error << " - " << msg;
 
@@ -698,7 +698,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         [this](const QString& error, const QString& msg){
             mMutedReposts.setListCreated(false);
 
-            if (ATProto::Client::isListNotFoundError(error))
+            if (ATProto::ATProtoErrorMsg::isListNotFound(error))
             {
                 qDebug() << "No muted reposts list:" << error << " - " << msg;
                 loadTimelineHide();
@@ -807,7 +807,7 @@ void Skywalker::syncTimeline(int maxPages)
     if (!timestamp.isValid() || !mUserSettings.getRewindToLastSeenPost(mUserDid))
     {
         qDebug() << "Do not rewind timeline";
-        getTimeline(TIMELINE_ADD_PAGE_SIZE);
+        getTimeline(TIMELINE_SYNC_PAGE_SIZE);
         finishTimelineSync(-1);
         return;
     }

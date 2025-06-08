@@ -687,7 +687,7 @@ void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
         [this, listUris, uri](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
 
-            if (ATProto::Client::isListNotFoundError(error))
+            if (ATProto::ATProtoErrorMsg::isListNotFound(error))
             {
                 qDebug() << "Remove unknown list:" << uri;
 
