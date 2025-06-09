@@ -26,7 +26,7 @@ SkyPage {
     }
 
     footer: Rectangle {
-        height: keyboardHandler.keyboardHeight
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
         color: "transparent"
     }
 

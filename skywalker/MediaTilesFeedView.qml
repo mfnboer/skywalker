@@ -58,7 +58,6 @@ GridView {
     flickDeceleration: guiSettings.flickDeceleration
     maximumFlickVelocity: guiSettings.maxFlickVelocity
     pixelAligned: guiSettings.flickPixelAligned
-    cacheBuffer: 3000
     interactive: enclosingView ? !enclosingView.interactive : true
     ScrollIndicator.vertical: ScrollIndicator {}
 

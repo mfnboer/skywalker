@@ -24,7 +24,7 @@ Rectangle {
     RowLayout {
         y: guiSettings.headerMargin
         width: parent.width
-        height: guiSettings.headerHeight - guiSettigs.headerMargin
+        height: guiSettings.headerHeight - guiSettings.headerMargin
 
         SvgPlainButton {
             id: backButton

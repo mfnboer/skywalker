@@ -14,8 +14,10 @@ SimpleAuthorListView {
         text: title
         onBack: page.closed()
     }
-
     headerPositioning: ListView.OverlayHeader
+
+    footer: DeadFooterMargin {}
+    footerPositioning: ListView.OverlayFooter
 
     onAuthorClicked: (profile) => root.getSkywalker().getDetailedProfile(profile.did)
 }

@@ -20,6 +20,7 @@ SkyPage {
         id: altText
         width: parent.width
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: guiSettings.footerMargin
         wrapMode: Text.Wrap
         elide: Text.ElideRight
         color: "white"

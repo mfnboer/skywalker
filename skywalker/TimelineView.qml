@@ -19,7 +19,6 @@ SkyListView {
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
-    //cacheBuffer: 6000
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""

@@ -682,10 +682,10 @@ ApplicationWindow {
         function getBackgroundColor() {
             const item = currentStackItem()
 
-            if (typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
+            if (item && typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
                 return item.background.color
 
-            if (typeof item.color !== 'undefined')
+            if (item && typeof item.color !== 'undefined')
                 return item.color
 
             return guiSettings.backgroundColor
