@@ -1543,6 +1543,7 @@ SkyPage {
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
+
         getFeed(modelId)
 
         if (author.hasCreatedAt)

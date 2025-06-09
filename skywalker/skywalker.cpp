@@ -1606,6 +1606,18 @@ void Skywalker::setGetPostThreadInProgress(bool inProgress)
     emit getPostThreadInProgressChanged();
 }
 
+void Skywalker::incGetDetailedProfileInProgress()
+{
+    ++mGetDetailedProfileInProgress;
+    emit getDetailedProfileInProgressChanged();
+}
+
+void Skywalker::decGetDetailedProfileInProgress()
+{
+    --mGetDetailedProfileInProgress;
+    emit getDetailedProfileInProgressChanged();
+}
+
 void Skywalker::setGetNotificationsInProgress(bool inProgress)
 {
     mGetNotificationsInProgress = inProgress;
@@ -1847,7 +1859,7 @@ void Skywalker::addOlderPostThread(int modelId)
 
 PostThreadModel* Skywalker::getPostThreadModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get post thread model:" << id;
     auto* model = mPostThreadModels.get(id);
     return model ? model->get() : nullptr;
 }
@@ -2099,15 +2111,18 @@ void Skywalker::getDetailedProfile(const QString& author)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get detailed profile:" << author;
+    incGetDetailedProfileInProgress();
 
     mBsky->getProfile(author,
         [this](auto profile){
+            decGetDetailedProfileInProgress();
             const DetailedProfile detailedProfile(profile);
             AuthorCache::instance().put(detailedProfile);
             emit getDetailedProfileOK(detailedProfile);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getDetailedProfile failed:" << error << " - " << msg;
+            decGetDetailedProfileInProgress();
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -2407,7 +2422,7 @@ int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::Auth
 
 const AuthorFeedModel* Skywalker::getAuthorFeedModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get author feed model:" << id;
     auto* model = mAuthorFeedModels.get(id);
     return model ? model->get() : nullptr;
 }
@@ -2429,7 +2444,7 @@ int Skywalker::createSearchPostFeedModel()
 
 SearchPostFeedModel* Skywalker::getSearchPostFeedModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get search post feed model:" << id;
     auto* model = mSearchPostFeedModels.get(id);
     return model ? model->get() : nullptr;
 }
@@ -2442,6 +2457,7 @@ void Skywalker::removeSearchPostFeedModel(int id)
 
 int Skywalker::createFeedListModel()
 {
+    qDebug() << "Create feed list model";
     auto model = std::make_unique<FeedListModel>(mFavoriteFeeds, this, this);
     const int id = mFeedListModels.put(std::move(model));
     return id;
@@ -2527,14 +2543,14 @@ void Skywalker::getAuthorFeedListNextPage(const QString& did, int id)
 
 FeedListModel* Skywalker::getFeedListModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get feed list model:" << id;
     auto* model = mFeedListModels.get(id);
     return model ? model->get() : nullptr;
 }
 
 void Skywalker::removeFeedListModel(int id)
 {
-    qDebug() << "Remove model:" << id;
+    qDebug() << "Remove feed list model:" << id;
     mFeedListModels.remove(id);
 }
 
@@ -2611,6 +2627,7 @@ void Skywalker::getAuthorStarterPackListNextPage(const QString& did, int id)
 
 int Skywalker::createStarterPackListModel()
 {
+    qDebug() << "Create starter pack list model";
     auto model = std::make_unique<StarterPackListModel>(this);
     const int id = mStarterPackListModels.put(std::move(model));
     return id;
@@ -2618,14 +2635,14 @@ int Skywalker::createStarterPackListModel()
 
 StarterPackListModel* Skywalker::getStarterPackListModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get starter pack model:" << id;
     auto* model = mStarterPackListModels.get(id);
     return model ? model->get() : nullptr;
 }
 
 void Skywalker::removeStarterPackListModel(int id)
 {
-    qDebug() << "Remove model:" << id;
+    qDebug() << "Remove starter pack model:" << id;
     mStarterPackListModels.remove(id);
 }
 
@@ -2675,7 +2692,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 
 PostFeedModel* Skywalker::getPostFeedModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get post feed model:" << id;
     auto* model = mPostFeedModels.get(id);
     return model ? model->get() : nullptr;
 }
@@ -2995,7 +3012,7 @@ int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& 
 
 AuthorListModel* Skywalker::getAuthorListModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get author list model:" << id;
     auto* model = mAuthorListModels.get(id);
     return model ? model->get() : nullptr;
 }
@@ -3156,6 +3173,7 @@ void Skywalker::getListListNextPage(int id, int limit, int maxPages, int minEntr
 
 int Skywalker::createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId)
 {
+    qDebug() << "Create list list model";
     auto model = std::make_unique<ListListModel>(type, purpose, atId, mFavoriteFeeds, this, this);
     const int id = mListListModels.put(std::move(model));
     return id;
@@ -3163,14 +3181,14 @@ int Skywalker::createListListModel(ListListModel::Type type, ListListModel::Purp
 
 ListListModel* Skywalker::getListListModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get list list model:" << id;
     auto* model = mListListModels.get(id);
     return model ? model->get() : nullptr;
 }
 
 void Skywalker::removeListListModel(int id)
 {
-    qDebug() << "Remove model:" << id;
+    qDebug() << "Remove list list model:" << id;
     mListListModels.remove(id);
 }
 
@@ -3364,14 +3382,14 @@ int Skywalker::createContentGroupListModel(const QString& did, const LabelerPoli
 
 ContentGroupListModel* Skywalker::getContentGroupListModel(int id) const
 {
-    qDebug() << "Get model:" << id;
+    qDebug() << "Get content group model:" << id;
     auto* model = mContentGroupListModels.get(id);
     return model ? model->get() : nullptr;
 }
 
 void Skywalker::removeContentGroupListModel(int id)
 {
-    qDebug() << "Remove model:" << id;
+    qDebug() << "Remove content group model:" << id;
     mContentGroupListModels.remove(id);
 }
 

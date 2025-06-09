@@ -9,11 +9,12 @@ ApplicationWindow {
     readonly property bool isPortrait: width < height
     readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
 
-    property double frameIntervalStart: Date.now()
-    property double prevFrame: frameIntervalStart
-    property double minFrameMs: 1000
-    property double maxFrameMs: 0
-    property int frameCount: 0
+    // Monitor FPS. Qt6.9 brings QFrameTimer
+    // property double frameIntervalStart: Date.now()
+    // property double prevFrame: frameIntervalStart
+    // property double minFrameMs: 1000
+    // property double maxFrameMs: 0
+    // property int frameCount: 0
 
     id: root
     width: 480
@@ -22,26 +23,26 @@ ApplicationWindow {
     title: skywalker.APP_NAME // qmllint disable missing-property
     color: guiSettings.backgroundColor
 
-    // TODO: remove
-    onFrameSwapped: {
-        const nextFrame = Date.now()
-        const frameDt = nextFrame - prevFrame
-        const dt = nextFrame - frameIntervalStart
+    // Monitor FPS. Qt6.9 brings QFrameTimer
+    // onFrameSwapped: {
+    //     const nextFrame = Date.now()
+    //     const frameDt = nextFrame - prevFrame
+    //     const dt = nextFrame - frameIntervalStart
 
-        minFrameMs = Math.min(frameDt, minFrameMs)
-        maxFrameMs = Math.max(frameDt, maxFrameMs)
-        prevFrame = nextFrame
-        ++frameCount
+    //     minFrameMs = Math.min(frameDt, minFrameMs)
+    //     maxFrameMs = Math.max(frameDt, maxFrameMs)
+    //     prevFrame = nextFrame
+    //     ++frameCount
 
-        if (dt > 1000) {
-            const fps = Math.round(frameCount / dt * 1000)
-            console.debug("FPS:", fps, "DT:", dt, "MIN:", minFrameMs, "MAX:", maxFrameMs)
-            frameCount = 0
-            frameIntervalStart = nextFrame
-            minFrameMs = 1000
-            maxFrameMs = 0
-        }
-    }
+    //     if (dt > 1000) {
+    //         const fps = Math.round(frameCount / dt * 1000)
+    //         console.debug("FPS:", fps, "DT:", dt, "MIN:", minFrameMs, "MAX:", maxFrameMs)
+    //         frameCount = 0
+    //         frameIntervalStart = nextFrame
+    //         minFrameMs = 1000
+    //         maxFrameMs = 0
+    //     }
+    // }
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
@@ -121,7 +122,7 @@ ApplicationWindow {
         id: busyIndicator
         z: 200
         anchors.centerIn: parent
-        running: skywalker.getPostThreadInProgress
+        running: skywalker.getPostThreadInProgress || skywalker.getDetailedProfileInProgress
     }
 
     StatusPopup {
@@ -388,8 +389,11 @@ ApplicationWindow {
         }
 
         onGetDetailedProfileOK: (profile) => { // qmllint disable signal-handler-parameters
-            let modelId = skywalker.createAuthorFeedModel(profile)
-            viewAuthor(profile, modelId)
+            Qt.callLater((p) => {
+                    let modelId = skywalker.createAuthorFeedModel(profile)
+                    viewAuthor(profile, modelId)
+                },
+                profile)
         }
 
         onGetAuthorFeedOk: (modelId) => authorFeedOk(modelId)

@@ -306,8 +306,8 @@ ColumnLayout {
 
     AccessibleCheckBox {
         text: qsTr("GIF auto play")
-        checked: userSettings.getGifAutoPlay()
-        onCheckedChanged: userSettings.setGifAutoPlay(checked)
+        checked: userSettings.gifAutoPlay
+        onCheckedChanged: userSettings.gifAutoPlay = checked
     }
 
     AccessibleCheckBox {

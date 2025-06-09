@@ -72,9 +72,13 @@ void UserSettings::reset()
     mBlocksWithExpiry = nullptr;
     mMutesWithExpiry = nullptr;
 
-    mFeedHideReplies.reset();
     mHideRepliesInThreadFromUnfollowed.reset();
-    mFeedHideFollowing.reset();
+    mShowSelfReposts.reset();
+    mShowFollowedReposts.reset();
+    mShowUnknownContentLanguage.reset();
+    mContentLanguages.reset();
+    mShowQuotesWithBlockedPost.reset();
+    mAssembleThreads.reset();
 
     setActiveUserDid({});
 }
@@ -433,16 +437,11 @@ Q_INVOKABLE void UserSettings::setFeedHideReplies(const QString& did, const QStr
         mSettings.setValue(uriKey(did, "feedhideReplies", feedUri), hide);
     else
         mSettings.remove(uriKey(did, "feedhideReplies", feedUri));
-
-    mFeedHideReplies = hide;
 }
 
 Q_INVOKABLE bool UserSettings::getFeedHideReplies(const QString& did, const QString& feedUri) const
 {
-    if (!mFeedHideReplies)
-        mFeedHideReplies = mSettings.value(uriKey(did, "feedhideReplies", feedUri), false).toBool();
-
-    return *mFeedHideReplies;
+        return mSettings.value(uriKey(did, "feedhideReplies", feedUri), false).toBool();
 }
 
 QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
@@ -456,16 +455,11 @@ Q_INVOKABLE void UserSettings::setFeedHideFollowing(const QString& did, const QS
         mSettings.setValue(uriKey(did, "feedhideFollowing", feedUri), hide);
     else
         mSettings.remove(uriKey(did, "feedhideFollowing", feedUri));
-
-    mFeedHideFollowing = hide;
 }
 
 Q_INVOKABLE bool UserSettings::getFeedHideFollowing(const QString& did, const QString& feedUri) const
 {
-    if (!mFeedHideFollowing)
-        mFeedHideFollowing = mSettings.value(uriKey(did, "feedhideFollowing", feedUri), false).toBool();
-
-    return *mFeedHideFollowing;
+        return mSettings.value(uriKey(did, "feedhideFollowing", feedUri), false).toBool();
 }
 
 QStringList UserSettings::getFeedHideFollowingUris(const QString& did) const
@@ -773,7 +767,11 @@ bool UserSettings::getLandscapeSideBar() const
 
 void UserSettings::setGifAutoPlay(bool autoPlay)
 {
+    if (autoPlay == getGifAutoPlay())
+        return;
+
     mSettings.setValue("gifAutoPlay", autoPlay);
+    emit gifAutoPlayChanged();
 }
 
 bool UserSettings::getGifAutoPlay() const
@@ -1076,32 +1074,44 @@ bool UserSettings::getNotificationsWifiOnly() const
 
 bool UserSettings::getShowQuotesWithBlockedPost(const QString& did) const
 {
-    return mSettings.value(key(did, "showQuotesWithBlockedPost"), true).toBool();
+    if (!mShowQuotesWithBlockedPost)
+        mShowQuotesWithBlockedPost = mSettings.value(key(did, "showQuotesWithBlockedPost"), true).toBool();
+
+    return *mShowQuotesWithBlockedPost;
 }
 
 void UserSettings::setShowQuotesWithBlockedPost(const QString& did, bool show)
 {
     mSettings.setValue(key(did, "showQuotesWithBlockedPost"), show);
+    mShowQuotesWithBlockedPost = show;
 }
 
 bool UserSettings::getShowFollowedReposts(const QString& did) const
 {
-    return mSettings.value(key(did, "showFollowedReposts"), true).toBool();
+    if (!mShowFollowedReposts)
+        mShowFollowedReposts = mSettings.value(key(did, "showFollowedReposts"), true).toBool();
+
+    return *mShowFollowedReposts;
 }
 
 void UserSettings::setShowFollowedReposts(const QString& did, bool show)
 {
     mSettings.setValue(key(did, "showFollowedReposts"), show);
+    mShowFollowedReposts = show;
 }
 
 bool UserSettings::getShowSelfReposts(const QString& did) const
 {
-    return mSettings.value(key(did, "showSelfReposts"), true).toBool();
+    if (!mShowSelfReposts)
+        mShowSelfReposts = mSettings.value(key(did, "showSelfReposts"), true).toBool();
+
+    return *mShowSelfReposts;
 }
 
 void UserSettings::setShowSelfReposts(const QString& did, bool show)
 {
     mSettings.setValue(key(did, "showSelfReposts"), show);
+    mShowSelfReposts = show;
 }
 
 bool UserSettings::getHideRepliesInThreadFromUnfollowed(const QString did) const
@@ -1120,12 +1130,16 @@ void UserSettings::setHideRepliesInThreadFromUnfollowed(const QString& did, bool
 
 bool UserSettings::getAssembleThreads(const QString& did) const
 {
-    return mSettings.value(key(did, "assembleThreads"), true).toBool();
+    if (!mAssembleThreads)
+        mAssembleThreads = mSettings.value(key(did, "assembleThreads"), true).toBool();
+
+    return *mAssembleThreads;
 }
 
 void UserSettings::setAssembleThreads(const QString& did, bool assemble)
 {
     mSettings.setValue(key(did, "assembleThreads"), assemble);
+    mAssembleThreads = assemble;
 }
 
 bool UserSettings::getRewindToLastSeenPost(const QString& did) const
@@ -1260,7 +1274,10 @@ void UserSettings::setUsedPostLanguages(const QString& did, const QStringList& l
 
 QStringList UserSettings::getContentLanguages(const QString& did) const
 {
-    return mSettings.value(key(did, "contentLanguages")).toStringList();
+    if (!mContentLanguages)
+        mContentLanguages = mSettings.value(key(did, "contentLanguages")).toStringList();
+
+    return *mContentLanguages;
 }
 
 void UserSettings::setContentLanguages(const QString& did, const QStringList& languages)
@@ -1272,6 +1289,7 @@ void UserSettings::setContentLanguages(const QString& did, const QStringList& la
     if (oldLangs != sortedLangs)
     {
         mSettings.setValue(key(did, "contentLanguages"), sortedLangs);
+        mContentLanguages = sortedLangs;
         emit contentLanguageFilterChanged();
     }
 }
@@ -1293,7 +1311,10 @@ void UserSettings::setExcludeDetectLanguages(const QString& did, const QStringLi
 
 bool UserSettings::getShowUnknownContentLanguage(const QString& did) const
 {
-    return mSettings.value(key(did, "showUnknownContentLanguage"), true).toBool();
+    if (!mShowUnknownContentLanguage)
+        mShowUnknownContentLanguage = mSettings.value(key(did, "showUnknownContentLanguage"), true).toBool();
+
+    return *mShowUnknownContentLanguage;
 }
 
 void UserSettings::setShowUnknownContentLanguage(const QString& did, bool show)
@@ -1303,6 +1324,7 @@ void UserSettings::setShowUnknownContentLanguage(const QString& did, bool show)
     if (oldShow != show)
     {
         mSettings.setValue(key(did, "showUnknownContentLanguage"), show);
+        mShowUnknownContentLanguage = show;
         emit contentLanguageFilterChanged();
     }
 }

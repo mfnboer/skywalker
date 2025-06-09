@@ -8,10 +8,6 @@
 #include <algorithm>
 #include <ranges>
 
-#ifndef Q_OS_ANDROID
-#include <valgrind/callgrind.h>
-#endif
-
 namespace Skywalker {
 
 using namespace std::chrono_literals;
@@ -341,25 +337,10 @@ void PostFeedModel::reset()
     clear();
 }
 
-// TODO: profile createPage()
 void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    ATProto::TimeMonitor timeMon("REPLY FEED ADD DT");
-
     qDebug() << "Add raw posts:" << feed->mFeed.size();
-
-#ifndef Q_OS_ANDROID
-    CALLGRIND_START_INSTRUMENTATION;
-    CALLGRIND_TOGGLE_COLLECT;
-#endif
-
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
-
-#ifndef Q_OS_ANDROID
-    CALLGRIND_TOGGLE_COLLECT;
-    CALLGRIND_STOP_INSTRUMENTATION;
-#endif
-
     addPage(std::move(page));
 }
 
@@ -903,12 +884,28 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     return true;
 }
 
+bool PostFeedModel::getFeedHideReplies() const
+{
+    if (!mFeedHideReplies)
+        mFeedHideReplies = mUserSettings.getFeedHideReplies(mUserDid, getPreferencesFeedKey());
+
+    return *mFeedHideReplies;
+}
+
+bool PostFeedModel::getFeedHideFollowing() const
+{
+    if (!mFeedHideFollowing)
+        mFeedHideFollowing = mUserSettings.getFeedHideFollowing(mUserDid, getPreferencesFeedKey());
+
+    return *mFeedHideFollowing;
+}
+
 bool PostFeedModel::mustHideContent(const Post& post) const
 {
     if (AbstractPostFeedModel::mustHideContent(post))
         return true;
 
-    if (mUserSettings.getFeedHideFollowing(mUserDid, getPreferencesFeedKey()))
+    if (getFeedHideFollowing())
     {
         if (mFollowing.contains(post.getAuthorDid()))
         {
@@ -986,7 +983,7 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
     if (feedViewPref.mHideReplies)
         return false;
 
-    if (mUserSettings.getFeedHideReplies(mUserDid, getPreferencesFeedKey()))
+    if (getFeedHideReplies())
         return false;
 
     // Always show the replies of the user.
@@ -1140,8 +1137,6 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    ATProto::TimeMonitor timeMon("REPLY FEED CREATE DT");
-
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
     const bool assembleThreads = mUserSettings.getAssembleThreads(mUserDid);
     auto page = std::make_unique<Page>();

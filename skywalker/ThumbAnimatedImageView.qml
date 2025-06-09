@@ -6,6 +6,6 @@ AnimatedImageAutoRetry {
     required property string url
 
     id: img
-    playing: skywalker.getUserSettings().getGifAutoPlay()
+    playing: skywalker.getUserSettings().gifAutoPlay
     source: url
 }

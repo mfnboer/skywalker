@@ -171,6 +171,8 @@ private:
     void  addFilteredPostFeedModelsFromJson(const QJsonObject& json);
     bool equalModels(QList<FilteredPostFeedModel*> models) const;
 
+    bool getFeedHideReplies() const;
+    bool getFeedHideFollowing() const;
     virtual bool mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
@@ -194,7 +196,9 @@ private:
     const ATProto::UserPreferences& mUserPreferences;
     UserSettings& mUserSettings;
     bool mLanguageFilterEnabled = false;
-    bool mFeedHideFollowing = false;
+
+    mutable std::optional<bool> mFeedHideReplies;
+    mutable std::optional<bool> mFeedHideFollowing = false;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.

@@ -32,6 +32,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
     Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
+    Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoAutoLoad READ getVideoAutoLoad WRITE setVideoAutoLoad NOTIFY videoAutoLoadChanged FINAL)
@@ -199,8 +200,8 @@ public:
     void setLandscapeSideBar(bool enabled);
     bool getLandscapeSideBar() const;
 
-    Q_INVOKABLE void setGifAutoPlay(bool autoPlay);
-    Q_INVOKABLE bool getGifAutoPlay() const;
+    void setGifAutoPlay(bool autoPlay);
+    bool getGifAutoPlay() const;
 
     void setVideoStreamingEnabled(bool enabled);
     bool getVideoStreamingEnabled() const;
@@ -359,6 +360,7 @@ signals:
     void giantEmojisChanged();
     void songlinkEnabledChanged();
     void landscapeSideBarChanged();
+    void gifAutoPlayChanged();
     void videoSoundChanged();
     void videoAutoPlayChanged();
     void videoAutoLoadChanged();
@@ -392,10 +394,16 @@ private:
     static QString sDefaultBackgroundColor;
     static QString sCurrentLinkColor;
 
+    // TODO: this cache only works for as long the calls to the settings are for the
+    // same DID.
     // Cache
-    mutable std::optional<bool> mFeedHideReplies;
     mutable std::optional<bool> mHideRepliesInThreadFromUnfollowed;
-    mutable std::optional<bool> mFeedHideFollowing;
+    mutable std::optional<bool> mShowSelfReposts;
+    mutable std::optional<bool> mShowFollowedReposts;
+    mutable std::optional<bool> mShowUnknownContentLanguage;
+    mutable std::optional<QStringList> mContentLanguages;
+    mutable std::optional<bool> mShowQuotesWithBlockedPost;
+    mutable std::optional<bool> mAssembleThreads;
 };
 
 }

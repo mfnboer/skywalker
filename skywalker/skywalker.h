@@ -54,6 +54,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
+    Q_PROPERTY(bool getDetailedProfileInProgress READ isGetDetailedProfileInProgress NOTIFY getDetailedProfileInProgressChanged FINAL)
     Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
     Q_PROPERTY(bool getMentionsInProgress READ isGetMentionsInProgress NOTIFY getMentionsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
@@ -222,6 +223,9 @@ public:
     bool isGetTimelineInProgress() const override { return mGetTimelineInProgress; }
     void setGetPostThreadInProgress(bool inProgress);
     bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
+    void incGetDetailedProfileInProgress();
+    void decGetDetailedProfileInProgress();
+    bool isGetDetailedProfileInProgress() const { return mGetDetailedProfileInProgress > 0; }
     void setGetNotificationsInProgress(bool inProgress);
     bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
     void setGetMentionsInProgress(bool inProgress);
@@ -272,6 +276,7 @@ signals:
     void dataMigrationDone();
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
+    void getDetailedProfileInProgressChanged();
     void getNotificationsInProgressChanged();
     void getMentionsInProgressChanged();
     void sessionExpired(QString error);
@@ -410,6 +415,7 @@ private:
     NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;
 
+    int mGetDetailedProfileInProgress = 0;
     bool mGetNotificationsInProgress = false;
     bool mGetMentionsInProgress = false;
     int mUnreadNotificationCount = 0;
