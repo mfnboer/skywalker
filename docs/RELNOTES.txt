@@ -1,8 +1,8 @@
 next
 ====
-* Increase flick velocity
 * Performance improvements
-* Translucent post age indicator turning opaque over time
+* Increase flick velocity
+* Post age indicator darkens (lightens) with age
 
 4.7
 ===

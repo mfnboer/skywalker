@@ -12,12 +12,23 @@ SkyLabel {
     text: guiSettings.durationToString(durationSeconds)
     font.pointSize: guiSettings.scaledFont(7/8)
     color: isOld ? guiSettings.textColor : Material.color(Material.Grey)
-    backgroundColor: isOld ? guiSettings.labelColor : "transparent"
-    backgroundOpacity: isOld ? Math.min(oldDays * 0.01 + 0.2, 1.0) : 1.0
+    backgroundColor: getBackgroundColor()
 
     MouseArea {
         anchors.fill: parent
         enabled: parent.isOld
         onClicked: root.getSkywalker().showStatusMessage(qsTr("Post is more than 5 days old"), QEnums.STATUS_LEVEL_INFO)
+    }
+
+    function getBackgroundColor() {
+        if (!isOld)
+            return "transparent"
+
+        const factor = Math.min(oldDays * 0.04, 1)
+
+        if (guiSettings.isLightMode)
+            return Qt.darker(guiSettings.backgroundColor, 1.01 + factor)
+        else
+            return Qt.lighter(guiSettings.backgroundColor, 1.6 + factor * 4)
     }
 }
