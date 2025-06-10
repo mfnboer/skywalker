@@ -216,10 +216,25 @@ int OffLineMessageChecker::check()
 {
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
+
+    if (!timestamp.isNull())
+    {
+        const auto now = QDateTime::currentDateTime();
+
+        if (now - timestamp < 2min)
+        {
+            qDebug() << "Retry later";
+            return EXIT_RETRY;
+        }
+    }
+
     initDNS();
     QTimer::singleShot(0, &mPresence, [this]{ resumeSession(); });
     int exitStatus = startEventLoop();
-    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+
+    if (exitStatus == EXIT_OK)
+        mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+
     return exitStatus;
 }
 

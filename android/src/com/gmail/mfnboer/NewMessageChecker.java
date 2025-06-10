@@ -102,6 +102,12 @@ public class NewMessageChecker extends Worker {
 
     public static void startChecker(boolean wifiOnly) {
         startChecker(1, wifiOnly);
+        startChecker(2, wifiOnly);
+    }
+
+    public static void stopChecker() {
+        stopChecker(1);
+        stopChecker(2);
     }
 
     public static void startChecker(int id, boolean wifiOnly) {
@@ -140,10 +146,6 @@ public class NewMessageChecker extends Worker {
             taskName,
             ExistingPeriodicWorkPolicy.REPLACE,
             request);
-    }
-
-    public static void stopChecker() {
-        stopChecker(1);
     }
 
     public static void stopChecker(int id) {
