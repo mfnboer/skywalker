@@ -39,25 +39,26 @@ public class NewMessageNotifier {
     private static Context mContext;
 
     private static int iconTypeToResource(int iconType) {
-        switch (iconType) {
-            case IC_POST:
-                return R.drawable.ic_post;
-            case IC_FOLLOW:
-                return R.drawable.ic_follow;
-            case IC_LIKE:
-                return R.drawable.ic_like;
-            case IC_MENTION:
-                return R.drawable.ic_mention;
-            case IC_REPOST:
-                return R.drawable.ic_repost;
-            case IC_CHAT:
-                return R.drawable.ic_chat;
-            case IC_VERIFICATION:
-                return R.drawable.ic_verification;
-            default:
-                Log.w(LOGTAG, "Unknown icon type: " + iconType);
-                return R.drawable.ic_post;
-        }
+        return R.drawable.ic_skywalker;
+        // switch (iconType) {
+        //     case IC_POST:
+        //         return R.drawable.ic_post;
+        //     case IC_FOLLOW:
+        //         return R.drawable.ic_follow;
+        //     case IC_LIKE:
+        //         return R.drawable.ic_like;
+        //     case IC_MENTION:
+        //         return R.drawable.ic_mention;
+        //     case IC_REPOST:
+        //         return R.drawable.ic_repost;
+        //     case IC_CHAT:
+        //         return R.drawable.ic_chat;
+        //     case IC_VERIFICATION:
+        //         return R.drawable.ic_verification;
+        //     default:
+        //         Log.w(LOGTAG, "Unknown icon type: " + iconType);
+        //         return R.drawable.ic_post;
+        // }
     }
 
     public static void setContext(Context context) {

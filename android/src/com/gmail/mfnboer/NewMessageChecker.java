@@ -102,7 +102,6 @@ public class NewMessageChecker extends Worker {
 
     public static void startChecker(boolean wifiOnly) {
         startChecker(1, wifiOnly);
-        //startChecker(2, wifiOnly);
     }
 
     public static void startChecker(int id, boolean wifiOnly) {
@@ -131,9 +130,11 @@ public class NewMessageChecker extends Worker {
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
             NewMessageChecker.class, 15, TimeUnit.MINUTES)
                 .setInitialDelay(1, TimeUnit.MINUTES)
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 450, TimeUnit.SECONDS)
+                .setBackoffCriteria(BackoffPolicy.LINEAR, PeriodicWorkRequest.MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
                 .setConstraints(constraints)
                 .build();
+
+        Log.d(LOGTAG, "Backoff duration: " + PeriodicWorkRequest.MIN_BACKOFF_MILLIS + "ms");
 
         getRemoteWorkManager(context).enqueueUniquePeriodicWork(
             taskName,
@@ -143,7 +144,6 @@ public class NewMessageChecker extends Worker {
 
     public static void stopChecker() {
         stopChecker(1);
-        //stopChecker(2);
     }
 
     public static void stopChecker(int id) {

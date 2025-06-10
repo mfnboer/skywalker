@@ -11,6 +11,7 @@
 #include <QJniObject>
 #include <QtCore/private/qandroidextras_p.h>
 #include <QTimer>
+#include <QHostInfo>
 #endif
 
 using namespace std::chrono_literals;
@@ -189,26 +190,37 @@ void OffLineMessageChecker::exit(int exitCode)
         mEventLoop->exit(exitCode);
 }
 
+// HACK: for some reason the DNS look up for the PLC directory often fails for a
+// few seconds in the background task. Retrying a few lookups overcomes this.
+static void initDNS()
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        const auto hostInfo = QHostInfo::fromName(ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST);
+
+        if (hostInfo.error() == QHostInfo::NoError)
+        {
+            qDebug() << hostInfo.hostName() << "address:" << hostInfo.addresses();
+            break;
+        }
+        else
+        {
+            qWarning() << hostInfo.hostName() << "error:" << hostInfo.errorString();
+        }
+
+        std::this_thread::sleep_for(1s);
+    }
+}
+
 int OffLineMessageChecker::check()
 {
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
-
-    if (!timestamp.isNull())
-    {
-        const auto now = QDateTime::currentDateTime();
-
-        if (now - timestamp < 2min)
-        {
-            qDebug() << "Retry later";
-            return EXIT_RETRY;
-        }
-    }
-
+    initDNS();
     QTimer::singleShot(0, &mPresence, [this]{ resumeSession(); });
-    startEventLoop();
+    int exitStatus = startEventLoop();
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
-    return EXIT_OK;
+    return exitStatus;
 }
 
 void OffLineMessageChecker::createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
@@ -324,12 +336,12 @@ void OffLineMessageChecker::resumeSession(bool retry)
                     },
                     [this](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        exit(EXIT_OK);
+                        exit(EXIT_RETRY);
                     });
             }
             else
             {
-                exit(EXIT_OK);
+                exit(EXIT_RETRY);
             }
         });
 }
@@ -355,7 +367,7 @@ void OffLineMessageChecker::refreshSession()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be refreshed:" << error << " - " << msg;
-            exit(EXIT_OK);
+            exit(EXIT_RETRY);
         });
 }
 
@@ -371,7 +383,7 @@ void OffLineMessageChecker::getUserPreferences()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
-            exit(EXIT_OK);
+            exit(EXIT_RETRY);
         });
 }
 
