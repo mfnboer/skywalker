@@ -1781,6 +1781,7 @@ ApplicationWindow {
         rootContent.currentIndex = rootContent.notificationIndex
 
         let loadCount = 25
+
         if (skywalker.unreadNotificationCount > 0) {
             if (skywalker.unreadNotificationCount > loadCount)
                 loadCount = Math.min(skywalker.unreadNotificationCount + 5, 100)

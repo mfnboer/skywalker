@@ -41,7 +41,7 @@ static constexpr int TIMELINE_GAP_FILL_SIZE = 100;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int FEED_ADD_PAGE_SIZE = 100;
-static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 25;
+static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 50;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 static constexpr int AUTHOR_LIKES_ADD_PAGE_SIZE = 25;
 static constexpr int AUTHOR_LIST_ADD_PAGE_SIZE = 50;
@@ -1626,7 +1626,7 @@ void Skywalker::setGetNotificationsInProgress(bool inProgress)
 
 void Skywalker::setGetMentionsInProgress(bool inProgress)
 {
-    mGetNotificationsInProgress = inProgress;
+    mGetMentionsInProgress = inProgress;
     emit getMentionsInProgressChanged();
 }
 

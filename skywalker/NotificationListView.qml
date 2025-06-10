@@ -84,11 +84,20 @@ SkyPage {
                     cover()
             }
 
+            onContentYChanged: {
+                const lastVisibleIndex = getLastVisibleIndex()
+
+                if (count - lastVisibleIndex < 15 && !skywalker.getNotificationsInProgress) {
+                    console.debug("Get next notification page")
+                    skywalker.getNotificationsNextPage(false)
+                }
+            }
+
             FlickableRefresher {
                 inProgress: skywalker.getNotificationsInProgress
                 topOvershootFun: () => {
-                    skywalker.getNotifications(25, true, false)
-                    skywalker.getNotifications(25, false, true)
+                    skywalker.getNotifications(50, true, false)
+                    skywalker.getNotifications(50, false, true)
                 }
                 bottomOvershootFun: () => skywalker.getNotificationsNextPage(false)
                 topText: qsTr("Pull down to refresh")
@@ -108,7 +117,7 @@ SkyPage {
 
             function doMoveToNotification(index) {
                 const lastVisibleIndex = getLastVisibleIndex()
-                console.debug("Move to notification:", index, "last:", lastVisibleIndex)
+                console.debug("Move to notification:", index, "last:", lastVisibleIndex, "count:", count)
                 positionViewAtIndex(index, ListView.End)
                 return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
             }
@@ -130,11 +139,20 @@ SkyPage {
                     cover()
             }
 
+            onContentYChanged: {
+                const lastVisibleIndex = getLastVisibleIndex()
+
+                if (count - lastVisibleIndex < 15 && !skywalker.getMentionsInProgress) {
+                    console.debug("Get next mentions page")
+                    skywalker.getNotificationsNextPage(true)
+                }
+            }
+
             FlickableRefresher {
                 inProgress: skywalker.getMentionsInProgress
                 topOvershootFun: () => {
-                    skywalker.getNotifications(25, true, false)
-                    skywalker.getNotifications(25, false, true)
+                    skywalker.getNotifications(50, true, false)
+                    skywalker.getNotifications(50, false, true)
                 }
                 bottomOvershootFun: () => skywalker.getNotificationsNextPage(true)
                 topText: qsTr("Pull down to refresh")
@@ -154,7 +172,7 @@ SkyPage {
 
             function doMoveToMention(index) {
                 const lastVisibleIndex = getLastVisibleIndex()
-                console.debug("Move to mention:", index, "last:", lastVisibleIndex)
+                console.debug("Move to mention:", index, "last:", lastVisibleIndex, "count:", count)
                 positionViewAtIndex(index, ListView.End)
                 return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
             }
@@ -196,11 +214,39 @@ SkyPage {
         }
     }
 
+    Timer {
+        property int index
+
+        id: moveToMentionTimer
+        interval: 200
+
+        function moveTo(i) {
+            index = i
+            start()
+        }
+
+        onTriggered: mentionList.moveToIndex(index, mentionList.doMoveToMention)
+    }
+
+    Timer {
+        property int index
+
+        id: moveToNotificationTimer
+        interval: 200
+
+        function moveTo(i) {
+            index = i
+            start()
+        }
+
+        onTriggered: allList.moveToIndex(index, allList.doMoveToNotification)
+    }
+
     function moveToNotification(index, mentions) {
         if (mentions)
-            mentionList.moveToIndex(index, mentionList.doMoveToMention)
+            moveToMentionTimer.moveTo(index)
         else
-            allList.moveToIndex(index, allList.doMoveToNotification)
+            moveToNotificationTimer.moveTo(index)
     }
 
     function positionViewAtBeginning() {
