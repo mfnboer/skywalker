@@ -26,6 +26,7 @@ constexpr char const* CHANNEL_VERIFICATION = "CHANNEL_VERIFICATION";
 
 constexpr int EXIT_OK = 0;
 constexpr int EXIT_RETRY = -1;
+constexpr int EXIT_NETWORK_FAILURE = -2;
 }
 
 #if defined(Q_OS_ANDROID)
@@ -163,9 +164,10 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
 
 void OffLineMessageChecker::initNetwork()
 {
+    qDebug() << "Initialize network";
     Q_ASSERT(mNetwork);
     mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
+    mNetwork->setTransferTimeout(30000);
 }
 
 int OffLineMessageChecker::startEventLoop()
@@ -190,50 +192,36 @@ void OffLineMessageChecker::exit(int exitCode)
         mEventLoop->exit(exitCode);
 }
 
-// HACK: for some reason the DNS look up for the PLC directory often fails for a
-// few seconds in the background task. Retrying a few lookups overcomes this.
-static void initDNS()
-{
-    for (int i = 0; i < 8; ++i)
-    {
-        const auto hostInfo = QHostInfo::fromName(ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST);
-
-        if (hostInfo.error() == QHostInfo::NoError)
-        {
-            qDebug() << hostInfo.hostName() << "address:" << hostInfo.addresses();
-            break;
-        }
-        else
-        {
-            qWarning() << hostInfo.hostName() << "error:" << hostInfo.errorString();
-        }
-
-        std::this_thread::sleep_for(1s);
-    }
-}
-
 int OffLineMessageChecker::check()
 {
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
 
-    if (!timestamp.isNull())
-    {
-        const auto now = QDateTime::currentDateTime();
+    int exitStatus = EXIT_OK;
 
-        if (now - timestamp < 2min)
+    // The network is not always available in a background task for some reason ???
+    // Retry few times.
+    for (int i = 0; i < 8; ++i)
+    {
+        qDebug() << "Attempt:" << i + 1;
+        QTimer::singleShot(0, &mPresence, [this]{ resumeSession(); });
+        exitStatus = startEventLoop();
+
+        if (exitStatus == EXIT_OK)
         {
-            qDebug() << "Retry later";
-            return EXIT_RETRY;
+            mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+            break;
+        }
+
+        if (exitStatus == EXIT_RETRY)
+            break;
+
+        if (exitStatus == EXIT_NETWORK_FAILURE)
+        {
+            exitStatus = EXIT_RETRY;
+            std::this_thread::sleep_for(1s);
         }
     }
-
-    initDNS();
-    QTimer::singleShot(0, &mPresence, [this]{ resumeSession(); });
-    int exitStatus = startEventLoop();
-
-    if (exitStatus == EXIT_OK)
-        mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
 
     return exitStatus;
 }
@@ -327,7 +315,9 @@ void OffLineMessageChecker::resumeSession(bool retry)
     }
 
     mUserDid = session->mDid;
-    auto xrpc = std::make_unique<Xrpc::Client>();
+
+    // Need a longer network transfer timeout for an Android background process.
+    auto xrpc = std::make_unique<Xrpc::Client>("", 30000);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
@@ -353,6 +343,11 @@ void OffLineMessageChecker::resumeSession(bool retry)
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
                         exit(EXIT_RETRY);
                     });
+            }
+            else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
+            {
+                qWarning() << "PDS not found, network failure";
+                exit(EXIT_NETWORK_FAILURE);
             }
             else
             {

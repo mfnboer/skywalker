@@ -21,6 +21,8 @@ import androidx.work.multiprocess.RemoteWorkManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
 import android.util.Log;
 
 import java.lang.System;
@@ -102,12 +104,10 @@ public class NewMessageChecker extends Worker {
 
     public static void startChecker(boolean wifiOnly) {
         startChecker(1, wifiOnly);
-        startChecker(2, wifiOnly);
     }
 
     public static void stopChecker() {
         stopChecker(1);
-        stopChecker(2);
     }
 
     public static void startChecker(int id, boolean wifiOnly) {
@@ -128,9 +128,18 @@ public class NewMessageChecker extends Worker {
             return;
         }
 
+        NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+
+        if (wifiOnly)
+            networkRequestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+
+        NetworkRequest networkRequest = networkRequestBuilder.build();
+
         Constraints constraints = new Constraints.Builder()
             .setRequiresBatteryNotLow(true)
-            .setRequiredNetworkType(wifiOnly ? NetworkType.UNMETERED : NetworkType.CONNECTED)
+            .setRequiredNetworkRequest(networkRequest, wifiOnly ? NetworkType.UNMETERED : NetworkType.CONNECTED)
             .build();
 
         PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(
