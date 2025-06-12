@@ -57,7 +57,7 @@ SkyListView {
 
         if (count - lastVisibleIndex < 10 && Boolean(model) && !model.getFeedInProgress) {
             console.debug("Get next author feed page")
-            getFeed(modelId)
+            getFeedNextPage(modelId)
         }
     }
 
