@@ -52,6 +52,15 @@ SkyListView {
         }
     }
 
+    onContentYChanged: {
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (count - lastVisibleIndex < 10 && Boolean(model) && !model.getFeedInProgress) {
+            console.debug("Get next author feed page")
+            getFeed(modelId)
+        }
+    }
+
     FlickableRefresher {
         inProgress: model && model.getFeedInProgress
         topOvershootFun: () => {

@@ -25,6 +25,7 @@ public:
                     QObject* parent = nullptr);
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
+    Q_INVOKABLE AuthorFeedModel* getUnderlyingModel() { return this; }
     QString getFeedName() const;
     QEnums::FeedType getFeedType() const { return QEnums::FEED_AUTHOR; }
 
