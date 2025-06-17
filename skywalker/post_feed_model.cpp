@@ -31,6 +31,20 @@ PostFeedModel::PostFeedModel(const QString& feedName,
 {
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
             [this]{ emit languageFilterConfiguredChanged(); });
+
+    connect(&mUserSettings, &UserSettings::feedHideRepliesChanged, this,
+            [this](QString did, QString feedUri)
+            {
+                if (did == mUserDid && feedUri == getFeedUri())
+                    mFeedHideReplies = mUserSettings.getFeedHideReplies(did, feedUri);
+            });
+
+    connect(&mUserSettings, &UserSettings::feedHideFollowingChanged, this,
+            [this](QString did, QString feedUri)
+            {
+                if (did == mUserDid && feedUri == getFeedUri())
+                    mFeedHideFollowing = mUserSettings.getFeedHideFollowing(did, feedUri);
+            });
 }
 
 const QString PostFeedModel::getFeedDid() const

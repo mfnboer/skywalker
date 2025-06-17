@@ -1,3 +1,7 @@
+next
+====
+* Fix "hide following" setting
+
 4.8
 ===
 * Performance improvements

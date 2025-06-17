@@ -433,10 +433,15 @@ QStringList UserSettings::getFeedViewModeUris(const QString& did) const
 
 Q_INVOKABLE void UserSettings::setFeedHideReplies(const QString& did, const QString& feedUri, bool hide)
 {
+    if (getFeedHideReplies(did, feedUri) == hide)
+        return;
+
     if (hide)
         mSettings.setValue(uriKey(did, "feedhideReplies", feedUri), hide);
     else
         mSettings.remove(uriKey(did, "feedhideReplies", feedUri));
+
+    emit feedHideRepliesChanged(did, feedUri);
 }
 
 Q_INVOKABLE bool UserSettings::getFeedHideReplies(const QString& did, const QString& feedUri) const
@@ -451,10 +456,15 @@ QStringList UserSettings::getFeedHideRepliesUris(const QString& did) const
 
 Q_INVOKABLE void UserSettings::setFeedHideFollowing(const QString& did, const QString& feedUri, bool hide)
 {
+    if (getFeedHideFollowing(did, feedUri) == hide)
+        return;
+
     if (hide)
         mSettings.setValue(uriKey(did, "feedhideFollowing", feedUri), hide);
     else
         mSettings.remove(uriKey(did, "feedhideFollowing", feedUri));
+
+    emit feedHideFollowingChanged(did, feedUri);
 }
 
 Q_INVOKABLE bool UserSettings::getFeedHideFollowing(const QString& did, const QString& feedUri) const

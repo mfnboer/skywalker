@@ -373,6 +373,8 @@ signals:
     void showSuggestedUsersChanged();
     void blocksWithExpiryChanged();
     void mutesWithExpiryChanged();
+    void feedHideRepliesChanged(QString did, QString feedUri);
+    void feedHideFollowingChanged(QString did, QString feedUri);
 
 private:
     QString key(const QString& did, const QString& subkey) const;

@@ -198,7 +198,7 @@ private:
     bool mLanguageFilterEnabled = false;
 
     mutable std::optional<bool> mFeedHideReplies;
-    mutable std::optional<bool> mFeedHideFollowing = false;
+    mutable std::optional<bool> mFeedHideFollowing;
 
     // The index is the last (non-filtered) post from a received page. The cursor is to get
     // the next page.
