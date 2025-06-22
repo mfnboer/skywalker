@@ -639,7 +639,7 @@ SkyPage {
             width: parent.width
 
             // -1 to make the interactive enable/disable work
-            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0)
+            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0) - guiSettings.headerMargin
 
             currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
 
@@ -711,6 +711,9 @@ SkyPage {
                             list: labelList
                         }
                     }
+
+                    footer: DeadFooterMargin {}
+                    footerPositioning: ListView.OverlayFooter
 
                     delegate: ContentGroupDelegate {
                         width: authorFeedView.width
@@ -922,6 +925,9 @@ SkyPage {
                             authorFeedView.interactive = true
                     }
 
+                    footer: DeadFooterMargin {}
+                    footerPositioning: ListView.OverlayFooter
+
                     delegate: GeneratorViewDelegate {
                         width: authorFeedView.width
 
@@ -978,6 +984,9 @@ SkyPage {
                             authorFeedView.interactive = true
                     }
 
+                    footer: DeadFooterMargin {}
+                    footerPositioning: ListView.OverlayFooter
+
                     delegate: StarterPackViewDelegate {
                         width: authorFeedView.width
                     }
@@ -1031,6 +1040,9 @@ SkyPage {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
                     }
+
+                    footer: DeadFooterMargin {}
+                    footerPositioning: ListView.OverlayFooter
 
                     delegate: ListViewDelegate {
                         width: authorFeedView.width

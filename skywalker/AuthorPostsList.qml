@@ -40,6 +40,9 @@ SkyListView {
             enclosingView.interactive = true
     }
 
+    footer: DeadFooterMargin {}
+    footerPositioning: ListView.OverlayFooter
+
     delegate: PostFeedViewDelegate {
         width: enclosingView.width
         swipeMode: [QEnums.AUTHOR_FEED_FILTER_VIDEO, QEnums.AUTHOR_FEED_FILTER_MEDIA].includes(feedFilter)

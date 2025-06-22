@@ -45,8 +45,7 @@ SkyPage {
 
             header: PlaceholderHeader { height: feedStack.headerHeight }
             headerPositioning: ListView.InlineHeader
-            footer: PlaceholderHeader { height: page.height}
-            footerPositioning: ListView.InlineFooter
+            footer: null
 
             Component.onCompleted: skywalker.getAuthorList(modelId)
         }
@@ -59,8 +58,6 @@ SkyPage {
 
             header: PlaceholderHeader { height: feedStack.headerHeight }
             headerPositioning: ListView.InlineHeader
-            footer: PlaceholderHeader { height: page.height}
-            footerPositioning: ListView.InlineFooter
 
             delegate: GeneratorViewDelegate {
                 width: feedListView.width
@@ -82,8 +79,6 @@ SkyPage {
 
             header: PlaceholderHeader { height: feedStack.headerHeight }
             headerPositioning: ListView.InlineHeader
-            footer: PlaceholderHeader { height: page.height }
-            footerPositioning: ListView.InlineFooter
 
             delegate: PostFeedViewDelegate {
                 width: postListView.width

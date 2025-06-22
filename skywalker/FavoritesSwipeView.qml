@@ -75,6 +75,7 @@ SwipeView {
             modelId: skywalker.createPostFeedModel(modelData.generatorView)
             showAsHome: true
             showFavorites: true
+            footer: null
 
             function saveAsLastViewedFeed() {
                 skywalker.saveLastViewedFeed(modelData.generatorView.uri)
@@ -96,6 +97,7 @@ SwipeView {
             modelId: skywalker.createPostFeedModel(modelData.listView)
             showAsHome: true
             showFavorites: true
+            footer: null
 
             function saveAsLastViewedFeed() {
                 skywalker.saveLastViewedFeed(modelData.listView.uri)
