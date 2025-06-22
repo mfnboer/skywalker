@@ -11,6 +11,7 @@ Text {
     property int capLineCount: initialShowMaxLineCount
     readonly property bool mustElideRich: elide === Text.ElideRight && textFormat === Text.RichText
     property bool isCompleted: false
+    property bool inWidthChanged: false
 
     id: theText
     height: mustElideRich && wrapMode !== Text.NoWrap ?
@@ -24,7 +25,14 @@ Text {
         }
     }
 
-    onWidthChanged: resetText()
+    onWidthChanged: {
+        if (inWidthChanged)
+            return
+
+        inWidthChanged = true
+        resetText()
+        inWidthChanged = false
+    }
 
     Accessible.role: Accessible.StaticText
     Accessible.name: plainText
@@ -133,8 +141,6 @@ Text {
         id: fontMetrics
         font: theText.font
     }
-
-
 
     Component.onCompleted: {
         isCompleted = true

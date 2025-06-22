@@ -1,6 +1,7 @@
 next
 ====
 * Fix "hide following" setting
+* Bug fixes
 
 4.8
 ===

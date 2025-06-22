@@ -5,6 +5,7 @@ Text {
     required property string plainText
     property bool mustClean: false
     property bool isCompleted: false
+    property bool inWidthChanged: false
 
     id: theText
     color: guiSettings.textColor
@@ -19,8 +20,14 @@ Text {
     }
 
     onWidthChanged: {
-        if (isCompleted)
+        if (inWidthChanged)
+            return
+
+        if (isCompleted) {
+            inWidthChanged = true
             setPlainText()
+            inWidthChanged = false
+        }
     }
 
     function elideText() {
