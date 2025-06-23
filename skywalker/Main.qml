@@ -1414,15 +1414,15 @@ ApplicationWindow {
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
     {
         postUtils.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                                 replyRootUri, replyRootCid, replyToLanguage, initialText, imageSource))
+                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, imageSource))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1436,22 +1436,23 @@ ApplicationWindow {
                 replyToPostText: replyToText,
                 replyToPostDateTime: replyToDateTime,
                 replyToAuthor: replyToAuthor,
-                replyToLanguage: replyToLanguage
+                replyToLanguage: replyToLanguage,
+                replyToMentionDids: replyToMentionDids
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)
     }
 
     function composeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                               replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource)
+                               replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, videoSource)
     {
         postUtils.checkPost(replyToUri, replyToCid,
             () => doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                                      replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource))
+                                      replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, videoSource))
     }
 
     function doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                               replyRootUri, replyRootCid, replyToLanguage, initialText, videoSource)
+                               replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, videoSource)
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1465,7 +1466,8 @@ ApplicationWindow {
                 replyToPostText: replyToText,
                 replyToPostDateTime: replyToDateTime,
                 replyToAuthor: replyToAuthor,
-                replyToLanguage: replyToLanguage
+                replyToLanguage: replyToLanguage,
+                replyToMentionDids: replyToMentionDids
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)

@@ -50,6 +50,7 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
     bool postLinkFound = false;
     bool feedLinkFound = false;
     bool listLinkFound = false;
+    QStringList mentions;
     WebLink::List webLinks;
     int cursorInWebLink = -1;
     mLinkShorteningReduction = 0;
@@ -140,6 +141,7 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
                 editMentionFound = true;
             }
 
+            mentions.push_back(facet.mMatch.sliced(1));
             textWithoutLinks += fullText.sliced(textIndex, facet.mStartIndex - textIndex);
             textIndex = facet.mEndIndex;
             break;
@@ -156,6 +158,7 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
         }
     }
 
+    setMentions(mentions);
     setWebLinks(webLinks);
     setCursorInWebLink(cursorInWebLink);
     textWithoutLinks += fullText.sliced(textIndex);
@@ -681,6 +684,15 @@ void FacetUtils::setCursorInFirstListLink(bool inLink)
 
     mCursorInFirstListLink = inLink;
     emit cursorInFirstListLinkChanged();
+}
+
+void FacetUtils::setMentions(const QStringList& mentions)
+{
+    if (mentions == mMentions)
+        return;
+
+    mMentions = mentions;
+    emit mentionsChanged();
 }
 
 void FacetUtils::setWebLinks(const WebLink::List& webLinks)

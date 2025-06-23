@@ -131,6 +131,7 @@ public:
     const LanguageList& getLanguages() const;
     bool hasLanguage() const;
 
+    QStringList getMentionDids() const;
     std::vector<QString> getHashtags() const override;
     std::vector<QString> getWebLinks() const override;
 

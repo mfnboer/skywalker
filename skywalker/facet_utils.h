@@ -24,6 +24,7 @@ class FacetUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(bool cursorInFirstFeedLink READ isCursorInFirstFeedLink WRITE setCursorInFirstFeedLink NOTIFY cursorInFirstFeedLinkChanged FINAL)
     Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstListLink READ isCursorInFirstListLink WRITE setCursorInFirstListLink NOTIFY cursorInFirstListLinkChanged FINAL)
+    Q_PROPERTY(QStringList mentions READ getMentions WRITE setMentions NOTIFY mentionsChanged FINAL)
     Q_PROPERTY(WebLink::List webLinks READ getWebLinks WRITE setWebLinks NOTIFY webLinksChanged FINAL)
     Q_PROPERTY(int cursorInWebLink READ getCursorInWebLink WRITE setCursorInWebLink NOTIFY cursorInWebLinkChanged FINAL)
     Q_PROPERTY(WebLink::List embeddedLinks READ getEmbeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
@@ -85,6 +86,8 @@ public:
     void setFirstListLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
     bool isCursorInFirstListLink() const { return mCursorInFirstListLink; }
     void setCursorInFirstListLink(bool inLink);
+    const QStringList& getMentions() const { return mMentions; }
+    void setMentions(const QStringList& mentions);
     const WebLink::List& getWebLinks() const { return mWebLinks; }
     void setWebLinks(const WebLink::List& webLinks);
     int getCursorInWebLink() const { return mCursorInWebLink; }
@@ -108,6 +111,7 @@ signals:
     void cursorInFirstFeedLinkChanged();
     void firstListLinkChanged();
     void cursorInFirstListLinkChanged();
+    void mentionsChanged();
     void webLinksChanged();
     void cursorInWebLinkChanged();
     void embeddedLinksChanged();
@@ -136,6 +140,7 @@ private:
     bool mCursorInFirstWebLink = false;
     int mLinkShorteningReduction = 0;
     QString mTextWithoutLinks;
+    QStringList mMentions; // handles without leading @
     WebLink::List mWebLinks;
     int mCursorInWebLink = -1;
     WebLink::List mEmbeddedLinks;

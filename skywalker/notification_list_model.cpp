@@ -796,6 +796,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getPostRecord().getReplyRootUri();
     case Role::NotificationPostReplyRootCid:
         return notification.getPostRecord().getReplyRootCid();
+    case Role::NotificationPostMentionDids:
+        return notification.getPostRecord().getMentionDids();
     case Role::NotificationPostRepostUri:
         return change && change->mRepostUri ? *change->mRepostUri : notification.getNotificationPost(mPostCache).getRepostUri();
     case Role::NotificationPostLikeUri:
@@ -990,6 +992,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostReplyRootAuthorDid), "notificationPostReplyRootAuthorDid" },
         { int(Role::NotificationPostReplyRootUri), "notificationPostReplyRootUri" },
         { int(Role::NotificationPostReplyRootCid), "notificationPostReplyRootCid" },
+        { int(Role::NotificationPostMentionDids), "notificationPostMentionDids" },
         { int(Role::NotificationPostRepostUri), "notificationPostRepostUri" },
         { int(Role::NotificationPostLikeUri), "notificationPostLikeUri" },
         { int(Role::NotificationPostLikeTransient), "notificationPostLikeTransient" },

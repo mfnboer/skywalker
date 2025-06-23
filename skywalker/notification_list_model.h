@@ -69,6 +69,7 @@ public:
         NotificationPostReplyRootAuthorDid,
         NotificationPostReplyRootUri,
         NotificationPostReplyRootCid,
+        NotificationPostMentionDids,
         NotificationPostRepostUri,
         NotificationPostLikeUri,
         NotificationPostLikeTransient,

@@ -47,6 +47,7 @@ Rectangle {
     required property string notificationPostReplyRootAuthorDid
     required property string notificationPostReplyRootUri
     required property string notificationPostReplyRootCid
+    required property list<string> notificationPostMentionDids
     required property string notificationPostRepostUri
     required property string notificationPostLikeUri
     required property bool notificationPostLikeTransient
@@ -311,7 +312,7 @@ Rectangle {
                             root.composeReply(notificationPostUri, notificationCid, notificationPostText,
                                               notificationPostTimestamp, notificationAuthor,
                                               notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                              lang)
+                                              lang, notificationPostMentionDids)
                         }
 
                         onRepost: {

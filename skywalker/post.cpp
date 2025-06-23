@@ -849,6 +849,18 @@ bool Post::hasLanguage() const
     return !getLanguages().empty();
 }
 
+QStringList Post::getMentionDids() const
+{
+    if (!mPost)
+        return {};
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
+    return ATProto::RichTextMaster::getFacetMentionDids(*record);
+}
+
 std::vector<QString> Post::getHashtags() const
 {
     if (!mPost)

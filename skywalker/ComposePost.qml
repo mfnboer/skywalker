@@ -41,6 +41,7 @@ SkyPage {
     property string replyToPostText
     property date replyToPostDateTime
     property string replyToLanguage
+    property list<string> replyToMentionDids: []
 
     // Quote post (for first post only)
     property bool openedAsQuotePost: false
@@ -1284,8 +1285,23 @@ SkyPage {
         }
 
         SvgTransparentButton {
-            id: linkButton
+            id: mentionsButton
             anchors.left: languageSelector.right
+            anchors.leftMargin: visible ? 8 : 0
+            y: height + 7 + restrictionRow.height + footerSeparator.height
+            width: visible ? height: 0
+            height: 30
+            accessibleName: qsTr("copy mentions")
+            svg: SvgOutline.atSign
+            enabled: profileUtils.unaddedReplyToMentions.length > 0
+            visible: profileUtils.replyToMentions.length > 0
+
+            onClicked: page.addReplyToMentions()
+        }
+
+        SvgTransparentButton {
+            id: linkButton
+            anchors.left: mentionsButton.right
             anchors.leftMargin: visible ? 8 : 0
             y: height + 5 + restrictionRow.height + footerSeparator.height
             width: visible ? height: 0
@@ -1648,6 +1664,32 @@ SkyPage {
         }
     }
 
+    ProfileUtils {
+        property list<string> replyToMentions: []
+        property list<string> unaddedReplyToMentions: getUnaddedReplyToMentions()
+
+        id: profileUtils
+        skywalker: page.skywalker
+
+        onBasicProfileOk: (profile) => {
+            if (!replyToMentions.includes(profile.handle)) {
+                console.debug("Got mention:", profile.handle)
+                replyToMentions.push(profile.handle)
+            }
+        }
+
+        function getUnaddedReplyToMentions() {
+            const postItem = currentPostItem()
+
+            if (!postItem)
+                return []
+
+            const postMentions = postItem.getPostText().mentions
+            console.debug("POST MENTIONS:", postMentions)
+            return replyToMentions.filter((m) => !postMentions.includes(m))
+        }
+    }
+
     GraphUtils {
         id: graphUtils
         skywalker: page.skywalker // qmllint disable missing-type
@@ -1970,6 +2012,16 @@ SkyPage {
 
         addSharedText(text)
         editVideo(source)
+    }
+
+    function addReplyToMentions() {
+        let mentionText = ""
+
+        // Add space at end of mention to avoid author typeahead search to popup
+        for (const mention of profileUtils.unaddedReplyToMentions)
+            mentionText += `@${mention} `
+
+        addSharedText(mentionText)
     }
 
     function postDone() {
@@ -2730,6 +2782,11 @@ SkyPage {
         allowListUrisFromDraft = postInteractionSettings.allowListUris
         restrictReply = postInteractionSettings.allowNobody || allowReplyMentioned || allowReplyFollower || allowReplyFollowing || allowListUrisFromDraft.length > 0
         allowQuoting = !postInteractionSettings.disableEmbedding
+
+        for (const mentionDid of replyToMentionDids) {
+            if (mentionDid !== userDid)
+                profileUtils.getBasicProfile(mentionDid)
+        }
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()

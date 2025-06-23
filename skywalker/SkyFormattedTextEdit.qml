@@ -22,6 +22,7 @@ TextEdit {
     property bool cursorInFirstFeedLink: false
     property string firstListLink
     property bool cursorInFirstListLink: false
+    property list<string> mentions
     property list<weblink> webLinks
     property int cursorInWebLink: -1
     property list<weblink> embeddedLinks
@@ -361,6 +362,7 @@ TextEdit {
         onCursorInFirstFeedLinkChanged: editText.cursorInFirstFeedLink = cursorInFirstFeedLink
         onFirstListLinkChanged: editText.firstListLink = firstListLink
         onCursorInFirstListLinkChanged: editText.cursorInFirstListLink = cursorInFirstListLink
+        onMentionsChanged: editText.mentions = mentions
         onWebLinksChanged: editText.webLinks = webLinks
         onCursorInWebLinkChanged: editText.cursorInWebLink = cursorInWebLink
         onEmbeddedLinksChanged: editText.embeddedLinks = embeddedLinks
@@ -398,7 +400,7 @@ TextEdit {
     function addEmbeddedLink(webLinkIndex, name) {
         // Delay text updates
         // As links get replaced by names in the text, the text may exceed the maximum
-        // length. That would trigger a split before the new link has beend add.
+        // length. That would trigger a split before the new link has been added.
         // Adding the link before doing text replacements goes wrong as text replacement
         // will cause link shifts.
         suppressTextUpdates = true

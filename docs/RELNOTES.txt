@@ -1,5 +1,6 @@
 next
 ====
+* Copy-mentions button when replying to a post with mentions
 * Fix "hide following" setting
 * Bug fixes
 

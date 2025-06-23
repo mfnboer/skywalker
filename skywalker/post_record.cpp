@@ -114,6 +114,15 @@ bool PostRecord::hasLanguage() const
     return !mRecord->mLanguages.empty();
 }
 
+
+QStringList PostRecord::getMentionDids() const
+{
+    if (!mRecord)
+        return {};
+
+    return ATProto::RichTextMaster::getFacetMentionDids(*mRecord);
+}
+
 bool PostRecord::isReply() const
 {
     return getReplyRootRef() != nullptr;

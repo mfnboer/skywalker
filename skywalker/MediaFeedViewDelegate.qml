@@ -35,6 +35,7 @@ Rectangle {
     required property string postReplyRootAuthorDid
     required property string postReplyRootUri
     required property string postReplyRootCid
+    required property list<string> postMentionDids
     required property string postFeedContext
     required property int postReplyCount
     required property int postRepostCount
@@ -373,7 +374,8 @@ Rectangle {
                 onReply: {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                                      author, postReplyRootUri, postReplyRootCid, lang)
+                                      author, postReplyRootUri, postReplyRootCid, lang,
+                                      postMentionDids)
                 }
 
                 onRepost: {

@@ -25,6 +25,7 @@ public:
     BasicProfile getReplyToAuthor() const;
     const LanguageList& getLanguages() const;
     bool hasLanguage() const;
+    QStringList getMentionDids() const;
     bool isReply() const;
     bool hasEmbeddedContent() const;
 
