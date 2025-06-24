@@ -494,7 +494,9 @@ ApplicationWindow {
                 "🥳")
         }
 
-        onOldestUnreadNotificationIndex: (index, mentions) => getNotificationView().moveToNotification(index, mentions)
+        onOldestUnreadNotificationIndex: (index, mentions) => {
+            Qt.callLater(getNotificationView().moveToNotification, index, mentions)
+        }
 
         onAppPaused: {
             let current = currentStackItem()

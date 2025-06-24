@@ -230,7 +230,6 @@ Rectangle {
                 PostHeader {
                     id: postHeader
                     width: parent.width
-                    Layout.fillWidth: true
                     author: notificationPostAuthor
                     postIndexedSecondsAgo: notificationSecondsAgo
                 }
@@ -252,7 +251,6 @@ Rectangle {
                 PostBody {
                     id: postBody
                     width: parent.width
-                    Layout.fillWidth: true
                     postAuthor: notificationAuthor
                     postText: notificationPostBlocked ? qsTr("🚫 Blocked") : notificationPostText
                     postPlainText: notificationPostBlocked ? "" : notificationPostPlainText
@@ -557,8 +555,6 @@ Rectangle {
     AccessibilityUtils {
         id: accessibilityUtils
     }
-
-
 
     function openNotification() {
         if (notificationPostUri)

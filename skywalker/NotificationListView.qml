@@ -214,39 +214,11 @@ SkyPage {
         }
     }
 
-    Timer {
-        property int index
-
-        id: moveToMentionTimer
-        interval: 200
-
-        function moveTo(i) {
-            index = i
-            start()
-        }
-
-        onTriggered: mentionList.moveToIndex(index, mentionList.doMoveToMention)
-    }
-
-    Timer {
-        property int index
-
-        id: moveToNotificationTimer
-        interval: 200
-
-        function moveTo(i) {
-            index = i
-            start()
-        }
-
-        onTriggered: allList.moveToIndex(index, allList.doMoveToNotification)
-    }
-
     function moveToNotification(index, mentions) {
         if (mentions)
-            moveToMentionTimer.moveTo(index)
+            mentionList.moveToIndex(index, mentionList.doMoveToMention)
         else
-            moveToNotificationTimer.moveTo(index)
+            allList.moveToIndex(index, allList.doMoveToNotification)
     }
 
     function positionViewAtBeginning() {
