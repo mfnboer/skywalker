@@ -3,6 +3,8 @@
 
 package com.gmail.mfnboer;
 
+import com.gmail.mfnboer.ScreenUtils;
+
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.Rect;
@@ -34,11 +36,15 @@ public class KeyboardHeightProvider extends PopupWindow {
 
             int keyboardHeight = metrics.heightPixels - (rect.bottom - rect.top);
             int resourceID = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+
             if (resourceID > 0) {
                 keyboardHeight -= context.getResources().getDimensionPixelSize(resourceID);
             }
+
             if (keyboardHeight < 100) {
                 keyboardHeight = 0;
+            } else {
+                keyboardHeight += ScreenUtils.getNavigationBarSize(ScreenUtils.INSETS_SIDE_BOTTOM);
             }
 
             Log.d(LOGTAG, "Keyboard height: " + keyboardHeight);

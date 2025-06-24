@@ -4,7 +4,6 @@
 package com.gmail.mfnboer;
 
 import com.gmail.mfnboer.KeyboardHeightProvider;
-import com.gmail.mfnboer.ScreenUtils;
 import com.gmail.mfnboer.SkywalkerApplication;
 
 import android.app.Activity;
@@ -13,7 +12,6 @@ import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.Window;
 
