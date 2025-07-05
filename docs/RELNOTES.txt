@@ -1,3 +1,7 @@
+next
+====
+* Only refresh feed on dragging down, not on flicking down
+
 4.9
 ===
 * Copy-mentions button when replying to a post with mentions

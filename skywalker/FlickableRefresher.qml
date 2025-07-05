@@ -55,7 +55,7 @@ Item {
         if (!enabled)
             return
 
-        if (topOvershootFun && verticalOvershoot < -refreshText.height - 10)  {
+        if (topOvershootFun && !list.flicking && verticalOvershoot < -refreshText.height - 20)  {
             inTopOvershoot = true
         } else if (verticalOvershoot >= 0) {
             if (inTopOvershoot && !inProgress)
