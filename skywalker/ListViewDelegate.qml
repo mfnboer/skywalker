@@ -237,6 +237,7 @@ Rectangle {
         id: moreMenu
         modal: true
         width: hideListMenuItem.width
+        bottomMargin: guiSettings.footerMargin
 
         CloseMenuItem {
             text: qsTr("<b>List</b>")

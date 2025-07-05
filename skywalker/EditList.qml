@@ -227,6 +227,7 @@ SkyPage {
         anchors.right: parent.right
         anchors.rightMargin: 10
         anchors.top: parent.top
+        anchors.topMargin: guiSettings.headerMargin
         svg: SvgOutline.check
         iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
         accessibleName: qsTr("save list")

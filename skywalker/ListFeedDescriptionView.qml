@@ -45,6 +45,8 @@ SkyPage {
         onBack: closed()
     }
 
+    footer: DeadFooterMargin {}
+
     AuthorListView {
         id: authorListView
         width: parent.width
