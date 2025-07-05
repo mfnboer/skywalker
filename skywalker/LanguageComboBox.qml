@@ -51,7 +51,7 @@ ComboBox {
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
         color: reversedColors && !autoDetectColor ? "white" : languageComboBox.color
-        text: languageComboBox.displayText ? languageComboBox.displayText : qsTr("Any lanuage")
+        text: languageComboBox.displayText ? languageComboBox.displayText : qsTr("Any language")
     }
 
     delegate: ItemDelegate {
