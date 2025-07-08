@@ -1296,7 +1296,7 @@ bool DraftPosts::addVideoToPost(ATProto::AppBskyFeed::Record::Post& post,
         return false;
     }
 
-    ATProto::PostMaster::addVideoToPost(post, std::move(blob), video.getAlt());
+    ATProto::PostMaster::addVideoToPost(post, std::move(blob), -1, -1, video.getAlt());
     return true;
 }
 

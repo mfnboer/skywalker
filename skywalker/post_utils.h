@@ -41,7 +41,8 @@ public:
                           const QString& quoteUri, const QString& quoteCid,
                           const WebLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language);
-    Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, const QString& videoAltText,
+    Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName,
+                          const QString& videoAltText, int videoWidth, int videoHeight,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
@@ -139,9 +140,9 @@ private:
                       const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
     void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, int videoWidth, int videoHeight, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                       const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
-    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, int videoWidth, int videoHeight, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continueRepost(const QString& uri, const QString& cid);
     void continueReAttachQuote(const QString& embeddingUri, int retries =1);

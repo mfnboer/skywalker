@@ -33,7 +33,8 @@ SkyPage {
         SvgPlainButton {
             id: okButton
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
             iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             svg: SvgOutline.check
             accessibleName: qsTr("process video")
@@ -288,7 +289,6 @@ SkyPage {
 
         return calcSdResolution().height
     }
-
 
     Component.onCompleted: {
         video.play()

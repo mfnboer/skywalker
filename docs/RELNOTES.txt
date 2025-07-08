@@ -1,6 +1,8 @@
 next
 ====
 * Only refresh feed on dragging down, not on flicking down
+* Set aspect ratio when you post a video
+* Bug fixes
 
 4.9
 ===

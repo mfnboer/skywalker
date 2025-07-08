@@ -41,7 +41,7 @@ void _handleEmojiPicked(JNIEnv* env, jobject, jstring jsEmoji)
         instance->handleEmojiPicked(emoji);
 }
 
-void _handleVideoTranscodingOk(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName)
+void _handleVideoTranscodingOk(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName, jint outputWidth, jint ouputHeight)
 {
     QString inputFileName = jsInputFileName ? env->GetStringUTFChars(jsInputFileName, nullptr) : QString();
     QString outputFileName = jsOuputFileName ? env->GetStringUTFChars(jsOuputFileName, nullptr) : QString();
@@ -49,7 +49,7 @@ void _handleVideoTranscodingOk(JNIEnv* env, jobject, jstring jsInputFileName, js
     auto& instance = *gTheInstance;
 
     if (instance)
-        instance->handleVideoTranscodingOk(inputFileName, outputFileName);
+        instance->handleVideoTranscodingOk(inputFileName, outputFileName, (int)outputWidth, (int)ouputHeight);
 }
 
 void _handleVideoTranscodingFailed(JNIEnv* env, jobject, jstring jsInputFileName, jstring jsOuputFileName, jstring jsError)
@@ -266,7 +266,7 @@ JNICallbackListener::JNICallbackListener() : QObject()
     jni.registerNativeMethods("com/gmail/mfnboer/EmojiPickerDialog", emojiPickerCallbacks, 1);
 
     const JNINativeMethod videoTranscoderCallbacks[] = {
-        { "emitTranscodingOk", "(Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingOk) },
+        { "emitTranscodingOk", "(Ljava/lang/String;Ljava/lang/String;II)V", reinterpret_cast<void *>(_handleVideoTranscodingOk) },
         { "emitTranscodingFailed", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", reinterpret_cast<void *>(_handleVideoTranscodingFailed) }
     };
     jni.registerNativeMethods("com/gmail/mfnboer/VideoTranscoder", videoTranscoderCallbacks, 2);
@@ -320,9 +320,9 @@ void JNICallbackListener::handleEmojiPicked(const QString& emoji)
     emit emojiPicked(emoji);
 }
 
-void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName)
+void JNICallbackListener::handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName, int outputWidth, int outputHeight)
 {
-    emit videoTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName));
+    emit videoTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), outputWidth, outputHeight);
 }
 
 void JNICallbackListener::handleVideoTranscodingFailed(const QString& inputFileName, const QString& outputFileName, const QString& error)

@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableList;
 
 public class VideoTranscoder {
     private static final String LOGTAG = "VideoTranscoder";
-    public static native void emitTranscodingOk(String inputFilePath, String outputFilePath);
+    public static native void emitTranscodingOk(String inputFilePath, String outputFilePath, int outputWidth, int outputHeight);
     public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
     public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
@@ -70,8 +70,8 @@ public class VideoTranscoder {
                 .addListener(new Transformer.Listener() {
                     @Override
                     public void onCompleted(Composition composition, ExportResult result) {
-                        Log.d(LOGTAG, "Transcoding completed: " + outputFilePath + " size:" + result.fileSizeBytes);
-                        emitTranscodingOk(inputFilePath, outputFilePath);
+                        Log.d(LOGTAG, "Transcoding completed: " + outputFilePath + " size: " + result.fileSizeBytes + " width: " + result.width + " height: " + result.height);
+                        emitTranscodingOk(inputFilePath, outputFilePath, result.width, result.height);
                     }
 
                     @Override

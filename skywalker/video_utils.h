@@ -32,14 +32,14 @@ public:
     Q_INVOKABLE VideoHandle* cacheVideo(const QString& link, const QString& fileName);
 
 signals:
-    void transcodingOk(QString inputFileName, QString outputFileName);
+    void transcodingOk(QString inputFileName, QString outputFileName, int outputWidth, int outputHeight);
     void transcodingFailed(QString inputFileName, QString error);
     void transcodingChanged();
     void copyVideoOk();
     void copyVideoFailed(QString error);
 
 private:
-    void handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile);
+    void handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight);
     void handleTranscodingFailed(const QString& inputFileName, FileSignal::SharedPtr outputFile, const QString& error);
 
     bool mTranscoding = false;

@@ -14,8 +14,8 @@ VideoUtils::VideoUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
-            this, [this](QString inputFileName, FileSignal::SharedPtr outputFile){
-                handleTranscodingOk(inputFileName, outputFile);
+            this, [this](QString inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight){
+                handleTranscodingOk(inputFileName, outputFile, outputWidth, outputHeight);
             });
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
@@ -85,7 +85,7 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     return true;
 }
 
-void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile)
+void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight)
 {
     if (inputFileName != mTranscodingFileName)
     {
@@ -98,7 +98,7 @@ void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::S
     mTranscodingFileName.clear();
     outputFile->setHandled(true);
     TempFileHolder::instance().put(outputFile->getFileName());
-    emit transcodingOk(inputFileName, outputFile->getFileName());
+    emit transcodingOk(inputFileName, outputFile->getFileName(), outputWidth, outputHeight);
 }
 
 void VideoUtils::handleTranscodingFailed(const QString& inputFileName, FileSignal::SharedPtr outputFile, const QString& error)

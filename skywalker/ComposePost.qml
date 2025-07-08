@@ -1698,23 +1698,23 @@ SkyPage {
     }
 
     VideoUtils {
-        property var callbackOk: (videoSource) => {}
+        property var callbackOk: (videoSource, width, height) => {}
         property var callbackFailed: (error) => {}
 
         id: videoUtils
         skywalker: page.skywalker // qmllint disable missing-property
 
-        onTranscodingOk: (inputFileName, outputFileName) => {
+        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
             const source = "file://" + outputFileName
             page.tmpVideos.push(source)
-            callbackOk(source) // qmllint disable use-proper-function
-            callbackOk = (videoSource) => {}
+            callbackOk(source, outputWidth, outputHeight) // qmllint disable use-proper-function
+            callbackOk = (videoSource, width, height) => {}
             callbackFailed = (error) => {}
         }
 
         onTranscodingFailed: (inputFileName, error) => {
             callbackFailed(error) // qmllint disable use-proper-function
-            callbackOk = (videoSource) => {}
+            callbackOk = (videoSource, width, height) => {}
             callbackFailed = (error) => {}
         }
 
@@ -2198,13 +2198,14 @@ SkyPage {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
                         postItem.videoStartMs, postItem.videoEndMs, postItem.videoRemoveAudio,
-                        (transcodedVideo) => {
+                        (transcodedVideo, videoWidth, videoHeight) => {
                             postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
-                            parentUri, parentCid,
-                            rootUri, rootCid,
-                            qUri, qCid,
-                            postItem.embeddedLinks,
-                            labels, postItem.language) },
+                                videoWidth, videoHeight,
+                                parentUri, parentCid,
+                                rootUri, rootCid,
+                                qUri, qCid,
+                                postItem.embeddedLinks,
+                                labels, postItem.language) },
                         (error) => postFailed(error)),
                 (error) => postFailed(error))
         } else {
