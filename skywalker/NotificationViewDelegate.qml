@@ -10,6 +10,7 @@ Rectangle {
     required property list<basicprofile> notificationOtherAuthors
     required property list<basicprofile> notificationAllAuthors
     required property int notificationReason // QEnums::NotificationReason
+    required property string notificationReasonRaw
     required property string notificationReasonSubjectUri
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
@@ -605,7 +606,8 @@ Rectangle {
                        QEnums.NOTIFICATION_REASON_REPOST,
                        QEnums.NOTIFICATION_REASON_VERIFIED,
                        QEnums.NOTIFICATION_REASON_UNVERIFIED,
-                       QEnums.NOTIFICATION_REASON_NEW_LABELS]
+                       QEnums.NOTIFICATION_REASON_NEW_LABELS,
+                       QEnums.NOTIFICATION_REASON_UNKNOWN]
         return reasons.includes(notificationReason)
     }
 
@@ -637,6 +639,8 @@ Rectangle {
             return qsTr("deleted your verification")
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
             return qsTr("published new labels. Visit the labeler profile to see which labels are new.")
+        case QEnums.NOTIFICATION_REASON_UNKNOWN:
+            return qsTr(`unknown notification: ${notificationReasonRaw}`)
         default:
             return "UNKNOW REASON: " + notificationReason
         }

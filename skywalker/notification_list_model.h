@@ -31,6 +31,7 @@ public:
         NotificationOtherAuthors,
         NotificationAllAuthors,
         NotificationReason,
+        NotificationReasonRaw,
         NotificationReasonSubjectUri,
         NotificationReasonSubjectCid,
         NotificationReasonPostText,

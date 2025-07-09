@@ -69,6 +69,14 @@ Notification::Reason Notification::getReason() const
     return Reason::NOTIFICATION_REASON_UNKNOWN;
 }
 
+QString Notification::getRawReason() const
+{
+    if (mNotification)
+        return mNotification->mRawReason;
+
+    return {};
+}
+
 QString Notification::getReasonSubjectUri() const
 {
     return mNotification ? mNotification->mReasonSubject.value_or(QString()) : QString();

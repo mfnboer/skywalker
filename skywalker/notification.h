@@ -27,6 +27,7 @@ public:
     QString getUri() const;
     QString getCid() const;
     Reason getReason() const;
+    QString getRawReason() const;
     QString getReasonSubjectUri() const;
     BasicProfile getAuthor() const;
     const BasicProfileList& getOtherAuthors() const { return mOtherAuthors; }
