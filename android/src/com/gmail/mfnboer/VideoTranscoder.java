@@ -70,8 +70,11 @@ public class VideoTranscoder {
                 .addListener(new Transformer.Listener() {
                     @Override
                     public void onCompleted(Composition composition, ExportResult result) {
-                        Log.d(LOGTAG, "Transcoding completed: " + outputFilePath + " size: " + result.fileSizeBytes + " width: " + result.width + " height: " + result.height);
-                        emitTranscodingOk(inputFilePath, outputFilePath, result.width, result.height);
+                        final boolean rotated = (result.width == height);
+                        final int w = rotated ? result.height : result.width;
+                        final int h = rotated ? result.width : result.height;
+                        Log.d(LOGTAG, "Transcoding completed: " + outputFilePath + " size: " + result.fileSizeBytes + " width: " + w + " height: " + h + " rotated: " + rotated);
+                        emitTranscodingOk(inputFilePath, outputFilePath, w, h);
                     }
 
                     @Override
