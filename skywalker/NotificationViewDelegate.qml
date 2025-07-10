@@ -15,6 +15,7 @@ Rectangle {
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
     required property string notificationReasonPostPlainText
+    required property basicprofile notificationReasonPostAuthor
     required property bool notificationReasonPostIsReply
     required property basicprofile notificationReasonPostReplyToAuthor
     required property bool notificationReasonPostHasUnknownEmbed
@@ -140,7 +141,7 @@ Rectangle {
                 height: width
                 color: guiSettings.likeColor
                 svg: SvgFilled.like
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_LIKE
+                visible: [QEnums.NOTIFICATION_REASON_LIKE, QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST].includes(notificationReason)
             }
             SkySvg {
                 x: parent.x + 14
@@ -149,7 +150,7 @@ Rectangle {
                 height: width
                 color: guiSettings.textColor
                 svg: SvgOutline.repost
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_REPOST
+                visible: [QEnums.NOTIFICATION_REASON_REPOST, QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST].includes(notificationReason)
             }
             SkySvg {
                 x: parent.x + 14
@@ -316,7 +317,7 @@ Rectangle {
 
                         onRepost: {
                             root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
-                                        notificationPostText, notificationPostTimestamp,
+                                        "", "", notificationPostText, notificationPostTimestamp,
                                         notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText)
                         }
 
@@ -436,6 +437,14 @@ Rectangle {
                     }
                 }
 
+                PostHeaderWithAvatar {
+                    width: parent.width
+                    author: notificationReasonPostAuthor
+                    postIndexedSecondsAgo: notificationSecondsAgo
+                    visible: [QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST,
+                              QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST].includes(notificationReason)
+                }
+
                 // Reply to
                 ReplyToRow {
                     width: parent.width
@@ -447,7 +456,7 @@ Rectangle {
                     id: reasonPostBody
                     topPadding: 5
                     width: parent.width
-                    postAuthor: skywalker.getUser()
+                    postAuthor: notificationReasonPostAuthor
                     postText: {
                         if (notificationReasonPostLocallyDeleted)
                             return qsTr("🗑 Deleted")
@@ -571,12 +580,14 @@ Rectangle {
 
         switch (notificationReason) {
         case QEnums.NOTIFICATION_REASON_LIKE:
+        case QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST:
             title = qsTr("Liked by")
             break
         case QEnums.NOTIFICATION_REASON_FOLLOW:
             title = qsTr("New followers")
             break
         case QEnums.NOTIFICATION_REASON_REPOST:
+        case QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST:
             title = qsTr("Reposted by")
             break
         case QEnums.NOTIFICATION_REASON_VERIFIED:
@@ -596,14 +607,17 @@ Rectangle {
     function showPost() {
         let reasons = [QEnums.NOTIFICATION_REASON_MENTION,
                        QEnums.NOTIFICATION_REASON_REPLY,
-                       QEnums.NOTIFICATION_REASON_QUOTE]
+                       QEnums.NOTIFICATION_REASON_QUOTE,
+                       QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST]
         return reasons.includes(notificationReason)
     }
 
     function isAggregatableReason() {
         let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
+                       QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST,
                        QEnums.NOTIFICATION_REASON_FOLLOW,
                        QEnums.NOTIFICATION_REASON_REPOST,
+                       QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST,
                        QEnums.NOTIFICATION_REASON_VERIFIED,
                        QEnums.NOTIFICATION_REASON_UNVERIFIED,
                        QEnums.NOTIFICATION_REASON_NEW_LABELS,
@@ -613,7 +627,9 @@ Rectangle {
 
     function showPostForAggregatableReason() {
         let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
-                       QEnums.NOTIFICATION_REASON_REPOST]
+                       QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST,
+                       QEnums.NOTIFICATION_REASON_REPOST,
+                       QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST]
         return reasons.includes(notificationReason)
     }
 
@@ -621,10 +637,14 @@ Rectangle {
         switch (notificationReason) {
         case QEnums.NOTIFICATION_REASON_LIKE:
             return qsTr("liked your post")
+        case QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST:
+            return qsTr("liked your repost")
         case QEnums.NOTIFICATION_REASON_FOLLOW:
             return qsTr("started following you")
         case QEnums.NOTIFICATION_REASON_REPOST:
             return qsTr("reposted your post")
+        case QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST:
+            return qsTr("reposted your repost")
         case QEnums.NOTIFICATION_REASON_MENTION:
             return qsTr("mentioned you")
         case QEnums.NOTIFICATION_REASON_REPLY:
@@ -639,6 +659,8 @@ Rectangle {
             return qsTr("deleted your verification")
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
             return qsTr("published new labels. Visit the labeler profile to see which labels are new.")
+        case QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST:
+            return qsTr("posted")
         case QEnums.NOTIFICATION_REASON_UNKNOWN:
             return qsTr(`unknown notification: ${notificationReasonRaw}`)
         default:

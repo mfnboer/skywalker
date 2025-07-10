@@ -79,7 +79,15 @@ QString Notification::getRawReason() const
 
 QString Notification::getReasonSubjectUri() const
 {
-    return mNotification ? mNotification->mReasonSubject.value_or(QString()) : QString();
+    switch (getReason())
+    {
+    case Reason::NOTIFICATION_REASON_LIKE_VIA_REPOST:
+        return getLikeSubjectUri();
+    case Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
+        return getRepostSubjectUri();
+    default:
+        return mNotification ? mNotification->mReasonSubject.value_or(QString()) : QString();
+    }
 }
 
 BasicProfile Notification::getAuthor() const
@@ -125,6 +133,44 @@ PostRecord Notification::getPostRecord() const
     }
 
     return PostRecord(rawRecord);
+}
+
+QString Notification::getLikeSubjectUri() const
+{
+    if (!mNotification)
+        return {};
+
+    ATProto::AppBskyFeed::Like* rawRecord = nullptr;
+
+    try {
+        rawRecord = std::get<ATProto::AppBskyFeed::Like::SharedPtr>(mNotification->mRecord).get();
+    } catch (const std::bad_variant_access&) {
+        return {};
+    }
+
+    if (rawRecord)
+        return rawRecord->mSubject->mUri;
+
+    return {};
+}
+
+QString Notification::getRepostSubjectUri() const
+{
+    if (!mNotification)
+        return {};
+
+    ATProto::AppBskyFeed::Repost* rawRecord = nullptr;
+
+    try {
+        rawRecord = std::get<ATProto::AppBskyFeed::Repost::SharedPtr>(mNotification->mRecord).get();
+    } catch (const std::bad_variant_access&) {
+        return {};
+    }
+
+    if (rawRecord)
+        return rawRecord->mSubject->mUri;
+
+    return {};
 }
 
 Post Notification::getReasonPost(const PostCache& cache) const
@@ -176,13 +222,16 @@ QString Notification::getPostUri() const
     switch (getReason())
     {
     case Reason::NOTIFICATION_REASON_LIKE:
+    case Reason::NOTIFICATION_REASON_LIKE_VIA_REPOST:
     case Reason::NOTIFICATION_REASON_FOLLOW:
     case Reason::NOTIFICATION_REASON_REPOST:
+    case Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
     case Reason::NOTIFICATION_REASON_STARTERPACK_JOINED:
         return getReasonSubjectUri();
     case Reason::NOTIFICATION_REASON_REPLY:
     case Reason::NOTIFICATION_REASON_MENTION:
     case Reason::NOTIFICATION_REASON_QUOTE:
+    case Reason::NOTIFICATION_REASON_SUBSCRIBED_POST:
         return getUri();
     case Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:

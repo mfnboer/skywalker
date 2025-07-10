@@ -47,7 +47,7 @@ void FeedUtils::like(const QString& uri, const QString& cid)
             model->updateLikeTransient(cid, true);
         });
 
-    postMaster()->like(uri, cid,
+    postMaster()->like(uri, cid, {}, {},
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
             if (!presence)
                 return;

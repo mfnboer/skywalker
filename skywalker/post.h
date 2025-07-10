@@ -61,6 +61,8 @@ public:
     QDateTime getIndexedAt() const;
     bool isRepost() const;
     std::optional<BasicProfile> getRepostedBy() const;
+    QString getReasonRepostUri() const;
+    QString getReasonRepostCid() const;
     bool isReply() const;
     std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;

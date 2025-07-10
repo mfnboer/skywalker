@@ -95,6 +95,9 @@ public:
         NOTIFICATION_REASON_STARTERPACK_JOINED = int(ATProto::AppBskyNotification::NotificationReason::STARTERPACK_JOINED),
         NOTIFICATION_REASON_VERIFIED = int(ATProto::AppBskyNotification::NotificationReason::VERIFIED),
         NOTIFICATION_REASON_UNVERIFIED = int(ATProto::AppBskyNotification::NotificationReason::UNVERIFIED),
+        NOTIFICATION_REASON_LIKE_VIA_REPOST = int(ATProto::AppBskyNotification::NotificationReason::LIKE_VIA_REPOST),
+        NOTIFICATION_REASON_REPOST_VIA_REPOST = int(ATProto::AppBskyNotification::NotificationReason::REPOST_VIA_REPOST),
+        NOTIFICATION_REASON_SUBSCRIBED_POST = int(ATProto::AppBskyNotification::NotificationReason::SUBSCRIBED_POST),
         NOTIFICATION_REASON_UNKNOWN = int(ATProto::AppBskyNotification::NotificationReason::UNKNOWN),
 
         // Additional reasons

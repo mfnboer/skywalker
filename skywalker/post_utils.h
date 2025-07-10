@@ -54,9 +54,9 @@ public:
     Q_INVOKABLE void undoThreadgate(const QString& threadgateUri, const QString& cid);
     Q_INVOKABLE void undoPostgate(const QString& postUri);
     Q_INVOKABLE void detachQuote(const QString& uri, const QString& embeddingUri, const QString& embeddingCid, bool detach);
-    Q_INVOKABLE void repost(const QString& uri, const QString& cid);
+    Q_INVOKABLE void repost(const QString& uri, const QString& cid, const QString& viaUri = {}, const QString& viaCid = {});
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
-    Q_INVOKABLE void like(const QString& uri, const QString& cid);
+    Q_INVOKABLE void like(const QString& uri, const QString& cid, const QString& viaUri = {}, const QString& viaCid = {});
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
     Q_INVOKABLE void muteThread(const QString& uri);
     Q_INVOKABLE void unmuteThread(const QString& uri);
@@ -144,7 +144,7 @@ private:
                       const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
     void continuePostVideo(const QString& videoFileName, const QString& videoAltText, int videoWidth, int videoHeight, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continueRepost(const QString& uri, const QString& cid);
+    void continueRepost(const QString& uri, const QString& cid, const QString& viaUri = {}, const QString& viaCid = {});
     void continueReAttachQuote(const QString& embeddingUri, int retries =1);
     void shareMedia(int fd, const QString& mimeType);
     void sharePhoto(int fd);

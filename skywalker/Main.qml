@@ -892,6 +892,8 @@ ApplicationWindow {
         property string repostedAlreadyUri
         property string repostUri
         property string repostCid
+        property string repostViaUri
+        property string repostViaCid
         property string repostText
         property date repostDateTime
         property basicprofile repostAuthor
@@ -932,7 +934,7 @@ ApplicationWindow {
                         if (repostDrawer.repostedAlreadyUri)
                             postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
                         else
-                            postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid)
+                            postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid, repostDrawer.repostViaUri, repostDrawer.repostViaCid)
 
                         repostDrawer.close()
                     }
@@ -981,10 +983,12 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
+        function show(hasRepostedUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText) {
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
+            repostViaUri = viaUri
+            repostViaCid = viaCid
             repostText = text
             repostDateTime = dateTime
             repostAuthor = author
@@ -1491,13 +1495,13 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
+    function repost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText) {
         postUtils.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText))
+            () => doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText))
     }
 
-    function doRepost(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText) {
-        repostDrawer.show(repostUri, uri, cid, text, dateTime, author, embeddingDisabled, plainText)
+    function doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText) {
+        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText)
     }
 
     function quotePost(uri, cid, text, dateTime, author, embeddingDisabled) {
@@ -1509,11 +1513,11 @@ ApplicationWindow {
         postUtils.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author))
     }
 
-    function like(likeUri, uri, cid) {
+    function like(likeUri, uri, cid, viaUri = "", viaCid = "") {
         if (likeUri)
             postUtils.undoLike(likeUri, cid)
         else
-            postUtils.like(uri, cid)
+            postUtils.like(uri, cid, viaUri, viaCid)
     }
 
     function likeFeed(likeUri, uri, cid) {

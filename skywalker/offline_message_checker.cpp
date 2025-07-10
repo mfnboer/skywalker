@@ -563,10 +563,13 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     switch (notification.getReason())
     {
     case Notification::Reason::NOTIFICATION_REASON_LIKE:
+    case Notification::Reason::NOTIFICATION_REASON_LIKE_VIA_REPOST:
     {
         channelId = CHANNEL_LIKE;
         iconType = IconType::LIKE;
-        msg = QObject::tr("<b>Liked your post</b>");
+        msg = notification.getReason() == Notification::Reason::NOTIFICATION_REASON_LIKE ?
+                QObject::tr("<b>Liked your post</b>") :
+                QObject::tr("<b>Liked your repost</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
         const auto reasonPostText = post.getFormattedText();
 
@@ -576,10 +579,13 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         break;
     }
     case Notification::Reason::NOTIFICATION_REASON_REPOST:
+    case Notification::Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
     {
         channelId = CHANNEL_REPOST;
         iconType = IconType::REPOST;
-        msg = QObject::tr("<b>Reposted your post</b>");
+        msg = notification.getReason() == Notification::Reason::NOTIFICATION_REASON_REPOST ?
+                QObject::tr("<b>Reposted your post</b>") :
+                QObject::tr("<b>Reposted your repost</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
         const auto reasonPostText = post.getFormattedText();
 
@@ -599,6 +605,8 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     case Notification::Reason::NOTIFICATION_REASON_REPLY:
         break;
     case Notification::Reason::NOTIFICATION_REASON_QUOTE:
+        break;
+    case Notification::Reason::NOTIFICATION_REASON_SUBSCRIBED_POST:
         break;
     case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
         channelId = CHANNEL_CHAT;

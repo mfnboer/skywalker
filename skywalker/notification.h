@@ -28,11 +28,18 @@ public:
     QString getCid() const;
     Reason getReason() const;
     QString getRawReason() const;
+
+    // For like-via-repost and repost-via-repost the reason subject uri in atproto is the
+    // repost-uri.
+    // This function will return the post-uri from the repost in that case.
     QString getReasonSubjectUri() const;
+
     BasicProfile getAuthor() const;
     const BasicProfileList& getOtherAuthors() const { return mOtherAuthors; }
     BasicProfileList getAllAuthors() const;
     PostRecord getPostRecord() const;
+    QString getLikeSubjectUri() const;
+    QString getRepostSubjectUri() const;
     Post getReasonPost(const PostCache&) const;
     Post getNotificationPost(const PostCache&) const;
     bool isRead() const;

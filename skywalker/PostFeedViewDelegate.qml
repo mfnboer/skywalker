@@ -18,6 +18,8 @@ Rectangle {
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
     required property basicprofile postRepostedByAuthor
+    required property string postReasonRepostUri;
+    required property string postReasonRepostCid;
     required property bool postHasUnknownEmbed
     required property string postUnknownEmbedType
     required property list<imageview> postImages
@@ -565,7 +567,7 @@ Rectangle {
                     }
 
                     onRepost: {
-                        root.repost(postRepostUri, postUri, postCid, postText,
+                        root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
                                     postIndexedDateTime, author, postEmbeddingDisabled, postPlainText)
                     }
 
@@ -574,7 +576,7 @@ Rectangle {
                                        author, postEmbeddingDisabled)
                     }
 
-                    onLike: root.like(postLikeUri, postUri, postCid)
+                    onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
 
                     onBookmark: {
                         if (isBookmarked) {

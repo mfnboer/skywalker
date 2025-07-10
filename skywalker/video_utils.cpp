@@ -80,7 +80,7 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     setTranscoding(true);
     mTranscodingFileName = inputFileName;
     QFile::copy(inputFileName, outputFileName);
-    handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName));
+    handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), -1, -1);
 #endif
     return true;
 }

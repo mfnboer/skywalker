@@ -367,7 +367,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         switch (notification.getReason())
         {
         case Notification::Reason::NOTIFICATION_REASON_LIKE:
+        case Notification::Reason::NOTIFICATION_REASON_LIKE_VIA_REPOST:
         case Notification::Reason::NOTIFICATION_REASON_REPOST:
+        case Notification::Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
         {
             const auto& uri = notification.getReasonSubjectUri();
 
@@ -379,6 +381,7 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, const NotificationLi
         case Notification::Reason::NOTIFICATION_REASON_REPLY:
         case Notification::Reason::NOTIFICATION_REASON_MENTION:
         case Notification::Reason::NOTIFICATION_REASON_QUOTE:
+        case Notification::Reason::NOTIFICATION_REASON_SUBSCRIBED_POST:
             if (mRetrieveNotificationPosts)
             {
                 const auto& uri = notification.getUri();
@@ -587,6 +590,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).getFormattedText();
     case Role::NotificationReasonPostPlainText:
         return notification.getReasonPost(mReasonPostCache).getText();
+    case Role::NotificationReasonPostAuthor:
+        return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getAuthor());
     case Role::NotificationReasonPostIsReply:
         return notification.getReasonPost(mReasonPostCache).isReply();
     case Role::NotificationReasonPostReplyToAuthor:
@@ -962,6 +967,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },
         { int(Role::NotificationReasonPostText), "notificationReasonPostText" },
         { int(Role::NotificationReasonPostPlainText), "notificationReasonPostPlainText" },
+        { int(Role::NotificationReasonPostAuthor), "notificationReasonPostAuthor" },
         { int(Role::NotificationReasonPostIsReply), "notificationReasonPostIsReply" },
         { int(Role::NotificationReasonPostReplyToAuthor), "notificationReasonPostReplyToAuthor" },
         { int(Role::NotificationReasonPostHasUnknownEmbed), "notificationReasonPostHasUnknownEmbed" },

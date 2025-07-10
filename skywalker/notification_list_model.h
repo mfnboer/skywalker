@@ -36,6 +36,7 @@ public:
         NotificationReasonSubjectCid,
         NotificationReasonPostText,
         NotificationReasonPostPlainText,
+        NotificationReasonPostAuthor,
         NotificationReasonPostIsReply,
         NotificationReasonPostReplyToAuthor,
         NotificationReasonPostLanguages,

@@ -251,7 +251,7 @@ void ProfileUtils::likeLabeler(const QString& uri, const QString& cid)
     if (!postMaster())
         return;
 
-    postMaster()->like(uri, cid,
+    postMaster()->like(uri, cid, {}, {},
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
             if (!presence)
                 return;

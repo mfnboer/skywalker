@@ -369,6 +369,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const BasicProfile* profileChange = getProfileChange(repostedBy->getDid());
         return QVariant::fromValue(profileChange ? *profileChange : *repostedBy);
     }
+    case Role::PostReasonRepostUri:
+        return post.getReasonRepostUri();
+    case Role::PostReasonRepostCid:
+        return post.getReasonRepostCid();
     case Role::PostRecord:
     {
         auto postRecord = post.getRecordView();
@@ -672,6 +676,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
         { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
+        { int(Role::PostReasonRepostUri), "postReasonRepostUri" },
+        { int(Role::PostReasonRepostCid), "postReasonRepostCid" },
         { int(Role::PostHasUnknownEmbed), "postHasUnknownEmbed" },
         { int(Role::PostUnknownEmbedType), "postUnknownEmbedType" },
         { int(Role::PostImages), "postImages" },

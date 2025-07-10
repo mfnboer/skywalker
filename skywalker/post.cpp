@@ -261,6 +261,22 @@ std::optional<BasicProfile> Post::getRepostedBy() const
     return BasicProfile(std::get<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason)->mBy);
 }
 
+QString Post::getReasonRepostUri() const
+{
+    if (!isRepost())
+        return {};
+
+    return std::get<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason)->mUri.value_or("");
+}
+
+QString Post::getReasonRepostCid() const
+{
+    if (!isRepost())
+        return {};
+
+    return std::get<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason)->mCid.value_or("");
+}
+
 bool Post::isReply() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)

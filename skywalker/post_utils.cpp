@@ -868,7 +868,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
         });
 }
 
-void PostUtils::repost(const QString& uri, const QString& cid)
+void PostUtils::repost(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid)
 {
     if (!postMaster())
         return;
@@ -876,9 +876,9 @@ void PostUtils::repost(const QString& uri, const QString& cid)
     emit repostProgress(tr("Reposting"));
 
     postMaster()->checkRecordExists(uri, cid,
-        [this, presence=getPresence(), uri, cid]{
+        [this, presence=getPresence(), uri, cid, viaUri, viaCid]{
             if (presence)
-                continueRepost(uri, cid);
+                continueRepost(uri, cid, viaUri, viaCid);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -889,12 +889,12 @@ void PostUtils::repost(const QString& uri, const QString& cid)
         });
 }
 
-void PostUtils::continueRepost(const QString& uri, const QString& cid)
+void PostUtils::continueRepost(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid)
 {
     if (!postMaster())
         return;
 
-    postMaster()->repost(uri, cid,
+    postMaster()->repost(uri, cid, viaUri, viaCid,
         [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
             if (!presence)
                 return;
@@ -943,7 +943,7 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
         });
 }
 
-void PostUtils::like(const QString& uri, const QString& cid)
+void PostUtils::like(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid)
 {
     if (!postMaster())
         return;
@@ -954,7 +954,7 @@ void PostUtils::like(const QString& uri, const QString& cid)
         });
 
 
-    postMaster()->like(uri, cid,
+    postMaster()->like(uri, cid, viaUri, viaCid,
         [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
             if (!presence)
                 return;
