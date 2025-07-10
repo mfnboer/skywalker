@@ -7,13 +7,33 @@ ColumnLayout {
 
     HeaderText {
         Layout.topMargin: 10
-        text: qsTr("Pull notifications")
+        text: qsTr("Notifications")
+    }
+
+    GridLayout {
+        Layout.fillWidth: true
+        columns: 2
+        rowSpacing: 5
+
+        AccessibleText {
+            Layout.preferredWidth: 120
+            text: qsTr("Likes")
+        }
+
+        NotificationTypeSetting {}
+
+        AccessibleText {
+            Layout.preferredWidth: 120
+            text: qsTr("Likes from")
+        }
+
+        NotificationIncludeSetting {}
     }
 
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        text: qsTr("Notifications can be enabled/disabled in the app settings of your phone.")
+        text: qsTr("Push notifications can be enabled/disabled in the app settings of your phone.")
     }
 
     AccessibleCheckBox {

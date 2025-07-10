@@ -440,7 +440,7 @@ Rectangle {
                 PostHeaderWithAvatar {
                     width: parent.width
                     author: notificationReasonPostAuthor
-                    postIndexedSecondsAgo: notificationSecondsAgo
+                    postIndexedSecondsAgo: -1
                     visible: [QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST,
                               QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST].includes(notificationReason)
                 }

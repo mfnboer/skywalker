@@ -550,6 +550,8 @@ qt_add_qml_module(libskywalker
         SOURCES
         QML_FILES DeadFooterMargin.qml
         QML_FILES DeadHeaderMargin.qml
+        QML_FILES NotificationTypeSetting.qml
+        QML_FILES NotificationIncludeSetting.qml
 )
 
 if (NOT ANDROID)
