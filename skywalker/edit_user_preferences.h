@@ -27,7 +27,7 @@ class EditUserPreferences : public QObject
     QML_ELEMENT
 
 public:
-    EditUserPreferences(QObject* parent = nullptr);
+    explicit EditUserPreferences(QObject* parent = nullptr);
 
     void setUserPreferences(const ATProto::UserPreferences& userPreferences);
     void saveTo(ATProto::UserPreferences& userPreferences);

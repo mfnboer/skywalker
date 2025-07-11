@@ -108,6 +108,22 @@ public:
     };
     Q_ENUM(NotificationReason)
 
+    enum NotifcationChatIncludeType
+    {
+        NOTIFCATION_CHAT_INCLUDE_ALL = int(ATProto::AppBskyNotification::ChatPreference::IncludeType::ALL),
+        NOTIFCATION_CHAT_INCLUDE_ACCEPTED = int(ATProto::AppBskyNotification::ChatPreference::IncludeType::ACCEPTED),
+        NOTIFCATION_CHAT_INCLUDE_UNKNWON = int(ATProto::AppBskyNotification::ChatPreference::IncludeType::UNKNOWN)
+    };
+    Q_ENUM(NotifcationChatIncludeType)
+
+    enum NotifcationFilterIncludeType
+    {
+        NOTIFICATION_FILTER_INCLUDE_ALL = int (ATProto::AppBskyNotification::FilterablePreference::IncludeType::ALL),
+        NOTIFICATION_FILTER_INCLUDE_FOLLOWS = int (ATProto::AppBskyNotification::FilterablePreference::IncludeType::FOLLOWS),
+        NOTIFICATION_FILTER_INCLUDE_UNKNOWN = int (ATProto::AppBskyNotification::FilterablePreference::IncludeType::UNKNOWN)
+    };
+    Q_ENUM(NotifcationFilterIncludeType)
+
     enum AuthorListType
     {
         AUTHOR_LIST_FOLLOWS = 0,

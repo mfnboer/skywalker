@@ -87,17 +87,44 @@ SkyPage {
             visible: allVisible
         }
 
-        SettingsNotifications {
-            id: settingsNotifications
+        Loader {
+            id: notificationsLoader
             anchors.top: settingsAppearance.bottom
             width: parent.width
-            height: visible ? undefined : 0
-            visible: allVisible
         }
+    }
+
+    Component {
+        id: notificationComponent
+
+        SettingsNotifications {
+            id: settingsNotifications
+            notificationPrefs: notificationtUtils.prefs
+        }
+    }
+
+    NotificationUtils {
+        property var prefs
+
+        id: notificationtUtils
+        skywalker: page.skywalker
+
+        onNotificationPrefsOk: (prefs) => {
+            notificationtUtils.prefs = prefs
+            notificationsLoader.sourceComponent = notificationComponent
+            notificationsLoader.active = true
+        }
+
+        onNotificationPrefsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     Component.onDestruction: {
         console.debug("Save settings");
         skywalker.saveUserPreferences();
+    }
+
+    Component.onCompleted: {
+        if (allVisible)
+            notificationtUtils.getNotificationPrefs()
     }
 }
