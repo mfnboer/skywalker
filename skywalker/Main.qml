@@ -2027,6 +2027,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function editNotificationSettings() {
+        let component = guiSettings.createComponent("SettingsForm.qml")
+        let form = component.createObject(root, { allVisible: false, onlyNotificationVisible: true })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(form)
+    }
+
     function editContentFilterSettings() {
         let component = guiSettings.createComponent("ContentFilterSettings.qml")
         let contentGroupListModel = skywalker.getGlobalContentGroupListModel()

@@ -201,15 +201,10 @@ SkyPage {
                 text: qsTr("<b>Options</b>")
                 Accessible.name: qsTr("close options menu")
             }
-            MenuWithInfoItem {
-                text: qsTr("Priority only")
-                info: qsTr("When priority only is enabled, replies and quotes from users you do not follow will not be shown.")
-                checkable: true
-                checked: skywalker.notificationListModel.priority
-
-                onToggled: {
-                    skywalker.updateNotificationPreferences(checked)
-                }
+            AccessibleMenuItem {
+                text: qsTr("Settings")
+                onTriggered: root.editNotificationSettings()
+                MenuItemSvg { svg: SvgOutline.settings }
             }
         }
     }

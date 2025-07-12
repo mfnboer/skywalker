@@ -11,6 +11,52 @@ ColumnLayout {
         text: qsTr("Notifications")
     }
 
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        color: guiSettings.textColor
+        text: qsTr("Allow others to be notified of your posts:")
+    }
+
+    SkyRoundRadioButton {
+        Layout.leftMargin: 10
+        padding: 0
+        checked: notificationPrefs.allowSubscriptions === QEnums.ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS
+        text: qsTr("Anyone who follows me")
+        onCheckedChanged: {
+            if (checked)
+                notificationPrefs.allowSubscriptions = QEnums.ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS
+        }
+    }
+    SkyRoundRadioButton {
+        Layout.leftMargin: 10
+        padding: 0
+        checked: notificationPrefs.allowSubscriptions === QEnums.ALLOW_ACTIVITY_SUBSCRIPTIONS_MUTUALS
+        text: qsTr("Only followers who I follow")
+        onCheckedChanged: {
+            if (checked)
+                notificationPrefs.allowSubscriptions = QEnums.ALLOW_ACTIVITY_SUBSCRIPTIONS_MUTUALS
+        }
+    }
+    SkyRoundRadioButton {
+        Layout.leftMargin: 10
+        padding: 0
+        checked: notificationPrefs.allowSubscriptions === QEnums.ALLOW_ACTIVITY_SUBSCRIPTIONS_NONE
+        text: qsTr("No one")
+        onCheckedChanged: {
+            if (checked)
+                notificationPrefs.allowSubscriptions = QEnums.ALLOW_ACTIVITY_SUBSCRIPTIONS_NONE
+        }
+    }
+
+
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        color: guiSettings.textColor
+        text: qsTr("Receive notifications:")
+    }
+
     GridLayout {
         Layout.fillWidth: true
         columns: 2

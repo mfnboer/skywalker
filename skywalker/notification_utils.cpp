@@ -20,8 +20,8 @@ void NotificationUtils::getNotificationPrefs()
             if (!presence)
                 return;
 
-            mNotificationPrefs = std::make_unique<EditNotificationPreferences>(prefs->mPreferences);
-            emit notificationPrefsOk(mNotificationPrefs.get());
+            mNotificationPrefs = prefs->mPreferences;
+            getNotificationDeclaration();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -32,17 +32,46 @@ void NotificationUtils::getNotificationPrefs()
         });
 }
 
-void NotificationUtils::saveNotificationPrefs()
+void NotificationUtils::getNotificationDeclaration()
 {
+    if (!notificationMaster())
+        return;
+
+    notificationMaster()->getDeclaration(mSkywalker->getUserDid(),
+        [this, presence=getPresence()](ATProto::AppBskyNotification::Declaration::SharedPtr declaration){
+            if (!presence)
+                return;
+
+            const auto allowSubscriptions = (QEnums::AllowActivitySubscriptionsType)declaration->mAllowSubscriptions;
+            qDebug() << "Allow subscriptions:" << allowSubscriptions;
+
+            mEditNotificationPrefs = std::make_unique<EditNotificationPreferences>(mNotificationPrefs, allowSubscriptions, this);
+            emit notificationPrefsOk(mEditNotificationPrefs.get());
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to get notification declaration:" << error << "-" << msg;
+            mEditNotificationPrefs = std::make_unique<EditNotificationPreferences>(mNotificationPrefs, QEnums::ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS, this);
+            emit notificationPrefsOk(mEditNotificationPrefs.get());
+        });
+}
+
+void NotificationUtils::saveNotificationPrefs()
+{   
     qDebug() << "Save notification preferences";
 
-    if (!mNotificationPrefs || mNotificationPrefs->isNull())
+    if (!mEditNotificationPrefs || mEditNotificationPrefs->isNull())
     {
         qDebug() << "No preferences loaded.";
         return;
     }
 
-    if (!mNotificationPrefs->isModified())
+    if (mEditNotificationPrefs->isAllowSubscriptionsModified())
+        updateNotificationDeclaration(mEditNotificationPrefs->getAllowSubscriptions());
+
+    if (!arePreferencesModified())
     {
         qDebug() << "No modified preferences.";
         return;
@@ -50,26 +79,26 @@ void NotificationUtils::saveNotificationPrefs()
 
     ATProto::AppBskyNotification::Preferences prefs;
 
-    if (mNotificationPrefs->isChatModified())
-        prefs.mChat = mNotificationPrefs->getPrefs()->mChat;
-    if (mNotificationPrefs->isFollowModified())
-        prefs.mFollow = mNotificationPrefs->getPrefs()->mFollow;
-    if (mNotificationPrefs->isLikeModified())
-        prefs.mLike = mNotificationPrefs->getPrefs()->mLike;
-    if (mNotificationPrefs->isLikeViaRepostModified())
-        prefs.mLikeViaRepost = mNotificationPrefs->getPrefs()->mLikeViaRepost;
-    if (mNotificationPrefs->isMentionModified())
-        prefs.mMention = mNotificationPrefs->getPrefs()->mMention;
-    if (mNotificationPrefs->isQuoteModified())
-        prefs.mQuote = mNotificationPrefs->getPrefs()->mQuote;
-    if (mNotificationPrefs->isReplyModified())
-        prefs.mReply = mNotificationPrefs->getPrefs()->mReply;
-    if (mNotificationPrefs->isRepostModified())
-        prefs.mRepost = mNotificationPrefs->getPrefs()->mRepost;
-    if (mNotificationPrefs->isRepostViaRepostModified())
-        prefs.mRepostViaRepost = mNotificationPrefs->getPrefs()->mRepostViaRepost;
-    if (mNotificationPrefs->isSubscribedPostModified())
-        prefs.mSubscribedPost = mNotificationPrefs->getPrefs()->mSubscribedPost;
+    if (mEditNotificationPrefs->isChatModified())
+        prefs.mChat = mEditNotificationPrefs->getPrefs()->mChat;
+    if (mEditNotificationPrefs->isFollowModified())
+        prefs.mFollow = mEditNotificationPrefs->getPrefs()->mFollow;
+    if (mEditNotificationPrefs->isLikeModified())
+        prefs.mLike = mEditNotificationPrefs->getPrefs()->mLike;
+    if (mEditNotificationPrefs->isLikeViaRepostModified())
+        prefs.mLikeViaRepost = mEditNotificationPrefs->getPrefs()->mLikeViaRepost;
+    if (mEditNotificationPrefs->isMentionModified())
+        prefs.mMention = mEditNotificationPrefs->getPrefs()->mMention;
+    if (mEditNotificationPrefs->isQuoteModified())
+        prefs.mQuote = mEditNotificationPrefs->getPrefs()->mQuote;
+    if (mEditNotificationPrefs->isReplyModified())
+        prefs.mReply = mEditNotificationPrefs->getPrefs()->mReply;
+    if (mEditNotificationPrefs->isRepostModified())
+        prefs.mRepost = mEditNotificationPrefs->getPrefs()->mRepost;
+    if (mEditNotificationPrefs->isRepostViaRepostModified())
+        prefs.mRepostViaRepost = mEditNotificationPrefs->getPrefs()->mRepostViaRepost;
+    if (mEditNotificationPrefs->isSubscribedPostModified())
+        prefs.mSubscribedPost = mEditNotificationPrefs->getPrefs()->mSubscribedPost;
 
     bskyClient()->putNotificationPreferencesV2(prefs,
         [presence=getPresence()](auto){
@@ -83,8 +112,61 @@ void NotificationUtils::saveNotificationPrefs()
                 return;
 
             qDebug() << "putNotificationPreferencesV2 failed:" << error << " - " << msg;
-            mSkywalker->showStatusMessage(tr("Failed to save notification preferences"), QEnums::STATUS_LEVEL_ERROR);
+            mSkywalker->showStatusMessage(tr("Failed to save notification settings"), QEnums::STATUS_LEVEL_ERROR);
         });
+}
+
+void NotificationUtils::updateNotificationDeclaration(QEnums::AllowActivitySubscriptionsType allowSubscriptions)
+{
+    qDebug() << "Update notification declaration";
+
+    if (!notificationMaster())
+        return;
+
+    ATProto::AppBskyNotification::Declaration declaration;
+    declaration.mAllowSubscriptions = (ATProto::AppBskyActor::AllowSubscriptionsType)allowSubscriptions;
+
+    notificationMaster()->updateDeclaration(mSkywalker->getUserDid(), declaration,
+        []{
+            qDebug() << "Updated declaration";
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to update notification declaration:" << error << "-" << msg;
+            mSkywalker->showStatusMessage(tr("Failed to save notification settings"), QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+ATProto::NotificationMaster* NotificationUtils::notificationMaster()
+{
+    if (!mNotificationMaster)
+    {
+        if (bskyClient())
+            mNotificationMaster = std::make_unique<ATProto::NotificationMaster>(*bskyClient());
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mNotificationMaster.get();
+}
+
+bool NotificationUtils::arePreferencesModified() const
+{
+    if (!mEditNotificationPrefs)
+        return false;
+
+    return mEditNotificationPrefs->isChatModified() ||
+           mEditNotificationPrefs->isFollowModified() ||
+           mEditNotificationPrefs->isLikeModified() ||
+           mEditNotificationPrefs->isLikeViaRepostModified() ||
+           mEditNotificationPrefs->isMentionModified() ||
+           mEditNotificationPrefs->isQuoteModified() ||
+           mEditNotificationPrefs->isReplyModified() ||
+           mEditNotificationPrefs->isRepostModified() ||
+           mEditNotificationPrefs->isRepostViaRepostModified() ||
+           mEditNotificationPrefs->isSubscribedPostModified();
 }
 
 }

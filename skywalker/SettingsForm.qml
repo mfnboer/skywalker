@@ -9,6 +9,7 @@ SkyPage {
     property var userPrefs: skywalker.getEditUserPreferences()
     property bool allVisible: true
     property bool onlyChatVisible: false
+    property bool onlyNotificationVisible: false
     readonly property string sideBarTitle: qsTr("Settings")
     readonly property SvgImage sideBarSvg: SvgOutline.settings
 
@@ -129,7 +130,7 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        if (allVisible)
+        if (allVisible || onlyNotificationVisible)
             notificationtUtils.getNotificationPrefs()
     }
 }

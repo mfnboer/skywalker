@@ -80,7 +80,7 @@ void Chat::initSettings()
 
 void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming)
 {
-    qDebug() << "Init settings";
+    qDebug() << "Update settings";
     Q_ASSERT(mBsky);
 
     if (!chatMaster())
@@ -101,7 +101,7 @@ void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming)
             if (!presence)
                 return;
 
-            qWarning() << "Failed to get chat settings:" << error << "-" << msg;
+            qWarning() << "Failed to update chat settings:" << error << "-" << msg;
             emit settingsFailed(msg);
         });
 }

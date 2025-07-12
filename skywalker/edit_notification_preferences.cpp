@@ -8,7 +8,10 @@ EditNotificationPreferences::EditNotificationPreferences(QObject* parent) :
     QObject(parent)
 {}
 
-EditNotificationPreferences::EditNotificationPreferences(const ATProto::AppBskyNotification::Preferences::SharedPtr& prefs, QObject* parent) :
+EditNotificationPreferences::EditNotificationPreferences(
+    const ATProto::AppBskyNotification::Preferences::SharedPtr& prefs,
+    QEnums::AllowActivitySubscriptionsType allowSubscriptions,
+    QObject* parent) :
     QObject(parent),
     mPrefs(prefs),
     mFollowPref(new EditNotificationFilterablePref(mPrefs->mFollow, this)),
@@ -19,7 +22,8 @@ EditNotificationPreferences::EditNotificationPreferences(const ATProto::AppBskyN
     mReplyPref(new EditNotificationFilterablePref(mPrefs->mReply, this)),
     mRepostPref(new EditNotificationFilterablePref(mPrefs->mRepost, this)),
     mRepostViaRepostPref(new EditNotificationFilterablePref(mPrefs->mRepostViaRepost, this)),
-    mSubscribedPostPref(new EditNotificationPref(mPrefs->mSubscribedPost, this))
+    mSubscribedPostPref(new EditNotificationPref(mPrefs->mSubscribedPost, this)),
+    mAllowSubscriptions(allowSubscriptions)
 {
 }
 
@@ -43,18 +47,14 @@ void EditNotificationPreferences::setChatPush(bool push)
     }
 }
 
-bool EditNotificationPreferences::isModified() const
+void EditNotificationPreferences::setAllowSubscriptions(QEnums::AllowActivitySubscriptionsType allowSubscriptions)
 {
-    return isChatModified() ||
-        isFollowModified() ||
-        isLikeModified() ||
-        isLikeViaRepostModified() ||
-        isMentionModified() ||
-        isQuoteModified() ||
-        isReplyModified() ||
-        isRepostModified() ||
-        isRepostViaRepostModified() ||
-        isSubscribedPostModified();
+    if (allowSubscriptions != mAllowSubscriptions)
+    {
+        mAllowSubscriptions = allowSubscriptions;
+        mAllowSubscriptionsModified = true;
+        emit allowSubscriptionsChanged();
+    }
 }
 
 }

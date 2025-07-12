@@ -4,6 +4,7 @@
 #include "edit_notification_preferences.h"
 #include "presence.h"
 #include "wrapped_skywalker.h"
+#include <atproto/lib/notification_master.h>
 
 namespace Skywalker {
 
@@ -23,7 +24,14 @@ signals:
     void notificationPrefsFailed(QString error);
 
 private:
-    std::unique_ptr<EditNotificationPreferences> mNotificationPrefs;
+    ATProto::NotificationMaster* notificationMaster();
+    void getNotificationDeclaration();
+    void updateNotificationDeclaration(QEnums::AllowActivitySubscriptionsType allowSubscriptions);
+    bool arePreferencesModified() const;
+
+    ATProto::AppBskyNotification::Preferences::SharedPtr mNotificationPrefs;
+    std::unique_ptr<ATProto::NotificationMaster> mNotificationMaster;
+    std::unique_ptr<EditNotificationPreferences> mEditNotificationPrefs;
 };
 
 }

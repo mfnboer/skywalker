@@ -124,6 +124,14 @@ public:
     };
     Q_ENUM(NotifcationFilterIncludeType)
 
+    enum AllowActivitySubscriptionsType
+    {
+        ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS = int (ATProto::AppBskyActor::AllowSubscriptionsType::FOLLOWERS),
+        ALLOW_ACTIVITY_SUBSCRIPTIONS_MUTUALS = int (ATProto::AppBskyActor::AllowSubscriptionsType::MUTUALS),
+        ALLOW_ACTIVITY_SUBSCRIPTIONS_NONE = int (ATProto::AppBskyActor::AllowSubscriptionsType::NONE)
+    };
+    Q_ENUM(AllowActivitySubscriptionsType)
+
     enum AuthorListType
     {
         AUTHOR_LIST_FOLLOWS = 0,

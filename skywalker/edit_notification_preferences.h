@@ -23,11 +23,14 @@ class EditNotificationPreferences : public QObject
     Q_PROPERTY(EditNotificationFilterablePref* repost READ getRepost CONSTANT FINAL)
     Q_PROPERTY(EditNotificationFilterablePref* repostViaRepost READ getRepostViaRepost CONSTANT FINAL)
     Q_PROPERTY(EditNotificationPref* subscribedPost READ getSubscribedPost CONSTANT FINAL)
+    Q_PROPERTY(QEnums::AllowActivitySubscriptionsType allowSubscriptions READ getAllowSubscriptions WRITE setAllowSubscriptions NOTIFY allowSubscriptionsChanged FINAL)
     QML_ELEMENT
 
 public:
     EditNotificationPreferences(QObject* parent = nullptr);
-    explicit EditNotificationPreferences(const ATProto::AppBskyNotification::Preferences::SharedPtr& prefs, QObject* parent = nullptr);
+    EditNotificationPreferences(const ATProto::AppBskyNotification::Preferences::SharedPtr& prefs,
+                                QEnums::AllowActivitySubscriptionsType allowSubscriptions,
+                                QObject* parent = nullptr);
 
     bool isNull() const { return !mPrefs; }
 
@@ -67,11 +70,14 @@ public:
     EditNotificationPref* getSubscribedPost() const { return mSubscribedPostPref.get(); }
     bool isSubscribedPostModified() const { return mSubscribedPostPref->isModified(); }
 
-    bool isModified() const;
+    QEnums::AllowActivitySubscriptionsType getAllowSubscriptions() const { return mAllowSubscriptions; }
+    void setAllowSubscriptions(QEnums::AllowActivitySubscriptionsType allowSubscriptions);
+    bool isAllowSubscriptionsModified() const { return mAllowSubscriptionsModified; }
 
 signals:
     void chatIncludeTypeChanged();
     void chatPushChanged();
+    void allowSubscriptionsChanged();
 
 private:
     ATProto::AppBskyNotification::Preferences::SharedPtr mPrefs;
@@ -86,6 +92,9 @@ private:
     std::unique_ptr<EditNotificationFilterablePref> mRepostPref;
     std::unique_ptr<EditNotificationFilterablePref> mRepostViaRepostPref;
     std::unique_ptr<EditNotificationPref> mSubscribedPostPref;
+
+    QEnums::AllowActivitySubscriptionsType mAllowSubscriptions = QEnums::ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS;
+    bool mAllowSubscriptionsModified = false;
 };
 
 }
