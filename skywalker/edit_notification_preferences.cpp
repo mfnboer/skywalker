@@ -18,7 +18,8 @@ EditNotificationPreferences::EditNotificationPreferences(const ATProto::AppBskyN
     mQuotePref(new EditNotificationFilterablePref(mPrefs->mQuote, this)),
     mReplyPref(new EditNotificationFilterablePref(mPrefs->mReply, this)),
     mRepostPref(new EditNotificationFilterablePref(mPrefs->mRepost, this)),
-    mRepostViaRepostPref(new EditNotificationFilterablePref(mPrefs->mRepostViaRepost, this))
+    mRepostViaRepostPref(new EditNotificationFilterablePref(mPrefs->mRepostViaRepost, this)),
+    mSubscribedPostPref(new EditNotificationPref(mPrefs->mSubscribedPost, this))
 {
 }
 
@@ -40,6 +41,20 @@ void EditNotificationPreferences::setChatPush(bool push)
         mPrefs->mChat->mPush = push;
         emit chatPushChanged();
     }
+}
+
+bool EditNotificationPreferences::isModified() const
+{
+    return isChatModified() ||
+        isFollowModified() ||
+        isLikeModified() ||
+        isLikeViaRepostModified() ||
+        isMentionModified() ||
+        isQuoteModified() ||
+        isReplyModified() ||
+        isRepostModified() ||
+        isRepostViaRepostModified() ||
+        isSubscribedPostModified();
 }
 
 }

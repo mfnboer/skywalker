@@ -31,6 +31,7 @@ void EditNotificationFilterablePref::setList(bool list)
     if (list != getList())
     {
         mPref->mList = list;
+        mModified = true;
         emit listChanged();
     }
 }
@@ -40,6 +41,7 @@ void EditNotificationFilterablePref::setPush(bool push)
     if (push != getPush())
     {
         mPref->mPush = push;
+        mModified = true;
         emit pushChanged();
     }
 }

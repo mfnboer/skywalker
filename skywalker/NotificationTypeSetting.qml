@@ -3,40 +3,40 @@ import QtQuick.Layouts
 import skywalker
 
 RowLayout {
-    required property var filterablePref
+    required property var notificationPref
 
     Layout.fillWidth: true
     spacing: -1
 
     SkyRadioButton {
         Layout.fillWidth: true
-        text: qsTr("None")
-        checked: !filterablePref.list
+        text: qsTr("In-app + Push")
+        checked: notificationPref.list && notificationPref.push
         onCheckedChanged: {
-            if (checked)
-                filterablePref.list = false
+            if (checked) {
+                notificationPref.list = true
+                notificationPref.push = true
+            }
         }
     }
     SkyRadioButton {
         Layout.fillWidth: true
         text: qsTr("In-app")
-        checked: filterablePref.list && !filterablePref.push
+        checked: notificationPref.list && !notificationPref.push
         onCheckedChanged: {
             if (checked) {
-                filterablePref.list = true
-                filterablePref.push = false
+                notificationPref.list = true
+                notificationPref.push = false
             }
         }
     }
     SkyRadioButton {
         Layout.fillWidth: true
-        text: qsTr("In-app + Push")
-        checked: filterablePref.list && filterablePref.push
+        text: qsTr("Off")
+        checked: !notificationPref.list
         onCheckedChanged: {
-            if (checked) {
-                filterablePref.list = true
-                filterablePref.push = true
-            }
+            if (checked)
+                notificationPref.list = false
         }
     }
 }

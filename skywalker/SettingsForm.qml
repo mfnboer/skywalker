@@ -115,12 +115,17 @@ SkyPage {
             notificationsLoader.active = true
         }
 
-        onNotificationPrefsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onNotificationPrefsFailed: (error) => {
+            skywalker.showStatusMessage(qsTr(`Cannot get notification preferences: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        }
     }
 
     Component.onDestruction: {
-        console.debug("Save settings");
-        skywalker.saveUserPreferences();
+        console.debug("Save settings")
+        skywalker.saveUserPreferences()
+
+        if (notificationsLoader.active)
+            notificationtUtils.saveNotificationPrefs()
     }
 
     Component.onCompleted: {

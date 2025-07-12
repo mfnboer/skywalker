@@ -16,6 +16,7 @@ public:
     explicit NotificationUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void getNotificationPrefs();
+    Q_INVOKABLE void saveNotificationPrefs();
 
 signals:
     void notificationPrefsOk(EditNotificationPreferences*);

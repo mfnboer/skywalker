@@ -23,7 +23,7 @@ ColumnLayout {
         }
 
         NotificationTypeSetting {
-            filterablePref: notificationPrefs.like
+            notificationPref: notificationPrefs.like
         }
 
         AccessibleText {
@@ -46,7 +46,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.likeViaRepost
+            notificationPref: notificationPrefs.likeViaRepost
         }
 
         AccessibleText {
@@ -69,7 +69,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.follow
+            notificationPref: notificationPrefs.follow
         }
 
         AccessibleText {
@@ -92,7 +92,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.reply
+            notificationPref: notificationPrefs.reply
         }
 
         AccessibleText {
@@ -115,7 +115,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.mention
+            notificationPref: notificationPrefs.mention
         }
 
         AccessibleText {
@@ -138,7 +138,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.quote
+            notificationPref: notificationPrefs.quote
         }
 
         AccessibleText {
@@ -161,7 +161,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.repost
+            notificationPref: notificationPrefs.repost
         }
 
         AccessibleText {
@@ -184,7 +184,7 @@ ColumnLayout {
 
         NotificationTypeSetting {
             Layout.topMargin: 10
-            filterablePref: notificationPrefs.repostViaRepost
+            notificationPref: notificationPrefs.repostViaRepost
         }
 
         AccessibleText {
@@ -197,7 +197,28 @@ ColumnLayout {
             filterablePref: notificationPrefs.repostViaRepost
         }
 
-        // TODO: chat, subscribed posts
+
+        AccessibleText {
+            Layout.topMargin: 10
+            Layout.preferredWidth: 120
+            wrapMode: Text.Wrap
+            text: qsTr("Subscribed posts")
+        }
+
+        NotificationTypeSetting {
+            Layout.topMargin: 10
+            notificationPref: notificationPrefs.subscribedPost
+        }
+
+        // TODO: link
+        AccessibleText {
+            Layout.topMargin: 10
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            textFormat: Text.RichText
+            text: qsTr(`<a href="" style="color: ${guiSettings.linkColor}; text-decoration: none">Show subscriptions</a>`)
+        }
     }
 
     AccessibleText {
@@ -209,7 +230,7 @@ ColumnLayout {
 
     AccessibleCheckBox {
         Layout.topMargin: 10
-        text: qsTr("WiFi only")
+        text: qsTr("Push notifications on WiFi only")
         checked: userSettings.getNotificationsWifiOnly()
         onCheckedChanged: userSettings.setNotificationsWifiOnly(checked)
     }

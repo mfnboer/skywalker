@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "edit_notification_filterable_pref.h"
+#include "edit_notification_pref.h"
 #include "enums.h"
 #include <atproto/lib/lexicon/app_bsky_notification.h>
 #include <QObject>
@@ -21,18 +22,22 @@ class EditNotificationPreferences : public QObject
     Q_PROPERTY(EditNotificationFilterablePref* reply READ getReply CONSTANT FINAL)
     Q_PROPERTY(EditNotificationFilterablePref* repost READ getRepost CONSTANT FINAL)
     Q_PROPERTY(EditNotificationFilterablePref* repostViaRepost READ getRepostViaRepost CONSTANT FINAL)
+    Q_PROPERTY(EditNotificationPref* subscribedPost READ getSubscribedPost CONSTANT FINAL)
     QML_ELEMENT
 
 public:
     EditNotificationPreferences(QObject* parent = nullptr);
     explicit EditNotificationPreferences(const ATProto::AppBskyNotification::Preferences::SharedPtr& prefs, QObject* parent = nullptr);
 
+    bool isNull() const { return !mPrefs; }
+
+    const ATProto::AppBskyNotification::Preferences::SharedPtr& getPrefs() const { return mPrefs; }
+
     QEnums::NotifcationChatIncludeType getChatIncludeType() const { return (QEnums::NotifcationChatIncludeType)mPrefs->mChat->mInclude; }
     void setChatIncludeType(QEnums::NotifcationChatIncludeType includeType);
 
     bool getChatPush() const { return mPrefs->mChat->mPush; }
     void setChatPush(bool push);
-
     bool isChatModified() const { return mChatModified; }
 
     EditNotificationFilterablePref* getFollow() const { return mFollowPref.get(); }
@@ -59,6 +64,11 @@ public:
     EditNotificationFilterablePref* getRepostViaRepost() const { return mRepostViaRepostPref.get(); }
     bool isRepostViaRepostModified() const { return mRepostViaRepostPref->isModified(); }
 
+    EditNotificationPref* getSubscribedPost() const { return mSubscribedPostPref.get(); }
+    bool isSubscribedPostModified() const { return mSubscribedPostPref->isModified(); }
+
+    bool isModified() const;
+
 signals:
     void chatIncludeTypeChanged();
     void chatPushChanged();
@@ -75,6 +85,7 @@ private:
     std::unique_ptr<EditNotificationFilterablePref> mReplyPref;
     std::unique_ptr<EditNotificationFilterablePref> mRepostPref;
     std::unique_ptr<EditNotificationFilterablePref> mRepostViaRepostPref;
+    std::unique_ptr<EditNotificationPref> mSubscribedPostPref;
 };
 
 }
