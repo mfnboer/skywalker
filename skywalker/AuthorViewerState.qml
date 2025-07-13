@@ -1,4 +1,5 @@
 import QtQuick
+import skywalker
 
 Row {
     required property string did
@@ -10,13 +11,18 @@ Row {
     property bool mutedByList: false
     property bool mutedReposts: false
     property bool hideFromTimeline: false
-    property bool activitySubscribed: false
+    property bool showActivitySubscription: false
+    property activitysubscription activitySubscription
 
     spacing: 5
 
     SkyLabel {
-        text: "🔔"
-        visible: activitySubscribed
+        text: "🔔 post"
+        visible: showActivitySubscription && activitySubscription.post
+    }
+    SkyLabel {
+        text: "🔔 reply"
+        visible: showActivitySubscription && activitySubscription.reply
     }
     SkyLabel {
         text: qsTr("follows you")

@@ -1953,14 +1953,15 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewAuthorList(modelId, title, description = "", showFollow = true) {
+    function viewAuthorList(modelId, title, description = "", showFollow = true, showActivitySubscription = false) {
         let component = guiSettings.createComponent("AuthorListView.qml")
         let view = component.createObject(root, {
                 title: title,
                 modelId: modelId,
                 skywalker: skywalker,
                 description: description,
-                showFollow: showFollow
+                showFollow: showFollow,
+                showActivitySubscription: showActivitySubscription
         })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)

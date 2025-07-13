@@ -315,6 +315,7 @@ private:
     void getKnownFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getBlocksAuthorList(int limit, const QString& cursor, int modelId);
     void getMutesAuthorList(int limit, const QString& cursor, int modelId);
+    void getActivitySubscriptionsAuthorList(int limit, const QString& cursor, int modelId);
     void getSuggestionsAuthorList(int limit, const QString& cursor, int modelId);
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);

@@ -256,14 +256,17 @@ ColumnLayout {
             notificationPref: notificationPrefs.subscribedPost
         }
 
-        // TODO: link
         AccessibleText {
             Layout.topMargin: 10
             Layout.columnSpan: 2
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             textFormat: Text.RichText
-            text: qsTr(`<a href="" style="color: ${guiSettings.linkColor}; text-decoration: none">Show subscriptions</a>`)
+            text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">Show subscriptions</a>`)
+            onLinkActivated: {
+                let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_ACTIVITY_SUBSCRIPTIONS, "")
+                root.viewAuthorList(modelId, qsTr("Subscribed accounts"), "", false, true)
+            }
         }
     }
 

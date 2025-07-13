@@ -1,5 +1,8 @@
 next
 ====
+* Notifications of likes of reposts and reposts of reposts
+* Subscribe to posts from people you follow
+* Settings to tune which notifications you want and which not
 * Only refresh feed on dragging down, not on flicking down
 * Set aspect ratio when you post a video
 * Bug fixes

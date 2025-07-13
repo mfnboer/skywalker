@@ -15,6 +15,7 @@ Rectangle {
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
+    property bool showActivitySubscription: false
     property bool highlight: false
     property int maximumDescriptionLineCount: 25
     readonly property int margin: 10
@@ -87,7 +88,8 @@ Rectangle {
                 mutedByList: !author.viewer.mutedByList.isNull()
                 mutedReposts: authorRect.mutedReposts
                 hideFromTimeline: authorRect.hideFromTimeline
-                activitySubscribed: authorRect.activitySubscription.isSubscribed
+                showActivitySubscription: authorRect.showActivitySubscription
+                activitySubscription: authorRect.activitySubscription
             }
 
             ContentLabels {

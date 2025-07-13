@@ -9,6 +9,7 @@ SkyListView {
     required property int modelId
     property string description
     property bool showFollow: true
+    property bool showActivitySubscription: false
     property bool allowDeleteItem: false
     property string listUri // set when the author list is a list of members from listUri
     property int prevModelId: -1
@@ -50,6 +51,7 @@ SkyListView {
 
         width: authorListView.width
         showFollow: authorListView.showFollow
+        showActivitySubscription: authorListView.showActivitySubscription
         allowDeleteItem: authorListView.allowDeleteItem
 
         onFollow: (profile) => { graphUtils.follow(profile) }
@@ -75,7 +77,7 @@ SkyListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: SvgOutline.noDirectMessages
+        svg: SvgOutline.noUsers
         text: qsTr("None")
         list: authorListView
     }

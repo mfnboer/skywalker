@@ -2822,6 +2822,24 @@ void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId
         });
 }
 
+void Skywalker::getActivitySubscriptionsAuthorList(int limit, const QString& cursor, int modelId)
+{
+    setGetAuthorListInProgress(true);
+    mBsky->listActivitySubscriptions(limit, Utils::makeOptionalString(cursor),
+        [this, modelId](auto output){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->addAuthors(std::move(output->mSubscriptions), output->mCursor.value_or(""));
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getActivitySubscriptionsAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int modelId)
 {
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
@@ -2947,6 +2965,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         break;
     case AuthorListModel::Type::AUTHOR_LIST_BLOCKS:
         getBlocksAuthorList(limit, cursor, id);
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_ACTIVITY_SUBSCRIPTIONS:
+        getActivitySubscriptionsAuthorList(limit, cursor, id);
         break;
     case AuthorListModel::Type::AUTHOR_LIST_MUTES:
         getMutesAuthorList(limit, cursor, id);

@@ -23,6 +23,7 @@ constexpr char const* CHANNEL_REPOST = "CHANNEL_REPOST";
 constexpr char const* CHANNEL_FOLLOW = "CHANNEL_FOLLOW";
 constexpr char const* CHANNEL_CHAT = "CHANNEL_CHAT";
 constexpr char const* CHANNEL_VERIFICATION = "CHANNEL_VERIFICATION";
+constexpr char const* CHANNEL_ACTIVITY_SUBSCRIPTION = "CHANNEL_ACTIVIY_SUBSCRIPTION";
 
 constexpr int EXIT_OK = 0;
 constexpr int EXIT_RETRY = -1;
@@ -133,6 +134,11 @@ const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNE
         CHANNEL_VERIFICATION,
         QObject::tr("Verification"),
         QObject::tr("Changes in your verification status")
+    },
+    {
+        CHANNEL_ACTIVITY_SUBSCRIPTION,
+        QObject::tr("Activity subscriptions"),
+        QObject::tr("Posts from users you subscribed to")
     }
 };
 
@@ -601,17 +607,22 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         break;
     case Notification::Reason::NOTIFICATION_REASON_MENTION:
         iconType = IconType::MENTION;
+        msg = QObject::tr("<b>Mentioned you</b><br>") + msg;
         break;
     case Notification::Reason::NOTIFICATION_REASON_REPLY:
+        msg = QObject::tr("<b>Replied to your post</b><br>") + msg;
         break;
     case Notification::Reason::NOTIFICATION_REASON_QUOTE:
+        msg = QObject::tr("<b>Quoted your post</b><br>") + msg;
         break;
     case Notification::Reason::NOTIFICATION_REASON_SUBSCRIBED_POST:
+        msg = QObject::tr("<b>Subscribed post</b><br>") + msg;
+        channelId = CHANNEL_ACTIVITY_SUBSCRIPTION;
         break;
     case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
         channelId = CHANNEL_CHAT;
         iconType = IconType::CHAT;
-        msg = notification.getDirectMessage().getFormattedText();
+        msg = QObject::tr("<b>Direct message</b><br>") + notification.getDirectMessage().getFormattedText();
         break;
     case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION:
     {
