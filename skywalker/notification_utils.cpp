@@ -139,6 +139,38 @@ void NotificationUtils::updateNotificationDeclaration(QEnums::AllowActivitySubsc
         });
 }
 
+void NotificationUtils::subscribeActivity(const QString& did, bool posts, bool replies)
+{
+    if (!bskyClient())
+        return;
+
+    ATProto::AppBskyNotification::ActivitySubscription subscription;
+    subscription.mPost = posts;
+    subscription.mReply = replies;
+
+    bskyClient()->putActivitySubscription(did, subscription,
+        [this, presence=getPresence()](ATProto::AppBskyNotification::SubjectActivitySubscription::SharedPtr activitySubscription){
+            if (!presence)
+                return;
+
+            const auto newSubscription = ActivitySubscription(activitySubscription->mActivitySubscription.get());
+
+            mSkywalker->makeLocalModelChange(
+                [did=activitySubscription->mSubject, newSubscription](LocalAuthorModelChanges* model){
+                    model->updateActivitySubscription(did, newSubscription);
+                });
+
+            emit subscribeActivityOk(activitySubscription->mSubject, newSubscription);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qWarning() << error << "-" << msg;
+            emit subscribeActivityFailed(msg);
+        });
+}
+
 ATProto::NotificationMaster* NotificationUtils::notificationMaster()
 {
     if (!mNotificationMaster)

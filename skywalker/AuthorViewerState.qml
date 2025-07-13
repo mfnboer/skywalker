@@ -10,9 +10,14 @@ Row {
     property bool mutedByList: false
     property bool mutedReposts: false
     property bool hideFromTimeline: false
+    property bool activitySubscribed: false
 
     spacing: 5
 
+    SkyLabel {
+        text: "🔔"
+        visible: activitySubscribed
+    }
     SkyLabel {
         text: qsTr("follows you")
         visible: followedBy

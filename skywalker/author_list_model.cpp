@@ -47,6 +47,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return change && change->mFollowingUri ? *change->mFollowingUri : author.getViewer().getFollowing();
     case Role::BlockingUri:
         return change && change->mBlockingUri ? *change->mBlockingUri : author.getViewer().getBlocking();
+    case Role::ActivitySubscription:
+        return change && change->mActivitySubscription ? QVariant::fromValue(*change->mActivitySubscription) : QVariant::fromValue(author.getViewer().getActivitySubscription());
     case Role::ListItemUri:
         return entry.mListItemUri;
     case Role::AuthorMuted:
@@ -199,6 +201,7 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
         { int(Role::Author), "author" },
         { int(Role::FollowingUri), "followingUri" },
         { int(Role::BlockingUri), "blockingUri" },
+        { int(Role::ActivitySubscription), "activitySubscription" },
         { int(Role::ListItemUri), "listItemUri" },
         { int(Role::AuthorMuted), "authorMuted" },
         { int(Role::MutedReposts), "mutedReposts" },
@@ -216,6 +219,11 @@ void AuthorListModel::blockingUriChanged()
 void AuthorListModel::followingUriChanged()
 {
     changeData({ int(Role::FollowingUri) });
+}
+
+void AuthorListModel::activitySubscriptionChanged()
+{
+    changeData({ int(Role::ActivitySubscription) });
 }
 
 void AuthorListModel::mutedChanged()

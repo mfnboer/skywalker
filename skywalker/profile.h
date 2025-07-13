@@ -114,6 +114,27 @@ private:
     std::shared_ptr<PrivateData> mPrivate;
 };
 
+class ActivitySubscription
+{
+    Q_GADGET
+    Q_PROPERTY(bool post READ getPost FINAL)
+    Q_PROPERTY(bool reply READ getReply FINAL)
+    Q_PROPERTY(bool isSubscribed READ isSubscribed FINAL)
+    QML_VALUE_TYPE(activitysubscription)
+
+public:
+    ActivitySubscription() = default;
+    explicit ActivitySubscription(const ATProto::AppBskyNotification::ActivitySubscription* activitySubscription);
+
+    bool getPost() const { return mPost; }
+    bool getReply() const { return mReply; }
+    bool isSubscribed() const { return mPost || mReply; }
+
+private:
+    bool mPost = false;
+    bool mReply = false;
+};
+
 class ProfileViewerState
 {
     Q_GADGET
@@ -126,6 +147,7 @@ class ProfileViewerState
     Q_PROPERTY(ListViewBasic mutedByList READ getMutedByList FINAL)
     Q_PROPERTY(ListViewBasic blockingByList READ getBlockingByList FINAL)
     Q_PROPERTY(KnownFollowers knownFollowers READ getKnownFollowers FINAL)
+    Q_PROPERTY(ActivitySubscription activitySubscription READ getActivitySubscription FINAL)
     QML_VALUE_TYPE(profileviewerstate)
 
 public:
@@ -141,6 +163,7 @@ public:
     const ListViewBasic& getMutedByList() const;
     const ListViewBasic& getBlockingByList() const;
     const KnownFollowers& getKnownFollowers() const;
+    const ActivitySubscription& getActivitySubscription() const;
 
     void setBlocking(const QString& blocking);
 
@@ -151,6 +174,7 @@ private:
         std::optional<ListViewBasic> mMutedByList;
         std::optional<ListViewBasic> mBlockedByList;
         std::optional<KnownFollowers> mKnownFollowers;
+        std::optional<ActivitySubscription> mActivitySubscription;
     };
     std::shared_ptr<PrivateData> mPrivate;
 };
@@ -171,6 +195,21 @@ private:
     ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr mAssociated;
 };
 
+class ProfileAssociatedActivitySubscription
+{
+    Q_GADGET
+    Q_PROPERTY(QEnums::AllowActivitySubscriptionsType allowSubscriptions READ getAllowSubscriptions FINAL)
+    QML_VALUE_TYPE(profileassociatedactivitysubscription)
+public:
+    ProfileAssociatedActivitySubscription() = default;
+    explicit ProfileAssociatedActivitySubscription(const ATProto::AppBskyActor::ProfileAssociatedActivitySubscription::SharedPtr& associated);
+
+    QEnums::AllowActivitySubscriptionsType getAllowSubscriptions() const;
+
+private:
+    ATProto::AppBskyActor::ProfileAssociatedActivitySubscription::SharedPtr mAssociated;
+};
+
 class ProfileAssociated
 {
     Q_GADGET
@@ -179,6 +218,7 @@ class ProfileAssociated
     Q_PROPERTY(int starterPacks READ getStarterPacks FINAL)
     Q_PROPERTY(int isLabeler READ isLabeler FINAL)
     Q_PROPERTY(ProfileAssociatedChat chat READ getChat FINAL)
+    Q_PROPERTY(ProfileAssociatedActivitySubscription activitySubscription READ getActivitySubscription FINAL)
     QML_VALUE_TYPE(profileassociated)
 
 public:
@@ -190,6 +230,7 @@ public:
     int getStarterPacks() const { return mAssociated ? mAssociated->mStarterPacks : 0; }
     bool isLabeler() const { return mAssociated ? mAssociated->mLabeler : false; }
     ProfileAssociatedChat getChat() const { return mAssociated ? ProfileAssociatedChat(mAssociated->mChat) : ProfileAssociatedChat{}; }
+    ProfileAssociatedActivitySubscription getActivitySubscription() const { return mAssociated ? ProfileAssociatedActivitySubscription(mAssociated->mActivitySubscription) : ProfileAssociatedActivitySubscription{}; }
 
 private:
     ATProto::AppBskyActor::ProfileAssociated::SharedPtr mAssociated;
@@ -259,6 +300,7 @@ public:
 
     Q_INVOKABLE bool isFixedLabeler() const;
     Q_INVOKABLE bool canSendDirectMessage() const;
+    Q_INVOKABLE bool allowsActivitySubscriptions() const;
 
     // Check if communication is blocked either due to the user blocking it
     // or being blocked by it.

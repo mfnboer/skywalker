@@ -7,6 +7,7 @@ Rectangle {
     required property profile author
     required property string followingUri
     required property string blockingUri
+    required property activitysubscription activitySubscription
     required property string listItemUri // empty when the author list is not an item list
     required property bool authorMuted
     required property bool mutedReposts
@@ -86,6 +87,7 @@ Rectangle {
                 mutedByList: !author.viewer.mutedByList.isNull()
                 mutedReposts: authorRect.mutedReposts
                 hideFromTimeline: authorRect.hideFromTimeline
+                activitySubscribed: authorRect.activitySubscription.isSubscribed
             }
 
             ContentLabels {

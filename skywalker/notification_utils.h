@@ -3,6 +3,7 @@
 #pragma once
 #include "edit_notification_preferences.h"
 #include "presence.h"
+#include "profile.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/notification_master.h>
 
@@ -18,10 +19,13 @@ public:
 
     Q_INVOKABLE void getNotificationPrefs();
     Q_INVOKABLE void saveNotificationPrefs();
+    Q_INVOKABLE void subscribeActivity(const QString& did, bool posts, bool replies);
 
 signals:
     void notificationPrefsOk(EditNotificationPreferences*);
     void notificationPrefsFailed(QString error);
+    void subscribeActivityOk(QString did, ActivitySubscription subscription);
+    void subscribeActivityFailed(QString error);
 
 private:
     ATProto::NotificationMaster* notificationMaster();

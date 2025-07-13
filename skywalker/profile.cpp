@@ -118,6 +118,15 @@ const QList<BasicProfile>& KnownFollowers::getFollowers() const
     return mPrivate->mFollowers;
 }
 
+ActivitySubscription::ActivitySubscription(const ATProto::AppBskyNotification::ActivitySubscription* activitySubscription)
+{
+    if (!activitySubscription)
+        return;
+
+    mPost = activitySubscription->mPost;
+    mReply = activitySubscription->mReply;
+}
+
 ProfileViewerState::ProfileViewerState(const ATProto::AppBskyActor::ViewerState::SharedPtr& viewerState) :
     mPrivate{std::make_shared<PrivateData>(viewerState)}
 {
@@ -228,6 +237,24 @@ const KnownFollowers& ProfileViewerState::getKnownFollowers() const
     return *mPrivate->mKnownFollowers;
 }
 
+const ActivitySubscription& ProfileViewerState::getActivitySubscription() const
+{
+    if (mPrivate && mPrivate->mActivitySubscription)
+        return *mPrivate->mActivitySubscription;
+
+    if (mPrivate)
+    {
+        mPrivate->mActivitySubscription = mPrivate->mViewerState ? ActivitySubscription(mPrivate->mViewerState->mActivitySubscription.get()) : ActivitySubscription{};
+    }
+    else
+    {
+        const_cast<ProfileViewerState*>(this)->mPrivate = std::make_shared<PrivateData>();
+        mPrivate->mActivitySubscription = ActivitySubscription{};
+    }
+
+    return *mPrivate->mActivitySubscription;
+}
+
 ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated) :
     mAssociated(associated)
 {
@@ -237,6 +264,18 @@ QEnums::AllowIncomingChat ProfileAssociatedChat::getAllowIncoming() const
 {
     // Default bsky setting is following
     return mAssociated ? (QEnums::AllowIncomingChat)mAssociated->mAllowIncoming : QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+}
+
+
+ProfileAssociatedActivitySubscription::ProfileAssociatedActivitySubscription(const ATProto::AppBskyActor::ProfileAssociatedActivitySubscription::SharedPtr& associated) :
+    mAssociated(associated)
+{
+}
+
+QEnums::AllowActivitySubscriptionsType ProfileAssociatedActivitySubscription::getAllowSubscriptions() const
+{
+    // Default bsky setting is followers
+    return mAssociated ? (QEnums::AllowActivitySubscriptionsType)mAssociated->mAllowSubscriptions : QEnums::ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS;
 }
 
 
@@ -627,6 +666,23 @@ bool BasicProfile::canSendDirectMessage() const
     }
 
     qWarning() << "Unknown allow incoming value:" << allowIncoming;
+    return false;
+}
+
+bool BasicProfile::allowsActivitySubscriptions() const
+{
+    const auto allowSubscriptions = getAssociated().getActivitySubscription().getAllowSubscriptions();
+
+    switch (allowSubscriptions)
+    {
+    case QEnums::ALLOW_ACTIVITY_SUBSCRIPTIONS_NONE:
+        return false;
+    case QEnums::ALLOW_ACTIVITY_SUBSCRIPTIONS_FOLLOWERS:
+        return !getViewer().getFollowing().isEmpty();
+    case QEnums::ALLOW_ACTIVITY_SUBSCRIPTIONS_MUTUALS:
+        return !getViewer().getFollowing().isEmpty() && !getViewer().getFollowedBy().isEmpty();
+    }
+
     return false;
 }
 

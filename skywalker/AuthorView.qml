@@ -24,6 +24,7 @@ SkyPage {
     property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
+    property activitysubscription activitySubscription: author.viewer.activitySubscription
     property bool authorMuted: author.viewer.muted
     property bool authorMutedReposts: false
     property bool authorHideFromTimeline: false
@@ -192,7 +193,12 @@ SkyPage {
             }
 
             RowLayout {
+                height: 50
+                spacing: 0
+
                 SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
                     svg: SvgOutline.edit
                     onClicked: editAuthor(author)
                     accessibleName: qsTr("edit your profile")
@@ -201,6 +207,8 @@ SkyPage {
 
                 SvgButton {
                     id: moreButton
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
                     svg: SvgOutline.moreVert
                     accessibleName: qsTr("more options")
                     onClicked: moreMenuLoader.open()
@@ -330,6 +338,25 @@ SkyPage {
                 }
 
                 SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
+                    svg: SvgOutline.notificationsAdd
+                    visible: !guiSettings.isUser(author) && !activitySubscription.isSubscribed && author.allowsActivitySubscriptions()
+                    onClicked: subscribeActivity()
+                    Accessible.name: qsTr(`press to subscribe to posts from ${author.name}`)
+                }
+                SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
+                    svg: SvgFilled.notificationsActive
+                    visible: !guiSettings.isUser(author) && activitySubscription.isSubscribed
+                    onClicked: subscribeActivity()
+                    Accessible.name: qsTr(`press to modify post subscription from ${author.name}`)
+                }
+
+                SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
                     svg: SvgOutline.directMessage
                     accessibleName: qsTr(`direct message ${author.name}`)
                     onClicked: skywalker.chat.startConvoForMember(author.did)
@@ -337,12 +364,14 @@ SkyPage {
                 }
 
                 SkyButton {
+                    Layout.preferredHeight: 40
                     text: qsTr("Follow")
                     visible: !following && !guiSettings.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.follow(author)
                     Accessible.name: qsTr(`press to follow ${author.name}`)
                 }
                 SkyButton {
+                    Layout.preferredHeight: 40
                     flat: true
                     text: qsTr("Following")
                     visible: following && !guiSettings.isUser(author) && contentVisible() && !isLabeler
@@ -351,12 +380,14 @@ SkyPage {
                 }
 
                 SkyButton {
+                    Layout.preferredHeight: 40
                     text: qsTr("Subscribe")
                     visible: !isSubscribed && isLabeler && !author.isFixedLabeler()
                     onClicked: contentGroupListModel.subscribed = true
                     Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
                 }
                 SkyButton {
+                    Layout.preferredHeight: 40
                     flat: true
                     text: qsTr("Unsubscribe")
                     visible: isSubscribed && isLabeler && !author.isFixedLabeler()
@@ -1289,9 +1320,47 @@ SkyPage {
         onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
     }
 
+    NotificationUtils {
+        id: notificationUtils
+        skywalker: page.skywalker
+
+        onSubscribeActivityOk: (did, subscription) => {
+            page.activitySubscription = subscription
+
+            if (!subscription.post && !subscription.reply) {
+                statusPopup.show(qsTr(`Unsubscribed from activities from ${author.name}`), QEnums.STATUS_LEVEL_INFO, 4)
+                return
+            }
+
+            let activityList = []
+
+            if (subscription.post)
+                activityList.push(qsTr("posts"))
+
+            if (subscription.reply)
+                activityList.push(qsTr("replies"))
+
+            const activityText = guiSettings.toWordSequence(activityList)
+            statusPopup.show(qsTr(`Subscribed to ${activityText} from ${author.name}`), QEnums.STATUS_LEVEL_INFO, 4)
+        }
+
+        onSubscribeActivityFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    }
 
     AccessibilityUtils {
         id: accessibilityUtils
+    }
+
+    function subscribeActivity() {
+        let component = guiSettings.createComponent("SubscribeActivity.qml")
+        let dialog = component.createObject(page, { subscription: page.activitySubscription })
+
+        dialog.onSubscribeTo.connect((post, reply) => {
+            notificationUtils.subscribeActivity(author.did, post, reply)
+        })
+
+        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.open()
     }
 
     function setFirstAppearance(appearanceDate) {

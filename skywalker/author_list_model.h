@@ -22,6 +22,7 @@ public:
         Author = Qt::UserRole + 1,
         FollowingUri,
         BlockingUri,
+        ActivitySubscription,
         ListItemUri,
         AuthorMuted,
         MutedReposts,
@@ -64,6 +65,7 @@ protected:
 
     virtual void blockingUriChanged() override;
     virtual void followingUriChanged() override;
+    virtual void activitySubscriptionChanged() override;
     virtual void mutedChanged() override;
     virtual void mutedRepostsChanged() override;
     virtual void hideFromTimelineChanged() override;

@@ -126,7 +126,7 @@ Rectangle {
                 y: 10
                 width: parent.width - 13
                 author: notificationAuthor
-                visible: showPost()
+                visible: showAvatarAsIcon()
 
                 onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
 
@@ -151,6 +151,15 @@ Rectangle {
                 color: guiSettings.textColor
                 svg: SvgOutline.repost
                 visible: [QEnums.NOTIFICATION_REASON_REPOST, QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST].includes(notificationReason)
+            }
+            SkySvg {
+                x: parent.x + 14
+                y: height + 5
+                width: parent.width - 19
+                height: width
+                color: guiSettings.avatarDefaultColor
+                svg: SvgFilled.notificationsActive
+                visible: [QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST].includes(notificationReason)
             }
             SkySvg {
                 x: parent.x + 14
@@ -234,6 +243,13 @@ Rectangle {
                     width: parent.width
                     author: notificationPostAuthor
                     postIndexedSecondsAgo: notificationSecondsAgo
+                    visible: showAvatarAsIcon()
+                }
+                PostHeaderWithAvatar {
+                    width: parent.width
+                    author: notificationPostAuthor
+                    postIndexedSecondsAgo: notificationSecondsAgo
+                    visible: !showAvatarAsIcon()
                 }
 
                 // Reply to
@@ -602,6 +618,13 @@ Rectangle {
         }
 
         root.viewSimpleAuthorList(title, notificationAllAuthors)
+    }
+
+    function showAvatarAsIcon() {
+        let reasons = [QEnums.NOTIFICATION_REASON_MENTION,
+                       QEnums.NOTIFICATION_REASON_REPLY,
+                       QEnums.NOTIFICATION_REASON_QUOTE]
+        return reasons.includes(notificationReason)
     }
 
     function showPost() {

@@ -12,6 +12,7 @@ RowLayout {
         Layout.fillWidth: true
         text: qsTr("Everyone")
         checked: filterablePref.includeType === QEnums.NOTIFICATION_FILTER_INCLUDE_ALL
+        enabled: filterablePref.list
         onCheckedChanged: {
             if (checked)
                 filterablePref.includeType = QEnums.NOTIFICATION_FILTER_INCLUDE_ALL
@@ -21,6 +22,7 @@ RowLayout {
         Layout.fillWidth: true
         text: qsTr("Users I follow")
         checked: filterablePref.includeType === QEnums.NOTIFICATION_FILTER_INCLUDE_FOLLOWS
+        enabled: filterablePref.list
         onCheckedChanged: {
             if (checked)
                 filterablePref.includeType = QEnums.NOTIFICATION_FILTER_INCLUDE_FOLLOWS

@@ -27,6 +27,12 @@ void LocalAuthorModelChanges::updateFollowingUri(const QString& did, const QStri
     followingUriChanged();
 }
 
+void LocalAuthorModelChanges::updateActivitySubscription(const QString& did, const ActivitySubscription& subscription)
+{
+    mChanges[did].mActivitySubscription = subscription;
+    activitySubscriptionChanged();
+}
+
 void LocalAuthorModelChanges::updateMuted(const QString& did, bool muted)
 {
     mChanges[did].mMuted = muted;
