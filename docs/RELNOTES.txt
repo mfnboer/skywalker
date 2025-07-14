@@ -1,4 +1,4 @@
-next
+4.10
 ====
 * Notifications of likes of reposts and reposts of reposts
 * Subscribe to posts from people you follow
