@@ -1,3 +1,9 @@
+4.11
+====
+* True video streaming. Video will start faster.
+* Bug fix: copy/paste anchors positioned correctly
+* Upgrade to Qt6.8.3 (patched)
+
 4.10
 ====
 * Notifications of likes of reposts and reposts of reposts

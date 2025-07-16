@@ -314,7 +314,6 @@ ColumnLayout {
         text: qsTr("Video streaming")
         checked: userSettings.videoStreamingEnabled
         onCheckedChanged: userSettings.videoStreamingEnabled = checked
-        visible: false // Disabled as video streaming is broken in Qt6.8.2
     }
 
     AccessibleCheckBox {
