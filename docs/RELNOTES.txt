@@ -1,6 +1,7 @@
 4.11
 ====
-* True video streaming. Video will start faster.
+* True video streaming. Video will start faster
+* Aggregate like and repost of reposts notifications
 * Bug fix: copy/paste anchors positioned correctly
 * Upgrade to Qt6.8.3 (patched)
 

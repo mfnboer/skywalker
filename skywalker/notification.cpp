@@ -77,6 +77,24 @@ QString Notification::getRawReason() const
     return {};
 }
 
+bool Notification::isAggregatable() const
+{
+    switch (getReason())
+    {
+    case Notification::Reason::NOTIFICATION_REASON_LIKE:
+    case Notification::Reason::NOTIFICATION_REASON_LIKE_VIA_REPOST:
+    case Notification::Reason::NOTIFICATION_REASON_FOLLOW:
+    case Notification::Reason::NOTIFICATION_REASON_REPOST:
+    case Notification::Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
+    case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
+    case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
+    case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:
+        return true;
+    default:
+        return false;
+    }
+}
+
 QString Notification::getReasonSubjectUri() const
 {
     switch (getReason())

@@ -28,6 +28,7 @@ public:
     QString getCid() const;
     Reason getReason() const;
     QString getRawReason() const;
+    bool isAggregatable() const;
 
     // For like-via-repost and repost-via-repost the reason subject uri in atproto is the
     // repost-uri.

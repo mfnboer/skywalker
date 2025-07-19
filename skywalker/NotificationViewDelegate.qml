@@ -11,6 +11,7 @@ Rectangle {
     required property list<basicprofile> notificationAllAuthors
     required property int notificationReason // QEnums::NotificationReason
     required property string notificationReasonRaw
+    required property bool notificationIsAggregatable
     required property string notificationReasonSubjectUri
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
@@ -117,7 +118,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: showAuthorList()
-                enabled: isAggregatableReason()
+                enabled: notificationIsAggregatable
             }
 
             Avatar {
@@ -377,7 +378,7 @@ Rectangle {
         Loader {
             id: aggregatableLoader
             Layout.preferredWidth: notification.width - guiSettings.threadColumnWidth - notification.margin * 2
-            active: isAggregatableReason()
+            active: notificationIsAggregatable
             visible: status == Loader.Ready
 
             function movedOffScreen() {
@@ -587,7 +588,7 @@ Rectangle {
             skywalker.getPostThread(notificationPostUri)
         else if (notificationInviteCode)
             skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
-        else if (isAggregatableReason)
+        else if (notificationIsAggregatable)
             showAuthorList()
     }
 
@@ -632,19 +633,6 @@ Rectangle {
                        QEnums.NOTIFICATION_REASON_REPLY,
                        QEnums.NOTIFICATION_REASON_QUOTE,
                        QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST]
-        return reasons.includes(notificationReason)
-    }
-
-    function isAggregatableReason() {
-        let reasons = [QEnums.NOTIFICATION_REASON_LIKE,
-                       QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST,
-                       QEnums.NOTIFICATION_REASON_FOLLOW,
-                       QEnums.NOTIFICATION_REASON_REPOST,
-                       QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST,
-                       QEnums.NOTIFICATION_REASON_VERIFIED,
-                       QEnums.NOTIFICATION_REASON_UNVERIFIED,
-                       QEnums.NOTIFICATION_REASON_NEW_LABELS,
-                       QEnums.NOTIFICATION_REASON_UNKNOWN]
         return reasons.includes(notificationReason)
     }
 
@@ -743,7 +731,7 @@ Rectangle {
     }
 
     function getSpeech() {
-        if (isAggregatableReason())
+        if (notificationIsAggregatable)
             return getAggregatableSpeech()
 
         if (showPost())

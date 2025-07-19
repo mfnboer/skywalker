@@ -32,6 +32,7 @@ public:
         NotificationAllAuthors,
         NotificationReason,
         NotificationReasonRaw,
+        NotificationIsAggregatable,
         NotificationReasonSubjectUri,
         NotificationReasonSubjectCid,
         NotificationReasonPostText,

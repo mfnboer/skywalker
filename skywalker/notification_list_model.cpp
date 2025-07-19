@@ -323,8 +323,10 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
         switch (notification.getReason())
         {
         case Notification::Reason::NOTIFICATION_REASON_LIKE:
+        case Notification::Reason::NOTIFICATION_REASON_LIKE_VIA_REPOST:
         case Notification::Reason::NOTIFICATION_REASON_FOLLOW:
         case Notification::Reason::NOTIFICATION_REASON_REPOST:
+        case Notification::Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
         case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
         case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
         case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:
@@ -582,6 +584,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReason();
     case Role::NotificationReasonRaw:
         return notification.getRawReason();
+    case Role::NotificationIsAggregatable:
+        return notification.isAggregatable();
     case Role::NotificationReasonSubjectUri:
         return notification.getReasonSubjectUri();
     case Role::NotificationReasonSubjectCid:
@@ -963,6 +967,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationAllAuthors), "notificationAllAuthors" },
         { int(Role::NotificationReason), "notificationReason" },
         { int(Role::NotificationReasonRaw), "notificationReasonRaw" },
+        { int(Role::NotificationIsAggregatable), "notificationIsAggregatable" },
         { int(Role::NotificationReasonSubjectUri), "notificationReasonSubjectUri" },
         { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },
         { int(Role::NotificationReasonPostText), "notificationReasonPostText" },
