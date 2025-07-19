@@ -88,6 +88,7 @@ bool Notification::isAggregatable() const
     case Notification::Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
     case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
     case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
+    case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:
         return true;
     default:

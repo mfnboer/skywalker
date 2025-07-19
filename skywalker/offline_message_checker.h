@@ -66,8 +66,10 @@ private:
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
     void getUserPreferences();
+    void getNotificationPreferences();
     void checkUnreadNotificationCount();
     void getNotifications(int toRead);
+    void filterNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr) const;
     void getChatNotifications();
     void getAvatars();
     void getAvatars(const QStringList& urls);
@@ -85,6 +87,7 @@ private:
     QString mUserDid;
     ImageReader mImageReader;
     ATProto::UserPreferences mUserPreferences;
+    ATProto::AppBskyNotification::Preferences::SharedPtr mNotificationPrefs;
     ProfileStore mUserFollows;
     ContentFilter mContentFilter;
     Bookmarks mBookmarks; // Not loaded. Needed for notification model

@@ -395,6 +395,21 @@ void OffLineMessageChecker::getUserPreferences()
         [this](auto prefs){
             mUserPreferences = prefs;
             mMutedWords.load(mUserPreferences);
+            getNotificationPreferences();
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            exit(EXIT_RETRY);
+        });
+}
+
+void OffLineMessageChecker::getNotificationPreferences()
+{
+    qDebug() << "Get notification preferences";
+
+    mBsky->getNotificationPreferences(
+        [this](auto prefs){
+            mNotificationPrefs = prefs->mPreferences;
             checkUnreadNotificationCount();
         },
         [this](const QString& error, const QString& msg){
@@ -443,6 +458,7 @@ void OffLineMessageChecker::getNotifications(int toRead)
 
     mBsky->listNotifications(limit, {}, {}, false, {},
         [this, toRead](auto notifications){
+            filterNotifications(notifications);
             const bool added = mNotificationListModel.addNotifications(std::move(notifications), *mBsky, false,
                 [this]{ getChatNotifications(); });
 
@@ -460,11 +476,127 @@ void OffLineMessageChecker::getNotifications(int toRead)
         false);
 }
 
+void OffLineMessageChecker::filterNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications) const
+{
+    if (!notifications)
+        return;
+
+    for (auto it = notifications->mNotifications.begin(); it != notifications->mNotifications.end(); )
+    {
+        const auto& notification = *it;
+
+        switch (notification->mReason)
+        {
+        case ATProto::AppBskyNotification::NotificationReason::LIKE:
+            if (mNotificationPrefs->mLike && mNotificationPrefs->mLike->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::REPOST:
+            if (mNotificationPrefs->mRepost && mNotificationPrefs->mRepost->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::FOLLOW:
+            if (mNotificationPrefs->mFollow && mNotificationPrefs->mFollow->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::MENTION:
+            if (mNotificationPrefs->mMention && mNotificationPrefs->mMention->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::REPLY:
+            if (mNotificationPrefs->mReply && mNotificationPrefs->mReply->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::QUOTE:
+            if (mNotificationPrefs->mQuote && mNotificationPrefs->mQuote->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::STARTERPACK_JOINED:
+            if (mNotificationPrefs->mStarterpackJoined && mNotificationPrefs->mStarterpackJoined->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::VERIFIED:
+            if (mNotificationPrefs->mVerified && mNotificationPrefs->mVerified->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::UNVERIFIED:
+            if (mNotificationPrefs->mUnverified && mNotificationPrefs->mUnverified->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::LIKE_VIA_REPOST:
+            if (mNotificationPrefs->mLikeViaRepost && mNotificationPrefs->mLikeViaRepost->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::REPOST_VIA_REPOST:
+            if (mNotificationPrefs->mRepostViaRepost && mNotificationPrefs->mRepostViaRepost->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::SUBSCRIBED_POST:
+            if (mNotificationPrefs->mSubscribedPost && mNotificationPrefs->mSubscribedPost->mPush)
+            {
+                ++it;
+                continue;
+            }
+
+            break;
+        case ATProto::AppBskyNotification::NotificationReason::UNKNOWN:
+            break;
+        }
+
+        qDebug() << "Remove push notification:" << notification->mRawReason;
+        it = notifications->mNotifications.erase(it);
+    }
+}
+
 void OffLineMessageChecker::getChatNotifications()
 {
     qDebug() << "Get chat notifications";
 
-    if (!mUserSettings.mustCheckOfflineChat(mUserDid))
+    if (!mUserSettings.mustCheckOfflineChat(mUserDid) || (mNotificationPrefs && mNotificationPrefs->mChat && !mNotificationPrefs->mChat->mPush))
     {
         qDebug() << "Chat not enabled";
         getAvatars();
