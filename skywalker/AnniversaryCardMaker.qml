@@ -25,7 +25,8 @@ SkyPage {
             id: addCardButton
             anchors.rightMargin: 10
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             accessibleName: qsTr("add card")
             onClicked: addCard(anniversaryCard.imageSource, page.years)
@@ -42,17 +43,25 @@ SkyPage {
     }
 
     ColumnLayout {
+        id: colorColumn
         x: 10
         anchors.top: cardImage.bottom
         anchors.topMargin: 10
         width: parent.width - 20
 
+        AccessibleText {
+            Layout.fillWidth: true
+            font.bold: true
+            text: qsTr("Choose your colors")
+        }
+
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
 
-            SkyRoundRadioButton {
+            SkyButton {
                 id: backgroundButton
+                Layout.preferredWidth: 100
                 Material.background: anniversaryCard.backgroundColor
                 onClicked: selectColor(anniversaryCard.backgroundColor, (color) => anniversaryCard.backgroundColor = color)
             }
@@ -70,8 +79,9 @@ SkyPage {
             Layout.fillWidth: true
             spacing: 10
 
-            SkyRoundRadioButton {
+            SkyButton {
                 id: logoButton
+                Layout.preferredWidth: 100
                 Material.background: anniversaryCard.logoColor
                 onClicked: selectColor(anniversaryCard.logoColor, (color) => anniversaryCard.logoColor = color)
             }
@@ -89,8 +99,9 @@ SkyPage {
             Layout.fillWidth: true
             spacing: 10
 
-            SkyRoundRadioButton {
+            SkyButton {
                 id: ageButton
+                Layout.preferredWidth: 100
                 Material.background: anniversaryCard.ageColor
                 onClicked: selectColor(anniversaryCard.ageColor, (color) => anniversaryCard.ageColor = color)
             }
@@ -103,6 +114,15 @@ SkyPage {
                 text: qsTr("Number")
             }
         }
+    }
+
+    SkyButton {
+        text: qsTr("OK")
+        anchors.top: colorColumn.bottom
+        anchors.topMargin: 10
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        onClicked: addCard(anniversaryCard.imageSource, page.years)
     }
 
     AnniversaryCard {

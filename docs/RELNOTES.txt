@@ -1,4 +1,4 @@
-4.11
+next
 ====
 * True video streaming. Video will start faster
 * Aggregate like and repost of reposts notifications
