@@ -152,6 +152,39 @@ bool ImageUtils::extractText(QEnums::Script script, const QString& imgSource)
 
     return true;
 #else
+    qDebug() << "ALT text generation not supported";
+    return false;
+#endif
+}
+
+bool ImageUtils::generateAltText(const QString& imgSource)
+{
+    qDebug() << "Generate ALT text for image:" << imgSource;
+
+#if defined(Q_OS_ANDROID)
+    QImage img = PhotoPicker::loadImage(imgSource);
+
+    if (img.isNull())
+        return false;
+
+    img.convertTo(QImage::Format_RGBA8888); // must match format in AltTextGenerator.java
+
+    QJniEnvironment env;
+    const int size = img.width() * img.height() * 4;
+    auto jsImg = env->NewByteArray(size);
+    const uint8_t* imgBits = img.constBits();
+    env->SetByteArrayRegion(jsImg, 0, (jint)size, (jbyte*)imgBits);
+    auto jsToken = QJniObject::fromString(imgSource);
+
+    auto success = QJniObject::callStaticMethod<jboolean>(
+        "com/gmail/mfnboer/AltTextGenerator",
+        "prepareAndStartImageDescription",
+        "([BII)Z",
+        jsImg, (jint)img.width(), (jint)img.height());
+
+    env->DeleteLocalRef(jsImg);
+    return bool(success);
+#else
     qDebug() << "Text extraction not supported";
     return false;
 #endif

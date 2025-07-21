@@ -98,6 +98,7 @@ qt_add_qml_module(appskywalker
         QML_FILES
         RESOURCES android/src/com/gmail/mfnboer/Translate.java
         RESOURCES android/src/com/gmail/mfnboer/EmojiPickerDialog.java
+        RESOURCES android/src/com/gmail/mfnboer/AltTextGenerator.java
 )
 
 if (ANDROID)

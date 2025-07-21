@@ -31,6 +31,8 @@ public:
     Q_INVOKABLE void installModule(QEnums::Script script);
     Q_INVOKABLE bool extractText(QEnums::Script script, const QString& imgSource);
 
+    Q_INVOKABLE bool generateAltText(const QString& imgSource);
+
     Q_INVOKABLE ImageView createImageView(const QString& url, const QString& alt);
 
     // Link card thumbail images do not contain an aspect ratio. For smooth scrolling list

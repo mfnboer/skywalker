@@ -104,6 +104,11 @@ SkyPage {
                         script: QEnums.SCRIPT_KOREAN
                         ButtonGroup.group: scriptButtonGroup
                     }
+
+                    AccessibleMenuItem {
+                        text: qsTr("Describe")
+                        onTriggered: imageUtils.generateAltText(imgSource)
+                    }
                 }
 
                 ButtonGroup { id: scriptButtonGroup }
