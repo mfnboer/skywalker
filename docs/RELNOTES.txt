@@ -1,3 +1,7 @@
+4.11.1
+======
+* Fallback to default entry point if PDS resolution fails.
+
 4.11
 ====
 * True video streaming. Video will start faster
