@@ -18,7 +18,12 @@ public:
     QList<QNetworkCookie> cookiesForUrl(const QUrl& url) const override
     {
         qDebug() << "Get cookies for:" << url;
-        return QNetworkCookieJar::cookiesForUrl(url);
+        const auto cookies = QNetworkCookieJar::cookiesForUrl(url);
+
+        for (const auto& cookie : cookies)
+            qDebug() << "Cookie name:" << QString(cookie.name()) << "value:" << QString(cookie.value());
+
+        return cookies;
     }
 
     bool setCookiesFromUrl(const QList<QNetworkCookie>& cookieList, const QUrl& url) override
@@ -147,7 +152,10 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     request.setRawHeader("Accept-Encoding", "identity");
     request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
     request.setRawHeader("Priority", "i"); // For Reuters
-    request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters
+    request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters, WSJ
+    // NOTE: WSJ requires a User-Agent with comment: Skywalker/version (android)
+    //       When (android) is replaced by (ubuntu) it does not work??
+    //       For NYT and Reuters this is sufficient: Skywalker/version
 
     QNetworkReply* reply = mNetwork->get(request);
     mInProgress = reply;
@@ -329,10 +337,23 @@ QString LinkCardReader::toPlainText(const QString& text)
 void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
 {
     mInProgress = nullptr;
-    qDebug() << "Failed to get link:" << reply->request().url();
+    const auto url = reply->request().url();
+    qDebug() << "Failed to get link:" << url;
     qDebug() << "Error:" << errCode << reply->errorString();
     qDebug() << reply->readAll();
-    emit linkCardFailed();
+
+    auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
+    Q_ASSERT(cookieJar);
+
+    if (!mRetry && cookieJar->setCookiesFromReply(*reply))
+    {
+        qDebug() << "Cookies stored, retry";
+        getLinkCard(url.toString(), true);
+    }
+    else
+    {
+        emit linkCardFailed();
+    }
 }
 
 void LinkCardReader::requestSslFailed(QNetworkReply* reply)
@@ -355,6 +376,7 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
         emit reply->redirectAllowed();
     }
 
+    // For DPG media
     auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
     Q_ASSERT(cookieJar);
     cookieJar->setCookiesFromReply(*reply);

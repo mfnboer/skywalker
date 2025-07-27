@@ -121,6 +121,8 @@ Skywalker::Skywalker(QObject* parent) :
     {
         qWarning() << "Failed to get app instance!";
     }
+
+    qDebug() << getUserAgentString();
 }
 
 Skywalker::~Skywalker()
@@ -140,6 +142,12 @@ Skywalker::~Skywalker()
     Q_ASSERT(mFeedListModels.empty());
     Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mContentGroupListModels.empty());
+}
+
+QString Skywalker::getUserAgentString()
+{
+    // NOTE: The "(android)" part is needed for LinkCardReader
+    return QString("%1/%2 (android)").arg(APP_NAME, VERSION);
 }
 
 // NOTE: user can be handle or DID

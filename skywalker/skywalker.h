@@ -69,7 +69,7 @@ class Skywalker : public IFeedPager
 public:
     static constexpr const char* APP_NAME = "Skywalker";
     static constexpr const char* VERSION = APP_VERSION;
-    static QString getUserAgentString() { return QString("%1/%2").arg(APP_NAME, VERSION); }
+    static QString getUserAgentString();
 
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 50;
     static constexpr int TIMELINE_NEXT_PAGE_THRESHOLD = 30; // Get next page when less posts till current end

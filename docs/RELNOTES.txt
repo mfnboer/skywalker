@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.11.1
 ======
 * Fallback to default entry point if PDS resolution fails.
