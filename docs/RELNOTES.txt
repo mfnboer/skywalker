@@ -1,5 +1,6 @@
 next
 ====
+* Moved buttons that were hiding in the top or bottom bars
 * Bug fixes
 
 4.11.1

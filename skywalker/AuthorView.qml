@@ -226,10 +226,8 @@ SkyPage {
                                 item.open() // qmllint disable missing-property
                         }
 
-                        sourceComponent: Menu {
+                        sourceComponent: SkyMenu {
                             id: moreMenu
-                            modal: true
-
                             onAboutToShow: root.enablePopupShield(true)
                             onAboutToHide: { root.enablePopupShield(false); parent.active = false }
 

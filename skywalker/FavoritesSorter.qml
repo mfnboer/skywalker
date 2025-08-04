@@ -80,9 +80,8 @@ SkyPage {
         accessibleName: qsTr("Favorites options")
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
 
             CloseMenuItem {
                 text: qsTr("<b>Favorites</b>")

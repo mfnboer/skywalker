@@ -138,11 +138,8 @@ Item {
                     item.open() // qmllint disable missing-property
             }
 
-            sourceComponent: Menu {
+            sourceComponent: SkyMenu {
                 id: moreMenu
-                modal: true
-                bottomMargin: guiSettings.footerMargin
-
                 onAboutToShow: root.enablePopupShield(true)
                 onAboutToHide: { root.enablePopupShield(false); parent.active = false }
 

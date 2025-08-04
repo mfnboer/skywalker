@@ -223,9 +223,8 @@ SkyPage {
         accessibleName: qsTr("more options")
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
 
             CloseMenuItem {
                 text: qsTr("<b>Starter pack</b>")

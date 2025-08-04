@@ -109,10 +109,8 @@ Drawer {
                 text: qsTr("Moderation")
                 onClicked: moderationMenu.open()
 
-                Menu {
+                SkyMenu {
                     id: moderationMenu
-                    modal: true
-
                     onAboutToShow: enableSettingsPopupShield(true)
                     onAboutToHide: enableSettingsPopupShield(false)
 

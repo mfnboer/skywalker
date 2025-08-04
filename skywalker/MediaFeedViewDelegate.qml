@@ -239,9 +239,8 @@ Rectangle {
         visible: mediaRect.showDetails
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
 
             AccessibleMenuItem {
                 text: qsTr("Save picture")

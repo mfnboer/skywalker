@@ -75,9 +75,8 @@ SkyPage {
                 enabled: extractButton.enabled
                 onClicked: moreMenu.open()
 
-                Menu {
+                SkyMenu {
                     id: moreMenu
-                    modal: true
 
                     CloseMenuItem {
                         text: qsTr("<b>Scripts</b>")

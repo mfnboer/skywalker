@@ -176,10 +176,8 @@ SkyPage {
         accessibleName: qsTr("chat options")
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
-
             onAboutToShow: root.enablePopupShield(true)
             onAboutToHide: root.enablePopupShield(false)
 

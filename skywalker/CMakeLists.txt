@@ -561,6 +561,7 @@ qt_add_qml_module(libskywalker
         SOURCES edit_notification_pref.h
         SOURCES edit_notification_pref.cpp
         QML_FILES SubscribeActivity.qml
+        QML_FILES SkyMenu.qml
 )
 
 if (NOT ANDROID)

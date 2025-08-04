@@ -223,9 +223,8 @@ Rectangle {
 
                 Accessible.name: qsTr("more options")
 
-                Menu {
+                SkyMenu {
                     id: moreMenu
-                    modal: true
 
                     CloseMenuItem {
                         text: qsTr("<b>Feed</b>")

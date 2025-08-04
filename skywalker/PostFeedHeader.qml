@@ -64,9 +64,8 @@ Rectangle {
 
             onClicked: moreMenu.open()
 
-            Menu {
+            SkyMenu {
                 id: moreMenu
-                modal: true
                 width: focusMenuItem.width
 
                 CloseMenuItem {
@@ -285,10 +284,8 @@ Rectangle {
     Component {
         id: viewMenuComponent
 
-        Menu {
+        SkyMenu {
             id: viewMenu
-            modal: true
-
             onAboutToShow: root.enablePopupShield(true)
             onAboutToHide: root.enablePopupShield(false)
 

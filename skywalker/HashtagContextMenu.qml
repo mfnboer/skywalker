@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Menu {
+SkyMenu {
     property string hashtag: ""
     property bool isMuted: false
     property bool isPinned: false
@@ -19,7 +19,6 @@ Menu {
     signal done
 
     id: hashtagMenu
-    modal: true
 
     onAboutToShow: {
         root.enablePopupShield(true)

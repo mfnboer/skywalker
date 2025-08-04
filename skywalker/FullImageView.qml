@@ -134,9 +134,8 @@ SkyPage {
         visible: showControls
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
 
             MenuItem {
                 text: qsTr("Save picture")

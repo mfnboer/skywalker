@@ -226,9 +226,8 @@ SkyPage {
         }
     }
 
-    Menu {
+    SkyMenu {
         id: moreMenu
-        modal: true
         width: hideListMenuItem.width
 
         CloseMenuItem {

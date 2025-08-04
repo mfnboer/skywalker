@@ -137,9 +137,9 @@ Rectangle {
             onPressAndHold: moreMenu.open()
         }
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-
+            modal: false
             onAboutToShow: root.enablePopupShield(true)
             onAboutToHide: root.enablePopupShield(false)
 

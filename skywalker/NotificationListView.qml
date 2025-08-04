@@ -190,10 +190,8 @@ SkyPage {
         accessibleName: qsTr("notification options")
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
-
             onAboutToShow: root.enablePopupShield(true)
             onAboutToHide: root.enablePopupShield(false)
 

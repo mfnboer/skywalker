@@ -87,12 +87,10 @@ ListView {
                         hashtagMenu.open()
                     }
 
-                    Menu {
+                    SkyMenu {
                         property string selectedTag
 
                         id: hashtagMenu
-                        modal: true
-
                         onAboutToShow: root.enablePopupShield(true)
                         onAboutToHide: root.enablePopupShield(false)
 

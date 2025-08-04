@@ -163,11 +163,9 @@ SkyPage {
             accessibleName: qsTr("post options")
             onClicked: moreMenu.open()
 
-            Menu {
+            SkyMenu {
                 id: moreMenu
                 width: Math.max(altItem.width, numberPrefixItem.width)
-                modal: true
-
                 onAboutToShow: root.enablePopupShield(true)
                 onAboutToHide: root.enablePopupShield(false)
 

@@ -38,6 +38,7 @@ SkyPage {
             id: updateProfileButton
             anchors.right: parent.right
             anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             accessibleName: qsTr("save profile")

@@ -15,6 +15,14 @@ SkyPage {
     Accessible.role: Accessible.Pane
     Accessible.name: skywalker.APP_NAME
 
+    header: DeadHeaderMargin {
+        color: guiSettings.skywalkerLogoColor
+    }
+
+    footer: DeadFooterMargin {
+        color: guiSettings.skywalkerLogoColor
+    }
+
     Column {
         width: parent.width
         height: parent.height

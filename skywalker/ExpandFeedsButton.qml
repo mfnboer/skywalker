@@ -16,11 +16,8 @@ SvgButton {
 
     Accessible.role: Accessible.ButtonDropDown
 
-    Menu {
+    SkyMenu {
         id: feedsMenu
-        modal: true
-        topPadding: guiSettings.headerMargin
-        bottomPadding: guiSettings.footerMargin
 
         MenuItem {
             contentItem: Text {

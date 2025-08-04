@@ -104,9 +104,8 @@ SkyPage {
         visible: !view.isPlaying
         onClicked: moreMenu.open()
 
-        Menu {
+        SkyMenu {
             id: moreMenu
-            modal: true
 
             MenuItem {
                 text: qsTr("Save video")
