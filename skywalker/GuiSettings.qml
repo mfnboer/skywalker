@@ -47,6 +47,7 @@ Item {
 
     // Colors
     readonly property string accentColor: userSettings ? userSettings.accentColor : (isLightMode ? "blue" : "#58a6ff")
+    readonly property string activeColor: "green"
     readonly property string avatarDefaultColor: accentColor
     property string backgroundColor: userSettings ? userSettings.backgroundColor : Material.background
     readonly property string badgeBorderColor: backgroundColor
@@ -190,6 +191,19 @@ Item {
 
     function shortFormatDateTime(date) {
         return date.toLocaleString(Qt.locale(), Locale.ShortFormat)
+    }
+
+    function dateTimeIndication(date) {
+        if (isNaN(date.getTime()))
+            return ""
+
+        if (isToday(date))
+            return Qt.locale().toString(date, Qt.locale().timeFormat(Locale.ShortFormat))
+
+        if (isYesterday(date))
+            return qsTr(`yesterday ${Qt.locale().toString(date, Qt.locale().timeFormat(Locale.ShortFormat))}`)
+
+        return shortFormatDateTime(date)
     }
 
     function expiresIndication(expiresAt) {

@@ -23,10 +23,12 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              HashtagIndex& hashtags,
                              const ATProto::UserPreferences& userPrefs,
                              UserSettings& userSettings,
+                             FollowsActivityStore& followsActivityStore,
                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
     mUserSettings(userSettings),
+    mFollowsActivityStore(followsActivityStore),
     mFeedName(feedName)
 {
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
@@ -1078,6 +1080,16 @@ bool PostFeedModel::mustShowQuotePost(const Post& post) const
     return true;
 }
 
+void PostFeedModel::reportActivity(const Post& post)
+{
+    const auto did = post.isRepost() ? post.getRepostedBy()->getDid() : post.getAuthorDid();
+
+    if (did.isEmpty())
+        return;
+
+    mFollowsActivityStore.reportActivity(did, post.getTimelineTimestamp());
+}
+
 void PostFeedModel::Page::setThreadgates()
 {
     if (mRootUriToThreadgate.empty())
@@ -1163,6 +1175,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
         {
             Post post(feedEntry);
             page->collectThreadgate(post);
+            reportActivity(post);
 
             // Due to reposting a post can show up multiple times in the feed.
             // Also overlapping pages (on prepend) can come in as we look for new posts.
@@ -1190,6 +1203,12 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 continue;
 
             const auto& replyRef = post.getViewPostReplyRef();
+
+            if (replyRef)
+            {
+                reportActivity(replyRef->mRoot);
+                reportActivity(replyRef->mParent);
+            }
 
             // Reposted replies are displayed without thread context
             if (replyRef && !post.isRepost())

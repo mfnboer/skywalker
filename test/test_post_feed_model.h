@@ -3,6 +3,7 @@
 #pragma once
 #include <definitions.h>
 #include <focus_hashtags.h>
+#include <follows_activity_store.h>
 #include <muted_words.h>
 #include <post_feed_model.h>
 #include <user_settings.h>
@@ -19,7 +20,8 @@ private slots:
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
             HOME_FEED, mUserDid, mFollowing, mMutedReposts, mHideLists, mContentFilter,
-            mBookmarks, mMutedWords, mFocusHashtags, mHashtags, mUserPreferences, mUserSettings);
+            mBookmarks, mMutedWords, mFocusHashtags, mHashtags, mUserPreferences, mUserSettings,
+            mFollowsActivityStore);
     }
 
     void cleanup()
@@ -493,6 +495,7 @@ private:
 
     QString mUserDid;
     ProfileStore mFollowing;
+    FollowsActivityStore mFollowsActivityStore{mFollowing, this};
     ProfileStore mMutedReposts;
     ProfileStore mHideLists;
     ATProto::UserPreferences mUserPreferences;

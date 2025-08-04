@@ -12,6 +12,7 @@
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
 #include "feed_pager.h"
+#include "follows_activity_store.h"
 #include "hashtag_index.h"
 #include "item_store.h"
 #include "labeler.h"
@@ -241,6 +242,7 @@ public:
     void setUnreadNotificationCount(int unread);
     void addToUnreadNotificationCount(int addUnread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
+    Q_INVOKABLE FollowsActivityStore* getFollowsActivityStore() { return &mFollowsActivityStore; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
@@ -372,6 +374,7 @@ private:
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
+    FollowsActivityStore mFollowsActivityStore;
     ProfileListItemStore mMutedReposts;
     ListStore mTimelineHide;
     ATProto::UserPreferences mUserPreferences;

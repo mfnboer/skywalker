@@ -7,11 +7,17 @@ Item {
     property basicprofile author
     property int radius: width / 2
     property SvgImage unknownSvg: SvgFilled.unknownAvatar
-    readonly property int contentVisibility: root.getSkywalker().getContentVisibility(author.labels)
+    property var skywalker: root.getSkywalker()
+    readonly property int contentVisibility: skywalker.getContentVisibility(author.labels)
     property bool showWarnedMedia: false
     readonly property bool showThumb: width < 90 // from bsky client code
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
     property bool showModeratorIcon: true
+    readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author.did)
+    readonly property date lastActive: activityStatus.lastActive
+    property bool isActive: activityStatus.isActive()
+
+    onLastActiveChanged: isActive = activityStatus.isActive()
 
     signal clicked
     signal pressAndHold
@@ -81,6 +87,29 @@ Item {
 
         function getExtraHeight() {
             return item ? item.getLiveLabelHeight() / 2 : 0
+        }
+    }
+    Loader {
+        id: activeLoader
+        active: avatarItem.isActive
+
+        sourceComponent: Rectangle {
+            width: avatarItem.width
+            height: width
+            radius: avatarItem.radius
+            color: "transparent"
+            border.color: guiSettings.activeColor
+            border.width: 2
+        }
+    }
+
+    Timer {
+        interval: 30000
+        repeat: true
+        running: avatarItem.isActive
+        onTriggered: {
+            avatarItem.isActive = activityStatus.isActive()
+            console.debug("STATUS:", author.name, "ACITVE:", avatarItem.isActive)
         }
     }
 

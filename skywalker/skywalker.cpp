@@ -51,6 +51,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
     mNetwork(new QNetworkAccessManager(this)),
+    mFollowsActivityStore(mUserFollows, this),
     mTimelineHide(this),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
@@ -67,7 +68,7 @@ Skywalker::Skywalker(QObject* parent) :
     mAnniversary(mUserDid, mUserSettings, this),
     mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
                    mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
-                   mUserPreferences, mUserSettings, this)
+                   mUserPreferences, mUserSettings, mFollowsActivityStore, this)
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
@@ -2668,7 +2669,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
             mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mBookmarks, mMutedWords,
-            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, this);
+            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
@@ -2680,7 +2681,8 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
-                                                 mSeenHashtags, mUserPreferences, mUserSettings, this);
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, this);
     model->setListView(listView);
     model->enableLanguageFilter(true);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
@@ -2692,7 +2694,8 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"),
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
-                                                 mSeenHashtags, mUserPreferences, mUserSettings, this);
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, this);
     model->setQuoteUri(quoteUri);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
@@ -3871,6 +3874,7 @@ void Skywalker::signOut()
     mUserProfile = {};
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
+    mFollowsActivityStore.clear();
     mUserFollows.clear();
     mMutedReposts.clear();
     mTimelineHide.clear();
