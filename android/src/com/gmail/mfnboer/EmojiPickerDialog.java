@@ -3,6 +3,7 @@
 
 package com.gmail.mfnboer;
 
+import com.gmail.mfnboer.ScreenUtils;
 import com.gmail.mfnboer.SkywalkerApplication;
 
 import android.app.Activity;
@@ -10,7 +11,6 @@ import android.graphics.Color;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.ViewGroup;
-import android.view.Gravity;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -33,11 +33,12 @@ public class EmojiPickerDialog {
             public void run() {
                 rootView = activity.findViewById(android.R.id.content);
                 container = new FrameLayout(activity);
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.MarginLayoutParams params = new ViewGroup.MarginLayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
                 );
-                params.gravity = Gravity.BOTTOM;
+                params.topMargin = ScreenUtils.getStatusBarSize(ScreenUtils.INSETS_SIDE_TOP);
+                params.bottomMargin = ScreenUtils.getNavigationBarSize(ScreenUtils.INSETS_SIDE_BOTTOM);
                 container.setLayoutParams(params);
                 container.setBackgroundColor(isLightMode ? Color.WHITE : Color.BLACK);
 

@@ -8,7 +8,6 @@ import com.gmail.mfnboer.SkywalkerApplication;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-//import android.graphics.Insets;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
