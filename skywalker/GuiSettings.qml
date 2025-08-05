@@ -47,7 +47,8 @@ Item {
 
     // Colors
     readonly property string accentColor: userSettings ? userSettings.accentColor : (isLightMode ? "blue" : "#58a6ff")
-    readonly property string activeColor: "green"
+    readonly property string activeBorderColor: isLightMode ? "#006600" : "#009900"
+    readonly property string activeColor: isLightMode ? "#009900" : "#006600"
     readonly property string avatarDefaultColor: accentColor
     property string backgroundColor: userSettings ? userSettings.backgroundColor : Material.background
     readonly property string badgeBorderColor: backgroundColor

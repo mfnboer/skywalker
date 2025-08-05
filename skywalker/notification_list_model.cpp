@@ -13,11 +13,13 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                             const MutedWords& mutedWords, QObject* parent) :
+                                             const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
+                                             QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
     mBookmarks(bookmarks),
-    mMutedWords(mutedWords)
+    mMutedWords(mutedWords),
+    mFollowsActivityStore(followsActivityStore)
 {
     connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
@@ -311,6 +313,24 @@ void NotificationListModel::addNotificationList(const NotificationList& list, bo
     qDebug() << "New list size:" << mList.size();
 }
 
+void NotificationListModel::reportActivity(const Notification& notification) const
+{
+    if (!mFollowsActivityStore)
+        return;
+
+    const auto timestamp = notification.getTimestamp();
+
+    if (!timestamp.isValid())
+        return;
+
+    const BasicProfile profile = notification.getAuthor();
+
+    if (profile.isNull())
+        return;
+
+    mFollowsActivityStore->reportActivity(profile.getDid(), timestamp);
+}
+
 NotificationListModel::NotificationList NotificationListModel::createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const
 {
     NotificationList notifications;
@@ -319,6 +339,7 @@ NotificationListModel::NotificationList NotificationListModel::createNotificatio
     for (const auto& rawNotification : rawList)
     {
         Notification notification(rawNotification);
+        reportActivity(notification);
 
         switch (notification.getReason())
         {

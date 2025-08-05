@@ -3,6 +3,7 @@
 #pragma once
 #include "activity_status.h"
 #include "profile_store.h"
+#include <QTimer>
 #include <QObject>
 
 namespace Skywalker {
@@ -19,9 +20,16 @@ public:
     void reportActivity(const QString& did, QDateTime timestamp);
 
 private:
+    void updateActivities();
+
     const IProfileStore& mUserFollows;
-    ActivityStatus mNotActiveStatus{this};
+    ActivityStatus mNotActiveStatus{"", this};
     std::unordered_map<QString, ActivityStatus*> mDidStatus;
+
+    // From oldest to newest activity
+    std::set<ActivityStatus*, ActiviyStatusPtrCmp> mActiveStatusSet;
+
+    QTimer mUpdateTimer;
 };
 
 }

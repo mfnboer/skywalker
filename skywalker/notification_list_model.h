@@ -4,6 +4,7 @@
 #include "base_list_model.h"
 #include "bookmarks.h"
 #include "content_filter.h"
+#include "follows_activity_store.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
 #include "muted_words.h"
@@ -104,7 +105,8 @@ public:
     };
 
     explicit NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
-                                   const MutedWords& mutedWords, QObject* parent = nullptr);
+                                   const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
+                                   QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -168,6 +170,7 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    void reportActivity(const Notification& notification) const;
     NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
     void filterNotificationList(NotificationList& list) const;
     void addNotificationList(const NotificationList& list, bool clearFirst);
@@ -190,6 +193,7 @@ private:
     const ContentFilter& mContentFilter;
     const Bookmarks& mBookmarks;
     const MutedWords& mMutedWords;
+    FollowsActivityStore* mFollowsActivityStore;
 
     NotificationList mList;
     QString mCursor;

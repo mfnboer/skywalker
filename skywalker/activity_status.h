@@ -10,22 +10,39 @@ namespace Skywalker {
 class ActivityStatus : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QDateTime lastActive READ getLastActive WRITE setLastActive NOTIFY lastActiveChanged FINAL)
+    Q_PROPERTY(QDateTime lastActive READ getLastActive NOTIFY lastActiveChanged FINAL)
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged FINAL)
     QML_ELEMENT
 
 public:
-    explicit ActivityStatus(QObject* parent = nullptr);
+    explicit ActivityStatus(const QString& did, QObject* parent = nullptr);
+
+    const QString& getDid() const { return mDid; }
 
     QDateTime getLastActive() const { return mLastActive; }
     void setLastActive(QDateTime lastActive);
 
-    Q_INVOKABLE bool isActive(QDateTime now = QDateTime::currentDateTimeUtc()) const;
+    bool isActive() const;
+    void updateActive(QDateTime now);
+
+    bool operator<(const ActivityStatus& rhs) const;
 
 signals:
     void lastActiveChanged();
+    void activeChanged();
 
 private:
+    QString mDid; // can be empty for default status
     QDateTime mLastActive;
+    QDateTime mActivityCheck;
+};
+
+struct ActiviyStatusPtrCmp
+{
+    bool operator()(ActivityStatus* lhs, ActivityStatus* rhs) const
+    {
+        return *lhs < *rhs;
+    }
 };
 
 }

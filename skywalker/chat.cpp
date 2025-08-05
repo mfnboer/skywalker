@@ -11,13 +11,14 @@ static constexpr auto MESSAGES_UPDATE_INTERVAL = 9s;
 static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
 static constexpr char const* DM_ACCESS_ERROR = "Your APP password does not allow access to your direct messages. Create a new APP password that allows access.";
 
-Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, QObject* parent) :
+Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
     QObject(parent),
     mPresence(std::make_unique<Presence>()),
     mBsky(bsky),
     mUserDid(userDid),
-    mAcceptedConvoListModel(userDid, this),
-    mRequestConvoListModel(userDid, this)
+    mFollowsActivityStore(followsActivityStore),
+    mAcceptedConvoListModel(userDid, mFollowsActivityStore, this),
+    mRequestConvoListModel(userDid, mFollowsActivityStore, this)
 {
     connect(&mMessagesUpdateTimer, &QTimer::timeout, this, [this]{ updateMessages(); });
     connect(&mAcceptedConvosUpdateTimer, &QTimer::timeout, this, [this]{ updateConvos(QEnums::CONVO_STATUS_ACCEPTED); });
@@ -604,7 +605,7 @@ MessageListModel* Chat::getMessageListModel(const QString& convoId)
     if (!model)
     {
         qDebug() << "Create message list model for convo:" << convoId;
-        model = std::make_unique<MessageListModel>(mUserDid, this);
+        model = std::make_unique<MessageListModel>(mUserDid, mFollowsActivityStore, this);
         startMessagesUpdateTimer();
     }
 

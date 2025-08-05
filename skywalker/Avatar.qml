@@ -15,9 +15,7 @@ Item {
     property bool showModeratorIcon: true
     readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author.did)
     readonly property date lastActive: activityStatus.lastActive
-    property bool isActive: activityStatus.isActive()
-
-    onLastActiveChanged: isActive = activityStatus.isActive()
+    readonly property bool isActive: activityStatus.active
 
     signal clicked
     signal pressAndHold
@@ -89,27 +87,19 @@ Item {
             return item ? item.getLiveLabelHeight() / 2 : 0
         }
     }
+
     Loader {
         id: activeLoader
         active: avatarItem.isActive
 
         sourceComponent: Rectangle {
-            width: avatarItem.width
+            x: avatarItem.width - width
+            y: avatarItem.height - height
+            width: avatarItem.width * 0.15
             height: width
-            radius: avatarItem.radius
-            color: "transparent"
-            border.color: guiSettings.activeColor
-            border.width: 2
-        }
-    }
-
-    Timer {
-        interval: 30000
-        repeat: true
-        running: avatarItem.isActive
-        onTriggered: {
-            avatarItem.isActive = activityStatus.isActive()
-            console.debug("STATUS:", author.name, "ACITVE:", avatarItem.isActive)
+            radius: width / 2
+            color: guiSettings.activeColor
+            border.color: guiSettings.activeBorderColor
         }
     }
 

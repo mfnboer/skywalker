@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "follows_activity_store.h"
 #include "message_view.h"
 #include <QAbstractListModel>
 #include <deque>
@@ -24,7 +25,7 @@ public:
 
     using Ptr = std::unique_ptr<MessageListModel>;
 
-    explicit MessageListModel(const QString& userDid, QObject* parent = nullptr);
+    explicit MessageListModel(const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -44,8 +45,11 @@ private:
     int getMessageIndexById(const QString& id) const;
     void rebuildIndex();
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
+    void reportActivity(const MessageView& message);
+    void reportActivity(const ReactionView& reaction);
 
     const QString& mUserDid;
+    FollowsActivityStore& mFollowsActivityStore;
 
     // Ordered from oldest to newest
     std::deque<MessageView> mMessages;
