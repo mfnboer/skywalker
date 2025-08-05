@@ -100,6 +100,7 @@ Item {
             radius: width / 2
             color: guiSettings.activeColor
             border.color: guiSettings.activeBorderColor
+            border.width: 1
         }
     }
 
