@@ -29,7 +29,7 @@ public:
 
     Q_INVOKABLE bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
-    ScopedHandle* registerRemovedCb(const RemovedCb&, QObject*) override { Q_ASSERT(false); }
+    ScopedHandle* registerRemovedCb(const RemovedCb&, QObject*) override { Q_ASSERT(false); return nullptr; }
 
 private:
     std::unordered_map<QString, ProfileListItemStore> mLists; // list uri -> list members
