@@ -28,7 +28,7 @@ AuthorListModel::AuthorListModel(Type type, const QString& atId,
     qDebug() << "New author list model type:" << type << "atId:" << atId;
 
     if (mType == QEnums::AUTHOR_LIST_ACTIVE_FOLLOWS)
-        mActiveFollows = mFollowsActivityStore.getActiveFollows();
+        mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
 }
 
 int AuthorListModel::rowCount(const QModelIndex& parent) const
@@ -86,7 +86,7 @@ void AuthorListModel::clear()
     mRawItemLists.clear();
 
     if (mType == QEnums::AUTHOR_LIST_ACTIVE_FOLLOWS)
-        mActiveFollows = mFollowsActivityStore.getActiveFollows();
+        mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
 }
 
 void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor)
@@ -185,19 +185,14 @@ std::vector<QString> AuthorListModel::getActiveFollowsDids(QString& cursor) cons
         startIndex = cursor.toInt();
 
     int endIndex = startIndex + ATProto::Client::MAX_IDS_GET_PROFILES;
-    endIndex = std::min(endIndex, (int)mActiveFollows.size());
+    endIndex = std::min(endIndex, (int)mActiveFollowsDids.size());
 
-    std::vector<QString> dids;
-
-    for (int i = 0; i < endIndex; ++i)
-        dids.push_back(mActiveFollows[i]->getDid());
-
-    if (endIndex == (int)mActiveFollows.size())
+    if (endIndex == (int)mActiveFollowsDids.size())
         cursor = "";
     else
         cursor.setNum(endIndex);
 
-    return dids;
+    return std::vector<QString>{mActiveFollowsDids.begin() + startIndex, mActiveFollowsDids.begin() + endIndex};
 }
 
 AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const

@@ -2745,6 +2745,7 @@ void Skywalker::getLabelersAuthorList(int modelId)
 
 void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
 {
+    qDebug() << "Get active follows, moded id:" << modelId << "cursor:" << cursor;
     const auto* model = mAuthorListModels.get(modelId);
 
     if (!model)
@@ -2755,6 +2756,7 @@ void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
 
     QString nextCursor = cursor;
     const std::vector<QString> dids = (*model)->getActiveFollowsDids(nextCursor);
+    qDebug() << "#did:" << dids.size() << "next cursor:" << nextCursor;
 
     if (dids.empty())
     {

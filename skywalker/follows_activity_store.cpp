@@ -8,16 +8,20 @@ using namespace std::chrono_literals;
 
 static constexpr auto UPDATE_INTERVAL = 31s;
 
-FollowsActivityStore::FollowsActivityStore(const IProfileStore& userFollows, QObject* parent) :
+FollowsActivityStore::FollowsActivityStore(IProfileStore& userFollows, QObject* parent) :
     QObject(parent),
     mUserFollows(userFollows)
 {
+    mRemovedCbHandle = mUserFollows.registerRemovedCb([this](const QString& did){ handleUnfollow(did); }, this);
     connect(&mUpdateTimer, &QTimer::timeout, this, [this]{ updateActivities(); });
     mUpdateTimer.start(UPDATE_INTERVAL);
 }
 
 void FollowsActivityStore::clear()
 {
+    for (auto& [_, status] : mDidStatus)
+        status->deleteLater();
+
     mDidStatus.clear();
     mActiveStatusSet.clear();
 }
@@ -32,7 +36,6 @@ ActivityStatus* FollowsActivityStore::getActivityStatus(const QString& did)
     if (it != mDidStatus.end())
         return it->second;
 
-    // TODO: delete on unfollow
     auto* status = new ActivityStatus(did, this);
     mDidStatus.insert({did, status});
     return status;
@@ -51,9 +54,15 @@ void FollowsActivityStore::reportActivity(const QString& did, QDateTime timestam
         mActiveStatusSet.insert(status);
 }
 
-std::vector<ActivityStatus*> FollowsActivityStore::getActiveFollows() const
+std::vector<QString> FollowsActivityStore::getActiveFollowsDids() const
 {
-    return std::vector<ActivityStatus*>{mActiveStatusSet.rbegin(), mActiveStatusSet.rend()};
+    std::vector<QString> dids;
+    dids.reserve(mActiveStatusSet.size());
+
+    for (auto it = mActiveStatusSet.rbegin(); it != mActiveStatusSet.rend(); ++it)
+        dids.push_back((*it)->getDid());
+
+    return dids;
 }
 
 void FollowsActivityStore::updateActivities()
@@ -70,6 +79,20 @@ void FollowsActivityStore::updateActivities()
         else
             break; // the remainder is newer and hence will stay active
     }
+}
+
+void FollowsActivityStore::handleUnfollow(const QString& did)
+{
+    auto it = mDidStatus.find(did);
+
+    if (it == mDidStatus.end())
+        return;
+
+    qDebug() << "Delete activity status:" << did;
+    ActivityStatus* status = it->second;
+    mActiveStatusSet.erase(status);
+    status->deleteLater();
+    mDidStatus.erase(it);
 }
 
 void FollowsActivityStore::pause()

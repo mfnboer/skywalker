@@ -18,6 +18,13 @@ const BasicProfile* ProfileStore::get(const QString& did) const
     return it != mDidProfileMap.end() ? &it->second : nullptr;
 }
 
+ScopedHandle* ProfileStore::registerRemovedCb(const RemovedCb& cb, QObject* owner)
+{
+    unsigned id = mNextRemoveCbId++;
+    mRemovedCbMap.insert({id, cb});
+    return new ScopedHandle([id, this]{ mRemovedCbMap.erase(id); }, owner);
+}
+
 void ProfileStore::add(const BasicProfile& profile)
 {
     const QString& did = profile.getDid();
@@ -32,6 +39,9 @@ void ProfileStore::remove(const QString& did)
 {
     qDebug() << "Remove profile:" << did;
     mDidProfileMap.erase(did);
+
+    for (const auto& [_, cb] : mRemovedCbMap)
+        cb(did);
 }
 
 void ProfileStore::clear()

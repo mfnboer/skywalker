@@ -13,22 +13,23 @@ class FollowsActivityStore : public QObject
     Q_OBJECT
 
 public:
-    explicit FollowsActivityStore(const IProfileStore& userFollows, QObject* parent = nullptr);
+    explicit FollowsActivityStore(IProfileStore& userFollows, QObject* parent = nullptr);
 
     void clear();
     Q_INVOKABLE ActivityStatus* getActivityStatus(const QString& did);
     void reportActivity(const QString& did, QDateTime timestamp);
 
     // From newest to oldest activity
-    std::vector<ActivityStatus*> getActiveFollows() const;
+    std::vector<QString> getActiveFollowsDids() const;
 
     void pause();
     void resume();
 
 private:
     void updateActivities();
+    void handleUnfollow(const QString& did);
 
-    const IProfileStore& mUserFollows;
+    IProfileStore& mUserFollows;
     ActivityStatus mNotActiveStatus{"", this};
     std::unordered_map<QString, ActivityStatus*> mDidStatus;
 
@@ -36,6 +37,7 @@ private:
     std::set<ActivityStatus*, ActiviyStatusPtrCmp> mActiveStatusSet;
 
     QTimer mUpdateTimer;
+    ScopedHandle* mRemovedCbHandle = nullptr;
 };
 
 }

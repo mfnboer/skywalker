@@ -14,8 +14,8 @@ Item {
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
     property bool showModeratorIcon: true
     readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author.did)
-    readonly property date lastActive: activityStatus.lastActive
-    readonly property bool isActive: activityStatus.active
+    readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
+    readonly property bool isActive: activityStatus ? activityStatus.active : false
 
     signal clicked
     signal pressAndHold

@@ -91,7 +91,7 @@ private:
     std::deque<ATProto::AppBskyActor::ProfileViewList> mRawLists;
     std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
     std::deque<ATProto::AppBskyGraph::ListItemViewList> mRawItemLists;
-    std::vector<ActivityStatus*> mActiveFollows;
+    std::vector<QString> mActiveFollowsDids;
 
     QString mCursor;
 };
