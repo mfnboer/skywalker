@@ -66,4 +66,16 @@ void FollowsActivityStore::updateActivities()
     }
 }
 
+void FollowsActivityStore::pause()
+{
+    qDebug() << "Pause";
+    mUpdateTimer.stop();
+}
+
+void FollowsActivityStore::resume()
+{
+    qDebug() << "Resume";
+    mUpdateTimer.start(UPDATE_INTERVAL);
+}
+
 }

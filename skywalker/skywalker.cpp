@@ -3739,6 +3739,8 @@ void Skywalker::pauseApp()
     }
 
     mChat->pause();
+    mFollowsActivityStore.pause();
+
     emit appPaused();
 }
 
@@ -3789,6 +3791,8 @@ void Skywalker::resumeApp()
         }
 
         mChat->resume();
+        mFollowsActivityStore.resume();
+
         emit appResumed();
     });
 }

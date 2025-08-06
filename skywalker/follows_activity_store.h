@@ -19,6 +19,9 @@ public:
     Q_INVOKABLE ActivityStatus* getActivityStatus(const QString& did);
     void reportActivity(const QString& did, QDateTime timestamp);
 
+    void pause();
+    void resume();
+
 private:
     void updateActivities();
 
