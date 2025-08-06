@@ -15,6 +15,8 @@ class ActivityStatus : public QObject
     QML_ELEMENT
 
 public:
+    static const std::chrono::minutes ACTIVE_INTERVAL;
+
     explicit ActivityStatus(const QString& did, QObject* parent = nullptr);
 
     const QString& getDid() const { return mDid; }

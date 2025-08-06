@@ -50,6 +50,11 @@ void FollowsActivityStore::reportActivity(const QString& did, QDateTime timestam
         mActiveStatusSet.insert(status);
 }
 
+std::vector<ActivityStatus*> FollowsActivityStore::getActiveFollows() const
+{
+    return std::vector<ActivityStatus*>{mActiveStatusSet.rbegin(), mActiveStatusSet.rend()};
+}
+
 void FollowsActivityStore::updateActivities()
 {
     const auto now = QDateTime::currentDateTimeUtc();

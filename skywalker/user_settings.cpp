@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "user_settings.h"
+#include "activity_status.h"
 #include "definitions.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
@@ -11,11 +12,18 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sDefaultBackgroundColor("white");
 QString UserSettings::sCurrentLinkColor("blue");
+
+int UserSettings::getActiveOnlineIntervalMins()
+{
+    return ActivityStatus::ACTIVE_INTERVAL / 1min;
+}
 
 UserSettings::UserSettings(QObject* parent) :
     QObject(parent)

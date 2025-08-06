@@ -6,7 +6,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-static constexpr auto ACTIVE_INTERVAL = 10min;
+const std::chrono::minutes ActivityStatus::ACTIVE_INTERVAL = 10min;
 
 ActivityStatus::ActivityStatus(const QString& did, QObject* parent) :
     QObject(parent),

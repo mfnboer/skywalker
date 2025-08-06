@@ -21,6 +21,7 @@ Drawer {
     signal switchAccount()
     signal inviteCodes()
     signal bookmarks()
+    signal activeFollows()
     signal signOut()
     signal about()
     signal buyCoffee()
@@ -161,6 +162,13 @@ Drawer {
                         MenuItemSvg { svg: SvgOutline.hashtag }
                     }
                 }
+            }
+
+            SkyMenuItem {
+                id: activeFollowsItem
+                icon: SvgOutline.onlineUsers
+                text: qsTr("Now Online")
+                onClicked: activeFollows()
             }
 
             SkyMenuItem {

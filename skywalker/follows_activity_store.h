@@ -19,6 +19,9 @@ public:
     Q_INVOKABLE ActivityStatus* getActivityStatus(const QString& did);
     void reportActivity(const QString& did, QDateTime timestamp);
 
+    // From newest to oldest activity
+    std::vector<ActivityStatus*> getActiveFollows() const;
+
     void pause();
     void resume();
 

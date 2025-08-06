@@ -2743,6 +2743,41 @@ void Skywalker::getLabelersAuthorList(int modelId)
         });
 }
 
+void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
+{
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (!model)
+    {
+        qWarning() << "No active follows model:" << modelId;
+        return;
+    }
+
+    QString nextCursor = cursor;
+    const std::vector<QString> dids = (*model)->getActiveFollowsDids(nextCursor);
+
+    if (dids.empty())
+    {
+        qDebug() << "No active follows, cursor:" << cursor;
+        return;
+    }
+
+    setGetAuthorListInProgress(true);
+    mBsky->getProfiles(dids,
+        [this, modelId, nextCursor](auto profileDetailedList){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->addAuthors(std::move(profileDetailedList), nextCursor);
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getActiveFollowsAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     setGetAuthorListInProgress(true);
@@ -3001,6 +3036,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     case AuthorListModel::Type::AUTHOR_LIST_LABELERS:
         getLabelersAuthorList(id);
         break;
+    case AuthorListModel::Type::AUTHOR_LIST_ACTIVE_FOLLOWS:
+        getActiveFollowsAuthorList(id, cursor);
+        break;
     }
 }
 
@@ -3037,7 +3075,8 @@ void Skywalker::getAuthorListNextPage(int id)
 
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mTimelineHide, mContentFilter, this);
+    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mTimelineHide,
+                                                   mFollowsActivityStore, mContentFilter, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
 }

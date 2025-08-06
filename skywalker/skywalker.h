@@ -312,6 +312,7 @@ signals:
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getLabelersAuthorList(int modelId);
+    void getActiveFollowsAuthorList(int modelId, const QString& cursor);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getKnownFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);

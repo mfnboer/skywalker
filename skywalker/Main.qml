@@ -758,6 +758,16 @@ ApplicationWindow {
             close()
         }
 
+        onActiveFollows: {
+            let userSettings = skywalker.getUserSettings()
+            const interval = userSettings.getActiveOnlineIntervalMins()
+            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_ACTIVE_FOLLOWS, "")
+            viewAuthorList(modelId, qsTr("Now Online"),
+                    qsTr(`Users you follow that have been active in the last ${interval} minutes.`),
+                    false)
+            close()
+        }
+
         onBlockedAccounts: {
             let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKS, "")
             viewAuthorList(modelId, qsTr("Blocked Accounts"),
