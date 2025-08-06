@@ -19,6 +19,7 @@ FollowsActivityStore::FollowsActivityStore(const IProfileStore& userFollows, QOb
 void FollowsActivityStore::clear()
 {
     mDidStatus.clear();
+    mActiveStatusSet.clear();
 }
 
 ActivityStatus* FollowsActivityStore::getActivityStatus(const QString& did)
