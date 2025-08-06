@@ -13,6 +13,7 @@ class ActivityStatus : public QObject
     Q_PROPERTY(QDateTime lastActive READ getLastActive NOTIFY lastActiveChanged FINAL)
     Q_PROPERTY(bool active READ isActive NOTIFY activeChanged FINAL)
     QML_ELEMENT
+    QML_UNCREATABLE("only created on the C++ side")
 
 public:
     static const std::chrono::minutes ACTIVE_INTERVAL;

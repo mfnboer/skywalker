@@ -929,6 +929,20 @@ bool UserSettings::getFloatingNavigationButtons() const
     return mSettings.value("floatingNavButtons", false).toBool();
 }
 
+void UserSettings::setShowFollowsActiveStatus(bool show)
+{
+    if (show == getShowFollowsActiveStatus())
+        return;
+
+    mSettings.setValue("showFollowsActiveStatus", show);
+    emit showFollowsActiveStatusChanged();
+}
+
+bool UserSettings::getShowFollowsActiveStatus() const
+{
+    return mSettings.value("showFollowsActiveStatus", true).toBool();
+}
+
 void UserSettings::setRequireAltText(const QString& did, bool require)
 {
     mSettings.setValue(key(did, "requireAltText"), require);

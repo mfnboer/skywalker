@@ -31,6 +31,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
+    Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
     Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
@@ -232,6 +233,9 @@ public:
     void setFloatingNavigationButtons(bool floating);
     bool getFloatingNavigationButtons() const;
 
+    void setShowFollowsActiveStatus(bool show);
+    bool getShowFollowsActiveStatus() const;
+
     Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
 
@@ -361,6 +365,7 @@ signals:
     void favoritesBarPositionChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();
+    void showFollowsActiveStatusChanged();
     void landscapeSideBarChanged();
     void gifAutoPlayChanged();
     void videoSoundChanged();

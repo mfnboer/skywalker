@@ -8,6 +8,7 @@ Item {
     property int radius: width / 2
     property SvgImage unknownSvg: SvgFilled.unknownAvatar
     property var skywalker: root.getSkywalker()
+    property var userSettings: skywalker.getUserSettings()
     readonly property int contentVisibility: skywalker.getContentVisibility(author.labels)
     property bool showWarnedMedia: false
     readonly property bool showThumb: width < 90 // from bsky client code
@@ -90,7 +91,7 @@ Item {
 
     Loader {
         id: activeLoader
-        active: avatarItem.isActive
+        active: avatarItem.isActive && userSettings.showFollowsActiveStatus
 
         sourceComponent: Rectangle {
             x: avatarItem.width - width
