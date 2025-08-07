@@ -135,7 +135,7 @@ public:
     void setNotificationsSeen(bool seen);
     Q_INVOKABLE void updateRead();
 
-    int getIndexOldestUnread() const;
+    Q_INVOKABLE int getIndexOldestUnread() const;
     const NotificationList& getNotifications() const { return mList; }
     QDateTime getTimestampLatestNotifcation() const;
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }

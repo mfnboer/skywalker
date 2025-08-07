@@ -2060,17 +2060,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
             const bool clearFirst = cursor.isEmpty();
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
-            model.addNotifications(std::move(ouput), *mBsky, clearFirst,
-                    [this, mentionsOnly, clearFirst]{
-                        if (clearFirst)
-                        {
-                            const auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
-                            const int index = model.getIndexOldestUnread();
-
-                            if (index >= 0)
-                                emit oldestUnreadNotificationIndex(index, mentionsOnly);
-                        }
-                    });
+            model.addNotifications(std::move(ouput), *mBsky, clearFirst);
 
             if (mentionsOnly)
                 setGetMentionsInProgress(false);
