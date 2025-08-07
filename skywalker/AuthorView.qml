@@ -513,6 +513,17 @@ SkyPage {
             }
 
             AccessibleText {
+                readonly property date lastActive: avatarImg.lastActive
+                readonly property string statusIcon: avatarImg.isActive ? "🟢" : "🟡"
+
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                color: guiSettings.textColor
+                text: qsTr(`${statusIcon} Last activity: ${guiSettings.dateTimeIndication(lastActive)}`)
+                visible: !isNaN(lastActive.getTime())
+            }
+
+            AccessibleText {
                 id: firstAppearanceText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10

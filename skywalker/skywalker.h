@@ -12,6 +12,7 @@
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
 #include "feed_pager.h"
+#include "follows_activity_store.h"
 #include "hashtag_index.h"
 #include "item_store.h"
 #include "labeler.h"
@@ -112,6 +113,7 @@ public:
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
+    Q_INVOKABLE void updateNotificationsSeen();
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
@@ -241,6 +243,7 @@ public:
     void setUnreadNotificationCount(int unread);
     void addToUnreadNotificationCount(int addUnread);
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
+    Q_INVOKABLE FollowsActivityStore* getFollowsActivityStore() { return &mFollowsActivityStore; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
@@ -303,13 +306,13 @@ signals:
     void showLinkReceived(QString uri); // Action received from the user clicking on a bsky link outside the app
     void bskyClientDeleted();
     void anniversary();
-    void oldestUnreadNotificationIndex(int index, bool mentions);
     void appPaused();
     void appResumed();
 
 private:
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getLabelersAuthorList(int modelId);
+    void getActiveFollowsAuthorList(int modelId, const QString& cursor);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getKnownFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
@@ -372,6 +375,7 @@ private:
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
+    FollowsActivityStore mFollowsActivityStore;
     ProfileListItemStore mMutedReposts;
     ListStore mTimelineHide;
     ATProto::UserPreferences mUserPreferences;

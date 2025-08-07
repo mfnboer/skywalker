@@ -11,17 +11,24 @@ AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& lis
 {
 }
 
-AuthorListModel::AuthorListModel(Type type, const QString& atId, const IProfileStore& mutedReposts,
-                                 const IProfileStore& timelineHide, const ContentFilter& contentFilter,
+AuthorListModel::AuthorListModel(Type type, const QString& atId,
+                                 const IProfileStore& mutedReposts,
+                                 const IProfileStore& timelineHide,
+                                 const FollowsActivityStore& followsActivityStore,
+                                 const ContentFilter& contentFilter,
                                  QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
     mAtId(atId),
     mMutedReposts(mutedReposts),
     mTimelineHide(timelineHide),
+    mFollowsActivityStore(followsActivityStore),
     mContentFilter(contentFilter)
 {
     qDebug() << "New author list model type:" << type << "atId:" << atId;
+
+    if (mType == QEnums::AUTHOR_LIST_ACTIVE_FOLLOWS)
+        mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
 }
 
 int AuthorListModel::rowCount(const QModelIndex& parent) const
@@ -57,6 +64,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return change && change->mMutedReposts ? *change->mMutedReposts : mMutedReposts.contains(author.getDid());
     case Role::HideFromTimeline:
         return mTimelineHide.contains(author.getDid());
+    case Role::EndOfList:
+        return entry.mEndOfList;
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -77,6 +86,9 @@ void AuthorListModel::clear()
     mRawLists.clear();
     mRawDetailedLists.clear();
     mRawItemLists.clear();
+
+    if (mType == QEnums::AUTHOR_LIST_ACTIVE_FOLLOWS)
+        mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
 }
 
 void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor)
@@ -93,6 +105,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
 
     mRawLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewList>(authors));
     qDebug() << "New list size:" << mList.size();
+    setEndOfList();
 }
 
 void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor)
@@ -117,6 +130,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::Lis
 
     mRawDetailedLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewDetailed::List>(authors));
     qDebug() << "New list size:" << mList.size();
+    setEndOfList();
 }
 
 void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor)
@@ -138,6 +152,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listIte
 
     mRawItemLists.push_back(std::forward<ATProto::AppBskyGraph::ListItemViewList>(listItems));
     qDebug() << "New list size:" << mList.size();
+    setEndOfList();
 }
 
 void AuthorListModel::prependAuthor(const Profile& author, const QString& listItemUri)
@@ -165,6 +180,37 @@ void AuthorListModel::deleteEntry(int index)
     beginRemoveRows({}, index, index);
     mList.erase(mList.begin() + index);
     endRemoveRows();
+
+    if (index == (int)mList.size())
+        setEndOfList();
+}
+
+void AuthorListModel::setEndOfList()
+{
+    if (isEndOfList() && !mList.empty())
+    {
+        mList.back().mEndOfList = true;
+        const auto index = createIndex(mList.size() - 1, 0);
+        emit dataChanged(index, index, { int(Role::EndOfList) });
+    }
+}
+
+std::vector<QString> AuthorListModel::getActiveFollowsDids(QString& cursor) const
+{
+    int startIndex = 0;
+
+    if (!cursor.isEmpty())
+        startIndex = cursor.toInt();
+
+    int endIndex = startIndex + ATProto::Client::MAX_IDS_GET_PROFILES;
+    endIndex = std::min(endIndex, (int)mActiveFollowsDids.size());
+
+    if (endIndex == (int)mActiveFollowsDids.size())
+        cursor = "";
+    else
+        cursor.setNum(endIndex);
+
+    return std::vector<QString>{mActiveFollowsDids.begin() + startIndex, mActiveFollowsDids.begin() + endIndex};
 }
 
 AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const
@@ -205,7 +251,8 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
         { int(Role::ListItemUri), "listItemUri" },
         { int(Role::AuthorMuted), "authorMuted" },
         { int(Role::MutedReposts), "mutedReposts" },
-        { int(Role::HideFromTimeline), "hideFromTimeline" }
+        { int(Role::HideFromTimeline), "hideFromTimeline" },
+        { int(Role::EndOfList), "endOfList" }
     };
 
     return roles;

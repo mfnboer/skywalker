@@ -4,9 +4,10 @@
 
 namespace Skywalker {
 
-ConvoListModel::ConvoListModel(const QString& userDid, QObject* parent) :
+ConvoListModel::ConvoListModel(const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
     QAbstractListModel(parent),
-    mUserDid(userDid)
+    mUserDid(userDid),
+    mFollowsActivityStore(followsActivityStore)
 {
 }
 
@@ -72,6 +73,7 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoViewList& conv
         mConvos.emplace_back(*convo, mUserDid);
         mConvoIdIndexMap[convo->mId] = mConvos.size() - 1;
         addConvoToDidMap(mConvos.back());
+        reportActivity(mConvos.back());
     }
 
     endInsertRows();
@@ -97,6 +99,7 @@ void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
     const int index = it->second;
     mConvos[index] = ConvoView{convo, mUserDid};
     addConvoToDidMap(mConvos[index]);
+    reportActivity(mConvos[index]);
     changeData({ int(Role::Convo) }, index, index);
 }
 
@@ -148,6 +151,7 @@ void ConvoListModel::insertConvo(const ConvoView& convo)
     beginInsertRows({}, insertIndex, insertIndex);
     mConvos.insert(insertIt, convo);
     addConvoToDidMap(convo);
+    reportActivity(convo);
 
     for (auto& [convoId, index] : mConvoIdIndexMap)
     {
@@ -185,6 +189,38 @@ void ConvoListModel::addConvoToDidMap(const ConvoView& convo)
         const QString& did = member.getBasicProfile().getDid();
         mDidConvoIdMap[did].insert(convoId);
     }
+}
+
+void ConvoListModel::reportActivity(const ConvoView& convo)
+{
+    reportActivity(convo.getLastMessage());
+    const MessageAndReactionView messageAndReaction = convo.getLastReaction();
+    reportActivity(messageAndReaction.getMessageView());
+    reportActivity(messageAndReaction.getReactionView());
+}
+
+void ConvoListModel::reportActivity(const MessageView& message)
+{
+    if (message.isNull())
+        return;
+
+    const auto& did = message.getSenderDid();
+    const auto timestamp = message.getSentAt();
+
+    if (!did.isEmpty() && timestamp.isValid())
+        mFollowsActivityStore.reportActivity(did, timestamp);
+}
+
+void ConvoListModel::reportActivity(const ReactionView& reaction)
+{
+    if (reaction.isNull())
+        return;
+
+    const auto& did = reaction.getSenderDid();
+    const auto timestamp = reaction.getCreatedAt();
+
+    if (!did.isEmpty() && timestamp.isValid())
+        mFollowsActivityStore.reportActivity(did, timestamp);
 }
 
 void ConvoListModel::deleteConvo(const QString& convoId)

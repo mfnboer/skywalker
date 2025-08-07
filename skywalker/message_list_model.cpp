@@ -6,9 +6,10 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-MessageListModel::MessageListModel(const QString& userDid, QObject* parent) :
+MessageListModel::MessageListModel(const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
     QAbstractListModel(parent),
-    mUserDid(userDid)
+    mUserDid(userDid),
+    mFollowsActivityStore(followsActivityStore)
 {
 }
 
@@ -93,6 +94,7 @@ void MessageListModel::addMessages(const ATProto::ChatBskyConvo::GetMessagesOutp
         }
 
         mMessages.emplace_front(message);
+        reportActivity(mMessages.front());
     }
 
     rebuildIndex();
@@ -155,6 +157,7 @@ void MessageListModel::updateMessages(const ATProto::ChatBskyConvo::GetMessagesO
         qDebug() << "Update existing message:" << storedMsg.getId() << "oldRev:" << storedMsg.getRev() << "newRev:" << msgRev;
         const MessageView updatedMsg(**messageView);
         storedMsg = updatedMsg;
+        reportActivity(storedMsg);
         changeData({}, index, index);
     }
 }
@@ -172,6 +175,7 @@ void MessageListModel::updateMessage(const MessageView& msg)
     MessageView& storedMsg = mMessages[index];
     qDebug() << "Found message:" << storedMsg.getId() << "rev:" << storedMsg.getRev();
     storedMsg = msg;
+    reportActivity(storedMsg);
     changeData({}, index, index);
 }
 
@@ -236,6 +240,33 @@ void MessageListModel::changeData(const QList<int>& roles, int begin, int end)
         return;
 
     emit dataChanged(createIndex(begin, 0), createIndex(end, 0), roles);
+}
+
+void MessageListModel::reportActivity(const MessageView& message)
+{
+    if (message.isNull())
+        return;
+
+    const auto& did = message.getSenderDid();
+    const auto timestamp = message.getSentAt();
+
+    if (!did.isEmpty() && timestamp.isValid())
+        mFollowsActivityStore.reportActivity(did, timestamp);
+
+    for (const auto& reaction : message.getReactions())
+        reportActivity(reaction);
+}
+
+void MessageListModel::reportActivity(const ReactionView& reaction)
+{
+    if (reaction.isNull())
+        return;
+
+    const auto& did = reaction.getSenderDid();
+    const auto timestamp = reaction.getCreatedAt();
+
+    if (!did.isEmpty() && timestamp.isValid())
+        mFollowsActivityStore.reportActivity(did, timestamp);
 }
 
 }

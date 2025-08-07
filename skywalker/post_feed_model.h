@@ -4,6 +4,7 @@
 #include "abstract_post_feed_model.h"
 #include "feed_pager.h"
 #include "filtered_post_feed_model.h"
+#include "follows_activity_store.h"
 #include "generator_view.h"
 #include "post_filter.h"
 #include <atproto/lib/user_preferences.h>
@@ -42,6 +43,7 @@ public:
                            HashtagIndex& hashtags,
                            const ATProto::UserPreferences& userPrefs,
                            UserSettings& userSettings,
+                           FollowsActivityStore& followsActivityStore,
                            QObject* parent = nullptr);
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
@@ -177,6 +179,7 @@ private:
     bool passLanguageFilter(const Post& post) const;
     bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
     bool mustShowQuotePost(const Post& post) const;
+    void reportActivity(const Post& post);
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
 
@@ -195,6 +198,7 @@ private:
     bool mIsHomeFeed = false;
     const ATProto::UserPreferences& mUserPreferences;
     UserSettings& mUserSettings;
+    FollowsActivityStore& mFollowsActivityStore;
     bool mLanguageFilterEnabled = false;
 
     mutable std::optional<bool> mFeedHideReplies;

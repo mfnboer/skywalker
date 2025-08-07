@@ -4,6 +4,7 @@
 #include "base_list_model.h"
 #include "content_filter.h"
 #include "enums.h"
+#include "follows_activity_store.h"
 #include "local_author_model_changes.h"
 #include "profile.h"
 #include "profile_store.h"
@@ -26,13 +27,15 @@ public:
         ListItemUri,
         AuthorMuted,
         MutedReposts,
-        HideFromTimeline
+        HideFromTimeline,
+        EndOfList
     };
 
     struct ListEntry
     {
         Profile mProfile;
         QString mListItemUri; // empty when not part of a list
+        bool mEndOfList = false;
 
         explicit ListEntry(const Profile& profile, const QString& listItemUri = {});
     };
@@ -42,6 +45,7 @@ public:
 
     AuthorListModel(Type type, const QString& atId, const IProfileStore& mutedReposts,
                     const IProfileStore& timelineHide,
+                    const FollowsActivityStore& followsActivityStore,
                     const ContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -60,6 +64,8 @@ public:
     Type getType() const { return mType; }
     const QString& getAtId() const { return mAtId; }
 
+    std::vector<QString> getActiveFollowsDids(QString& cursor) const;
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -73,6 +79,7 @@ protected:
 private:
     using AuthorList = std::deque<ListEntry>;
 
+    void setEndOfList();
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
     void changeData(const QList<int>& roles) override;
 
@@ -80,12 +87,14 @@ private:
     QString mAtId;
     const IProfileStore& mMutedReposts;
     const IProfileStore& mTimelineHide;
+    const FollowsActivityStore& mFollowsActivityStore;
     const ContentFilter& mContentFilter;
 
     AuthorList mList;
     std::deque<ATProto::AppBskyActor::ProfileViewList> mRawLists;
     std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
     std::deque<ATProto::AppBskyGraph::ListItemViewList> mRawItemLists;
+    std::vector<QString> mActiveFollowsDids;
 
     QString mCursor;
 };

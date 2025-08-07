@@ -51,6 +51,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
     mNetwork(new QNetworkAccessManager(this)),
+    mFollowsActivityStore(mUserFollows, this),
     mTimelineHide(this),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
@@ -58,16 +59,16 @@ Skywalker::Skywalker(QObject* parent) :
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
-    mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, this),
-    mMentionListModel(mContentFilter, mBookmarks, mMutedWords, this),
-    mChat(std::make_unique<Chat>(mBsky, mUserDid, this)),
+    mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, &mFollowsActivityStore, this),
+    mMentionListModel(mContentFilter, mBookmarks, mMutedWords, &mFollowsActivityStore, this),
+    mChat(std::make_unique<Chat>(mBsky, mUserDid, mFollowsActivityStore, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
     mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
                    mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
-                   mUserPreferences, mUserSettings, this)
+                   mUserPreferences, mUserSettings, mFollowsActivityStore, this)
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
@@ -2012,6 +2013,24 @@ void Skywalker::updateNotificationPreferences(bool priority)
         });
 }
 
+void Skywalker::updateNotificationsSeen()
+{
+    Q_ASSERT(mBsky);
+    auto timestamp = mNotificationListModel.getTimestampLatestNotifcation();
+    qDebug() << "Update notifications seen:" << timestamp;
+
+    if (!timestamp.isValid())
+    {
+        qDebug() << "No valid timestamp";
+        return;
+    }
+
+    mBsky->updateNotificationSeen(timestamp + 1ms, {}, {});
+    mNotificationListModel.setNotificationsSeen(true);
+    mMentionListModel.setNotificationsSeen(true);
+    setUnreadNotificationCount(0);
+}
+
 void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -2041,17 +2060,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
             const bool clearFirst = cursor.isEmpty();
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
-            model.addNotifications(std::move(ouput), *mBsky, clearFirst,
-                    [this, mentionsOnly, clearFirst]{
-                        if (clearFirst)
-                        {
-                            const auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
-                            const int index = model.getIndexOldestUnread();
-
-                            if (index >= 0)
-                                emit oldestUnreadNotificationIndex(index, mentionsOnly);
-                        }
-                    });
+            model.addNotifications(std::move(ouput), *mBsky, clearFirst);
 
             if (mentionsOnly)
                 setGetMentionsInProgress(false);
@@ -2668,7 +2677,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
             mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mBookmarks, mMutedWords,
-            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, this);
+            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
@@ -2680,7 +2689,8 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
-                                                 mSeenHashtags, mUserPreferences, mUserSettings, this);
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, this);
     model->setListView(listView);
     model->enableLanguageFilter(true);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
@@ -2692,7 +2702,8 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"),
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
-                                                 mSeenHashtags, mUserPreferences, mUserSettings, this);
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, this);
     model->setQuoteUri(quoteUri);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
@@ -2736,6 +2747,43 @@ void Skywalker::getLabelersAuthorList(int modelId)
         [this](const QString& error, const QString& msg){
             setGetAuthorListInProgress(false);
             qDebug() << "getLabelersAuthorList failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
+{
+    qDebug() << "Get active follows, moded id:" << modelId << "cursor:" << cursor;
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (!model)
+    {
+        qWarning() << "No active follows model:" << modelId;
+        return;
+    }
+
+    QString nextCursor = cursor;
+    const std::vector<QString> dids = (*model)->getActiveFollowsDids(nextCursor);
+    qDebug() << "#did:" << dids.size() << "next cursor:" << nextCursor;
+
+    if (dids.empty())
+    {
+        qDebug() << "No active follows, cursor:" << cursor;
+        return;
+    }
+
+    setGetAuthorListInProgress(true);
+    mBsky->getProfiles(dids,
+        [this, modelId, nextCursor](auto profileDetailedList){
+            setGetAuthorListInProgress(false);
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->addAuthors(std::move(profileDetailedList), nextCursor);
+        },
+        [this](const QString& error, const QString& msg){
+            setGetAuthorListInProgress(false);
+            qDebug() << "getActiveFollowsAuthorList failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -2998,6 +3046,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     case AuthorListModel::Type::AUTHOR_LIST_LABELERS:
         getLabelersAuthorList(id);
         break;
+    case AuthorListModel::Type::AUTHOR_LIST_ACTIVE_FOLLOWS:
+        getActiveFollowsAuthorList(id, cursor);
+        break;
     }
 }
 
@@ -3034,7 +3085,8 @@ void Skywalker::getAuthorListNextPage(int id)
 
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mTimelineHide, mContentFilter, this);
+    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mTimelineHide,
+                                                   mFollowsActivityStore, mContentFilter, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
 }
@@ -3736,6 +3788,8 @@ void Skywalker::pauseApp()
     }
 
     mChat->pause();
+    mFollowsActivityStore.pause();
+
     emit appPaused();
 }
 
@@ -3786,6 +3840,8 @@ void Skywalker::resumeApp()
         }
 
         mChat->resume();
+        mFollowsActivityStore.resume();
+
         emit appResumed();
     });
 }
@@ -3871,6 +3927,7 @@ void Skywalker::signOut()
     mUserProfile = {};
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
+    mFollowsActivityStore.clear();
     mUserFollows.clear();
     mMutedReposts.clear();
     mTimelineHide.clear();

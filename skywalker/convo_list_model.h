@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "convo_view.h"
+#include "follows_activity_store.h"
 #include <QAbstractListModel>
 #include <vector>
 
@@ -23,7 +24,7 @@ public:
 
     using Ptr = std::unique_ptr<ConvoListModel>;
 
-    explicit ConvoListModel(const QString& userDid, QObject* parent = nullptr);
+    explicit ConvoListModel(const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -62,8 +63,12 @@ private:
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
     bool checkIndex(int index) const;
     void addConvoToDidMap(const ConvoView& convo);
+    void reportActivity(const ConvoView& convo);
+    void reportActivity(const MessageView& message);
+    void reportActivity(const ReactionView& reaction);
 
     const QString& mUserDid;
+    FollowsActivityStore& mFollowsActivityStore;
     std::vector<ConvoView> mConvos;
     std::unordered_map<QString, int> mConvoIdIndexMap;
 

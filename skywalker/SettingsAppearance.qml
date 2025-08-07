@@ -287,6 +287,12 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Show online indication for users you follow")
+        checked: userSettings.showFollowsActiveStatus
+        onCheckedChanged: userSettings.showFollowsActiveStatus = checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Sidebar in landscape mode")
         checked: userSettings.landscapeSideBar
         onCheckedChanged: userSettings.landscapeSideBar = checked

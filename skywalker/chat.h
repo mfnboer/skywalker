@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "convo_list_model.h"
+#include "follows_activity_store.h"
 #include "message_list_model.h"
 #include "presence.h"
 #include "web_link.h"
@@ -23,7 +24,7 @@ class Chat : public QObject
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
-    explicit Chat(ATProto::Client::Ptr& bsky, const QString& mUserDid, QObject* parent = nullptr);
+    explicit Chat(ATProto::Client::Ptr& bsky, const QString& mUserDid, FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
 
     void reset();
     void initSettings();
@@ -128,6 +129,7 @@ private:
     std::unique_ptr<ATProto::ChatMaster> mChatMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     const QString& mUserDid;
+    FollowsActivityStore& mFollowsActivityStore;
     ConvoListModel mAcceptedConvoListModel;
     ConvoListModel mRequestConvoListModel;
     int mUnreadCount = 0;

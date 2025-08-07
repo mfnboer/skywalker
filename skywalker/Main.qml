@@ -347,6 +347,8 @@ ApplicationWindow {
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
             skywalker.chat.getAllConvos()
+            skywalker.getNotifications(50, false, false)
+            skywalker.getNotifications(50, false, true)
 
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
@@ -494,8 +496,12 @@ ApplicationWindow {
                 "🥳")
         }
 
-        onOldestUnreadNotificationIndex: (index, mentions) => {
-            Qt.callLater(getNotificationView().moveToNotification, index, mentions)
+        onUnreadNotificationCountChanged: {
+            if (unreadNotificationCount > 0 && rootContent.currentIndex !== rootContent.notificationIndex) {
+                const loadCount = Math.min(100, Math.max(50, unreadNotificationCount))
+                skywalker.getNotifications(loadCount, false, false)
+                skywalker.getNotifications(loadCount, false, true)
+            }
         }
 
         onAppPaused: {
@@ -644,8 +650,18 @@ ApplicationWindow {
                     prevItem.cover()
             }
 
-            if (prevIndex === notificationIndex)
+            if (prevIndex === notificationIndex) {
                 skywalker.notificationListModel.updateRead()
+                skywalker.mentionListModel.updateRead()
+
+                // The unread notification count will be non-zero when new notifications came
+                // in when the notifications tab is open and the user did not refresh.
+                if (skywalker.unreadNotificationCount > 0) {
+                    const loadCount = Math.min(100, Math.max(50, unreadNotificationCount))
+                    skywalker.getNotifications(loadCount, false, false)
+                    skywalker.getNotifications(loadCount, false, true)
+                }
+            }
 
             prevIndex = currentIndex
             let currentItem = currentStackItem()
@@ -755,6 +771,16 @@ ApplicationWindow {
 
         onContentFiltering: {
             editContentFilterSettings()
+            close()
+        }
+
+        onActiveFollows: {
+            let userSettings = skywalker.getUserSettings()
+            const interval = userSettings.getActiveOnlineIntervalMins()
+            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_ACTIVE_FOLLOWS, "")
+            viewAuthorList(modelId, qsTr("Now Online"),
+                    qsTr(`Users you follow that have been active in the last ${interval} minutes.`),
+                    false)
             close()
         }
 
@@ -1788,18 +1814,14 @@ ApplicationWindow {
     function viewNotifications() {
         rootContent.currentIndex = rootContent.notificationIndex
 
-        let loadCount = 25
-
         if (skywalker.unreadNotificationCount > 0) {
-            if (skywalker.unreadNotificationCount > loadCount)
-                loadCount = Math.min(skywalker.unreadNotificationCount + 5, 100)
+            skywalker.updateNotificationsSeen()
 
-            skywalker.getNotifications(loadCount, true, false)
-            skywalker.getNotifications(loadCount, false, true)
-        }
-        else if (!skywalker.notificationListModel.notificationsLoaded()) {
-            skywalker.getNotifications(loadCount, false, false)
-            skywalker.getNotifications(loadCount, false, true)
+            const notificationIndex = skywalker.notificationListModel.getIndexOldestUnread()
+            getNotificationView().moveToNotification(notificationIndex, false)
+
+            const mentionIndex = skywalker.mentionListModel.getIndexOldestUnread()
+            getNotificationView().moveToNotification(notificationInex, true)
         }
     }
 
