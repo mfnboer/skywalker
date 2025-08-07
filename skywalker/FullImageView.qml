@@ -21,6 +21,10 @@ SkyPage {
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
 
+    header: DeadHeaderMargin {
+        color: guiSettings.fullScreenColor
+    }
+
     Loader {
         id: previewLoader
         active: Boolean(previewImage)
@@ -113,7 +117,6 @@ SkyPage {
 
     SvgButton {
         x: guiSettings.leftMargin
-        y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
@@ -124,7 +127,6 @@ SkyPage {
     }
 
     SvgButton {
-        y: guiSettings.headerMargin
         anchors.right: parent.right
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor

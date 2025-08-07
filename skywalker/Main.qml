@@ -1821,7 +1821,7 @@ ApplicationWindow {
             getNotificationView().moveToNotification(notificationIndex, false)
 
             const mentionIndex = skywalker.mentionListModel.getIndexOldestUnread()
-            getNotificationView().moveToNotification(notificationInex, true)
+            getNotificationView().moveToNotification(mentionIndex, true)
         }
     }
 
