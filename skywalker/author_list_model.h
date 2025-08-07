@@ -27,13 +27,15 @@ public:
         ListItemUri,
         AuthorMuted,
         MutedReposts,
-        HideFromTimeline
+        HideFromTimeline,
+        EndOfList
     };
 
     struct ListEntry
     {
         Profile mProfile;
         QString mListItemUri; // empty when not part of a list
+        bool mEndOfList = false;
 
         explicit ListEntry(const Profile& profile, const QString& listItemUri = {});
     };
@@ -77,6 +79,7 @@ protected:
 private:
     using AuthorList = std::deque<ListEntry>;
 
+    void setEndOfList();
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
     void changeData(const QList<int>& roles) override;
 

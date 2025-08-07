@@ -113,6 +113,7 @@ public:
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
+    Q_INVOKABLE void updateNotificationsSeen();
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getBookmarksPage(bool clearModel = false);

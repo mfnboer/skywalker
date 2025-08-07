@@ -578,6 +578,14 @@ int NotificationListModel::getIndexOldestUnread() const
     return index;
 }
 
+QDateTime NotificationListModel::getTimestampLatestNotifcation() const
+{
+    if (mList.empty())
+        return {};
+
+    return mList.front().getTimestamp();
+}
+
 int NotificationListModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);

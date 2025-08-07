@@ -347,6 +347,8 @@ ApplicationWindow {
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
             skywalker.chat.getAllConvos()
+            skywalker.getNotifications(25, false, false)
+            skywalker.getNotifications(25, false, true)
 
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
@@ -498,6 +500,13 @@ ApplicationWindow {
             Qt.callLater(getNotificationView().moveToNotification, index, mentions)
         }
 
+        onUnreadNotificationCountChanged: {
+            if (unreadNotificationCount > 0 && rootContent.currentIndex !== rootContent.notificationIndex) {
+                skywalker.getNotifications(25, false, false)
+                skywalker.getNotifications(25, false, true)
+            }
+        }
+
         onAppPaused: {
             let current = currentStackItem()
 
@@ -644,8 +653,17 @@ ApplicationWindow {
                     prevItem.cover()
             }
 
-            if (prevIndex === notificationIndex)
+            if (prevIndex === notificationIndex) {
                 skywalker.notificationListModel.updateRead()
+                skywalker.mentionListModel.updateRead()
+
+                // The unread notification count will be non-zero when new notifications came
+                // in when the notifications tab is open and the user did not refresh.
+                if (skywalker.unreadNotificationCount > 0) {
+                    skywalker.getNotifications(25, false, false)
+                    skywalker.getNotifications(25, false, true)
+                }
+            }
 
             prevIndex = currentIndex
             let currentItem = currentStackItem()
@@ -1798,19 +1816,8 @@ ApplicationWindow {
     function viewNotifications() {
         rootContent.currentIndex = rootContent.notificationIndex
 
-        let loadCount = 25
-
-        if (skywalker.unreadNotificationCount > 0) {
-            if (skywalker.unreadNotificationCount > loadCount)
-                loadCount = Math.min(skywalker.unreadNotificationCount + 5, 100)
-
-            skywalker.getNotifications(loadCount, true, false)
-            skywalker.getNotifications(loadCount, false, true)
-        }
-        else if (!skywalker.notificationListModel.notificationsLoaded()) {
-            skywalker.getNotifications(loadCount, false, false)
-            skywalker.getNotifications(loadCount, false, true)
-        }
+        if (skywalker.unreadNotificationCount > 0)
+            skywalker.updateNotificationsSeen()
     }
 
     function viewChat() {

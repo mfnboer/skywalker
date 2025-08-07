@@ -12,6 +12,7 @@ Rectangle {
     required property bool authorMuted
     required property bool mutedReposts
     required property bool hideFromTimeline
+    required property bool endOfList
     property bool allowDeleteItem: false
     property bool showAuthor: authorVisible()
     property bool showFollow: true
@@ -144,6 +145,19 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: authorRect.highlight ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
+        }
+
+        Text {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            topPadding: 10
+            bottomPadding: 20
+            elide: Text.ElideRight
+            color: guiSettings.textColor
+            text: qsTr("End of list")
+            font.italic: true
+            visible: endOfList
         }
     }
     MouseArea {

@@ -2013,6 +2013,24 @@ void Skywalker::updateNotificationPreferences(bool priority)
         });
 }
 
+void Skywalker::updateNotificationsSeen()
+{
+    Q_ASSERT(mBsky);
+    auto timestamp = mNotificationListModel.getTimestampLatestNotifcation();
+    qDebug() << "Update notifications seen:" << timestamp;
+
+    if (!timestamp.isValid())
+    {
+        qDebug() << "No valid timestamp";
+        return;
+    }
+
+    mBsky->updateNotificationSeen(timestamp + 1ms, {}, {});
+    mNotificationListModel.setNotificationsSeen(true);
+    mMentionListModel.setNotificationsSeen(true);
+    setUnreadNotificationCount(0);
+}
+
 void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, const QString& cursor)
 {
     Q_ASSERT(mBsky);
