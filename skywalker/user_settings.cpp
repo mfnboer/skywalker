@@ -264,7 +264,7 @@ void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    QTimer::singleShot(0, this, [this]{ mSettings.sync(); });
+    mSettings.sync();
     qDebug() << "Session saved";
 }
 

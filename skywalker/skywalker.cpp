@@ -3626,7 +3626,7 @@ void Skywalker::updateUser(const QString& did, const QString& host)
 
 void Skywalker::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
-    mUserSettings.saveSession(session);
+    QTimer::singleShot(0, this, [this, session]{ mUserSettings.saveSession(session); });
 }
 
 std::optional<ATProto::ComATProtoServer::Session> Skywalker::getSavedSession() const
@@ -3767,6 +3767,7 @@ void Skywalker::pauseApp()
     if (mBsky && mBsky->getSession())
     {
         // Make sure tokens are saved as the offline message checker needs them
+        // Also timeline sync timestamps should be saved for sync'ing on startup
         mUserSettings.saveSession(*mBsky->getSession());
     }
 
