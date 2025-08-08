@@ -50,6 +50,7 @@ public:
 
     // The indexedAt of a post or repost
     QDateTime getTimelineTimestamp() const;
+    QDateTime getRepostTimestamp() const;
 
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
 

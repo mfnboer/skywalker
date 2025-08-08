@@ -1087,7 +1087,8 @@ void PostFeedModel::reportActivity(const Post& post)
     if (did.isEmpty())
         return;
 
-    mFollowsActivityStore.reportActivity(did, post.getTimelineTimestamp());
+    const QDateTime timestamp = post.isRepost() ? post.getRepostTimestamp() : post.getIndexedAt();
+    mFollowsActivityStore.reportActivity(did, timestamp);
 }
 
 void PostFeedModel::Page::setThreadgates()
