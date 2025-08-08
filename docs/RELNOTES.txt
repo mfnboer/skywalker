@@ -1,4 +1,4 @@
-next
+4.12
 ====
 * Online indication for users you follow
 * Moved buttons that were hiding in the top or bottom bars
