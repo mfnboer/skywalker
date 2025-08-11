@@ -3147,10 +3147,11 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
     }
 }
 
+// TODO: specific calls for modList and curateList
 void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     setGetListListInProgress(true);
-    mBsky->getLists(atId, limit, Utils::makeOptionalString(cursor),
+    mBsky->getLists(atId, {}, limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             qDebug() << "getListListAll succeeded, id:" << modelId;
