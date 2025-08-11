@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.12
 ====
 * Online indication for users you follow

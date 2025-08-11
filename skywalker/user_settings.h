@@ -354,6 +354,7 @@ public:
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
     void sync() { mSettings.sync(); }
+    void syncLater() { QTimer::singleShot(0, [this]{ sync(); }); }
 
 signals:
     void contentLanguageFilterChanged();

@@ -341,7 +341,6 @@ private:
     void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
-    void saveSession(const ATProto::ComATProtoServer::Session& session);
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
     void saveSyncTimestamp(int postIndex, int offsetY);
     void saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY);

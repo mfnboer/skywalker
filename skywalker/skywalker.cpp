@@ -163,8 +163,8 @@ void Skywalker::login(const QString host, const QString user, QString password, 
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
             updateUser(session->mDid, host);
-            saveSession(*session);
-            mUserSettings.setRememberPassword(session->mDid, rememberPassword);
+            mUserSettings.saveSession(*session);
+            mUserSettings.setRememberPassword(session->mDid, rememberPassword); // this calls sync
 
             if (rememberPassword)
                 mUserSettings.savePassword(session->mDid, password);
@@ -228,7 +228,8 @@ bool Skywalker::resumeSession(bool retry)
     mBsky->resumeSession(*session,
         [this, retry] {
             qInfo() << "Session resumed";
-            saveSession(*mBsky->getSession());
+            mUserSettings.saveSession(*mBsky->getSession());
+            mUserSettings.sync();
             mUserDid = mBsky->getSession()->mDid;
 
             if (!retry)
@@ -236,13 +237,14 @@ bool Skywalker::resumeSession(bool retry)
                 mBsky->refreshSession(
                     [this]{
                         qDebug() << "Session refreshed";
-                        saveSession(*mBsky->getSession());
+                        mUserSettings.saveSession(*mBsky->getSession());
+                        mUserSettings.sync();
                         startRefreshTimers();
                         emit resumeSessionOk();
                     },
                     [this](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearTokens(mUserDid);
+                        mUserSettings.clearTokens(mUserDid); // calls sync
                         mBsky->clearSession();
                         emit resumeSessionFailed(msg);
                     });
@@ -262,12 +264,13 @@ bool Skywalker::resumeSession(bool retry)
                 mBsky->refreshSession(
                     [this]{
                         qDebug() << "Session refreshed";
-                        saveSession(*mBsky->getSession());
+                        mUserSettings.saveSession(*mBsky->getSession());
+                        mUserSettings.sync();
                         resumeSession(true);
                     },
                     [this, did=session->mDid](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearTokens(did);
+                        mUserSettings.clearTokens(did); // calls sync
                         mBsky->clearSession();
                         emit resumeSessionFailed(msg);
                     });
@@ -367,7 +370,8 @@ void Skywalker::refreshSession(const std::function<void()>& cbDone)
     mBsky->refreshSession(
         [this, cbDone]{
             qDebug() << "Session refreshed";
-            saveSession(*mBsky->getSession());
+            mUserSettings.saveSession(*mBsky->getSession());
+            mUserSettings.syncLater();
 
             if (cbDone)
                 cbDone();
@@ -3624,11 +3628,6 @@ void Skywalker::updateUser(const QString& did, const QString& host)
     mUserSettings.setActiveUserDid(did);
 }
 
-void Skywalker::saveSession(const ATProto::ComATProtoServer::Session& session)
-{
-    QTimer::singleShot(0, this, [this, session]{ mUserSettings.saveSession(session); });
-}
-
 std::optional<ATProto::ComATProtoServer::Session> Skywalker::getSavedSession() const
 {
     const QString did = mUserSettings.getActiveUserDid();
@@ -3769,6 +3768,7 @@ void Skywalker::pauseApp()
         // Make sure tokens are saved as the offline message checker needs them
         // Also timeline sync timestamps should be saved for sync'ing on startup
         mUserSettings.saveSession(*mBsky->getSession());
+        mUserSettings.sync();
     }
 
     saveHashtags();
@@ -3902,7 +3902,13 @@ void Skywalker::signOut()
 
     qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
+
     saveHashtags();
+
+    if (mBsky && mBsky->getSession())
+        mUserSettings.saveSession(*mBsky->getSession());
+
+    mUserSettings.sync();
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();

@@ -305,7 +305,6 @@ std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSess
 void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     mUserSettings.saveSession(session);
-    mUserSettings.sync();
 }
 
 void OffLineMessageChecker::resumeSession(bool retry)
