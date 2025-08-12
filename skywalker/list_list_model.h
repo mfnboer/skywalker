@@ -58,6 +58,8 @@ public:
 
     // Returns the number of lists added
     int addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor);
+    int addLists(ATProto::AppBskyGraph::ListWithMembership::List listsWithMembership, const QString& cursor);
+
     void addLists(const QList<ListView>& lists);
     Q_INVOKABLE void prependList(const ListView& list);
     Q_INVOKABLE ListView updateEntry(int index, const QString& cid, const QString& name,
@@ -72,6 +74,8 @@ public:
     Type getType() const { return mType; }
     Q_INVOKABLE Purpose getPurpose() const { return mPurpose; }
     const QString& getAtId() const { return mAtId; }
+    bool needsMembershipInfo() const { return !mMemberCheckDid.isEmpty(); }
+    const QString& getMemberCheckDid() const { return mMemberCheckDid; }
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -107,12 +111,17 @@ private:
     ListList mLists;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
+
+    // TODO: remove?
     GraphUtils mGraphUtils;
+
     QString mUserDid;
     const ListStore& mTimelineHide;
     const UserSettings& mUserSettings;
     QString mMemberCheckDid;
+
     std::unordered_map<QString, std::optional<QString>> mMemberCheckResults; // listUri -> listItemUri
+
     bool mExcludeInternalLists = false;
 };
 

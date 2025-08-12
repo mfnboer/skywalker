@@ -3134,7 +3134,11 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
 
     switch (type) {
     case ListListModel::Type::LIST_TYPE_ALL:
-        getListListAll(atId, limit, maxPages, minEntries, cursor, id);
+        if ((*model)->needsMembershipInfo())
+            getListListWithMembershipAll((*model)->getMemberCheckDid(), (*model)->getPurpose(), limit, maxPages, minEntries, cursor, id);
+        else
+            getListListAll(atId, (*model)->getPurpose(), limit, maxPages, minEntries, cursor, id);
+
         break;
     case ListListModel::Type::LIST_TYPE_BLOCKS:
         getListListBlocks(limit, maxPages, minEntries, cursor, id);
@@ -3147,11 +3151,22 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
     }
 }
 
-// TODO: specific calls for modList and curateList
-void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
+void Skywalker::getListListAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
+    std::vector<ATProto::AppBskyGraph::ListPurpose> filterPurpose;
+
+    switch (purpose)
+    {
+    case QEnums::LIST_PURPOSE_MOD:
+    case QEnums::LIST_PURPOSE_CURATE:
+        filterPurpose.push_back((ATProto::AppBskyGraph::ListPurpose)purpose);
+        break;
+    default:
+        break;
+    }
+
     setGetListListInProgress(true);
-    mBsky->getLists(atId, {}, limit, Utils::makeOptionalString(cursor),
+    mBsky->getLists(atId, filterPurpose, limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             setGetListListInProgress(false);
             qDebug() << "getListListAll succeeded, id:" << modelId;
@@ -3172,6 +3187,47 @@ void Skywalker::getListListAll(const QString& atId, int limit, int maxPages, int
         [this](const QString& error, const QString& msg){
             setGetListListInProgress(false);
             qDebug() << "getListListAll failed:" << error << " - " << msg;
+            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
+    qDebug() << "Get lists with membership:" << atId;
+    std::vector<ATProto::AppBskyGraph::ListPurpose> filterPurpose;
+
+    switch (purpose)
+    {
+    case QEnums::LIST_PURPOSE_MOD:
+    case QEnums::LIST_PURPOSE_CURATE:
+        filterPurpose.push_back((ATProto::AppBskyGraph::ListPurpose)purpose);
+        break;
+    default:
+        break;
+    }
+
+    setGetListListInProgress(true);
+    mBsky->getListsWithMembership(atId, filterPurpose, limit, Utils::makeOptionalString(cursor),
+        [this, modelId, limit, maxPages, minEntries, cursor](auto output){
+            setGetListListInProgress(false);
+            qDebug() << "getListListWithMembershipAll succeeded, id:" << modelId;
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+            {
+                if (cursor.isEmpty())
+                    (*model)->clear();
+
+                const int added = (*model)->addLists(std::move(output->mListsWithMembership), output->mCursor.value_or(""));
+                const int toAdd = minEntries - added;
+
+                if (toAdd > 0)
+                    getListListNextPage(modelId, limit, maxPages - 1, toAdd);
+            }
+        },
+        [this](const QString& error, const QString& msg){
+            setGetListListInProgress(false);
+            qDebug() << "getListListWithMembershipAll failed:" << error << " - " << msg;
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }

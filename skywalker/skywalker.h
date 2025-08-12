@@ -323,7 +323,8 @@ private:
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getListListAll(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getListListAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user);

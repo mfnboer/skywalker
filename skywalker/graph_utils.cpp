@@ -1003,7 +1003,7 @@ void GraphUtils::unmuteReposts(const QString& did)
     removeListUser(mutedReposts.getListUri(), *listItemUri);
 }
 
-bool GraphUtils::isInternalList(const QString& listUri) const
+bool GraphUtils::isInternalList(const QString& listUri)
 {
     ATProto::ATUri atUri(listUri);
     return atUri.isValid() && atUri.getRkey() == RKEY_MUTED_REPOSTS;

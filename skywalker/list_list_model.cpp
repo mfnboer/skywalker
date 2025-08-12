@@ -109,6 +109,7 @@ void ListListModel::clear()
 int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor)
 {
     qDebug() << "Add lists:" << lists.size() << "cursor:" << cursor;
+    Q_ASSERT(mMemberCheckDid.isEmpty());
     mCursor = cursor;
 
     const auto filteredLists = filterLists(std::move(lists));
@@ -125,11 +126,44 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
     mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
 
-    if (!mMemberCheckDid.isEmpty())
+    // TODO: remove?
+    // if (!mMemberCheckDid.isEmpty())
+    // {
+    //     for (const auto& l : filteredLists)
+    //         mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
+    // }
+
+    qDebug() << "New lists size:" << mLists.size();
+    return filteredLists.size();
+}
+
+int ListListModel::addLists(ATProto::AppBskyGraph::ListWithMembership::List listsWithMembership, const QString& cursor)
+{
+    qDebug() << "Add lists with membership:" << listsWithMembership.size() << "cursor:" << cursor;
+    Q_ASSERT(!mMemberCheckDid.isEmpty());
+    mCursor = cursor;
+    ATProto::AppBskyGraph::ListViewList lists;
+    lists.reserve(listsWithMembership.size());
+
+    for (const auto& list : listsWithMembership)
     {
-        for (const auto& l : filteredLists)
-            mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
+        lists.push_back(list->mList);
+        mMemberCheckResults[list->mList->mUri] = list->mListItem ? list->mListItem->mUri : "";
     }
+
+    const auto filteredLists = filterLists(std::move(lists));
+
+    if (filteredLists.empty())
+    {
+        qDebug() << "No new lists";
+        return 0;
+    }
+
+    const size_t newRowCount = mLists.size() + filteredLists.size();
+
+    beginInsertRows({}, mLists.size(), newRowCount - 1);
+    mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
+    endInsertRows();
 
     qDebug() << "New lists size:" << mLists.size();
     return filteredLists.size();
@@ -138,6 +172,7 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
 void ListListModel::addLists(const QList<ListView>& lists)
 {
     qDebug() << "Add lists:" << lists.size();
+    Q_ASSERT(mMemberCheckDid.isEmpty());
 
     if (lists.empty())
     {
@@ -151,11 +186,12 @@ void ListListModel::addLists(const QList<ListView>& lists)
     mLists.insert(mLists.end(), lists.begin(), lists.end());
     endInsertRows();
 
-    if (!mMemberCheckDid.isEmpty())
-    {
-        for (const auto& l : lists)
-            mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
-    }
+    // TODO: is this needed?
+    // if (!mMemberCheckDid.isEmpty())
+    // {
+    //     for (const auto& l : lists)
+    //         mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
+    // }
 
     qDebug() << "New lists size:" << mLists.size();
 }
@@ -163,13 +199,15 @@ void ListListModel::addLists(const QList<ListView>& lists)
 void ListListModel::prependList(const ListView& list)
 {
     qDebug() << "Prepend list:" << list.getName();
+    Q_ASSERT(mMemberCheckDid.isEmpty());
 
     beginInsertRows({}, 0, 0);
     mLists.push_front(list);
     endInsertRows();
 
-    if (!mMemberCheckDid.isEmpty())
-        mGraphUtils.isListUser(list.getUri(), mMemberCheckDid);
+    // TODO: is this needed?
+    // if (!mMemberCheckDid.isEmpty())
+    //     mGraphUtils.isListUser(list.getUri(), mMemberCheckDid);
 
     qDebug() << "New lists size:" << mLists.size();
 }
@@ -242,7 +280,7 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
 
     for (auto&& listView : lists)
     {
-        if (mExcludeInternalLists && mGraphUtils.isInternalList(listView->mUri))
+        if (mExcludeInternalLists && GraphUtils::isInternalList(listView->mUri))
             continue;
 
         if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN &&

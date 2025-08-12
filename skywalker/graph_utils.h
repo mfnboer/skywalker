@@ -63,7 +63,7 @@ public:
     Q_INVOKABLE void unmuteReposts(const QString& did);
 
     // Check if a list is a list internally used by Skywalker
-    bool isInternalList(const QString& listUri) const;
+    static bool isInternalList(const QString& listUri);
 
     void startExpiryCheckTimer();
     void stopExpiryCheckTimer();
