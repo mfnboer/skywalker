@@ -40,7 +40,6 @@ public:
     Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
     Q_INVOKABLE void addListUser(const QString& listUri, const BasicProfile& profile);
     Q_INVOKABLE void removeListUser(const QString& listUri, const QString& listItemUri);
-    Q_INVOKABLE void isListUser(const QString& listUri, const QString& did, int maxPages = 10, const std::optional<QString> cursor = {});
 
     Q_INVOKABLE void createListFromStarterPack(const StarterPackView& starterPack);
 
@@ -97,8 +96,6 @@ signals:
     void addListUserFailed(QString error);
     void removeListUserOk();
     void removeListUserFailed(QString error);
-    void isListUserOk(QString listUri, QString did, QString listItemUri);
-    void isListUserFailed(QString error);
     void blockListOk(QString uri);
     void blockListFailed(QString error);
     void unblockListOk();

@@ -1,5 +1,6 @@
 next
 ====
+* Performance improvement for list functions
 * Bug fixes
 
 4.12

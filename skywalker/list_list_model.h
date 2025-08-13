@@ -2,7 +2,6 @@
 // License: GPLv3
 #pragma once
 #include "base_list_model.h"
-#include "graph_utils.h"
 #include "list_store.h"
 #include "list_view.h"
 #include "local_list_model_changes.h"
@@ -97,7 +96,6 @@ private:
     using ListList = std::deque<ListView>;
 
     QEnums::TripleBool memberCheck(const QString& listUri) const;
-    void updateMemberCheckResults(const QString& listUri, const QString& listItemUri);
     QString getMemberListItemUri(const QString& listUri) const;
     void listSavedChanged();
     void listPinnedChanged();
@@ -111,17 +109,11 @@ private:
     ListList mLists;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
-
-    // TODO: remove?
-    GraphUtils mGraphUtils;
-
     QString mUserDid;
     const ListStore& mTimelineHide;
     const UserSettings& mUserSettings;
     QString mMemberCheckDid;
-
-    std::unordered_map<QString, std::optional<QString>> mMemberCheckResults; // listUri -> listItemUri
-
+    std::unordered_map<QString, QString> mMemberCheckResults; // listUri -> listItemUri
     bool mExcludeInternalLists = false;
 };
 

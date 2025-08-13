@@ -603,51 +603,6 @@ void GraphUtils::getListView(const QString& listUri, bool viewPosts)
         });
 }
 
-void GraphUtils::isListUser(const QString& listUri, const QString& did, int maxPages, const std::optional<QString> cursor)
-{
-    if (!bskyClient())
-        return;
-
-    if (maxPages <= 0)
-    {
-        qWarning() << "Max pages reached";
-        emit isListUserOk(listUri, did, {});
-        return;
-    }
-
-    bskyClient()->getList(listUri, 100, cursor,
-        [this, presence=getPresence(), listUri, did, maxPages](auto output){
-            if (!presence)
-                return;
-
-            for (const auto& item : output->mItems)
-            {
-                if (item->mSubject->mDid == did)
-                {
-                    qDebug() << "User:" << did << "is member of list:" << listUri << ", itemUri:" << item->mUri;
-                    emit isListUserOk(listUri, did, item->mUri);
-                    return;
-                }
-            }
-
-            if (output->mCursor)
-            {
-                isListUser(listUri, did, maxPages - 1, output->mCursor);
-            }
-            else
-            {
-                emit isListUserOk(listUri, did, {});
-            }
-        },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
-            if (!presence)
-                return;
-
-            qDebug() << "getListViewfailed:" << error << " - " << msg;
-            emit isListUserFailed(msg);
-        });
-}
-
 void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile)
 {
     if (!graphMaster())

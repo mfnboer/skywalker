@@ -13,6 +13,7 @@
 #include "feed_list_model.h"
 #include "feed_pager.h"
 #include "follows_activity_store.h"
+#include "graph_utils.h"
 #include "hashtag_index.h"
 #include "item_store.h"
 #include "labeler.h"

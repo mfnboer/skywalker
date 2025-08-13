@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "list_list_model.h"
+#include "graph_utils.h"
 #include "skywalker.h"
 #include "favorite_feeds.h"
 
@@ -14,22 +15,15 @@ ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
     mPurpose(purpose),
     mAtId(atId),
     mFavoriteFeeds(favoriteFeeds),
-    mGraphUtils(this),
     mUserDid(skywalker->getUserDid()),
     mTimelineHide(*skywalker->getTimelineHide()),
     mUserSettings(*skywalker->getUserSettings())
 {
     qDebug() << "New list list model type:" << type << "purpose:" << purpose << "atId:" << atId;
-    mGraphUtils.setSkywalker(skywalker);
 
     connect(&mFavoriteFeeds, &FavoriteFeeds::listSaved, this, [this]{ listSavedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::listPinned, this, [this]{ listPinnedChanged(); });
     connect(&mFavoriteFeeds, &FavoriteFeeds::listUnpinned, this, [this](QString){ listPinnedChanged(); });
-
-    connect(&mGraphUtils, &GraphUtils::isListUserOk, this,
-            [this](const QString& listUri, const QString&, const QString& listItemUri){
-                updateMemberCheckResults(listUri, listItemUri);
-            });
 }
 
 int ListListModel::rowCount(const QModelIndex& parent) const
@@ -126,13 +120,6 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QSt
     mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
 
-    // TODO: remove?
-    // if (!mMemberCheckDid.isEmpty())
-    // {
-    //     for (const auto& l : filteredLists)
-    //         mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
-    // }
-
     qDebug() << "New lists size:" << mLists.size();
     return filteredLists.size();
 }
@@ -186,13 +173,6 @@ void ListListModel::addLists(const QList<ListView>& lists)
     mLists.insert(mLists.end(), lists.begin(), lists.end());
     endInsertRows();
 
-    // TODO: is this needed?
-    // if (!mMemberCheckDid.isEmpty())
-    // {
-    //     for (const auto& l : lists)
-    //         mGraphUtils.isListUser(l.getUri(), mMemberCheckDid);
-    // }
-
     qDebug() << "New lists size:" << mLists.size();
 }
 
@@ -204,10 +184,6 @@ void ListListModel::prependList(const ListView& list)
     beginInsertRows({}, 0, 0);
     mLists.push_front(list);
     endInsertRows();
-
-    // TODO: is this needed?
-    // if (!mMemberCheckDid.isEmpty())
-    //     mGraphUtils.isListUser(list.getUri(), mMemberCheckDid);
 
     qDebug() << "New lists size:" << mLists.size();
 }
@@ -332,22 +308,11 @@ QEnums::TripleBool ListListModel::memberCheck(const QString& listUri) const
 
     if (it != mMemberCheckResults.end())
     {
-        const std::optional<QString>& listItemUri = it->second;
-
-        if (!listItemUri)
-            return QEnums::TRIPLE_BOOL_UNKNOWN;
-
-        return listItemUri->isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
+        const QString& listItemUri = it->second;
+        return listItemUri.isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
     }
 
     return QEnums::TRIPLE_BOOL_UNKNOWN;
-}
-
-void ListListModel::updateMemberCheckResults(const QString& listUri, const QString& listItemUri)
-{
-    qDebug() << "List:" << listUri << "Item:" << listItemUri;
-    mMemberCheckResults[listUri] = listItemUri;
-    changeData({ int(Role::MemberCheck), int(Role::MemberListItemUri) });
 }
 
 QString ListListModel::getMemberListItemUri(const QString& listUri) const
@@ -362,8 +327,8 @@ QString ListListModel::getMemberListItemUri(const QString& listUri) const
     if (it == mMemberCheckResults.end())
         return {};
 
-    qDebug() << "Get member, list:" << listUri << "item:" << *(it->second);
-    return *(it->second);
+    qDebug() << "Get member, list:" << listUri << "item:" << it->second;
+    return it->second;
 }
 
 void ListListModel::blockedChanged()
