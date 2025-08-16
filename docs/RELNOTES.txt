@@ -1,5 +1,6 @@
 next
 ====
+* Position post thread view on the post you clicked
 * Performance improvement for list functions
 * Bug fixes
 

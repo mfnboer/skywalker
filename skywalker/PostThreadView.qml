@@ -202,8 +202,8 @@ SkyListView {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
-        positionViewAtIndex(index, ListView.End)
-        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+        positionViewAtIndex(index, ListView.Center)
+        return (firstVisibleIndex <= index && lastVisibleIndex >= index)
     }
 
     function rowsInsertedHandler(parent, start, end) {
@@ -213,6 +213,9 @@ SkyListView {
         if (start === 0 && inserted !== count) {
             moveToIndex(end + 1, sync)
             postEntryIndex += inserted
+        }
+        else {
+            moveToIndex(postEntryIndex, sync)
         }
     }
 
