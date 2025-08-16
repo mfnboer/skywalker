@@ -56,6 +56,9 @@ SkyListView {
     }
 
     onContentYChanged: {
+        if (modelId < 0)
+            return
+
         const lastVisibleIndex = getLastVisibleIndex()
 
         if (count - lastVisibleIndex < 10 && Boolean(model) && !model.getFeedInProgress) {
