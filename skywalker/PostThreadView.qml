@@ -4,7 +4,7 @@ import skywalker
 SkyListView {
     required property int modelId
     required property int postEntryIndex
-    property bool syncToEntry: true
+    property int syncToIndex: postEntryIndex
     property var skywalker: root.getSkywalker()
     readonly property string sideBarTitle: qsTr("Post thread")
     readonly property SvgImage sideBarSvg: SvgOutline.chat
@@ -147,8 +147,14 @@ SkyListView {
     delegate: PostFeedViewDelegate {
         width: view.width
         onShowHiddenReplies: model.showHiddenReplies()
-        onAddMorePosts: (uri) => skywalker.addPostThread(uri, modelId)
-        onAddOlderPosts: skywalker.addOlderPostThread(modelId)
+        onAddMorePosts: (uri) => {
+            syncToIndex = getLastVisibleIndex() + 1
+            skywalker.addPostThread(uri, modelId)
+        }
+        onAddOlderPosts: {
+            syncToIndex = 0
+            skywalker.addOlderPostThread(modelId)
+        }
     }
 
     FlickableRefresher {
@@ -212,10 +218,10 @@ SkyListView {
 
         if (start === 0 && inserted !== count) {
             moveToIndex(end + 1, sync)
-            postEntryIndex += inserted
+            syncToIndex += inserted
         }
         else {
-            moveToIndex(postEntryIndex, sync)
+            moveToIndex(syncToIndex, sync)
         }
     }
 
