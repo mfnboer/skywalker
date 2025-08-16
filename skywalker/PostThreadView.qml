@@ -146,9 +146,12 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: view.width
-        onShowHiddenReplies: model.showHiddenReplies()
+        onShowHiddenReplies: {
+            syncToIndex = index
+            model.showHiddenReplies()
+        }
         onAddMorePosts: (uri) => {
-            syncToIndex = getLastVisibleIndex() + 1
+            syncToIndex = index
             skywalker.addPostThread(uri, modelId)
         }
         onAddOlderPosts: {
