@@ -566,6 +566,7 @@ qt_add_qml_module(libskywalker
         SOURCES activity_status.h
         SOURCES follows_activity_store.cpp
         SOURCES activity_status.cpp
+        QML_FILES EditImage.qml
 )
 
 if (NOT ANDROID)

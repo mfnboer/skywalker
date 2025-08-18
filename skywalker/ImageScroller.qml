@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
+// Some ugliness: this code depends on being a child of ComposePost
 ScrollView {
     property int imgWidth: 240
     property bool requireAltText: false
@@ -78,6 +79,15 @@ ScrollView {
                     onClicked: postUtils.sharePhotoToApp(modelData)
                 }
 
+                SvgButton {
+                    anchors.centerIn: parent
+                    width: 34
+                    height: width
+                    svg: SvgOutline.edit
+                    accessibleName: qsTr(`edit picture ${(index + 1)}`)
+                    onClicked: imageScroller.editImage(index)
+                }
+
                 SkyLabel {
                     anchors.left: parent.left
                     anchors.right: parent.right
@@ -94,7 +104,6 @@ ScrollView {
             }
         }
     }
-
 
     function removeImage(index) {
         postUtils.dropPhoto(images[index])
@@ -158,5 +167,18 @@ ScrollView {
         })
         memePage.onCancel.connect(() => root.popStack())
         root.pushStack(memePage)
+    }
+
+    function editImage(index) {
+        let component = guiSettings.createComponent("EditImage.qml")
+        let editPage = component.createObject(page, {
+            imgSource: images[index]
+        })
+        editPage.onDone.connect((newImgSource) => {
+            images[index] = newImgSource
+            root.popStack()
+        })
+        editPage.onCancel.connect(() => root.popStack())
+        root.pushStack(editPage)
     }
 }

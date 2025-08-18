@@ -3,7 +3,9 @@
 #include "image_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
+#include "shared_image_provider.h"
 #include "songlink.h"
+#include <QTransform>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
@@ -232,6 +234,49 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
         return 1000.0 / 690.0;
 
     return 720.0 / 1280.0;
+}
+
+QString ImageUtils::transformImage(const QString& imgSource, const QList<QEnums::ImageTransform>& transformations) const
+{
+    qDebug() << "Transform image:" << imgSource;
+
+    if (transformations.empty())
+    {
+        qDebug() << "No transformations";
+        return imgSource;
+    }
+
+    QImage img = PhotoPicker::loadImage(imgSource);
+
+    if (img.isNull())
+    {
+        qWarning() << "Cannot load image:" << imgSource;
+        return imgSource;
+    }
+
+    for (auto transformation : transformations)
+    {
+        switch (transformation)
+        {
+        case QEnums::IMAGE_TRANSFORM_MIRROR:
+            qDebug() << "Mirror";
+            img = img.mirrored(true, false);
+            break;
+        case QEnums::IMAGE_TRANSFORM_ROTATE:
+            qDebug() << "Rotate";
+            img = img.transformed(QTransform().rotate(-90));
+            break;
+        }
+    }
+
+    auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+
+    if (imgSource.startsWith("image://"))
+        imgProvider->removeImage(imgSource);
+
+    const QString newSource = imgProvider->addImage(img);
+    qDebug() << "New image source:" << newSource;
+    return newSource;
 }
 
 }

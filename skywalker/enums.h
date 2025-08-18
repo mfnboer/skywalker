@@ -404,6 +404,13 @@ public:
         ACTOR_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::ActorStatus::UNKNOWN
     };
     Q_ENUM(ActorStatus)
+
+    enum ImageTransform
+    {
+        IMAGE_TRANSFORM_MIRROR,
+        IMAGE_TRANSFORM_ROTATE
+    };
+    Q_ENUM(ImageTransform)
 };
 
 }

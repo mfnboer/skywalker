@@ -36,6 +36,8 @@ SkyPage {
         }
     }
 
+    footer: DeadFooterMargin {}
+
     Image {
         property int boundingWidth: maskWidth
         property int boundingHeight: maskHeight
@@ -47,6 +49,7 @@ SkyPage {
         width: parent.width
         height: parent.height - helpText.height
         fillMode: Image.PreserveAspectFit
+        autoTransform: true
         source: photoSource
         transform: Translate { id: imgTranslation }
 
