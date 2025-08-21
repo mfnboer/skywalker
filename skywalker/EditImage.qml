@@ -5,7 +5,9 @@ SkyPage {
     required property string imgSource
     readonly property int cornerSize: 30
     readonly property int cornerBorderWidth: 3
-    readonly property int usableHeight: height - header.height - buttonRow.height
+    readonly property double maskOpacity: 0.8
+    readonly property string maskColor: guiSettings.backgroundColor
+    readonly property int usableHeight: height - header.height - buttonRow.height - footer.height
 
     signal cancel
     signal done(string newImgSource)
@@ -30,6 +32,7 @@ SkyPage {
     footer: DeadFooterMargin {}
 
     Item {
+        id: editItem
         width: parent.width
         height: usableHeight
 
@@ -68,33 +71,14 @@ SkyPage {
             readonly property bool sidesSwapped: rotationCount % 2 === 1
 
             id: img
-            // x: (page.width - width) / 2
-            // y: (page.usableHeight - height) / 2
             anchors.centerIn: parent
-            width: startSize.width // sidesSwapped ? page.usableHeight : page.width
-            height: startSize.height // sidesSwapped ? page.width : page.usableHeight
+            width: startSize.width
+            height: startSize.height
             fillMode: Image.PreserveAspectCrop
             autoTransform: true
             source: imgSource
             scale: 1
-            transform: [Translate {
-                    id: imgTranslation
-
-                    onXChanged: console.debug("TRANS X:", x)
-                }]
-
-            // onSidesSwappedChanged: {
-            //     const r = boundingRect.getSwappedCutScale() / boundingRect.getNormalCutScale()
-
-            //     if (sidesSwapped) {
-            //         imgTranslation.x *= r
-            //         imgTranslation.y *= r
-            //     }
-            //     else {
-            //         imgTranslation.x /= r
-            //         imgTranslation.y /= r
-            //     }
-            // }
+            transform: [Translate { id: imgTranslation }]
 
             PinchHandler {
                 target: null
@@ -160,34 +144,14 @@ SkyPage {
                 }
             }
 
-            function getNormalScale() {
+            function calcImgStartScale() {
                 const xScale = page.width / sourceSize.width
                 const yScale = page.usableHeight / sourceSize.height
                 return Math.min(xScale, yScale)
             }
 
-            function getImageNormalSize() {
-                const s = getNormalScale()
-                return Qt.size(sourceSize.width * s, sourceSize.height * s)
-            }
-
-            function getSwappedScale() {
-                const xScale = page.usableHeight / sourceSize.width
-                const yScale = page.width / sourceSize.height
-                return Math.min(xScale, yScale)
-            }
-
-            function getImgStartScale() {
-                // if (sidesSwapped) {
-                //     console.debug("SWAPPED RATIO:", boundingRect.sidesSwappedRatio, (boundingRect.getSwappedCutScale() / boundingRect.getNormalCutScale()))
-                //     return getNormalScale() * boundingRect.sidesSwappedRatio
-                // }
-
-                return getNormalScale()
-            }
-
             function getImgStartSize() {
-                const s = getImgStartScale()
+                const s = calcImgStartScale()
                 return Qt.size(sourceSize.width * s, sourceSize.height * s)
             }
 
@@ -243,20 +207,11 @@ SkyPage {
 
         Rectangle {
             property rect cutRect: Qt.rect(0, 0, img.sourceSize.width, img.sourceSize.height)
-            readonly property double cutScale: getNormalCutScale() // img.sidesSwapped ? getSwappedCutScale() : getNormalCutScale()
-            property double sidesSwappedRatio: 1 // getSwappedCutScale() / getNormalCutScale()
-            property int prevWidth: 0
-            property int prevHeight: 0
+            readonly property double cutScale: calcCutScale()
 
-            function getNormalCutScale() {
+            function calcCutScale() {
                 const xScale = page.width / cutRect.width
                 const yScale = page.usableHeight / cutRect.height
-                return Math.min(xScale, yScale)
-            }
-
-            function getSwappedCutScale() {
-                const xScale = page.usableHeight / cutRect.width
-                const yScale = page.width / cutRect.height
                 return Math.min(xScale, yScale)
             }
 
@@ -267,13 +222,10 @@ SkyPage {
             }
 
             id: boundingRect
-            // x: (page.width - width) / 2
-            // y: (page.usableHeight - height) / 2
             anchors.centerIn: parent
             width: getCutRect().width
             height: getCutRect().height
-            color: "yellow"
-            opacity: 0.2
+            color: "transparent"
             border.color: guiSettings.textColor
             transform: []
 
@@ -292,15 +244,15 @@ SkyPage {
                 imgTranslation.x += -cutTopLeftX / 2 + (width - cutTopRightX) / 2
                 imgTranslation.y += -cutTopLeftY / 2 + (height - cutBottomLeftY) / 2
 
-                const prevCutScale = getNormalCutScale()
+                const prevCutScale = cutScale
                 cutRect.x = cx
                 cutRect.y = cy
                 cutRect.width = cw
                 cutRect.height = ch
-                const ratio = getNormalCutScale() / prevCutScale
+                const ratio = cutScale / prevCutScale
 
                 const center = Qt.point(img.getCenter().x - imgTranslation.x / img.scale, img.getCenter().y - imgTranslation.y / img.scale)
-                console.debug("CUT:", cutRect,  Qt.point(cutTopLeftX, cutTopLeftY), Qt.point(cx, cy), "WIDTH:", cutWidth, cw, "RATIO:", ratio, "CENTER:", center, "IMG CENTER:", img.getCenter(), "SCALE:", img.scale, sidesSwappedRatio)
+                console.debug("CUT:", cutRect,  Qt.point(cutTopLeftX, cutTopLeftY), Qt.point(cx, cy), "WIDTH:", cutWidth, cw, "RATIO:", ratio, "CENTER:", center, "IMG CENTER:", img.getCenter(), "SCALE:", img.scale)
                 img.updateScale(center, ratio)
             }
 
@@ -469,10 +421,103 @@ SkyPage {
                     }
                 }
             }
+
+            Rectangle {
+                id: topCutMask
+                anchors.topMargin: 1
+                anchors.leftMargin: 1
+                anchors.rightMargin: 1
+                anchors.top: parent.top
+                anchors.bottom: topLeftCorner.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: maskColor
+                opacity: maskOpacity
+            }
+
+            Rectangle {
+                id: bottomCutMask
+                anchors.bottomMargin: 1
+                anchors.leftMargin: 1
+                anchors.rightMargin: 1
+                anchors.top: bottomnLeftCorner.bottom
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: maskColor
+                opacity: maskOpacity
+            }
+
+            Rectangle {
+                id: leftCutMask
+                anchors.leftMargin: 1
+                anchors.topMargin: topLeftCorner.y === 0 ? 1 : 0
+                anchors.bottomMargin: bottomnLeftCorner.y === boundingRect.height - cornerSize ? 1 : 0
+                anchors.top: topCutMask.bottom
+                anchors.bottom: bottomCutMask.top
+                anchors.left: parent.left
+                anchors.right: topLeftCorner.left
+                color: maskColor
+                opacity: maskOpacity
+            }
+
+            Rectangle {
+                id: rightCutMask
+                anchors.rightMargin: 1
+                anchors.topMargin: topLeftCorner.y === 0 ? 1 : 0
+                anchors.bottomMargin: bottomnLeftCorner.y === boundingRect.height - cornerSize ? 1 : 0
+                anchors.top: topCutMask.bottom
+                anchors.bottom: bottomCutMask.top
+                anchors.right: parent.right
+                anchors.left: topRightCorner.right
+                color: maskColor
+                opacity: maskOpacity
+            }
         }
     }
 
     Rectangle {
+        id: topMask
+        anchors.top: parent.top
+        height: (page.usableHeight - (img.sidesSwapped ? boundingRect.width : boundingRect.height) * editItem.scale) / 2
+        anchors.left: parent.left
+        anchors.right: parent.right
+        color: maskColor
+        opacity: maskOpacity
+    }
+
+    Rectangle {
+        id: bottomMask
+        height: topMask.height
+        anchors.bottom: buttonRect.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        color: maskColor
+        opacity: maskOpacity
+    }
+
+    Rectangle {
+        id: leftMask
+        anchors.top: topMask.bottom
+        anchors.bottom: bottomMask.top
+        anchors.left: parent.left
+        width: (parent.width - (img.sidesSwapped ? boundingRect.height : boundingRect.width) * editItem.scale) / 2
+        color: maskColor
+        opacity: maskOpacity
+    }
+
+    Rectangle {
+        id: rightMask
+        anchors.top: topMask.bottom
+        anchors.bottom: bottomMask.top
+        anchors.right: parent.right
+        width: leftMask.width
+        color: maskColor
+        opacity: maskOpacity
+    }
+
+    Rectangle {
+        id: buttonRect
         anchors.bottom: parent.bottom
         width: parent.width
         height: buttonRow.height
