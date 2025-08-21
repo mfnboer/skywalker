@@ -33,7 +33,28 @@ SkyPage {
         width: parent.width
         height: usableHeight
 
-        scale: (img.sidesSwapped && boundingRect.height > width) ? width / boundingRect.height : 1
+        scale: calcScale()
+
+        function calcScale() {
+            let s = 1
+
+            if (img.sidesSwapped) {
+                if (boundingRect.height > width)
+                    s = width / boundingRect.height
+
+                if (boundingRect.width > height)
+                    s = Math.min(s, height / boundingRect.width)
+            }
+            else {
+                if (boundingRect.width > width)
+                    s = width / boundingRect.width
+
+                if (boundingRect.height > height)
+                    s = Math.min(s, height / boundingRect.height)
+            }
+
+            return s
+        }
 
         Image {
             property size startSize: getImgStartSize()
@@ -256,45 +277,20 @@ SkyPage {
             border.color: guiSettings.textColor
             transform: []
 
-            onWidthChanged: {
-                if (prevWidth > 0 && width > 0) {
-                    const change = width / prevWidth
-                    console.debug("WIDTH:", width, "CHANGE:", change)
-                    topLeftCorner.x *= change
-                    topLeftCorner.width *= change
-                }
+            onWidthChanged: fixCorners()
+            onHeightChanged: fixCorners()
 
-                prevWidth = width
-            }
-
-            onHeightChanged: {
-                if (prevHeight > 0 && height > 0) {
-                    const change = height / prevHeight
-                    console.debug("HEIGHT:", height, "CHANGE:", change)
-                    topLeftCorner.y *= change
-                    topLeftCorner.height *= change
-                }
-
-                prevHeight = height
-            }
-
-            function updateCutRect(cutX, cutY, cutWidth, cutHeight) {
-                const cx = cutX / cutScale + cutRect.x
-                const cy = cutY / cutScale + cutRect.y
+            function updateCutRect(cutTopLeftX, cutTopLeftY, cutTopRightX, cutTopRightY,
+                                   cutBottomLeftX, cutBottomLeftY, cutBottomRightX, cutBottomRightY) {
+                const cx = cutTopLeftX / cutScale + cutRect.x
+                const cy = cutTopLeftY / cutScale + cutRect.y
+                const cutWidth = cutTopRightX - cutTopLeftX
+                const cutHeight = cutBottomLeftY - cutTopLeftY
                 const cw = cutWidth / cutScale
                 const ch = cutHeight / cutScale
 
-                // let ratio = cutRect.width / cw
-                // let newHeight = cutHeight * ratio
-                // const maxHeight = img.sidesSwapped ? page.width : page.usableHeight
-
-                // if (newHeight > page.maxHeight) {
-                //     const shrinkRatio = maxHeight / newHeight
-                //     ratio *= shrinkRatio
-                // }
-
-                imgTranslation.x += -cutX / 2
-                imgTranslation.y += -cutY / 2
+                imgTranslation.x += -cutTopLeftX / 2 + (width - cutTopRightX) / 2
+                imgTranslation.y += -cutTopLeftY / 2 + (height - cutBottomLeftY) / 2
 
                 const prevCutScale = getNormalCutScale()
                 cutRect.x = cx
@@ -304,8 +300,30 @@ SkyPage {
                 const ratio = getNormalCutScale() / prevCutScale
 
                 const center = Qt.point(img.getCenter().x - imgTranslation.x / img.scale, img.getCenter().y - imgTranslation.y / img.scale)
-                console.debug("CUT:", cutRect,  Qt.point(cutX, cutY), Qt.point(cx, cy), "WIDTH:", cutWidth, cw, "RATIO:", ratio, "CENTER:", center, "IMG CENTER:", img.getCenter(), "SCALE:", img.scale, sidesSwappedRatio)
+                console.debug("CUT:", cutRect,  Qt.point(cutTopLeftX, cutTopLeftY), Qt.point(cx, cy), "WIDTH:", cutWidth, cw, "RATIO:", ratio, "CENTER:", center, "IMG CENTER:", img.getCenter(), "SCALE:", img.scale, sidesSwappedRatio)
                 img.updateScale(center, ratio)
+            }
+
+            function handleCut() {
+                boundingRect.updateCutRect(topLeftCorner.x, topLeftCorner.y,
+                                           topRightCorner.x + cornerSize, topRightCorner.y,
+                                           bottomnLeftCorner.x, bottomnLeftCorner.y + cornerSize,
+                                           bottomRightCorner.x + cornerSize, bottomRightCorner.y + cornerSize)
+                fixCorners()
+            }
+
+            function fixCorners() {
+                topLeftCorner.x = 0
+                topLeftCorner.y = 0
+
+                topRightCorner.x = boundingRect.width - cornerSize
+                topRightCorner.y = 0
+
+                bottomnLeftCorner.x = 0
+                bottomnLeftCorner.y = boundingRect.height - cornerSize
+
+                bottomRightCorner.x = boundingRect.width - cornerSize
+                bottomRightCorner.y = boundingRect.height - cornerSize
             }
 
             Rectangle {
@@ -316,19 +334,137 @@ SkyPage {
                 border.width: cornerBorderWidth
                 border.color: guiSettings.textColor
 
+                onXChanged: {
+                    if (topLeftMouse.drag.active)
+                        bottomnLeftCorner.x = x
+                }
+
+                onYChanged: {
+                    if (topLeftMouse.drag.active)
+                        topRightCorner.y = y
+                }
+
                 MouseArea {
+                    id: topLeftMouse
                     anchors.fill: parent
                     drag.target: parent
                     drag.minimumX: 0
+                    drag.maximumX: topRightCorner.x - cornerSize
                     drag.minimumY: 0
+                    drag.maximumY: bottomnLeftCorner.y - cornerSize
 
                     drag.onActiveChanged: {
                         if (!drag.active) {
-                            boundingRect.updateCutRect(topLeftCorner.x, topLeftCorner.y,
-                                                       boundingRect.width - topLeftCorner.x,
-                                                       boundingRect.height - topLeftCorner.y)
-                            topLeftCorner.x = 0
-                            topLeftCorner.y = 0
+                            boundingRect.handleCut()
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: topRightCorner
+                x: parent.width - width
+                width: cornerSize
+                height: cornerSize
+                color: "transparent"
+                border.width: cornerBorderWidth
+                border.color: guiSettings.textColor
+
+                onXChanged: {
+                    if (topRightMouse.drag.active)
+                        bottomRightCorner.x = x
+                }
+
+                onYChanged: {
+                    if (topRightMouse.drag.active)
+                        topLeftCorner.y = y
+                }
+
+                MouseArea {
+                    id: topRightMouse
+                    anchors.fill: parent
+                    drag.target: parent
+                    drag.minimumX: topLeftCorner.x + cornerSize
+                    drag.maximumX: boundingRect.width - cornerSize
+                    drag.minimumY: 0
+                    drag.maximumY: bottomRightCorner.y - cornerSize
+
+                    drag.onActiveChanged: {
+                        if (!drag.active) {
+                            boundingRect.handleCut()
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: bottomnLeftCorner
+                y: boundingRect.height - cornerSize
+                width: cornerSize
+                height: cornerSize
+                color: "transparent"
+                border.width: cornerBorderWidth
+                border.color: guiSettings.textColor
+
+                onXChanged: {
+                    if (bottomLeftMouse.drag.active)
+                        topLeftCorner.x =x
+                }
+
+                onYChanged: {
+                    if (bottomLeftMouse.drag.active)
+                        bottomRightCorner.y = y
+                }
+
+                MouseArea {
+                    id: bottomLeftMouse
+                    anchors.fill: parent
+                    drag.target: parent
+                    drag.minimumX: 0
+                    drag.maximumX: bottomRightCorner.x - cornerSize
+                    drag.minimumY: topLeftCorner.y + cornerSize
+                    drag.maximumY: boundingRect.height - cornerSize
+
+                    drag.onActiveChanged: {
+                        if (!drag.active) {
+                            boundingRect.handleCut()
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: bottomRightCorner
+                x: boundingRect.width - cornerSize
+                y: boundingRect.height - cornerSize
+                width: cornerSize
+                height: cornerSize
+                color: "transparent"
+                border.width: cornerBorderWidth
+                border.color: guiSettings.textColor
+
+                onXChanged: {
+                    if (bottomRightMouse.drag.active)
+                        topRightCorner.x = x
+                }
+
+                onYChanged: {
+                    if (bottomRightMouse.drag.active)
+                        bottomnLeftCorner.y = y
+                }
+
+                MouseArea {
+                    id: bottomRightMouse
+                    anchors.fill: parent
+                    drag.target: parent
+                    drag.minimumX: bottomnLeftCorner.x + cornerSize
+                    drag.maximumX: boundingRect.width - cornerSize
+                    drag.minimumY: topRightCorner.y + cornerSize
+                    drag.maximumY: boundingRect.height - cornerSize
+
+                    drag.onActiveChanged: {
+                        if (!drag.active) {
+                            boundingRect.handleCut()
                         }
                     }
                 }
@@ -336,22 +472,27 @@ SkyPage {
         }
     }
 
-    Row {
-        id: buttonRow
-        anchors.horizontalCenter: parent.horizontalCenter
+    Rectangle {
         anchors.bottom: parent.bottom
-        topPadding: 10
+        width: parent.width
+        height: buttonRow.height
+        color: guiSettings.backgroundColor
 
-        SvgButton {
-            svg: SvgOutline.mirrorHor
-            accessibleName: qsTr("mirror horizontally")
-            onClicked: page.mirror()
-        }
+        Row {
+            id: buttonRow
+            anchors.horizontalCenter: parent.horizontalCenter
 
-        SvgButton {
-            svg: SvgOutline.rotate90ccw
-            accessibleName: qsTr("rotate 90 degrees counter clockwise")
-            onClicked: page.rotate()
+            SvgButton {
+                svg: SvgOutline.mirrorHor
+                accessibleName: qsTr("mirror horizontally")
+                onClicked: page.mirror()
+            }
+
+            SvgButton {
+                svg: SvgOutline.rotate90ccw
+                accessibleName: qsTr("rotate 90 degrees counter clockwise")
+                onClicked: page.rotate()
+            }
         }
     }
 
