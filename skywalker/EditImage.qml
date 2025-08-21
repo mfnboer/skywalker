@@ -69,6 +69,8 @@ SkyPage {
             property bool mirrored: false
             property int rotationCount: 0
             readonly property bool sidesSwapped: rotationCount % 2 === 1
+            readonly property int maxXDrag: getMaxXDrag()
+            readonly property int maxYDrag: getMaxYDrag()
 
             id: img
             anchors.centerIn: parent
@@ -78,7 +80,9 @@ SkyPage {
             autoTransform: true
             source: imgSource
             scale: 1
-            transform: [Translate { id: imgTranslation }]
+            transform: [Translate {
+                    id: imgTranslation
+                }]
 
             PinchHandler {
                 target: null
@@ -145,8 +149,8 @@ SkyPage {
             }
 
             function calcImgStartScale() {
-                const xScale = page.width / sourceSize.width
-                const yScale = page.usableHeight / sourceSize.height
+                const xScale = (page.width - 2 * cornerSize) / sourceSize.width
+                const yScale = (page.usableHeight - 2 * cornerSize) / sourceSize.height
                 return Math.min(xScale, yScale)
             }
 
@@ -171,20 +175,37 @@ SkyPage {
                 return Qt.point(width / 2, height / 2)
             }
 
-            function keepInScreen() {
+            function getMaxXDrag() {
                 let imgSize = img.getImgSize()
+                return (imgSize.width * img.scale - img.boundingWidth) / 2
+            }
 
-                let maxXDrag = (imgSize.width * img.scale - img.boundingWidth) / 2
+            function getMaxYDrag() {
+                let imgSize = img.getImgSize()
+                return (imgSize.height * img.scale - img.boundingHeight) / 2
+            }
+
+            function keepInScreen() {
+                if (img.scale < img.minScale)
+                    img.scale = img.minScale
+
                 if (imgTranslation.x > maxXDrag)
                     imgTranslation.x = maxXDrag
                 else if (imgTranslation.x < -maxXDrag)
                     imgTranslation.x = -maxXDrag
 
-                let maxYDrag = (imgSize.height * img.scale - img.boundingHeight) / 2
                 if (imgTranslation.y > maxYDrag)
                     imgTranslation.y = maxYDrag
                 else if (imgTranslation.y < -maxYDrag)
                     imgTranslation.y = -maxYDrag
+
+                let imgSize = img.getImgSize()
+
+                if (imgSize.width * img.scale < img.boundingWidth)
+                    boundingRect.setCutFullWidth(imgSize.width)
+
+                if (imgSize.height * img.scale < img.boundingHeight)
+                    boundingRect.setCutFullHeight(imgSize.height)
             }
 
             function getSelectRect() {
@@ -210,8 +231,8 @@ SkyPage {
             readonly property double cutScale: calcCutScale()
 
             function calcCutScale() {
-                const xScale = page.width / cutRect.width
-                const yScale = page.usableHeight / cutRect.height
+                const xScale = (page.width - 2 * cornerSize) / cutRect.width
+                const yScale = (page.usableHeight - 2 * cornerSize) / cutRect.height
                 return Math.min(xScale, yScale)
             }
 
@@ -231,6 +252,14 @@ SkyPage {
 
             onWidthChanged: fixCorners()
             onHeightChanged: fixCorners()
+
+            function setCutFullWidth(fullWidth) {
+                cutRect.width = fullWidth
+            }
+
+            function setCutFullHeight(fullHeight) {
+                cutRect.height = fullHeight
+            }
 
             function updateCutRect(cutTopLeftX, cutTopLeftY, cutTopRightX, cutTopRightY,
                                    cutBottomLeftX, cutBottomLeftY, cutBottomRightX, cutBottomRightY) {
@@ -262,6 +291,7 @@ SkyPage {
                                            bottomnLeftCorner.x, bottomnLeftCorner.y + cornerSize,
                                            bottomRightCorner.x + cornerSize, bottomRightCorner.y + cornerSize)
                 fixCorners()
+                img.keepInScreen()
             }
 
             function fixCorners() {
@@ -276,6 +306,21 @@ SkyPage {
 
                 bottomRightCorner.x = boundingRect.width - cornerSize
                 bottomRightCorner.y = boundingRect.height - cornerSize
+            }
+
+            function getHeightForMask() {
+                return (img.sidesSwapped ? width : height) * editItem.scale
+            }
+
+            function getExtraTopHeightForMask() {
+                if (img.rotationCount % 4 == 0)
+                    return Math.min(topLeftCorner.y, 0)
+                if (img.rotationCount % 4 == 1)
+                    return Math.min(width - topRightCorner.x - cornerSize, 0)
+                if (img.rotationCount % 4 == 2)
+                    return Math.min(height - bottomRightCorner.y - cornerSize, 0)
+                if (img.rotationCount % 4 == 3)
+                    return Math.min(bottomnLeftCorner.x, 0)
             }
 
             Rectangle {
@@ -300,9 +345,9 @@ SkyPage {
                     id: topLeftMouse
                     anchors.fill: parent
                     drag.target: parent
-                    drag.minimumX: 0
+                    drag.minimumX: imgTranslation.x - img.maxXDrag
                     drag.maximumX: topRightCorner.x - cornerSize
-                    drag.minimumY: 0
+                    drag.minimumY: imgTranslation.y - img.maxYDrag
                     drag.maximumY: bottomnLeftCorner.y - cornerSize
 
                     drag.onActiveChanged: {
@@ -337,8 +382,8 @@ SkyPage {
                     anchors.fill: parent
                     drag.target: parent
                     drag.minimumX: topLeftCorner.x + cornerSize
-                    drag.maximumX: boundingRect.width - cornerSize
-                    drag.minimumY: 0
+                    drag.maximumX: boundingRect.width - cornerSize + img.maxXDrag + imgTranslation.x
+                    drag.minimumY: imgTranslation.y - img.maxYDrag
                     drag.maximumY: bottomRightCorner.y - cornerSize
 
                     drag.onActiveChanged: {
@@ -372,10 +417,10 @@ SkyPage {
                     id: bottomLeftMouse
                     anchors.fill: parent
                     drag.target: parent
-                    drag.minimumX: 0
+                    drag.minimumX: imgTranslation.x - img.maxXDrag
                     drag.maximumX: bottomRightCorner.x - cornerSize
                     drag.minimumY: topLeftCorner.y + cornerSize
-                    drag.maximumY: boundingRect.height - cornerSize
+                    drag.maximumY: boundingRect.height - cornerSize + img.maxYDrag + imgTranslation.y
 
                     drag.onActiveChanged: {
                         if (!drag.active) {
@@ -410,9 +455,9 @@ SkyPage {
                     anchors.fill: parent
                     drag.target: parent
                     drag.minimumX: bottomnLeftCorner.x + cornerSize
-                    drag.maximumX: boundingRect.width - cornerSize
+                    drag.maximumX: boundingRect.width - cornerSize + img.maxXDrag + imgTranslation.x
                     drag.minimumY: topRightCorner.y + cornerSize
-                    drag.maximumY: boundingRect.height - cornerSize
+                    drag.maximumY: boundingRect.height - cornerSize + img.maxYDrag + imgTranslation.y
 
                     drag.onActiveChanged: {
                         if (!drag.active) {
@@ -479,7 +524,7 @@ SkyPage {
     Rectangle {
         id: topMask
         anchors.top: parent.top
-        height: (page.usableHeight - (img.sidesSwapped ? boundingRect.width : boundingRect.height) * editItem.scale) / 2
+        height: (page.usableHeight - boundingRect.getHeightForMask()) / 2 + boundingRect.getExtraTopHeightForMask()
         anchors.left: parent.left
         anchors.right: parent.right
         color: maskColor
@@ -488,7 +533,7 @@ SkyPage {
 
     Rectangle {
         id: bottomMask
-        height: topMask.height
+        height: (page.usableHeight - boundingRect.getHeightForMask()) / 2
         anchors.bottom: buttonRect.top
         anchors.left: parent.left
         anchors.right: parent.right
