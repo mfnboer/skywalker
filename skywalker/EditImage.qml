@@ -3,9 +3,11 @@ import skywalker
 
 SkyPage {
     required property string imgSource
-    readonly property int cornerSize: 30
-    readonly property int cornerBorderWidth: 3
-    readonly property double maskOpacity: 0.8
+    readonly property int cornerSize: 35
+    readonly property int cornerBorderWidth: 2
+    readonly property int cornerMargin: 5
+    readonly property double maskOpacity: 0.6
+    readonly property string cutToolColor: guiSettings.buttonColor
     readonly property string maskColor: guiSettings.backgroundColor
     readonly property int usableHeight: height - header.height - buttonRow.height - footer.height
 
@@ -64,9 +66,10 @@ SkyPage {
             property int boundingWidth: boundingRect.width
             property int boundingHeight: boundingRect.height
             property double minScale: 1
-            property bool zooming: false
 
-            property bool mirrored: false
+            property bool horMirrored: false
+            property bool vertMirrored: false
+            readonly property bool mirrored: (horMirrored && !vertMirrored) || (!horMirrored && vertMirrored)
             property int rotationCount: 0
             readonly property bool sidesSwapped: rotationCount % 2 === 1
             readonly property int maxXDrag: getMaxXDrag()
@@ -80,9 +83,25 @@ SkyPage {
             autoTransform: true
             source: imgSource
             scale: 1
-            transform: [Translate {
+            transform: [
+                Translate {
                     id: imgTranslation
-                }]
+                },
+                Scale {
+                    origin.x: img.width / 2
+                    xScale: img.horMirrored ? -1 : 1
+                },
+                Scale {
+                    origin.y: img.height / 2
+                    yScale: img.vertMirrored ? -1 : 1
+                },
+                Rotation {
+                    id: imgRotation
+                    origin.x: img.width / 2
+                    origin.y: img.height / 2
+                    angle: img.rotationCount * -90
+                }
+            ]
 
             PinchHandler {
                 target: null
@@ -98,12 +117,6 @@ SkyPage {
 
                     img.keepInScreen()
                 }
-
-                onGrabChanged: (transition, point) => {
-                    if (transition === PointerDevice.UngrabPassive) {
-                        img.zooming = img.scale > img.minScale
-                    }
-                }
             }
 
             PinchHandler {
@@ -118,6 +131,16 @@ SkyPage {
                     img.translate(delta.x, delta.y)
                     img.keepInScreen()
                 }
+            }
+
+            function reset() {
+                boundingRect.resetSize()
+                scale = minScale
+                imgTranslation.x = 0
+                imgTranslation.y = 0
+                rotationCount = 0
+                horMirrored = false
+                vertMirrored = false
             }
 
             function updateScale(center, delta) {
@@ -199,13 +222,15 @@ SkyPage {
                 else if (imgTranslation.y < -maxYDrag)
                     imgTranslation.y = -maxYDrag
 
-                let imgSize = img.getImgSize()
+                let s = 1
 
-                if (imgSize.width * img.scale < img.boundingWidth)
-                    boundingRect.setCutFullWidth(imgSize.width)
+                if (width * img.scale < boundingWidth)
+                    s = boundingWidth / (width * img.scale)
 
-                if (imgSize.height * img.scale < img.boundingHeight)
-                    boundingRect.setCutFullHeight(imgSize.height)
+                if (height * img.scale < boundingHeight)
+                    s = boundingHeight / (height * img.scale)
+
+                img.scale *= s
             }
 
             function getSelectRect() {
@@ -248,17 +273,22 @@ SkyPage {
             height: getCutRect().height
             color: "transparent"
             border.color: guiSettings.textColor
-            transform: []
+            border.width: 1
+            transform: [
+                Rotation {
+                    id: boundingRotation
+                    origin.x: boundingRect.width / 2
+                    origin.y: boundingRect.height / 2
+                    angle: img.rotationCount * -90
+                }
+            ]
 
             onWidthChanged: fixCorners()
             onHeightChanged: fixCorners()
 
-            function setCutFullWidth(fullWidth) {
-                cutRect.width = fullWidth
-            }
-
-            function setCutFullHeight(fullHeight) {
-                cutRect.height = fullHeight
+            function resetSize() {
+                cutRect.width = img.sourceSize.width
+                cutRect.height = img.sourceSize.height
             }
 
             function updateCutRect(cutTopLeftX, cutTopLeftY, cutTopRightX, cutTopRightY,
@@ -288,7 +318,7 @@ SkyPage {
             function handleCut() {
                 boundingRect.updateCutRect(topLeftCorner.x, topLeftCorner.y,
                                            topRightCorner.x + cornerSize, topRightCorner.y,
-                                           bottomnLeftCorner.x, bottomnLeftCorner.y + cornerSize,
+                                           bottomLeftCorner.x, bottomLeftCorner.y + cornerSize,
                                            bottomRightCorner.x + cornerSize, bottomRightCorner.y + cornerSize)
                 fixCorners()
                 img.keepInScreen()
@@ -301,8 +331,8 @@ SkyPage {
                 topRightCorner.x = boundingRect.width - cornerSize
                 topRightCorner.y = 0
 
-                bottomnLeftCorner.x = 0
-                bottomnLeftCorner.y = boundingRect.height - cornerSize
+                bottomLeftCorner.x = 0
+                bottomLeftCorner.y = boundingRect.height - cornerSize
 
                 bottomRightCorner.x = boundingRect.width - cornerSize
                 bottomRightCorner.y = boundingRect.height - cornerSize
@@ -314,13 +344,50 @@ SkyPage {
 
             function getExtraTopHeightForMask() {
                 if (img.rotationCount % 4 == 0)
-                    return Math.min(topLeftCorner.y, 0)
+                    return topLeftCorner.y
                 if (img.rotationCount % 4 == 1)
-                    return Math.min(width - topRightCorner.x - cornerSize, 0)
+                    return width - topRightCorner.x - cornerSize
                 if (img.rotationCount % 4 == 2)
-                    return Math.min(height - bottomRightCorner.y - cornerSize, 0)
+                    return height - bottomRightCorner.y - cornerSize
                 if (img.rotationCount % 4 == 3)
-                    return Math.min(bottomnLeftCorner.x, 0)
+                    return bottomLeftCorner.x
+            }
+
+            function getExtraBottomHeightForMask() {
+                if (img.rotationCount % 4 == 0)
+                    return height - bottomLeftCorner.y - cornerSize
+                if (img.rotationCount % 4 == 1)
+                    return topLeftCorner.x
+                if (img.rotationCount % 4 == 2)
+                    return topRightCorner.y
+                if (img.rotationCount % 4 == 3)
+                    return width - bottomRightCorner.x - cornerSize
+            }
+
+            function getWidthForMask() {
+                return (img.sidesSwapped ? height : width) * editItem.scale
+            }
+
+            function getExtraLeftWidthForMask() {
+                if (img.rotationCount % 4 == 0)
+                    return topLeftCorner.x
+                if (img.rotationCount % 4 == 1)
+                    return topRightCorner.y
+                if (img.rotationCount % 4 == 2)
+                    return width - bottomRightCorner.x - cornerSize
+                if (img.rotationCount % 4 == 3)
+                    return height - bottomLeftCorner.y - cornerSize
+            }
+
+            function getExtraRightWidthForMask() {
+                if (img.rotationCount % 4 == 0)
+                    return width - topRightCorner.x - cornerSize
+                if (img.rotationCount % 4 == 1)
+                    return height - bottomRightCorner.y - cornerSize
+                if (img.rotationCount % 4 == 2)
+                    return bottomLeftCorner.x
+                if (img.rotationCount % 4 == 3)
+                    return topLeftCorner.y
             }
 
             Rectangle {
@@ -328,12 +395,30 @@ SkyPage {
                 width: cornerSize
                 height: cornerSize
                 color: "transparent"
-                border.width: cornerBorderWidth
-                border.color: guiSettings.textColor
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.topMargin: cornerMargin
+                    anchors.left: parent.left
+                    anchors.leftMargin: cornerMargin
+                    width: parent.width - cornerMargin
+                    height: cornerBorderWidth
+                    color: cutToolColor
+                }
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.topMargin: cornerMargin
+                    anchors.left: parent.left
+                    anchors.leftMargin: cornerMargin
+                    width: cornerBorderWidth
+                    height: parent.height - cornerMargin
+                    color: cutToolColor
+                }
 
                 onXChanged: {
                     if (topLeftMouse.drag.active)
-                        bottomnLeftCorner.x = x
+                        bottomLeftCorner.x = x
                 }
 
                 onYChanged: {
@@ -348,7 +433,7 @@ SkyPage {
                     drag.minimumX: imgTranslation.x - img.maxXDrag
                     drag.maximumX: topRightCorner.x - cornerSize
                     drag.minimumY: imgTranslation.y - img.maxYDrag
-                    drag.maximumY: bottomnLeftCorner.y - cornerSize
+                    drag.maximumY: bottomLeftCorner.y - cornerSize
 
                     drag.onActiveChanged: {
                         if (!drag.active) {
@@ -364,8 +449,26 @@ SkyPage {
                 width: cornerSize
                 height: cornerSize
                 color: "transparent"
-                border.width: cornerBorderWidth
-                border.color: guiSettings.textColor
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.topMargin: cornerMargin
+                    anchors.right: parent.right
+                    anchors.rightMargin: cornerMargin
+                    width: parent.width - cornerMargin
+                    height: cornerBorderWidth
+                    color: cutToolColor
+                }
+
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.topMargin: cornerMargin
+                    anchors.right: parent.right
+                    anchors.rightMargin: cornerMargin
+                    width: cornerBorderWidth
+                    height: parent.height - cornerMargin
+                    color: cutToolColor
+                }
 
                 onXChanged: {
                     if (topRightMouse.drag.active)
@@ -395,13 +498,31 @@ SkyPage {
             }
 
             Rectangle {
-                id: bottomnLeftCorner
+                id: bottomLeftCorner
                 y: boundingRect.height - cornerSize
                 width: cornerSize
                 height: cornerSize
                 color: "transparent"
-                border.width: cornerBorderWidth
-                border.color: guiSettings.textColor
+
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: cornerMargin
+                    anchors.left: parent.left
+                    anchors.leftMargin: cornerMargin
+                    width: parent.width - cornerMargin
+                    height: cornerBorderWidth
+                    color: cutToolColor
+                }
+
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: cornerMargin
+                    anchors.left: parent.left
+                    anchors.leftMargin: cornerMargin
+                    width: cornerBorderWidth
+                    height: parent.height - cornerMargin
+                    color: cutToolColor
+                }
 
                 onXChanged: {
                     if (bottomLeftMouse.drag.active)
@@ -437,8 +558,26 @@ SkyPage {
                 width: cornerSize
                 height: cornerSize
                 color: "transparent"
-                border.width: cornerBorderWidth
-                border.color: guiSettings.textColor
+
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: cornerMargin
+                    anchors.right: parent.right
+                    anchors.rightMargin: cornerMargin
+                    width: parent.width - cornerMargin
+                    height: cornerBorderWidth
+                    color: cutToolColor
+                }
+
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: cornerMargin
+                    anchors.right: parent.right
+                    anchors.rightMargin: cornerMargin
+                    width: cornerBorderWidth
+                    height: parent.height - cornerMargin
+                    color: cutToolColor
+                }
 
                 onXChanged: {
                     if (bottomRightMouse.drag.active)
@@ -447,14 +586,14 @@ SkyPage {
 
                 onYChanged: {
                     if (bottomRightMouse.drag.active)
-                        bottomnLeftCorner.y = y
+                        bottomLeftCorner.y = y
                 }
 
                 MouseArea {
                     id: bottomRightMouse
                     anchors.fill: parent
                     drag.target: parent
-                    drag.minimumX: bottomnLeftCorner.x + cornerSize
+                    drag.minimumX: bottomLeftCorner.x + cornerSize
                     drag.maximumX: boundingRect.width - cornerSize + img.maxXDrag + imgTranslation.x
                     drag.minimumY: topRightCorner.y + cornerSize
                     drag.maximumY: boundingRect.height - cornerSize + img.maxYDrag + imgTranslation.y
@@ -466,65 +605,13 @@ SkyPage {
                     }
                 }
             }
-
-            Rectangle {
-                id: topCutMask
-                anchors.topMargin: 1
-                anchors.leftMargin: 1
-                anchors.rightMargin: 1
-                anchors.top: parent.top
-                anchors.bottom: topLeftCorner.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: maskColor
-                opacity: maskOpacity
-            }
-
-            Rectangle {
-                id: bottomCutMask
-                anchors.bottomMargin: 1
-                anchors.leftMargin: 1
-                anchors.rightMargin: 1
-                anchors.top: bottomnLeftCorner.bottom
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: maskColor
-                opacity: maskOpacity
-            }
-
-            Rectangle {
-                id: leftCutMask
-                anchors.leftMargin: 1
-                anchors.topMargin: topLeftCorner.y === 0 ? 1 : 0
-                anchors.bottomMargin: bottomnLeftCorner.y === boundingRect.height - cornerSize ? 1 : 0
-                anchors.top: topCutMask.bottom
-                anchors.bottom: bottomCutMask.top
-                anchors.left: parent.left
-                anchors.right: topLeftCorner.left
-                color: maskColor
-                opacity: maskOpacity
-            }
-
-            Rectangle {
-                id: rightCutMask
-                anchors.rightMargin: 1
-                anchors.topMargin: topLeftCorner.y === 0 ? 1 : 0
-                anchors.bottomMargin: bottomnLeftCorner.y === boundingRect.height - cornerSize ? 1 : 0
-                anchors.top: topCutMask.bottom
-                anchors.bottom: bottomCutMask.top
-                anchors.right: parent.right
-                anchors.left: topRightCorner.right
-                color: maskColor
-                opacity: maskOpacity
-            }
         }
     }
 
     Rectangle {
         id: topMask
         anchors.top: parent.top
-        height: (page.usableHeight - boundingRect.getHeightForMask()) / 2 + boundingRect.getExtraTopHeightForMask()
+        height: Math.floor((page.usableHeight - boundingRect.getHeightForMask()) / 2) + boundingRect.getExtraTopHeightForMask()
         anchors.left: parent.left
         anchors.right: parent.right
         color: maskColor
@@ -533,7 +620,7 @@ SkyPage {
 
     Rectangle {
         id: bottomMask
-        height: (page.usableHeight - boundingRect.getHeightForMask()) / 2
+        height: Math.floor((page.usableHeight - boundingRect.getHeightForMask()) / 2) + boundingRect.getExtraBottomHeightForMask()
         anchors.bottom: buttonRect.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -546,7 +633,7 @@ SkyPage {
         anchors.top: topMask.bottom
         anchors.bottom: bottomMask.top
         anchors.left: parent.left
-        width: (parent.width - (img.sidesSwapped ? boundingRect.height : boundingRect.width) * editItem.scale) / 2
+        width: Math.floor((parent.width - boundingRect.getWidthForMask()) / 2) + boundingRect.getExtraLeftWidthForMask()
         color: maskColor
         opacity: maskOpacity
     }
@@ -556,7 +643,7 @@ SkyPage {
         anchors.top: topMask.bottom
         anchors.bottom: bottomMask.top
         anchors.right: parent.right
-        width: leftMask.width
+        width: Math.floor((parent.width - boundingRect.getWidthForMask()) / 2) + boundingRect.getExtraRightWidthForMask()
         color: maskColor
         opacity: maskOpacity
     }
@@ -581,7 +668,19 @@ SkyPage {
             SvgButton {
                 svg: SvgOutline.rotate90ccw
                 accessibleName: qsTr("rotate 90 degrees counter clockwise")
-                onClicked: page.rotate()
+                onClicked: page.rotate(1)
+            }
+
+            SvgButton {
+                svg: SvgOutline.rotate90cw
+                accessibleName: qsTr("rotate 90 degrees clockwise")
+                onClicked: page.rotate(-1)
+            }
+
+            SvgButton {
+                svg: SvgOutline.resetImage
+                accessibleName: qsTr("reset image")
+                onClicked: img.reset()
             }
         }
     }
@@ -590,44 +689,18 @@ SkyPage {
         id: imageUtils
     }
 
-    Component {
-        id: mirrorComponent
-
-        Scale {
-            origin.x: img.width / 2
-            xScale: -1
-        }
-    }
-
-    Component {
-        id: rotateImgageComponent
-
-        Rotation {
-            origin.x: img.width / 2
-            origin.y: img.height / 2
-            angle: -90
-        }
-    }
-
-    Component {
-        id: rotateBoundingRectComponent
-
-        Rotation {
-            origin.x: boundingRect.width / 2
-            origin.y: boundingRect.height / 2
-            angle: -90
-        }
-    }
-
     function mirror() {
-        img.transform.push(mirrorComponent.createObject(img))
-        img.mirrored = !img.mirrored
+        if (!img.sidesSwapped)
+            img.horMirrored = !img.horMirrored
+        else
+            img.vertMirrored = !img.vertMirrored
     }
 
-    function rotate() {
-        img.transform.push(rotateImgageComponent.createObject(img))
-        boundingRect.transform.push(rotateBoundingRectComponent.createObject(boundingRect))
-        ++img.rotationCount
+    function rotate(count) {
+        img.rotationCount = (img.rotationCount + count) % 4
+
+        if (img.rotationCount < 0)
+            img.rotationCount += 4
     }
 
     function transformImage() {
