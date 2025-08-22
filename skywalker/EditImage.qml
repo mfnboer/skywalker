@@ -69,7 +69,6 @@ SkyPage {
 
             property bool horMirrored: false
             property bool vertMirrored: false
-            readonly property bool mirrored: (horMirrored && !vertMirrored) || (!horMirrored && vertMirrored)
             property int rotationCount: 0
             readonly property bool sidesSwapped: rotationCount % 2 === 1
             readonly property int maxXDrag: getMaxXDrag()
@@ -154,20 +153,20 @@ SkyPage {
 
             function translate(dx, dy) {
                 if (img.rotationCount % 4 === 0) {
-                    imgTranslation.x += dx * (img.mirrored ? -1 : 1)
-                    imgTranslation.y += dy
+                    imgTranslation.x += dx * (img.horMirrored ? -1 : 1)
+                    imgTranslation.y += dy * (img.vertMirrored ? -1 : 1)
                 }
                 else if (img.rotationCount % 4 === 1) {
-                    imgTranslation.x -= dy * (img.mirrored ? -1 : 1)
-                    imgTranslation.y += dx
+                    imgTranslation.x -= dy * (img.horMirrored ? -1 : 1)
+                    imgTranslation.y += dx * (img.vertMirrored ? -1 : 1)
                 }
                 else if (img.rotationCount % 4 === 2) {
-                    imgTranslation.x -= dx * (img.mirrored ? -1 : 1)
-                    imgTranslation.y -= dy
+                    imgTranslation.x -= dx * (img.horMirrored ? -1 : 1)
+                    imgTranslation.y -= dy * (img.vertMirrored ? -1 : 1)
                 }
                 else if (img.rotationCount % 4 === 3) {
-                    imgTranslation.x += dy * (img.mirrored ? -1 : 1)
-                    imgTranslation.y -= dx
+                    imgTranslation.x += dy * (img.horMirrored ? -1 : 1)
+                    imgTranslation.y -= dx * (img.vertMirrored ? -1 : 1)
                 }
             }
 
@@ -300,8 +299,8 @@ SkyPage {
                 const cw = cutWidth / cutScale
                 const ch = cutHeight / cutScale
 
-                imgTranslation.x += -cutTopLeftX / 2 + (width - cutTopRightX) / 2
-                imgTranslation.y += -cutTopLeftY / 2 + (height - cutBottomLeftY) / 2
+                imgTranslation.x += (-cutTopLeftX / 2 + (width - cutTopRightX) / 2) * (img.horMirrored ? -1 : 1)
+                imgTranslation.y += (-cutTopLeftY / 2 + (height - cutBottomLeftY) / 2) * (img.vertMirrored ? -1 : 1)
 
                 const prevCutScale = cutScale
                 cutRect.x = cx
