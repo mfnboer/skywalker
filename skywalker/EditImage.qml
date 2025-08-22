@@ -190,7 +190,7 @@ SkyPage {
 
             function getImgSize() {
                 let s = getImgScale()
-                return Qt.size(sourceSize.width * s, sourceSize.height * s)
+                return Qt.size(Math.ceil(sourceSize.width * s), Math.ceil(sourceSize.height * s))
             }
 
             function getCenter() {
@@ -198,7 +198,7 @@ SkyPage {
             }
 
             function getMaxXDrag() {
-                let imgSize = img.getImgSize()
+                let imgSize = img.getImgSize() // TODO: use startSize?
                 return (imgSize.width * img.scale - img.boundingWidth) / 2
             }
 
@@ -233,17 +233,19 @@ SkyPage {
             }
 
             function getSelectRect() {
-                console.debug("BOUNDING SIZE:", img.boundingWidth, img.boundingHeight)
-                let s = img.getImgScale()
-                let imgSize = img.getImgSize()
+                if (boundingRect.cutSize == img.sourceSize)
+                    return Qt.rect(0, 0, img.sourceSize.width, img.sourceSize.height)
+
+                let s = img.calcImgStartScale()
+                let imgSize = img.getImgStartSize()
 
                 let x0 = (imgSize.width * img.scale - img.boundingWidth) / 2
                 let y0 = (imgSize.height * img.scale - img.boundingHeight) / 2
 
-                let rx = (x0 - imgTranslation.x) / img.scale / s
-                let ry = (y0 - imgTranslation.y) / img.scale / s
-                let rw = img.boundingWidth / img.scale / s
-                let rh = img.boundingHeight / img.scale / s
+                let rx = Math.round((x0 - imgTranslation.x) / img.scale / s)
+                let ry = Math.round((y0 - imgTranslation.y) / img.scale / s)
+                let rw = Math.round(img.boundingWidth / img.scale / s)
+                let rh = Math.round(img.boundingHeight / img.scale / s)
 
                 let r = Qt.rect(rx, ry, rw, rh)
                 return r
@@ -251,25 +253,25 @@ SkyPage {
         }
 
         Rectangle {
-            property rect cutRect: Qt.rect(0, 0, img.sourceSize.width, img.sourceSize.height)
+            property size cutSize: img.sourceSize
             readonly property double cutScale: calcCutScale()
 
             function calcCutScale() {
-                const xScale = (page.width - 2 * cornerSize) / cutRect.width
-                const yScale = (page.usableHeight - 2 * cornerSize) / cutRect.height
+                const xScale = (page.width - 2 * cornerSize) / cutSize.width
+                const yScale = (page.usableHeight - 2 * cornerSize) / cutSize.height
                 return Math.min(xScale, yScale)
             }
 
-            function getCutRect()
+            function getScaledCutSize()
             {
                 const s = cutScale
-                return Qt.rect(cutRect.x * s, cutRect.y * s, cutRect.width * s, cutRect.height * s)
+                return Qt.rect(cutSize.x * s, cutSize.y * s, cutSize.width * s, cutSize.height * s)
             }
 
             id: boundingRect
             anchors.centerIn: parent
-            width: getCutRect().width
-            height: getCutRect().height
+            width: getScaledCutSize().width
+            height: getScaledCutSize().height
             color: "transparent"
             border.color: guiSettings.textColor
             border.width: 1
@@ -286,14 +288,11 @@ SkyPage {
             onHeightChanged: fixCorners()
 
             function resetSize() {
-                cutRect.width = img.sourceSize.width
-                cutRect.height = img.sourceSize.height
+                cutSize = img.sourceSize
             }
 
             function updateCutRect(cutTopLeftX, cutTopLeftY, cutTopRightX, cutTopRightY,
                                    cutBottomLeftX, cutBottomLeftY, cutBottomRightX, cutBottomRightY) {
-                const cx = cutTopLeftX / cutScale + cutRect.x
-                const cy = cutTopLeftY / cutScale + cutRect.y
                 const cutWidth = cutTopRightX - cutTopLeftX
                 const cutHeight = cutBottomLeftY - cutTopLeftY
                 const cw = cutWidth / cutScale
@@ -303,14 +302,11 @@ SkyPage {
                 imgTranslation.y += (-cutTopLeftY / 2 + (height - cutBottomLeftY) / 2) * (img.vertMirrored ? -1 : 1)
 
                 const prevCutScale = cutScale
-                cutRect.x = cx
-                cutRect.y = cy
-                cutRect.width = cw
-                cutRect.height = ch
+                cutSize.width = cw
+                cutSize.height = ch
                 const ratio = cutScale / prevCutScale
 
                 const center = Qt.point(img.getCenter().x - imgTranslation.x / img.scale, img.getCenter().y - imgTranslation.y / img.scale)
-                console.debug("CUT:", cutRect,  Qt.point(cutTopLeftX, cutTopLeftY), Qt.point(cx, cy), "WIDTH:", cutWidth, cw, "RATIO:", ratio, "CENTER:", center, "IMG CENTER:", img.getCenter(), "SCALE:", img.scale)
                 img.updateScale(center, ratio)
             }
 
@@ -702,19 +698,40 @@ SkyPage {
             img.rotationCount += 4
     }
 
+    function mirrorCutRect(r) {
+        let mr = r
+
+        if (img.horMirrored)
+            mr = Qt.rect(img.sourceSize.width - mr.width - mr.x, mr.y, mr.width, mr.height)
+
+        if (img.vertMirrored)
+            mr = Qt.rect(mr.x, img.sourceSize.height - mr.height - mr.y, mr.width, mr.height)
+
+        return mr
+    }
+
+    function rotateCutRect(r) {
+        if (img.rotationCount % 4 == 0)
+            return r
+        if (img.rotationCount % 4 == 1)
+            return Qt.rect(r.y, img.sourceSize.width - r.width - r.x, r.height, r.width)
+        if (img.rotationCount % 4 == 2)
+            return Qt.rect(img.sourceSize.width - r.width - r.x, img.sourceSize.height - r.height - r.y, r.width, r.height)
+        if (img.rotationCount % 4 == 3)
+            return Qt.rect(img.sourceSize.height - r.height - r.y, r.x, r.height, r.width)
+    }
+
     function transformImage() {
-        let transformations = []
+        let cutRect = boundingRect.cutSize == img.sourceSize ?
+                Qt.rect(0, 0, 0, 0) :
+                rotateCutRect(mirrorCutRect(img.getSelectRect()))
 
-        for (const t of img.transform) {
-            if (t instanceof Scale)
-                transformations.push(QEnums.IMAGE_TRANSFORM_MIRROR)
-            else if (t instanceof Rotation)
-                transformations.push(QEnums.IMAGE_TRANSFORM_ROTATE)
-            else
-                console.warn("Unknown transform:", t)
-        }
-
-        const newImgSource = imageUtils.transformImage(imgSource, transformations)
+        const newImgSource = imageUtils.transformImage(
+                               imgSource,
+                               img.horMirrored,
+                               img.vertMirrored,
+                               imgRotation.angle,
+                               cutRect)
         done(newImgSource)
     }
 }

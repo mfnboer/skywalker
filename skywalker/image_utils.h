@@ -38,7 +38,7 @@ public:
     // The image can be cropped to this ratio (height / width)
     Q_INVOKABLE double getPreferredLinkCardAspectRatio(const QString& link) const;
 
-    Q_INVOKABLE QString transformImage(const QString& imgSource, const QList<QEnums::ImageTransform>& transformations) const;
+    Q_INVOKABLE QString transformImage(const QString& imgSource, bool horMirror, bool vertMirror, int rotationAngle, const QRect& cutRect) const;
 
 signals:
     void checkAvailabilityOk(QEnums::Script script, bool available);

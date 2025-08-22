@@ -236,13 +236,13 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
     return 720.0 / 1280.0;
 }
 
-QString ImageUtils::transformImage(const QString& imgSource, const QList<QEnums::ImageTransform>& transformations) const
+Q_INVOKABLE QString ImageUtils::transformImage(const QString& imgSource, bool horMirror, bool vertMirror, int rotationAngle, const QRect& cutRect) const
 {
-    qDebug() << "Transform image:" << imgSource;
+    qDebug() << "Transform image:" << imgSource << "horMirror:" << horMirror << "vertMirror:" << vertMirror << "rot:" << rotationAngle << "cut:" << cutRect;
 
-    if (transformations.empty())
+    if (!horMirror && !vertMirror && rotationAngle == 0 && cutRect.isEmpty())
     {
-        qDebug() << "No transformations";
+        qDebug() << "No transformation";
         return imgSource;
     }
 
@@ -254,20 +254,17 @@ QString ImageUtils::transformImage(const QString& imgSource, const QList<QEnums:
         return imgSource;
     }
 
-    for (auto transformation : transformations)
-    {
-        switch (transformation)
-        {
-        case QEnums::IMAGE_TRANSFORM_MIRROR:
-            qDebug() << "Mirror";
-            img = img.mirrored(true, false);
-            break;
-        case QEnums::IMAGE_TRANSFORM_ROTATE:
-            qDebug() << "Rotate";
-            img = img.transformed(QTransform().rotate(-90));
-            break;
-        }
-    }
+    if (horMirror)
+        img = img.mirrored(true, false);
+
+    if (vertMirror)
+        img = img.mirrored(false, true);
+
+    if (rotationAngle != 0)
+        img = img.transformed(QTransform().rotate(rotationAngle));
+
+    if (!cutRect.isEmpty())
+        img = img.copy(cutRect);
 
     auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
 
