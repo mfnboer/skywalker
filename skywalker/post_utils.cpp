@@ -1194,7 +1194,7 @@ void PostUtils::sharePhotoToApp(const QString& sourceUrl)
             if (!presence)
                 return;
 
-            mSkywalker->showStatusMessage("Copied photo top clipboard", QEnums::STATUS_LEVEL_INFO);
+            mSkywalker->showStatusMessage("Copied photo to clipboard", QEnums::STATUS_LEVEL_INFO);
         },
         [this, presence=getPresence()](const QString& error){
             if (!presence)

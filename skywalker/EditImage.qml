@@ -2,11 +2,13 @@ import QtQuick
 import skywalker
 
 SkyPage {
+    readonly property string sideBarTitle: qsTr("Edit image")
+    readonly property SvgImage sideBarSvg: SvgOutline.edit
     required property string imgSource
     readonly property int cornerSize: 35
     readonly property int cornerBorderWidth: 2
     readonly property int cornerMargin: 5
-    readonly property double maskOpacity: 0.6
+    readonly property double maskOpacity: 0.7
     readonly property string cutToolColor: guiSettings.buttonColor
     readonly property string maskColor: guiSettings.backgroundColor
     readonly property int usableHeight: height - header.height - buttonRow.height - footer.height
@@ -20,11 +22,13 @@ SkyPage {
     header: SimpleHeader {
         text: qsTr("Edit Image")
         backIsCancel: true
+        visible: !root.showSideBar
         onBack: cancel()
 
         SvgPlainButton {
             anchors.right: parent.right
             anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             accessibleName: qsTr("editing finished")
             onClicked: transformImage()
@@ -181,29 +185,17 @@ SkyPage {
                 return Qt.size(sourceSize.width * s, sourceSize.height * s)
             }
 
-            function getImgScale() {
-                let xScale = width / sourceSize.width
-                let yScale = height / sourceSize.height
-                let s = Math.min(xScale, yScale)
-                return s
-            }
-
-            function getImgSize() {
-                let s = getImgScale()
-                return Qt.size(Math.ceil(sourceSize.width * s), Math.ceil(sourceSize.height * s))
-            }
-
             function getCenter() {
                 return Qt.point(width / 2, height / 2)
             }
 
             function getMaxXDrag() {
-                let imgSize = img.getImgSize() // TODO: use startSize?
+                let imgSize = img.getImgStartSize()
                 return (imgSize.width * img.scale - img.boundingWidth) / 2
             }
 
             function getMaxYDrag() {
-                let imgSize = img.getImgSize()
+                let imgSize = img.getImgStartSize()
                 return (imgSize.height * img.scale - img.boundingHeight) / 2
             }
 

@@ -61,12 +61,22 @@ ScrollView {
                 }
 
                 SvgButton {
+                    id: closeButton
                     x: parent.width - width
                     width: 34
                     height: width
                     svg: SvgOutline.close
                     accessibleName: qsTr(`remove picture ${(index + 1)}`)
                     onClicked: imageScroller.removeImage(index)
+                }
+
+                SvgButton {
+                    x: closeButton.x - width
+                    width: 34
+                    height: width
+                    svg: SvgOutline.edit
+                    accessibleName: qsTr(`edit picture ${(index + 1)}`)
+                    onClicked: imageScroller.editImage(index)
                 }
 
                 SvgButton {
@@ -77,15 +87,6 @@ ScrollView {
                     svg: SvgOutline.share
                     accessibleName: qsTr(`share picture ${(index + 1)} to other app`)
                     onClicked: postUtils.sharePhotoToApp(modelData)
-                }
-
-                SvgButton {
-                    anchors.centerIn: parent
-                    width: 34
-                    height: width
-                    svg: SvgOutline.edit
-                    accessibleName: qsTr(`edit picture ${(index + 1)}`)
-                    onClicked: imageScroller.editImage(index)
                 }
 
                 SkyLabel {
