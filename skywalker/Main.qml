@@ -647,7 +647,7 @@ ApplicationWindow {
                 // The unread notification count will be non-zero when new notifications came
                 // in when the notifications tab is open and the user did not refresh.
                 if (skywalker.unreadNotificationCount > 0) {
-                    const loadCount = Math.min(100, Math.max(50, unreadNotificationCount))
+                    const loadCount = Math.min(100, Math.max(50, skywalker.unreadNotificationCount))
                     skywalker.getNotifications(loadCount, false, false)
                     skywalker.getNotifications(loadCount, false, true)
                 }

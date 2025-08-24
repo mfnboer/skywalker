@@ -225,7 +225,7 @@ SkyPage {
             }
 
             function getSelectRect() {
-                if (boundingRect.cutSize == img.sourceSize)
+                if (boundingRect.cutSize == img.sourceSize && img.scale === 1)
                     return Qt.rect(0, 0, img.sourceSize.width, img.sourceSize.height)
 
                 let s = img.calcImgStartScale()
@@ -714,7 +714,7 @@ SkyPage {
     }
 
     function transformImage() {
-        let cutRect = boundingRect.cutSize == img.sourceSize ?
+        let cutRect = boundingRect.cutSize == img.sourceSize && img.scale === 1 ?
                 Qt.rect(0, 0, 0, 0) :
                 rotateCutRect(mirrorCutRect(img.getSelectRect()))
 
