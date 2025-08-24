@@ -62,8 +62,7 @@ SkyPage {
 
         header: PlaceholderHeader { height: grid.height }
         headerPositioning: ListView.InlineHeader
-        footer: PlaceholderHeader { height: page.height}
-        footerPositioning: ListView.InlineFooter
+        footer: null
 
         Component.onCompleted: skywalker.getAuthorList(modelId)
     }

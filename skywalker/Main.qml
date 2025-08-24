@@ -194,16 +194,6 @@ ApplicationWindow {
         }
     }
 
-    onShowSideBarChanged: {
-        if (!showSideBar) {
-            // HACK to make the footer appear again.
-            // Without the hack the footer height gets reset correctly, but the
-            // footer stays invisible??
-            favoritesTabBar.favoritesSwipeViewVisible = false
-            Qt.callLater(() => { favoritesTabBar.update() })
-        }
-    }
-
     function isFavoritesTabBarVisible() {
         return favoritesTabBar.visible
     }

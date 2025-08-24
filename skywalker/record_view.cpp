@@ -283,9 +283,6 @@ QVariant RecordView::getExternal() const
     if (!externalView)
         return {};
 
-    // TODO: should pointer not be deleted?
-    // return QVariant::fromValue(*externalView.release());
-    qDebug() << "TEST EXTERNAL VIEW";
     return QVariant::fromValue(*externalView);
 }
 
