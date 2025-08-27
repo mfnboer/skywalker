@@ -255,10 +255,10 @@ Q_INVOKABLE QString ImageUtils::transformImage(const QString& imgSource, bool ho
     }
 
     if (horMirror)
-        img = img.mirrored(true, false);
+        img = img.flipped(Qt::Horizontal);
 
     if (vertMirror)
-        img = img.mirrored(false, true);
+        img = img.flipped(Qt::Vertical);
 
     if (rotationAngle != 0)
         img = img.transformed(QTransform().rotate(rotationAngle));

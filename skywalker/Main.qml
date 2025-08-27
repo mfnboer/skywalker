@@ -23,6 +23,14 @@ ApplicationWindow {
     title: skywalker.APP_NAME // qmllint disable missing-property
     color: guiSettings.backgroundColor
 
+    // Added for Qt6.9 to make all the changes for full screen display in Android 15
+    // work. Instead of those changes, using the SafeArea option may be nicer.
+    flags: Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint
+    topPadding: 0
+    bottomPadding: 0
+    leftPadding: 0
+    rightPadding: 0
+
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // onFrameSwapped: {
     //     const nextFrame = Date.now()
