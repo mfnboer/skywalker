@@ -274,10 +274,11 @@ Rectangle {
     Rectangle {
         width: parent.width
         anchors.top: postColumn.top
-        anchors.bottom: postColumn.bottom
+        //anchors.bottom: postColumn.bottom
+        height: postColumn.height + (Boolean(postVideo) ? 0 : (root.height - postColumn.y - postColumn.height))
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#00000000" }
-            GradientStop { position: 1.0; color: "#CF000000" }
+            GradientStop { position: 1.0; color: "#EF000000" }
         }
         visible: postColumn.visible
     }
