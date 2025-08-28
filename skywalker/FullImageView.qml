@@ -22,7 +22,7 @@ SkyPage {
     background: Rectangle { color: guiSettings.fullScreenColor }
 
     header: DeadHeaderMargin {
-        color: guiSettings.fullScreenColor
+        color: "transparent"
     }
 
     Loader {
@@ -92,7 +92,7 @@ SkyPage {
                     ImageAltText {
                         id: altText
                         alt: images[index].alt
-                        visible: alt && isCurrentItem
+                        visible: alt
                     }
                 }
                 ImageWithZoom {
@@ -169,12 +169,12 @@ SkyPage {
 
     function setSystemBarsColor() {
         displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
-        displayUtils.setStatusBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setStatusBarTransparentAndMode(true, guiSettings.fullScreenColor, false)
     }
 
     function resetSystemBarsColor() {
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
-        displayUtils.setStatusBarColor(guiSettings.headerColor)
+        displayUtils.setStatusBarTransparent(false, guiSettings.headerColor)
     }
 
     Component.onDestruction: {
