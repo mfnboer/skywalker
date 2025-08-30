@@ -1,5 +1,6 @@
 next
 ====
+* Small cosmetic changes
 * Upgrade to 6.9.2
 
 4.13

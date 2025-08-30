@@ -29,7 +29,7 @@ Item {
 
         // Due to scaling the painted size can be smaller than the image size
         maskWidth: filter.imageVisible() ? (img.item ? getImageMaskWidth() : 0) : parent.width
-        maskHeight: filter.imageVisible() ? (img.item ? getImageMakskHeight() : 0) : filter.height
+        maskHeight: filter.imageVisible() ? (img.item ? getImageMaskHeight() : 0) : filter.height
 
         maskColor: preview.maskColor
 
@@ -93,10 +93,23 @@ Item {
     }
 
     function getImageMaskWidth() {
-        return imgSizeKnown ? img.item.paintedWidth : img.item.width
+        if (!imgSizeKnown)
+            return img.item.width
+
+        // HACK: the painted with seems sometimes 1 or 2 pixels off??
+        if (img.item.width - img.item.paintedWidth <= 2)
+            return img.item.width
+
+        return img.item.paintedWidth
     }
 
-    function getImageMakskHeight() {
-        return imgSizeKnown ? img.item.paintedHeight : img.item.height
+    function getImageMaskHeight() {
+        if (!imgSizeKnown)
+            return img.item.height
+
+        if (img.item.height - img.item.paintedHeight <= 2)
+            return img.item.height
+
+        return img.item.paintedHeight
     }
 }

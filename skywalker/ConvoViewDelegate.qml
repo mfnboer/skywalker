@@ -190,7 +190,6 @@ Rectangle {
 
                             topPadding: 10
                             textFormat: Text.RichText
-                            //plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: ${convo.lastReaction.message.text}`)
                             plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `)
                         }
                         SkyCleanedText {

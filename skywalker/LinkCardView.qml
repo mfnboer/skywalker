@@ -17,18 +17,15 @@ RoundCornerMask {
     id: card
     height: columnHeight
     cornerRadius: 10
-    border.width: 1
-    border.color: borderColor
 
     Column {
         id: externalColumn
         width: parent.width
-        topPadding: 1
         spacing: 3
 
         FilteredImageWarning {
             id: filter
-            width: parent.width - 2
+            width: parent.width
             contentVisibility: card.contentVisibility
             contentWarning: card.contentWarning
             imageUrl: card.thumbUrl
@@ -119,6 +116,14 @@ RoundCornerMask {
                 onClicked: root.openLink(card.uri)
             }
         }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        border.width: 1
+        border.color: borderColor
+        radius: cornerRadius
+        color: "transparent"
     }
 
     ImageUtils {
