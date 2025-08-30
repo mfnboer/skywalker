@@ -181,15 +181,25 @@ Rectangle {
                     }
 
                     // Last reaction
-                    SkyCleanedText {
-                        readonly property bool sentByUser: convo.lastReaction.reaction.senderDid === skywalker.getUserDid()
-
+                    RowLayout {
                         width: parent.width
-                        topPadding: 10
-                        elide: Text.ElideRight
-                        textFormat: Text.RichText
-                        plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: ${convo.lastReaction.message.text}`)
                         visible: showLastReaction
+
+                        SkyCleanedText {
+                            readonly property bool sentByUser: convo.lastReaction.reaction.senderDid === skywalker.getUserDid()
+
+                            topPadding: 10
+                            textFormat: Text.RichText
+                            //plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: ${convo.lastReaction.message.text}`)
+                            plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `)
+                        }
+                        SkyCleanedText {
+                            Layout.fillWidth: true
+                            topPadding: 10
+                            elide: Text.ElideRight
+                            textFormat: Text.RichText
+                            plainText: `${convo.lastReaction.message.text}`
+                        }
                     }
                 }
 
