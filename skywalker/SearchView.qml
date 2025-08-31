@@ -41,7 +41,7 @@ SkyPage {
 
     header: SearchHeader {
         minSearchTextLength: 0
-        placeHolderText: isPostSearch ? qsTr("Search posts") : qsTr("Search users")
+        placeHolderText: qsTr("Search posts or users")
         showBackButton: !root.showSideBar
         onBack: page.closed()
 
