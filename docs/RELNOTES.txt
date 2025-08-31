@@ -1,6 +1,7 @@
 next
 ====
 * Small cosmetic changes
+* Bug fixes
 * Upgrade to 6.9.2
 
 4.13
