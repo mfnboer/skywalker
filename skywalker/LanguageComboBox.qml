@@ -20,6 +20,8 @@ ComboBox {
     valueRole: "shortCode"
     textRole: "shortCode"
     popup.width: 220
+    popup.topMargin: guiSettings.headerMargin
+    popup.bottomMargin: guiSettings.footerMargin
 
     background: Rectangle {
         id: backgroundRect

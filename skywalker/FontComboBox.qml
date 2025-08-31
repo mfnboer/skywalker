@@ -19,6 +19,8 @@ ComboBox {
     valueRole: "display"
     textRole: "display"
     popup.width: 130
+    popup.topMargin: guiSettings.headerMargin
+    popup.bottomMargin: guiSettings.footerMargin
 
     background: Rectangle {
         radius: 3

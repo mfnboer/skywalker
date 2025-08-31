@@ -18,6 +18,7 @@ SkyPage {
     readonly property int avatarSize: 1000
     readonly property int bannerWidth: 3000
     readonly property int bannerHeight: 1000
+    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
 
     signal closed
     signal profileUpdated(string name, string description, string avatar, string banner)
@@ -89,7 +90,7 @@ SkyPage {
             id: fontSelector
             x: 10
             y: 10
-            popup.height: Math.min(editProfilePage.height - 20, popup.contentHeight)
+            popup.height: Math.min(editProfilePage.usableHeight, popup.contentHeight)
             focusPolicy: Qt.NoFocus
         }
     }

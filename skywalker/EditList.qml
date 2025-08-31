@@ -12,6 +12,8 @@ SkyPage {
     readonly property int avatarSize: 1000
     readonly property string sideBarTitle: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
     readonly property SvgImage sideBarSvg: SvgOutline.list
+    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
+
 
     signal closed
     signal listCreated(listview list)
@@ -68,7 +70,7 @@ SkyPage {
             id: fontSelector
             x: 10
             y: 10
-            popup.height: Math.min(editListPage.height - 20, popup.contentHeight)
+            popup.height: Math.min(editListPage.usableHeight, popup.contentHeight)
             focusPolicy: Qt.NoFocus
         }
 

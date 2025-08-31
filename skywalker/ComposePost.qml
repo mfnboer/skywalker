@@ -79,6 +79,7 @@ SkyPage {
     property bool isAnniversary: skywalker.getAnniversary().isAnniversary()
     readonly property string sideBarTitle: qsTr("Compose post")
     readonly property SvgImage sideBarSvg: SvgOutline.chat
+    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
 
     // Cache
     property list<string> tmpImages: []
@@ -1235,7 +1236,7 @@ SkyPage {
             id: fontSelector
             x: addGif.x + addGif.width + 8
             y: 5 + restrictionRow.height + footerSeparator.height + 6
-            popup.height: Math.min(page.height - 20, popup.contentHeight)
+            popup.height: Math.min(page.usableHeight, popup.contentHeight)
             focusPolicy: Qt.NoFocus
         }
 
@@ -1247,7 +1248,7 @@ SkyPage {
             anchors.leftMargin: 8
             y: 5 + restrictionRow.height + footerSeparator.height + 6
             popup.x: Math.max(-x, Math.min(0, page.width - popup.width - x))
-            popup.height: Math.min(page.height - 20, popup.contentHeight)
+            popup.height: Math.min(page.usableHeight, popup.contentHeight)
             currentIndex: find(currentPostLanguage())
             reversedColors: languageUtils.isDefaultPostLanguageSet && currentValue === languageUtils.defaultPostLanguage
             autoDetectColor: currentPostLanguageSource() === QEnums.LANGUAGE_SOURCE_AUTO

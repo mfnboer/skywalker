@@ -17,6 +17,8 @@ ComboBox {
     valueRole: "shortCode"
     textRole: "shortCode"
     popup.width: 250
+    popup.topMargin: guiSettings.headerMargin
+    popup.bottomMargin: guiSettings.footerMargin
 
     background: Rectangle {
         implicitWidth: 46

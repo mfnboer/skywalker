@@ -16,6 +16,7 @@ SkyPage {
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
     readonly property alias sideBarAuthor: page.firstMember
+    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
 
     signal closed
     signal acceptConvo(convoview convo)
@@ -283,7 +284,7 @@ SkyPage {
             x: page.margin
             anchors.bottomMargin: 5
             anchors.bottom: parent.bottom
-            popup.height: page.height - (page.header.y + page.header.height)
+            popup.height: Math.min(page.usableHeight, popup.contentHeight)
             focusPolicy: Qt.NoFocus
             visible: textInputToolbarHeight > 0
         }
