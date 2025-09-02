@@ -7,6 +7,7 @@
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
+#include "muted_words.h"
 #include "post.h"
 #include "profile_store.h"
 #include <QAbstractListModel>
@@ -209,6 +210,14 @@ protected:
     int mModelId = -1;
 
 private:
+    static const QString NULL_STRING;
+    static const ProfileStore NULL_PROFILE_STORE;
+    static const ContentFilterShowAll NULL_CONTENT_FILTER;
+    static const Bookmarks NULL_BOOKMARKS;
+    static const MutedWordsNoMutes NULL_MATCH_WORDS;
+    static const FocusHashtags NULL_FOCUS_HASHTAGS;
+    static HashtagIndex NULL_HASHTAG_INDEX;
+
     void indexHashtags(const Post& post);
     void identifyThreadPost(const Post& post);
 

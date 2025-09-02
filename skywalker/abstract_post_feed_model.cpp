@@ -4,7 +4,6 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "focus_hashtags.h"
-#include "muted_words.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
 
@@ -12,14 +11,13 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-// TODO
-static const QString NULL_STRING;
-static const ProfileStore NULL_PROFILE_STORE;
-static const ContentFilterShowAll NULL_CONTENT_FILTER;
-static const Bookmarks NULL_BOOKMARKS;
-static const MutedWordsNoMutes NULL_MATCH_WORDS;
-static const FocusHashtags NULL_FOCUS_HASHTAGS;
-static HashtagIndex NULL_HASHTAG_INDEX(0);
+const QString AbstractPostFeedModel::NULL_STRING;
+const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
+const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
+const Bookmarks AbstractPostFeedModel::NULL_BOOKMARKS;
+const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
+const FocusHashtags AbstractPostFeedModel::NULL_FOCUS_HASHTAGS;
+HashtagIndex AbstractPostFeedModel::NULL_HASHTAG_INDEX{0};
 
 AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
     QAbstractListModel(parent),
