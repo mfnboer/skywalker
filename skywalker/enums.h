@@ -2,9 +2,10 @@
 // License: GPLv3
 #pragma once
 #include <atproto/lib/lexicon/app_bsky_actor.h>
-#include <atproto/lib/lexicon/chat_bsky_convo.h>
 #include <atproto/lib/lexicon/app_bsky_graph.h>
 #include <atproto/lib/lexicon/app_bsky_notification.h>
+#include <atproto/lib/lexicon/app_bsky_unspecced.h>
+#include <atproto/lib/lexicon/chat_bsky_convo.h>
 #include <atproto/lib/lexicon/com_atproto_moderation.h>
 #include <QObject>
 #include <QtQmlIntegration>
@@ -404,6 +405,13 @@ public:
         ACTOR_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::ActorStatus::UNKNOWN
     };
     Q_ENUM(ActorStatus)
+
+    enum TrendStatus
+    {
+        TREND_STATUS_HOT = (int)ATProto::AppBskyUnspecced::TrendStatus::HOT,
+        TREND_STATUS_UNKNOWN = (int)ATProto::AppBskyUnspecced::TrendStatus::UNKNOWN
+    };
+    Q_ENUM(TrendStatus)
 };
 
 }

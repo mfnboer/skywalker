@@ -1,5 +1,6 @@
 next
 ====
+* Show details on trends: category, age, number of posts
 * Small cosmetic changes
 * Bug fixes
 * Upgrade to 6.9.2

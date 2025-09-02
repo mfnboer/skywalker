@@ -12,7 +12,8 @@ class TrendingTopicListModel : public QAbstractListModel
 
 public:
     enum class Role {
-        Topic = Qt::UserRole + 1
+        Topic = Qt::UserRole + 1,
+        TopicAgeSeconds
     };
 
     using Ptr = std::unique_ptr<TrendingTopicListModel>;
@@ -24,7 +25,7 @@ public:
 
     bool empty() const { return mList.empty(); }
     void clear();
-    void addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics, int maxTopics);
+    void addTopics(const ATProto::AppBskyUnspecced::TrendView::List& topics, int maxTopics);
 
 protected:
     QHash<int, QByteArray> roleNames() const override;

@@ -12,6 +12,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
+// TODO
 static const QString NULL_STRING;
 static const ProfileStore NULL_PROFILE_STORE;
 static const ContentFilterShowAll NULL_CONTENT_FILTER;

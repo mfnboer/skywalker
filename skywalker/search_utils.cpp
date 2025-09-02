@@ -837,15 +837,16 @@ void SearchUtils::getTrendingTopics()
     qDebug() << "Get trending topics";
     Q_ASSERT(mSkywalker);
     const QString& did = mSkywalker->getUserDid();
+    const int limit = std::max(MAX_TRENDING_TOPICS, ATProto::Client::MAX_TRENDS);
 
-    bskyClient()->getTrendingTopics(did, {},
+    bskyClient()->getTrends(limit,
         [this, presence=getPresence()](auto output){
             if (!presence)
                 return;
 
             auto& model = createTrendingTopicsListModel();
             model.clear();
-            model.addTopics(output->mTopics, MAX_TRENDING_TOPICS);
+            model.addTopics(output->mTrends, MAX_TRENDING_TOPICS);
         },
         [](const QString& error, const QString& msg){
             qDebug() << "getTrendingTopics failed:" << error << " - " << msg;

@@ -425,34 +425,77 @@ SkyPage {
                         required property var modelData
 
                         width: parent.width
-                        height: Math.max(topicIcon.height, topicTitle.height)
+                        height: Math.max(topicIcon.height, separator.y + separator.height)
                         color: "transparent"
-
 
                         SkySvg {
                             id: topicIcon
                             x: page.margin
+                            y: height + 10
                             width: 34
                             height: width
                             color: guiSettings.textColor
-                            svg: modelData.contentMode === QEnums.CONTENT_MODE_VIDEO ? SvgOutline.film : SvgOutline.trending
+                            svg: modelData.topic.contentMode === QEnums.CONTENT_MODE_VIDEO ? SvgOutline.film : SvgOutline.trending
                         }
 
-                        SkyCleanedTextLine {
+                        RowLayout {
                             id: topicTitle
+                            y: 10
                             anchors.left: topicIcon.right
                             anchors.right: parent.right
-                            anchors.verticalCenter: parent.verticalCenter
                             anchors.leftMargin: guiSettings.threadColumnWidth - topicIcon.width
                             anchors.rightMargin: page.margin
-                            elide: Text.ElideRight
-                            color: guiSettings.linkColor
-                            plainText: modelData.topic
+
+                            SkyCleanedTextLine {
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                font.bold: true
+                                plainText: modelData.topic.topic + (modelData.topic.status === QEnums.TREND_STATUS_HOT ? " 🔥" : "")
+                            }
+
+                            DurationLabel {
+                                Layout.alignment: Qt.AlignVCenter
+                                durationSeconds: modelData.topicAgeSeconds
+                                visible: modelData.topicAgeSeconds > 0
+                            }
+                        }
+
+                        RowLayout {
+                            id: topicDetails
+                            anchors.left: topicTitle.left
+                            anchors.right: topicTitle.right
+                            anchors.top: topicTitle.bottom
+
+                            SkyCleanedTextLine {
+                                topPadding: 5
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
+                                font.pointSize: guiSettings.scaledFont(7/8)
+                                font.italic: true
+                                plainText: modelData.topic.category
+                            }
+
+                            AccessibleText {
+                                topPadding: 5
+                                font.pointSize: guiSettings.scaledFont(7/8)
+                                color: Material.color(Material.Grey)
+                                text: qsTr(`${modelData.topic.postCount} posts`)
+                                visible: modelData.topic.postCount > 0
+                            }
+                        }
+
+                        Rectangle {
+                            id: separator
+                            anchors.top: topicDetails.bottom
+                            anchors.topMargin: 10
+                            width: parent.width
+                            height: 1
+                            color: guiSettings.separatorColor
                         }
 
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: root.openLink(modelData.link)
+                            onClicked: root.openLink(modelData.topic.link)
                         }
                     }
                 }

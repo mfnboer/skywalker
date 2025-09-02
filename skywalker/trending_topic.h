@@ -14,6 +14,10 @@ class TrendingTopic : public NormalizedWordIndex
     Q_GADGET
     Q_PROPERTY(QString topic READ getTopic FINAL)
     Q_PROPERTY(QString link READ getLink FINAL)
+    Q_PROPERTY(QDateTime startedAt READ getStartedAt FINAL)
+    Q_PROPERTY(QEnums::TrendStatus status READ getStatus FINAL)
+    Q_PROPERTY(QString category READ getCategory FINAL)
+    Q_PROPERTY(int postCount READ getPostCount FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode FINAL)
     QML_VALUE_TYPE(trendingtopic)
 
@@ -21,11 +25,15 @@ public:
     using List = QList<TrendingTopic>;
 
     TrendingTopic() = default;
-    explicit TrendingTopic(const ATProto::AppBskyUnspecced::TrendingTopic::SharedPtr& topic);
-    TrendingTopic(const QString& topic, const QString& link, QEnums::ContentMode contentMode);
+    explicit TrendingTopic(const ATProto::AppBskyUnspecced::TrendView::SharedPtr& topic);
+    TrendingTopic(const QString& topic, const QString& link, const QString& category, QEnums::ContentMode contentMode);
 
     QString getTopic() const;
     QString getLink() const;
+    QDateTime getStartedAt() const;
+    QEnums::TrendStatus getStatus() const;
+    QString getCategory() const;
+    int getPostCount() const;
     QEnums::ContentMode getContentMode() const { return mContentMode; }
 
     // NormalizedWordIndex
@@ -38,7 +46,7 @@ public:
     QString getAuthorDid() const override { return {}; }
 
 private:
-    ATProto::AppBskyUnspecced::TrendingTopic::SharedPtr mTopic;
+    ATProto::AppBskyUnspecced::TrendView::SharedPtr mTopic;
     QEnums::ContentMode mContentMode = QEnums::CONTENT_MODE_UNSPECIFIED;
 };
 

@@ -4,6 +4,8 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 TrendingTopicListModel::TrendingTopicListModel(const IMatchWords& mutedWords, QObject* parent) :
     QAbstractListModel(parent),
     mMutedWords(mutedWords)
@@ -26,6 +28,8 @@ QVariant TrendingTopicListModel::data(const QModelIndex& index, int role) const
     {
     case Role::Topic:
         return QVariant::fromValue(topic);
+    case Role::TopicAgeSeconds:
+        return double((QDateTime::currentDateTimeUtc() - topic.getStartedAt()) / 1s);
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -42,7 +46,7 @@ void TrendingTopicListModel::clear()
     }
 }
 
-void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendingTopic::List& topics, int maxTopics)
+void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendView::List& topics, int maxTopics)
 {
     qDebug() << "Add topics:" << topics.size();
     std::vector<TrendingTopic> trendingTopics;
@@ -66,7 +70,9 @@ void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::Trending
     }
 
     const TrendingTopic trendingVideos(tr("Trending videos"),
-            "https://bsky.app/profile/bsky.app/feed/thevids", QEnums::CONTENT_MODE_VIDEO);
+                                       "https://bsky.app/profile/bsky.app/feed/thevids",
+                                       tr("video"),
+                                       QEnums::CONTENT_MODE_VIDEO);
     trendingTopics.push_back(trendingVideos);
 
     const size_t newRowCount = mList.size() + trendingTopics.size();
@@ -80,7 +86,8 @@ void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::Trending
 QHash<int, QByteArray> TrendingTopicListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
-        { int(Role::Topic), "topic" }
+        { int(Role::Topic), "topic" },
+        { int(Role::TopicAgeSeconds), "topicAgeSeconds" }
     };
 
     return roles;
