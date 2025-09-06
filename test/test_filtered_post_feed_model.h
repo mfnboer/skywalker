@@ -327,7 +327,7 @@ private:
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
     ContentFilter mContentFilter{mUserPreferences, &mUserSettings};
-    Bookmarks mBookmarks;
+    LegacyBookmarks mBookmarks;
     MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};

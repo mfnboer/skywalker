@@ -168,10 +168,10 @@ qt_add_qml_module(libskywalker
         QML_FILES SwitchUserDrawer.qml
         QML_FILES AltTextEditor.qml
         QML_FILES MenuItemSvg.qml
-        SOURCES bookmarks.h
-        SOURCES bookmarks.cpp
-        SOURCES bookmarks_model.h
-        SOURCES bookmarks_model.cpp
+        SOURCES legacy_bookmarks.h
+        SOURCES legacy_bookmarks.cpp
+        SOURCES legacy_bookmarks_model.h
+        SOURCES legacy_bookmarks_model.cpp
         QML_FILES Bookmarks.qml
         QML_FILES About.qml
         QML_FILES StartupStatus.qml

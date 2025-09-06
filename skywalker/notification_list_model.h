@@ -2,7 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "base_list_model.h"
-#include "bookmarks.h"
+#include "legacy_bookmarks.h"
 #include "content_filter.h"
 #include "follows_activity_store.h"
 #include "local_post_model_changes.h"
@@ -104,7 +104,7 @@ public:
         EndOfList
     };
 
-    explicit NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+    explicit NotificationListModel(const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
                                    const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
                                    QObject* parent = nullptr);
 
@@ -192,7 +192,7 @@ private:
     void updateInviteCodeUser(const BasicProfile& profile);
 
     const ContentFilter& mContentFilter;
-    const Bookmarks& mBookmarks;
+    const LegacyBookmarks& mBookmarks;
     const MutedWords& mMutedWords;
     FollowsActivityStore* mFollowsActivityStore;
 

@@ -12,7 +12,7 @@
 
 namespace Skywalker {
 
-class Bookmarks : public WrappedSkywalker, public Presence
+class LegacyBookmarks : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(int maxSize MEMBER MAX_BOOKMARKS CONSTANT FINAL)
@@ -21,7 +21,7 @@ class Bookmarks : public WrappedSkywalker, public Presence
 public:
     static constexpr qsizetype MAX_BOOKMARKS = 200;
 
-    explicit Bookmarks(QObject* parent = nullptr);
+    explicit LegacyBookmarks(QObject* parent = nullptr);
 
     size_t size() const { return mBookmarkedPostUris.size(); }
     bool isFull() const { return mBookmarkedPostUris.size() >= MAX_BOOKMARKS; }

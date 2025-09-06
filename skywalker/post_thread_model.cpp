@@ -8,7 +8,7 @@ namespace Skywalker {
 PostThreadModel::PostThreadModel(const QString& threadEntryUri,
                                  const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
-                                 const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                                 const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
                                  const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :

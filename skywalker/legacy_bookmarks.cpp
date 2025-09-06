@@ -1,19 +1,19 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
-#include "bookmarks.h"
+#include "legacy_bookmarks.h"
 #include "lexicon/lexicon.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
 
 namespace Skywalker {
 
-Bookmarks::Bookmarks(QObject* parent) :
+LegacyBookmarks::LegacyBookmarks(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
 {
 }
 
-void Bookmarks::clear()
+void LegacyBookmarks::clear()
 {
     qDebug() << "clear bookmarks";
     mBookmarkedPostUris.clear();
@@ -23,7 +23,7 @@ void Bookmarks::clear()
     emit sizeChanged();
 }
 
-bool Bookmarks::addBookmark(const QString& postUri)
+bool LegacyBookmarks::addBookmark(const QString& postUri)
 {
     if (mPostUriIndex.count(postUri))
     {
@@ -43,7 +43,7 @@ bool Bookmarks::addBookmark(const QString& postUri)
     return true;
 }
 
-bool Bookmarks::addBookmarkPrivate(const QString& postUri)
+bool LegacyBookmarks::addBookmarkPrivate(const QString& postUri)
 {
     if (mPostUriIndex.count(postUri))
     {
@@ -58,7 +58,7 @@ bool Bookmarks::addBookmarkPrivate(const QString& postUri)
     return true;
 }
 
-void Bookmarks::removeBookmark(const QString& postUri)
+void LegacyBookmarks::removeBookmark(const QString& postUri)
 {
     if (!mPostUriIndex.count(postUri))
     {
@@ -77,7 +77,7 @@ void Bookmarks::removeBookmark(const QString& postUri)
     emit sizeChanged();
 }
 
-std::vector<QString> Bookmarks::getPage(int startIndex, int size) const
+std::vector<QString> LegacyBookmarks::getPage(int startIndex, int size) const
 {
     qDebug() << "Get page, start:" << startIndex << "size:" << size << "#bookmarks:" << mBookmarkedPostUris.size();
     std::vector<QString> page;
@@ -93,7 +93,7 @@ std::vector<QString> Bookmarks::getPage(int startIndex, int size) const
     return page;
 }
 
-void Bookmarks::load()
+void LegacyBookmarks::load()
 {
     qDebug() << "Load bookmarks";
     clear();
@@ -101,7 +101,7 @@ void Bookmarks::load()
     emit sizeChanged();
 }
 
-void Bookmarks::save()
+void LegacyBookmarks::save()
 {
     qDebug() << "Save bookmarks to settings";
 
@@ -124,7 +124,7 @@ void Bookmarks::save()
     mDirty = false;
 }
 
-void Bookmarks::loadFromBsky(std::function<void()> doneCb)
+void LegacyBookmarks::loadFromBsky(std::function<void()> doneCb)
 {
     qDebug() << "Load bookmarks from bsky";
 
@@ -141,7 +141,7 @@ void Bookmarks::loadFromBsky(std::function<void()> doneCb)
     });
 }
 
-void Bookmarks::loadFromSettings()
+void LegacyBookmarks::loadFromSettings()
 {
     qDebug() << "Load bookmarks from settings";
     const auto* userSettings = mSkywalker->getUserSettings();
@@ -159,7 +159,7 @@ void Bookmarks::loadFromSettings()
         addBookmarkPrivate(uri);
 }
 
-void Bookmarks::writeRecord(const Bookmark::Bookmark& bookmark)
+void LegacyBookmarks::writeRecord(const Bookmark::Bookmark& bookmark)
 {
     if (!bskyClient())
         return;
@@ -185,7 +185,7 @@ void Bookmarks::writeRecord(const Bookmark::Bookmark& bookmark)
         });
 }
 
-void Bookmarks::deleteRecord(const QString& postUri)
+void LegacyBookmarks::deleteRecord(const QString& postUri)
 {
     const auto& recordUri = mPostUriRecordUriMap[postUri];
     ATProto::ATUri atUri(recordUri);
@@ -223,7 +223,7 @@ void Bookmarks::deleteRecord(const QString& postUri)
         });
 }
 
-void Bookmarks::deleteRecords()
+void LegacyBookmarks::deleteRecords()
 {
     qDebug() << "Delete records";
 
@@ -259,7 +259,7 @@ void Bookmarks::deleteRecords()
         });
 }
 
-void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<QString> cursor, int maxPages)
+void LegacyBookmarks::listRecords(const std::function<void()>& doneCb, std::optional<QString> cursor, int maxPages)
 {
     qDebug() << "Load bookmarks page, cursor:" << (cursor ? *cursor : "") << "max pages:" << maxPages;
 
@@ -309,7 +309,7 @@ void Bookmarks::listRecords(const std::function<void()>& doneCb, std::optional<Q
         });
 }
 
-void Bookmarks::createRecords(const QStringList& postUris, const std::function<void()>& doneCb)
+void LegacyBookmarks::createRecords(const QStringList& postUris, const std::function<void()>& doneCb)
 {
     ATProto::ComATProtoRepo::ApplyWritesList writes;
 

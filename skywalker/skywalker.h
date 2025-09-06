@@ -4,8 +4,8 @@
 #include "anniversary.h"
 #include "author_feed_model.h"
 #include "author_list_model.h"
-#include "bookmarks.h"
-#include "bookmarks_model.h"
+#include "legacy_bookmarks.h"
+#include "legacy_bookmarks_model.h"
 #include "content_group_list_model.h"
 #include "draft_posts_model.h"
 #include "edit_user_preferences.h"
@@ -50,7 +50,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* mentionListModel READ getMentionListModel CONSTANT FINAL)
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
-    Q_PROPERTY(Bookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
+    Q_PROPERTY(LegacyBookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
     Q_PROPERTY(FocusHashtags* focusHashtags READ getFocusHashtags CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
@@ -196,7 +196,7 @@ public:
     void saveHashtags();
 
     // NOTE: destroys the previous model
-    Q_INVOKABLE const BookmarksModel* createBookmarksModel();
+    Q_INVOKABLE const LegacyBookmarksModel* createBookmarksModel();
     Q_INVOKABLE void deleteBookmarksModel();
 
     const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
@@ -217,7 +217,7 @@ public:
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     NotificationListModel* getMentionListModel() { return &mMentionListModel; }
     Chat* getChat();
-    Bookmarks* getBookmarks() { return &mBookmarks; }
+    LegacyBookmarks* getBookmarks() { return &mBookmarks; }
     MutedWords* getMutedWords() { return &mMutedWords; }
     FocusHashtags* getFocusHashtags() { return mFocusHashtags.get(); }
     void setAutoUpdateTimelineInProgress(bool inProgress);
@@ -387,8 +387,8 @@ private:
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;
 
-    Bookmarks mBookmarks;
-    BookmarksModel::Ptr mBookmarksModel;
+    LegacyBookmarks mBookmarks;
+    LegacyBookmarksModel::Ptr mBookmarksModel;
     MutedWords mMutedWords;
     MutedWordsNoMutes mMutedWordsNoMutes;
     std::unique_ptr<FocusHashtags> mFocusHashtags;

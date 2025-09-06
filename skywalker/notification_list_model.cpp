@@ -12,7 +12,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
                                              const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
                                              QObject* parent) :
     QAbstractListModel(parent),
@@ -21,7 +21,7 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
     mMutedWords(mutedWords),
     mFollowsActivityStore(followsActivityStore)
 {
-    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
+    connect(&mBookmarks, &LegacyBookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
             [this](const QString&){ changeData({ int(Role::ReplyToAuthor),
                                  int(Role::NotificationReasonPostReplyToAuthor),

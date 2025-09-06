@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
-#include "bookmarks_model.h"
+#include "legacy_bookmarks_model.h"
 #include "author_cache.h"
 #include "definitions.h"
 #include <atproto/lib/at_uri.h>
 
 namespace Skywalker {
 
-BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& following,
+LegacyBookmarksModel::LegacyBookmarksModel(const QString& userDid, const IProfileStore& following,
                                const IProfileStore& mutedReposts,
-                               const ContentFilter& contentFilter, const Bookmarks& bookmarks,
+                               const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
                                const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                HashtagIndex& hashtags,
                                QObject* parent) :
@@ -19,7 +19,7 @@ BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& foll
 {
 }
 
-void BookmarksModel::clear()
+void LegacyBookmarksModel::clear()
 {
     if (!mFeed.empty())
     {
@@ -31,7 +31,7 @@ void BookmarksModel::clear()
     qDebug() << "All bookmarks removed";
 }
 
-void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto::Client& bsky)
+void LegacyBookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto::Client& bsky)
 {
     Q_ASSERT(postUris.size() <= MAX_PAGE_SIZE);
 
@@ -81,7 +81,7 @@ void BookmarksModel::addBookmarks(const std::vector<QString>& postUris, ATProto:
     qDebug() << "Bookmarks:" << mFeed.size();
 }
 
-void BookmarksModel::addPosts(const std::vector<QString>& postUris)
+void LegacyBookmarksModel::addPosts(const std::vector<QString>& postUris)
 {
     beginInsertRows({}, mFeed.size(), mFeed.size() + postUris.size() - 1);
 
@@ -109,7 +109,7 @@ void BookmarksModel::addPosts(const std::vector<QString>& postUris)
     endInsertRows();
 }
 
-void BookmarksModel::setInProgress(bool inProgress)
+void LegacyBookmarksModel::setInProgress(bool inProgress)
 {
     if (inProgress != mInProgress)
     {
@@ -118,7 +118,7 @@ void BookmarksModel::setInProgress(bool inProgress)
     }
 }
 
-void BookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris, ATProto::Client& bsky)
+void LegacyBookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris, ATProto::Client& bsky)
 {
     std::unordered_set<QString> unknownAuthors;
 
@@ -177,7 +177,7 @@ void BookmarksModel::getAuthorsDeletedPosts(const std::vector<QString>& postUris
         });
 }
 
-ATProto::AppBskyFeed::PostView::SharedPtr BookmarksModel::getDeletedPost(const QString& atUri)
+ATProto::AppBskyFeed::PostView::SharedPtr LegacyBookmarksModel::getDeletedPost(const QString& atUri)
 {
     const auto it = mDeletedPosts.find(atUri);
 

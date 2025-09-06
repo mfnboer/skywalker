@@ -77,7 +77,7 @@ Skywalker::Skywalker(QObject* parent) :
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
-    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
+    connect(&mBookmarks, &LegacyBookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
@@ -2117,7 +2117,7 @@ void Skywalker::getBookmarksPage(bool clearModel)
         mBookmarksModel->clear();
 
     const int pageIndex = mBookmarksModel->rowCount();
-    const auto page = mBookmarks.getPage(pageIndex, BookmarksModel::MAX_PAGE_SIZE);
+    const auto page = mBookmarks.getPage(pageIndex, LegacyBookmarksModel::MAX_PAGE_SIZE);
 
     if (page.empty())
     {
@@ -3652,13 +3652,13 @@ void Skywalker::saveUserPreferences()
     saveUserPreferences(prefs);
 }
 
-const BookmarksModel* Skywalker::createBookmarksModel()
+const LegacyBookmarksModel* Skywalker::createBookmarksModel()
 {
-    mBookmarksModel = std::make_unique<BookmarksModel>(
+    mBookmarksModel = std::make_unique<LegacyBookmarksModel>(
         mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
-    connect(mBookmarksModel.get(), &BookmarksModel::failure, this,
+    connect(mBookmarksModel.get(), &LegacyBookmarksModel::failure, this,
             [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
 
     return mBookmarksModel.get();

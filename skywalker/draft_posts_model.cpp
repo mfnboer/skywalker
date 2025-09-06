@@ -9,7 +9,7 @@ namespace Skywalker {
 
 DraftPostsModel::DraftPostsModel(const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
-                                 const IContentFilter& contentFilter, const Bookmarks& bookmarks,
+                                 const IContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
                                  const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :

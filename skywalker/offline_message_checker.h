@@ -1,7 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "bookmarks.h"
+#include "legacy_bookmarks.h"
 #include "content_filter.h"
 #include "image_reader.h"
 #include "muted_words.h"
@@ -90,7 +90,7 @@ private:
     ATProto::AppBskyNotification::Preferences::SharedPtr mNotificationPrefs;
     ProfileStore mUserFollows;
     ContentFilter mContentFilter;
-    Bookmarks mBookmarks; // Not loaded. Needed for notification model
+    LegacyBookmarks mBookmarks; // Not loaded. Needed for notification model
     MutedWords mMutedWords;
     NotificationListModel mNotificationListModel;
     std::unordered_map<QString, QByteArray> mAvatars; // URL -> jpg

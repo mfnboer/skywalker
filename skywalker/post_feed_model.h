@@ -37,7 +37,7 @@ public:
                            const IProfileStore& mutedReposts,
                            const IProfileStore& feedHide,
                            const IContentFilter& contentFilter,
-                           const Bookmarks& bookmarks,
+                           const LegacyBookmarks& bookmarks,
                            const IMatchWords& mutedWords,
                            const FocusHashtags& focusHashtags,
                            HashtagIndex& hashtags,

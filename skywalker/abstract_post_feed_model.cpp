@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 const QString AbstractPostFeedModel::NULL_STRING;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
-const Bookmarks AbstractPostFeedModel::NULL_BOOKMARKS;
+const LegacyBookmarks AbstractPostFeedModel::NULL_BOOKMARKS;
 const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
 const FocusHashtags AbstractPostFeedModel::NULL_FOCUS_HASHTAGS;
 HashtagIndex AbstractPostFeedModel::NULL_HASHTAG_INDEX{0};
@@ -36,7 +36,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
                                              const IProfileStore& feedHide,
-                                             const IContentFilter& contentFilter, const Bookmarks& bookmarks,
+                                             const IContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
@@ -51,7 +51,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mFocusHashtags(focusHashtags),
     mHashtags(hashtags)
 {
-    connect(&mBookmarks, &Bookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); }, Qt::QueuedConnection);
+    connect(&mBookmarks, &LegacyBookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); }, Qt::QueuedConnection);
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
             [this](const QString& did){ replyToAuthorAdded(did); }, Qt::QueuedConnection);
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
