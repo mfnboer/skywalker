@@ -9,12 +9,12 @@ namespace Skywalker {
 
 DraftPostsModel::DraftPostsModel(const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
-                                 const IContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
+                                 const IContentFilter& contentFilter,
                                  const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
-                          contentFilter, bookmarks, mutedWords, focusHashtags, hashtags,
+                          contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {
 }

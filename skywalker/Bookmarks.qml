@@ -6,7 +6,6 @@ import skywalker
 SkyListView {
     required property var skywalker
     readonly property string sideBarTitle: qsTr("Bookmarks")
-    readonly property string sideBarSubTitle: `${skywalker.bookmarks.size} / ${skywalker.bookmarks.maxSize}`
     readonly property SvgImage sideBarSvg: SvgOutline.bookmark
 
     signal closed
@@ -22,7 +21,6 @@ SkyListView {
         SimpleHeader {
             id: portraitHeader
             text: sideBarTitle
-            subTitle: sideBarSubTitle
             visible: !root.showSideBar
             onBack: bookmarksView.closed()
         }
@@ -41,9 +39,9 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: model.inProgress
-        topOvershootFun: () => skywalker.getBookmarksPage(true)
-        bottomOvershootFun: () => skywalker.getBookmarksPage()
+        inProgress: model.getFeedInProgress
+        topOvershootFun: () => skywalker.getBookmarks().getBookmarks()
+        bottomOvershootFun: () => skywalker.getBookmarks().getBookmarksNextPage()
         topText: qsTr("Pull down to refresh bookmarks")
     }
 
@@ -57,7 +55,7 @@ SkyListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: model.inProgress
+        running: model.getFeedInProgress
     }
 
 

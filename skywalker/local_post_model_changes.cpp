@@ -100,6 +100,18 @@ void LocalPostModelChanges::updateThreadMuted(const QString& uri, bool muted)
     threadMutedChanged();
 }
 
+void LocalPostModelChanges::updateBookmarked(const QString& cid, bool bookmarked)
+{
+    mChanges[cid].mBookmarked = bookmarked;
+    bookmarkedChanged();
+}
+
+void LocalPostModelChanges::updateBookmarkTransient(const QString& cid, bool transient)
+{
+    mChanges[cid].mBookmarkTransient = transient;
+    bookmarkTransientChanged();
+}
+
 bool LocalPostModelChanges::updateDetachedRecord(const QString& cid, const QString& postUri)
 {
     if (postUri.isEmpty())

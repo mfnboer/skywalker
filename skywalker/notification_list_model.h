@@ -2,7 +2,6 @@
 // License: GPLv3
 #pragma once
 #include "base_list_model.h"
-#include "legacy_bookmarks.h"
 #include "content_filter.h"
 #include "follows_activity_store.h"
 #include "local_post_model_changes.h"
@@ -91,6 +90,7 @@ public:
         NotificationPostQuoteCount,
         NotificationPostReplyCount,
         NotificationPostBookmarked,
+        NotificationPostBookmarkTransient,
         NotificationPostNotFound,
         NotificationPostBlocked,
         NotificationPostLabels,
@@ -104,7 +104,7 @@ public:
         EndOfList
     };
 
-    explicit NotificationListModel(const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
+    explicit NotificationListModel(const ContentFilter& contentFilter,
                                    const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
                                    QObject* parent = nullptr);
 
@@ -159,6 +159,8 @@ protected:
     virtual void replyRestrictionListsChanged() override;
     virtual void hiddenRepliesChanged() override;
     virtual void threadMutedChanged() override;
+    virtual void bookmarkedChanged() override;
+    virtual void bookmarkTransientChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;
@@ -182,7 +184,6 @@ private:
     void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);
     void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
 
-    void postBookmarkedChanged();
     void changeData(const QList<int>& roles) override;
     void clearLocalState();
     void clearRows();
@@ -192,7 +193,6 @@ private:
     void updateInviteCodeUser(const BasicProfile& profile);
 
     const ContentFilter& mContentFilter;
-    const LegacyBookmarks& mBookmarks;
     const MutedWords& mMutedWords;
     FollowsActivityStore* mFollowsActivityStore;
 

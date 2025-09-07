@@ -340,7 +340,6 @@ ApplicationWindow {
             let userSettings = skywalker.getUserSettings()
             const lastSignIn = userSettings.getLastSignInTimestamp(did)
             // inviteCodeStore.load(lastSignIn)
-            skywalker.loadBookmarks()
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
@@ -763,7 +762,7 @@ ApplicationWindow {
             let page = component.createObject(root, { skywalker: skywalker })
             page.onClosed.connect(() => { popStack() })
             pushStack(page)
-            skywalker.getBookmarksPage()
+            skywalker.getBookmarks().getBookmarks()
             close()
         }
 

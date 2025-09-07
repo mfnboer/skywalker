@@ -4,8 +4,8 @@
 #include "anniversary.h"
 #include "author_feed_model.h"
 #include "author_list_model.h"
-#include "legacy_bookmarks.h"
-#include "legacy_bookmarks_model.h"
+#include "bookmarks.h"
+#include "bookmarks_model.h"
 #include "content_group_list_model.h"
 #include "draft_posts_model.h"
 #include "edit_user_preferences.h"
@@ -50,7 +50,6 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* mentionListModel READ getMentionListModel CONSTANT FINAL)
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
-    Q_PROPERTY(LegacyBookmarks* bookmarks READ getBookmarks CONSTANT FINAL)
     Q_PROPERTY(MutedWords* mutedWords READ getMutedWords CONSTANT FINAL)
     Q_PROPERTY(FocusHashtags* focusHashtags READ getFocusHashtags CONSTANT FINAL)
     Q_PROPERTY(bool autoUpdateTimelineInProgress READ isAutoUpdateTimelineInProgress NOTIFY autoUpdateTimeLineInProgressChanged FINAL)
@@ -117,7 +116,6 @@ public:
     Q_INVOKABLE void updateNotificationsSeen();
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
-    Q_INVOKABLE void getBookmarksPage(bool clearModel = false);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
 
     // If avatar is a "image://", then the profile takes ownership of the image
@@ -189,14 +187,14 @@ public:
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
     Q_INVOKABLE void saveUserPreferences();
     Q_INVOKABLE void saveFavoriteFeeds();
-    Q_INVOKABLE void loadBookmarks();
     Q_INVOKABLE void loadMutedWords();
     Q_INVOKABLE void saveMutedWords(std::function<void()> okCb = {});
     Q_INVOKABLE void loadHashtags();
     void saveHashtags();
 
     // NOTE: destroys the previous model
-    Q_INVOKABLE const LegacyBookmarksModel* createBookmarksModel();
+    Q_INVOKABLE BookmarksModel* createBookmarksModel();
+    BookmarksModel* getBookmarksModel();
     Q_INVOKABLE void deleteBookmarksModel();
 
     const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
@@ -217,7 +215,7 @@ public:
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     NotificationListModel* getMentionListModel() { return &mMentionListModel; }
     Chat* getChat();
-    LegacyBookmarks* getBookmarks() { return &mBookmarks; }
+    Q_INVOKABLE Bookmarks* getBookmarks();
     MutedWords* getMutedWords() { return &mMutedWords; }
     FocusHashtags* getFocusHashtags() { return mFocusHashtags.get(); }
     void setAutoUpdateTimelineInProgress(bool inProgress);
@@ -387,8 +385,7 @@ private:
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;
 
-    LegacyBookmarks mBookmarks;
-    LegacyBookmarksModel::Ptr mBookmarksModel;
+    BookmarksModel::Ptr mBookmarksModel;
     MutedWords mMutedWords;
     MutedWordsNoMutes mMutedWordsNoMutes;
     std::unique_ptr<FocusHashtags> mFocusHashtags;
@@ -420,6 +417,7 @@ private:
     NotificationListModel mNotificationListModel; // All notifications
     NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;
+    std::unique_ptr<Bookmarks> mBookmarks;
 
     int mGetDetailedProfileInProgress = 0;
     bool mGetNotificationsInProgress = false;

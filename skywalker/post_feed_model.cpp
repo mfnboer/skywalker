@@ -17,7 +17,6 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const IProfileStore& mutedReposts,
                              const IProfileStore& feedHide,
                              const IContentFilter& contentFilter,
-                             const LegacyBookmarks& bookmarks,
                              const IMatchWords& mutedWords,
                              const FocusHashtags& focusHashtags,
                              HashtagIndex& hashtags,
@@ -25,7 +24,7 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              UserSettings& userSettings,
                              FollowsActivityStore& followsActivityStore,
                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, bookmarks, mutedWords, focusHashtags, hashtags, parent),
+    AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
     mUserSettings(userSettings),
     mFollowsActivityStore(followsActivityStore),
@@ -625,7 +624,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
     auto model = std::make_unique<FilteredPostFeedModel>(
             std::move(postFilter), this, mUserDid, mFollowing, mMutedReposts, mContentFilter,
-            mBookmarks, mMutedWords, mFocusHashtags, mHashtags, this);
+            mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setModelId(mModelId);
     model->setPosts(mFeed, mFeed.size());

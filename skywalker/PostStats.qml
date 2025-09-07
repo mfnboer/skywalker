@@ -19,7 +19,7 @@ Item {
     required property string replyRootUri
     required property bool authorIsUser
     required property bool isBookmarked
-    required property bool bookmarkNotFound
+    required property bool bookmarkTransient
     property string plainTextForEmoji: ""
     property bool showViewThread: false
     property var record: null // recordview
@@ -61,7 +61,7 @@ Item {
         iconColor: enabled ? postStats.color : guiSettings.disabledColor
         svg: SvgOutline.reply
         statistic: replyCount
-        visible: !bookmarkNotFound && !limitedStats
+        visible: !limitedStats
         enabled: !replyDisabled
         onClicked: reply()
 
@@ -75,7 +75,7 @@ Item {
         iconColor: repostUri ? guiSettings.likeColor : postStats.color
         svg: SvgOutline.repost
         statistic: repostCount
-        visible: !bookmarkNotFound && !limitedStats
+        visible: !limitedStats
         onClicked: repost()
         onPressAndHold: quotePost()
 
@@ -89,7 +89,6 @@ Item {
         iconColor: likeUri ? guiSettings.likeColor : postStats.color
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
-        visible: !bookmarkNotFound
         onClicked: like()
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
@@ -110,6 +109,11 @@ Item {
         onClicked: bookmark()
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
+
+        BlinkingOpacity {
+            target: bookmarkIcon
+            running: bookmarkTransient
+        }
     }
     StatIcon {
         id: moreIcon
@@ -118,7 +122,6 @@ Item {
         width: parent.width / 8
         iconColor: postStats.color
         svg: SvgOutline.moreVert
-        visible: !bookmarkNotFound
         onClicked: moreMenuLoader.open()
 
         Accessible.name: qsTr("more options")

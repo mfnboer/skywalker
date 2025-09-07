@@ -2,7 +2,6 @@
 // License: GPLv3
 #pragma once
 #include "base_list_model.h"
-#include "legacy_bookmarks.h"
 #include "content_filter.h"
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
@@ -88,7 +87,7 @@ public:
         PostHiddenReplies,
         PostIsHiddenReply,
         PostBookmarked,
-        PostBookmarkNotFound,
+        PostBookmarkTransient,
         PostLabels,
         PostContentVisibility,
         PostContentWarning,
@@ -108,7 +107,7 @@ public:
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
                           const IProfileStore& feedHide,
-                          const IContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
+                          const IContentFilter& contentFilter,
                           const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                           HashtagIndex& hashtags,
                           QObject* parent = nullptr);
@@ -184,6 +183,8 @@ protected:
     virtual void replyRestrictionListsChanged() override;
     virtual void hiddenRepliesChanged() override;
     virtual void threadMutedChanged() override;
+    virtual void bookmarkedChanged() override;
+    virtual void bookmarkTransientChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;
@@ -203,7 +204,6 @@ protected:
     const IProfileStore& mMutedReposts;
     const IProfileStore& mFeedHide;
     const IContentFilter& mContentFilter;
-    const LegacyBookmarks& mBookmarks;
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
@@ -213,7 +213,6 @@ private:
     static const QString NULL_STRING;
     static const ProfileStore NULL_PROFILE_STORE;
     static const ContentFilterShowAll NULL_CONTENT_FILTER;
-    static const LegacyBookmarks NULL_BOOKMARKS;
     static const MutedWordsNoMutes NULL_MATCH_WORDS;
     static const FocusHashtags NULL_FOCUS_HASHTAGS;
     static HashtagIndex NULL_HASHTAG_INDEX;
@@ -221,7 +220,6 @@ private:
     void indexHashtags(const Post& post);
     void identifyThreadPost(const Post& post);
 
-    void postBookmarkedChanged();
     void postIsThreadChanged(const QString& postUri);
     void replyToAuthorAdded(const QString& did);
 

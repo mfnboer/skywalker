@@ -14,7 +14,6 @@ using namespace std::chrono_literals;
 const QString AbstractPostFeedModel::NULL_STRING;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
-const LegacyBookmarks AbstractPostFeedModel::NULL_BOOKMARKS;
 const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
 const FocusHashtags AbstractPostFeedModel::NULL_FOCUS_HASHTAGS;
 HashtagIndex AbstractPostFeedModel::NULL_HASHTAG_INDEX{0};
@@ -26,7 +25,6 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
     mMutedReposts(NULL_PROFILE_STORE),
     mFeedHide(NULL_PROFILE_STORE),
     mContentFilter(NULL_CONTENT_FILTER),
-    mBookmarks(NULL_BOOKMARKS),
     mMutedWords(NULL_MATCH_WORDS),
     mFocusHashtags(NULL_FOCUS_HASHTAGS),
     mHashtags(NULL_HASHTAG_INDEX)
@@ -36,7 +34,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
                                              const IProfileStore& feedHide,
-                                             const IContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
+                                             const IContentFilter& contentFilter,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
@@ -46,12 +44,10 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mMutedReposts(mutedReposts),
     mFeedHide(feedHide),
     mContentFilter(contentFilter),
-    mBookmarks(bookmarks),
     mMutedWords(mutedWords),
     mFocusHashtags(focusHashtags),
     mHashtags(hashtags)
 {
-    connect(&mBookmarks, &LegacyBookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); }, Qt::QueuedConnection);
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
             [this](const QString& did){ replyToAuthorAdded(did); }, Qt::QueuedConnection);
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
@@ -570,9 +566,9 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return rootChange && rootChange->mHiddenReplies ? rootChange->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
     }
     case Role::PostBookmarked:
-        return mBookmarks.isBookmarked(post.getUri());
-    case Role::PostBookmarkNotFound:
-        return post.isBookmarkNotFound();
+        return change && change->mBookmarked ? *change->mBookmarked : post.isBookmarked();
+    case Role::PostBookmarkTransient:
+        return change ? change->mBookmarkTransient : false;
     case Role::PostLabels:
         return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
@@ -720,7 +716,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostHiddenReplies), "postHiddenReplies" },
         { int(Role::PostIsHiddenReply), "postIsHiddenReply" },
         { int(Role::PostBookmarked), "postBookmarked" },
-        { int(Role::PostBookmarkNotFound), "postBookmarkNotFound" },
+        { int(Role::PostBookmarkTransient), "postBookmarkTransient" },
         { int(Role::PostLabels), "postLabels" },
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
@@ -835,9 +831,14 @@ void AbstractPostFeedModel::locallyBlockedChanged()
     changeData({ int(Role::PostBlocked), int(Role::PostLocallyDeleted) });
 }
 
-void AbstractPostFeedModel::postBookmarkedChanged()
+void AbstractPostFeedModel::bookmarkedChanged()
 {
     changeData({ int(Role::PostBookmarked) });
+}
+
+void AbstractPostFeedModel::bookmarkTransientChanged()
+{
+    changeData({ int(Role::PostBookmarkTransient) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

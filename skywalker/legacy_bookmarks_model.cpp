@@ -9,12 +9,12 @@ namespace Skywalker {
 
 LegacyBookmarksModel::LegacyBookmarksModel(const QString& userDid, const IProfileStore& following,
                                const IProfileStore& mutedReposts,
-                               const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
+                               const ContentFilter& contentFilter,
                                const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                HashtagIndex& hashtags,
                                QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
-                          contentFilter, bookmarks, mutedWords, focusHashtags, hashtags,
+                          contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {
 }
@@ -98,13 +98,10 @@ void LegacyBookmarksModel::addPosts(const std::vector<QString>& postUris)
         {
             qWarning() << "Bookmarked post not found:" << uri;
             Post deletedPost(getDeletedPost(uri));
-            deletedPost.setBookmarkNotFound(true);
+            //deletedPost.setBookmarkNotFound(true);
             mFeed.push_back(deletedPost);
         }
     }
-
-    if (mFeed.size() == mBookmarks.size())
-        mFeed.back().setEndOfFeed(true);
 
     endInsertRows();
 }

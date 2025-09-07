@@ -33,17 +33,19 @@ Post Post::createHiddenPosts()
     return post;
 }
 
-Post Post::createNotFound()
+Post Post::createNotFound(const QString uri)
 {
     Post post;
     post.mNotFound = true;
+    post.mUri = uri;
     return post;
 }
 
-Post Post::createBlocked()
+Post Post::createBlocked(const QString uri)
 {
     Post post;
     post.mBlocked = true;
+    post.mUri = uri;
     return post;
 }
 
@@ -148,8 +150,7 @@ const QString& Post::getCid() const
 
 const QString& Post::getUri() const
 {
-    static const QString NO_STRING;
-    return mPost ? mPost->mUri : NO_STRING;
+    return mPost ? mPost->mUri : mUri;
 }
 
 QString Post::getText() const
@@ -692,6 +693,14 @@ QString Post::getLikeUri() const
 
     const auto& like = mPost->mViewer->mLike;
     return like ? *like : QString();
+}
+
+bool Post::isBookmarked() const
+{
+    if (!mPost || !mPost->mViewer)
+        return false;
+
+    return mPost->mViewer->mBookmarked;
 }
 
 bool Post::isThreadMuted() const
