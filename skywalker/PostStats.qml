@@ -93,9 +93,13 @@ Item {
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
 
-        BlinkingOpacity {
-            target: likeIcon
-            running: likeTransient
+        Loader {
+            active: likeTransient || active
+
+            BlinkingOpacity {
+                target: likeIcon
+                running: likeTransient
+            }
         }
     }
     StatIcon {
@@ -110,9 +114,13 @@ Item {
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
 
-        BlinkingOpacity {
-            target: bookmarkIcon
-            running: bookmarkTransient
+        Loader {
+            active: bookmarkTransient || active
+
+            sourceComponent: BlinkingOpacity {
+                target: bookmarkIcon
+                running: bookmarkTransient
+            }
         }
     }
     StatIcon {

@@ -55,9 +55,13 @@ SkyListView {
 
             Accessible.name: postBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
 
-            BlinkingOpacity {
-                target: bookmarkIcon
-                running: postBookmarkTransient
+            Loader {
+                active: postBookmarkTransient || active
+
+                BlinkingOpacity {
+                    target: bookmarkIcon
+                    running: postBookmarkTransient
+                }
             }
         }
     }
