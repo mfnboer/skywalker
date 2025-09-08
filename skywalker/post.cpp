@@ -33,19 +33,21 @@ Post Post::createHiddenPosts()
     return post;
 }
 
-Post Post::createNotFound(const QString uri)
+Post Post::createNotFound(const QString uri, const QString cid)
 {
     Post post;
     post.mNotFound = true;
     post.mUri = uri;
+    post.mCid = cid;
     return post;
 }
 
-Post Post::createBlocked(const QString uri)
+Post Post::createBlocked(const QString uri, const QString cid)
 {
     Post post;
     post.mBlocked = true;
     post.mUri = uri;
+    post.mCid = cid;
     return post;
 }
 
@@ -144,8 +146,7 @@ Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView) :
 
 const QString& Post::getCid() const
 {
-    static const QString NO_STRING;
-    return mPost ? mPost->mCid : NO_STRING;
+    return mPost ? mPost->mCid : mCid;
 }
 
 const QString& Post::getUri() const
@@ -698,7 +699,7 @@ QString Post::getLikeUri() const
 bool Post::isBookmarked() const
 {
     if (!mPost || !mPost->mViewer)
-        return false;
+        return mIsBookmarked;
 
     return mPost->mViewer->mBookmarked;
 }

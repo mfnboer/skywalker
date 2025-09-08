@@ -586,7 +586,7 @@ Rectangle {
                     }
 
                     onViewThread: {
-                        if (postUri)
+                        if (!postIsPlaceHolder && postUri)
                             skywalker.getPostThread(postUri)
                     }
 
@@ -862,7 +862,7 @@ Rectangle {
     function openPostThread() {
         if (!(postThreadType & QEnums.THREAD_ENTRY))
         {
-            if (postUri)
+            if (!postIsPlaceHolder && postUri)
                 skywalker.getPostThread(postUri)
         }
     }

@@ -36,6 +36,30 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: bookmarksView.width
+
+        StatIcon {
+            id: bookmarkIcon
+            anchors.right: parent.right
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.verticalCenter
+            iconColor: postBookmarked ? guiSettings.buttonColor : guiSettings.statsColor
+            svg: postBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
+            visible: postNotFound || postBlocked
+
+            onClicked: {
+                if (postBookmarked)
+                    skywalker.getBookmarks().removeBookmark(postUri, postCid)
+                else
+                    skywalker.getBookmarks().addBookmark(postUri, postCid)
+            }
+
+            Accessible.name: postBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
+
+            BlinkingOpacity {
+                target: bookmarkIcon
+                running: postBookmarkTransient
+            }
+        }
     }
 
     FlickableRefresher {

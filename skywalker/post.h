@@ -25,8 +25,8 @@ public:
     // to fetch those posts.
     static Post createGapPlaceHolder(const QString& gapCursor);
     static Post createHiddenPosts();
-    static Post createNotFound(const QString uri = "");
-    static Post createBlocked(const QString uri = "");
+    static Post createNotFound(const QString uri = "", const QString cid = "");
+    static Post createBlocked(const QString uri = "", const QString cid = "");
     static Post createNotSupported(const QString& unsupportedType);
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
@@ -95,6 +95,7 @@ public:
     int getQuoteCount() const;
     QString getRepostUri() const;
     QString getLikeUri() const;
+    void setBookmarked(bool bookmarked) { mIsBookmarked = bookmarked; }
     bool isBookmarked() const;
     bool isThreadMuted() const;
     bool isReplyDisabled() const;
@@ -154,6 +155,7 @@ private:
     ATProto::AppBskyFeed::FeedViewPost::SharedPtr mFeedViewPost;
 
     QString mUri;
+    QString mCid;
 
     int mGapId = 0;
 
@@ -179,6 +181,7 @@ private:
     bool mNotFound = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
+    bool mIsBookmarked = false;
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;

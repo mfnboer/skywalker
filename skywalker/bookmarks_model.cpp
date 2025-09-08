@@ -45,7 +45,7 @@ void BookmarksModel::addBookmarks(const ATProto::AppBskyBookmark::GetBookmarksOu
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
 
     for (const auto& bookmark : output.mBookmarks)
-        std::visit([this](auto&& post){ addPost(post); }, bookmark->mItem);
+        std::visit([this, subject=bookmark->mSubject](auto&& post){ addPost(post, subject); }, bookmark->mItem);
 
     endInsertRows();
     qDebug() << "New bookmarks count:" << mFeed.size();
@@ -58,19 +58,23 @@ void BookmarksModel::addBookmarks(const ATProto::AppBskyBookmark::GetBookmarksOu
     }
 }
 
-void BookmarksModel::addPost(const ATProto::AppBskyFeed::PostView::SharedPtr& post)
+void BookmarksModel::addPost(const ATProto::AppBskyFeed::PostView::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr&)
 {
     mFeed.push_back(Post(post));
 }
 
-void BookmarksModel::addPost(const ATProto::AppBskyFeed::NotFoundPost::SharedPtr& post)
+void BookmarksModel::addPost(const ATProto::AppBskyFeed::NotFoundPost::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject)
 {
-    mFeed.push_back(Post::createNotFound(post->mUri));
+    Post p = Post::createNotFound(post->mUri, subject->mCid);
+    p.setBookmarked(true);
+    mFeed.push_back(p);
 }
 
-void BookmarksModel::addPost(const ATProto::AppBskyFeed::BlockedPost::SharedPtr& post)
+void BookmarksModel::addPost(const ATProto::AppBskyFeed::BlockedPost::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject)
 {
-    mFeed.push_back(Post::createBlocked(post->mUri));
+    Post p = Post::createBlocked(post->mUri, subject->mCid);
+    p.setBookmarked(true);
+    mFeed.push_back(p);
 }
 
 }

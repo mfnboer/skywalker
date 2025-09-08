@@ -235,7 +235,7 @@ Rectangle {
                 onShare: skywalker.sharePost(postUri)
 
                 onViewThread: {
-                    if (postUri)
+                    if (!postIsPlaceHolder && postUri)
                         skywalker.getPostThread(postUri)
                 }
 
