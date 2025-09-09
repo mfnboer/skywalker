@@ -32,6 +32,8 @@ public:
         std::optional<ListViewBasicList> mReplyRestrictionLists;
         std::optional<QStringList> mHiddenReplies;
         std::optional<bool> mThreadMuted;
+        std::optional<bool> mBookmarked;
+        bool mBookmarkTransient = false;
         RecordView::SharedPtr mDetachedRecord;
         RecordView::SharedPtr mReAttachedRecord;
         std::optional<bool> mViewerStatePinned;
@@ -59,6 +61,8 @@ public:
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
     void updateHiddenReplies(const QString& cid, const QStringList& hiddenReplies);
     void updateThreadMuted(const QString& uri, bool muted);
+    void updateBookmarked(const QString& cid, bool bookmarked);
+    void updateBookmarkTransient(const QString& cid, bool transient);
 
     /**
      * @brief updateDetachedRecord
@@ -86,6 +90,8 @@ protected:
     virtual void replyRestrictionListsChanged() = 0;
     virtual void hiddenRepliesChanged() = 0;
     virtual void threadMutedChanged() = 0;
+    virtual void bookmarkedChanged() = 0;
+    virtual void bookmarkTransientChanged() = 0;
     virtual void detachedRecordChanged() = 0;
     virtual void reAttachedRecordChanged() = 0;
     virtual void viewerStatePinnedChanged() = 0;

@@ -55,29 +55,26 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide(this),
     mUserSettings(this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
-    mBookmarks(this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
-    mNotificationListModel(mContentFilter, mBookmarks, mMutedWords, &mFollowsActivityStore, this),
-    mMentionListModel(mContentFilter, mBookmarks, mMutedWords, &mFollowsActivityStore, this),
+    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
     mChat(std::make_unique<Chat>(mBsky, mUserDid, mFollowsActivityStore, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
     mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
-                   mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags, mSeenHashtags,
+                   mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, mFollowsActivityStore, this)
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
     mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
-    mBookmarks.setSkywalker(this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
-    connect(&mBookmarks, &LegacyBookmarks::sizeChanged, this, [this]{ mBookmarks.save(); });
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
@@ -542,11 +539,6 @@ void Skywalker::saveFavoriteFeeds()
     saveUserPreferences(prefs);
 }
 
-void Skywalker::loadBookmarks()
-{
-    mBookmarks.load();
-}
-
 void Skywalker::loadMutedWords()
 {
     mMutedWords.load(mUserPreferences);
@@ -808,8 +800,13 @@ void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& di
 
 void Skywalker::dataMigration()
 {
-    // Here data migration functions to be executed at startup can be done.
+    // Here data migration functions to be executed at startup can be called.
     // dataMigrationStatus can be called to show status during startup.
+
+    // Bookmarks migration will be done while skywalker is running, no need to wait.
+    Bookmarks* bookmarks = getBookmarks();
+    bookmarks->migrateToBsky();
+
     emit dataMigrationDone();
 }
 
@@ -834,7 +831,6 @@ void Skywalker::syncTimeline(int maxPages)
     //     return;
     // }
 
-    disableDebugLogging(); // sync can cause a lot of logging
     emit timelineSyncStart(maxPages, timestamp);
     const auto cid = mUserSettings.getSyncCid(mUserDid);
     syncTimeline(timestamp, cid, maxPages);
@@ -893,7 +889,6 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
                 syncTimeline(tillTimestamp, cid, maxPages - 1, newCursor);
         },
         [this](const QString& error, const QString& msg){
-            restoreDebugLogging();
             qWarning() << "syncTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
@@ -918,7 +913,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (lastTimestamp.isNull())
     {
-        restoreDebugLogging();
         qWarning() << "Feed is empty";
 
         if (model.isHomeFeed())
@@ -931,7 +925,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (lastTimestamp < tillTimestamp)
     {
-        restoreDebugLogging();
         const auto index = model.findTimestamp(tillTimestamp, cid);
         qDebug() << "Feed synced, last timestamp:" << lastTimestamp << "index:"
                  << index << ",feed size:" << model.rowCount()
@@ -951,7 +944,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (maxPages == 1)
     {
-        restoreDebugLogging();
         qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
         if (model.isHomeFeed())
@@ -969,7 +961,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (newCursor.isEmpty())
     {
-        restoreDebugLogging();
         qDebug() << "Last page reached, no more cursor";
 
         if (model.isHomeFeed())
@@ -983,7 +974,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (newCursor == cursor)
     {
-        restoreDebugLogging();
         qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
         qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
@@ -1737,7 +1727,7 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
             if (modelId < 0)
             {
                 auto model = std::make_unique<PostThreadModel>(uri,
-                    mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+                    mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                     mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
                 int postEntryIndex = model->setPostThread(thread);
@@ -2105,29 +2095,6 @@ void Skywalker::getNotificationsNextPage(bool mentionsOnly)
     getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, mentionsOnly, cursor);
 }
 
-void Skywalker::getBookmarksPage(bool clearModel)
-{
-    Q_ASSERT(mBsky);
-    Q_ASSERT(mBookmarksModel);
-
-    if (!mBookmarksModel)
-        return;
-
-    if (clearModel)
-        mBookmarksModel->clear();
-
-    const int pageIndex = mBookmarksModel->rowCount();
-    const auto page = mBookmarks.getPage(pageIndex, LegacyBookmarksModel::MAX_PAGE_SIZE);
-
-    if (page.empty())
-    {
-        qDebug() << "No more bookmarks";
-        return;
-    }
-
-    mBookmarksModel->addBookmarks(page, *mBsky);
-}
-
 void Skywalker::getDetailedProfile(const QString& author)
 {
     Q_ASSERT(mBsky);
@@ -2434,7 +2401,7 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
 int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter)
 {
     auto model = std::make_unique<AuthorFeedModel>(
-        author, mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+        author, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setFilter(filter);
     const int id = addModelToStore<AuthorFeedModel>(std::move(model), mAuthorFeedModels);
@@ -2457,7 +2424,7 @@ void Skywalker::removeAuthorFeedModel(int id)
 int Skywalker::createSearchPostFeedModel()
 {
     auto model = std::make_unique<SearchPostFeedModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+        mUserDid, mUserFollows, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
@@ -2680,7 +2647,7 @@ int Skywalker::addModelToStore(ModelType::Ptr model, ItemStore<typename ModelTyp
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
-            mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mBookmarks, mMutedWords,
+            mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mMutedWords,
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore, this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
@@ -2692,7 +2659,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
     auto model = std::make_unique<PostFeedModel>(listView.getName(),
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
-                                                 mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
+                                                 mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, this);
     model->setListView(listView);
@@ -2705,7 +2672,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"),
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
-                                                 mContentFilter, mBookmarks, mMutedWords, *mFocusHashtags,
+                                                 mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, this);
     model->setQuoteUri(quoteUri);
@@ -3652,15 +3619,17 @@ void Skywalker::saveUserPreferences()
     saveUserPreferences(prefs);
 }
 
-const LegacyBookmarksModel* Skywalker::createBookmarksModel()
+BookmarksModel* Skywalker::createBookmarksModel()
 {
-    mBookmarksModel = std::make_unique<LegacyBookmarksModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilter, mBookmarks,
+    mBookmarksModel = std::make_unique<BookmarksModel>(
+        mUserDid, mUserFollows, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
-    connect(mBookmarksModel.get(), &LegacyBookmarksModel::failure, this,
-            [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
+    return mBookmarksModel.get();
+}
 
+BookmarksModel* Skywalker::getBookmarksModel()
+{
     return mBookmarksModel.get();
 }
 
@@ -3672,7 +3641,7 @@ void Skywalker::deleteBookmarksModel()
 DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
     return std::make_unique<DraftPostsModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilterShowAll, mBookmarks,
+        mUserDid, mUserFollows, mMutedReposts, mContentFilterShowAll,
         mMutedWordsNoMutes, *mFocusHashtags, mSeenHashtags, this);
 }
 
@@ -3736,6 +3705,17 @@ Chat* Skywalker::getChat()
     return mChat.get();
 }
 
+Bookmarks* Skywalker::getBookmarks()
+{
+    if (!mBookmarks)
+    {
+        mBookmarks = std::make_unique<Bookmarks>(this);
+        mBookmarks->setSkywalker(this);
+    }
+
+    return mBookmarks.get();
+}
+
 void Skywalker::shareImage(const QString& contentUri, const QString& text)
 {
     if (!FileUtils::checkReadMediaPermission())
@@ -3781,17 +3761,6 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
     QUrl url = QUrl::fromLocalFile(tmpFilePath);
     TempFileHolder::instance().put(std::move(video));
     emit sharedVideoReceived(url, text);
-}
-
-void Skywalker::disableDebugLogging()
-{
-    mDebugLogging = QLoggingCategory::defaultCategory()->isDebugEnabled();
-    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, false);
-}
-
-void Skywalker::restoreDebugLogging()
-{
-    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, mDebugLogging);
 }
 
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)
@@ -3982,6 +3951,7 @@ void Skywalker::signOut()
     mNotificationListModel.clear();
     mMentionListModel.clear();
     mChat->reset();
+    mBookmarks = nullptr;
     mUserPreferences = ATProto::UserPreferences();
     mProfileMaster = nullptr;
     mEditUserPreferences = nullptr;
@@ -3997,7 +3967,6 @@ void Skywalker::signOut()
     mTimelineHide.clear();
     setUnreadNotificationCount(0);
     mBookmarksModel = nullptr;
-    mBookmarks.clear();
     mMutedWords.clear();
     mFocusHashtags->clear();
     mUserHashtags.clear();

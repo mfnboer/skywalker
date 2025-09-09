@@ -56,7 +56,7 @@ Rectangle {
     required property list<string> postHiddenReplies
     required property bool postIsHiddenReply
     required property bool postBookmarked
-    required property bool postBookmarkNotFound
+    required property bool postBookmarkTransient
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -366,7 +366,7 @@ Rectangle {
                 replyRootUri: postReplyRootUri
                 authorIsUser: guiSettings.isUser(author)
                 isBookmarked: postBookmarked
-                bookmarkNotFound: postBookmarkNotFound
+                bookmarkTransient: postBookmarkTransient
                 plainTextForEmoji: postPlainText
                 showViewThread: true
                 record: postRecord
@@ -393,21 +393,16 @@ Rectangle {
                 onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
 
                 onBookmark: {
-                    if (isBookmarked) {
-                        skywalker.bookmarks.removeBookmark(postUri)
-                    }
-                    else {
-                        const bookmarked = skywalker.bookmarks.addBookmark(postUri)
-
-                        if (!bookmarked)
-                            skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
-                    }
+                    if (isBookmarked)
+                        skywalker.getBookmarks().removeBookmark(postUri, postCid)
+                    else
+                        skywalker.getBookmarks().addBookmark(postUri, postCid)
                 }
 
                 onShare: skywalker.sharePost(postUri)
 
                 onViewThread: {
-                    if (postUri)
+                    if (!postIsPlaceHolder && postUri)
                         skywalker.getPostThread(postUri)
                 }
 

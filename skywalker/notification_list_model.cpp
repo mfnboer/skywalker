@@ -12,16 +12,14 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-NotificationListModel::NotificationListModel(const ContentFilter& contentFilter, const LegacyBookmarks& bookmarks,
+NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
                                              const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
                                              QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
-    mBookmarks(bookmarks),
     mMutedWords(mutedWords),
     mFollowsActivityStore(followsActivityStore)
 {
-    connect(&mBookmarks, &LegacyBookmarks::sizeChanged, this, [this]{ postBookmarkedChanged(); });
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
             [this](const QString&){ changeData({ int(Role::ReplyToAuthor),
                                  int(Role::NotificationReasonPostReplyToAuthor),
@@ -921,7 +919,9 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostReplyCount:
         return notification.getNotificationPost(mPostCache).getReplyCount() + (change ? change->mReplyCountDelta : 0);
     case Role::NotificationPostBookmarked:
-        return mBookmarks.isBookmarked(notification.getPostUri());
+        return change && change->mBookmarked ? *change->mBookmarked :  notification.getNotificationPost(mPostCache).isBookmarked();
+    case Role::NotificationPostBookmarkTransient:
+        return change ? change->mBookmarkTransient : false;
     case Role::NotificationPostNotFound:
         return notification.getNotificationPost(mPostCache).isNotFound();
     case Role::NotificationPostBlocked:
@@ -1054,6 +1054,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostQuoteCount), "notificationPostQuoteCount" },
         { int(Role::NotificationPostReplyCount), "notificationPostReplyCount" },
         { int(Role::NotificationPostBookmarked), "notificationPostBookmarked" },
+        { int(Role::NotificationPostBookmarkTransient), "notificationPostBookmarkTransient" },
         { int(Role::NotificationPostNotFound), "notificationPostNotFound" },
         { int(Role::NotificationPostBlocked), "notificationPostBlocked" },
         { int(Role::NotificationPostLabels), "notificationPostLabels" },
@@ -1160,9 +1161,14 @@ void NotificationListModel::locallyBlockedChanged()
     changeData({ int(Role::NotificationPostBlocked) });
 }
 
-void NotificationListModel::postBookmarkedChanged()
+void NotificationListModel::bookmarkedChanged()
 {
     changeData({ int(Role::NotificationPostBookmarked) });
+}
+
+void NotificationListModel::bookmarkTransientChanged()
+{
+    changeData({ int(Role::NotificationPostBookmarkTransient) });
 }
 
 void NotificationListModel::changeData(const QList<int>& roles)

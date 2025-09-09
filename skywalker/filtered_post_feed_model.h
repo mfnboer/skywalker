@@ -27,7 +27,6 @@ public:
                                    const QString& userDid, const IProfileStore& following,
                                    const IProfileStore& mutedReposts,
                                    const IContentFilter& contentFilter,
-                                   const LegacyBookmarks& bookmarks,
                                    const IMatchWords& mutedWords,
                                    const FocusHashtags& focusHashtags,
                                    HashtagIndex& hashtags,

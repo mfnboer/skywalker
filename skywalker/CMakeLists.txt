@@ -567,6 +567,10 @@ qt_add_qml_module(libskywalker
         SOURCES follows_activity_store.cpp
         SOURCES activity_status.cpp
         QML_FILES EditImage.qml
+        SOURCES bookmarks_model.h
+        SOURCES bookmarks_model.cpp
+        SOURCES bookmarks.h
+        SOURCES bookmarks.cpp
 )
 
 if (NOT ANDROID)

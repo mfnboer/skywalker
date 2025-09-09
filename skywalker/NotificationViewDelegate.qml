@@ -68,6 +68,7 @@ Rectangle {
     required property int notificationPostQuoteCount
     required property int notificationPostReplyCount
     required property bool notificationPostBookmarked
+    required property bool notificationPostBookmarkTransient
     required property bool notificationPostNotFound
     required property bool notificationPostBlocked
     required property list<language> notificationPostLanguages
@@ -317,7 +318,7 @@ Rectangle {
                         visible: !notificationPostNotFound && !notificationPostBlocked
                         authorIsUser: false
                         isBookmarked: notificationPostBookmarked
-                        bookmarkNotFound: false
+                        bookmarkTransient: notificationPostBookmarkTransient
                         plainTextForEmoji: notificationPostPlainText
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
@@ -347,15 +348,10 @@ Rectangle {
                         onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
 
                         onBookmark: {
-                            if (isBookmarked) {
-                                skywalker.bookmarks.removeBookmark(notificationPostUri)
-                            }
-                            else {
-                                const bookmarked = skywalker.bookmarks.addBookmark(notificationPostUri)
-
-                                if (!bookmarked)
-                                    skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
-                            }
+                            if (isBookmarked)
+                                skywalker.getBookmarks().removeBookmark(notificationPostUri, notificationCid)
+                            else
+                                skywalker.getBookmarks().addBookmark(notificationPostUri, notificationCid)
                         }
 
                         onShare: skywalker.sharePost(notificationPostUri)

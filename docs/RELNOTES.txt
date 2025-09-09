@@ -1,5 +1,7 @@
 next
 ====
+* Bluesky bookmarks
+  Your local bookmarks will be migrated to Bluesky automatically
 * Show details on trends: category, age, number of posts
 * Small cosmetic changes
 * Bug fixes

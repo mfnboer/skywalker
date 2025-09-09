@@ -534,6 +534,16 @@ QStringList UserSettings::getBookmarks(const QString& did) const
     return mSettings.value(key(did, "bookmarks")).toStringList();
 }
 
+void UserSettings::setBookmarksMigrationAttempts(const QString& did, int attempts)
+{
+    mSettings.setValue(key(did, "bookmarksMigrationAttempts"), attempts);
+}
+
+int UserSettings::getBookmarksMigrationAttempts(const QString& did) const
+{
+    return mSettings.value(key(did, "bookmarksMigrationAttempts"), 0).toInt();
+}
+
 QStringList UserSettings::getMutedWords(const QString& did) const
 {
     return mSettings.value(key(did, "mutedWords")).toStringList();

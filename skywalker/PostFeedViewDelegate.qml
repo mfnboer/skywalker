@@ -62,7 +62,7 @@ Rectangle {
     required property list<string> postHiddenReplies
     required property bool postIsHiddenReply
     required property bool postBookmarked
-    required property bool postBookmarkNotFound
+    required property bool postBookmarkTransient
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -552,7 +552,7 @@ Rectangle {
                     replyRootUri: postReplyRootUri
                     authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
-                    bookmarkNotFound: postBookmarkNotFound
+                    bookmarkTransient: postBookmarkTransient
                     plainTextForEmoji: postPlainText
                     showViewThread: swipeMode
                     record: postRecord
@@ -579,19 +579,14 @@ Rectangle {
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
 
                     onBookmark: {
-                        if (isBookmarked) {
-                            skywalker.bookmarks.removeBookmark(postUri)
-                        }
-                        else {
-                            const bookmarked = skywalker.bookmarks.addBookmark(postUri)
-
-                            if (!bookmarked)
-                                skywalker.showStatusMessage(qsTr("Your bookmarks are full!"), QEnums.STATUS_LEVEL_ERROR)
-                        }
+                        if (isBookmarked)
+                            skywalker.getBookmarks().removeBookmark(postUri, postCid)
+                        else
+                            skywalker.getBookmarks().addBookmark(postUri, postCid)
                     }
 
                     onViewThread: {
-                        if (postUri)
+                        if (!postIsPlaceHolder && postUri)
                             skywalker.getPostThread(postUri)
                     }
 
@@ -842,7 +837,7 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
-        enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound
+        enabled: !(postThreadType & QEnums.THREAD_ENTRY)
         onClicked: {
             if (swipeMode)
                 activateSwipe()
@@ -865,9 +860,9 @@ Rectangle {
     }
 
     function openPostThread() {
-        if (!(postThreadType & QEnums.THREAD_ENTRY) && !postBookmarkNotFound)
+        if (!(postThreadType & QEnums.THREAD_ENTRY))
         {
-            if (postUri)
+            if (!postIsPlaceHolder && postUri)
                 skywalker.getPostThread(postUri)
         }
     }

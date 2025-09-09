@@ -162,6 +162,9 @@ public:
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
 
+    void setBookmarksMigrationAttempts(const QString& did, int attempts);
+    int getBookmarksMigrationAttempts(const QString& did) const;
+
     // Legacy
     QStringList getMutedWords(const QString& did) const;
     void removeMutedWords(const QString& did);

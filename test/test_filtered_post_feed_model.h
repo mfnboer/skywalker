@@ -22,7 +22,7 @@ private slots:
 
         mPostFeedModel = std::make_unique<FilteredPostFeedModel>(
             std::move(filter), nullptr, mUserDid, mFollowing, mMutedReposts, mContentFilter,
-            mBookmarks, mMutedWords, mFocusHashtags, mHashtags);
+            mMutedWords, mFocusHashtags, mHashtags);
     }
 
     void cleanup()
@@ -327,7 +327,6 @@ private:
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
     ContentFilter mContentFilter{mUserPreferences, &mUserSettings};
-    LegacyBookmarks mBookmarks;
     MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};

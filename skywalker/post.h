@@ -25,8 +25,8 @@ public:
     // to fetch those posts.
     static Post createGapPlaceHolder(const QString& gapCursor);
     static Post createHiddenPosts();
-    static Post createNotFound();
-    static Post createBlocked();
+    static Post createNotFound(const QString uri = "", const QString cid = "");
+    static Post createBlocked(const QString uri = "", const QString cid = "");
     static Post createNotSupported(const QString& unsupportedType);
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
@@ -95,6 +95,8 @@ public:
     int getQuoteCount() const;
     QString getRepostUri() const;
     QString getLikeUri() const;
+    void setBookmarked(bool bookmarked) { mIsBookmarked = bookmarked; }
+    bool isBookmarked() const;
     bool isThreadMuted() const;
     bool isReplyDisabled() const;
     bool isEmbeddingDisabled() const;
@@ -138,9 +140,6 @@ public:
     std::vector<QString> getHashtags() const override;
     std::vector<QString> getWebLinks() const override;
 
-    bool isBookmarkNotFound() const { return mBookmarkNotFound; }
-    void setBookmarkNotFound(bool notFound) { mBookmarkNotFound = notFound; }
-
     bool isPinned() const { return mPinned; }
     void setPinned(bool pinned) { mPinned = pinned; }
 
@@ -154,6 +153,9 @@ private:
 
     // null if the post represents a reply ref.
     ATProto::AppBskyFeed::FeedViewPost::SharedPtr mFeedViewPost;
+
+    QString mUri;
+    QString mCid;
 
     int mGapId = 0;
 
@@ -179,9 +181,7 @@ private:
     bool mNotFound = false;
     bool mNotSupported = false;
     QString mUnsupportedType;
-
-    // Placeholder for a bookmarked post that cannot be found (probably deleted).
-    bool mBookmarkNotFound = false;
+    bool mIsBookmarked = false;
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
