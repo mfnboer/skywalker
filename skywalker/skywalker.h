@@ -353,8 +353,6 @@ private:
     void initLabelers();
     void loadLabelSettings();
     void removeLabelerSubscriptions(const std::unordered_set<QString>& dids);
-    void disableDebugLogging();
-    void restoreDebugLogging();
     void handleAppStateChange(Qt::ApplicationState state);
     void pauseApp();
     void resumeApp();

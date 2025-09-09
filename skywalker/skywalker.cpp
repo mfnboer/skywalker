@@ -800,8 +800,13 @@ void Skywalker::removeLabelerSubscriptions(const std::unordered_set<QString>& di
 
 void Skywalker::dataMigration()
 {
-    // Here data migration functions to be executed at startup can be done.
+    // Here data migration functions to be executed at startup can be called.
     // dataMigrationStatus can be called to show status during startup.
+
+    // Bookmarks migration will be done while skywalker is running, no need to wait.
+    Bookmarks* bookmarks = getBookmarks();
+    bookmarks->migrateToBsky();
+
     emit dataMigrationDone();
 }
 
@@ -826,7 +831,6 @@ void Skywalker::syncTimeline(int maxPages)
     //     return;
     // }
 
-    disableDebugLogging(); // sync can cause a lot of logging
     emit timelineSyncStart(maxPages, timestamp);
     const auto cid = mUserSettings.getSyncCid(mUserDid);
     syncTimeline(timestamp, cid, maxPages);
@@ -885,7 +889,6 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
                 syncTimeline(tillTimestamp, cid, maxPages - 1, newCursor);
         },
         [this](const QString& error, const QString& msg){
-            restoreDebugLogging();
             qWarning() << "syncTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
@@ -910,7 +913,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (lastTimestamp.isNull())
     {
-        restoreDebugLogging();
         qWarning() << "Feed is empty";
 
         if (model.isHomeFeed())
@@ -923,7 +925,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (lastTimestamp < tillTimestamp)
     {
-        restoreDebugLogging();
         const auto index = model.findTimestamp(tillTimestamp, cid);
         qDebug() << "Feed synced, last timestamp:" << lastTimestamp << "index:"
                  << index << ",feed size:" << model.rowCount()
@@ -943,7 +944,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (maxPages == 1)
     {
-        restoreDebugLogging();
         qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
         if (model.isHomeFeed())
@@ -961,7 +961,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (newCursor.isEmpty())
     {
-        restoreDebugLogging();
         qDebug() << "Last page reached, no more cursor";
 
         if (model.isHomeFeed())
@@ -975,7 +974,6 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (newCursor == cursor)
     {
-        restoreDebugLogging();
         qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
         qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
@@ -3763,17 +3761,6 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
     QUrl url = QUrl::fromLocalFile(tmpFilePath);
     TempFileHolder::instance().put(std::move(video));
     emit sharedVideoReceived(url, text);
-}
-
-void Skywalker::disableDebugLogging()
-{
-    mDebugLogging = QLoggingCategory::defaultCategory()->isDebugEnabled();
-    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, false);
-}
-
-void Skywalker::restoreDebugLogging()
-{
-    QLoggingCategory::defaultCategory()->setEnabled(QtDebugMsg, mDebugLogging);
 }
 
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)

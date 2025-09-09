@@ -5,7 +5,9 @@ import skywalker
 
 SkyListView {
     required property var skywalker
+    readonly property var bookmarks: skywalker.getBookmarks()
     readonly property string sideBarTitle: qsTr("Bookmarks")
+    readonly property string sideBarSubTitle: bookmarks.migrationInProgress ? `Migrating bookmarks ${bookmarks.migratedCount} / ${bookmarks.toMigrateCount}` : ""
     readonly property SvgImage sideBarSvg: SvgOutline.bookmark
 
     signal closed
@@ -21,6 +23,7 @@ SkyListView {
         SimpleHeader {
             id: portraitHeader
             text: sideBarTitle
+            subTitle: sideBarSubTitle
             visible: !root.showSideBar
             onBack: bookmarksView.closed()
         }
