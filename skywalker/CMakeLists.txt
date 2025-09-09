@@ -133,7 +133,6 @@ qt_add_qml_module(libskywalker
         QML_FILES ReplyToRow.qml
         SOURCES content_filter.h
         SOURCES content_filter.cpp
-        SOURCES
         QML_FILES FilteredImageWarning.qml
         SOURCES link_utils.h
         SOURCES link_utils.cpp
@@ -168,10 +167,6 @@ qt_add_qml_module(libskywalker
         QML_FILES SwitchUserDrawer.qml
         QML_FILES AltTextEditor.qml
         QML_FILES MenuItemSvg.qml
-        SOURCES legacy_bookmarks.h
-        SOURCES legacy_bookmarks.cpp
-        SOURCES legacy_bookmarks_model.h
-        SOURCES legacy_bookmarks_model.cpp
         QML_FILES Bookmarks.qml
         QML_FILES About.qml
         QML_FILES StartupStatus.qml
@@ -185,7 +180,6 @@ qt_add_qml_module(libskywalker
         SOURCES report_utils.h
         SOURCES report_utils.cpp
         QML_FILES SkyTextEdit.qml
-        RESOURCES
         QML_FILES SimpleButtonHeader.qml
         QML_FILES ReportDetailsEditor.qml
         SOURCES muted_words.h
@@ -243,7 +237,6 @@ qt_add_qml_module(libskywalker
         QML_FILES TextLengthCounter.qml
         QML_FILES EditAvatar.qml
         QML_FILES ImageFileDialog.qml
-        QML_FILES
         QML_FILES ListFeedDescriptionView.qml
         QML_FILES QuoteList.qml
         QML_FILES SearchAuthor.qml
@@ -272,7 +265,6 @@ qt_add_qml_module(libskywalker
         QML_FILES AddContentWarning.qml
         SOURCES content_label.h
         QML_FILES ContentLabelInfo.qml
-        QML_FILES
         QML_FILES AccessibilityUtils.qml
         QML_FILES AccessibleMenuItem.qml
         QML_FILES AccessibleTabButton.qml
@@ -312,15 +304,12 @@ qt_add_qml_module(libskywalker
         SOURCES jni_utils.cpp
         SOURCES offline_message_checker.h
         SOURCES offline_message_checker.cpp
-        SOURCES
-        SOURCES
         QML_FILES FontComboBox.qml
         QML_FILES AddGifButton.qml
         QML_FILES ImageScroller.qml
         QML_FILES SvgTransparentButton.qml
         QML_FILES ComposePostItem.qml
         QML_FILES SeparatorLine.qml
-        QML_FILES
         SOURCES tenor_gif.cpp
         QML_FILES LanguageComboBox.qml
         SOURCES language_utils.h
@@ -379,7 +368,6 @@ qt_add_qml_module(libskywalker
         SOURCES starter_pack.cpp
         SOURCES starter_pack_list_model.h
         SOURCES starter_pack_list_model.cpp
-        QML_FILES
         QML_FILES StarterPackViewDelegate.qml
         QML_FILES StarterPackView.qml
         QML_FILES SkyListView.qml
@@ -430,7 +418,6 @@ qt_add_qml_module(libskywalker
         QML_FILES AddUserTimelineView.qml
         QML_FILES SkyTabWithCloseButton.qml
         QML_FILES AddFocusHashtagTimelineView.qml
-        QML_FILES
         QML_FILES AddHashtagTimelineView.qml
         SOURCES image_utils.h
         SOURCES image_utils.cpp
@@ -470,7 +457,6 @@ qt_add_qml_module(libskywalker
         SOURCES list_cache.cpp
         SOURCES display_utils.h
         SOURCES scoped_handle.h
-        SOURCES
         SOURCES display_utils.cpp
         QML_FILES ThumbImageKnownSizeView.qml
         QML_FILES ThumbImageUnknownSizeView.qml
@@ -547,7 +533,6 @@ qt_add_qml_module(libskywalker
         QML_FILES AuthorViewerState.qml
         QML_FILES LiveLabel.qml
         QML_FILES ThumbImageFixedSizeView.qml
-        SOURCES
         QML_FILES DeadFooterMargin.qml
         QML_FILES DeadHeaderMargin.qml
         QML_FILES NotificationTypeSetting.qml

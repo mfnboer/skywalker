@@ -1,11 +1,11 @@
-next
+4.14
 ====
 * Bluesky bookmarks
   Your local bookmarks will be migrated to Bluesky automatically
 * Show details on trends: category, age, number of posts
 * Small cosmetic changes
 * Bug fixes
-* Upgrade to 6.9.2
+* Upgrade to Qt6.9.2
 
 4.13
 ====

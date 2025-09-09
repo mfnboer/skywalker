@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(appskywalker VERSION 4.13 LANGUAGES CXX)
-set(VERSION_CODE 85)
+project(appskywalker VERSION 4.14 LANGUAGES CXX)
+set(VERSION_CODE 86)
 set(APP_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -86,7 +86,6 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/NewMessageNotifier.java
         RESOURCES android/src/com/gmail/mfnboer/SkywalkerApplication.java
         RESOURCES android/src/com/gmail/mfnboer/DirectMessageActivity.java
-        RESOURCES
         RESOURCES android/src/com/gmail/mfnboer/VideoTranscoder.java
         RESOURCES android/src/com/gmail/mfnboer/NetworkUtils.java
         RESOURCES android/src/com/gmail/mfnboer/QVideoEncoder.java
@@ -95,7 +94,6 @@ qt_add_qml_module(appskywalker
         RESOURCES android/src/com/gmail/mfnboer/VirtualKeyboardListener.java
         RESOURCES android/src/com/gmail/mfnboer/ScreenUtils.java
         RESOURCES android/src/com/gmail/mfnboer/KeyboardHeightProvider.java
-        QML_FILES
         RESOURCES android/src/com/gmail/mfnboer/Translate.java
         RESOURCES android/src/com/gmail/mfnboer/EmojiPickerDialog.java
 )
