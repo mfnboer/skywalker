@@ -1,4 +1,5 @@
 import QtQuick
+import skywalker
 
 ThumbImageView {
     required property imageview image

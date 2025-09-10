@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import skywalker
 
 RowLayout {
     required property basicprofile author

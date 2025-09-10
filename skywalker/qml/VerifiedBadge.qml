@@ -1,19 +1,20 @@
 import QtQuick
+import skywalker
 
 Image {
     required property basicprofile author
 
     id: badge
     fillMode: Image.PreserveAspectFit
-    source: "/images/verifier_check.svg"
+    source: "/images/verified_check.svg"
 
     MouseArea {
         anchors.fill: parent
-        onClicked: showVerifierStatus()
+        onClicked: showVerifiedStatus()
     }
 
-    function showVerifierStatus() {
-        let component = guiSettings.createComponent("TrustedVerifierDialog.qml")
+    function showVerifiedStatus() {
+        let component = guiSettings.createComponent("VerifiedDialog.qml")
         let dialog = component.createObject(rootContent, { author: badge.author })
         dialog.onAccepted.connect(() => { dialog.destroy() })
         dialog.onRejected.connect(() => { dialog.destroy() })

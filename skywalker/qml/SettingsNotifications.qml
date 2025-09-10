@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import skywalker
 
 ColumnLayout {
     required property  var notificationPrefs

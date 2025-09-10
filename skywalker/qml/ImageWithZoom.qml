@@ -1,6 +1,5 @@
 import QtQuick
 
-
 ImageAutoRetry {
     property bool zooming: false
     property real autoScale: 1.0

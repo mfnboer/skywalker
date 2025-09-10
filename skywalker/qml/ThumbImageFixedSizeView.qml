@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import skywalker
 
 ThumbImageView {
     required property imageview image

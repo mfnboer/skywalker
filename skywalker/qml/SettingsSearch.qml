@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import skywalker
 
 ColumnLayout {
     property var skywalker: root.getSkywalker()

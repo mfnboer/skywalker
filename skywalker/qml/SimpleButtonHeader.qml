@@ -1,4 +1,5 @@
 import QtQuick
+import skywalker
 
 // Header with a title and a button
 Rectangle {
