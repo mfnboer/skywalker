@@ -207,7 +207,7 @@ qt_add_qml_module(libskywalker
         SOURCES generator_view.h
         SOURCES generator_view.cpp
         SOURCES feed_list_model.cpp
-        QML_FILES qml/SearchFeeds.qml
+        QML_FILES
         QML_FILES qml/GeneratorViewDelegate.qml
         QML_FILES qml/PostFeedView.qml
         QML_FILES qml/FeedAvatar.qml

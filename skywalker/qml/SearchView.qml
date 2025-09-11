@@ -87,7 +87,6 @@ SkyPage {
         searchActive: true
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
-        onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
     }

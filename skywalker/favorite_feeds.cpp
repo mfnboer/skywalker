@@ -553,12 +553,16 @@ std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, 
 
 void FavoriteFeeds::updateSavedViews()
 {
-    mSavedFeeds.clear();
+    if (!mUpdateSavedFeedsModelInProgress)
+        mSavedFeeds.clear();
 
     if (!mSavedFeedsPref.mSaved.empty())
     {
-        updateSavedGeneratorViews();
-        updateSavedListViews();
+        if (!mUpdateSavedFeedsModelInProgress)
+            updateSavedGeneratorViews();
+
+        if (!mUpdateSavedListsModelInProgress)
+            updateSavedListViews();
     }
 }
 
@@ -586,7 +590,7 @@ void FavoriteFeeds::updateSavedGeneratorViews()
 void FavoriteFeeds::updateSavedListViews()
 {
     auto listUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_GRAPH_LIST);
-    setUpdateSavedFeedsModelInProgress(true);
+    setUpdateSavedListsModelInProgress(true);
     updateSavedListViews(std::move(listUris));
 }
 
@@ -594,7 +598,7 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
 {
     if (listUris.empty())
     {
-        setUpdateSavedFeedsModelInProgress(false);
+        setUpdateSavedListsModelInProgress(false);
 
         if (!mSavedLists.empty())
             updateSavedListsModel();
@@ -786,6 +790,15 @@ void FavoriteFeeds::setUpdateSavedFeedsModelInProgress(bool inProgress)
     {
         mUpdateSavedFeedsModelInProgress = inProgress;
         emit updateSavedFeedsModelInProgressChanged();
+    }
+}
+
+void FavoriteFeeds::setUpdateSavedListsModelInProgress(bool inProgress)
+{
+    if (mUpdateSavedListsModelInProgress != inProgress)
+    {
+        mUpdateSavedListsModelInProgress = inProgress;
+        emit updateSavedListsModelInProgressChanged();
     }
 }
 

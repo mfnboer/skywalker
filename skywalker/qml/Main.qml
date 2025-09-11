@@ -99,8 +99,7 @@ ApplicationWindow {
             else
                 popStack()
         }
-        else if (rootContent.currentIndex === rootContent.searchIndex ||
-                 rootContent.currentIndex === rootContent.feedsIndex) {
+        else if (rootContent.currentIndex === rootContent.searchIndex) {
             // Hack to hide the selection anchor on Android that should not have been
             // there at all.
             currentStackItem().hide()
@@ -188,7 +187,6 @@ ApplicationWindow {
         onHomeClicked: favoritesSwipeView.currentView.moveToHome()
         onNotificationsClicked: viewNotifications()
         onSearchClicked: viewSearchView()
-        onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
         footerVisible: !showSideBar
         visible: favoritesTabBar.favoritesSwipeViewVisible
@@ -588,7 +586,6 @@ ApplicationWindow {
         homeActive: rootContent.currentIndex === rootContent.timelineIndex
         notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
         searchActive: rootContent.currentIndex === rootContent.searchIndex
-        feedsActive: rootContent.currentIndex === rootContent.feedsIndex
         messagesActive: rootContent.currentIndex === rootContent.chatIndex
         onHomeClicked: {
             if (homeActive)
@@ -606,12 +603,6 @@ ApplicationWindow {
             if (!searchActive)
                 viewSearchView()
         }
-        onFeedsClicked: {
-            if (!feedsActive)
-                viewFeedsView()
-            else if (currentStackItem() instanceof SearchFeeds)
-                currentStackItem().positionViewAtBeginning()
-        }
         onMessagesClicked: {
             if (!messagesActive)
                 viewChat()
@@ -625,8 +616,7 @@ ApplicationWindow {
         readonly property int timelineIndex: 0
         readonly property int notificationIndex: 1
         readonly property int searchIndex: 2
-        readonly property int feedsIndex: 3
-        readonly property int chatIndex: 4
+        readonly property int chatIndex: 3
         property int prevIndex: timelineIndex
 
         id: rootContent
@@ -676,9 +666,6 @@ ApplicationWindow {
         }
         StackView {
             id: searchStack
-        }
-        StackView {
-            id: feedsStack
         }
         StackView {
             id: chatStack
@@ -1414,7 +1401,6 @@ ApplicationWindow {
         getFavoritesSwipeView().reset()
         unwindStack()
         destroySearchView()
-        destroyFeedsView()
         // inviteCodeStore.clear()
         skywalker.signOut()
     }
@@ -1870,31 +1856,6 @@ ApplicationWindow {
 
         unwindStack()
         currentStackItem().showSearchFeed(searchFeed)
-    }
-
-    function createFeedsView() {
-        let feedsComponent = guiSettings.createComponent("SearchFeeds.qml")
-        let feedsView = feedsComponent.createObject(root,
-                { skywalker: skywalker, timeline: getTimelineView() })
-        feedsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
-        feedsStack.push(feedsView)
-    }
-
-    function destroyFeedsView() {
-        if (feedsStack.depth > 0) {
-            let item = feedsStack.get(0)
-            item.forceDestroy()
-            feedsStack.clear()
-        }
-    }
-
-    function viewFeedsView() {
-        rootContent.currentIndex = rootContent.feedsIndex
-
-        if (feedsStack.depth === 0)
-            createFeedsView()
-
-        currentStackItem().show()
     }
 
     function viewHomeFeed() {

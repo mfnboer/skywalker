@@ -6,7 +6,7 @@ import skywalker
 SkyPage {
     required property var skywalker
     required property int modelId
-    readonly property string sideBarTitle: qsTr("User lists")
+    readonly property string sideBarTitle: qsTr("User Lists & Feeds")
     readonly property SvgImage sideBarSvg: SvgOutline.list
 
     id: page
@@ -34,6 +34,9 @@ SkyPage {
         AccessibleTabButton {
             text: qsTr("Saved lists")
         }
+        AccessibleTabButton {
+            text: qsTr("Saved feeds")
+        }
     }
 
     SwipeView {
@@ -52,16 +55,12 @@ SkyPage {
             description: qsTr("Public, shareable lists of users which can be used as feeds or reply restrictions.")
         }
 
-        ListView {
+        SkyListView {
             id: savedListsView
             spacing: 0
             clip: true
             model: skywalker.favoriteFeeds.getSavedListsModel()
             boundsBehavior: Flickable.StopAtBounds
-            flickDeceleration: guiSettings.flickDeceleration
-            maximumFlickVelocity: guiSettings.maxFlickVelocity
-            pixelAligned: guiSettings.flickPixelAligned
-            ScrollIndicator.vertical: ScrollIndicator {}
 
             header: Rectangle {
                 width: parent.width
@@ -100,6 +99,51 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
+                running: skywalker.favoriteFeeds.updateSavedListsModelInProgress
+            }
+        }
+
+        SkyListView {
+            id: savedFeedsView
+            spacing: 0
+            clip: true
+            model: skywalker.favoriteFeeds.getSavedFeedsModel()
+            boundsBehavior: Flickable.StopAtBounds
+
+            header: Rectangle {
+                width: parent.width
+                height: savedFeedsheaderText.height
+                z: guiSettings.headerZLevel
+                color: guiSettings.backgroundColor
+
+                Text {
+                    id: savedFeedsheaderText
+                    width: parent.width
+                    padding: 10
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    color: guiSettings.textColor
+                    text: qsTr("You can find feeds on the search page")
+                }
+            }
+            headerPositioning: ListView.OverlayHeader
+
+            delegate: GeneratorViewDelegate {
+                width: page.width
+
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+            }
+
+            FlickableRefresher {}
+
+            EmptyListIndication {
+                svg: SvgOutline.noPosts
+                text: qsTr("No saved feeds")
+                list: savedFeedsView
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
                 running: skywalker.favoriteFeeds.updateSavedFeedsModelInProgress
             }
         }
@@ -110,7 +154,13 @@ SkyPage {
         skywalker: page.skywalker // qmllint disable missing-type
     }
 
+    FeedUtils {
+        id: feedUtils
+        skywalker: page.skywalker // qmllint disable missing-type
+    }
+
     Component.onDestruction: {
         skywalker.favoriteFeeds.removeSavedListsModel()
+        skywalker.favoriteFeeds.removeSavedFeedsModel()
     }
 }

@@ -19,7 +19,6 @@ Rectangle {
     signal homeClicked()
     signal notificationsClicked()
     signal searchClicked()
-    signal feedsClicked()
     signal messagesClicked()
     signal addConvoClicked()
 
@@ -57,13 +56,29 @@ Rectangle {
             onClicked: searchClicked()
         }
 
-        SkyFooterButton {
+        Rectangle {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            floating: floatingButtons
-            svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
-            Accessible.name: qsTr("feeds")
-            onClicked: feedsClicked()
+            color: "transparent"
+
+            SvgButton {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: height
+                height: parent.height
+                svg: SvgOutline.chat
+                accessibleName: qsTr("create post")
+
+                onClicked: parent.post()
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: parent.post()
+            }
+
+            function post() {
+                root.composePost()
+            }
         }
 
         SkyFooterButton {

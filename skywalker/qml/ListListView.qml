@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var skywalker
     required property int modelId
     property string description
@@ -15,11 +15,7 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
     clip: true
-    ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List
 

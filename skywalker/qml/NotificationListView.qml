@@ -26,7 +26,6 @@ SkyPage {
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()
         onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
     }
