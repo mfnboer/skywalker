@@ -41,7 +41,7 @@ SkyPage {
 
     header: SearchHeader {
         minSearchTextLength: 0
-        placeHolderText: qsTr("Search posts or users")
+        placeHolderText: qsTr("Search posts, users or feeds")
         showBackButton: !root.showSideBar
         onBack: page.closed()
 
@@ -69,6 +69,11 @@ SkyPage {
         }
 
         onSearch: (text) => { searchUtils.search(text) }
+        onCleared: {
+            page.isTyping = false
+            currentText = ""
+            unfocus()
+        }
     }
 
     // Place footer explicitly on the bottom instead of using Page.footer
@@ -126,7 +131,7 @@ SkyPage {
         rightPadding: page.margin
         visible: searchStack.visible
 
-        onCurrentIndexChanged: page.isPostSearch = (currentIndex !== tabUsers.TabBar.index)
+        onCurrentIndexChanged: page.isPostSearch = (currentIndex === tabTopPosts.TabBar.index || currentIndex === tabLatestPosts.TabBar.index)
 
         AccessibleTabButton {
             id: tabTopPosts
@@ -141,6 +146,11 @@ SkyPage {
         AccessibleTabButton {
             id: tabUsers
             text: qsTr("Users")
+            width: implicitWidth;
+        }
+        AccessibleTabButton {
+            id: tabFeeds
+            text: qsTr("Feeds")
             width: implicitWidth;
         }
 
@@ -270,13 +280,17 @@ SkyPage {
             }
 
             SwipeView.onIsCurrentItemChanged: {
-                if (!SwipeView.isCurrentItem)
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                } else {
                     cover()
+                }
             }
 
             FlickableRefresher {
                 inProgress: postsViewTop.model && postsViewTop.model.getFeedInProgress
-                topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
+                topOvershootFun:  () => parent.refreshSearch()
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
                 topText: qsTr("Pull down to refresh")
             }
@@ -285,12 +299,16 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewTop
-                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
+                onRetry: parent.refreshSearch()
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
                 running: postsViewTop.model && postsViewTop.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.scopedRefreshSearchPosts(SearchSortOrder.TOP)
             }
         }
 
@@ -306,13 +324,17 @@ SkyPage {
             }
 
             SwipeView.onIsCurrentItemChanged: {
-                if (!SwipeView.isCurrentItem)
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                } else {
                     cover()
+                }
             }
 
             FlickableRefresher {
                 inProgress: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
-                topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
+                topOvershootFun:  () => parent.refreshSearch()
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
                 topText: qsTr("Pull down to refresh")
             }
@@ -321,12 +343,16 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewLatest
-                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
+                onRetry: parent.refreshSearch()
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
                 running: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
             }
         }
 
@@ -346,9 +372,16 @@ SkyPage {
                 onClicked: (profile) => searchUtils.addLastSearchedProfile(profile)
             }
 
+            SwipeView.onIsCurrentItemChanged: {
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                }
+            }
+
             FlickableRefresher {
                 inProgress: searchUtils.searchActorsInProgress
-                bottomOvershootFun: () => searchUtils.getNextPageSearchActors(header.getDisplayText())
+                bottomOvershootFun: () => searchUtils.getNextPageSearchActors(page.getSearchText())
             }
 
             EmptyListIndication {
@@ -360,6 +393,52 @@ SkyPage {
             BusyIndicator {
                 anchors.centerIn: parent
                 running: searchUtils.searchActorsInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.searchActors(page.getSearchText())
+            }
+        }
+
+        SkyListView {
+            id: feedListView
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
+            model: searchUtils.getSearchFeedsModel()
+            clip: true
+
+            Accessible.role: Accessible.List
+
+            delegate: GeneratorViewDelegate {
+                width: feedListView.width
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+            }
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                }
+            }
+
+            FlickableRefresher {
+                inProgress: searchUtils.searchFeedsInProgress
+                bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.getSearchText())
+            }
+
+            EmptyListIndication {
+                svg: SvgOutline.noPosts
+                text: qsTr("No feeds found")
+                list: feedListView
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: searchUtils.searchFeedsInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.searchFeeds(page.getSearchText())
             }
         }
     }
@@ -753,15 +832,18 @@ SkyPage {
 
         function search(query) {
             page.isTyping = false
+            page.resetSearch()
 
             if (query.length > 0) {
-                searchUtils.addLastSearch(query)
-                scopedSearchPosts(query)
-                searchUtils.searchActors(query)
+                if (searchStack.currentItem)
+                    searchStack.currentItem.refreshSearch()
             }
             else {
                 currentText = "*"
-                scopedSearchPosts("*")
+                // scopedSearchPosts("*")
+
+                if (searchStack.currentItem)
+                    searchStack.currentItem.refreshSearch()
             }
         }
 
@@ -769,23 +851,21 @@ SkyPage {
             if (query.length === 0)
                 return
 
-            if (query === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
-                return
-
-            searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
-            searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
+            scopedRefreshSearchPosts(SearchSortOrder.TOP)
+            scopedRefreshSearchPosts(SearchSortOrder.LATEST)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postAuthorUser,
+            getNextPageSearchPosts(currentText, sortOrder, postAuthorUser,
                                    postMentionsUser, postSince, postSetSince,
                                    postUntil, postSetUntil, postLanguage)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
-            searchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser,
+            if (currentText === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
+                return
+
+            searchPosts(currentText, sortOrder, postAuthorUser, postMentionsUser,
                         postSince, postSetSince, postUntil, postSetUntil, postLanguage)
         }
 
@@ -816,6 +896,11 @@ SkyPage {
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
         }
+    }
+
+    FeedUtils {
+        id: feedUtils
+        skywalker: page.skywalker // qmllint disable missing-type
     }
 
     GraphUtils {
@@ -965,8 +1050,16 @@ SkyPage {
                     })
     }
 
+    function resetSearch() {
+        feedListView.model.clear()
+        usersView.model.clear()
+        postsViewTop.model.clear()
+        postsViewLatest.model.clear()
+    }
+
     function forceDestroy() {
         searchUtils.clearAllSearchResults()
+        feedListView.model = null
         usersView.model = null
         postsViewTop.model = null
         postsViewLatest.model = null

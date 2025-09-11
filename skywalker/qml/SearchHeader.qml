@@ -14,6 +14,7 @@ Rectangle {
     signal searchTextChanged(string text)
     signal keyRelease(var event)
     signal search(string text)
+    signal cleared()
 
     id: headerRect
     width: parent.width
@@ -81,8 +82,10 @@ Rectangle {
                     svg: SvgOutline.close
                     Material.background: guiSettings.backgroundColor
                     accessibleName: qsTr("clear search text")
-                    visible: searchText.displayText.length > 0
-                    onClicked: searchText.clear()
+                    onClicked: {
+                        searchText.clear()
+                        cleared()
+                    }
                 }
             }
 

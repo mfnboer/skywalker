@@ -23,7 +23,7 @@ public:
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
     int addFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
-    void clear();
+    Q_INVOKABLE void clear();
 
     const QString& getCursorNextPage() const { return mCursorNextPage; }
 
