@@ -1,5 +1,6 @@
 next
 ====
+* Fix layout on tablets
 * Bug fixes
 
 4.14

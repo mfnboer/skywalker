@@ -25,7 +25,6 @@ ApplicationWindow {
 
     // Added for Qt6.9 to make all the changes for full screen display in Android 15
     // work. Instead of those changes, using the SafeArea option may be nicer.
-    flags: Qt.ExpandedClientAreaHint | Qt.NoTitleBarBackgroundHint
     topPadding: 0
     bottomPadding: 0
     leftPadding: 0
