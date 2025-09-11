@@ -62,6 +62,10 @@ Rectangle {
             color: "transparent"
 
             SvgButton {
+                topInset: 0
+                leftInset: 0
+                rightInset: 0
+                bottomInset: 0
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: height
                 height: parent.height
