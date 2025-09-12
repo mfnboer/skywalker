@@ -85,7 +85,7 @@ SkyPage {
         timeline: page.timeline
         skywalker: page.skywalker
         searchView: page
-        searchActive: true
+        activePage: QEnums.UI_PAGE_SEARCH
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
         onMessagesClicked: root.viewChat()

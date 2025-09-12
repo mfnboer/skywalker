@@ -27,6 +27,16 @@ public:
     };
     Q_ENUM(DisplayMode)
 
+    enum UiPage
+    {
+        UI_PAGE_NONE = 0,
+        UI_PAGE_HOME,
+        UI_PAGE_NOTIFICATIONS,
+        UI_PAGE_SEARCH,
+        UI_PAGE_MESSAGES
+    };
+    Q_ENUM(UiPage);
+
     enum PostType
     {
         POST_STANDALONE = 0,

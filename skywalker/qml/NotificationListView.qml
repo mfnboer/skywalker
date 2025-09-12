@@ -22,7 +22,7 @@ SkyPage {
     footer: SkyFooter {
         timeline: page.timeline
         skywalker: page.skywalker
-        notificationsActive: true
+        activePage: QEnums.UI_PAGE_NOTIFICATIONS
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()
         onSearchClicked: root.viewSearchView()

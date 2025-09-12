@@ -34,6 +34,8 @@ SkyPage {
         }
     }
 
+    footer: DeadFooterMargin {}
+
     SkyTextInput {
         id: searchInput
         y: !root.showSideBar ? 0 : guiSettings.headerMargin

@@ -182,7 +182,7 @@ ApplicationWindow {
         width: parent.width - guiSettings.rightMargin
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
-        homeActive: true
+        activePage: QEnums.UI_PAGE_HOME
         extraFooterMargin: getExtraFooterMargin()
         onHomeClicked: favoritesSwipeView.currentView.moveToHome()
         onNotificationsClicked: viewNotifications()

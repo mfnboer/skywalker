@@ -7,10 +7,7 @@ Rectangle {
     required property var timeline
     required property var skywalker
     property var searchView
-    property bool homeActive: false
-    property bool notificationsActive: false
-    property bool searchActive: false
-    property bool messagesActive: false
+    property int activePage: QEnums.UI_PAGE_NONE
     property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
     property int extraFooterMargin: 0
     property bool footerVisible: true
@@ -36,8 +33,8 @@ Rectangle {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
             floating: floatingButtons
-            svg: homeActive ? SvgFilled.home : SvgOutline.home
-            counter: homeActive && timeline ? timeline.unreadPosts : 0
+            svg: isHomeActive() ? SvgFilled.home : SvgOutline.home
+            counter: isHomeActive() && timeline ? timeline.unreadPosts : 0
             counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
             Accessible.name: getHomeSpeech()
@@ -48,7 +45,7 @@ Rectangle {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
             floating: floatingButtons
-            svg: searchActive ? SvgFilled.search : SvgOutline.search
+            svg: isSearchActive() ? SvgFilled.search : SvgOutline.search
             Accessible.name: qsTr("search")
             onClicked: searchClicked()
         }
@@ -70,14 +67,14 @@ Rectangle {
                 accessibleName: qsTr("create post")
 
                 onClicked: {
-                    if (messagesActive)
+                    if (isMessagesActive())
                         addConvoClicked()
                     else
                         post()
                 }
 
                 function getSvg() {
-                    if (messagesActive)
+                    if (isMessagesActive())
                         return SvgOutline.add
 
                     if (isHashtagSearch())
@@ -92,7 +89,7 @@ Rectangle {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
             floating: floatingButtons
-            svg: messagesActive ? SvgFilled.directMessage : SvgOutline.directMessage
+            svg: isMessagesActive() ? SvgFilled.directMessage : SvgOutline.directMessage
             counter: skywalker.chat.unreadCount
             Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
             onClicked: messagesClicked()
@@ -102,37 +99,15 @@ Rectangle {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
             floating: floatingButtons
-            svg: notificationsActive ? SvgFilled.notifications : SvgOutline.notifications
+            svg: isNotificationsActive() ? SvgFilled.notifications : SvgOutline.notifications
             counter: root.getSkywalker().unreadNotificationCount
             Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)
             onClicked: notificationsClicked()
         }
     }
 
-    // PostButton {
-    //     y: -height - 10 - extraFooterMargin
-    //     svg: getSvg()
-    //     accessibleName: qsTr("post")
-    //     overrideOnClicked: () => {
-    //         if (messagesActive)
-    //             addConvoClicked()
-    //         else
-    //             post()
-    //     }
-
-    //     function getSvg() {
-    //         if (messagesActive)
-    //             return SvgOutline.add
-
-    //         if (isHashtagSearch())
-    //             return SvgOutline.hashtag
-
-    //         return SvgOutline.chat
-    //     }
-    // }
-
     function isHashtagSearch() {
-        if (!searchActive)
+        if (!isSearchActive())
             return false
 
         return searchView.isHashtagSearch
@@ -146,7 +121,7 @@ Rectangle {
     }
 
     function getHomeSpeech() {
-        if (!homeActive)
+        if (!isHomeActive())
             return qsTr("show feed")
 
         if (!timeline)
@@ -159,5 +134,21 @@ Rectangle {
             return qsTr("1 post from the top of your time line")
 
         return qsTr(`${timeline.unreadPosts} posts from top of your timeline, press to go to top`)
+    }
+
+    function isHomeActive() {
+        return activePage === QEnums.UI_PAGE_HOME
+    }
+
+    function isNotificationsActive() {
+        return activePage === QEnums.UI_PAGE_NOTIFICATIONS
+    }
+
+    function isSearchActive() {
+        return activePage === QEnums.UI_PAGE_SEARCH
+    }
+
+    function isMessagesActive() {
+        return activePage === QEnums.UI_PAGE_MESSAGES
     }
 }

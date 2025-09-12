@@ -826,6 +826,7 @@ Rectangle {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 topPadding: 10
+                bottomPadding: 50
                 elide: Text.ElideRight
                 color: guiSettings.textColor
                 text: qsTr("End of feed")
