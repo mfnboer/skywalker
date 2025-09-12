@@ -30,8 +30,8 @@ Drawer {
     width: Math.min(userColumn.width + leftPadding + rightPadding, parent.width - 20)
     topPadding: guiSettings.headerMargin + 10
     bottomPadding: guiSettings.footerMargin + 10
-    leftPadding: 20
-    rightPadding: 20
+    leftPadding: Math.max(20, guiSettings.leftMargin)
+    rightPadding: Math.max(20, guiSettings.rightMargin)
 
     Flickable {
         anchors.fill: parent
