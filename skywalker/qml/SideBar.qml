@@ -10,7 +10,6 @@ Pane {
     property bool notificationsActive: false
     property bool searchActive: false
     property bool messagesActive: false
-    property bool showHomeFeedBadge: false
     property bool floatingButtons: false
     property var rootItem: root.currentStackItem()
     property bool isBasePage: root.currentStack().depth === 1
@@ -262,8 +261,6 @@ Pane {
                     counterBackgroundColor: guiSettings.sideBarColor
                     counterBorderColor: guiSettings.sideBarColor
                     counterTextColor: guiSettings.textColor
-                    showAltBadge: showHomeFeedBadge
-                    altBadgeSvg: SvgOutline.feed
                     Accessible.name: getHomeSpeech()
                     onClicked: homeClicked()
                 }

@@ -6,12 +6,11 @@ import skywalker
 Rectangle {
     required property var timeline
     required property var skywalker
+    property var searchView
     property bool homeActive: false
     property bool notificationsActive: false
     property bool searchActive: false
-    property bool feedsActive: false
     property bool messagesActive: false
-    property bool showHomeFeedBadge: false
     property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
     property int extraFooterMargin: 0
     property bool footerVisible: true
@@ -41,8 +40,6 @@ Rectangle {
             counter: homeActive && timeline ? timeline.unreadPosts : 0
             counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
-            showAltBadge: showHomeFeedBadge
-            altBadgeSvg: SvgOutline.feed
             Accessible.name: getHomeSpeech()
             onClicked: homeClicked()
         }
@@ -69,19 +66,25 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: height
                 height: parent.height
-                svg: SvgOutline.chat
+                svg: getSvg()
                 accessibleName: qsTr("create post")
 
-                onClicked: parent.post()
-            }
+                onClicked: {
+                    if (messagesActive)
+                        addConvoClicked()
+                    else
+                        post()
+                }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: parent.post()
-            }
+                function getSvg() {
+                    if (messagesActive)
+                        return SvgOutline.add
 
-            function post() {
-                root.composePost()
+                    if (isHashtagSearch())
+                        return SvgOutline.hashtag
+
+                    return SvgOutline.chat
+                }
             }
         }
 
@@ -106,38 +109,38 @@ Rectangle {
         }
     }
 
-    PostButton {
-        y: -height - 10 - extraFooterMargin
-        svg: getSvg()
-        accessibleName: qsTr("post")
-        overrideOnClicked: () => {
-            if (messagesActive)
-                addConvoClicked()
-            else
-                post()
-        }
+    // PostButton {
+    //     y: -height - 10 - extraFooterMargin
+    //     svg: getSvg()
+    //     accessibleName: qsTr("post")
+    //     overrideOnClicked: () => {
+    //         if (messagesActive)
+    //             addConvoClicked()
+    //         else
+    //             post()
+    //     }
 
-        function getSvg() {
-            if (messagesActive)
-                return SvgOutline.add
+    //     function getSvg() {
+    //         if (messagesActive)
+    //             return SvgOutline.add
 
-            if (isHashtagSearch())
-                return SvgOutline.hashtag
+    //         if (isHashtagSearch())
+    //             return SvgOutline.hashtag
 
-            return SvgOutline.chat
-        }
-    }
+    //         return SvgOutline.chat
+    //     }
+    // }
 
     function isHashtagSearch() {
         if (!searchActive)
             return false
 
-        return parent.isHashtagSearch
+        return searchView.isHashtagSearch
     }
 
     function post() {
         if (isHashtagSearch())
-            root.composePost("\n" + parent.getSearchText())
+            root.composePost("\n" + searchView.getSearchText())
         else
             root.composePost()
     }

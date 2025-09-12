@@ -84,6 +84,7 @@ SkyPage {
         anchors.bottom: parent.bottom
         timeline: page.timeline
         skywalker: page.skywalker
+        searchView: page
         searchActive: true
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
