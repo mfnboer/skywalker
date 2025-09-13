@@ -466,7 +466,7 @@ SkyPage {
             contentHeight: suggestedUsersView.y + suggestedUsersView.height
             flickableDirection: Flickable.VerticalFlick
             boundsBehavior: Flickable.StopAtBounds
-            interactive: trendingTopicsColumn.visible && contentY < trendingTopicsColumn.y + trendingTopicsColumn.height
+            interactive: true // trendingTopicsColumn.visible && contentY < trendingTopicsColumn.y + trendingTopicsColumn.height
 
             AccessibleText {
                 id: trendingTopicsText
@@ -581,19 +581,65 @@ SkyPage {
             }
 
             SkyListView {
-                id: suggestedUsersView
+                id: suggestedFeedsView
                 anchors.top: trendingTopicsColumn.visible ? trendingTopicsColumn.bottom : parent.top
                 width: suggestionsView.width
-                height: visible ? suggestionsView.height : 0
+                height: visible ? contentHeight : 0
+                model: searchUtils.getSuggestedFeedsModel()
+                clip: true
+                interactive: false
+                visible: userSettings.showSuggestedFeeds
+
+                Accessible.role: Accessible.List
+
+                header: AccessibleText {
+                    width: parent.width
+                    padding: 10
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(9/8)
+                    text: qsTr("Suggested feeds")
+
+                    SvgButton {
+                        anchors.right: parent.right
+                        width: height
+                        height: parent.height
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("disable suggested feeds")
+                        onPressed: {
+                            guiSettings.notice(page, qsTr("You can enable suggested feeds again in settings."))
+                            userSettings.showSuggestedFeeds = false
+                        }
+                    }
+                }
+
+                delegate: GeneratorViewDelegate {
+                    width: suggestedUsersView.width
+                    endOfFeed: false
+                    onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+                }
+
+                EmptyListIndication {
+                    y: header.height
+                    svg: SvgOutline.noPosts
+                    text: qsTr("No suggestions")
+                    list: suggestedFeedsView
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: suggestedFeedsView.model.getFeedInProgress
+                }
+            }
+
+            SkyListView {
+                id: suggestedUsersView
+                anchors.top: suggestedFeedsView.bottom
+                width: suggestionsView.width
+                height: visible ? contentHeight : 0
                 model: searchUtils.getSearchSuggestedUsersModel()
                 clip: true
-                interactive: !suggestionsView.interactive
+                interactive: false
                 visible: userSettings.showSuggestedUsers
-
-                onVerticalOvershootChanged: {
-                    if (interactive && trendingTopicsColumn.visible)
-                        suggestionsView.contentY = y + verticalOvershoot
-                }
 
                 Accessible.role: Accessible.List
 
@@ -611,7 +657,7 @@ SkyPage {
                         svg: SvgOutline.close
                         accessibleName: qsTr("disable suggested accounts")
                         onPressed: {
-                            guiSettings.notice(page, qsTr("You can enable trending topics again in settings."))
+                            guiSettings.notice(page, qsTr("You can enable suggested accounts again in settings."))
                             userSettings.showSuggestedUsers = false
                         }
                     }
@@ -621,11 +667,6 @@ SkyPage {
                     width: suggestedUsersView.width
                     onFollow: (profile) => { graphUtils.follow(profile) }
                     onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
-                }
-
-                FlickableRefresher {
-                    inProgress: searchUtils.searchSuggestedActorsInProgress
-                    bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
                 }
 
                 EmptyListIndication {
@@ -886,9 +927,17 @@ SkyPage {
             getTrendingTopics()
         }
 
+        function suggestFeeds() {
+            if (!userSettings.showSuggestedFeeds)
+                return
+
+            getSuggestedFeeds(10)
+        }
+
         function getSuggestions() {
             suggestUsers()
             suggestTrendingTopics()
+            suggestFeeds()
         }
 
         Component.onDestruction: {
@@ -1111,11 +1160,13 @@ SkyPage {
             searchUtils.suggestTrendingTopics()
         }
 
-        if (userSettings.showSuggestedUsers)
+        if (userSettings.showSuggestedUsers || userSettings.showSuggestedFeeds)
             firstSearch = false
     }
 
     Component.onCompleted: {
+        userSettings.onShowSuggestedUsersChanged.connect(() => { if (userSettings.showSuggestedUsers) firstSearch = true })
+        userSettings.onShowSuggestedFeedsChanged.connect(() => { if (userSettings.showSuggestedFeeds) firstSearch = true })
         searchUtils.initLastSearchedProfiles()
     }
 }

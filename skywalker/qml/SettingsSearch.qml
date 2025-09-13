@@ -18,6 +18,12 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Suggested feeds")
+        checked: userSettings.showSuggestedFeeds
+        onCheckedChanged: userSettings.showSuggestedFeeds = checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Suggested accounts")
         checked: userSettings.showSuggestedUsers
         onCheckedChanged: userSettings.showSuggestedUsers = checked

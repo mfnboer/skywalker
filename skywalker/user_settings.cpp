@@ -1278,6 +1278,20 @@ void UserSettings::setShowTrendingTopics(bool show)
     }
 }
 
+bool UserSettings::getShowSuggestedFeeds() const
+{
+    return mSettings.value("showSuggestedFeeds", true).toBool();
+}
+
+void UserSettings::setShowSuggestedFeeds(bool show)
+{
+    if (show != getShowSuggestedFeeds())
+    {
+        mSettings.setValue("showSuggestedFeeds", show);
+        emit showSuggestedFeedsChanged();
+    }
+}
+
 bool UserSettings::getShowSuggestedUsers() const
 {
     return mSettings.value("showSuggestedUsers", true).toBool();

@@ -594,6 +594,40 @@ Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
     searchFeeds(text, cursor);
 }
 
+void SearchUtils::getSuggestedFeeds(int maxFeeds)
+{
+    qDebug() << "Get suggested feeds";
+    auto& model = *getSuggestedFeedsModel();
+
+    if (model.isGetFeedInProgress())
+    {
+        qDebug() << "Search feeds still in progress";
+        return;
+    }
+
+    model.setGetFeedInProgress(true);
+    bskyClient()->getSuggestedFeeds(maxFeeds,
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedFeedsModel();
+            model.setGetFeedInProgress(false);
+            model.clear();
+            model.addFeeds(std::move(output->mFeeds), "");
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedFeedsModel();
+            model.setGetFeedInProgress(false);
+
+            qDebug() << "getSuggestedFeeds failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrder)
 {
     Q_ASSERT(mSkywalker);
@@ -647,6 +681,16 @@ FeedListModel* SearchUtils::getSearchFeedsModel()
     return mSkywalker->getFeedListModel(mSearchFeedsModelId);
 }
 
+FeedListModel* SearchUtils::getSuggestedFeedsModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSuggestedFeedsModelId < 0)
+        mSuggestedFeedsModelId = mSkywalker->createFeedListModel();
+
+    return mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
+}
+
 void SearchUtils::clearAllSearchResults()
 {
     mAuthorTypeaheadList.clear();
@@ -676,6 +720,13 @@ void SearchUtils::clearAllSearchResults()
     {
         Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getFeedListModel(mSearchFeedsModelId);
+        model->clear();
+    }
+
+    if (mSuggestedFeedsModelId >= 0)
+    {
+        Q_ASSERT(mSkywalker);
+        auto* model = mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
         model->clear();
     }
 }
