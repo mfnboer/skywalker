@@ -23,7 +23,7 @@ SimpleAuthorListView {
     }
 
     onAuthorClicked: (profile) => {
-        const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
+        const fullText = editText.getFullText()
         const mentionStartIndex = facetUtils.getEditMentionIndex()
         const mentionEndIndex = mentionStartIndex + facetUtils.editMention.length
         editText.clear() // also clears the preedit buffer

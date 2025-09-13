@@ -24,7 +24,7 @@ HashtagListView {
     }
 
     onHashtagClicked: (hashtag) => {
-        const {textBefore, textBetween, textAfter, fullText} = editText.getTextParts()
+        const fullText = editText.getFullText()
         const hashtagStartIndex = facetUtils.getEditTagIndex()
         const hashtagEndIndex = hashtagStartIndex + facetUtils.editTag.length
         editText.clear() // also clears the preedit buffer

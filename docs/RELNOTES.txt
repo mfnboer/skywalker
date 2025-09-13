@@ -1,3 +1,10 @@
+next
+====
+* Move feeds search into the regular search
+* Saved feeds are now "User Lists & Feeds"
+* Improve automatic text overflow into next post in thread
+* Bug fixes
+
 4.14.1
 ======
 * Fix layout on tablets
