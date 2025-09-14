@@ -241,6 +241,14 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
     return list;
 }
 
+void AuthorListModel::setGetFeedInProgress(bool inProgress)
+{
+    if (inProgress != mGetFeedInProgress) {
+        mGetFeedInProgress = inProgress;
+        emit getFeedInProgressChanged();
+    }
+}
+
 QHash<int, QByteArray> AuthorListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

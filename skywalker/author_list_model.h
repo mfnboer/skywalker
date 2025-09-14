@@ -18,6 +18,8 @@ class AuthorListModel : public QAbstractListModel,
                         public LocalAuthorModelChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+
 public:
     enum class Role {
         Author = Qt::UserRole + 1,
@@ -66,6 +68,12 @@ public:
 
     std::vector<QString> getActiveFollowsDids(QString& cursor) const;
 
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
+signals:
+    void getFeedInProgressChanged();
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -97,6 +105,7 @@ private:
     std::vector<QString> mActiveFollowsDids;
 
     QString mCursor;
+    bool mGetFeedInProgress = false;
 };
 
 }

@@ -380,7 +380,7 @@ SkyPage {
             }
 
             FlickableRefresher {
-                inProgress: searchUtils.searchActorsInProgress
+                inProgress: usersView.model && usersView.model.getFeedInProgress
                 bottomOvershootFun: () => searchUtils.getNextPageSearchActors(page.getSearchText())
             }
 
@@ -392,7 +392,7 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchActorsInProgress
+                running: usersView.model && usersView.model.getFeedInProgress
             }
 
             function refreshSearch() {
@@ -422,7 +422,7 @@ SkyPage {
             }
 
             FlickableRefresher {
-                inProgress: searchUtils.searchFeedsInProgress
+                inProgress: feedListView.model && feedListView.model.getFeedInProgress
                 bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.getSearchText())
             }
 
@@ -434,7 +434,7 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchFeedsInProgress
+                running: feedListView.model && feedListView.model.getFeedInProgress
             }
 
             function refreshSearch() {
@@ -458,6 +458,8 @@ SkyPage {
         }
 
         Flickable {
+            property int lastMovementY: 0
+
             id: suggestionsView
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
@@ -467,6 +469,23 @@ SkyPage {
             flickableDirection: Flickable.VerticalFlick
             boundsBehavior: Flickable.StopAtBounds
             interactive: true
+
+            onVisibleChanged: {
+                // Restore last scroll position when view becomes visible again
+                if (visible) {
+                    if (lastMovementY <= contentHeight)
+                        contentY = lastMovementY
+                    else
+                        lastMovementY = contentY
+                }
+            }
+
+            onMovementEnded: lastMovementY = contentY
+
+            function resetPosition() {
+                lastMovementY = 0
+                contentY = 0
+            }
 
             AccessibleText {
                 id: trendingTopicsText
@@ -627,7 +646,7 @@ SkyPage {
 
                 BusyIndicator {
                     anchors.centerIn: parent
-                    running: suggestedFeedsView.model.getFeedInProgress
+                    running: suggestedFeedsView.model && suggestedFeedsView.model.getFeedInProgress
                 }
             }
 
@@ -678,7 +697,7 @@ SkyPage {
 
                 BusyIndicator {
                     anchors.centerIn: parent
-                    running: searchUtils.searchSuggestedActorsInProgress
+                    running: suggestedUsersView.model && suggestedUsersView.model.getFeedInProgress
                 }
             }
 
@@ -727,7 +746,7 @@ SkyPage {
 
                 BusyIndicator {
                     anchors.centerIn: parent
-                    running: suggestedStarterPacksView.model.getFeedInProgress
+                    running: suggestedStarterPacksView.model && suggestedStarterPacksView.model.getFeedInProgress
                 }
             }
         }
@@ -1219,6 +1238,8 @@ SkyPage {
 
         if (userSettings.showSuggestedUsers || userSettings.showSuggestedFeeds || userSettings.showSuggestedStarterPacks)
             firstSearch = false
+
+        suggestionsView.resetPosition()
     }
 
     Component.onCompleted: {
