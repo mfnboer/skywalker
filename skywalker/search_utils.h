@@ -8,6 +8,7 @@
 #include "profile_matcher.h"
 #include "search_feed.h"
 #include "search_post_feed_model.h"
+#include "starter_pack_list_model.h"
 #include "trending_topic_list_model.h"
 #include "wrapped_skywalker.h"
 #include <vector>
@@ -59,11 +60,13 @@ public:
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE void getSuggestedFeeds(int maxFeeds);
+    Q_INVOKABLE void getSuggestedStarterPacks(int maxPacks);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder);
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
     Q_INVOKABLE FeedListModel* getSuggestedFeedsModel();
+    Q_INVOKABLE StarterPackListModel* getSuggestedStarterPacksModel();
     Q_INVOKABLE void clearAllSearchResults();
     Q_INVOKABLE QStringList getLastSearches() const;
     Q_INVOKABLE void addLastSearch(const QString& search);
@@ -117,6 +120,7 @@ private:
     int mSearchSuggestedUsersModelId = -1;
     int mSearchFeedsModelId = -1;
     int mSuggestedFeedsModelId = -1;
+    int mSuggestedStarterPacksModelId = -1;
     bool mSearchActorsInProgress = false;
     bool mSearchSuggestedActorsInProgress = false;
     bool mSearchFeedsInProgress = false;

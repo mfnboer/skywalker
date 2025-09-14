@@ -45,6 +45,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
     Q_PROPERTY(bool showSuggestedFeeds READ getShowSuggestedFeeds WRITE setShowSuggestedFeeds NOTIFY showSuggestedFeedsChanged FINAL)
     Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
+    Q_PROPERTY(bool showSuggestedStarterPacks READ getShowSuggestedStarterPacks WRITE setShowSuggestedStarterPacks NOTIFY showSuggestedStarterPacksChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
 
@@ -323,6 +324,9 @@ public:
     bool getShowSuggestedUsers() const;
     void setShowSuggestedUsers(bool show);
 
+    bool getShowSuggestedStarterPacks() const;
+    void setShowSuggestedStarterPacks(bool show);
+
     QString getDefaultPostLanguage(const QString& did) const;
     void setDefaultPostLanguage(const QString& did, const QString& language);
 
@@ -387,6 +391,7 @@ signals:
     void showTrendingTopicsChanged();
     void showSuggestedFeedsChanged();
     void showSuggestedUsersChanged();
+    void showSuggestedStarterPacksChanged();
     void blocksWithExpiryChanged();
     void mutesWithExpiryChanged();
     void feedHideRepliesChanged(QString did, QString feedUri);

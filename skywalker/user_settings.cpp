@@ -1306,6 +1306,20 @@ void UserSettings::setShowSuggestedUsers(bool show)
     }
 }
 
+bool UserSettings::getShowSuggestedStarterPacks() const
+{
+    return mSettings.value("showSuggestedStarterPacks", true).toBool();
+}
+
+void UserSettings::setShowSuggestedStarterPacks(bool show)
+{
+    if (show != getShowSuggestedStarterPacks())
+    {
+        mSettings.setValue("showSuggestedStarterPacks", show);
+        emit showSuggestedStarterPacksChanged();
+    }
+}
+
 QString UserSettings::getDefaultPostLanguage(const QString& did) const
 {
     return mSettings.value(key(did, "defaultPostLanguage")).toString();

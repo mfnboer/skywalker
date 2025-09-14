@@ -596,7 +596,7 @@ Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
 
 void SearchUtils::getSuggestedFeeds(int maxFeeds)
 {
-    qDebug() << "Get suggested feeds";
+    qDebug() << "Get suggested feeds:" << maxFeeds;
     auto& model = *getSuggestedFeedsModel();
 
     if (model.isGetFeedInProgress())
@@ -624,6 +624,40 @@ void SearchUtils::getSuggestedFeeds(int maxFeeds)
             model.setGetFeedInProgress(false);
 
             qDebug() << "getSuggestedFeeds failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getSuggestedStarterPacks(int maxPacks)
+{
+    qDebug() << "Get suggested starter packs:" << maxPacks;
+    auto& model = *getSuggestedStarterPacksModel();
+
+    if (model.isGetFeedInProgress())
+    {
+        qDebug() << "Search feeds still in progress";
+        return;
+    }
+
+    model.setGetFeedInProgress(true);
+    bskyClient()->getSuggestedStarterPacks(maxPacks,
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedStarterPacksModel();
+            model.setGetFeedInProgress(false);
+            model.clear();
+            model.addStarterPacks(std::move(output->mStarterPacks), "");
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedStarterPacksModel();
+            model.setGetFeedInProgress(false);
+
+            qDebug() << "getSuggestedStarterPacks failed:" << error << " - " << msg;
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -691,42 +725,54 @@ FeedListModel* SearchUtils::getSuggestedFeedsModel()
     return mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
 }
 
+StarterPackListModel* SearchUtils::getSuggestedStarterPacksModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSuggestedStarterPacksModelId < 0)
+        mSuggestedStarterPacksModelId = mSkywalker->createStarterPackListModel();
+
+    return mSkywalker->getStarterPackListModel(mSuggestedStarterPacksModelId);
+}
+
 void SearchUtils::clearAllSearchResults()
 {
+    Q_ASSERT(mSkywalker);
     mAuthorTypeaheadList.clear();
 
     for (const auto& [_, modelId] : mSearchPostFeedModelId)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getSearchPostFeedModel(modelId);
         model->clear();
     }
 
     if (mSearchUsersModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getAuthorListModel(mSearchUsersModelId);
         model->clear();
     }
 
     if (mSearchSuggestedUsersModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getAuthorListModel(mSearchSuggestedUsersModelId);
         model->clear();
     }
 
     if (mSearchFeedsModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getFeedListModel(mSearchFeedsModelId);
         model->clear();
     }
 
     if (mSuggestedFeedsModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
+        model->clear();
+    }
+
+    if (mSuggestedStarterPacksModelId >= 0)
+    {
+        auto* model = mSkywalker->getStarterPackListModel(mSuggestedStarterPacksModelId);
         model->clear();
     }
 }

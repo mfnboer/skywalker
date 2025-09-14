@@ -463,10 +463,10 @@ SkyPage {
             Layout.preferredHeight: parent.height
             clip: true
             contentWidth: page.width
-            contentHeight: suggestedUsersView.y + suggestedUsersView.height
+            contentHeight: suggestedStarterPacksView.y + suggestedStarterPacksView.height
             flickableDirection: Flickable.VerticalFlick
             boundsBehavior: Flickable.StopAtBounds
-            interactive: true // trendingTopicsColumn.visible && contentY < trendingTopicsColumn.y + trendingTopicsColumn.height
+            interactive: true
 
             AccessibleText {
                 id: trendingTopicsText
@@ -679,6 +679,55 @@ SkyPage {
                 BusyIndicator {
                     anchors.centerIn: parent
                     running: searchUtils.searchSuggestedActorsInProgress
+                }
+            }
+
+            SkyListView {
+                id: suggestedStarterPacksView
+                anchors.top: suggestedUsersView.bottom
+                width: suggestionsView.width
+                height: visible ? contentHeight : 0
+                model: searchUtils.getSuggestedStarterPacksModel()
+                clip: true
+                interactive: false
+                visible: userSettings.showSuggestedStarterPacks
+
+                Accessible.role: Accessible.List
+
+                header: AccessibleText {
+                    width: parent.width
+                    padding: 10
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(9/8)
+                    text: qsTr("Suggested starter packs")
+
+                    SvgButton {
+                        anchors.right: parent.right
+                        width: height
+                        height: parent.height
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("disable suggested starter packs")
+                        onPressed: {
+                            guiSettings.notice(page, qsTr("You can enable suggested starter packs again in settings."))
+                            userSettings.showSuggestedStarterPacks = false
+                        }
+                    }
+                }
+
+                delegate: StarterPackViewDelegate {
+                    width: suggestedUsersView.width
+                }
+
+                EmptyListIndication {
+                    y: header.height
+                    svg: SvgOutline.noLists
+                    text: qsTr("No suggestions")
+                    list: suggestedStarterPacksView
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: suggestedStarterPacksView.model.getFeedInProgress
                 }
             }
         }
@@ -934,10 +983,18 @@ SkyPage {
             getSuggestedFeeds(10)
         }
 
+        function suggestStarterPacks() {
+            if (!userSettings.showSuggestedStarterPacks)
+                return
+
+            getSuggestedStarterPacks(10)
+        }
+
         function getSuggestions() {
             suggestUsers()
             suggestTrendingTopics()
             suggestFeeds()
+            suggestStarterPacks()
         }
 
         Component.onDestruction: {
@@ -1160,13 +1217,14 @@ SkyPage {
             searchUtils.suggestTrendingTopics()
         }
 
-        if (userSettings.showSuggestedUsers || userSettings.showSuggestedFeeds)
+        if (userSettings.showSuggestedUsers || userSettings.showSuggestedFeeds || userSettings.showSuggestedStarterPacks)
             firstSearch = false
     }
 
     Component.onCompleted: {
         userSettings.onShowSuggestedUsersChanged.connect(() => { if (userSettings.showSuggestedUsers) firstSearch = true })
         userSettings.onShowSuggestedFeedsChanged.connect(() => { if (userSettings.showSuggestedFeeds) firstSearch = true })
+        userSettings.onShowSuggestedStarterPacksChanged.connect(() => { if (userSettings.showSuggestedStarterPacks) firstSearch = true })
         searchUtils.initLastSearchedProfiles()
     }
 }

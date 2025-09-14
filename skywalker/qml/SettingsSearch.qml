@@ -28,4 +28,10 @@ ColumnLayout {
         checked: userSettings.showSuggestedUsers
         onCheckedChanged: userSettings.showSuggestedUsers = checked
     }
+
+    AccessibleCheckBox {
+        text: qsTr("Suggested starter packs")
+        checked: userSettings.showSuggestedStarterPacks
+        onCheckedChanged: userSettings.showSuggestedStarterPacks = checked
+    }
 }
