@@ -56,8 +56,8 @@ public:
     Q_INVOKABLE void getSuggestedFollows(const QString& user);
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
-    Q_INVOKABLE void getSuggestedFeeds(int maxFeeds);
-    Q_INVOKABLE void getSuggestedStarterPacks(int maxPacks);
+    Q_INVOKABLE void getSuggestedFeeds();
+    Q_INVOKABLE void getSuggestedStarterPacks();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder);
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();

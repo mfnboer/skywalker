@@ -12,6 +12,7 @@ namespace Skywalker {
 static constexpr int MAX_LAST_SEARCHES = 25;
 static constexpr int MAX_LAST_PROFILE_SEARCHES = 10;
 static constexpr int MAX_TRENDING_TOPICS = 10;
+static constexpr int MAX_SUGGESTIONS = 10;
 static constexpr char const* USER_ME = "me";
 
 static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
@@ -446,7 +447,7 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
     const QStringList langs = mSkywalker->getUserSettings()->getContentLanguages(did);
 
     model->setGetFeedInProgress(true);
-    bskyClient()->getSuggestions({}, Utils::makeOptionalString(cursor), langs,
+    bskyClient()->getSuggestions(MAX_SUGGESTIONS, Utils::makeOptionalString(cursor), langs,
         [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;
@@ -517,6 +518,10 @@ void SearchUtils::getSuggestedFollows(const QString& user)
             auto* model = getSearchSuggestedUsersModel();
             model->setGetFeedInProgress(false);
             model->clear();
+
+            if (output->mSuggestions.size() > MAX_SUGGESTIONS)
+                output->mSuggestions.resize(MAX_SUGGESTIONS);
+
             model->addAuthors(std::move(output->mSuggestions), "");
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -590,9 +595,9 @@ Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
     searchFeeds(text, cursor);
 }
 
-void SearchUtils::getSuggestedFeeds(int maxFeeds)
+void SearchUtils::getSuggestedFeeds()
 {
-    qDebug() << "Get suggested feeds:" << maxFeeds;
+    qDebug() << "Get suggested feeds";
     auto& model = *getSuggestedFeedsModel();
 
     if (model.isGetFeedInProgress())
@@ -602,7 +607,7 @@ void SearchUtils::getSuggestedFeeds(int maxFeeds)
     }
 
     model.setGetFeedInProgress(true);
-    bskyClient()->getSuggestedFeeds(maxFeeds,
+    bskyClient()->getSuggestedFeeds(MAX_SUGGESTIONS,
         [this, presence=getPresence()](auto output){
             if (!presence)
                 return;
@@ -624,9 +629,9 @@ void SearchUtils::getSuggestedFeeds(int maxFeeds)
         });
 }
 
-void SearchUtils::getSuggestedStarterPacks(int maxPacks)
+void SearchUtils::getSuggestedStarterPacks()
 {
-    qDebug() << "Get suggested starter packs:" << maxPacks;
+    qDebug() << "Get suggested starter packs";
     auto& model = *getSuggestedStarterPacksModel();
 
     if (model.isGetFeedInProgress())
@@ -636,7 +641,7 @@ void SearchUtils::getSuggestedStarterPacks(int maxPacks)
     }
 
     model.setGetFeedInProgress(true);
-    bskyClient()->getSuggestedStarterPacks(maxPacks,
+    bskyClient()->getSuggestedStarterPacks(MAX_SUGGESTIONS,
         [this, presence=getPresence()](auto output){
             if (!presence)
                 return;

@@ -447,7 +447,8 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         width: parent.width
-        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
+        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus ||
+                       (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers && !userSettings.showSuggestedFeeds && !userSettings.showSuggestedStarterPacks)) ?
                 recentSearchesView.StackLayout.index :
                 suggestionsView.StackLayout.index
         visible: !currentText
@@ -473,18 +474,36 @@ SkyPage {
             onVisibleChanged: {
                 // Restore last scroll position when view becomes visible again
                 if (visible) {
-                    if (lastMovementY <= contentHeight)
-                        contentY = lastMovementY
-                    else
-                        lastMovementY = contentY
+                    // Delay by few ms to let the complete view render first
+                    restorePositionTimer.run(lastMovementY)
                 }
             }
 
-            onMovementEnded: lastMovementY = contentY
+            onMovementEnded: {
+                lastMovementY = contentY
+            }
 
             function resetPosition() {
                 lastMovementY = 0
                 contentY = 0
+            }
+
+            Timer {
+                property int restoreY: 0
+
+                id: restorePositionTimer
+                interval: 10
+                onTriggered: {
+                    if (restoreY <= suggestionsView.contentHeight)
+                        suggestionsView.contentY = restoreY
+                    else
+                        suggestionsView.lastMovementY = suggestionsView.contentY
+                }
+
+                function run(posY) {
+                    restoreY = posY
+                    start()
+                }
             }
 
             AccessibleText {
@@ -643,11 +662,6 @@ SkyPage {
                     text: qsTr("No suggestions")
                     list: suggestedFeedsView
                 }
-
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: suggestedFeedsView.model && suggestedFeedsView.model.getFeedInProgress
-                }
             }
 
             SkyListView {
@@ -684,6 +698,7 @@ SkyPage {
 
                 delegate: AuthorViewDelegate {
                     width: suggestedUsersView.width
+                    endOfList: false
                     onFollow: (profile) => { graphUtils.follow(profile) }
                     onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
                 }
@@ -693,11 +708,6 @@ SkyPage {
                     svg: SvgOutline.noUsers
                     text: qsTr("No suggestions")
                     list: suggestedUsersView
-                }
-
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: suggestedUsersView.model && suggestedUsersView.model.getFeedInProgress
                 }
             }
 
@@ -743,11 +753,21 @@ SkyPage {
                     text: qsTr("No suggestions")
                     list: suggestedStarterPacksView
                 }
+            }
 
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: suggestedStarterPacksView.model && suggestedStarterPacksView.model.getFeedInProgress
-                }
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: suggestedFeedsView.model && suggestedFeedsView.model.getFeedInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: suggestedUsersView.model && suggestedUsersView.model.getFeedInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: suggestedStarterPacksView.model && suggestedStarterPacksView.model.getFeedInProgress
             }
         }
 
@@ -999,14 +1019,14 @@ SkyPage {
             if (!userSettings.showSuggestedFeeds)
                 return
 
-            getSuggestedFeeds(10)
+            getSuggestedFeeds()
         }
 
         function suggestStarterPacks() {
             if (!userSettings.showSuggestedStarterPacks)
                 return
 
-            getSuggestedStarterPacks(10)
+            getSuggestedStarterPacks()
         }
 
         function getSuggestions() {
