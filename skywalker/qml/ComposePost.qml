@@ -488,11 +488,14 @@ SkyPage {
                                 return
 
                             if (threadAutoSplit && graphemeLength > maxLength) {
+                                // NOTE: there could be text in the preedit buffer.
+                                // Get the full text to get the preedit stuff too.
+                                const fullText = postText.getFullText()
                                 console.debug("SPLIT:", index)
 
                                 // Avoid to re-split when the post count text becomes visible or longer
                                 const maxPartLength = page.maxPostLength - postCountText.maxSize()
-                                const parts = textSplitter.splitText(text, embeddedLinks, maxPartLength, minPostSplitLineLength, 2)
+                                const parts = textSplitter.splitText(fullText, embeddedLinks, maxPartLength, minPostSplitLineLength, 2)
 
                                 if (parts.length > 1) {
                                     const moveCursor = cursorPosition > parts[0].text.length && index === currentPostIndex

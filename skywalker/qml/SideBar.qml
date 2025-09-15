@@ -9,9 +9,7 @@ Pane {
     property bool homeActive: false
     property bool notificationsActive: false
     property bool searchActive: false
-    property bool feedsActive: false
     property bool messagesActive: false
-    property bool showHomeFeedBadge: false
     property bool floatingButtons: false
     property var rootItem: root.currentStackItem()
     property bool isBasePage: root.currentStack().depth === 1
@@ -19,7 +17,6 @@ Pane {
     signal homeClicked()
     signal notificationsClicked()
     signal searchClicked()
-    signal feedsClicked()
     signal messagesClicked()
     signal addConvoClicked()
 
@@ -264,8 +261,6 @@ Pane {
                     counterBackgroundColor: guiSettings.sideBarColor
                     counterBorderColor: guiSettings.sideBarColor
                     counterTextColor: guiSettings.textColor
-                    showAltBadge: showHomeFeedBadge
-                    altBadgeSvg: SvgOutline.feed
                     Accessible.name: getHomeSpeech()
                     onClicked: homeClicked()
                 }
@@ -305,32 +300,6 @@ Pane {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: searchClicked()
-                    }
-                }
-            }
-
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 12
-                visible: isBasePage
-
-                SkyFooterButton {
-                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
-                    Layout.preferredWidth: Layout.preferredHeight
-                    svg: feedsActive ? SvgFilled.feed : SvgOutline.feed
-                    Accessible.name: qsTr("feeds")
-                    onClicked: feedsClicked()
-                }
-
-                AccessibleText {
-                    Layout.fillWidth: true
-                    elide: Text.ElideRight
-                    font.bold: feedsActive
-                    text: qsTr("Feeds")
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: feedsClicked()
                     }
                 }
             }

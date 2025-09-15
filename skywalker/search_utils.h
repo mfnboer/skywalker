@@ -8,6 +8,7 @@
 #include "profile_matcher.h"
 #include "search_feed.h"
 #include "search_post_feed_model.h"
+#include "starter_pack_list_model.h"
 #include "trending_topic_list_model.h"
 #include "wrapped_skywalker.h"
 #include <vector>
@@ -22,9 +23,6 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(BasicProfileList lastSearchedProfiles READ getLastSearchedProfiles WRITE setLastSearchedProfiles NOTIFY lastSearchedProfilesChanged FINAL)
     Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
     Q_PROPERTY(QEnums::ContentVisibility overrideAdultVisibility READ getOverrideAdultVisibility WRITE setOverrideAdultVisibility NOTIFY overrideAdultVisibilityChanged FINAL)
-    Q_PROPERTY(bool searchActorsInProgress READ getSearchActorsInProgress WRITE setSearchActorsInProgress NOTIFY searchActorsInProgressChanged FINAL)
-    Q_PROPERTY(bool searchSuggestedActorsInProgress READ getSearchSuggestedActorsInProgress WRITE setSearchSuggestedActorsInProgress NOTIFY searchSuggestedActorsInProgressChanged FINAL)
-    Q_PROPERTY(bool searchFeedsInProgress READ getSearchFeedsInProgress WRITE setSearchFeedsInProgress NOTIFY searchFeedsInProgressChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -58,10 +56,14 @@ public:
     Q_INVOKABLE void getSuggestedFollows(const QString& user);
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
+    Q_INVOKABLE void getSuggestedFeeds();
+    Q_INVOKABLE void getSuggestedStarterPacks();
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder);
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
+    Q_INVOKABLE FeedListModel* getSuggestedFeedsModel();
+    Q_INVOKABLE StarterPackListModel* getSuggestedStarterPacksModel();
     Q_INVOKABLE void clearAllSearchResults();
     Q_INVOKABLE QStringList getLastSearches() const;
     Q_INVOKABLE void addLastSearch(const QString& search);
@@ -80,12 +82,6 @@ public:
     void setHashtagTypeaheadList(const QStringList& list);
     const BasicProfileList& getLastSearchedProfiles() const { return mLastSearchedProfiles; }
     void setLastSearchedProfiles(const BasicProfileList& list);
-    bool getSearchActorsInProgress() const { return mSearchActorsInProgress; }
-    void setSearchActorsInProgress(bool inProgress);
-    bool getSearchSuggestedActorsInProgress() const { return mSearchSuggestedActorsInProgress; }
-    void setSearchSuggestedActorsInProgress(bool inProgress);
-    bool getSearchFeedsInProgress() const { return mSearchFeedsInProgress; }
-    void setSearchFeedsInProgress(bool inProgress);
     TrendingTopicListModel* getTrendingTopicsListModel() { return mTrendingTopicsListModel.get(); }
     QEnums::ContentVisibility getOverrideAdultVisibility() const { return mOVerrideAdultVisibility; }
     void setOverrideAdultVisibility(QEnums::ContentVisibility visibility);
@@ -94,9 +90,6 @@ signals:
     void authorTypeaheadListChanged();
     void hashtagTypeaheadListChanged();
     void lastSearchedProfilesChanged();
-    void searchActorsInProgressChanged();
-    void searchSuggestedActorsInProgressChanged();
-    void searchFeedsInProgressChanged();
     void trendingTopicsListModelChanged();
     void overrideAdultVisibilityChanged();
 
@@ -114,9 +107,8 @@ private:
     int mSearchUsersModelId = -1;
     int mSearchSuggestedUsersModelId = -1;
     int mSearchFeedsModelId = -1;
-    bool mSearchActorsInProgress = false;
-    bool mSearchSuggestedActorsInProgress = false;
-    bool mSearchFeedsInProgress = false;
+    int mSuggestedFeedsModelId = -1;
+    int mSuggestedStarterPacksModelId = -1;
     AnyProfileMatcher mAnyProfileMatcher;
     CanChatProfileMatcher mCanChatProfileMatcher;
     TrendingTopicListModel::Ptr mTrendingTopicsListModel;

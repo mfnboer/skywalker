@@ -256,7 +256,7 @@ Dialog {
                                 model: skywalker.getListListModel(listModelId)
                                 valueRole: "listUri"
                                 textRole: "listName"
-                                inProgress: skywalker.getListListInProgress
+                                inProgress: model?.getFeedInProgress
                                 bottomOvershootFun: () => skywalker.getListListNextPage(listModelId)
                                 initialIndex: allowListIndexes[parent.index]
                                 findValue: getListUriFromDraft(parent.index)

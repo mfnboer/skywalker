@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     required property var skywalker
     required property int modelId
     property string description
@@ -15,11 +15,7 @@ ListView {
     id: view
     spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
     clip: true
-    ScrollIndicator.vertical: ScrollIndicator {}
 
     Accessible.role: Accessible.List
 
@@ -72,7 +68,7 @@ ListView {
     }
 
     FlickableRefresher {
-        inProgress: skywalker.getListListInProgress
+        inProgress: view.model?.getFeedInProgress
         topOvershootFun: () => refresh()
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
         topText: qsTr("Refresh lists")
@@ -87,7 +83,7 @@ ListView {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: skywalker.getListListInProgress
+        running: view.model?.getFeedInProgress
     }
 
     GraphUtils {

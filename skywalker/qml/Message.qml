@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import skywalker
 
 Dialog {
     property string emoji: ""

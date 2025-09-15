@@ -21,6 +21,8 @@ class ListListModel : public QAbstractListModel,
                       public LocalProfileChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+
 public:
     enum class Role {
         List = Qt::UserRole + 1,
@@ -76,6 +78,12 @@ public:
     bool needsMembershipInfo() const { return !mMemberCheckDid.isEmpty(); }
     const QString& getMemberCheckDid() const { return mMemberCheckDid; }
 
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
+signals:
+    void getFeedInProgressChanged();
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -115,6 +123,7 @@ private:
     QString mMemberCheckDid;
     std::unordered_map<QString, QString> mMemberCheckResults; // listUri -> listItemUri
     bool mExcludeInternalLists = false;
+    bool mGetFeedInProgress = false;
 };
 
 }

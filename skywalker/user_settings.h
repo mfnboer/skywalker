@@ -43,7 +43,9 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
+    Q_PROPERTY(bool showSuggestedFeeds READ getShowSuggestedFeeds WRITE setShowSuggestedFeeds NOTIFY showSuggestedFeedsChanged FINAL)
     Q_PROPERTY(bool showSuggestedUsers READ getShowSuggestedUsers WRITE setShowSuggestedUsers NOTIFY showSuggestedUsersChanged FINAL)
+    Q_PROPERTY(bool showSuggestedStarterPacks READ getShowSuggestedStarterPacks WRITE setShowSuggestedStarterPacks NOTIFY showSuggestedStarterPacksChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
 
@@ -316,8 +318,14 @@ public:
     bool getShowTrendingTopics() const;
     void setShowTrendingTopics(bool show);
 
+    bool getShowSuggestedFeeds() const;
+    void setShowSuggestedFeeds(bool show);
+
     bool getShowSuggestedUsers() const;
     void setShowSuggestedUsers(bool show);
+
+    bool getShowSuggestedStarterPacks() const;
+    void setShowSuggestedStarterPacks(bool show);
 
     QString getDefaultPostLanguage(const QString& did) const;
     void setDefaultPostLanguage(const QString& did, const QString& language);
@@ -381,7 +389,9 @@ signals:
     void floatingNavigationButtonsChanged();
     void scriptRecognitionChanged();
     void showTrendingTopicsChanged();
+    void showSuggestedFeedsChanged();
     void showSuggestedUsersChanged();
+    void showSuggestedStarterPacksChanged();
     void blocksWithExpiryChanged();
     void mutesWithExpiryChanged();
     void feedHideRepliesChanged(QString did, QString feedUri);

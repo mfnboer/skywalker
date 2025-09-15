@@ -48,7 +48,7 @@ ListView {
     }
 
     FlickableRefresher {
-        inProgress: skywalker.getListListInProgress
+        inProgress: view.model?.getFeedInProgress
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
     }
 
@@ -61,7 +61,7 @@ ListView {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: skywalker.getListListInProgress
+        running: view.model?.getFeedInProgress
     }
 
     GraphUtils {

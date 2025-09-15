@@ -48,6 +48,17 @@ void StarterPackListModel::clear()
 
 void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasicList starterPacks, const QString& cursor)
 {
+    _addStarterPacks(starterPacks, cursor);
+}
+
+void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor)
+{
+    _addStarterPacks(starterPacks, cursor);
+}
+
+template<typename T>
+void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor)
+{
     qDebug() << "Add starter packs:" << starterPacks.size() << "cursor:" << cursor;
     mCursor = cursor;
 
@@ -66,6 +77,14 @@ void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackVie
 
     endInsertRows();
     qDebug() << "New starter packs size:" << mStarterPacks.size();
+}
+
+void StarterPackListModel::setGetFeedInProgress(bool inProgress)
+{
+    if (inProgress != mGetFeedInProgress) {
+        mGetFeedInProgress = inProgress;
+        emit getFeedInProgressChanged();
+    }
 }
 
 QHash<int, QByteArray> StarterPackListModel::roleNames() const

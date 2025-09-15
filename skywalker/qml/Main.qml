@@ -25,10 +25,10 @@ ApplicationWindow {
 
     // Added for Qt6.9 to make all the changes for full screen display in Android 15
     // work. Instead of those changes, using the SafeArea option may be nicer.
-    topPadding: 0
-    bottomPadding: 0
-    leftPadding: 0
-    rightPadding: 0
+    // topPadding: 0
+    // bottomPadding: 0
+    // leftPadding: 0
+    // rightPadding: 0
 
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // onFrameSwapped: {
@@ -99,8 +99,7 @@ ApplicationWindow {
             else
                 popStack()
         }
-        else if (rootContent.currentIndex === rootContent.searchIndex ||
-                 rootContent.currentIndex === rootContent.feedsIndex) {
+        else if (rootContent.currentIndex === rootContent.searchIndex) {
             // Hack to hide the selection anchor on Android that should not have been
             // there at all.
             currentStackItem().hide()
@@ -183,12 +182,11 @@ ApplicationWindow {
         width: parent.width - guiSettings.rightMargin
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
-        homeActive: true
+        activePage: QEnums.UI_PAGE_HOME
         extraFooterMargin: getExtraFooterMargin()
         onHomeClicked: favoritesSwipeView.currentView.moveToHome()
         onNotificationsClicked: viewNotifications()
         onSearchClicked: viewSearchView()
-        onFeedsClicked: viewFeedsView()
         onMessagesClicked: viewChat()
         footerVisible: !showSideBar
         visible: favoritesTabBar.favoritesSwipeViewVisible
@@ -343,9 +341,6 @@ ApplicationWindow {
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
             skywalker.chat.getAllConvos()
-            skywalker.getNotifications(50, false, false)
-            skywalker.getNotifications(50, false, true)
-
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
             userSettings.updateLastSignInTimestamp(did)
@@ -492,12 +487,8 @@ ApplicationWindow {
                 "🥳")
         }
 
-        onUnreadNotificationCountChanged: {
-            if (unreadNotificationCount > 0 && rootContent.currentIndex !== rootContent.notificationIndex) {
-                const loadCount = Math.min(100, Math.max(50, unreadNotificationCount))
-                skywalker.getNotifications(loadCount, false, false)
-                skywalker.getNotifications(loadCount, false, true)
-            }
+        onUnreadNotificationsLoaded: (mentionsOnly, oldestUnreadIndex) => {
+            getNotificationView().moveToNotification(oldestUnreadIndex, mentionsOnly)
         }
 
         onAppPaused: {
@@ -588,7 +579,6 @@ ApplicationWindow {
         homeActive: rootContent.currentIndex === rootContent.timelineIndex
         notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
         searchActive: rootContent.currentIndex === rootContent.searchIndex
-        feedsActive: rootContent.currentIndex === rootContent.feedsIndex
         messagesActive: rootContent.currentIndex === rootContent.chatIndex
         onHomeClicked: {
             if (homeActive)
@@ -606,12 +596,6 @@ ApplicationWindow {
             if (!searchActive)
                 viewSearchView()
         }
-        onFeedsClicked: {
-            if (!feedsActive)
-                viewFeedsView()
-            else if (currentStackItem() instanceof SearchFeeds)
-                currentStackItem().positionViewAtBeginning()
-        }
         onMessagesClicked: {
             if (!messagesActive)
                 viewChat()
@@ -625,8 +609,7 @@ ApplicationWindow {
         readonly property int timelineIndex: 0
         readonly property int notificationIndex: 1
         readonly property int searchIndex: 2
-        readonly property int feedsIndex: 3
-        readonly property int chatIndex: 4
+        readonly property int chatIndex: 3
         property int prevIndex: timelineIndex
 
         id: rootContent
@@ -649,14 +632,6 @@ ApplicationWindow {
             if (prevIndex === notificationIndex) {
                 skywalker.notificationListModel.updateRead()
                 skywalker.mentionListModel.updateRead()
-
-                // The unread notification count will be non-zero when new notifications came
-                // in when the notifications tab is open and the user did not refresh.
-                if (skywalker.unreadNotificationCount > 0) {
-                    const loadCount = Math.min(100, Math.max(50, skywalker.unreadNotificationCount))
-                    skywalker.getNotifications(loadCount, false, false)
-                    skywalker.getNotifications(loadCount, false, true)
-                }
             }
 
             prevIndex = currentIndex
@@ -676,9 +651,6 @@ ApplicationWindow {
         }
         StackView {
             id: searchStack
-        }
-        StackView {
-            id: feedsStack
         }
         StackView {
             id: chatStack
@@ -1414,7 +1386,6 @@ ApplicationWindow {
         getFavoritesSwipeView().reset()
         unwindStack()
         destroySearchView()
-        destroyFeedsView()
         // inviteCodeStore.clear()
         skywalker.signOut()
     }
@@ -1811,13 +1782,16 @@ ApplicationWindow {
         rootContent.currentIndex = rootContent.notificationIndex
 
         if (skywalker.unreadNotificationCount > 0) {
-            skywalker.updateNotificationsSeen()
+            const loadCount = Math.min(100, Math.max(10, skywalker.unreadNotificationCount))
+            skywalker.getNotifications(loadCount, true, false, true)
+            skywalker.getNotifications(loadCount, false, true, true)
+        }
+        else {
+            if (skywalker.notificationListModel.rowCount() === 0)
+                skywalker.getNotifications(10, false, false)
 
-            const notificationIndex = skywalker.notificationListModel.getIndexOldestUnread()
-            getNotificationView().moveToNotification(notificationIndex, false)
-
-            const mentionIndex = skywalker.mentionListModel.getIndexOldestUnread()
-            getNotificationView().moveToNotification(mentionIndex, true)
+            if (skywalker.mentionListModel.rowCount() === 0)
+                skywalker.getNotifications(10, false, true)
         }
     }
 
@@ -1870,31 +1844,6 @@ ApplicationWindow {
 
         unwindStack()
         currentStackItem().showSearchFeed(searchFeed)
-    }
-
-    function createFeedsView() {
-        let feedsComponent = guiSettings.createComponent("SearchFeeds.qml")
-        let feedsView = feedsComponent.createObject(root,
-                { skywalker: skywalker, timeline: getTimelineView() })
-        feedsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
-        feedsStack.push(feedsView)
-    }
-
-    function destroyFeedsView() {
-        if (feedsStack.depth > 0) {
-            let item = feedsStack.get(0)
-            item.forceDestroy()
-            feedsStack.clear()
-        }
-    }
-
-    function viewFeedsView() {
-        rootContent.currentIndex = rootContent.feedsIndex
-
-        if (feedsStack.depth === 0)
-            createFeedsView()
-
-        currentStackItem().show()
     }
 
     function viewHomeFeed() {

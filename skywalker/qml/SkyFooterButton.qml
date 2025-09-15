@@ -10,8 +10,6 @@ Rectangle {
     property string counterBackgroundColor: guiSettings.badgeColor
     property string counterBorderColor: guiSettings.badgeBorderColor
     property string counterTextColor: guiSettings.badgeTextColor
-    property bool showAltBadge
-    property SvgImage altBadgeSvg
 
     signal clicked
 
@@ -47,32 +45,6 @@ Rectangle {
             border.color: button.counterBorderColor
             counterColor: button.counterTextColor
             counter: button.counter
-        }
-
-        // Alternative badge
-        Loader {
-            active: Boolean(altBadgeSvg)
-
-            sourceComponent: Rectangle {
-                x: icon.width - 17
-                y: -icon.y + 6
-                width: 20
-                height: 20
-                radius: 10
-                color: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
-                border.color: guiSettings.backgroundColor
-                border.width: 2
-                visible: showAltBadge
-
-                SkySvg {
-                    x: 4
-                    y: height + 2
-                    width: 14
-                    height: width
-                    color: guiSettings.textColor
-                    svg: altBadgeSvg
-                }
-            }
         }
     }
 

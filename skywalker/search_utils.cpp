@@ -12,6 +12,7 @@ namespace Skywalker {
 static constexpr int MAX_LAST_SEARCHES = 25;
 static constexpr int MAX_LAST_PROFILE_SEARCHES = 10;
 static constexpr int MAX_TRENDING_TOPICS = 10;
+static constexpr int MAX_SUGGESTIONS = 10;
 static constexpr char const* USER_ME = "me";
 
 static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
@@ -131,6 +132,16 @@ void SearchUtils::removeModels()
         mSkywalker->removeFeedListModel(mSearchFeedsModelId);
         mSearchFeedsModelId = -1;
     }
+
+    if (mSuggestedFeedsModelId >= 0) {
+        mSkywalker->removeFeedListModel(mSuggestedFeedsModelId);
+        mSuggestedFeedsModelId = -1;
+    }
+
+    if (mSuggestedStarterPacksModelId >= 0) {
+        mSkywalker->removeStarterPackListModel(mSuggestedStarterPacksModelId);
+        mSuggestedStarterPacksModelId = -1;
+    }
 }
 
 void SearchUtils::setAuthorTypeaheadList(const BasicProfileList& list)
@@ -152,33 +163,6 @@ void SearchUtils::setLastSearchedProfiles(const BasicProfileList& list)
 {
     mLastSearchedProfiles = list;
     emit lastSearchedProfilesChanged();
-}
-
-void SearchUtils::setSearchActorsInProgress(bool inProgress)
-{
-    if (inProgress != mSearchActorsInProgress)
-    {
-        mSearchActorsInProgress = inProgress;
-        emit searchActorsInProgressChanged();
-    }
-}
-
-void SearchUtils::setSearchSuggestedActorsInProgress(bool inProgress)
-{
-    if (inProgress != mSearchSuggestedActorsInProgress)
-    {
-        mSearchSuggestedActorsInProgress = inProgress;
-        emit searchSuggestedActorsInProgressChanged();
-    }
-}
-
-void SearchUtils::setSearchFeedsInProgress(bool inProgress)
-{
-    if (inProgress != mSearchFeedsInProgress)
-    {
-        mSearchFeedsInProgress = inProgress;
-        emit searchFeedsInProgressChanged();
-    }
 }
 
 void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher)
@@ -389,7 +373,9 @@ void SearchUtils::searchActors(const QString& text, const QString& cursor)
     if (text.isEmpty())
         return;
 
-    if (mSearchActorsInProgress)
+    auto* model = getSearchUsersModel();
+
+    if (model->isGetFeedInProgress())
     {
         qDebug() << "Search actors still in progress";
         return;
@@ -397,14 +383,14 @@ void SearchUtils::searchActors(const QString& text, const QString& cursor)
 
     const auto searchText = preProcessSearchText(text);
 
-    setSearchActorsInProgress(true);
+    model->setGetFeedInProgress(true);
     bskyClient()->searchActors(searchText, {}, Utils::makeOptionalString(cursor),
         [this, presence=getPresence(), searchText, cursor](auto output){
             if (!presence)
                 return;
 
-            setSearchActorsInProgress(false);
             auto* model = getSearchUsersModel();
+            model->setGetFeedInProgress(false);
 
             if (cursor.isEmpty())
                 model->clear();
@@ -415,7 +401,9 @@ void SearchUtils::searchActors(const QString& text, const QString& cursor)
             if (!presence)
                 return;
 
-            setSearchActorsInProgress(false);
+            auto* model = getSearchUsersModel();
+            model->setGetFeedInProgress(false);
+
             qDebug() << "searchActors failed:" << error << " - " << msg;
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -424,14 +412,14 @@ void SearchUtils::searchActors(const QString& text, const QString& cursor)
 void SearchUtils::getNextPageSearchActors(const QString& text)
 {
     qDebug() << "Get next page search actors";
+    auto* model = getSearchUsersModel();
 
-    if (mSearchActorsInProgress)
+    if (model->isGetFeedInProgress())
     {
         qDebug() << "Search actors still in progress";
         return;
     }
 
-    auto* model = getSearchUsersModel();
     const auto& cursor = model->getCursor();
 
     if (cursor.isEmpty())
@@ -447,8 +435,9 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
 {
     Q_ASSERT(mSkywalker);
     qDebug() << "Get suggested actors, cursor:" << cursor;
+    auto* model = getSearchSuggestedUsersModel();
 
-    if (mSearchSuggestedActorsInProgress)
+    if (model->isGetFeedInProgress())
     {
         qDebug() << "Search suggested actors still in progress";
         return;
@@ -457,14 +446,14 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
     const QString& did = mSkywalker->getUserDid();
     const QStringList langs = mSkywalker->getUserSettings()->getContentLanguages(did);
 
-    setSearchSuggestedActorsInProgress(true);
-    bskyClient()->getSuggestions({}, Utils::makeOptionalString(cursor), langs,
+    model->setGetFeedInProgress(true);
+    bskyClient()->getSuggestions(MAX_SUGGESTIONS, Utils::makeOptionalString(cursor), langs,
         [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;
 
-            setSearchSuggestedActorsInProgress(false);
             auto* model = getSearchSuggestedUsersModel();
+            model->setGetFeedInProgress(false);
 
             if (cursor.isEmpty())
                 model->clear();
@@ -475,7 +464,9 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
             if (!presence)
                 return;
 
-            setSearchSuggestedActorsInProgress(false);
+            auto* model = getSearchSuggestedUsersModel();
+            model->setGetFeedInProgress(false);
+
             qDebug() << "getSuggestedActors failed:" << error << " - " << msg;
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -484,14 +475,14 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
 void SearchUtils::getNextPageSuggestedActors()
 {
     qDebug() << "Get next page suggested actors";
+    auto* model = getSearchSuggestedUsersModel();
 
-    if (mSearchSuggestedActorsInProgress)
+    if (model->isGetFeedInProgress())
     {
         qDebug() << "Search suggested actors still in progress";
         return;
     }
 
-    auto* model = getSearchSuggestedUsersModel();
     const auto& cursor = model->getCursor();
 
     if (cursor.isEmpty())
@@ -507,32 +498,39 @@ void SearchUtils::getSuggestedFollows(const QString& user)
 {
     Q_ASSERT(mSkywalker);
     qDebug() << "Get suggested follows:" << user;
+    auto* model = getSearchSuggestedUsersModel();
 
-    if (mSearchSuggestedActorsInProgress)
+    if (model->isGetFeedInProgress())
     {
-        qDebug() << "Search suggested actors still in progress";
+        qDebug() << "Search suggested follows still in progress";
         return;
     }
 
     const QString& did = mSkywalker->getUserDid();
     const QStringList langs = mSkywalker->getUserSettings()->getContentLanguages(did);
 
-    setSearchSuggestedActorsInProgress(true);
+    model->setGetFeedInProgress(true);
     bskyClient()->getSuggestedFollows(user, langs,
         [this, presence=getPresence()](auto output){
             if (!presence)
                 return;
 
-            setSearchSuggestedActorsInProgress(false);
             auto* model = getSearchSuggestedUsersModel();
+            model->setGetFeedInProgress(false);
             model->clear();
+
+            if (output->mSuggestions.size() > MAX_SUGGESTIONS)
+                output->mSuggestions.resize(MAX_SUGGESTIONS);
+
             model->addAuthors(std::move(output->mSuggestions), "");
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            setSearchSuggestedActorsInProgress(false);
+            auto* model = getSearchSuggestedUsersModel();
+            model->setGetFeedInProgress(false);
+
             qDebug() << "getSuggestedFollows failed:" << error << " - " << msg;
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -541,21 +539,22 @@ void SearchUtils::getSuggestedFollows(const QString& user)
 void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
 {
     qDebug() << "Search feeds:" << text << "cursor:" << cursor;
+    auto& model = *getSearchFeedsModel();
 
-    if (mSearchFeedsInProgress)
+    if (model.isGetFeedInProgress())
     {
         qDebug() << "Search feeds still in progress";
         return;
     }
 
-    setSearchFeedsInProgress(true);
+    model.setGetFeedInProgress(true);
     bskyClient()->getPopularFeedGenerators(text, 20, Utils::makeOptionalString(cursor),
         [this, presence=getPresence(), cursor](auto output){
             if (!presence)
                 return;
 
-            setSearchFeedsInProgress(false);
             auto& model = *getSearchFeedsModel();
+            model.setGetFeedInProgress(false);
 
             if (cursor.isEmpty())
                 model.clear();
@@ -566,7 +565,9 @@ void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
             if (!presence)
                 return;
 
-            setSearchFeedsInProgress(false);
+            auto& model = *getSearchFeedsModel();
+            model.setGetFeedInProgress(false);
+
             qDebug() << "searchFeeds failed:" << error << " - " << msg;
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
@@ -575,14 +576,14 @@ void SearchUtils::searchFeeds(const QString& text, const QString& cursor)
 Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
 {
     qDebug() << "Get next page search feeds:" << text;
+    auto& model = *getSearchFeedsModel();
 
-    if (mSearchFeedsInProgress)
+    if (model.isGetFeedInProgress())
     {
         qDebug() << "Search feeds still in progress";
         return;
     }
 
-    auto& model = *getSearchFeedsModel();
     const auto& cursor = model.getCursor();
 
     if (cursor.isEmpty())
@@ -592,6 +593,74 @@ Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
     }
 
     searchFeeds(text, cursor);
+}
+
+void SearchUtils::getSuggestedFeeds()
+{
+    qDebug() << "Get suggested feeds";
+    auto& model = *getSuggestedFeedsModel();
+
+    if (model.isGetFeedInProgress())
+    {
+        qDebug() << "Search feeds still in progress";
+        return;
+    }
+
+    model.setGetFeedInProgress(true);
+    bskyClient()->getSuggestedFeeds(MAX_SUGGESTIONS,
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedFeedsModel();
+            model.setGetFeedInProgress(false);
+            model.clear();
+            model.addFeeds(std::move(output->mFeeds), "");
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedFeedsModel();
+            model.setGetFeedInProgress(false);
+
+            qDebug() << "getSuggestedFeeds failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getSuggestedStarterPacks()
+{
+    qDebug() << "Get suggested starter packs";
+    auto& model = *getSuggestedStarterPacksModel();
+
+    if (model.isGetFeedInProgress())
+    {
+        qDebug() << "Search feeds still in progress";
+        return;
+    }
+
+    model.setGetFeedInProgress(true);
+    bskyClient()->getSuggestedStarterPacks(MAX_SUGGESTIONS,
+        [this, presence=getPresence()](auto output){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedStarterPacksModel();
+            model.setGetFeedInProgress(false);
+            model.clear();
+            model.addStarterPacks(std::move(output->mStarterPacks), "");
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            auto& model = *getSuggestedStarterPacksModel();
+            model.setGetFeedInProgress(false);
+
+            qDebug() << "getSuggestedStarterPacks failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
 }
 
 SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrder)
@@ -647,35 +716,64 @@ FeedListModel* SearchUtils::getSearchFeedsModel()
     return mSkywalker->getFeedListModel(mSearchFeedsModelId);
 }
 
+FeedListModel* SearchUtils::getSuggestedFeedsModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSuggestedFeedsModelId < 0)
+        mSuggestedFeedsModelId = mSkywalker->createFeedListModel();
+
+    return mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
+}
+
+StarterPackListModel* SearchUtils::getSuggestedStarterPacksModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSuggestedStarterPacksModelId < 0)
+        mSuggestedStarterPacksModelId = mSkywalker->createStarterPackListModel();
+
+    return mSkywalker->getStarterPackListModel(mSuggestedStarterPacksModelId);
+}
+
 void SearchUtils::clearAllSearchResults()
 {
+    Q_ASSERT(mSkywalker);
     mAuthorTypeaheadList.clear();
 
     for (const auto& [_, modelId] : mSearchPostFeedModelId)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getSearchPostFeedModel(modelId);
         model->clear();
     }
 
     if (mSearchUsersModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getAuthorListModel(mSearchUsersModelId);
         model->clear();
     }
 
     if (mSearchSuggestedUsersModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getAuthorListModel(mSearchSuggestedUsersModelId);
         model->clear();
     }
 
     if (mSearchFeedsModelId >= 0)
     {
-        Q_ASSERT(mSkywalker);
         auto* model = mSkywalker->getFeedListModel(mSearchFeedsModelId);
+        model->clear();
+    }
+
+    if (mSuggestedFeedsModelId >= 0)
+    {
+        auto* model = mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
+        model->clear();
+    }
+
+    if (mSuggestedStarterPacksModelId >= 0)
+    {
+        auto* model = mSkywalker->getStarterPackListModel(mSuggestedStarterPacksModelId);
         model->clear();
     }
 }

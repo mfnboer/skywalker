@@ -22,11 +22,10 @@ SkyPage {
     footer: SkyFooter {
         timeline: root.getTimelineView()
         skywalker: page.skywalker
-        messagesActive: true
+        activePage: QEnums.UI_PAGE_MESSAGES
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: positionViewAtBeginning()
         onAddConvoClicked: addConvo()
         footerVisible: !root.showSideBar

@@ -46,6 +46,9 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
     if (page->mFirstHiddenReplyIndex != -1)
         mFeed.push_back(Post::createHiddenPosts());
 
+    if (!mFeed.empty())
+        mFeed.back().setEndOfFeed(true);
+
     endInsertRows();
 
     if (page->mFirstHiddenReplyIndex != -1)
@@ -105,8 +108,11 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
         }
     }
 
-    mFeed[index].removeThreadType(QEnums::THREAD_LEAF);
-    changeData({ int(Role::PostThreadType) });
+    auto& postBeforeInsert = mFeed[index];
+    postBeforeInsert.removeThreadType(QEnums::THREAD_LEAF);
+    postBeforeInsert.setEndOfFeed(false);
+    mFeed.back().setEndOfFeed(true);
+    changeData({ int(Role::PostThreadType), int(Role::EndOfFeed) });
 
     return true;
 }
@@ -201,6 +207,7 @@ void PostThreadModel::showHiddenReplies()
 
     beginInsertRows({}, mFeed.size(), newRowCount - 1);
     mFeed.insert(mFeed.end(), mHiddenRepliesFeed.begin(), mHiddenRepliesFeed.end());
+    mFeed.back().setEndOfFeed(true);
     endInsertRows();
 
     mHiddenRepliesFeed.clear();

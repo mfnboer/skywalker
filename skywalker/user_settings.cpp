@@ -1278,6 +1278,20 @@ void UserSettings::setShowTrendingTopics(bool show)
     }
 }
 
+bool UserSettings::getShowSuggestedFeeds() const
+{
+    return mSettings.value("showSuggestedFeeds", true).toBool();
+}
+
+void UserSettings::setShowSuggestedFeeds(bool show)
+{
+    if (show != getShowSuggestedFeeds())
+    {
+        mSettings.setValue("showSuggestedFeeds", show);
+        emit showSuggestedFeedsChanged();
+    }
+}
+
 bool UserSettings::getShowSuggestedUsers() const
 {
     return mSettings.value("showSuggestedUsers", true).toBool();
@@ -1289,6 +1303,20 @@ void UserSettings::setShowSuggestedUsers(bool show)
     {
         mSettings.setValue("showSuggestedUsers", show);
         emit showSuggestedUsersChanged();
+    }
+}
+
+bool UserSettings::getShowSuggestedStarterPacks() const
+{
+    return mSettings.value("showSuggestedStarterPacks", true).toBool();
+}
+
+void UserSettings::setShowSuggestedStarterPacks(bool show)
+{
+    if (show != getShowSuggestedStarterPacks())
+    {
+        mSettings.setValue("showSuggestedStarterPacks", show);
+        emit showSuggestedStarterPacksChanged();
     }
 }
 

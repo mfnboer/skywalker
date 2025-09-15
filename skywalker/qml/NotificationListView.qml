@@ -22,11 +22,10 @@ SkyPage {
     footer: SkyFooter {
         timeline: page.timeline
         skywalker: page.skywalker
-        notificationsActive: true
+        activePage: QEnums.UI_PAGE_NOTIFICATIONS
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: positionViewAtBeginning()
         onSearchClicked: root.viewSearchView()
-        onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
     }
@@ -87,17 +86,17 @@ SkyPage {
             onContentYChanged: {
                 const lastVisibleIndex = getLastVisibleIndex()
 
-                if (count - lastVisibleIndex < 15 && !skywalker.getNotificationsInProgress) {
+                if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
                     console.debug("Get next notification page")
                     skywalker.getNotificationsNextPage(false)
                 }
             }
 
             FlickableRefresher {
-                inProgress: skywalker.getNotificationsInProgress
+                inProgress: allList.model?.getFeedInProgress
                 topOvershootFun: () => {
-                    skywalker.getNotifications(50, true, false)
-                    skywalker.getNotifications(50, false, true)
+                    skywalker.getNotifications(25, true, false)
+                    skywalker.getNotifications(25, false, true)
                 }
                 bottomOvershootFun: () => skywalker.getNotificationsNextPage(false)
                 topText: qsTr("Pull down to refresh")
@@ -112,7 +111,7 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: skywalker.getNotificationsInProgress
+                running: allList.model?.getFeedInProgress
             }
 
             function doMoveToNotification(index) {
@@ -143,14 +142,14 @@ SkyPage {
             onContentYChanged: {
                 const lastVisibleIndex = getLastVisibleIndex()
 
-                if (count - lastVisibleIndex < 15 && !skywalker.getMentionsInProgress) {
+                if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
                     console.debug("Get next mentions page")
                     skywalker.getNotificationsNextPage(true)
                 }
             }
 
             FlickableRefresher {
-                inProgress: skywalker.getMentionsInProgress
+                inProgress: mentionList.model?.getFeedInProgress
                 topOvershootFun: () => {
                     skywalker.getNotifications(50, true, false)
                     skywalker.getNotifications(50, false, true)
@@ -168,7 +167,7 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: skywalker.getMentionsInProgress
+                running: mentionList.model?.getFeedInProgress
             }
 
             function doMoveToMention(index) {
@@ -210,6 +209,11 @@ SkyPage {
     }
 
     function moveToNotification(index, mentions) {
+        console.debug("Move to:", index, "mentionsOnly:", mentions)
+
+        if (index < 0)
+            return
+
         if (mentions)
             mentionList.moveToIndex(index, mentionList.doMoveToMention)
         else

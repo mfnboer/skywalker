@@ -18,6 +18,8 @@ class AuthorListModel : public QAbstractListModel,
                         public LocalAuthorModelChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+
 public:
     enum class Role {
         Author = Qt::UserRole + 1,
@@ -51,7 +53,7 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void clear();
+    Q_INVOKABLE void clear();
     void addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor);
     void addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
     void addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor);
@@ -65,6 +67,12 @@ public:
     const QString& getAtId() const { return mAtId; }
 
     std::vector<QString> getActiveFollowsDids(QString& cursor) const;
+
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
+signals:
+    void getFeedInProgressChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -97,6 +105,7 @@ private:
     std::vector<QString> mActiveFollowsDids;
 
     QString mCursor;
+    bool mGetFeedInProgress = false;
 };
 
 }

@@ -42,12 +42,12 @@ Drawer {
 
         Column {
             id: userColumn
-            width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 70
+            width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 80
             spacing: 5
 
             Column {
                 width: parent.width
-                spacing: 5
+                spacing: 3
 
                 Accessible.role: Accessible.StaticText
                 Accessible.name: `${user.name} @${user.handle}`
@@ -174,7 +174,7 @@ Drawer {
             SkyMenuItem {
                 id: userListsItem
                 icon: SvgOutline.list
-                text: qsTr("User Lists")
+                text: qsTr("User Lists & Feeds")
                 onClicked: userLists()
             }
 

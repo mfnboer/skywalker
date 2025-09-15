@@ -41,7 +41,7 @@ SkyPage {
 
     header: SearchHeader {
         minSearchTextLength: 0
-        placeHolderText: qsTr("Search posts or users")
+        placeHolderText: qsTr("Search posts, users or feeds")
         showBackButton: !root.showSideBar
         onBack: page.closed()
 
@@ -69,6 +69,11 @@ SkyPage {
         }
 
         onSearch: (text) => { searchUtils.search(text) }
+        onCleared: {
+            page.isTyping = false
+            currentText = ""
+            unfocus()
+        }
     }
 
     // Place footer explicitly on the bottom instead of using Page.footer
@@ -79,10 +84,10 @@ SkyPage {
         anchors.bottom: parent.bottom
         timeline: page.timeline
         skywalker: page.skywalker
-        searchActive: true
+        searchView: page
+        activePage: QEnums.UI_PAGE_SEARCH
         onHomeClicked: root.viewTimeline()
         onNotificationsClicked: root.viewNotifications()
-        onFeedsClicked: root.viewFeedsView()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
     }
@@ -126,7 +131,7 @@ SkyPage {
         rightPadding: page.margin
         visible: searchStack.visible
 
-        onCurrentIndexChanged: page.isPostSearch = (currentIndex !== tabUsers.TabBar.index)
+        onCurrentIndexChanged: page.isPostSearch = (currentIndex === tabTopPosts.TabBar.index || currentIndex === tabLatestPosts.TabBar.index)
 
         AccessibleTabButton {
             id: tabTopPosts
@@ -141,6 +146,11 @@ SkyPage {
         AccessibleTabButton {
             id: tabUsers
             text: qsTr("Users")
+            width: implicitWidth;
+        }
+        AccessibleTabButton {
+            id: tabFeeds
+            text: qsTr("Feeds")
             width: implicitWidth;
         }
 
@@ -270,13 +280,17 @@ SkyPage {
             }
 
             SwipeView.onIsCurrentItemChanged: {
-                if (!SwipeView.isCurrentItem)
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                } else {
                     cover()
+                }
             }
 
             FlickableRefresher {
                 inProgress: postsViewTop.model && postsViewTop.model.getFeedInProgress
-                topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
+                topOvershootFun:  () => parent.refreshSearch()
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
                 topText: qsTr("Pull down to refresh")
             }
@@ -285,12 +299,16 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewTop
-                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.TOP)
+                onRetry: parent.refreshSearch()
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
                 running: postsViewTop.model && postsViewTop.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.scopedRefreshSearchPosts(SearchSortOrder.TOP)
             }
         }
 
@@ -306,13 +324,17 @@ SkyPage {
             }
 
             SwipeView.onIsCurrentItemChanged: {
-                if (!SwipeView.isCurrentItem)
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                } else {
                     cover()
+                }
             }
 
             FlickableRefresher {
                 inProgress: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
-                topOvershootFun:  () => searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
+                topOvershootFun:  () => parent.refreshSearch()
                 bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
                 topText: qsTr("Pull down to refresh")
             }
@@ -321,12 +343,16 @@ SkyPage {
                 svg: SvgOutline.noPosts
                 text: qsTr("No posts found")
                 list: postsViewLatest
-                onRetry: searchUtils.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
+                onRetry: parent.refreshSearch()
             }
 
             BusyIndicator {
                 anchors.centerIn: parent
                 running: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
             }
         }
 
@@ -346,9 +372,16 @@ SkyPage {
                 onClicked: (profile) => searchUtils.addLastSearchedProfile(profile)
             }
 
+            SwipeView.onIsCurrentItemChanged: {
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                }
+            }
+
             FlickableRefresher {
-                inProgress: searchUtils.searchActorsInProgress
-                bottomOvershootFun: () => searchUtils.getNextPageSearchActors(header.getDisplayText())
+                inProgress: usersView.model && usersView.model.getFeedInProgress
+                bottomOvershootFun: () => searchUtils.getNextPageSearchActors(page.getSearchText())
             }
 
             EmptyListIndication {
@@ -359,7 +392,53 @@ SkyPage {
 
             BusyIndicator {
                 anchors.centerIn: parent
-                running: searchUtils.searchActorsInProgress
+                running: usersView.model && usersView.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.searchActors(page.getSearchText())
+            }
+        }
+
+        SkyListView {
+            id: feedListView
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
+            model: searchUtils.getSearchFeedsModel()
+            clip: true
+
+            Accessible.role: Accessible.List
+
+            delegate: GeneratorViewDelegate {
+                width: feedListView.width
+                onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+            }
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                }
+            }
+
+            FlickableRefresher {
+                inProgress: feedListView.model && feedListView.model.getFeedInProgress
+                bottomOvershootFun: () => searchUtils.getNextPageSearchFeeds(page.getSearchText())
+            }
+
+            EmptyListIndication {
+                svg: SvgOutline.noPosts
+                text: qsTr("No feeds found")
+                list: feedListView
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: feedListView.model && feedListView.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.searchFeeds(page.getSearchText())
             }
         }
     }
@@ -368,7 +447,8 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         width: parent.width
-        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus || (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers)) ?
+        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus ||
+                       (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers && !userSettings.showSuggestedFeeds && !userSettings.showSuggestedStarterPacks)) ?
                 recentSearchesView.StackLayout.index :
                 suggestionsView.StackLayout.index
         visible: !currentText
@@ -379,15 +459,52 @@ SkyPage {
         }
 
         Flickable {
+            property int lastMovementY: 0
+
             id: suggestionsView
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             clip: true
             contentWidth: page.width
-            contentHeight: suggestedUsersView.y + suggestedUsersView.height
+            contentHeight: suggestedStarterPacksView.y + suggestedStarterPacksView.height
             flickableDirection: Flickable.VerticalFlick
             boundsBehavior: Flickable.StopAtBounds
-            interactive: trendingTopicsColumn.visible && contentY < trendingTopicsColumn.y + trendingTopicsColumn.height
+            interactive: true
+
+            onVisibleChanged: {
+                // Restore last scroll position when view becomes visible again
+                if (visible) {
+                    // Delay by few ms to let the complete view render first
+                    restorePositionTimer.run(lastMovementY)
+                }
+            }
+
+            onMovementEnded: {
+                lastMovementY = contentY
+            }
+
+            function resetPosition() {
+                lastMovementY = 0
+                contentY = 0
+            }
+
+            Timer {
+                property int restoreY: 0
+
+                id: restorePositionTimer
+                interval: 10
+                onTriggered: {
+                    if (restoreY <= suggestionsView.contentHeight)
+                        suggestionsView.contentY = restoreY
+                    else
+                        suggestionsView.lastMovementY = suggestionsView.contentY
+                }
+
+                function run(posY) {
+                    restoreY = posY
+                    start()
+                }
+            }
 
             AccessibleText {
                 id: trendingTopicsText
@@ -502,19 +619,60 @@ SkyPage {
             }
 
             SkyListView {
-                id: suggestedUsersView
+                id: suggestedFeedsView
                 anchors.top: trendingTopicsColumn.visible ? trendingTopicsColumn.bottom : parent.top
                 width: suggestionsView.width
-                height: visible ? suggestionsView.height : 0
+                height: visible ? contentHeight : 0
+                model: searchUtils.getSuggestedFeedsModel()
+                clip: true
+                interactive: false
+                visible: userSettings.showSuggestedFeeds
+
+                Accessible.role: Accessible.List
+
+                header: AccessibleText {
+                    width: parent.width
+                    padding: 10
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(9/8)
+                    text: qsTr("Suggested feeds")
+
+                    SvgButton {
+                        anchors.right: parent.right
+                        width: height
+                        height: parent.height
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("disable suggested feeds")
+                        onPressed: {
+                            guiSettings.notice(page, qsTr("You can enable suggested feeds again in settings."))
+                            userSettings.showSuggestedFeeds = false
+                        }
+                    }
+                }
+
+                delegate: GeneratorViewDelegate {
+                    width: suggestedUsersView.width
+                    endOfFeed: false
+                    onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+                }
+
+                EmptyListIndication {
+                    y: header.height
+                    svg: SvgOutline.noPosts
+                    text: qsTr("No suggestions")
+                    list: suggestedFeedsView
+                }
+            }
+
+            SkyListView {
+                id: suggestedUsersView
+                anchors.top: suggestedFeedsView.bottom
+                width: suggestionsView.width
+                height: visible ? contentHeight : 0
                 model: searchUtils.getSearchSuggestedUsersModel()
                 clip: true
-                interactive: !suggestionsView.interactive
+                interactive: false
                 visible: userSettings.showSuggestedUsers
-
-                onVerticalOvershootChanged: {
-                    if (interactive && trendingTopicsColumn.visible)
-                        suggestionsView.contentY = y + verticalOvershoot
-                }
 
                 Accessible.role: Accessible.List
 
@@ -532,7 +690,7 @@ SkyPage {
                         svg: SvgOutline.close
                         accessibleName: qsTr("disable suggested accounts")
                         onPressed: {
-                            guiSettings.notice(page, qsTr("You can enable trending topics again in settings."))
+                            guiSettings.notice(page, qsTr("You can enable suggested accounts again in settings."))
                             userSettings.showSuggestedUsers = false
                         }
                     }
@@ -540,13 +698,9 @@ SkyPage {
 
                 delegate: AuthorViewDelegate {
                     width: suggestedUsersView.width
+                    endOfList: false
                     onFollow: (profile) => { graphUtils.follow(profile) }
                     onUnfollow: (did, uri) => { graphUtils.unfollow(did, uri) }
-                }
-
-                FlickableRefresher {
-                    inProgress: searchUtils.searchSuggestedActorsInProgress
-                    bottomOvershootFun: () => searchUtils.getNextPageSuggestedActors()
                 }
 
                 EmptyListIndication {
@@ -555,11 +709,65 @@ SkyPage {
                     text: qsTr("No suggestions")
                     list: suggestedUsersView
                 }
+            }
 
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: searchUtils.searchSuggestedActorsInProgress
+            SkyListView {
+                id: suggestedStarterPacksView
+                anchors.top: suggestedUsersView.bottom
+                width: suggestionsView.width
+                height: visible ? contentHeight : 0
+                model: searchUtils.getSuggestedStarterPacksModel()
+                clip: true
+                interactive: false
+                visible: userSettings.showSuggestedStarterPacks
+
+                Accessible.role: Accessible.List
+
+                header: AccessibleText {
+                    width: parent.width
+                    padding: 10
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(9/8)
+                    text: qsTr("Suggested starter packs")
+
+                    SvgButton {
+                        anchors.right: parent.right
+                        width: height
+                        height: parent.height
+                        svg: SvgOutline.close
+                        accessibleName: qsTr("disable suggested starter packs")
+                        onPressed: {
+                            guiSettings.notice(page, qsTr("You can enable suggested starter packs again in settings."))
+                            userSettings.showSuggestedStarterPacks = false
+                        }
+                    }
                 }
+
+                delegate: StarterPackViewDelegate {
+                    width: suggestedUsersView.width
+                }
+
+                EmptyListIndication {
+                    y: header.height
+                    svg: SvgOutline.noLists
+                    text: qsTr("No suggestions")
+                    list: suggestedStarterPacksView
+                }
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: suggestedFeedsView.model && suggestedFeedsView.model.getFeedInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: suggestedUsersView.model && suggestedUsersView.model.getFeedInProgress
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: suggestedStarterPacksView.model && suggestedStarterPacksView.model.getFeedInProgress
             }
         }
 
@@ -753,15 +961,18 @@ SkyPage {
 
         function search(query) {
             page.isTyping = false
+            page.resetSearch()
 
             if (query.length > 0) {
-                searchUtils.addLastSearch(query)
-                scopedSearchPosts(query)
-                searchUtils.searchActors(query)
+                if (searchStack.currentItem)
+                    searchStack.currentItem.refreshSearch()
             }
             else {
                 currentText = "*"
-                scopedSearchPosts("*")
+                // scopedSearchPosts("*")
+
+                if (searchStack.currentItem)
+                    searchStack.currentItem.refreshSearch()
             }
         }
 
@@ -769,23 +980,21 @@ SkyPage {
             if (query.length === 0)
                 return
 
-            if (query === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
-                return
-
-            searchPosts(query, SearchSortOrder.TOP, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
-            searchPosts(query, SearchSortOrder.LATEST, postAuthorUser, postMentionsUser,
-                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
+            scopedRefreshSearchPosts(SearchSortOrder.TOP)
+            scopedRefreshSearchPosts(SearchSortOrder.LATEST)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(header.getDisplayText(), sortOrder, postAuthorUser,
+            getNextPageSearchPosts(currentText, sortOrder, postAuthorUser,
                                    postMentionsUser, postSince, postSetSince,
                                    postUntil, postSetUntil, postLanguage)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
-            searchPosts(header.getDisplayText(), sortOrder, postAuthorUser, postMentionsUser,
+            if (currentText === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
+                return
+
+            searchPosts(currentText, sortOrder, postAuthorUser, postMentionsUser,
                         postSince, postSetSince, postUntil, postSetUntil, postLanguage)
         }
 
@@ -806,9 +1015,25 @@ SkyPage {
             getTrendingTopics()
         }
 
+        function suggestFeeds() {
+            if (!userSettings.showSuggestedFeeds)
+                return
+
+            getSuggestedFeeds()
+        }
+
+        function suggestStarterPacks() {
+            if (!userSettings.showSuggestedStarterPacks)
+                return
+
+            getSuggestedStarterPacks()
+        }
+
         function getSuggestions() {
             suggestUsers()
             suggestTrendingTopics()
+            suggestFeeds()
+            suggestStarterPacks()
         }
 
         Component.onDestruction: {
@@ -816,6 +1041,11 @@ SkyPage {
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
         }
+    }
+
+    FeedUtils {
+        id: feedUtils
+        skywalker: page.skywalker // qmllint disable missing-type
     }
 
     GraphUtils {
@@ -965,8 +1195,16 @@ SkyPage {
                     })
     }
 
+    function resetSearch() {
+        feedListView.model.clear()
+        usersView.model.clear()
+        postsViewTop.model.clear()
+        postsViewLatest.model.clear()
+    }
+
     function forceDestroy() {
         searchUtils.clearAllSearchResults()
+        feedListView.model = null
         usersView.model = null
         postsViewTop.model = null
         postsViewLatest.model = null
@@ -1018,11 +1256,16 @@ SkyPage {
             searchUtils.suggestTrendingTopics()
         }
 
-        if (userSettings.showSuggestedUsers)
+        if (userSettings.showSuggestedUsers || userSettings.showSuggestedFeeds || userSettings.showSuggestedStarterPacks)
             firstSearch = false
+
+        suggestionsView.resetPosition()
     }
 
     Component.onCompleted: {
+        userSettings.onShowSuggestedUsersChanged.connect(() => { if (userSettings.showSuggestedUsers) firstSearch = true })
+        userSettings.onShowSuggestedFeedsChanged.connect(() => { if (userSettings.showSuggestedFeeds) firstSearch = true })
+        userSettings.onShowSuggestedStarterPacksChanged.connect(() => { if (userSettings.showSuggestedStarterPacks) firstSearch = true })
         searchUtils.initLastSearchedProfiles()
     }
 }
