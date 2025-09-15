@@ -1032,13 +1032,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: skywalker.getStarterPackListInProgress
+                        inProgress: authorStarterPackList.model?.getFeedInProgress
                         bottomOvershootFun: () => getStarterPackListNextPage(starterPackListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: skywalker.getStarterPackListInProgress
+                        running: authorStarterPackList.model?.getFeedInProgress
                     }
 
                     EmptyListIndication {

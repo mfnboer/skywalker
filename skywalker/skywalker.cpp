@@ -1627,12 +1627,6 @@ void Skywalker::setGetListListInProgress(bool inProgress)
     emit getListListInProgressChanged();
 }
 
-void Skywalker::setGetStarterPackListInProgress(bool inProgress)
-{
-    mGetStarterPackListInProgress = inProgress;
-    emit getStarterPackListInProgressChanged();
-}
-
 void Skywalker::setUnreadNotificationCount(int unread)
 {
     const int totalUnread = unread + mNotificationListModel.getUnreadCount();
@@ -2527,12 +2521,6 @@ void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QStri
     Q_ASSERT(mBsky);
     qDebug() << "Get author starter pack list:" << id << "did:" << did << "cursor:" << cursor;
 
-    if (mGetStarterPackListInProgress)
-    {
-        qDebug() << "Get author starter pack list still in progress";
-        return;
-    }
-
     const auto* model = mStarterPackListModels.get(id);
     Q_ASSERT(model);
 
@@ -2542,23 +2530,35 @@ void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QStri
         return;
     }
 
-    setGetStarterPackListInProgress(true);
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author starter pack list still in progress";
+        return;
+    }
+
+    (*model)->setGetFeedInProgress(true);
     mBsky->getActorStarterPacks(did, {}, Utils::makeOptionalString(cursor),
         [this, id, cursor](auto output){
-            setGetStarterPackListInProgress(false);
             const auto* model = mStarterPackListModels.get(id);
 
             if (!model)
                 return; // user has closed the view
+
+            (*model)->setGetFeedInProgress(false);
 
             if (cursor.isEmpty())
                 (*model)->clear();
 
             (*model)->addStarterPacks(std::move(output->mStarterPacks), output->mCursor.value_or(""));
         },
-        [this](const QString& error, const QString& msg){
-            setGetStarterPackListInProgress(false);
+        [this, id](const QString& error, const QString& msg){
             qDebug() << "getActorStarterPacks failed:" << error << " - " << msg;
+
+            const auto* model = mStarterPackListModels.get(id);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -2567,18 +2567,18 @@ void Skywalker::getAuthorStarterPackListNextPage(const QString& did, int id)
 {
     qDebug() << "Get author starter pack list next page:" << id << "did:" << did;
 
-    if (mGetStarterPackListInProgress)
-    {
-        qDebug() << "Get author feed list still in progress";
-        return;
-    }
-
     const auto* model = mStarterPackListModels.get(id);
     Q_ASSERT(model);
 
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author starter pack list still in progress";
         return;
     }
 
