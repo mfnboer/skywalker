@@ -1100,13 +1100,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: skywalker.getListListInProgress
+                        inProgress: authorListList.model?.getFeedInProgress
                         bottomOvershootFun: () => getListListNextPage(listListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: skywalker.getListListInProgress
+                        running: authorListList.model?.getFeedInProgress
                     }
 
                     EmptyListIndication {

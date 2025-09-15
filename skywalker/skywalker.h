@@ -56,7 +56,6 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getDetailedProfileInProgress READ isGetDetailedProfileInProgress NOTIFY getDetailedProfileInProgressChanged FINAL)
-    Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
     Q_PROPERTY(BasicProfile user READ getUser NOTIFY userChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(FavoriteFeeds* favoriteFeeds READ getFavoriteFeeds CONSTANT FINAL)
@@ -223,8 +222,6 @@ public:
     void incGetDetailedProfileInProgress();
     void decGetDetailedProfileInProgress();
     bool isGetDetailedProfileInProgress() const { return mGetDetailedProfileInProgress > 0; }
-    void setGetListListInProgress(bool inProgress);
-    bool isGetListListInProgress() const { return mGetListListInProgress; }
     const QString getAvatarUrl() const { return mUserProfile.getAvatarUrl(); }
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
@@ -276,7 +273,6 @@ signals:
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
     void getDetailedProfileOK(DetailedProfile);
-    void getListListInProgressChanged();
     void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
     void getStarterPackViewOk(StarterPackView starterPack);
     void getPostThreadInProgressChanged();
@@ -377,7 +373,6 @@ private:
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
-    bool mGetListListInProgress = false;
     bool mSignOutInProgress = false;
 
     QTimer mRefreshTimer;

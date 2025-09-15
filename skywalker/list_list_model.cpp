@@ -277,6 +277,14 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
     return filtered;
 }
 
+void ListListModel::setGetFeedInProgress(bool inProgress)
+{
+    if (inProgress != mGetFeedInProgress) {
+        mGetFeedInProgress = inProgress;
+        emit getFeedInProgressChanged();
+    }
+}
+
 QHash<int, QByteArray> ListListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{

@@ -1621,12 +1621,6 @@ void Skywalker::decGetDetailedProfileInProgress()
     emit getDetailedProfileInProgressChanged();
 }
 
-void Skywalker::setGetListListInProgress(bool inProgress)
-{
-    mGetListListInProgress = inProgress;
-    emit getListListInProgressChanged();
-}
-
 void Skywalker::setUnreadNotificationCount(int unread)
 {
     const int totalUnread = unread + mNotificationListModel.getUnreadCount();
@@ -3182,18 +3176,18 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
     Q_ASSERT(mBsky);
     qDebug() << "Get list list model:" << id << "cursor:" << cursor;
 
-    if (mGetListListInProgress)
-    {
-        qDebug() << "Get list list still in progress";
-        return;
-    }
-
     const auto* model = mListListModels.get(id);
     Q_ASSERT(model);
 
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get list list still in progress";
         return;
     }
 
@@ -3234,15 +3228,20 @@ void Skywalker::getListListAll(const QString& atId, QEnums::ListPurpose purpose,
         break;
     }
 
-    setGetListListInProgress(true);
+    auto* model = mListListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getLists(atId, filterPurpose, limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
-            setGetListListInProgress(false);
             qDebug() << "getListListAll succeeded, id:" << modelId;
             const auto* model = mListListModels.get(modelId);
 
             if (model)
             {
+                (*model)->setGetFeedInProgress(false);
+
                 if (cursor.isEmpty())
                     (*model)->clear();
 
@@ -3253,9 +3252,14 @@ void Skywalker::getListListAll(const QString& atId, QEnums::ListPurpose purpose,
                     getListListNextPage(modelId, limit, maxPages - 1, toAdd);
             }
         },
-        [this](const QString& error, const QString& msg){
-            setGetListListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getListListAll failed:" << error << " - " << msg;
+
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -3275,15 +3279,20 @@ void Skywalker::getListListWithMembershipAll(const QString& atId, QEnums::ListPu
         break;
     }
 
-    setGetListListInProgress(true);
+    auto* model = mListListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getListsWithMembership(atId, filterPurpose, limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
-            setGetListListInProgress(false);
             qDebug() << "getListListWithMembershipAll succeeded, id:" << modelId;
             const auto* model = mListListModels.get(modelId);
 
             if (model)
             {
+                (*model)->setGetFeedInProgress(false);
+
                 if (cursor.isEmpty())
                     (*model)->clear();
 
@@ -3294,23 +3303,33 @@ void Skywalker::getListListWithMembershipAll(const QString& atId, QEnums::ListPu
                     getListListNextPage(modelId, limit, maxPages - 1, toAdd);
             }
         },
-        [this](const QString& error, const QString& msg){
-            setGetListListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getListListWithMembershipAll failed:" << error << " - " << msg;
+
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
-    setGetListListInProgress(true);
+    auto* model = mListListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getListBlocks(limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
-            setGetListListInProgress(false);
             const auto* model = mListListModels.get(modelId);
 
             if (model)
             {
+                (*model)->setGetFeedInProgress(false);
+
                 if (cursor.isEmpty())
                     (*model)->clear();
 
@@ -3321,23 +3340,33 @@ void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const
                     getListListNextPage(modelId, limit, maxPages - 1, toAdd);
             }
         },
-        [this](const QString& error, const QString& msg){
-            setGetListListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getListListBlocks failed:" << error << " - " << msg;
+
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
-    setGetListListInProgress(true);
+    auto* model = mListListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getListMutes(limit, Utils::makeOptionalString(cursor),
         [this, modelId, limit, maxPages, minEntries, cursor](auto output){
-            setGetListListInProgress(false);
             const auto* model = mListListModels.get(modelId);
 
             if (model)
             {
+                (*model)->setGetFeedInProgress(false);
+
                 if (cursor.isEmpty())
                     (*model)->clear();
 
@@ -3348,9 +3377,14 @@ void Skywalker::getListListMutes(int limit, int maxPages, int minEntries, const 
                     getListListNextPage(modelId, limit, maxPages - 1, toAdd);
             }
         },
-        [this](const QString& error, const QString& msg){
-            setGetListListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getListListMutes failed:" << error << " - " << msg;
+
+            const auto* model = mListListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
