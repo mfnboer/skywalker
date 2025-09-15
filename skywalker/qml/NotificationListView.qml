@@ -86,7 +86,7 @@ SkyPage {
             onContentYChanged: {
                 const lastVisibleIndex = getLastVisibleIndex()
 
-                if (count - lastVisibleIndex < 15 && !model?.getFeedInProgress) {
+                if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
                     console.debug("Get next notification page")
                     skywalker.getNotificationsNextPage(false)
                 }
@@ -95,8 +95,8 @@ SkyPage {
             FlickableRefresher {
                 inProgress: allList.model?.getFeedInProgress
                 topOvershootFun: () => {
-                    skywalker.getNotifications(50, true, false)
-                    skywalker.getNotifications(50, false, true)
+                    skywalker.getNotifications(25, true, false)
+                    skywalker.getNotifications(25, false, true)
                 }
                 bottomOvershootFun: () => skywalker.getNotificationsNextPage(false)
                 topText: qsTr("Pull down to refresh")
@@ -142,7 +142,7 @@ SkyPage {
             onContentYChanged: {
                 const lastVisibleIndex = getLastVisibleIndex()
 
-                if (count - lastVisibleIndex < 15 && !model?.getFeedInProgress) {
+                if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
                     console.debug("Get next mentions page")
                     skywalker.getNotificationsNextPage(true)
                 }
