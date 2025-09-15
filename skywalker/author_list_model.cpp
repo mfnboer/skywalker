@@ -91,7 +91,7 @@ void AuthorListModel::clear()
         mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
 }
 
-void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor)
+void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor)
 {
     qDebug() << "Add authors:" << authors.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -103,7 +103,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewList authors,
     mList.insert(mList.end(), list.begin(), list.end());
     endInsertRows();
 
-    mRawLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewList>(authors));
+    mRawLists.push_back(std::forward<ATProto::AppBskyActor::ProfileView::List>(authors));
     qDebug() << "New list size:" << mList.size();
     setEndOfList();
 }
@@ -133,7 +133,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::Lis
     setEndOfList();
 }
 
-void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor)
+void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor)
 {
     qDebug() << "Add list item authors:" << listItems.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -150,7 +150,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemViewList listIte
 
     endInsertRows();
 
-    mRawItemLists.push_back(std::forward<ATProto::AppBskyGraph::ListItemViewList>(listItems));
+    mRawItemLists.push_back(std::forward<ATProto::AppBskyGraph::ListItemView::List>(listItems));
     qDebug() << "New list size:" << mList.size();
     setEndOfList();
 }
@@ -213,7 +213,7 @@ std::vector<QString> AuthorListModel::getActiveFollowsDids(QString& cursor) cons
     return std::vector<QString>{mActiveFollowsDids.begin() + startIndex, mActiveFollowsDids.begin() + endIndex};
 }
 
-AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const
+AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileView::List& authors) const
 {
     AuthorList list;
 

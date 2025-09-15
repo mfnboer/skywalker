@@ -332,7 +332,7 @@ void NotificationListModel::reportActivity(const Notification& notification) con
     mFollowsActivityStore->reportActivity(profile.getDid(), timestamp);
 }
 
-NotificationListModel::NotificationList NotificationListModel::createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const
+NotificationListModel::NotificationList NotificationListModel::createNotificationList(const ATProto::AppBskyNotification::Notification::List& rawList) const
 {
     NotificationList notifications;
     std::unordered_map<Notification::Reason, std::unordered_map<QString, int>> aggregate;

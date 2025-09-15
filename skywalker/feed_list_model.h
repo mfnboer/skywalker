@@ -45,7 +45,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     Q_INVOKABLE void clear();
-    void addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, const QString& cursor);
+    void addFeeds(ATProto::AppBskyFeed::GeneratorView::List feeds, const QString& cursor);
     Q_INVOKABLE void addFeeds(const GeneratorViewList& feeds);
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }

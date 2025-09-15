@@ -86,8 +86,8 @@ signals:
     void userOrderedPinnedFeedsChanged();
 
 private:
-    void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
-    void addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators);
+    void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorView::List&& generators);
+    void addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorView::List&& generators);
     void addToUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
     void removeFromUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
     void pinFeed(const GeneratorView& feed);
@@ -96,8 +96,8 @@ private:
     void unpinList(const ListView& list);
     void pinSearch(const SearchFeed& search);
     void unpinSearch(const SearchFeed& search);
-    void addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators);
-    void addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators);
+    void addSavedFeeds(ATProto::AppBskyFeed::GeneratorView::List&& savedGenerators);
+    void addPinnedFeeds(ATProto::AppBskyFeed::GeneratorView::List&& pinnedGenerators);
     void addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedPtr& pinnedList);
     void updateSavedViews();
     void updateSavedGeneratorViews();

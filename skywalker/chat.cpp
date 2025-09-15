@@ -233,7 +233,7 @@ void Chat::getConvosNextPage(QEnums::ConvoStatus status)
     getConvos(status, cursor);
 }
 
-QString Chat::getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatBskyConvo::ConvoViewList& convos)
+QString Chat::getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatBskyConvo::ConvoView::List& convos)
 {
     QString lastRev = "";
 

@@ -893,13 +893,13 @@ ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(Draft::Draf
     return replyRef;
 }
 
-ATProto::ComATProtoLabel::LabelList DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const
+ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const
 {
     if (!post.mLabels)
         return {};
 
     const QString userDid = mSkywalker->getUserDid();
-    ATProto::ComATProtoLabel::LabelList labels;
+    ATProto::ComATProtoLabel::Label::List labels;
 
     for (const auto& selfLabel : post.mLabels->mValues)
     {

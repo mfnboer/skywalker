@@ -78,7 +78,7 @@ void FeedListModel::clear()
     clearLocalProfileChanges();
 }
 
-void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorViewList feeds, const QString& cursor)
+void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorView::List feeds, const QString& cursor)
 {
     qDebug() << "Add feeds:" << feeds.size() << "cursor:" << cursor;
     mCursor = cursor;

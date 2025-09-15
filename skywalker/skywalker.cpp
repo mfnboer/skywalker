@@ -2969,7 +2969,7 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
                 return;
 
             (*model)->setGetFeedInProgress(false);
-            ATProto::AppBskyActor::ProfileViewList profileList;
+            ATProto::AppBskyActor::ProfileView::List profileList;
 
             for (const auto& like : output->mLikes)
                 profileList.push_back(std::move(like->mActor));

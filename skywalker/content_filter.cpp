@@ -279,7 +279,7 @@ QString ContentFilter::getWarning(const ContentLabel& label) const
 }
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(
-    const ATProto::ComATProtoLabel::LabelList& labels,
+    const ATProto::ComATProtoLabel::Label::List& labels,
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     const auto contentLabels = getContentLabels(labels);

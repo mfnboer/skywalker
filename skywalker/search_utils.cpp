@@ -165,7 +165,7 @@ void SearchUtils::setLastSearchedProfiles(const BasicProfileList& list)
     emit lastSearchedProfilesChanged();
 }
 
-void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher)
+void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasic::List& profileViewBasicList, const IProfileMatcher& matcher)
 {
     if (profileViewBasicList.empty())
         return;

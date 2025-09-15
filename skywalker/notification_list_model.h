@@ -179,7 +179,7 @@ protected:
 
 private:
     void reportActivity(const Notification& notification) const;
-    NotificationList createNotificationList(const ATProto::AppBskyNotification::NotificationList& rawList) const;
+    NotificationList createNotificationList(const ATProto::AppBskyNotification::Notification::List& rawList) const;
     void filterNotificationList(NotificationList& list) const;
     void addNotificationList(const NotificationList& list, bool clearFirst);
     void addConvoLastMessage(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& lastRev, const QString& userDid);

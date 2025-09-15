@@ -54,9 +54,9 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     Q_INVOKABLE void clear();
-    void addAuthors(ATProto::AppBskyActor::ProfileViewList authors, const QString& cursor);
+    void addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor);
     void addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
-    void addAuthors(ATProto::AppBskyGraph::ListItemViewList listItems, const QString& cursor);
+    void addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor);
     Q_INVOKABLE void prependAuthor(const Profile& author, const QString& listItemUri);
     Q_INVOKABLE void deleteEntry(int index);
 
@@ -88,7 +88,7 @@ private:
     using AuthorList = std::deque<ListEntry>;
 
     void setEndOfList();
-    AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileViewList& authors) const;
+    AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileView::List& authors) const;
     void changeData(const QList<int>& roles) override;
 
     Type mType;
@@ -99,9 +99,9 @@ private:
     const ContentFilter& mContentFilter;
 
     AuthorList mList;
-    std::deque<ATProto::AppBskyActor::ProfileViewList> mRawLists;
+    std::deque<ATProto::AppBskyActor::ProfileView::List> mRawLists;
     std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
-    std::deque<ATProto::AppBskyGraph::ListItemViewList> mRawItemLists;
+    std::deque<ATProto::AppBskyGraph::ListItemView::List> mRawItemLists;
     std::vector<QString> mActiveFollowsDids;
 
     QString mCursor;

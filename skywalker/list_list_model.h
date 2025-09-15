@@ -58,7 +58,7 @@ public:
     Q_INVOKABLE void clear();
 
     // Returns the number of lists added
-    int addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor);
+    int addLists(ATProto::AppBskyGraph::ListView::List lists, const QString& cursor);
     int addLists(ATProto::AppBskyGraph::ListWithMembership::List listsWithMembership, const QString& cursor);
 
     void addLists(const QList<ListView>& lists);
@@ -109,7 +109,7 @@ private:
     void listPinnedChanged();
     void changeData(const QList<int>& roles) override;
 
-    ListList filterLists(ATProto::AppBskyGraph::ListViewList lists) const;
+    ListList filterLists(ATProto::AppBskyGraph::ListView::List lists) const;
 
     Type mType;
     Purpose mPurpose;

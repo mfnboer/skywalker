@@ -94,7 +94,7 @@ signals:
     void overrideAdultVisibilityChanged();
 
 private:
-    void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasicList& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
+    void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasic::List& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
     void localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher = AnyProfileMatcher{});
     QString preProcessSearchText(const QString& text) const;
     TrendingTopicListModel& createTrendingTopicsListModel();

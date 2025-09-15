@@ -100,7 +100,7 @@ void ListListModel::clear()
     clearLocalProfileChanges();
 }
 
-int ListListModel::addLists(ATProto::AppBskyGraph::ListViewList lists, const QString& cursor)
+int ListListModel::addLists(ATProto::AppBskyGraph::ListView::List lists, const QString& cursor)
 {
     qDebug() << "Add lists:" << lists.size() << "cursor:" << cursor;
     Q_ASSERT(mMemberCheckDid.isEmpty());
@@ -129,7 +129,7 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListWithMembership::List list
     qDebug() << "Add lists with membership:" << listsWithMembership.size() << "cursor:" << cursor;
     Q_ASSERT(!mMemberCheckDid.isEmpty());
     mCursor = cursor;
-    ATProto::AppBskyGraph::ListViewList lists;
+    ATProto::AppBskyGraph::ListView::List lists;
     lists.reserve(listsWithMembership.size());
 
     for (const auto& list : listsWithMembership)
@@ -250,7 +250,7 @@ ListView ListListModel::getEntry(int index) const
     return mLists[index];
 }
 
-ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListViewList lists) const
+ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListView::List lists) const
 {
     ListList filtered;
 

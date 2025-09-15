@@ -30,7 +30,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void clear();
-    void addConvos(const ATProto::ChatBskyConvo::ConvoViewList& convos, const QString& cursor);
+    void addConvos(const ATProto::ChatBskyConvo::ConvoView::List& convos, const QString& cursor);
     void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void insertConvo(const ConvoView& convo);

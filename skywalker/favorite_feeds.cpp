@@ -143,19 +143,19 @@ void FavoriteFeeds::initUserOrderedPinnedFeeds()
     saveUserOrderedPinnedFeeds();
 }
 
-void FavoriteFeeds::addSavedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& savedGenerators)
+void FavoriteFeeds::addSavedFeeds(ATProto::AppBskyFeed::GeneratorView::List&& savedGenerators)
 {
     qDebug() << "Add saved feeds:" << savedGenerators.size();
-    addFeeds(mSavedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(savedGenerators));
+    addFeeds(mSavedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorView::List>(savedGenerators));
 
     if (!mSavedFeeds.empty())
         updateSavedFeedsModel();
 }
 
-void FavoriteFeeds::addPinnedFeeds(ATProto::AppBskyFeed::GeneratorViewList&& pinnedGenerators)
+void FavoriteFeeds::addPinnedFeeds(ATProto::AppBskyFeed::GeneratorView::List&& pinnedGenerators)
 {
     qDebug() << "Add pinned feeds:" << pinnedGenerators.size();
-    addFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorViewList>(pinnedGenerators));
+    addFeeds(mPinnedFeeds, std::forward<ATProto::AppBskyFeed::GeneratorView::List>(pinnedGenerators));
     emit pinnedFeedsChanged();
 }
 
@@ -170,7 +170,7 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     emit pinnedFeedsChanged();
 }
 
-void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
+void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorView::List&& generators)
 {
     for (auto& gen : generators)
     {
@@ -180,7 +180,7 @@ void FavoriteFeeds::addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::
     }
 }
 
-void FavoriteFeeds::addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorViewList&& generators)
+void FavoriteFeeds::addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorView::List&& generators)
 {
     for (auto& gen : generators)
     {

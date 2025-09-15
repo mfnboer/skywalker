@@ -46,7 +46,7 @@ void StarterPackListModel::clear()
     mCursor.clear();
 }
 
-void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasicList starterPacks, const QString& cursor)
+void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor)
 {
     _addStarterPacks(starterPacks, cursor);
 }

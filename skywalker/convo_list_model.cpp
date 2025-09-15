@@ -51,7 +51,7 @@ void ConvoListModel::clear()
     mCursor.clear();
 }
 
-void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoViewList& convos, const QString& cursor)
+void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoView::List& convos, const QString& cursor)
 {
     qDebug() << "Add convos:" << convos.size() << "cursor:" << cursor;
     mCursor = cursor;

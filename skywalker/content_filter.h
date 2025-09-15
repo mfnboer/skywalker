@@ -13,7 +13,7 @@ class IContentFilter
 {
 public:
     virtual ~IContentFilter() = default;
-    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels,
+    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::Label::List& labels,
                                                                                    std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
     virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels,
                                                                                    std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
@@ -58,7 +58,7 @@ public:
     QString getGroupWarning(const ContentGroup& group) const;
     QString getWarning(const ContentLabel& label) const;
 
-    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList& labels,
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::Label::List& labels,
                                                                            std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels,
                                                                            std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
@@ -97,7 +97,7 @@ private:
 class ContentFilterShowAll : public IContentFilter
 {
 public:
-    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::LabelList&, std::optional<QEnums::ContentVisibility> = {}) const override
+    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::Label::List&, std::optional<QEnums::ContentVisibility> = {}) const override
     {
         return {QEnums::CONTENT_VISIBILITY_SHOW, ""};
     }

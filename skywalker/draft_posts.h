@@ -116,7 +116,7 @@ private:
     ATProto::AppBskyFeed::Record::Post::SharedPtr createReplyToPost(const Draft::Draft& draft) const;
     ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::ReplyRef::SharedPtr createReplyRef(Draft::Draft& draft) const;
-    ATProto::ComATProtoLabel::LabelList createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
+    ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
     ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
         const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
