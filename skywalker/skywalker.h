@@ -56,7 +56,6 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getDetailedProfileInProgress READ isGetDetailedProfileInProgress NOTIFY getDetailedProfileInProgressChanged FINAL)
-    Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
     Q_PROPERTY(bool getStarterPackListInProgress READ isGetStarterPackListInProgress NOTIFY getStarterPackListInProgressChanged FINAL)
     Q_PROPERTY(BasicProfile user READ getUser NOTIFY userChanged FINAL)
@@ -225,8 +224,6 @@ public:
     void incGetDetailedProfileInProgress();
     void decGetDetailedProfileInProgress();
     bool isGetDetailedProfileInProgress() const { return mGetDetailedProfileInProgress > 0; }
-    void setGetAuthorListInProgress(bool inProgress);
-    bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     void setGetListListInProgress(bool inProgress);
     bool isGetListListInProgress() const { return mGetListListInProgress; }
     void setGetStarterPackListInProgress(bool inProgress);
@@ -282,7 +279,6 @@ signals:
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
     void getDetailedProfileOK(DetailedProfile);
-    void getAuthorListInProgressChanged();
     void getListListInProgressChanged();
     void getStarterPackListInProgressChanged();
     void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
@@ -385,7 +381,6 @@ private:
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
-    bool mGetAuthorListInProgress = false;
     bool mGetListListInProgress = false;
     bool mGetStarterPackListInProgress = false;
     bool mSignOutInProgress = false;

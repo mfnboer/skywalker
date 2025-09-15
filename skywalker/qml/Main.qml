@@ -1786,6 +1786,13 @@ ApplicationWindow {
             skywalker.getNotifications(loadCount, true, false, true)
             skywalker.getNotifications(loadCount, false, true, true)
         }
+        else {
+            if (skywalker.notificationListModel.rowCount() === 0)
+                skywalker.getNotifications(10, false, false)
+
+            if (skywalker.mentionListModel.rowCount() === 0)
+                skywalker.getNotifications(10, false, true)
+        }
     }
 
     function viewChat() {

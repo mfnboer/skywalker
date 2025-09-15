@@ -1621,12 +1621,6 @@ void Skywalker::decGetDetailedProfileInProgress()
     emit getDetailedProfileInProgressChanged();
 }
 
-void Skywalker::setGetAuthorListInProgress(bool inProgress)
-{
-    mGetAuthorListInProgress = inProgress;
-    emit getAuthorListInProgressChanged();
-}
-
 void Skywalker::setGetListListInProgress(bool inProgress)
 {
     mGetListListInProgress = inProgress;
@@ -2689,21 +2683,30 @@ void Skywalker::getLabelersAuthorList(int modelId)
         return;
     }
 
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getProfiles(labelers,
         [this, modelId](auto profileDetailedList){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
             {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->clear();
                 (*model)->addAuthors(std::move(profileDetailedList), "");
             }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getLabelersAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -2729,160 +2732,249 @@ void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
         return;
     }
 
-    setGetAuthorListInProgress(true);
+    (*model)->setGetFeedInProgress(true);
     mBsky->getProfiles(dids,
         [this, modelId, nextCursor](auto profileDetailedList){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(profileDetailedList), nextCursor);
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getActiveFollowsAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getFollows(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mFollows), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getFollowsAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getFollowers(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mFollowers), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getFollowersAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getKnownFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getKnownFollowers(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mFollowers), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getKnownFollowersAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getBlocks(limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mBlocks), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getBlocksAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getMutes(limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mMutes), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getMutesAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getActivitySubscriptionsAuthorList(int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->listActivitySubscriptions(limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mSubscriptions), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getActivitySubscriptionsAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int modelId)
 {
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
-    setGetAuthorListInProgress(true);
+
     mBsky->getSuggestions(limit, Utils::makeOptionalString(cursor), langs,
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mActors), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getSuggestionsAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getLikes(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (!model)
                 return;
 
+            (*model)->setGetFeedInProgress(false);
             ATProto::AppBskyActor::ProfileViewList profileList;
 
             for (const auto& like : output->mLikes)
@@ -2890,47 +2982,71 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
 
             (*model)->addAuthors(std::move(profileList), output->mCursor.value_or(""));
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getLikesAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getRepostedBy(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
                 (*model)->addAuthors(std::move(output->mRepostedBy), output->mCursor.value_or(""));
+            }
         },
-        [this](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getRepostsAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
-    setGetAuthorListInProgress(true);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
     mBsky->getList(atId, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
-            setGetAuthorListInProgress(false);
             const auto* model = mAuthorListModels.get(modelId);
 
             if (!model)
                 return;
 
+            (*model)->setGetFeedInProgress(false);
             (*model)->addAuthors(std::move(output->mItems), output->mCursor.value_or(""));
         },
-        [this, atId](const QString& error, const QString& msg){
-            setGetAuthorListInProgress(false);
+        [this, atId, modelId](const QString& error, const QString& msg){
             qDebug() << "getListMembersAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
 
             // The muted reposts list may not have been created. Consider it as empty.
             if (atId != mUserSettings.getMutedRepostsListUri(mUserDid))
@@ -2943,18 +3059,18 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
     Q_ASSERT(mBsky);
     qDebug() << "Get author list model:" << id << "cursor:" << cursor;
 
-    if (mGetAuthorListInProgress)
-    {
-        qDebug() << "Get author list still in progress";
-        return;
-    }
-
     const auto* model = mAuthorListModels.get(id);
     Q_ASSERT(model);
 
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author list still in progress";
         return;
     }
 
@@ -3013,18 +3129,18 @@ void Skywalker::getAuthorListNextPage(int id)
 {
     qDebug() << "Get author list next page, model:" << id;
 
-    if (mGetAuthorListInProgress)
-    {
-        qDebug() << "Get author list still in progress";
-        return;
-    }
-
     const auto* model = mAuthorListModels.get(id);
     Q_ASSERT(model);
 
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author list still in progress";
         return;
     }
 
@@ -3964,7 +4080,6 @@ void Skywalker::signOut()
     setAutoUpdateTimelineInProgress(false);
     setGetTimelineInProgress(false);
     setGetPostThreadInProgress(false);
-    setGetAuthorListInProgress(false);
 
     mSignOutInProgress = false;
 
