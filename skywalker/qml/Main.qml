@@ -341,9 +341,6 @@ ApplicationWindow {
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
             skywalker.chat.getAllConvos()
-            skywalker.getNotifications(50, false, false)
-            skywalker.getNotifications(50, false, true)
-
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
             userSettings.updateLastSignInTimestamp(did)
@@ -490,12 +487,8 @@ ApplicationWindow {
                 "🥳")
         }
 
-        onUnreadNotificationCountChanged: {
-            if (unreadNotificationCount > 0 && rootContent.currentIndex !== rootContent.notificationIndex) {
-                const loadCount = Math.min(100, Math.max(50, unreadNotificationCount))
-                skywalker.getNotifications(loadCount, false, false)
-                skywalker.getNotifications(loadCount, false, true)
-            }
+        onUnreadNotificationsLoaded: (mentionsOnly, oldestUnreadIndex) => {
+            getNotificationView().moveToNotification(oldestUnreadIndex, mentionsOnly)
         }
 
         onAppPaused: {
@@ -639,14 +632,6 @@ ApplicationWindow {
             if (prevIndex === notificationIndex) {
                 skywalker.notificationListModel.updateRead()
                 skywalker.mentionListModel.updateRead()
-
-                // The unread notification count will be non-zero when new notifications came
-                // in when the notifications tab is open and the user did not refresh.
-                if (skywalker.unreadNotificationCount > 0) {
-                    const loadCount = Math.min(100, Math.max(50, skywalker.unreadNotificationCount))
-                    skywalker.getNotifications(loadCount, false, false)
-                    skywalker.getNotifications(loadCount, false, true)
-                }
             }
 
             prevIndex = currentIndex
@@ -1797,13 +1782,9 @@ ApplicationWindow {
         rootContent.currentIndex = rootContent.notificationIndex
 
         if (skywalker.unreadNotificationCount > 0) {
-            skywalker.updateNotificationsSeen()
-
-            const notificationIndex = skywalker.notificationListModel.getIndexOldestUnread()
-            getNotificationView().moveToNotification(notificationIndex, false)
-
-            const mentionIndex = skywalker.mentionListModel.getIndexOldestUnread()
-            getNotificationView().moveToNotification(mentionIndex, true)
+            const loadCount = Math.min(100, Math.max(10, skywalker.unreadNotificationCount))
+            skywalker.getNotifications(loadCount, true, false, true)
+            skywalker.getNotifications(loadCount, false, true, true)
         }
     }
 

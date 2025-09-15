@@ -141,6 +141,9 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
             emit dataChanged(index, index, { int(Role::EndOfList) });
         }
 
+        if (doneCb)
+            doneCb();
+
         return false;
     }
 
@@ -424,7 +427,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
 {
     if (uris.empty())
     {
-        cb();
+        if (cb)
+            cb();
+
         return;
     }
 
@@ -459,7 +464,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
         [cb](const QString& err, const QString& msg)
         {
             qWarning() << "Failed to get posts:" << err << " - " << msg;
-            cb();
+
+            if (cb)
+                cb();
         });
 }
 
@@ -986,6 +993,14 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
     qWarning() << "Uknown role requested:" << role;
     return {};
+}
+
+void NotificationListModel::setGetFeedInProgress(bool inProgress)
+{
+    if (inProgress != mGetFeedInProgress) {
+        mGetFeedInProgress = inProgress;
+        emit getFeedInProgressChanged();
+    }
 }
 
 QHash<int, QByteArray> NotificationListModel::roleNames() const

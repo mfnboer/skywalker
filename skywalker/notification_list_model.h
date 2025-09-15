@@ -21,6 +21,7 @@ class NotificationListModel : public QAbstractListModel,
                               public LocalProfileChanges
 {
     Q_OBJECT
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(bool priority READ getPriority NOTIFY priorityChanged FINAL)
 
 public:
@@ -135,14 +136,18 @@ public:
     void setNotificationsSeen(bool seen);
     Q_INVOKABLE void updateRead();
 
-    Q_INVOKABLE int getIndexOldestUnread() const;
+    int getIndexOldestUnread() const;
     const NotificationList& getNotifications() const { return mList; }
     QDateTime getTimestampLatestNotifcation() const;
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
 
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
 signals:
     void priorityChanged();
+    void getFeedInProgressChanged();
 
 protected:
     // LocalPostModelChanges
@@ -211,6 +216,7 @@ private:
     NotificationList mInviteCodeUsedNotifications;
     NotificationList mNewLabelsNotifications;
     bool mNotificationsSeen = false;
+    bool mGetFeedInProgress = false;
 };
 
 }

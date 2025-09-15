@@ -1621,18 +1621,6 @@ void Skywalker::decGetDetailedProfileInProgress()
     emit getDetailedProfileInProgressChanged();
 }
 
-void Skywalker::setGetNotificationsInProgress(bool inProgress)
-{
-    mGetNotificationsInProgress = inProgress;
-    emit getNotificationsInProgressChanged();
-}
-
-void Skywalker::setGetMentionsInProgress(bool inProgress)
-{
-    mGetMentionsInProgress = inProgress;
-    emit getMentionsInProgressChanged();
-}
-
 void Skywalker::setGetAuthorListInProgress(bool inProgress)
 {
     mGetAuthorListInProgress = inProgress;
@@ -2025,22 +2013,19 @@ void Skywalker::updateNotificationsSeen()
     setUnreadNotificationCount(0);
 }
 
-void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, const QString& cursor)
+void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, bool emitLoadedSignal, const QString& cursor)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get notifications:" << cursor << "mentionsOnly:" << mentionsOnly;
-    const bool progress = mentionsOnly ? mGetMentionsInProgress : mGetNotificationsInProgress;
+    auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
-    if (progress)
+    if (model.isGetFeedInProgress())
     {
         qDebug() << "Get notifications still in progress";
         return;
     }
 
-    if (mentionsOnly)
-        setGetMentionsInProgress(true);
-    else
-        setGetNotificationsInProgress(true);
+    model.setGetFeedInProgress(true);
 
     const auto reasons = mentionsOnly ?
         std::vector<ATProto::AppBskyNotification::NotificationReason>{
@@ -2050,25 +2035,26 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
         std::vector<ATProto::AppBskyNotification::NotificationReason>{};
 
     mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {}, reasons,
-        [this, mentionsOnly, cursor](auto ouput){
+        [this, mentionsOnly, emitLoadedSignal, cursor](auto ouput){
             const bool clearFirst = cursor.isEmpty();
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
-            model.addNotifications(std::move(ouput), *mBsky, clearFirst);
+            model.addNotifications(std::move(ouput), *mBsky, clearFirst,
+                [this, mentionsOnly, emitLoadedSignal]{
+                    auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
+                    model.setGetFeedInProgress(false);
 
-            if (mentionsOnly)
-                setGetMentionsInProgress(false);
-            else
-                setGetNotificationsInProgress(false);
+                    if (emitLoadedSignal)
+                    {
+                        const int oldestUnreadIndex = model.getIndexOldestUnread();
+                        emit unreadNotificationsLoaded(mentionsOnly, oldestUnreadIndex);
+                    }
+                });
         },
         [this, mentionsOnly](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
-
-            if (mentionsOnly)
-                setGetMentionsInProgress(false);
-            else
-                setGetNotificationsInProgress(false);
-
+            auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
+            model.setGetFeedInProgress(false);
             emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
@@ -2092,7 +2078,7 @@ void Skywalker::getNotificationsNextPage(bool mentionsOnly)
         return;
     }
 
-    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, mentionsOnly, cursor);
+    getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, mentionsOnly, false, cursor);
 }
 
 void Skywalker::getDetailedProfile(const QString& author)

@@ -56,8 +56,6 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(bool getTimelineInProgress READ isGetTimelineInProgress NOTIFY getTimeLineInProgressChanged FINAL)
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getDetailedProfileInProgress READ isGetDetailedProfileInProgress NOTIFY getDetailedProfileInProgressChanged FINAL)
-    Q_PROPERTY(bool getNotificationsInProgress READ isGetNotificationsInProgress NOTIFY getNotificationsInProgressChanged FINAL)
-    Q_PROPERTY(bool getMentionsInProgress READ isGetMentionsInProgress NOTIFY getMentionsInProgressChanged FINAL)
     Q_PROPERTY(bool getAuthorListInProgress READ isGetAuthorListInProgress NOTIFY getAuthorListInProgressChanged FINAL)
     Q_PROPERTY(bool getListListInProgress READ isGetListListInProgress NOTIFY getListListInProgressChanged FINAL)
     Q_PROPERTY(bool getStarterPackListInProgress READ isGetStarterPackListInProgress NOTIFY getStarterPackListInProgressChanged FINAL)
@@ -114,7 +112,7 @@ public:
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
     Q_INVOKABLE void updateNotificationsSeen();
-    Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, const QString& cursor = {});
+    Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
 
@@ -227,10 +225,6 @@ public:
     void incGetDetailedProfileInProgress();
     void decGetDetailedProfileInProgress();
     bool isGetDetailedProfileInProgress() const { return mGetDetailedProfileInProgress > 0; }
-    void setGetNotificationsInProgress(bool inProgress);
-    bool isGetNotificationsInProgress() const { return mGetNotificationsInProgress; }
-    void setGetMentionsInProgress(bool inProgress);
-    bool isGetMentionsInProgress() const { return mGetMentionsInProgress; }
     void setGetAuthorListInProgress(bool inProgress);
     bool isGetAuthorListInProgress() const { return mGetAuthorListInProgress; }
     void setGetListListInProgress(bool inProgress);
@@ -279,8 +273,6 @@ signals:
     void autoUpdateTimeLineInProgressChanged();
     void getTimeLineInProgressChanged();
     void getDetailedProfileInProgressChanged();
-    void getNotificationsInProgressChanged();
-    void getMentionsInProgressChanged();
     void sessionExpired(QString error);
     void getAuthorFeedOk(int modelId);
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
@@ -288,6 +280,7 @@ signals:
     void postThreadOk(int id, int postEntryIndex);
     void userChanged();
     void unreadNotificationCountChanged();
+    void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
     void getDetailedProfileOK(DetailedProfile);
     void getAuthorListInProgressChanged();
     void getListListInProgressChanged();
@@ -418,8 +411,6 @@ private:
     std::unique_ptr<Bookmarks> mBookmarks;
 
     int mGetDetailedProfileInProgress = 0;
-    bool mGetNotificationsInProgress = false;
-    bool mGetMentionsInProgress = false;
     int mUnreadNotificationCount = 0;
 
     HashtagIndex mUserHashtags;
