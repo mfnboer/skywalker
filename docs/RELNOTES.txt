@@ -4,6 +4,7 @@ next
 * Saved feeds are now "User Lists & Feeds"
 * Add suggested feeds and starter packs to the search page
 * Improve automatic text overflow into next post in thread
+* Removed floating navigation buttons
 * Bug fixes
 * Downgrade to Qt6.8.3
 

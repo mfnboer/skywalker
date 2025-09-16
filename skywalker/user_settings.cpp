@@ -933,9 +933,13 @@ void UserSettings::setFloatingNavigationButtons(bool floating)
     emit floatingNavigationButtonsChanged();
 }
 
+// TODO
+// Floating buttons do not play well with full screen margin settings.
+// Disabled for now.
 bool UserSettings::getFloatingNavigationButtons() const
 {
-    return mSettings.value("floatingNavButtons", false).toBool();
+    return false;
+    // return mSettings.value("floatingNavButtons", false).toBool();
 }
 
 void UserSettings::setShowFollowsActiveStatus(bool show)

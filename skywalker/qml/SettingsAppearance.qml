@@ -298,11 +298,12 @@ ColumnLayout {
         onCheckedChanged: userSettings.landscapeSideBar = checked
     }
 
-    AccessibleCheckBox {
-        text: qsTr("Floating navigation buttons")
-        checked: userSettings.floatingNavigationButtons
-        onCheckedChanged: userSettings.floatingNavigationButtons = checked
-    }
+    // TODO: see UserSettings::getFloatingNavigationButtons
+    // AccessibleCheckBox {
+    //     text: qsTr("Floating navigation buttons")
+    //     checked: userSettings.floatingNavigationButtons
+    //     onCheckedChanged: userSettings.floatingNavigationButtons = checked
+    // }
 
     AccessibleCheckBox {
         text: qsTr("Giant emoji")
