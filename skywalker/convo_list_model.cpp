@@ -55,7 +55,6 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoView::List& co
 {
     qDebug() << "Add convos:" << convos.size() << "cursor:" << cursor;
     mCursor = cursor;
-    changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
 
     if (convos.empty())
     {
@@ -77,6 +76,7 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoView::List& co
     }
 
     endInsertRows();
+    changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
     qDebug() << "New convos size:" << mConvos.size();
 }
 
@@ -162,6 +162,7 @@ void ConvoListModel::insertConvo(const ConvoView& convo)
     mConvoIdIndexMap[convo.getId()] = insertIndex;
     endInsertRows();
 
+    changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
     setUnreadCount(mUnreadCount + convo.getUnreadCount());
 }
 
@@ -253,6 +254,7 @@ void ConvoListModel::deleteConvo(const QString& convoId)
     }
 
     endRemoveRows();
+    changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
 }
 
 const ConvoView* ConvoListModel::getConvo(const QString& convoId) const

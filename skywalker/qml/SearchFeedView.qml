@@ -39,9 +39,6 @@ SkyListView {
     }
     headerPositioning: ListView.PullBackHeader
 
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
-
     delegate: PostFeedViewDelegate {
         width: feedView.width
     }
