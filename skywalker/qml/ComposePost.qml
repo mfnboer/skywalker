@@ -490,6 +490,7 @@ SkyPage {
                             if (threadAutoSplit && graphemeLength > maxLength) {
                                 // NOTE: there could be text in the preedit buffer.
                                 // Get the full text to get the preedit stuff too.
+                                Qt.inputMethod.commit()
                                 const fullText = postText.getFullText()
                                 console.debug("SPLIT:", index)
 
@@ -512,7 +513,8 @@ SkyPage {
                                     postUtils.identifyLanguage(textWithoutLinks, index)
 
                                     if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
-                                        threadPosts.addPost(index, parts[1].text, parts[1].embeddedLinks, moveCursor)
+                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
+                                        threadPosts.addPost(index, parts[1].text, parts[1].embeddedLinks, moveCursor, newCursorPosition)
                                     }
                                     else {
                                         // Prepend excess text to next post
@@ -928,8 +930,8 @@ SkyPage {
                     console.debug("REMOVED POST:", index)
                 }
 
-                function addPost(index, text = "", embeddedLinks = [], focus = true) {
-                    console.debug("ADD POST:", index)
+                function addPost(index, text = "", embeddedLinks = [], focus = true, newCursorPosition = -1) {
+                    console.debug("ADD POST:", index, "FOCUS:", focus, "CUR:", newCursorPosition)
 
                     if (count >= maxThreadPosts) {
                         console.warn("Maximum posts reached:", count)
@@ -950,14 +952,14 @@ SkyPage {
 
                     if (currentPostIndex === index && focus) {
                         currentPostIndex += 1
-                        focusTimer.start()
+                        focusTimer.startAndSetCursor(newCursorPosition)
                     }
                     else {
                         setCursorTimer.startSetCursor(currentPostIndex, oldCursorPosition)
                     }
 
                     if (text)
-                        setPostTextTimer.startSetText(text, embeddedLinks, index + 1)
+                        setPostTextTimer.startSetText(text, embeddedLinks, index + 1, newCursorPosition)
 
                     console.debug("ADDED POST:", index)
                 }
@@ -1841,12 +1843,16 @@ SkyPage {
     }
 
     Timer {
+        property int cursorPosition: -1
+
         id: focusTimer
         interval: 200
         onTriggered: {
             let postText = currentPostItem().getPostText()
 
-            if (!postText.text.startsWith("\n#")) // hashtag post
+            if (cursorPosition >= 0)
+                postText.cursorPosition = cursorPosition
+            else if (!postText.text.startsWith("\n#")) // hashtag post
                 postText.cursorPosition = postText.text.length
 
             if (Boolean(page.initialVideo)) {
@@ -1856,6 +1862,13 @@ SkyPage {
                 postText.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
                 postText.forceActiveFocus()
             }
+
+            cursorPosition = -1
+        }
+
+        function startAndSetCursor(cursorPosition = -1) {
+            focusTimer.cursorPosition = cursorPosition
+            start()
         }
     }
 
