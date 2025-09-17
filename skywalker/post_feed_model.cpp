@@ -668,7 +668,12 @@ int PostFeedModel::findFilteredPostFeedModel(FilteredPostFeedModel* postFeedMode
     return -1;
 }
 
-FilteredPostFeedModel::Ptr PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
+void PostFeedModel::deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
+{
+    removeFilteredPostFeedModel(postFeedModel);
+}
+
+FilteredPostFeedModel::Ptr PostFeedModel::removeFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel)
 {
     const int index = findFilteredPostFeedModel(postFeedModel);
 
@@ -725,7 +730,7 @@ void PostFeedModel::reorderFilteredPostFeedModels(const QList<FilteredPostFeedMo
 
     for (auto* model : models)
     {
-        auto deletedModel = deleteFilteredPostFeedModel(model);
+        auto deletedModel = removeFilteredPostFeedModel(model);
 
         if (deletedModel)
             deletedModel.release();

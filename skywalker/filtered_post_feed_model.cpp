@@ -15,13 +15,11 @@ FilteredPostFeedModel::FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                              const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    FilteredPostBaseModel(std::move(postFilter), userDid, following, mutedReposts,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
-    mPostFilter(std::move(postFilter)),
     mUnderlyingModel(underlyingModel)
 {
-    Q_ASSERT(mPostFilter);
 }
 
 QVariant FilteredPostFeedModel::getUnderlyingModel()
@@ -151,24 +149,6 @@ void FilteredPostFeedModel::removeTailPosts(const TimelineFeed& posts, size_t nu
             setCheckedTillTimestamp(post.getTimelineTimestamp());
             break;
         }
-    }
-}
-
-void FilteredPostFeedModel::setCheckedTillTimestamp(QDateTime timestamp)
-{
-    if (timestamp != mCheckedTillTimestamp)
-    {
-        mCheckedTillTimestamp = timestamp;
-        emit checkedTillTimestampChanged();
-    }
-}
-
- void FilteredPostFeedModel::setNumPostsChecked(int numPostsChecked)
-{
-    if (numPostsChecked != mNumPostsChecked)
-    {
-        mNumPostsChecked = numPostsChecked;
-        emit numPostsCheckedChanged();
     }
 }
 
