@@ -170,7 +170,7 @@ private:
     QJsonObject filteredPostFeedModelsToJson();
     int findFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel) const;
     int findFilteredPostFeedModelByFilter(IPostFilter* filter) const;
-    void  addFilteredPostFeedModelsFromJson(const QJsonObject& json);
+    void addFilteredPostFeedModelsFromJson(const QJsonObject& json);
     bool equalModels(QList<FilteredPostFeedModel*> models) const;
 
     bool getFeedHideReplies() const;

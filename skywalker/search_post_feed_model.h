@@ -1,8 +1,9 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
-
 #include "abstract_post_feed_model.h"
+#include "feed_pager.h"
+#include "filtered_search_post_feed_model.h"
 #include "muted_words.h"
 
 namespace Skywalker {
@@ -10,6 +11,8 @@ namespace Skywalker {
 class SearchPostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
+    Q_PROPERTY(QList<FilteredSearchPostFeedModel*> filteredPostFeedModels READ getFilteredPostFeedModels NOTIFY filteredPostFeedModelsChanged FINAL)
+
 public:
     using Ptr = std::unique_ptr<SearchPostFeedModel>;
 
@@ -20,24 +23,55 @@ public:
                         HashtagIndex& hashtags,
                         QObject* parent = nullptr);
 
+    Q_INVOKABLE bool isFilterModel() const { return false; }
+    Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
+
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
     int addFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
     Q_INVOKABLE void clear();
 
+    void setGetFeedInProgress(bool inProgress) override;
+    void setFeedError(const QString& error) override;
+    Q_INVOKABLE void getFeed(IFeedPager* pager);
+    Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
+
     const QString& getCursorNextPage() const { return mCursorNextPage; }
+
+    Q_INVOKABLE FilteredSearchPostFeedModel* addVideoFilter();
+    Q_INVOKABLE FilteredSearchPostFeedModel* addMediaFilter();
+    Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);
+    QList<FilteredSearchPostFeedModel*> getFilteredPostFeedModels() const;
+
+    void refreshAllData() override;
+    void refreshAllFilteredModels();
+    void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
+    void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
+
+signals:
+    void filteredPostFeedModelsChanged();
+    void firstPage();
+    void nextPage();
 
 private:
     struct Page
     {
         using Ptr = std::unique_ptr<Page>;
-        std::vector<Post> mFeed;
+        TimelineFeed mFeed;
         void addPost(const Post& post);
     };
 
     Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
+    void addPageToFilteredPostModels(const Page& page, int pageSize);
+    void clearFilteredPostModels();
+    void setEndOfFeedFilteredPostModels(bool endOfFeed);
+    FilteredSearchPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
+    FilteredSearchPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);
+    int findFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel) const;
 
     QString mCursorNextPage;
+
+    std::vector<FilteredSearchPostFeedModel::Ptr> mFilteredPostFeedModels;
 };
 
 }

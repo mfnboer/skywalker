@@ -38,6 +38,8 @@ public:
     void setNumPostsChecked(int numPostsChecked);
     int getNumPostsChecked() const { return mNumPostsChecked; }
 
+    QVariant data(const QModelIndex& index, int role) const override;
+
 signals:
     void checkedTillTimestampChanged();
     void numPostsCheckedChanged();

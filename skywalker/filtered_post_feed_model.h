@@ -41,8 +41,6 @@ public:
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
 
-    QVariant data(const QModelIndex& index, int role) const override;
-
 private:
     struct Page
     {

@@ -180,23 +180,6 @@ void FilteredPostFeedModel::getFeedNextPage(IFeedPager* pager)
         qWarning() << "No underlying model:" << getFeedName();
 }
 
-QVariant FilteredPostFeedModel::data(const QModelIndex& index, int role) const
-{
-    if (index.row() < 0 || index.row() >= (int)mFeed.size())
-        return {};
-
-    switch (Role(role))
-    {
-    case Role::PostType:
-        if (!mPostFilter->mustAddThread())
-            return QEnums::POST_STANDALONE;
-    default:
-        break;
-    }
-
-    return AbstractPostFeedModel::data(index, role);
-}
-
 void FilteredPostFeedModel::Page::addPost(const Post* post)
 {
     mFeed.push_back(post);

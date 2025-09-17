@@ -38,5 +38,21 @@ void FilteredPostBaseModel::setNumPostsChecked(int numPostsChecked)
     }
 }
 
+QVariant FilteredPostBaseModel::data(const QModelIndex& index, int role) const
+{
+    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+        return {};
+
+    switch (Role(role))
+    {
+    case Role::PostType:
+        if (!mPostFilter->mustAddThread())
+            return QEnums::POST_STANDALONE;
+    default:
+        break;
+    }
+
+    return AbstractPostFeedModel::data(index, role);
+}
 
 }

@@ -1896,7 +1896,10 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
         update(model.get());
 
     for (auto& [_, model] : mSearchPostFeedModels.items())
+    {
         update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
 
     for (auto& [_, model] : mPostFeedModels.items())
     {
@@ -1931,7 +1934,10 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
         update(model.get());
 
     for (auto& [_, model] : mSearchPostFeedModels.items())
+    {
         update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
 
     for (auto& [_, model] : mPostFeedModels.items())
     {
