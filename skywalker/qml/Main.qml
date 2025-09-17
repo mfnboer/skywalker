@@ -602,6 +602,11 @@ ApplicationWindow {
             else if (currentStackItem() instanceof ConvoListView)
                 currentStackItem().positionViewAtBeginning()
         }
+        onAddConvoClicked: {
+            if (currentStackItem() instanceof ConvoListView)
+                currentStackItem().addConvo()
+        }
+
         visible: showSideBar && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
     }
 

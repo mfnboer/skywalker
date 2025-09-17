@@ -28,7 +28,10 @@ Pane {
     }
 
     Flickable {
-        anchors.fill: parent
+        width: parent.width
+        anchors.top: parent.top
+        anchors.bottom: postButton.top
+        anchors.bottomMargin: 10
         clip: true
         contentWidth: parent.width
         contentHeight: sideBarColumn.height
@@ -377,6 +380,24 @@ Pane {
                 Accessible.onPressAction: clicked()
             }
         }
+    }
+
+    FooterPostButton {
+        id: postButton
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 20
+        width: 70
+        height: width
+
+        messagesActive: sideBar.messagesActive
+        hashtagSearch: sideBar.searchActive && rootItem instanceof SearchView && rootItem.isHashtagSearch
+        searchView: rootItem instanceof SearchView ? rootItem : null
+        authorView: rootItem instanceof AuthorView ? rootItem : null
+        postThreadView: rootItem instanceof PostThreadView ? rootItem : null
+        visible: isBasePage || rootItem instanceof AuthorView || rootItem instanceof PostThreadView
+
+        onAddConvoClicked: sideBar.addConvoClicked()
     }
 
     function getHomeSpeech() {

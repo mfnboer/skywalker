@@ -60,8 +60,9 @@ SkyPage {
     footer: DeadFooterMargin {
         PostButton {
             y: -height - 10
-            svg: (guiSettings.isUser(author) || author.hasInvalidHandle()) ? SvgOutline.chat : SvgOutline.atSign
+            svg: authorCanBeMentioned() ? SvgOutline.atSign : SvgOutline.chat
             overrideOnClicked: () => mentionPost()
+            visible: !root.showSideBar
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr(`post and mention ${author.name}`)
@@ -1358,6 +1359,10 @@ SkyPage {
 
     AccessibilityUtils {
         id: accessibilityUtils
+    }
+
+    function authorCanBeMentioned() {
+        return !guiSettings.isUser(author) && !author.hasInvalidHandle()
     }
 
     function subscribeActivity() {

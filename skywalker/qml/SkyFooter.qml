@@ -18,6 +18,7 @@ Rectangle {
     signal messagesClicked()
     signal addConvoClicked()
 
+    id: footer
     width: parent.width
     height: (visible && footerVisible) ? guiSettings.footerHeight : 0
     z: guiSettings.footerZLevel
@@ -55,33 +56,16 @@ Rectangle {
             Layout.fillWidth: true
             color: "transparent"
 
-            SvgButton {
-                topInset: 0
-                leftInset: 0
-                rightInset: 0
-                bottomInset: 0
+            FooterPostButton {
+                messagesActive: isMessagesActive()
+                hashtagSearch: isHashtagSearch()
+                searchView: footer.searchView
+
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: height
                 height: parent.height
-                svg: getSvg()
-                accessibleName: qsTr("create post")
 
-                onClicked: {
-                    if (isMessagesActive())
-                        addConvoClicked()
-                    else
-                        post()
-                }
-
-                function getSvg() {
-                    if (isMessagesActive())
-                        return SvgOutline.add
-
-                    if (isHashtagSearch())
-                        return SvgOutline.hashtag
-
-                    return SvgOutline.chat
-                }
+                onAddConvoClicked: footer.addConvoClicked()
             }
         }
 
@@ -111,13 +95,6 @@ Rectangle {
             return false
 
         return searchView.isHashtagSearch
-    }
-
-    function post() {
-        if (isHashtagSearch())
-            root.composePost("\n" + searchView.getSearchText())
-        else
-            root.composePost()
     }
 
     function getHomeSpeech() {
