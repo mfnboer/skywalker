@@ -228,7 +228,6 @@ ApplicationWindow {
         closeStartupStatus()
         getTimelineView().setInSync(postIndex, offsetY)
         skywalker.startTimelineAutoUpdate()
-        showLastViewedFeed()
     }
 
     function showLastViewedFeed() {
@@ -2203,6 +2202,7 @@ ApplicationWindow {
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
+        skywalker.favoriteFeeds.onInitialized.connect(showLastViewedFeed)
     }
 
     Component.onCompleted: {

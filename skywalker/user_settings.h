@@ -138,6 +138,10 @@ public:
     Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
     QStringList getFeedViewModeUris(const QString& did) const;
 
+    Q_INVOKABLE void setSearchFeedViewMode(const QString& did, const QString& searchQuery, QEnums::ContentMode mode);
+    Q_INVOKABLE QEnums::ContentMode getSearchFeedViewMode(const QString& did, const QString& searchQuery);
+    QStringList getSearchFeedViewModeSearchQueries(const QString& did) const;
+
     Q_INVOKABLE void setFeedHideReplies(const QString& did, const QString& feedUri, bool hide);
     Q_INVOKABLE bool getFeedHideReplies(const QString& did, const QString& feedUri) const;
     QStringList getFeedHideRepliesUris(const QString& did) const;
@@ -398,13 +402,16 @@ signals:
     void feedHideFollowingChanged(QString did, QString feedUri);
 
 private:
+    bool isValidKeyPart(const QString& keyPart) const;
     QString key(const QString& did, const QString& subkey) const;
+    QString key(const QString& did, const QString& subkey1, const QString& subkey2) const;
     QString uriKey(const QString& did, const QString& subkey, QString uri) const;
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
     void cleanup();
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;
+    QStringList getSearchFeedViewSearchQueries(const QString& did, const QString& feedKey) const;
 
     QSettings mSettings;
     PasswordEncryption mEncryption;

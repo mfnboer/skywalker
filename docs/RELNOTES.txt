@@ -3,6 +3,7 @@ next
 * Move feeds search into the regular search
 * Saved feeds are now "User Lists & Feeds"
 * Add suggested feeds and starter packs to the search page
+* Media, video and gallery views can now be set on pinned hashtags
 * Improve automatic text overflow into next post in thread
 * Removed floating navigation buttons
 * Bug fixes

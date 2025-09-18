@@ -13,6 +13,8 @@ class AuthorFeedModel : public AbstractPostFeedModel
     Q_OBJECT
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
     Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
+    Q_PROPERTY(QString feedDid READ getFeedDid CONSTANT FINAL)
+    Q_PROPERTY(bool feedAcceptsInteractions READ feedAcceptsInteractions CONSTANT FINAL)
 
 public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
@@ -28,6 +30,8 @@ public:
     Q_INVOKABLE AuthorFeedModel* getUnderlyingModel() { return this; }
     QString getFeedName() const;
     QEnums::FeedType getFeedType() const { return QEnums::FEED_AUTHOR; }
+    QString getFeedDid() const { return ""; }
+    bool feedAcceptsInteractions() const { return false; }
 
     void setFilter(QEnums::AuthorFeedFilter filter) { mFilter = filter; }
     QEnums::AuthorFeedFilter getFilter() const { return mFilter; }

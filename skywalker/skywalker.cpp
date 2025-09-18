@@ -997,6 +997,7 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
 void Skywalker::finishTimelineSync(int index)
 {
+    qDebug() << "Timeline synced";
     mTimelineSynced = true;
 
     // Inform the GUI about the timeline sync.
@@ -1015,6 +1016,7 @@ void Skywalker::finishTimelineSync(int index)
 
 void Skywalker::finishTimelineSyncFailed()
 {
+    qWarning() << "Timeline sync failed";
     emit timelineSyncFailed();
     OffLineMessageChecker::checkNotificationPermission();
     JNICallbackListener::handlePendingIntent();

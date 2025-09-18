@@ -42,9 +42,25 @@ UserSettings::UserSettings(const QString& fileName, QObject* parent) :
     cleanup();
 }
 
+bool UserSettings::isValidKeyPart(const QString& keyPart) const
+{
+    if (keyPart.indexOf('/') != -1)
+    {
+        qWarning() << "Invalid key part:" << keyPart;
+        return false;
+    }
+
+    return true;
+}
+
 QString UserSettings::key(const QString& did, const QString& subkey) const
 {
     return QString("%1/%2").arg(did, subkey);
+}
+
+QString UserSettings::key(const QString& did, const QString& subkey1, const QString& subkey2) const
+{
+    return QString("%1/%2/%3").arg(did, subkey1, subkey2);
 }
 
 static QString& uriToKey(QString& uri)
@@ -408,10 +424,8 @@ void UserSettings::setFeedViewMode(const QString& did, const QString& feedUri, Q
         mSettings.remove(uriKey(did, "feedViewMode", feedUri));
 }
 
-QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QString& feedUri)
+static QEnums::ContentMode intToContentMode(int mode)
 {
-    const int mode = mSettings.value(uriKey(did, "feedViewMode", feedUri), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
-
     if (mode < QEnums::CONTENT_MODE_UNSPECIFIED || mode > QEnums::CONTENT_MODE_LAST)
         return QEnums::CONTENT_MODE_UNSPECIFIED;
 
@@ -419,6 +433,12 @@ QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QStr
         return QEnums::CONTENT_MODE_UNSPECIFIED;
 
     return QEnums::ContentMode(mode);
+}
+
+QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QString& feedUri)
+{
+    const int mode = mSettings.value(uriKey(did, "feedViewMode", feedUri), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
+    return intToContentMode(mode);
 }
 
 QStringList UserSettings::getFeedViewUris(const QString& did, const QString& feedKey) const
@@ -436,6 +456,40 @@ QStringList UserSettings::getFeedViewUris(const QString& did, const QString& fee
 QStringList UserSettings::getFeedViewModeUris(const QString& did) const
 {
     return getFeedViewUris(did, "feedViewMode");
+}
+
+void UserSettings::setSearchFeedViewMode(const QString& did, const QString& searchQuery, QEnums::ContentMode mode)
+{
+    if (!isValidKeyPart(searchQuery))
+        return;
+
+    if (mode != QEnums::CONTENT_MODE_UNSPECIFIED)
+        mSettings.setValue(key(did, "searchFeedViewMode", searchQuery), (int)mode);
+    else
+        mSettings.remove(key(did, "searchFeedViewMode", searchQuery));
+}
+
+QEnums::ContentMode UserSettings::getSearchFeedViewMode(const QString& did, const QString& searchQuery)
+{
+    if (!isValidKeyPart(searchQuery))
+        return QEnums::CONTENT_MODE_UNSPECIFIED;
+
+    const int mode = mSettings.value(key(did, "searchFeedViewMode", searchQuery), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
+    return intToContentMode(mode);
+}
+
+QStringList UserSettings::getSearchFeedViewSearchQueries(const QString& did, const QString& feedKey) const
+{
+    const_cast<QSettings&>(mSettings).beginGroup(key(did, feedKey));
+    QStringList searchQueries = mSettings.allKeys();
+    const_cast<QSettings&>(mSettings).endGroup();
+
+    return searchQueries;
+}
+
+QStringList UserSettings::getSearchFeedViewModeSearchQueries(const QString& did) const
+{
+    return getSearchFeedViewSearchQueries(did, "searchFeedViewMode");
 }
 
 Q_INVOKABLE void UserSettings::setFeedHideReplies(const QString& did, const QString& feedUri, bool hide)

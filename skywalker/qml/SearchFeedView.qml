@@ -207,10 +207,9 @@ SkyListView {
         if (oldModel.isFilterModel())
             oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
 
-        // TODO
-        // if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri)) {
-        //     userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
-        // }
+        if (skywalker.favoriteFeeds.isPinnedSearch(searchFeed.name)) {
+            userSettings.setSearchFeedViewMode(skywalker.getUserDid(), searchFeed.name, contentMode)
+        }
 
         mediaTilesLoader.active = [QEnums.CONTENT_MODE_MEDIA_TILES, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode)
 
@@ -314,5 +313,12 @@ SkyListView {
         let m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
         m.onFirstPage.connect(() => { search() })
         m.onNextPage.connect(() => { getNextPage() })
+
+        const viewMode = userSettings.getSearchFeedViewMode(skywalker.getUserDid(), searchFeed.name)
+
+        if (viewMode !== QEnums.CONTENT_MODE_UNSPECIFIED) {
+            initialContentMode = viewMode
+            changeView(viewMode)
+        }
     }
 }
