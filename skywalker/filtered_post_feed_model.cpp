@@ -15,13 +15,11 @@ FilteredPostFeedModel::FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                              const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    FilteredPostBaseModel(std::move(postFilter), userDid, following, mutedReposts,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
-    mPostFilter(std::move(postFilter)),
     mUnderlyingModel(underlyingModel)
 {
-    Q_ASSERT(mPostFilter);
 }
 
 QVariant FilteredPostFeedModel::getUnderlyingModel()
@@ -154,24 +152,6 @@ void FilteredPostFeedModel::removeTailPosts(const TimelineFeed& posts, size_t nu
     }
 }
 
-void FilteredPostFeedModel::setCheckedTillTimestamp(QDateTime timestamp)
-{
-    if (timestamp != mCheckedTillTimestamp)
-    {
-        mCheckedTillTimestamp = timestamp;
-        emit checkedTillTimestampChanged();
-    }
-}
-
- void FilteredPostFeedModel::setNumPostsChecked(int numPostsChecked)
-{
-    if (numPostsChecked != mNumPostsChecked)
-    {
-        mNumPostsChecked = numPostsChecked;
-        emit numPostsCheckedChanged();
-    }
-}
-
 void FilteredPostFeedModel::setEndOfFeed(bool endOfFeed)
 {
     AbstractPostFeedModel::setEndOfFeed(endOfFeed);
@@ -198,23 +178,6 @@ void FilteredPostFeedModel::getFeedNextPage(IFeedPager* pager)
         mUnderlyingModel->getFeedNextPage(pager);
     else
         qWarning() << "No underlying model:" << getFeedName();
-}
-
-QVariant FilteredPostFeedModel::data(const QModelIndex& index, int role) const
-{
-    if (index.row() < 0 || index.row() >= (int)mFeed.size())
-        return {};
-
-    switch (Role(role))
-    {
-    case Role::PostType:
-        if (!mPostFilter->mustAddThread())
-            return QEnums::POST_STANDALONE;
-    default:
-        break;
-    }
-
-    return AbstractPostFeedModel::data(index, role);
 }
 
 void FilteredPostFeedModel::Page::addPost(const Post* post)

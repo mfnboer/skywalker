@@ -113,7 +113,7 @@ public:
     Q_INVOKABLE FilteredPostFeedModel* addFocusHashtagFilter(FocusHashtagEntry* focusHashtag);
     Q_INVOKABLE FilteredPostFeedModel* addVideoFilter();
     Q_INVOKABLE FilteredPostFeedModel* addMediaFilter();
-    Q_INVOKABLE FilteredPostFeedModel::Ptr deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
+    Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     Q_INVOKABLE void reorderFilteredPostFeedModels(const QList<FilteredPostFeedModel*>& models);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
     Q_INVOKABLE void addFilteredPostFeedModelsFromSettings();
@@ -166,10 +166,11 @@ private:
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
     void addFilteredPostFeedModel(FilteredPostFeedModel::Ptr model);
+    FilteredPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QJsonObject filteredPostFeedModelsToJson();
     int findFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel) const;
     int findFilteredPostFeedModelByFilter(IPostFilter* filter) const;
-    void  addFilteredPostFeedModelsFromJson(const QJsonObject& json);
+    void addFilteredPostFeedModelsFromJson(const QJsonObject& json);
     bool equalModels(QList<FilteredPostFeedModel*> models) const;
 
     bool getFeedHideReplies() const;

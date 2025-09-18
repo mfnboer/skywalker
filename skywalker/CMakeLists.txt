@@ -557,6 +557,10 @@ qt_add_qml_module(libskywalker
         SOURCES bookmarks.h
         SOURCES bookmarks.cpp
         QML_FILES qml/FooterPostButton.qml
+        SOURCES filtered_post_base_model.h
+        SOURCES filtered_post_base_model.cpp
+        SOURCES filtered_search_post_feed_model.h
+        SOURCES filtered_search_post_feed_model.cpp
 )
 
 if (NOT ANDROID)

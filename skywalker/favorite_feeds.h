@@ -72,6 +72,7 @@ public:
     void saveTo(ATProto::UserPreferences& userPreferences, UserSettings& settings) const;
 
 signals:
+    void initialized();
     void feedSaved();
     void listSaved();
     void feedPinned();
@@ -120,6 +121,9 @@ private:
     template<typename Container>
     void removeNonPinnedFeeds(const Container& feedUris, const std::function<void(const QString& uri)>& removeFun);
 
+    template<typename Container>
+    void removeNonPinnedSearches(const Container& searchQueries, const std::function<void(const QString& searchQuery)>& removeFun);
+
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     std::unordered_set<QString> mSavedUris;
     std::unordered_set<QString> mPinnedUris;
@@ -136,6 +140,7 @@ private:
     int mSavedListsModelId = -1;
     bool mUpdateSavedFeedsModelInProgress = false;
     bool mUpdateSavedListsModelInProgress = false;
+    bool mInitializing = false;
     Skywalker* mSkywalker;
 };
 

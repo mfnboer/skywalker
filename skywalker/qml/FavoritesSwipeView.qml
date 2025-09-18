@@ -39,6 +39,8 @@ SwipeView {
 
             SwipeView.onIsCurrentItemChanged: {
                 if (SwipeView.isCurrentItem) {
+                    console.debug("Current favorite:", modelData.name)
+
                     if (active) {
                         if (item) {
                             item.uncover()

@@ -66,6 +66,7 @@ void FavoriteFeeds::clear()
 void FavoriteFeeds::init(const SearchFeed::List& searchFeeds, const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
 {
     qDebug() << "Initialize favorite feeds";
+    mInitializing = true;
     clear();
 
     // NOTE: order is important, setting save feeds preferences is async and will eventually
@@ -610,7 +611,7 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
     listUris.pop_back();
 
     mSkywalker->getBskyClient()->getList(uri, 1, {},
-        [this, listUris](auto output){\
+        [this, listUris](auto output){
             if (output->mList->mCreator->mDid != mSkywalker->getUserDid())
             {
                 qDebug() << "Add saved list:" << output->mList->mName;
@@ -859,6 +860,10 @@ void FavoriteFeeds::cleanupSettings()
     removeNonPinnedFeeds(settings.getFeedViewModeUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedViewMode(userDid, uri, QEnums::CONTENT_MODE_UNSPECIFIED); });
 
+    qDebug() << "Cleanup search feed view mode settings";
+    removeNonPinnedSearches(settings.getSearchFeedViewModeSearchQueries(userDid),
+        [&settings, &userDid](const QString& query){ settings.setSearchFeedViewMode(userDid, query, QEnums::CONTENT_MODE_UNSPECIFIED); });
+
     qDebug() << "Cleanup feed hide replies settings";
     removeNonPinnedFeeds(settings.getFeedHideRepliesUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedHideReplies(userDid, uri, false); });
@@ -866,11 +871,20 @@ void FavoriteFeeds::cleanupSettings()
     qDebug() << "Cleanup feed hide following settings";
     removeNonPinnedFeeds(settings.getFeedHideFollowingUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedHideFollowing(userDid, uri, false); });
+
+    if (mInitializing)
+    {
+        qDebug() << "Initialized";
+        mInitializing = false;
+        emit initialized();
+    }
 }
 
 template<typename Container>
 void FavoriteFeeds::removeNonPinnedFeeds(const Container& feedUris, const std::function<void(const QString& uri)>& removeFun)
 {
+    qDebug() << "Remove non pinned feeds";
+
     for (const QString& uri : feedUris)
     {
         qDebug() << "Check:" << uri;
@@ -878,6 +892,22 @@ void FavoriteFeeds::removeNonPinnedFeeds(const Container& feedUris, const std::f
         {
             qWarning() << "Feed not pinned:" << uri;
             removeFun(uri);
+        }
+    }
+}
+
+template<typename Container>
+void FavoriteFeeds::removeNonPinnedSearches(const Container& searchQueries, const std::function<void(const QString& searchQuery)>& removeFun)
+{
+    qDebug() << "Remove non pinned searches";
+
+    for (const QString& query : searchQueries)
+    {
+        qDebug() << "Check:" << query;
+        if (!isPinnedSearch(query))
+        {
+            qWarning() << "Feed not pinned:" << query;
+            removeFun(query);
         }
     }
 }

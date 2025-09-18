@@ -303,7 +303,7 @@ SkyListView {
             model = model.getUnderlyingModel()
             break
         case QEnums.CONTENT_MODE_VIDEO:
-            case QEnums.CONTENT_MODE_VIDEO_TILES:
+        case QEnums.CONTENT_MODE_VIDEO_TILES:
             model = model.getUnderlyingModel().addVideoFilter()
             break
         case QEnums.CONTENT_MODE_MEDIA:
