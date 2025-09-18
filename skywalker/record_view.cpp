@@ -249,7 +249,7 @@ QVariant RecordView::getVideo() const
     if (!videoView)
         return {};
 
-    return QVariant::fromValue(*videoView.release());
+    return QVariant::fromValue(*videoView);
 }
 
 VideoView::Ptr RecordView::getVideoView() const
