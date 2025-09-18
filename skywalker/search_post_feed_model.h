@@ -12,6 +12,9 @@ class SearchPostFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QList<FilteredSearchPostFeedModel*> filteredPostFeedModels READ getFilteredPostFeedModels NOTIFY filteredPostFeedModelsChanged FINAL)
+    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QString feedDid READ getFeedDid CONSTANT FINAL)
+    Q_PROPERTY(bool feedAcceptsInteractions READ feedAcceptsInteractions CONSTANT FINAL)
 
 public:
     using Ptr = std::unique_ptr<SearchPostFeedModel>;
@@ -25,6 +28,9 @@ public:
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
+    QString getFeedName() const { return "SearchFeed"; }
+    QString getFeedDid() const { return ""; }
+    bool feedAcceptsInteractions() const { return false; }
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);

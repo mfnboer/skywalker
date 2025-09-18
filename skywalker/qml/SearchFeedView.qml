@@ -216,7 +216,7 @@ SkyListView {
 
         if (lastVisibleIndex > -1) {
             const newIndex = model.findTimestamp(timestamp, cid)
-            //setInSync(modelId, newIndex, lastVisibleOffsetY)
+            setInSync(newIndex, lastVisibleOffsetY)
 
             if (mediaTilesLoader.item) {
                 mediaTilesLoader.item.goToIndex(newIndex)
@@ -235,7 +235,54 @@ SkyListView {
 
     function moveToHome() {
         positionViewAtBeginning()
+
+        if (mediaTilesLoader.item)
+            mediaTilesLoader.item.moveToHome()
+
         updateUnreadPosts()
+    }
+
+    function resetHeaderPosition() {
+        if (mediaTilesLoader.item)
+            mediaTilesLoader.item.resetHeaderPosition()
+        else
+            privateResetHeaderPosition()
+    }
+
+    function doMoveToPost(index) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Move to:", model.feedName, "index:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
+        positionViewAtIndex(Math.max(index, 0), ListView.End)
+        updateUnreadPosts()
+        resetHeaderPosition()
+        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
+    }
+
+    function finishSync() {
+        updateUnreadPosts()
+        resetHeaderPosition()
+    }
+
+    function setInSync(index, offsetY = 0) {
+        console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
+
+        if (index === 0 && offsetY === 0) {
+            moveToHome()
+            finishSync()
+        }
+        else if (index >= 0) {
+            moveToIndex(index, doMoveToPost, () => { contentY -= offsetY; finishSync() })
+        }
+        else {
+            positionViewAtEnd()
+            finishSync()
+        }
+    }
+
+    function syncToHome() {
+        finishSync()
+        moveToHome()
     }
 
     function search() {
