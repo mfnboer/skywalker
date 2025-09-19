@@ -5,7 +5,8 @@
 
 namespace Skywalker {
 
-SearchPostFeedModel::SearchPostFeedModel(const QString& userDid, const IProfileStore& following,
+SearchPostFeedModel::SearchPostFeedModel(const QString& feedName, const QString& userDid,
+                                         const IProfileStore& following,
                                          const IProfileStore& mutedReposts,
                                          const ContentFilter& contentFilter,
                                          const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -13,7 +14,8 @@ SearchPostFeedModel::SearchPostFeedModel(const QString& userDid, const IProfileS
                                          QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
-                          parent)
+                          parent),
+    mFeedName(feedName)
 {
 }
 

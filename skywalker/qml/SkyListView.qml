@@ -13,6 +13,9 @@ ListView {
     property int virtualFooterStartY: 0
     readonly property int virtualFooterTopY: (originY - contentY) - virtualFooterStartY + height - virtualFooterHeight + verticalOvershoot
     readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
+    property int prevContentY: 0
+
+    signal contentMoved()
 
     onOriginYChanged: {
         virtualFooterStartY += (originY - prevOriginY)
@@ -40,17 +43,29 @@ ListView {
     Accessible.role: Accessible.List
 
     onMovementEnded: {
+        prevContentY = contentY
+
         if (virtualFooterHeight !== 0)
             moveVirtualFooter()
 
         if (!enableOnScreenCheck)
             return
 
+        // TODO: seems excessive to loop through all items
         for (var i = 0; i < count; ++i) {
             const item = itemAtIndex(i)
 
             if (item)
                 item.checkOnScreen() // qmllint disable missing-property
+        }
+    }
+
+    onContentYChanged: {
+        // Throttle the callbacks in order not to do something on every
+        // contentY change.
+        if (Math.abs(contentY - prevContentY) > 250) {
+            prevContentY = contentY
+            contentMoved()
         }
     }
 

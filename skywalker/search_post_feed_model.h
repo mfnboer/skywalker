@@ -19,7 +19,8 @@ class SearchPostFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<SearchPostFeedModel>;
 
-    SearchPostFeedModel(const QString& userDid, const IProfileStore& following,
+    SearchPostFeedModel(const QString& feedName, const QString& userDid,
+                        const IProfileStore& following,
                         const IProfileStore& mutedReposts,
                         const ContentFilter& contentFilter,
                         const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -28,7 +29,7 @@ public:
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
-    QString getFeedName() const { return "SearchFeed"; }
+    const QString& getFeedName() const { return mFeedName; }
     QString getFeedDid() const { return ""; }
     bool feedAcceptsInteractions() const { return false; }
 
@@ -75,6 +76,7 @@ private:
     FilteredSearchPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);
     int findFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel) const;
 
+    QString mFeedName;
     QString mCursorNextPage;
 
     std::vector<FilteredSearchPostFeedModel::Ptr> mFilteredPostFeedModels;

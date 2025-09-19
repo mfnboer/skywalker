@@ -25,6 +25,8 @@ GridView {
     readonly property int virtualFooterTopY: (originY - contentY) - virtualFooterStartY + height - virtualFooterHeight + verticalOvershoot
     readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
 
+    property int prevContentY: 0
+
     onOriginYChanged: {
         virtualFooterStartY += (originY - prevOriginY)
         prevOriginY = originY
@@ -96,23 +98,23 @@ GridView {
     }
 
     onMovementEnded: {
+        prevContentY = contentY
         moveHeader()
 
         if (virtualFooterHeight !== 0)
             moveVirtualFooter()
 
-        const lastIndex = getBottomRightVisibleIndex()
-        console.debug("Move:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
-
-        if (lastIndex >= 0 && count - lastIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD) {
-            console.debug("Prefetch next page:", mediaTilesView.model.feedName, "index:", lastIndex, "count:", count)
-            model.getFeedNextPage(skywalker)
-        }
-
-        updateUnreadPosts()
+        updateOnMovement()
     }
 
     onContentYChanged: {
+        if (Math.abs(contentY - prevContentY) > mediaTilesView.cellHeight) {
+            prevContentY = contentY
+            updateOnMovement()
+        }
+    }
+
+    function updateOnMovement() {
         const lastVisibleIndex = getBottomRightVisibleIndex()
 
         if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD * 2 && Boolean(model) && !feedLoading) {

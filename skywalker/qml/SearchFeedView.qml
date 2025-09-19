@@ -20,7 +20,7 @@ SkyListView {
 
     id: feedView
     width: parent.width
-    model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+    model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: searchFeed.name
@@ -68,7 +68,17 @@ SkyListView {
         updateUnreadPosts()
     }
 
-    onMovementEnded: {
+    onMovementEnded: updateOnMovement()
+    onContentMoved: updateOnMovement()
+
+    function updateOnMovement() {
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && Boolean(model) && !model.getFeedInProgress) {
+            console.debug("Get next feed page")
+            model.getFeedNextPage(skywalker)
+        }
+
         updateUnreadPosts()
     }
 
@@ -308,9 +318,7 @@ SkyListView {
     }
 
     Component.onCompleted: {
-        search()
-
-        let m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+        let m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
         m.onFirstPage.connect(() => { search() })
         m.onNextPage.connect(() => { getNextPage() })
 
@@ -320,5 +328,7 @@ SkyListView {
             initialContentMode = viewMode
             changeView(viewMode)
         }
+
+        search()
     }
 }

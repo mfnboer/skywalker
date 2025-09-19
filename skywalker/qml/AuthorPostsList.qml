@@ -55,7 +55,10 @@ SkyListView {
         }
     }
 
-    onContentYChanged: {
+    onMovementEnded: updateOnMovement()
+    onContentMoved: updateOnMovement()
+
+    function updateOnMovement() {
         if (modelId < 0)
             return
 

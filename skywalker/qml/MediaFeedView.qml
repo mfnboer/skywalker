@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
+// This is a full screen swipe view
 SkyListView {
     readonly property int closeTransition: StackView.Immediate
     required property var skywalker

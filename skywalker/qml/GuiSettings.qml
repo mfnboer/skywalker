@@ -368,10 +368,12 @@ Item {
         if (!model.isFilterModel())
             return ""
 
-        if (model.numPostsChecked === 0)
-            return qsTr(`No more '${model.feedName}' posts in feed till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+        const underlyingModel = model.getUnderlyingModel()
 
-        return qsTr(`No more '${model.feedName}' posts in ${model.numPostsChecked} feed posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+        if (model.numPostsChecked === 0)
+            return qsTr(`No more '${model.feedName}' posts in '${underlyingModel.feedName}' feed till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
+
+        return qsTr(`No more '${model.feedName}' posts in ${model.numPostsChecked} '${underlyingModel.feedName}' feed posts till ${model.checkedTillTimestamp.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)
     }
 
     function getContentModeSvg(contentMode) {

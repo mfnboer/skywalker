@@ -2397,10 +2397,10 @@ void Skywalker::removeAuthorFeedModel(int id)
     mAuthorFeedModels.remove(id);
 }
 
-int Skywalker::createSearchPostFeedModel()
+int Skywalker::createSearchPostFeedModel(const QString& feedName)
 {
     auto model = std::make_unique<SearchPostFeedModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+        feedName, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;

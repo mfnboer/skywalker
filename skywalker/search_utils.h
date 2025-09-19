@@ -58,7 +58,7 @@ public:
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE void getSuggestedFeeds();
     Q_INVOKABLE void getSuggestedStarterPacks();
-    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder);
+    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder, const QString& feedName = "SearchFeed");
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();

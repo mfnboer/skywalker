@@ -272,7 +272,7 @@ SkyPage {
             id: postsViewTop
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP, SearchSortOrder.TOP)
             clip: true
 
             delegate: PostFeedViewDelegate {
@@ -316,7 +316,7 @@ SkyPage {
             id: postsViewLatest
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, SearchSortOrder.LATEST)
             clip: true
 
             delegate: PostFeedViewDelegate {

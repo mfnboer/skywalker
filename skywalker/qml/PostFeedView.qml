@@ -90,10 +90,12 @@ SkyListView {
         }
 
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
-        updateFeedUnreadPosts()
+        updateOnMovement()
     }
 
-    onContentYChanged: {
+    onContentMoved: updateOnMovement()
+
+    function updateOnMovement() {
         if (!inSync)
             return
 

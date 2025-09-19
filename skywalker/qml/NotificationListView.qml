@@ -139,7 +139,10 @@ SkyPage {
                     cover()
             }
 
-            onContentYChanged: {
+            onMovementEnded: updateOnMovement()
+            onContentMoved: updateOnMovement()
+
+            function updateOnMovement() {
                 const lastVisibleIndex = getLastVisibleIndex()
 
                 if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {

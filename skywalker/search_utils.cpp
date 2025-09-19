@@ -663,12 +663,12 @@ void SearchUtils::getSuggestedStarterPacks()
         });
 }
 
-SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrder)
+SearchPostFeedModel* SearchUtils::getSearchPostFeedModel(const QString& sortOrder, const QString& feedName)
 {
     Q_ASSERT(mSkywalker);
 
     if (!mSearchPostFeedModelId.contains(sortOrder))
-        mSearchPostFeedModelId[sortOrder] = mSkywalker->createSearchPostFeedModel();
+        mSearchPostFeedModelId[sortOrder] = mSkywalker->createSearchPostFeedModel(feedName);
 
     auto* model = mSkywalker->getSearchPostFeedModel(mSearchPostFeedModelId[sortOrder]);
 
