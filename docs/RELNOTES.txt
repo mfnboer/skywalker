@@ -1,10 +1,10 @@
-next
+4.15
 ====
 * Move feeds search into the regular search
 * Saved feeds are now in "User Lists & Feeds"
 * Added suggested feeds and starter packs to the search page
 * Media, video and gallery views can now be set on pinned hashtags
-* Improve automatic text overflow into next post in thread
+* Improve automatic text overflow into next post in thread composer
 * Removed floating navigation buttons
 * Bug fixes
 * Downgrade to Qt6.8.3
