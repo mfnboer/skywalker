@@ -5,9 +5,9 @@ SkyPage {
     readonly property string sideBarTitle: qsTr("Edit image")
     readonly property SvgImage sideBarSvg: SvgOutline.edit
     required property string imgSource
-    readonly property int cornerSize: 35
-    readonly property int cornerBorderWidth: 2
-    readonly property int cornerMargin: 5
+    readonly property int cornerSize: 50
+    readonly property int cornerBorderWidth: 5
+    readonly property int cornerMargin: 0
     readonly property double maskOpacity: 0.7
     readonly property string cutToolColor: guiSettings.buttonColor
     readonly property string maskColor: guiSettings.backgroundColor
@@ -598,7 +598,7 @@ SkyPage {
     Rectangle {
         id: topMask
         anchors.top: parent.top
-        height: Math.floor((page.usableHeight - boundingRect.getHeightForMask()) / 2) + boundingRect.getExtraTopHeightForMask()
+        height: Math.ceil((page.usableHeight - boundingRect.getHeightForMask()) / 2) + boundingRect.getExtraTopHeightForMask()
         anchors.left: parent.left
         anchors.right: parent.right
         color: maskColor
@@ -607,7 +607,7 @@ SkyPage {
 
     Rectangle {
         id: bottomMask
-        height: Math.floor((page.usableHeight - boundingRect.getHeightForMask()) / 2) + boundingRect.getExtraBottomHeightForMask()
+        height: Math.ceil((page.usableHeight - boundingRect.getHeightForMask()) / 2) + boundingRect.getExtraBottomHeightForMask()
         anchors.bottom: buttonRect.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -620,7 +620,7 @@ SkyPage {
         anchors.top: topMask.bottom
         anchors.bottom: bottomMask.top
         anchors.left: parent.left
-        width: Math.floor((parent.width - boundingRect.getWidthForMask()) / 2) + boundingRect.getExtraLeftWidthForMask()
+        width: Math.ceil((parent.width - boundingRect.getWidthForMask()) / 2) + boundingRect.getExtraLeftWidthForMask()
         color: maskColor
         opacity: maskOpacity
     }
@@ -630,7 +630,7 @@ SkyPage {
         anchors.top: topMask.bottom
         anchors.bottom: bottomMask.top
         anchors.right: parent.right
-        width: Math.floor((parent.width - boundingRect.getWidthForMask()) / 2) + boundingRect.getExtraRightWidthForMask()
+        width: Math.ceil((parent.width - boundingRect.getWidthForMask()) / 2) + boundingRect.getExtraRightWidthForMask()
         color: maskColor
         opacity: maskOpacity
     }
