@@ -233,7 +233,8 @@ TextEdit {
                 UnicodeFonts.graphemeLength(preeditText) -
                 linkShorteningReduction
 
-        facetUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
+        if (editText.maxLength != -1)
+            facetUtils.setHighLightMaxLength(editText.maxLength + linkShorteningReduction)
 
         return graphemeLength - prevGraphemeLength
     }
