@@ -130,7 +130,9 @@ TextSplitterPart TextSplitter::joinText(
     QString joinedText = text1;
     WebLink::List joinedLinks = embeddedLinks1;
 
-    if (!text1.back().isSpace() && !text2.front().isSpace())
+    if (text1.back() == '.')
+        joinedText += "\n\n";
+    else if (!text1.back().isSpace() && !text2.front().isSpace())
         joinedText += ' ';
 
     const int indexShift = joinedText.size();

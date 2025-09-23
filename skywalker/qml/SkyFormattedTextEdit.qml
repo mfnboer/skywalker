@@ -113,9 +113,16 @@ TextEdit {
     }
 
     onMaxLengthChanged: {
+        let maxLen = editText.maxLength
+
+        if (editText.maxLength != -1) {
+            const linkShorteningReduction = enableLinkShortening ? facetUtils.getLinkShorteningReduction() : 0
+            maxLen += linkShorteningReduction
+        }
+
         facetUtils.setHighlightDocument(
                 editText.textDocument, guiSettings.linkColor, guiSettings.errorColor,
-                editText.maxLength, guiSettings.textLengthExceededColor)
+                maxLen, guiSettings.textLengthExceededColor)
     }
 
     // HACK:

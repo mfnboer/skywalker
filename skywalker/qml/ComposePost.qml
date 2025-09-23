@@ -10,8 +10,9 @@ SkyPage {
     property string initialVideo: ""
     property int margin: 15
 
+    property bool largeEditor: false
     readonly property int maxLanguageIdentificationLength: 200
-    readonly property int maxPostLength: 300
+    readonly property int maxPostLength: largeEditor ? 15000 : 300
     readonly property int maxThreadPosts: 99
     readonly property int minPostSplitLineLength: 30
     readonly property int maxImages: 4 // per post
@@ -135,6 +136,7 @@ SkyPage {
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
             enabled: !isPosting && postsAreValid() && hasFullContent() && checkAltText()
             onClicked: sendPost()
+            visible: !largeEditor
             Accessible.name: replyToPostUri ? qsTr("send reply") : qsTr("send post")
 
             function sendPost() {
@@ -162,6 +164,7 @@ SkyPage {
             anchors.right: parent.right
             svg: SvgOutline.moreVert
             accessibleName: qsTr("post options")
+            visible: !largeEditor
             onClicked: moreMenu.open()
 
             SkyMenu {
@@ -218,7 +221,7 @@ SkyPage {
                 AccessibleMenuItem {
                     text: qsTr("Auto split")
                     checkable: true
-                    checked: skywalker.getUserSettings().getThreadAutoSplit()
+                    checked: threadAutoSplit //skywalker.getUserSettings().getThreadAutoSplit()
 
                     onToggled: {
                         threadAutoSplit = checked
@@ -238,6 +241,15 @@ SkyPage {
                     }
                 }
             }
+        }
+
+        AccessibleText {
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            anchors.right: parent.right
+            anchors.rightMargin: page.margin
+            font.italic: true
+            text: qsTr("document editor")
+            visible: largeEditor
         }
     }
 
@@ -487,55 +499,59 @@ SkyPage {
                             if (splitting)
                                 return
 
-                            if (threadAutoSplit && graphemeLength > maxLength) {
-                                // NOTE: there could be text in the preedit buffer.
-                                // Get the full text to get the preedit stuff too.
-                                Qt.inputMethod.commit()
-                                const fullText = postText.getFullText()
-                                console.debug("SPLIT:", index)
-
-                                // Avoid to re-split when the post count text becomes visible or longer
-                                const maxPartLength = page.maxPostLength - postCountText.maxSize()
-                                const parts = textSplitter.splitText(fullText, embeddedLinks, maxPartLength, minPostSplitLineLength, 2)
-
-                                if (parts.length > 1) {
-                                    const moveCursor = cursorPosition > parts[0].text.length && index === currentPostIndex
-                                    const oldCursorPosition = cursorPosition
-
-                                    splitting = true
-                                    text = UnicodeFonts.rtrim(parts[0].text)
-                                    embeddedLinks = parts[0].embeddedLinks
-
-                                    if (!moveCursor && index === currentPostIndex)
-                                        cursorPosition = oldCursorPosition
-
-                                    splitting = false
-                                    postUtils.identifyLanguage(textWithoutLinks, index)
-
-                                    if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
-                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
-                                        threadPosts.addPost(index, parts[1].text, parts[1].embeddedLinks, moveCursor, newCursorPosition)
-                                    }
-                                    else {
-                                        // Prepend excess text to next post
-                                        let nextPostText = threadPosts.itemAt(index + 1).getPostText()
-                                        let joinedPart = textSplitter.joinText(parts[1].text, parts[1].embeddedLinks, nextPostText.text, nextPostText.embeddedLinks)
-                                        const newText = joinedPart.text
-                                        const newLinks = joinedPart.embeddedLinks
-                                        const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
-
-                                        setPostTextTimer.startSetText(newText, newLinks, index + 1, newCursorPosition)
-
-                                        if (moveCursor)
-                                            currentPostIndex = index + 1
-                                    }
-                                }
+                            if (!largeEditor && threadAutoSplit && maxGraphemeLengthExceeded()) {
+                                split()
                             }
                             else if (textHasChanged) {
                                 if (index === currentPostIndex)
                                     languageIdentificationTimer.start()
                                 else
                                     postUtils.identifyLanguage(textWithoutLinks, index)
+                            }
+                        }
+
+                        function split() {
+                            // NOTE: there could be text in the preedit buffer.
+                            // Get the full text to get the preedit stuff too.
+                            Qt.inputMethod.commit()
+                            const fullText = postText.getFullText()
+                            console.debug("SPLIT:", index)
+
+                            // Avoid to re-split when the post count text becomes visible or longer
+                            const maxPartLength = page.maxPostLength - postCountText.maxSize()
+                            const parts = textSplitter.splitText(fullText, embeddedLinks, maxPartLength, minPostSplitLineLength, 2)
+
+                            if (parts.length > 1) {
+                                const moveCursor = cursorPosition > parts[0].text.length && index === currentPostIndex
+                                const oldCursorPosition = cursorPosition
+
+                                splitting = true
+                                text = UnicodeFonts.rtrim(parts[0].text)
+                                embeddedLinks = parts[0].embeddedLinks
+
+                                if (!moveCursor && index === currentPostIndex)
+                                    cursorPosition = oldCursorPosition
+
+                                splitting = false
+                                postUtils.identifyLanguage(textWithoutLinks, index)
+
+                                if (index === threadPosts.count - 1 || threadPosts.itemAt(index + 1).hasAttachment()) {
+                                    const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
+                                    threadPosts.addPost(index, parts[1].text, parts[1].embeddedLinks, moveCursor, newCursorPosition)
+                                }
+                                else {
+                                    // Prepend excess text to next post
+                                    let nextPostText = threadPosts.itemAt(index + 1).getPostText()
+                                    let joinedPart = textSplitter.joinText(parts[1].text, parts[1].embeddedLinks, nextPostText.text, nextPostText.embeddedLinks)
+                                    const newText = joinedPart.text
+                                    const newLinks = joinedPart.embeddedLinks
+                                    const newCursorPosition = moveCursor ? oldCursorPosition - parts[0].text.length : -1
+
+                                    setPostText(newText, newLinks, index + 1, newCursorPosition)
+
+                                    if (moveCursor)
+                                        currentPostIndex = index + 1
+                                }
                             }
                         }
 
@@ -964,22 +980,37 @@ SkyPage {
                     console.debug("ADDED POST:", index)
                 }
 
-                function mergePosts() {
+                function enableLargeEditor() {
+                    page.largeEditor = true
+                    mergePosts(false)
+                }
+
+                function disableLargeEditor() {
+                    page.largeEditor = false
+                    let postText = itemAt(0).getPostText()
+
+                    if (postText.maxGraphemeLengthExceeded()) {
+                        threadAutoSplit = true
+                        postText.split()
+                    }
+                }
+
+                function mergePosts(breakOnAttachment = true) {
                     for (let i = 0; i < count; ++i) {
                         let item = itemAt(i)
 
-                        if (item.hasAttachment())
+                        if (breakOnAttachment && item.hasAttachment())
                             continue
 
                         let postText = item.getPostText()
                         if (postText.text.length === postText.maxLength)
                             continue
 
-                        i = mergePostsAt(i)
+                        i = mergePostsAt(i, breakOnAttachment)
                     }
                 }
 
-                function mergePostsAt(index) {
+                function mergePostsAt(index, breakOnAttachment) {
                     if (index === count - 1)
                         return index
 
@@ -991,7 +1022,7 @@ SkyPage {
                     while (endIndex < count) {
                         let nextPost = itemAt(endIndex)
 
-                        if (nextPost.hasAttachment())
+                        if (breakOnAttachment && nextPost.hasAttachment())
                             break
 
                         let nextPostText = nextPost.getPostText()
@@ -1059,7 +1090,7 @@ SkyPage {
         font.pointSize: guiSettings.scaledFont(9/8)
         textFormat: Text.RichText
         text: qsTr(`<a href=\"drafts\" style=\"color: ${guiSettings.linkColor}\">Drafts</a>`)
-        visible: threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
+        visible: threadPosts.count === 1 && !largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -1074,12 +1105,21 @@ SkyPage {
         font.pointSize: guiSettings.scaledFont(9/8)
         textFormat: Text.RichText
         text: qsTr(`<a href=\"card\" style=\"color: ${guiSettings.linkColor}\">Add anniversary card</a>`)
-        visible: isAnniversary && threadPosts.count === 1 && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
+        visible: isAnniversary && threadPosts.count === 1 && !largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
         onLinkActivated: addAnniversaryCard()
 
         Accessible.role: Accessible.Link
         Accessible.name: UnicodeFonts.toPlainText(text)
         Accessible.onPressAction: addAnniversaryCard()
+    }
+
+    AccessibleText {
+        anchors.centerIn: parent
+        width: parent.width - 2 * margin
+        font.italic: true
+        wrapMode: Text.Wrap
+        text: qsTr("In the document editor you can write a long text. When you are done, you switch back to the normal post editor. Your long text will be converted to a thread of posts. From the post editor you can send the full thread.")
+        visible: largeEditor && !hasFullContent()
     }
 
     footer: Rectangle {
@@ -1323,12 +1363,23 @@ SkyPage {
         SvgTransparentButton {
             id: contentWarningIcon
             anchors.left: linkButton.right
-            anchors.leftMargin: 8
+            anchors.leftMargin: visible ? 8 : 0
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? SvgOutline.hideVisibility : SvgOutline.visibility
             visible: hasImageContent()
             onClicked: page.addContentWarning()
+        }
+
+        SvgTransparentButton {
+            id: editModeButton
+            anchors.right: addPost.left
+            anchors.rightMargin: visible ? 8 : 0
+            y: height + 5 + restrictionRow.height + footerSeparator.height
+            accessibleName: page.largeEditor ? qsTr("switch to post edit mode") : qsTr("switch to document edit mode")
+            svg: page.largeEditor ? SvgOutline.editDocument : SvgOutline.editPost
+            enabled: page.largeEditor || page.canSwitchToLargeEditor()
+            onClicked: page.toggleEditMode()
         }
 
         SvgButton {
@@ -1340,7 +1391,7 @@ SkyPage {
             anchors.right: parent.right
             svg: SvgOutline.add
             accessibleName: qsTr("add post")
-            enabled: hasFullContent() && threadPosts.count < maxThreadPosts
+            enabled: !page.largeEditor && hasFullContent() && threadPosts.count < maxThreadPosts
             focusPolicy: Qt.NoFocus
             onClicked: {
                 Qt.inputMethod.commit()
@@ -1796,6 +1847,20 @@ SkyPage {
         id: memeMaker
     }
 
+    function setPostText(text, embeddedLinks, index, cursorPosition = -1) {
+        let postText = threadPosts.itemAt(index).getPostText()
+
+        if (cursorPosition > -1)
+            setCursorTimer.startSetCursor(index, cursorPosition)
+
+        postText.suppressTextUpdates = true
+        postText.text = text
+        postText.suppressTextUpdates = false
+
+        postText.setEmbeddedLinks(embeddedLinks)
+        postText.textUpdated()
+    }
+
     Timer {
         property string text
         property list<weblink> embeddedLinks
@@ -1805,13 +1870,7 @@ SkyPage {
         id: setPostTextTimer
         interval: 0
         onTriggered: {
-            let postText = threadPosts.itemAt(index).getPostText()
-
-            if (cursorPosition > -1)
-                setCursorTimer.startSetCursor(index, cursorPosition)
-
-            postText.text = text
-            postText.setEmbeddedLinks(embeddedLinks)
+            setPostText(text, embeddedLinks, index, cursorPosition)
         }
 
         function startSetText(text, embeddedLinks, index, cursorPosition = -1) {
@@ -2089,9 +2148,28 @@ SkyPage {
         return false
     }
 
+    function canSwitchToLargeEditor() {
+        for (let i = 1; i < threadPosts.count; ++ i) {
+            const postItem = threadPosts.itemAt(i)
+
+            if (postItem.hasAttachment())
+                return false
+        }
+
+        return true
+    }
+
     function cancel() {
         if (!hasPartialContent()) {
             page.closed()
+            return
+        }
+
+        if (page.largeEditor) {
+            guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you want to go back to the post editor?"),
+                    () => toggleEditMode())
             return
         }
 
@@ -2514,6 +2592,23 @@ SkyPage {
 
         console.debug("Get list names:", names)
         allowListNamesFromDraft = names
+    }
+
+    function toggleEditMode() {
+        if (largeEditor) {
+            threadPosts.disableLargeEditor()
+            return
+        }
+
+        if (threadPosts.count === 1) {
+            threadPosts.enableLargeEditor()
+            return
+        }
+
+        guiSettings.noticeOkCancel(
+                page,
+                qsTr("Switching to the document editor will merge your posts into a single text. When you later go back to the post editor the text may be split into multiple posts in a different way."),
+                () => threadPosts.enableLargeEditor())
     }
 
     function addContentWarning() {

@@ -1,5 +1,6 @@
 next
 ====
+* Document editor for editing full thread text.
 * Bug fixes
 
 4.15
