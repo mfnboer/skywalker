@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.15
 ====
 * Move feeds search into the regular search
