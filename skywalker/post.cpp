@@ -158,6 +158,9 @@ QString Post::getText() const
 {
     static const QString NO_STRING;
 
+    if (!mOverrideText.isEmpty())
+        return mOverrideText;
+
     if (!mPost)
         return NO_STRING;
 
@@ -178,6 +181,9 @@ QString Post::getText() const
 QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const QString& linkColor) const
 {
     static const QString NO_STRING;
+
+    if (!mOverrideFormattedText.isEmpty())
+        return mOverrideFormattedText;
 
     if (!mPost)
         return NO_STRING;
@@ -933,6 +939,9 @@ std::vector<QString> Post::getWebLinks() const
 
 QEnums::TripleBool Post::isThread() const
 {
+    if (mIsThreadOverride)
+        return *mIsThreadOverride;
+
     if (isPlaceHolder())
         return QEnums::TRIPLE_BOOL_NO;
 

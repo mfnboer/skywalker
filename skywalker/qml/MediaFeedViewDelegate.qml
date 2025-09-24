@@ -367,6 +367,7 @@ Rectangle {
                 authorIsUser: guiSettings.isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
+                isThread: postIsThread
                 plainTextForEmoji: postPlainText
                 showViewThread: true
                 record: postRecord
@@ -404,6 +405,11 @@ Rectangle {
                 onViewThread: {
                     if (!postIsPlaceHolder && postUri)
                         skywalker.getPostThread(postUri)
+                }
+
+                onUnrollThread: {
+                    if (!postIsPlaceHolder && postUri)
+                        skywalker.getPostThread(postUri, true)
                 }
 
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)

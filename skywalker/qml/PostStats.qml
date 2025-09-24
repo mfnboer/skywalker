@@ -20,6 +20,7 @@ Item {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkTransient
+    required property bool isThread
     property string plainTextForEmoji: ""
     property bool showViewThread: false
     property var record: null // recordview
@@ -34,6 +35,7 @@ Item {
     signal quotePost()
     signal like()
     signal viewThread()
+    signal unrollThread()
     signal muteThread()
     signal bookmark()
     signal share()
@@ -197,6 +199,13 @@ Item {
                     onTriggered: viewThread()
 
                     MenuItemSvg { svg: SvgOutline.chat }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Unroll thread")
+                    visible: isThread
+                    onTriggered: unrollThread()
+
+                    MenuItemSvg { svg: SvgOutline.thread }
                 }
                 AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")

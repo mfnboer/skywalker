@@ -48,8 +48,11 @@ public:
     static bool isKeycapEmoji(const QString& grapheme);
     static QString setEmojiFontCombinedEmojis(const QString& text);
 
+    static bool hasPhraseEnding(const QString& text);
+
 private:
     static uint convertToSmallCaps(QChar c);
+    static QString getLastGrapheme(const QString& text);
 };
 
 }

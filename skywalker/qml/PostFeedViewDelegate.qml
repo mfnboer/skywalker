@@ -553,6 +553,7 @@ Rectangle {
                     authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
                     bookmarkTransient: postBookmarkTransient
+                    isThread: postIsThread
                     plainTextForEmoji: postPlainText
                     showViewThread: swipeMode
                     record: postRecord
@@ -588,6 +589,11 @@ Rectangle {
                     onViewThread: {
                         if (!postIsPlaceHolder && postUri)
                             skywalker.getPostThread(postUri)
+                    }
+
+                    onUnrollThread: {
+                        if (!postIsPlaceHolder && postUri)
+                            skywalker.getPostThread(postUri, true)
                     }
 
                     onShare: skywalker.sharePost(postUri)

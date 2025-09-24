@@ -434,4 +434,29 @@ QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
     return QStringList{emojiSet.begin(), emojiSet.end()};
 }
 
+bool UnicodeFonts::hasPhraseEnding(const QString& text)
+{
+    const auto lastChar = text.back();
+
+    if (lastChar == '.' || lastChar == '!' || lastChar == '?')
+        return true;
+
+    const QString lastGrapheme = getLastGrapheme(text);
+
+    return EmojiNames::isEmoji(lastGrapheme);
+}
+
+QString UnicodeFonts::getLastGrapheme(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    boundaryFinder.toEnd();
+    const int prev = boundaryFinder.toPreviousBoundary();
+
+    if (prev == -1)
+        return {};
+
+    const int len = text.length() - prev;
+    return text.sliced(prev, len);
+}
+
 }

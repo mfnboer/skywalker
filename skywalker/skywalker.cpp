@@ -1680,10 +1680,11 @@ void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVis
         saveFeedSyncTimestamp(*model, lastVisibleIndex, lastVisibleOffsetY);
 }
 
-void Skywalker::getPostThread(const QString& uri, int modelId)
+// TODO: drop modelId?
+void Skywalker::getPostThread(const QString& uri, bool unrollThread, int modelId)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get post thread:" << uri << "model:" << modelId;
+    qDebug() << "Get post thread:" << uri << "unroll:" << unrollThread << "model:" << modelId;
 
     if (mGetPostThreadInProgress)
     {
@@ -1693,12 +1694,12 @@ void Skywalker::getPostThread(const QString& uri, int modelId)
 
     setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, {},
-        [this, uri, modelId](auto thread){
+        [this, uri, unrollThread, modelId](auto thread){
             setGetPostThreadInProgress(false);
 
             if (modelId < 0)
             {
-                auto model = std::make_unique<PostThreadModel>(uri,
+                auto model = std::make_unique<PostThreadModel>(uri, unrollThread,
                     mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                     mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 

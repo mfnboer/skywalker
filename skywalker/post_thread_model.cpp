@@ -2,10 +2,11 @@
 // License: GPLv3
 #include "post_thread_model.h"
 #include "author_cache.h"
+#include "thread_unroller.h"
 
 namespace Skywalker {
 
-PostThreadModel::PostThreadModel(const QString& threadEntryUri,
+PostThreadModel::PostThreadModel(const QString& threadEntryUri, bool unrollThread,
                                  const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
@@ -15,7 +16,8 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri,
     AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
-    mThreadEntryUri(threadEntryUri)
+    mThreadEntryUri(threadEntryUri),
+    mUnrollThread(unrollThread)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -334,9 +336,23 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
             // The user will see the current post as a post with a non-zero reply count.
             // By clicking on this post the hidden replies can be accessed.
             if (!mPostFeedModel.isHiddenReply(*nextReply))
-                addReplyThread(*nextReply, false, false, indentLevel);
+            {
+                if (mPostFeedModel.mUnrollThread)
+                {
+                    auto nextReplyPost = Post::createPost(*nextReply, mPostFeedModel.mThreadgateView);
+
+                    if (nextReplyPost.getAuthorDid() == threadPost.getAuthorDid())
+                        addReplyThread(*nextReply, false, false, indentLevel);
+                }
+                else
+                {
+                    addReplyThread(*nextReply, false, false, indentLevel);
+                }
+            }
             else
+            {
                 mFeed.back().addThreadType(QEnums::THREAD_LEAF);
+            }
         }
         else
         {
@@ -473,6 +489,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
     const auto& postThread = page->mRawThread->mThread;
     Post post = Post::createPost(*postThread, mThreadgateView);
     post.addThreadType(QEnums::THREAD_ENTRY);
+    const auto postEntryDid = post.getAuthorDid();
 
     if (!post.isPlaceHolder())
     {
@@ -503,6 +520,10 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         while (parent && !addMore)
         {
             Post parentPost = Post::createPost(*parent, mThreadgateView);
+
+            if (mUnrollThread && parentPost.getAuthorDid() != postEntryDid)
+                break;
+
             parentPost.addThreadType(QEnums::THREAD_PARENT);
 
             if (!parentPost.isPlaceHolder())
@@ -537,6 +558,14 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         {
             Q_ASSERT(reply);
 
+            if (mUnrollThread)
+            {
+                Post replyPost = Post::createPost(*reply, mThreadgateView);
+
+                if (replyPost.getAuthorDid() != postEntryDid)
+                    continue;
+            }
+
             if (page->mFirstHiddenReplyIndex == -1 && isHiddenReply(*reply))
             {
                 page->mFirstHiddenReplyIndex = page->mFeed.size();
@@ -547,6 +576,9 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
             firstReply = false;
         }
     }
+
+    if (mUnrollThread)
+        page->mFeed = ThreadUnroller::unrollThread(page->mFeed);
 
     return page;
 }

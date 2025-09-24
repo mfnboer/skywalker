@@ -319,6 +319,7 @@ Rectangle {
                         authorIsUser: false
                         isBookmarked: notificationPostBookmarked
                         bookmarkTransient: notificationPostBookmarkTransient
+                        isThread: false
                         plainTextForEmoji: notificationPostPlainText
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia

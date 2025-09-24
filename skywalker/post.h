@@ -54,8 +54,12 @@ public:
 
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
 
+    void setOverrideText(const QString& text) { mOverrideText = text; }
+    void setOverrideFormattedText(const QString& formattedText) { mOverrideFormattedText = formattedText; }
+
     QString getText() const override;
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
+
     WebLink::List getDraftEmbeddedLinks() const;
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
@@ -144,6 +148,7 @@ public:
     void setPinned(bool pinned) { mPinned = pinned; }
 
     QEnums::TripleBool isThread() const;
+    void setIsThreadOverride(QEnums::TripleBool isThread) { mIsThreadOverride = isThread; }
 
     QJsonObject toJson() const;
 
@@ -156,6 +161,9 @@ private:
 
     QString mUri;
     QString mCid;
+
+    QString mOverrideText;
+    QString mOverrideFormattedText;
 
     int mGapId = 0;
 
@@ -182,6 +190,7 @@ private:
     bool mNotSupported = false;
     QString mUnsupportedType;
     bool mIsBookmarked = false;
+    std::optional<QEnums::TripleBool> mIsThreadOverride;
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;

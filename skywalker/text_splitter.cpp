@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "text_splitter.h"
 #include "split_text_boundary_finder.h"
+#include "unicode_fonts.h"
 
 namespace Skywalker {
 
@@ -130,7 +131,7 @@ TextSplitterPart TextSplitter::joinText(
     QString joinedText = text1;
     WebLink::List joinedLinks = embeddedLinks1;
 
-    if (text1.back() == '.')
+    if (UnicodeFonts::hasPhraseEnding(text1))
         joinedText += "\n\n";
     else if (!text1.back().isSpace() && !text2.front().isSpace())
         joinedText += ' ';
