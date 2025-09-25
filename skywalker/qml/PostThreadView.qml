@@ -149,6 +149,7 @@ SkyListView {
     delegate: PostFeedViewDelegate {
         width: view.width
         unrollThread: isUnrolledThread
+        postThreadModel: view.model
 
         onShowHiddenReplies: {
             syncToIndex = index

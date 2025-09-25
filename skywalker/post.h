@@ -48,6 +48,9 @@ public:
     const QString& getCid() const;
     const QString& getUri() const;
 
+    void setOverrideCid(const QString& cid) { mOverrideCid = cid; }
+    void setOverrideUri(const QString& uri) { mOverrideUri = uri; }
+
     // The indexedAt of a post or repost
     QDateTime getTimelineTimestamp() const;
     QDateTime getRepostTimestamp() const;
@@ -64,6 +67,7 @@ public:
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
+    void setOverrideIndexedAt(QDateTime dateTime) { mOverrideIndexedAt = dateTime; }
     bool isRepost() const;
     std::optional<BasicProfile> getRepostedBy() const;
     QString getReasonRepostUri() const;
@@ -97,17 +101,28 @@ public:
     bool isQuotePost() const;
 
     int getReplyCount() const;
+    void setOverrideReplyCount(int count) { mOverrideReplyCount = count; }
     int getRepostCount() const;
+    void setOverrideRepostCount(int count) { mOverrideRepostCount = count; }
     int getLikeCount() const;
+    void setOverrideLikeCount(int count) { mOverrideLikeCount = count; }
     int getQuoteCount() const;
+    void setOverrideQuoteCount(int count) { mOverrideQuoteCount = count; }
     QString getRepostUri() const;
+    void setOverrideRepostUri(const QString& uri) { mOverrideRepostUri = uri; }
     QString getLikeUri() const;
+    void setOverrideLikeUri(const QString& uri) { mOverrideLikeUri = uri; }
     void setBookmarked(bool bookmarked) { mIsBookmarked = bookmarked; }
     bool isBookmarked() const;
+    void setOverrideBookmarked(bool bookmarked) { mOverrideIsBookmarked = bookmarked; }
     bool isThreadMuted() const;
+    void setOverrideThreadMuted(bool muted) { mOverrideThreadMuted = muted; }
     bool isReplyDisabled() const;
+    void setOverrideReplyDisabled(bool disabled) { mOverrideReplyDisabled = disabled; }
     bool isEmbeddingDisabled() const;
+    void setOverrideEmbeddingDisabled(bool disabled) { mOverrideEmbeddingDisabled = disabled; }
     bool isViewerStatePinned() const;
+
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr getThreadgateView() const;
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgate) { mThreadgateView = threadgate; }
     QString getThreadgateUri() const;
@@ -164,8 +179,13 @@ private:
     QString mUri;
     QString mCid;
 
+    QString mOverrideUri;
+    QString mOverrideCid;
+
     QString mOverrideText;
     QString mOverrideFormattedText;
+
+    QDateTime mOverrideIndexedAt;
 
     int mGapId = 0;
 
@@ -192,6 +212,18 @@ private:
     bool mNotSupported = false;
     QString mUnsupportedType;
     bool mIsBookmarked = false;
+
+    QString mOverrideRepostUri;
+    QString mOverrideLikeUri;
+    std::optional<bool> mOverrideIsBookmarked;
+    std::optional<bool> mOverrideThreadMuted;
+    std::optional<bool> mOverrideEmbeddingDisabled;
+    std::optional<bool> mOverrideReplyDisabled;
+
+    std::optional<int> mOverrideReplyCount;
+    std::optional<int> mOverrideRepostCount;
+    std::optional<int> mOverrideLikeCount;
+    std::optional<int> mOverrideQuoteCount;
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;

@@ -73,6 +73,7 @@ Rectangle {
     required property bool postLocallyDeleted
     required property bool endOfFeed
     property bool unrollThread: false
+    property var postThreadModel // provided when thread is unrolled
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property bool swipeMode: false
@@ -484,7 +485,7 @@ Rectangle {
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
-                detailedView: (postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread
+                detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
                 initialShowMaxTextLines: unrollThread ? maxTextLines : 25
                 bodyBackgroundColor: postEntry.color.toString()
                 borderColor: postEntry.border.color.toString()
@@ -497,7 +498,7 @@ Rectangle {
             // Reposts and likes in detailed view of post entry in thread view
             Loader {
                 width: parent.width
-                active: (postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread
+                active: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
                 visible: status == Loader.Ready
                 sourceComponent: Flow {
                     width: parent.width
@@ -530,11 +531,11 @@ Rectangle {
 
             // Stats
             Loader {
-                active: !unrollThread
+                active: !unrollThread || endOfFeed
                 width: parent.width
                 height: guiSettings.statsHeight + 10
                 asynchronous: true
-                visible: !unrollThread
+                visible: active
 
                 sourceComponent: PostStats {
                     width: parent.width
@@ -557,6 +558,7 @@ Rectangle {
                     isBookmarked: postBookmarked
                     bookmarkTransient: postBookmarkTransient
                     isThread: postIsThread
+                    isUnrolledThread: postEntry.unrollThread
                     plainTextForEmoji: postPlainText
                     showViewThread: swipeMode
                     record: postRecord
@@ -565,19 +567,24 @@ Rectangle {
 
                     onReply: {
                         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
-                        root.composeReply(postUri, postCid, postText, postIndexedDateTime,
+                        root.composeReply(postUri, postCid,
+                                          unrollThread ? postThreadModel?.getFirstPostText() : postText,
+                                          postIndexedDateTime,
                                           author, postReplyRootUri, postReplyRootCid, lang,
                                           postMentionDids)
                     }
 
                     onRepost: {
-                        root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
-                                    postIndexedDateTime, author, postEmbeddingDisabled, postPlainText)
+                        root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
+                                    unrollThread ? postThreadModel?.getFirstPostText() : postText,
+                                    postIndexedDateTime, author, postEmbeddingDisabled,
+                                    unrollThread ? postThreadModel?.getFirstPostPlainText() : postPlainText)
                     }
 
                     onQuotePost: {
-                        root.quotePost(postUri, postCid, postText, postIndexedDateTime,
-                                       author, postEmbeddingDisabled)
+                        root.quotePost(postUri, postCid,
+                                       unrollThread ? postThreadModel?.getFirstPostText() : postText,
+                                       postIndexedDateTime, author, postEmbeddingDisabled)
                     }
 
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
@@ -604,14 +611,14 @@ Rectangle {
                     onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
                     onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
                     onDeletePost: confirmDelete()
-                    onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
-                    onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
-                    onTranslatePost: root.translateText(postPlainText)
+                    onCopyPostText: skywalker.copyPostTextToClipboard(unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                    onReportPost: root.reportPost(postUri, postCid, unrollThread ? postThreadModel?.getFirstPostText() : postText, postIndexedDateTime, author)
+                    onTranslatePost: root.translateText(unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                     onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
                     onPin: root.pinPost(postUri, postCid)
                     onUnpin: root.unpinPost(postCid)
                     onBlockAuthor: root.blockAuthor(author)
-                    onShowEmojiNames: root.showEmojiNamesList(postPlainText)
+                    onShowEmojiNames: root.showEmojiNamesList(unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                     onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
                     onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
                 }
@@ -915,7 +922,8 @@ Rectangle {
         if (!postBody.postVisible())
             return getHiddenPostSpeech()
 
-        return accessibilityUtils.getPostSpeech(postIndexedDateTime, author, postPlainText,
+        return accessibilityUtils.getPostSpeech(postIndexedDateTime, author,
+                unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText,
                 postImages, postExternal, postRecord, postRecordWithMedia,
                 postRepostedByAuthor, postIsReply, postReplyToAuthor)
     }

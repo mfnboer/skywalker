@@ -39,6 +39,7 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
         return -1;
     }
 
+    mFirstPostFromUnrolledThread = page->mFirstPostFromUnrolledThread;
     const size_t newRowCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex + 1;
     const size_t pageInsertCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex;
 
@@ -214,6 +215,39 @@ void PostThreadModel::showHiddenReplies()
 
     mHiddenRepliesFeed.clear();
     qDebug() << "New feed size:" << mFeed.size();
+}
+
+QString PostThreadModel::getFirstPostText() const
+{
+    if (!mFirstPostFromUnrolledThread)
+        return "";
+
+    return mFirstPostFromUnrolledThread->getFormattedText();
+}
+
+QString PostThreadModel::getFirstPostPlainText() const
+{
+    if (!mFirstPostFromUnrolledThread)
+        return "";
+
+    return mFirstPostFromUnrolledThread->getText();
+}
+
+QString PostThreadModel::getFullThreadPlainText() const
+{
+    if (mFeed.empty())
+        return "";
+
+    QString text = mFeed.front().getText();
+
+    for (int i = 1; i < (int)mFeed.size(); ++i)
+    {
+        const Post& post = mFeed[i];
+        text += '\n';
+        text += post.getText();
+    }
+
+    return text;
 }
 
 QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
@@ -578,7 +612,10 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
     }
 
     if (mUnrollThread)
+    {
+        page->mFirstPostFromUnrolledThread = Post(page->mFeed.front());
         page->mFeed = ThreadUnroller::unrollThread(page->mFeed);
+    }
 
     return page;
 }

@@ -21,6 +21,7 @@ Item {
     required property bool isBookmarked
     required property bool bookmarkTransient
     required property bool isThread
+    property bool isUnrolledThread: false
     property string plainTextForEmoji: ""
     property bool showViewThread: false
     property var record: null // recordview
@@ -202,7 +203,7 @@ Item {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Unroll thread")
-                    visible: isThread
+                    visible: isThread && !isUnrolledThread
                     onTriggered: unrollThread()
 
                     MenuItemSvg { svg: SvgOutline.thread }
@@ -241,7 +242,7 @@ Item {
 
                 AccessibleMenuItem {
                     text: viewerStatePinned ? qsTr("Unpin from profile") : qsTr("Pin to profile")
-                    visible: authorIsUser
+                    visible: authorIsUser && !isUnrolledThread
                     onTriggered: {
                         if (viewerStatePinned)
                             unpin()
@@ -254,14 +255,14 @@ Item {
 
                 AccessibleMenuItem {
                     text: qsTr("Delete")
-                    visible: authorIsUser
+                    visible: authorIsUser && !isUnrolledThread
                     onTriggered: deletePost()
 
                     MenuItemSvg { svg: SvgOutline.delete }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report post")
-                    visible: !authorIsUser
+                    visible: !authorIsUser && !isUnrolledThread
                     onTriggered: reportPost()
 
                     MenuItemSvg { svg: SvgOutline.report }

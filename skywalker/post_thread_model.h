@@ -43,6 +43,10 @@ public:
     Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
     Q_INVOKABLE void showHiddenReplies();
 
+    Q_INVOKABLE QString getFirstPostText() const;
+    Q_INVOKABLE QString getFirstPostPlainText() const;
+    Q_INVOKABLE QString getFullThreadPlainText() const;
+
     // May return UNKNOWN if there are reply restrictions. This will happen
     // if the root is not in the thread, but the first post has replies disabled.
     QEnums::ReplyRestriction getReplyRestriction() const;
@@ -67,6 +71,7 @@ private:
         explicit Page(PostThreadModel& postFeedModel) : mPostFeedModel(postFeedModel) {}
 
         std::deque<Post> mFeed;
+        std::optional<Post> mFirstPostFromUnrolledThread;
         ATProto::AppBskyFeed::PostThread::SharedPtr mRawThread;
         int mEntryPostIndex = 0;
         int mFirstHiddenReplyIndex = -1;
@@ -90,6 +95,7 @@ private:
     std::deque<Post> mHiddenRepliesFeed;
     QString mThreadEntryUri;
     bool mUnrollThread = false;
+    std::optional<Post> mFirstPostFromUnrolledThread;
 };
 
 }

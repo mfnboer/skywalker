@@ -146,11 +146,17 @@ Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView) :
 
 const QString& Post::getCid() const
 {
+    if (!mOverrideCid.isEmpty())
+        return mOverrideCid;
+
     return mPost ? mPost->mCid : mCid;
 }
 
 const QString& Post::getUri() const
 {
+    if (!mOverrideUri.isEmpty())
+        return mOverrideUri;
+
     return mPost ? mPost->mUri : mUri;
 }
 
@@ -237,6 +243,9 @@ BasicProfile Post::getAuthor() const
 
 QDateTime Post::getIndexedAt() const
 {
+    if (mOverrideIndexedAt.isValid())
+        return mOverrideIndexedAt;
+
     if (!mPost)
         return {};
 
@@ -681,26 +690,41 @@ bool Post::isQuotePost() const
 
 int Post::getReplyCount() const
 {
+    if (mOverrideReplyCount)
+        return *mOverrideReplyCount;
+
     return mPost ? mPost->mReplyCount : 0;
 }
 
 int Post::getRepostCount() const
 {
+    if (mOverrideRepostCount)
+        return *mOverrideRepostCount;
+
     return mPost ? mPost->mRepostCount : 0;
 }
 
 int Post::getLikeCount() const
 {
+    if (mOverrideLikeCount)
+        return *mOverrideLikeCount;
+
     return mPost ? mPost->mLikeCount : 0;
 }
 
 int Post::getQuoteCount() const
 {
+    if (mOverrideQuoteCount)
+        return *mOverrideQuoteCount;
+
     return mPost ? mPost->mQuoteCount : 0;
 }
 
 QString Post::getRepostUri() const
 {
+    if (!mOverrideRepostUri.isEmpty())
+        return mOverrideRepostUri;
+
     if (!mPost || !mPost->mViewer)
         return {};
 
@@ -710,6 +734,9 @@ QString Post::getRepostUri() const
 
 QString Post::getLikeUri() const
 {
+    if (!mOverrideLikeUri.isEmpty())
+        return mOverrideLikeUri;
+
     if (!mPost || !mPost->mViewer)
         return {};
 
@@ -719,6 +746,9 @@ QString Post::getLikeUri() const
 
 bool Post::isBookmarked() const
 {
+    if (mOverrideIsBookmarked)
+        return *mOverrideIsBookmarked;
+
     if (!mPost || !mPost->mViewer)
         return mIsBookmarked;
 
@@ -727,6 +757,9 @@ bool Post::isBookmarked() const
 
 bool Post::isThreadMuted() const
 {
+    if (mOverrideThreadMuted)
+        return *mOverrideThreadMuted;
+
     if (!mPost || !mPost->mViewer)
         return false;
 
@@ -735,6 +768,9 @@ bool Post::isThreadMuted() const
 
 bool Post::isReplyDisabled() const
 {
+    if (mOverrideReplyDisabled)
+        return *mOverrideReplyDisabled;
+
     if (!mPost || !mPost->mViewer)
         return false;
 
@@ -743,6 +779,9 @@ bool Post::isReplyDisabled() const
 
 bool Post::isEmbeddingDisabled() const
 {
+    if (mOverrideEmbeddingDisabled)
+        return *mOverrideEmbeddingDisabled;
+
     if (!mPost || !mPost->mViewer)
         return false;
 

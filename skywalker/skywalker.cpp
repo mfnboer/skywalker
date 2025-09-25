@@ -1703,6 +1703,8 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread, int modelId
                     mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                     mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
+                // TODO: the thread gets unrolled right away, causing further thread posts
+                // no to be retrieved as getPostToAttachMore() does not work anymore.
                 int postEntryIndex = model->setPostThread(thread);
 
                 if (postEntryIndex < 0)

@@ -21,6 +21,7 @@ std::deque<Post> ThreadUnroller::unrollThread(const std::deque<Post>& thread)
         index = nextIndex;
     }
 
+    setThreadStats(thread, unrolledThread);
     return unrolledThread;
 }
 
@@ -60,6 +61,53 @@ std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& th
     unrolledPost.setOverrideFormattedText(formattedText);
 
     return { postIndex, unrolledPost };
+}
+
+// For the last post in the unrolled thread, the stats are shown.
+// Aggregate/copy stats from previous posts.
+void ThreadUnroller::setThreadStats(const std::deque<Post>& rawThread, std::deque<Post>& unrolledThread)
+{
+    Q_ASSERT(!rawThread.empty());
+    Q_ASSERT(!unrolledThread.empty());
+
+    if (rawThread.size() <= 1)
+        return;
+
+    const auto& firstPost = rawThread.front();
+    auto& lastPost = unrolledThread.back();
+
+    // Set URI/CID from first post, such the bookmarking in quoting
+    // will rever to the first post in the thread.
+    lastPost.setOverrideUri(firstPost.getUri());
+    lastPost.setOverrideCid(firstPost.getCid());
+
+    lastPost.setOverrideIndexedAt(firstPost.getIndexedAt());
+    lastPost.setOverrideLikeUri(firstPost.getLikeUri());
+    lastPost.setOverrideRepostUri(firstPost.getRepostUri());
+    lastPost.setOverrideBookmarked(firstPost.isBookmarked());
+    lastPost.setOverrideThreadMuted(firstPost.isThreadMuted());
+    lastPost.setOverrideEmbeddingDisabled(firstPost.isEmbeddingDisabled());
+    lastPost.setOverrideReplyDisabled(firstPost.isReplyDisabled());
+
+    int replyCount = 0;
+    int repostCount = 0;
+    int likeCount = 0;
+    int quoteCount = 0;
+
+    for (const auto& post : rawThread)
+    {
+        replyCount += post.getReplyCount();
+        repostCount += post.getRepostCount();
+        likeCount += post.getLikeCount();
+        quoteCount += post.getQuoteCount();
+    }
+
+    // Subtract own replies due to the thread posts
+    lastPost.setOverrideReplyCount(replyCount - (rawThread.size() - 1));
+
+    lastPost.setOverrideRepostCount(repostCount);
+    lastPost.setOverrideLikeCount(likeCount);
+    lastPost.setOverrideQuoteCount(quoteCount);
 }
 
 bool ThreadUnroller::morePostsCanBeAdded(const Post& post)

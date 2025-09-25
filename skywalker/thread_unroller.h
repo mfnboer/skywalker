@@ -13,6 +13,7 @@ public:
 
 private:
     static std::pair<int, Post> createThreadPart(const std::deque<Post>& thread, int startIndex);
+    static void setThreadStats(const std::deque<Post>& rawThread, std::deque<Post>& unrolledThread);
     static bool morePostsCanBeAdded(const Post& post);
 };
 
