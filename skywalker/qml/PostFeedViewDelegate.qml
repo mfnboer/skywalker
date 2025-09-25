@@ -72,6 +72,7 @@ Rectangle {
     required property bool postIsThread
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property bool unrollThread: false
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property bool swipeMode: false
@@ -99,9 +100,9 @@ Rectangle {
     // Setting the default size to 300 if the grid is not sized yet, seems to fix
     // positioning issued with viewPositionAtIndex
     height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > 30 ? grid.height : 300) + extraFooterHeight
-    color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.postHighLightColor : guiSettings.backgroundColor
-    border.width: postThreadType & QEnums.THREAD_ENTRY ? 1 : 0
-    border.color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.borderHighLightColor : guiSettings.borderColor
+    color: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? guiSettings.postHighLightColor : guiSettings.backgroundColor
+    border.width: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? 1 : 0
+    border.color: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? guiSettings.borderHighLightColor : guiSettings.borderColor
     visible: postFoldedType !== QEnums.FOLDED_POST_SUBSEQUENT
 
     Accessible.role: Accessible.Button
@@ -172,7 +173,7 @@ Rectangle {
                         return guiSettings.threadStartColor(threadColor)
                     } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
                                (postThreadType & QEnums.THREAD_ENTRY)){
-                        return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : guiSettings.threadEntryColor(threadColor)
+                        return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : getThreadEntryColor(threadColor)
                     } else if (postThreadType & QEnums.THREAD_TOP) {
                         return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
                     } else if (postThreadType & QEnums.THREAD_PARENT) {
@@ -333,7 +334,7 @@ Rectangle {
                                 return guiSettings.threadMidColor(threadColor)
                             case QEnums.POST_THREAD: {
                                 if (postThreadType & QEnums.THREAD_ENTRY) {
-                                    return guiSettings.threadEntryColor(threadColor)
+                                    return getThreadEntryColor(threadColor)
                                 } else if ((postThreadType & QEnums.THREAD_PARENT) ||
                                         (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
                                     return guiSettings.threadStartColor(threadColor)
@@ -356,7 +357,7 @@ Rectangle {
                                 return guiSettings.threadEndColor(threadColor)
                             case QEnums.POST_THREAD: {
                                 if (postThreadType & QEnums.THREAD_ENTRY) {
-                                    return guiSettings.threadEntryColor(threadColor)
+                                    return getThreadEntryColor(threadColor)
                                 } else if (postThreadType & QEnums.THREAD_PARENT) {
                                     return guiSettings.threadStartColor(threadColor)
                                 } else if (postThreadType & QEnums.THREAD_LEAF) {
@@ -379,7 +380,7 @@ Rectangle {
                 y: 5
                 width: parent.width - 13
                 author: postEntry.author
-                visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
+                visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
                 onClicked: skywalker.getDetailedProfile(author.did)
 
@@ -419,7 +420,7 @@ Rectangle {
 
             Loader {
                 width: parent.width
-                active: threadBarVisible
+                active: threadBarVisible && (!unrollThread || postEntry.index == 0)
                 visible: status == Loader.Ready
 
                 sourceComponent: PostHeader {
@@ -430,7 +431,7 @@ Rectangle {
             }
             Loader {
                 width: parent.width
-                active: !threadBarVisible
+                active: !threadBarVisible && (!unrollThread || postEntry.index == 0)
                 visible: status == Loader.Ready
 
                 sourceComponent: PostHeaderWithAvatar {
@@ -477,13 +478,14 @@ Rectangle {
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
                 postMuted: postEntry.postMutedReason
-                postIsThread: postEntry.postIsThread
+                postIsThread: postEntry.postIsThread && !postEntry.unrollThread
                 postVideo: postEntry.postVideo
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
-                detailedView: postThreadType & QEnums.THREAD_ENTRY
+                detailedView: (postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread
+                initialShowMaxTextLines: unrollThread ? maxTextLines : 25
                 bodyBackgroundColor: postEntry.color.toString()
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
@@ -495,7 +497,7 @@ Rectangle {
             // Reposts and likes in detailed view of post entry in thread view
             Loader {
                 width: parent.width
-                active: postThreadType & QEnums.THREAD_ENTRY
+                active: (postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread
                 visible: status == Loader.Ready
                 sourceComponent: Flow {
                     width: parent.width
@@ -528,10 +530,11 @@ Rectangle {
 
             // Stats
             Loader {
-                active: true
+                active: !unrollThread
                 width: parent.width
                 height: guiSettings.statsHeight + 10
                 asynchronous: true
+                visible: !unrollThread
 
                 sourceComponent: PostStats {
                     width: parent.width
@@ -618,6 +621,7 @@ Rectangle {
                 width: parent.width
                 active: (postThreadType & QEnums.THREAD_LEAF) &&
                         !(postThreadType & QEnums.THREAD_ENTRY) &&
+                        !unrollThread &&
                         postReplyCount > 0
                 visible: status == Loader.Ready
 
@@ -641,6 +645,7 @@ Rectangle {
                 active: postType === QEnums.POST_THREAD &&
                         !(postThreadType & QEnums.THREAD_LEAF) &&
                         !(postThreadType & QEnums.THREAD_ENTRY) &&
+                        !unrollThread &&
                         postReplyCount > 1
                 visible: status == Loader.Ready
 
@@ -773,7 +778,7 @@ Rectangle {
             Layout.preferredWidth: threadColumnWidth
             Layout.preferredHeight: postEntry.margin
             color: "transparent"
-            visible: threadBarVisible
+            visible: threadBarVisible && !unrollThread
 
             Rectangle {
                 x: 8 + (avatarImg.width - width) / 2
@@ -789,7 +794,7 @@ Rectangle {
                         return guiSettings.threadMidColor(threadColor)
                     case QEnums.POST_THREAD: {
                         if (postThreadType & QEnums.THREAD_ENTRY)  {
-                            return guiSettings.threadEntryColor(threadColor)
+                            return getThreadEntryColor(threadColor)
                         }
                         if (postThreadType & QEnums.THREAD_LEAF) {
                             return guiSettings.backgroundColor
@@ -810,6 +815,7 @@ Rectangle {
             Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: postEntry.margin
             color: "transparent"
+            visible: !unrollThread
         }
 
         // Post/Thread separator
@@ -819,7 +825,7 @@ Rectangle {
             Layout.preferredHeight: 1
             color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
             visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
-                (postThreadType & QEnums.THREAD_LEAF)
+                ((postThreadType & QEnums.THREAD_LEAF) && !unrollThread)
         }
 
         // End of feed indication
@@ -835,7 +841,7 @@ Rectangle {
                 bottomPadding: 50
                 elide: Text.ElideRight
                 color: guiSettings.textColor
-                text: qsTr("End of feed")
+                text: unrollThread ? qsTr("End of thread") : qsTr("End of feed")
                 font.italic: true
             }
         }
@@ -844,7 +850,7 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
-        enabled: !(postThreadType & QEnums.THREAD_ENTRY)
+        enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !unrollThread
         onClicked: {
             if (swipeMode)
                 activateSwipe()
@@ -867,7 +873,7 @@ Rectangle {
     }
 
     function openPostThread() {
-        if (!(postThreadType & QEnums.THREAD_ENTRY))
+        if (!(postThreadType & QEnums.THREAD_ENTRY) && !unrollThread)
         {
             if (!postIsPlaceHolder && postUri)
                 skywalker.getPostThread(postUri)
@@ -922,6 +928,10 @@ Rectangle {
             return postBody.getMuteText()
 
         return postContentWarning
+    }
+
+    function getThreadEntryColor(color) {
+        return guiSettings.threadEntryColor(color)
     }
 
     function checkOnScreen() {

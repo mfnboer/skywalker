@@ -539,6 +539,11 @@ QList<ImageView> Post::getImages() const
     return images;
 }
 
+bool Post::hasImages() const
+{
+    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+}
+
 QList<ImageView> Post::getDraftImages() const
 {
     if (!mPost)
@@ -576,6 +581,11 @@ VideoView::Ptr Post::getVideoView() const
     return std::make_unique<VideoView>(video);
 }
 
+bool Post::hasVideo() const
+{
+    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+}
+
 VideoView::Ptr Post::getDraftVideoView() const
 {
     auto videoView = getVideoView();
@@ -611,6 +621,11 @@ ExternalView::Ptr Post::getExternalView() const
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mPost->mEmbed->mEmbed)->mExternal;
     return std::make_unique<ExternalView>(external);
+}
+
+bool Post::hasExternal() const
+{
+    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
 }
 
 RecordView::Ptr Post::getRecordView() const
@@ -939,9 +954,6 @@ std::vector<QString> Post::getWebLinks() const
 
 QEnums::TripleBool Post::isThread() const
 {
-    if (mIsThreadOverride)
-        return *mIsThreadOverride;
-
     if (isPlaceHolder())
         return QEnums::TRIPLE_BOOL_NO;
 

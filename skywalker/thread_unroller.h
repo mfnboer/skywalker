@@ -12,6 +12,8 @@ public:
     static std::deque<Post> unrollThread(const std::deque<Post>& thread);
 
 private:
+    static std::pair<int, Post> createThreadPart(const std::deque<Post>& thread, int startIndex);
+    static bool morePostsCanBeAdded(const Post& post);
 };
 
 }

@@ -84,10 +84,13 @@ public:
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const override;
+    bool hasImages() const;
     QList<ImageView> getDraftImages() const;
     VideoView::Ptr getVideoView() const override;
+    bool hasVideo() const;
     VideoView::Ptr getDraftVideoView() const;
     ExternalView::Ptr getExternalView() const override;
+    bool hasExternal() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
     RecordView::SharedPtr getRecordViewFromRecordOrRecordWithMedia() const;
@@ -148,7 +151,6 @@ public:
     void setPinned(bool pinned) { mPinned = pinned; }
 
     QEnums::TripleBool isThread() const;
-    void setIsThreadOverride(QEnums::TripleBool isThread) { mIsThreadOverride = isThread; }
 
     QJsonObject toJson() const;
 
@@ -190,7 +192,6 @@ private:
     bool mNotSupported = false;
     QString mUnsupportedType;
     bool mIsBookmarked = false;
-    std::optional<QEnums::TripleBool> mIsThreadOverride;
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;

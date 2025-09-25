@@ -23,7 +23,8 @@ Column {
     property var postRecord // recordview
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
-    property int maxTextLines: 1000
+    property int initialShowMaxTextLines: 25
+    property int maxTextLines: 10000
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property string borderColor: guiSettings.borderColor
     property bool showWarnedPost: false
@@ -49,7 +50,7 @@ Column {
         width: parent.width
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        initialShowMaxLineCount: Math.min(maxTextLines, 25)
+        initialShowMaxLineCount: Math.min(maxTextLines, initialShowMaxTextLines)
         maximumLineCount: maxTextLines
         ellipsisBackgroundColor: postBody.bodyBackgroundColor
         elide: Text.ElideRight
