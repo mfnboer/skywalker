@@ -141,6 +141,7 @@ public:
     void setFoldedPostType(QEnums::FoldedPostType foldedPostType) { mFoldedPostType = foldedPostType; }
 
     int getThreadType() const { return mThreadType; }
+    void setThreadType(int threadType) { mThreadType = threadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
     void removeThreadType(QEnums::ThreadPostType threadType) { mThreadType &= ~threadType; }
     int getThreadIndentLevel() const { return mThreadIndentLevel; }

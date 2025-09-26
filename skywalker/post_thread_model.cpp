@@ -39,7 +39,6 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
         return -1;
     }
 
-    mFirstPostFromUnrolledThread = page->mFirstPostFromUnrolledThread;
     const size_t newRowCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex + 1;
     const size_t pageInsertCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex;
 
@@ -217,7 +216,30 @@ void PostThreadModel::showHiddenReplies()
     qDebug() << "New feed size:" << mFeed.size();
 }
 
-QString PostThreadModel::getFirstPostText() const
+void PostThreadModel::unrollThread()
+{
+    qDebug() << "Unroll thread, feed size:" << mFeed.size();
+
+    if (mFeed.empty())
+        return;
+
+    if (!mUnrollThread)
+        return;
+
+    mFirstPostFromUnrolledThread = mFeed.front();
+    const auto unrolledFeed = ThreadUnroller::unrollThread(mFeed);
+    qDebug() << "Unrolled feeds szie:" << unrolledFeed.size();
+
+    beginRemoveRows({}, 0, mFeed.size() - 1);
+    mFeed.clear();
+    endRemoveRows();
+
+    beginInsertRows({}, 0, unrolledFeed.size() - 1);
+    mFeed = unrolledFeed;
+    endInsertRows();
+}
+
+QString PostThreadModel::getFirstUnrolledPostText() const
 {
     if (!mFirstPostFromUnrolledThread)
         return "";
@@ -225,7 +247,7 @@ QString PostThreadModel::getFirstPostText() const
     return mFirstPostFromUnrolledThread->getFormattedText();
 }
 
-QString PostThreadModel::getFirstPostPlainText() const
+QString PostThreadModel::getFirstUnrolledPostPlainText() const
 {
     if (!mFirstPostFromUnrolledThread)
         return "";
@@ -609,12 +631,6 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
             page->addReplyThread(*reply, directReply, firstReply, indentLevel);
             firstReply = false;
         }
-    }
-
-    if (mUnrollThread)
-    {
-        page->mFirstPostFromUnrolledThread = Post(page->mFeed.front());
-        page->mFeed = ThreadUnroller::unrollThread(page->mFeed);
     }
 
     return page;

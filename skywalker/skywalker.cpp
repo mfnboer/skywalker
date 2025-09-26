@@ -1703,8 +1703,6 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread, int modelId
                     mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                     mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
-                // TODO: the thread gets unrolled right away, causing further thread posts
-                // no to be retrieved as getPostToAttachMore() does not work anymore.
                 int postEntryIndex = model->setPostThread(thread);
 
                 if (postEntryIndex < 0)
@@ -1718,14 +1716,30 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread, int modelId
                 const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
 
                 if (!uri.isEmpty())
+                {
                     addPostThread(uri, id);
+                }
                 else
+                {
                     qDebug() << "No more posts to add";
+
+                    if (unrollThread)
+                    {
+                        auto* m = getPostThreadModel(id);
+                        Q_ASSERT(m);
+
+                        if (m)
+                            m->unrollThread();
+                        else
+                            qWarning() << "Model does not exist:" << id;
+                    }
+                }
 
                 emit postThreadOk(id, postEntryIndex);
             }
             else
             {
+                // TODO: can be dropped when we drop modelId
                 auto model = getPostThreadModel(modelId);
 
                 if (model)
@@ -1749,6 +1763,11 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
     if (maxPages <= 0)
     {
         qDebug() << "Max pages reached";
+        auto model = getPostThreadModel(modelId);
+
+        if (model && model->isUnrollThread())
+            model->unrollThread();
+
         return;
     }
 
@@ -1772,10 +1791,15 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
 
                     if (!leafUri.isEmpty())
                         addPostThread(leafUri, modelId, maxPages - 1);
+                    else if (model->isUnrollThread())
+                        model->unrollThread();
                 }
                 else
                 {
                     qDebug() << "No more posts to add";
+
+                    if (model->isUnrollThread())
+                        model->unrollThread();
                 }
             }
             else

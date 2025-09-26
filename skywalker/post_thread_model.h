@@ -9,7 +9,7 @@ namespace Skywalker {
 class PostThreadModel : public AbstractPostFeedModel
 {
     Q_OBJECT
-    Q_PROPERTY(bool unrollThread READ getUnrollThread CONSTANT FINAL)
+    Q_PROPERTY(bool unrollThread READ isUnrollThread CONSTANT FINAL)
     Q_PROPERTY(QEnums::ReplyRestriction replyRestriction READ getReplyRestriction NOTIFY threadReplyRestrictionChanged FINAL)
     Q_PROPERTY(BasicProfile replyRestrictionAuthor READ getReplyRestrictionAuthor NOTIFY threadReplyRestrictionChanged FINAL)
     Q_PROPERTY(ListViewBasicList replyRestrictionLists READ getReplyRestrictionLists NOTIFY threadReplyRestrictionListsChanged FINAL)
@@ -39,12 +39,13 @@ public:
     QString getPostToAttachMore() const;
 
     QString getRootUri() const;
-    bool getUnrollThread() const { return mUnrollThread; }
+    bool isUnrollThread() const { return mUnrollThread; }
     Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
     Q_INVOKABLE void showHiddenReplies();
 
-    Q_INVOKABLE QString getFirstPostText() const;
-    Q_INVOKABLE QString getFirstPostPlainText() const;
+    void unrollThread();
+    Q_INVOKABLE QString getFirstUnrolledPostText() const;
+    Q_INVOKABLE QString getFirstUnrolledPostPlainText() const;
     Q_INVOKABLE QString getFullThreadPlainText() const;
 
     // May return UNKNOWN if there are reply restrictions. This will happen
@@ -71,7 +72,6 @@ private:
         explicit Page(PostThreadModel& postFeedModel) : mPostFeedModel(postFeedModel) {}
 
         std::deque<Post> mFeed;
-        std::optional<Post> mFirstPostFromUnrolledThread;
         ATProto::AppBskyFeed::PostThread::SharedPtr mRawThread;
         int mEntryPostIndex = 0;
         int mFirstHiddenReplyIndex = -1;

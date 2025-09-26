@@ -320,7 +320,7 @@ Rectangle {
                 x: avatarImg.x + (avatarImg.width - width) / 2
                 y: ((postType === QEnums.POST_ROOT && !postIsReply) || ((postThreadType & QEnums.THREAD_TOP) && !postIsReply)) ? avatarImg.y + avatarImg.height / 2 : 0
                 width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
-                height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
+                height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 && !unrollThread ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
 
                 // Gradient is used display thread context.
                 gradient: Gradient {
@@ -355,14 +355,14 @@ Rectangle {
                             case QEnums.POST_STANDALONE:
                                 return guiSettings.backgroundColor
                             case QEnums.POST_LAST_REPLY:
-                                return guiSettings.threadEndColor(threadColor)
+                                return getThreadEndColor(threadColor)
                             case QEnums.POST_THREAD: {
                                 if (postThreadType & QEnums.THREAD_ENTRY) {
                                     return getThreadEntryColor(threadColor)
                                 } else if (postThreadType & QEnums.THREAD_PARENT) {
                                     return guiSettings.threadStartColor(threadColor)
                                 } else if (postThreadType & QEnums.THREAD_LEAF) {
-                                    return guiSettings.threadEndColor(threadColor)
+                                    return getThreadEndColor(threadColor)
                                 }
 
                                 return guiSettings.threadMidColor(threadColor)
@@ -559,7 +559,6 @@ Rectangle {
                     bookmarkTransient: postBookmarkTransient
                     isThread: postIsThread
                     isUnrolledThread: postEntry.unrollThread
-                    plainTextForEmoji: postPlainText
                     showViewThread: swipeMode
                     record: postRecord
                     recordWithMedia: postRecordWithMedia
@@ -568,7 +567,7 @@ Rectangle {
                     onReply: {
                         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                         root.composeReply(postUri, postCid,
-                                          unrollThread ? postThreadModel?.getFirstPostText() : postText,
+                                          postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                           postIndexedDateTime,
                                           author, postReplyRootUri, postReplyRootCid, lang,
                                           postMentionDids)
@@ -576,14 +575,14 @@ Rectangle {
 
                     onRepost: {
                         root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
-                                    unrollThread ? postThreadModel?.getFirstPostText() : postText,
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                     postIndexedDateTime, author, postEmbeddingDisabled,
-                                    unrollThread ? postThreadModel?.getFirstPostPlainText() : postPlainText)
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText)
                     }
 
                     onQuotePost: {
                         root.quotePost(postUri, postCid,
-                                       unrollThread ? postThreadModel?.getFirstPostText() : postText,
+                                       postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                        postIndexedDateTime, author, postEmbeddingDisabled)
                     }
 
@@ -611,14 +610,14 @@ Rectangle {
                     onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
                     onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
                     onDeletePost: confirmDelete()
-                    onCopyPostText: skywalker.copyPostTextToClipboard(unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onReportPost: root.reportPost(postUri, postCid, unrollThread ? postThreadModel?.getFirstPostText() : postText, postIndexedDateTime, author)
-                    onTranslatePost: root.translateText(unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                    onCopyPostText: skywalker.copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                    onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author)
+                    onTranslatePost: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                     onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
                     onPin: root.pinPost(postUri, postCid)
                     onUnpin: root.unpinPost(postCid)
                     onBlockAuthor: root.blockAuthor(author)
-                    onShowEmojiNames: root.showEmojiNamesList(unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                    onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                     onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
                     onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
                 }
@@ -804,7 +803,7 @@ Rectangle {
                             return getThreadEntryColor(threadColor)
                         }
                         if (postThreadType & QEnums.THREAD_LEAF) {
-                            return guiSettings.backgroundColor
+                            return getThreadEndColor(threadColor)
                         } else if (postThreadType & QEnums.THREAD_PARENT)  {
                             return guiSettings.threadStartColor(threadColor)
                         }
@@ -940,6 +939,10 @@ Rectangle {
 
     function getThreadEntryColor(color) {
         return guiSettings.threadEntryColor(color)
+    }
+
+    function getThreadEndColor(color) {
+        return unrollThread ? guiSettings.threadMidColor(color) : guiSettings.threadEndColor(color)
     }
 
     function checkOnScreen() {

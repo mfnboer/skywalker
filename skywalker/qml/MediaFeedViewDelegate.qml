@@ -368,7 +368,6 @@ Rectangle {
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
                 isThread: postIsThread
-                plainTextForEmoji: postPlainText
                 showViewThread: true
                 record: postRecord
                 recordWithMedia: postRecordWithMedia

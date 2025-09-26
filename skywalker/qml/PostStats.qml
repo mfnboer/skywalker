@@ -22,7 +22,6 @@ Item {
     required property bool bookmarkTransient
     required property bool isThread
     property bool isUnrolledThread: false
-    property string plainTextForEmoji: ""
     property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
@@ -276,7 +275,6 @@ Item {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Emoji names")
-                    visible: UnicodeFonts.hasEmoji(plainTextForEmoji)
                     onTriggered: showEmojiNames()
 
                     MenuItemSvg { svg: SvgOutline.emojiLanguage }

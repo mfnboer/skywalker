@@ -22,12 +22,16 @@ std::deque<Post> ThreadUnroller::unrollThread(const std::deque<Post>& thread)
     }
 
     setThreadStats(thread, unrolledThread);
+    setThreadTypes(unrolledThread);
     return unrolledThread;
 }
 
 std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& thread, int startIndex)
 {
     Q_ASSERT(!thread.empty());
+    Q_ASSERT(startIndex >= 0);
+    Q_ASSERT(startIndex < (int)thread.size());
+
     const Post& firstPost = thread[startIndex];
 
     if ((int)thread.size() == startIndex + 1)
@@ -36,9 +40,8 @@ std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& th
     if (!morePostsCanBeAdded(firstPost))
         return { startIndex + 1, firstPost };
 
-    Post unrolledPost(firstPost);
-    QString plainText = unrolledPost.getText();
-    QString formattedText = unrolledPost.getFormattedText();
+    QString plainText = firstPost.getText();
+    QString formattedText = firstPost.getFormattedText();
 
     int postIndex = startIndex + 1;
     for (; postIndex < (int)thread.size(); ++postIndex)
@@ -57,6 +60,7 @@ std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& th
         }
     }
 
+    Post unrolledPost(thread[postIndex - 1]);
     unrolledPost.setOverrideText(plainText);
     unrolledPost.setOverrideFormattedText(formattedText);
 
@@ -108,6 +112,28 @@ void ThreadUnroller::setThreadStats(const std::deque<Post>& rawThread, std::dequ
     lastPost.setOverrideRepostCount(repostCount);
     lastPost.setOverrideLikeCount(likeCount);
     lastPost.setOverrideQuoteCount(quoteCount);
+}
+
+void ThreadUnroller::setThreadTypes(std::deque<Post>& unrolledThread)
+{
+    if (unrolledThread.empty())
+        return;
+
+    for (auto& post : unrolledThread)
+        post.setThreadType(QEnums::THREAD_NONE);
+
+    unrolledThread.front().addThreadType(QEnums::THREAD_TOP);
+    unrolledThread.back().addThreadType(QEnums::THREAD_LEAF);
+
+    if (unrolledThread.size() < 2)
+        return;
+
+    unrolledThread.front().addThreadType(QEnums::THREAD_PARENT);
+    unrolledThread[1].addThreadType(QEnums::THREAD_FIRST_DIRECT_CHILD);
+    unrolledThread[1].addThreadType(QEnums::THREAD_DIRECT_CHILD);
+
+    for (int i = 1; i < (int)unrolledThread.size(); ++i)
+        unrolledThread[i].addThreadType(QEnums::THREAD_CHILD);
 }
 
 bool ThreadUnroller::morePostsCanBeAdded(const Post& post)
