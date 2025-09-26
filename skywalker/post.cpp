@@ -304,6 +304,9 @@ QString Post::getReasonRepostCid() const
 
 bool Post::isReply() const
 {
+    if (mOverrideIsReply)
+        return *mOverrideIsReply;
+
     if (mFeedViewPost && mFeedViewPost->mReply)
         return true;
 

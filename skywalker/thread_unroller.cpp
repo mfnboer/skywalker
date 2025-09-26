@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "thread_unroller.h"
 #include "unicode_fonts.h"
+#include <QRegularExpression>
 
 namespace Skywalker {
 
@@ -33,25 +34,36 @@ std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& th
     Q_ASSERT(startIndex < (int)thread.size());
 
     const Post& firstPost = thread[startIndex];
-
-    if ((int)thread.size() == startIndex + 1)
-        return { startIndex + 1, firstPost };
-
-    if (!morePostsCanBeAdded(firstPost))
-        return { startIndex + 1, firstPost };
-
     QString plainText = firstPost.getText();
+    QString counter = getCounter(plainText);
+    removeCounterFromPlainText(plainText, counter);
     QString formattedText = firstPost.getFormattedText();
+    removeCounterFromFormattedText(formattedText, counter);
+
+    if ((int)thread.size() == startIndex + 1 || !morePostsCanBeAdded(firstPost))
+    {
+        Post unrolledPost(firstPost);
+        unrolledPost.setOverrideText(plainText);
+        unrolledPost.setOverrideFormattedText(formattedText);
+        return { startIndex + 1, unrolledPost };
+    }
 
     int postIndex = startIndex + 1;
     for (; postIndex < (int)thread.size(); ++postIndex)
     {
         const auto& post = thread[postIndex];
-        bool phraseEnding = UnicodeFonts::hasPhraseEnding(plainText);
-        plainText += phraseEnding ? "\n\n" : " ";
-        plainText += post.getText();
-        formattedText += phraseEnding ? "<br><br>" : " ";
-        formattedText += post.getFormattedText();
+        QString postText = post.getText();
+        counter = getCounter(postText);
+        removeCounterFromPlainText(postText, counter);
+        QString postFormattedText = post.getFormattedText();
+        removeCounterFromFormattedText(postFormattedText, counter);
+
+        const bool newPhrase = UnicodeFonts::hasPhraseEnding(plainText) || UnicodeFonts::hasPhraseStarting(postText);
+
+        plainText += newPhrase ? "\n\n" : " ";
+        plainText += postText;
+        formattedText += newPhrase ? "<br><br>" : " ";
+        formattedText += postFormattedText;
 
         if (!morePostsCanBeAdded(post))
         {
@@ -125,6 +137,11 @@ void ThreadUnroller::setThreadTypes(std::deque<Post>& unrolledThread)
     unrolledThread.front().addThreadType(QEnums::THREAD_TOP);
     unrolledThread.back().addThreadType(QEnums::THREAD_LEAF);
 
+    // Could be a reply due to posts getting merged. Make it not a reply, such
+    // that the visualizer will offer the user to show older posts of the thread.
+    // The thread is completely unrolled.
+    unrolledThread.front().setOverrideIsReply(false);
+
     if (unrolledThread.size() < 2)
         return;
 
@@ -139,6 +156,107 @@ void ThreadUnroller::setThreadTypes(std::deque<Post>& unrolledThread)
 bool ThreadUnroller::morePostsCanBeAdded(const Post& post)
 {
     return !(post.hasImages() || post.hasVideo() || post.hasExternal() || post.isQuotePost());
+}
+
+static QString matchRegexes(const std::vector<QRegularExpression>& regexes, const QString& text)
+{
+    for (const auto& re : regexes)
+    {
+        auto match = re.match(text);
+
+        if (match.hasMatch())
+            return match.captured();
+    }
+
+    return {};
+}
+
+QString ThreadUnroller::getCounter(const QString& text)
+{
+    static const std::vector<QRegularExpression> counterREs = {
+        QRegularExpression{ R"(\( *[0-9]+ */ *[0-9]+ *\) *$)" },
+        QRegularExpression{ R"(\[ *[0-9]+ */ *[0-9]+ *\] *$)" },
+        QRegularExpression{ R"([0-9]+ */ *[0-9]+ *$)" },
+        QRegularExpression{ R"([0-9]+ */ *n *$)" },
+        QRegularExpression{ R"([0-9]+ */ *$)" },
+        QRegularExpression{ R"(/ *[0-9]+ *$)" }
+    };
+
+    QString counter = matchRegexes(counterREs, text);
+    qDebug() << "Match counter:" << counter << "text:" << text;
+
+    if (counter.isEmpty())
+        return {};
+
+    int end = text.size() - counter.size();
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    boundaryFinder.setPosition(end);
+    int prev = boundaryFinder.toPreviousBoundary();
+    QString prefix = "";
+    bool emojiAllowed = true;
+    QString emoji;
+
+    while (prev >= 0)
+    {
+        const QString grapheme = text.sliced(prev, end - prev);
+
+        if (emojiAllowed && UnicodeFonts::isEmoji(grapheme))
+        {
+            prefix = grapheme + prefix;
+            emoji = grapheme;
+            emojiAllowed = false;
+        }
+        else if (grapheme == " ")
+        {
+            prefix = grapheme + prefix;
+        }
+        else if (grapheme == "\n")
+        {
+            prefix = grapheme + prefix;
+            emojiAllowed = false;
+        }
+        else
+        {
+            break;
+        }
+
+        end = prev;
+        prev = boundaryFinder.toPreviousBoundary();
+    }
+
+    // If the counter contains an emoji, we expect white space in front of it
+    if (!emoji.isEmpty() && prefix.startsWith(emoji))
+        prefix.slice(emoji.size());
+
+    counter = prefix + counter;
+    qDebug() << "Prefixed counter:" << counter;
+    return counter;
+}
+
+void ThreadUnroller::removeCounterFromPlainText(QString& text, const QString& counter)
+{
+    if (counter.isEmpty())
+        return;
+
+    text.slice(0, text.size() - counter.size());
+}
+
+void ThreadUnroller::removeCounterFromFormattedText(QString& text, const QString& counter)
+{
+    if (counter.isEmpty())
+        return;
+
+    QString htmlCounter(counter);
+    htmlCounter.replace('\n', "<br>");
+    int index = text.lastIndexOf(htmlCounter);
+
+    if (index < 0)
+    {
+        qWarning() << "Cannot find counter:" << htmlCounter << "text:" << text;
+        return;
+    }
+
+    text.remove(index, htmlCounter.size());
 }
 
 }

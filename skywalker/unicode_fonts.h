@@ -13,6 +13,7 @@ class UnicodeFonts : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString THREAD_SYMBOL MEMBER THREAD_SYMBOL CONSTANT)
+    Q_PROPERTY(QString THREAD_LINK MEMBER THREAD_LINK CONSTANT)
     QML_ELEMENT
     QML_SINGLETON
 
@@ -20,6 +21,7 @@ public:
     using FontType = QEnums::FontType;
 
     static constexpr const char* THREAD_SYMBOL = "🧵";
+    static constexpr const char* THREAD_LINK = "unroll_thread";
 
     static bool isAlpha(QChar c);
     static bool isDigit(QChar c);
@@ -49,10 +51,11 @@ public:
     static QString setEmojiFontCombinedEmojis(const QString& text);
 
     static bool hasPhraseEnding(const QString& text);
+    static bool hasPhraseStarting(const QString& text);
+    static QString getLastGrapheme(const QString& text);
 
 private:
     static uint convertToSmallCaps(QChar c);
-    static QString getLastGrapheme(const QString& text);
 };
 
 }

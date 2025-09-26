@@ -73,6 +73,7 @@ public:
     QString getReasonRepostUri() const;
     QString getReasonRepostCid() const;
     bool isReply() const;
+    void setOverrideIsReply(bool isReply) { mOverrideIsReply = isReply; }
     std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyToRef() const;
@@ -187,6 +188,7 @@ private:
     QString mOverrideFormattedText;
 
     QDateTime mOverrideIndexedAt;
+    std::optional<bool> mOverrideIsReply;
 
     int mGapId = 0;
 

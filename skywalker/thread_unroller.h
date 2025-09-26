@@ -16,6 +16,9 @@ private:
     static void setThreadStats(const std::deque<Post>& rawThread, std::deque<Post>& unrolledThread);
     static void setThreadTypes(std::deque<Post>& unrolledThread);
     static bool morePostsCanBeAdded(const Post& post);
+    static QString getCounter(const QString& text);
+    static void removeCounterFromPlainText(QString& text, const QString& counter);
+    static void removeCounterFromFormattedText(QString& text, const QString& counter);
 };
 
 }

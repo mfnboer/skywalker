@@ -34,14 +34,18 @@ Column {
     property bool isDraft: false
     property bool swipeMode: false
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
+    readonly property bool replaceThreadIndicator: postIsThread && !showThreadIndicator
 
     // The font-size is set to make sure the thread indicator is in normal text size when the
     // post is giant emoji only.
     // The <div> cause a line break if there is post text before. In an empty post no newline
     // is prepended.
-    readonly property string displayText: postText + (showThreadIndicator ? `<div style="font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</div>` : "")
+    readonly property string displayText:
+        (replaceThreadIndicator ? postText.replace(UnicodeFonts.THREAD_SYMBOL, `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none">${UnicodeFonts.THREAD_SYMBOL}</a>`) : postText) +
+        (showThreadIndicator ? `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none; font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</a>` : "")
 
     signal activateSwipe
+    signal unrollThread
 
     id: postBody
 
@@ -66,6 +70,8 @@ Column {
         LinkCatcher {
             z: parent.z - 1
             containingText: postPlainText
+
+            onUnrollThread: postBody.unrollThread()
         }
 
         Rectangle {

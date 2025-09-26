@@ -486,13 +486,18 @@ Rectangle {
                 postRecordWithMedia: postEntry.postRecordWithMedia
                 postDateTime: postEntry.postIndexedDateTime
                 detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
-                initialShowMaxTextLines: unrollThread ? maxTextLines : 25
+                initialShowMaxTextLines: postEntry.unrollThread ? maxTextLines : 25
                 bodyBackgroundColor: postEntry.color.toString()
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
                 swipeMode: postEntry.swipeMode
 
                 onActivateSwipe: postEntry.activateSwipe()
+                onUnrollThread: {
+                    console.debug("UNROLL!!!")
+                    if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
+                        skywalker.getPostThread(postUri, true)
+                }
             }
 
             // Reposts and likes in detailed view of post entry in thread view

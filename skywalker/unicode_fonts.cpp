@@ -446,6 +446,12 @@ bool UnicodeFonts::hasPhraseEnding(const QString& text)
     return EmojiNames::isEmoji(lastGrapheme);
 }
 
+bool UnicodeFonts::hasPhraseStarting(const QString& text)
+{
+    const auto firstChar = text.front();
+    return firstChar.isUpper() || !firstChar.isLetter();
+}
+
 QString UnicodeFonts::getLastGrapheme(const QString& text)
 {
     QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
