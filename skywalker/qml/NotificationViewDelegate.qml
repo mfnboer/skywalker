@@ -283,6 +283,7 @@ Rectangle {
                     postContentWarning: notificationPostContentWarning
                     postMuted: notificationPostMutedReason
                     postIsThread: false
+                    postIsThreadReply: false
                     postVideo: notificationPostVideo
                     postExternal: notificationPostExternal
                     postRecord: notificationPostRecord
@@ -489,6 +490,7 @@ Rectangle {
                     postContentWarning: ""
                     postMuted: QEnums.MUTED_POST_NONE
                     postIsThread: false
+                    postIsThreadReply: false
                     postDateTime: notificationReasonPostTimestamp
                     postVideo: notificationReasonPostVideo
                     postExternal: notificationReasonPostExternal

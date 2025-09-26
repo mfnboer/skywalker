@@ -1025,6 +1025,15 @@ QEnums::TripleBool Post::isThread() const
     return *isThread ? QEnums::TRIPLE_BOOL_YES : QEnums::TRIPLE_BOOL_NO;
 }
 
+bool Post::isThreadReply() const
+{
+    const QString did = getAuthorDid();
+
+    // NOTE: this is not fool proof as there could be replies from other authors
+    // between the root and the parent of this post.
+    return isReply() && did == getReplyToAuthorDid() && did == getReplyRootAuthorDid();
+}
+
 QJsonObject Post::toJson() const
 {
     QJsonObject json;

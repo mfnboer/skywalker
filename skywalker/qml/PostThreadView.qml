@@ -140,7 +140,7 @@ SkyListView {
             visible: !root.showSideBar
 
             Accessible.role: Accessible.Button
-            Accessible.name: qsTr(`reply to ${(getReplyToAuthor().name)}`)
+            Accessible.name: qsTr(`reply to ${(getReplyToAuthor()?.name)}`)
             Accessible.onPressAction: clicked()
         }
     }

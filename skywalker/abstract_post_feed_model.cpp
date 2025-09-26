@@ -616,6 +616,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         qWarning() << "Invalid isThread:" << isThread;
         return false;
     }
+    case Role::PostIsThreadReply:
+        return post.isThreadReply();
     case Role::PostLocallyDeleted:
     {
         if (getLocallyBlocked(post.getAuthor().getDid()))
@@ -724,6 +726,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostHighlightColor), "postHighlightColor" },
         { int(Role::PostIsPinned), "postIsPinned" },
         { int(Role::PostIsThread), "postIsThread" },
+        { int(Role::PostIsThreadReply), "postIsThreadReply" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };

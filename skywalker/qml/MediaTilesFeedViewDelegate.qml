@@ -63,6 +63,7 @@ Rectangle {
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsThread
+    required property bool postIsThreadReply
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
@@ -200,7 +201,7 @@ Rectangle {
                 authorIsUser: guiSettings.isUser(author)
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
-                isThread: postIsThread
+                isThread: postIsThread || postIsThreadReply
                 showViewThread: true
                 record: postRecord
                 recordWithMedia: postRecordWithMedia

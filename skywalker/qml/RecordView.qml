@@ -64,6 +64,7 @@ Item {
                 postContentWarning: record.contentWarning
                 postMuted: record.mutedReason
                 postIsThread: record.postIsThread === QEnums.TRIPLE_BOOL_YES
+                postIsThreadReply: record.postIsThreadReply
                 postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime

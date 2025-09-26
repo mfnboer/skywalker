@@ -18,6 +18,7 @@ Column {
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
     required property bool postIsThread
+    required property bool postIsThreadReply
     property var postVideo // videoView
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
@@ -34,7 +35,7 @@ Column {
     property bool isDraft: false
     property bool swipeMode: false
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
-    readonly property bool replaceThreadIndicator: postIsThread && !showThreadIndicator
+    readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
 
     // The font-size is set to make sure the thread indicator is in normal text size when the
     // post is giant emoji only.

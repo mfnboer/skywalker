@@ -70,6 +70,7 @@ Rectangle {
     required property string postHighlightColor
     required property bool postIsPinned
     required property bool postIsThread
+    required property bool postIsThreadReply
     required property bool postLocallyDeleted
     required property bool endOfFeed
     property bool unrollThread: false
@@ -480,6 +481,7 @@ Rectangle {
                 postContentWarning: postEntry.postContentWarning
                 postMuted: postEntry.postMutedReason
                 postIsThread: postEntry.postIsThread && !postEntry.unrollThread
+                postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
                 postVideo: postEntry.postVideo
                 postExternal: postEntry.postExternal
                 postRecord: postEntry.postRecord
@@ -562,7 +564,7 @@ Rectangle {
                     authorIsUser: guiSettings.isUser(author)
                     isBookmarked: postBookmarked
                     bookmarkTransient: postBookmarkTransient
-                    isThread: postIsThread
+                    isThread: postIsThread || postIsThreadReply
                     isUnrolledThread: postEntry.unrollThread
                     showViewThread: swipeMode
                     record: postRecord
