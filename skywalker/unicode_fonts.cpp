@@ -436,6 +436,9 @@ QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
 
 bool UnicodeFonts::hasPhraseEnding(const QString& text)
 {
+    if (text.isEmpty())
+        return false;
+
     const auto lastChar = text.back();
 
     if (lastChar == '.' || lastChar == '!' || lastChar == '?')
@@ -448,6 +451,9 @@ bool UnicodeFonts::hasPhraseEnding(const QString& text)
 
 bool UnicodeFonts::hasPhraseStarting(const QString& text)
 {
+    if (text.isEmpty())
+        return false;
+
     const auto firstChar = text.front();
     return firstChar.isUpper() || !firstChar.isLetter();
 }

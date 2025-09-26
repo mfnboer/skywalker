@@ -179,7 +179,8 @@ QString ThreadUnroller::getCounter(const QString& text)
         QRegularExpression{ R"([0-9]+ */ *[0-9]+ *$)" },
         QRegularExpression{ R"([0-9]+ */ *n *$)" },
         QRegularExpression{ R"([0-9]+ */ *$)" },
-        QRegularExpression{ R"(/ *[0-9]+ *$)" }
+        QRegularExpression{ R"(/ *[0-9]+ *$)" },
+        QRegularExpression{ R"(🧵 *$)" }
     };
 
     QString counter = matchRegexes(counterREs, text);
@@ -193,7 +194,7 @@ QString ThreadUnroller::getCounter(const QString& text)
     boundaryFinder.setPosition(end);
     int prev = boundaryFinder.toPreviousBoundary();
     QString prefix = "";
-    bool emojiAllowed = true;
+    bool emojiAllowed = !counter.startsWith("🧵");
     QString emoji;
 
     while (prev >= 0)

@@ -69,6 +69,11 @@ Item {
                 postExternal: record.external
                 postDateTime: record.postDateTime
                 bodyBackgroundColor: recordView.backgroundColor == "transparent" ? guiSettings.backgroundColor : recordView.backgroundColor
+
+                onUnrollThread: {
+                    if (record.postUri)
+                        skywalker.getPostThread(record.postUri, true)
+                }
             }
         }
 

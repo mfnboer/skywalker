@@ -395,7 +395,7 @@ Pane {
         searchView: rootItem instanceof SearchView ? rootItem : null
         authorView: rootItem instanceof AuthorView ? rootItem : null
         postThreadView: rootItem instanceof PostThreadView ? rootItem : null
-        visible: isBasePage || rootItem instanceof AuthorView || rootItem instanceof PostThreadView
+        visible: isBasePage || rootItem instanceof AuthorView || (rootItem instanceof PostThreadView && !rootItem.isUnrolledThread)
 
         onAddConvoClicked: sideBar.addConvoClicked()
     }

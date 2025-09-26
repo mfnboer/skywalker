@@ -341,6 +341,11 @@ Rectangle {
             postDateTime: videoPage.postIndexedDateTime
             maxTextLines: videoPage.showFullPostText ? 1000 : 2
             bodyBackgroundColor: "transparent"
+
+            onUnrollThread: {
+                if (!postIsPlaceHolder && postUri)
+                    skywalker.getPostThread(postUri, true)
+            }
         }
 
         Loader {

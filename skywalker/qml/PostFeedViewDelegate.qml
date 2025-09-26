@@ -496,7 +496,6 @@ Rectangle {
 
                 onActivateSwipe: postEntry.activateSwipe()
                 onUnrollThread: {
-                    console.debug("UNROLL!!!")
                     if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
                         skywalker.getPostThread(postUri, true)
                 }

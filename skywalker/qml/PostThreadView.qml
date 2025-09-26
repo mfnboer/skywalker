@@ -137,7 +137,7 @@ SkyListView {
             y: -height - 10
             svg: SvgOutline.reply
             overrideOnClicked: () => reply()
-            visible: !root.showSideBar
+            visible: !root.showSideBar && !isUnrolledThread
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr(`reply to ${(getReplyToAuthor()?.name)}`)
