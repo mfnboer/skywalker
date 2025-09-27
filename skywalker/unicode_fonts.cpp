@@ -471,4 +471,19 @@ QString UnicodeFonts::getLastGrapheme(const QString& text)
     return text.sliced(prev, len);
 }
 
+QString UnicodeFonts::turnLastThreadSymbolIntoLink(const QString& text)
+{
+    static const QString THREAD_SYMBOL_STRING(THREAD_SYMBOL);
+    static const QString LINK_TEMPLATE("<a href=\"%1\" style=\"text-decoration: none\">%2</a>");
+    static const QString LINK = LINK_TEMPLATE.arg(THREAD_LINK, THREAD_SYMBOL_STRING);
+
+    int index = text.lastIndexOf(THREAD_SYMBOL_STRING);
+
+    if (index < 0)
+        return text;
+
+    QString result(text);
+    return result.replace(index, THREAD_SYMBOL_STRING.size(), LINK);
+}
+
 }

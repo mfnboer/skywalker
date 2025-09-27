@@ -41,9 +41,8 @@ Column {
     // post is giant emoji only.
     // The <div> cause a line break if there is post text before. In an empty post no newline
     // is prepended.
-    // TODO: only replace last thread symbol
     readonly property string displayText:
-        (replaceThreadIndicator ? postText.replace(UnicodeFonts.THREAD_SYMBOL, `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none">${UnicodeFonts.THREAD_SYMBOL}</a>`) : postText) +
+        (replaceThreadIndicator ? UnicodeFonts.turnLastThreadSymbolIntoLink(postText) : postText) +
         (showThreadIndicator ? `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none; font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</a>` : "")
 
     signal activateSwipe

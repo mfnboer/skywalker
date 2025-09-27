@@ -531,6 +531,13 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                 return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
             }
 
+            // When we unroll a thread we filter out all posts from the same author.
+            // If the author made multiple replies on a post, then we want the oldest,
+            // assuming that the thread was posted in one go, the oldest is most likely
+            // the thread continuation.
+            if (mUnrollThread)
+                return lhsPost->mIndexedAt < rhsPost->mIndexedAt;
+
             // New before old
             return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
         });
@@ -630,6 +637,12 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
             page->addReplyThread(*reply, directReply, firstReply, indentLevel);
             firstReply = false;
+
+            // We only need the first reply in a thread if there are multiple by
+            // the same author. The other replies are most likely comments on the
+            // thread that have been added later.
+            if (mUnrollThread)
+                break;
         }
     }
 
