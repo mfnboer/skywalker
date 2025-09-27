@@ -441,11 +441,16 @@ bool UnicodeFonts::hasPhraseEnding(const QString& text)
 
     const auto lastChar = text.back();
 
-    if (lastChar == '.' || lastChar == '!' || lastChar == '?')
+    static const std::unordered_set<QChar> PHRASE_END_SYMBOLS = {
+        '.', '!', '?', '"', '\'', '`', ':',
+        (int16_t)0x2019, // Right single quotation mark
+        (int16_t)0x201D  // Right double quotation mark
+    };
+
+    if (PHRASE_END_SYMBOLS.contains(lastChar))
         return true;
 
     const QString lastGrapheme = getLastGrapheme(text);
-
     return EmojiNames::isEmoji(lastGrapheme);
 }
 
@@ -456,6 +461,17 @@ bool UnicodeFonts::hasPhraseStarting(const QString& text)
 
     const auto firstChar = text.front();
     return firstChar.isUpper() || !firstChar.isLetter();
+}
+
+QString UnicodeFonts::getFirstGrapheme(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    const int next = boundaryFinder.toNextBoundary();
+
+    if (next == -1)
+        return {};
+
+    return text.sliced(0, next);
 }
 
 QString UnicodeFonts::getLastGrapheme(const QString& text)

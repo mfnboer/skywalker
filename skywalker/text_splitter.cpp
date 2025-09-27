@@ -131,7 +131,7 @@ TextSplitterPart TextSplitter::joinText(
     QString joinedText = text1;
     WebLink::List joinedLinks = embeddedLinks1;
 
-    if (UnicodeFonts::hasPhraseEnding(text1))
+    if (UnicodeFonts::hasPhraseEnding(text1) || UnicodeFonts::hasPhraseStarting(text2))
         joinedText += "\n\n";
     else if (!text1.back().isSpace() && !text2.front().isSpace())
         joinedText += ' ';

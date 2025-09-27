@@ -53,6 +53,7 @@ public:
 
     static bool hasPhraseEnding(const QString& text);
     static bool hasPhraseStarting(const QString& text);
+    static QString getFirstGrapheme(const QString& text);
     static QString getLastGrapheme(const QString& text);
 
 private:
