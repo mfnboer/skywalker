@@ -95,6 +95,7 @@ public:
         PostHighlightColor,
         PostIsPinned,
         PostIsThread,
+        PostIsThreadReply,
         PostLocallyDeleted,
         EndOfFeed
     };

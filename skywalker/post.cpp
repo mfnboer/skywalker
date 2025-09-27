@@ -146,17 +146,26 @@ Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView) :
 
 const QString& Post::getCid() const
 {
+    if (!mOverrideCid.isEmpty())
+        return mOverrideCid;
+
     return mPost ? mPost->mCid : mCid;
 }
 
 const QString& Post::getUri() const
 {
+    if (!mOverrideUri.isEmpty())
+        return mOverrideUri;
+
     return mPost ? mPost->mUri : mUri;
 }
 
 QString Post::getText() const
 {
     static const QString NO_STRING;
+
+    if (!mOverrideText.isEmpty())
+        return mOverrideText;
 
     if (!mPost)
         return NO_STRING;
@@ -178,6 +187,9 @@ QString Post::getText() const
 QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const QString& linkColor) const
 {
     static const QString NO_STRING;
+
+    if (!mOverrideFormattedText.isEmpty())
+        return mOverrideFormattedText;
 
     if (!mPost)
         return NO_STRING;
@@ -231,6 +243,9 @@ BasicProfile Post::getAuthor() const
 
 QDateTime Post::getIndexedAt() const
 {
+    if (mOverrideIndexedAt.isValid())
+        return mOverrideIndexedAt;
+
     if (!mPost)
         return {};
 
@@ -289,6 +304,9 @@ QString Post::getReasonRepostCid() const
 
 bool Post::isReply() const
 {
+    if (mOverrideIsReply)
+        return *mOverrideIsReply;
+
     if (mFeedViewPost && mFeedViewPost->mReply)
         return true;
 
@@ -533,6 +551,11 @@ QList<ImageView> Post::getImages() const
     return images;
 }
 
+bool Post::hasImages() const
+{
+    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+}
+
 QList<ImageView> Post::getDraftImages() const
 {
     if (!mPost)
@@ -570,6 +593,11 @@ VideoView::Ptr Post::getVideoView() const
     return std::make_unique<VideoView>(video);
 }
 
+bool Post::hasVideo() const
+{
+    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+}
+
 VideoView::Ptr Post::getDraftVideoView() const
 {
     auto videoView = getVideoView();
@@ -605,6 +633,11 @@ ExternalView::Ptr Post::getExternalView() const
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mPost->mEmbed->mEmbed)->mExternal;
     return std::make_unique<ExternalView>(external);
+}
+
+bool Post::hasExternal() const
+{
+    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
 }
 
 RecordView::Ptr Post::getRecordView() const
@@ -660,26 +693,41 @@ bool Post::isQuotePost() const
 
 int Post::getReplyCount() const
 {
+    if (mOverrideReplyCount)
+        return *mOverrideReplyCount;
+
     return mPost ? mPost->mReplyCount : 0;
 }
 
 int Post::getRepostCount() const
 {
+    if (mOverrideRepostCount)
+        return *mOverrideRepostCount;
+
     return mPost ? mPost->mRepostCount : 0;
 }
 
 int Post::getLikeCount() const
 {
+    if (mOverrideLikeCount)
+        return *mOverrideLikeCount;
+
     return mPost ? mPost->mLikeCount : 0;
 }
 
 int Post::getQuoteCount() const
 {
+    if (mOverrideQuoteCount)
+        return *mOverrideQuoteCount;
+
     return mPost ? mPost->mQuoteCount : 0;
 }
 
 QString Post::getRepostUri() const
 {
+    if (!mOverrideRepostUri.isEmpty())
+        return mOverrideRepostUri;
+
     if (!mPost || !mPost->mViewer)
         return {};
 
@@ -689,6 +737,9 @@ QString Post::getRepostUri() const
 
 QString Post::getLikeUri() const
 {
+    if (!mOverrideLikeUri.isEmpty())
+        return mOverrideLikeUri;
+
     if (!mPost || !mPost->mViewer)
         return {};
 
@@ -698,6 +749,9 @@ QString Post::getLikeUri() const
 
 bool Post::isBookmarked() const
 {
+    if (mOverrideIsBookmarked)
+        return *mOverrideIsBookmarked;
+
     if (!mPost || !mPost->mViewer)
         return mIsBookmarked;
 
@@ -706,6 +760,9 @@ bool Post::isBookmarked() const
 
 bool Post::isThreadMuted() const
 {
+    if (mOverrideThreadMuted)
+        return *mOverrideThreadMuted;
+
     if (!mPost || !mPost->mViewer)
         return false;
 
@@ -714,6 +771,9 @@ bool Post::isThreadMuted() const
 
 bool Post::isReplyDisabled() const
 {
+    if (mOverrideReplyDisabled)
+        return *mOverrideReplyDisabled;
+
     if (!mPost || !mPost->mViewer)
         return false;
 
@@ -722,6 +782,9 @@ bool Post::isReplyDisabled() const
 
 bool Post::isEmbeddingDisabled() const
 {
+    if (mOverrideEmbeddingDisabled)
+        return *mOverrideEmbeddingDisabled;
+
     if (!mPost || !mPost->mViewer)
         return false;
 
@@ -960,6 +1023,15 @@ QEnums::TripleBool Post::isThread() const
     }
 
     return *isThread ? QEnums::TRIPLE_BOOL_YES : QEnums::TRIPLE_BOOL_NO;
+}
+
+bool Post::isThreadReply() const
+{
+    const QString did = getAuthorDid();
+
+    // NOTE: this is not fool proof as there could be replies from other authors
+    // between the root and the parent of this post.
+    return isReply() && did == getReplyToAuthorDid() && did == getReplyRootAuthorDid();
 }
 
 QJsonObject Post::toJson() const

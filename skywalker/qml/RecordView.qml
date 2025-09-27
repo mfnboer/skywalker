@@ -64,10 +64,16 @@ Item {
                 postContentWarning: record.contentWarning
                 postMuted: record.mutedReason
                 postIsThread: record.postIsThread === QEnums.TRIPLE_BOOL_YES
+                postIsThreadReply: record.postIsThreadReply
                 postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime
                 bodyBackgroundColor: recordView.backgroundColor == "transparent" ? guiSettings.backgroundColor : recordView.backgroundColor
+
+                onUnrollThread: {
+                    if (record.postUri)
+                        skywalker.getPostThread(record.postUri, true)
+                }
             }
         }
 

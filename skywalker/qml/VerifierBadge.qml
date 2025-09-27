@@ -7,6 +7,7 @@ Image {
     id: badge
     fillMode: Image.PreserveAspectFit
     source: "/images/verifier_check.svg"
+    asynchronous: true
 
     MouseArea {
         anchors.fill: parent

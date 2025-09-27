@@ -32,6 +32,7 @@ ScrollView {
                 fillMode: Image.PreserveAspectCrop
                 autoTransform: true
                 source: modelData
+                asynchronous: true
 
                 Accessible.role: Accessible.StaticText
                 Accessible.name: qsTr(`picture ${(index + 1)}: `) + (imageScroller.hasAltText(index) ? altTexts[index] : "no alt text")

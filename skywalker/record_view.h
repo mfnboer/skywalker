@@ -26,6 +26,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
     Q_PROPERTY(bool postIsReply READ isReply FINAL)
     Q_PROPERTY(QEnums::TripleBool postIsThread READ isThread FINAL)
+    Q_PROPERTY(bool postIsThreadReply READ isThreadReply FINAL)
     Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor FINAL)
     Q_PROPERTY(bool hasUnknownEmbed READ hasUnknownEmbed FINAL)
     Q_PROPERTY(QString unknownEmbedType READ getUnknownEmbedType FINAL)
@@ -86,6 +87,7 @@ public:
     bool isReply() const;
     QString getReplyToAuthorDid() const;
     BasicProfile getReplyToAuthor() const;
+    QString getReplyRootAuthorDid() const;
     const LanguageList& getLanguages() const;
     std::vector<QString> getHashtags() const override;
     std::vector<QString> getWebLinks() const override;
@@ -93,6 +95,7 @@ public:
     const QString& getContentWarning() const { return mPrivate->mContentWarning; }
     QEnums::MutedPostReason getMutedReason() const { return mPrivate->mMutedReason; }
     QEnums::TripleBool isThread() const;
+    bool isThreadReply() const;
 
     bool getNotFound() const { return mPrivate->mNotFound; }
     bool getBlocked() const { return mPrivate->mBlocked; }

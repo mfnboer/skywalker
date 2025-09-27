@@ -198,6 +198,7 @@ Rectangle {
                 height: width
                 fillMode: Image.PreserveAspectFit
                 source: "/images/verified_check.svg"
+                asynchronous: true
                 visible: [QEnums.NOTIFICATION_REASON_VERIFIED, QEnums.NOTIFICATION_REASON_UNVERIFIED].includes(notificationReason)
             }
             Rectangle {
@@ -283,6 +284,7 @@ Rectangle {
                     postContentWarning: notificationPostContentWarning
                     postMuted: notificationPostMutedReason
                     postIsThread: false
+                    postIsThreadReply: false
                     postVideo: notificationPostVideo
                     postExternal: notificationPostExternal
                     postRecord: notificationPostRecord
@@ -319,7 +321,7 @@ Rectangle {
                         authorIsUser: false
                         isBookmarked: notificationPostBookmarked
                         bookmarkTransient: notificationPostBookmarkTransient
-                        plainTextForEmoji: notificationPostPlainText
+                        isThread: false
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
 
@@ -489,6 +491,7 @@ Rectangle {
                     postContentWarning: ""
                     postMuted: QEnums.MUTED_POST_NONE
                     postIsThread: false
+                    postIsThreadReply: false
                     postDateTime: notificationReasonPostTimestamp
                     postVideo: notificationReasonPostVideo
                     postExternal: notificationReasonPostExternal

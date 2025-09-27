@@ -434,4 +434,72 @@ QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
     return QStringList{emojiSet.begin(), emojiSet.end()};
 }
 
+bool UnicodeFonts::hasPhraseEnding(const QString& text)
+{
+    if (text.isEmpty())
+        return false;
+
+    const auto lastChar = text.back();
+
+    static const std::unordered_set<QChar> PHRASE_END_SYMBOLS = {
+        '.', '!', '?', '"', '\'', '`', ':',
+        (int16_t)0x2019, // Right single quotation mark
+        (int16_t)0x201D  // Right double quotation mark
+    };
+
+    if (PHRASE_END_SYMBOLS.contains(lastChar))
+        return true;
+
+    const QString lastGrapheme = getLastGrapheme(text);
+    return EmojiNames::isEmoji(lastGrapheme);
+}
+
+bool UnicodeFonts::hasPhraseStarting(const QString& text)
+{
+    if (text.isEmpty())
+        return false;
+
+    const auto firstChar = text.front();
+    return firstChar.isUpper() || !firstChar.isLetter();
+}
+
+QString UnicodeFonts::getFirstGrapheme(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    const int next = boundaryFinder.toNextBoundary();
+
+    if (next == -1)
+        return {};
+
+    return text.sliced(0, next);
+}
+
+QString UnicodeFonts::getLastGrapheme(const QString& text)
+{
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    boundaryFinder.toEnd();
+    const int prev = boundaryFinder.toPreviousBoundary();
+
+    if (prev == -1)
+        return {};
+
+    const int len = text.length() - prev;
+    return text.sliced(prev, len);
+}
+
+QString UnicodeFonts::turnLastThreadSymbolIntoLink(const QString& text)
+{
+    static const QString THREAD_SYMBOL_STRING(THREAD_SYMBOL);
+    static const QString LINK_TEMPLATE("<a href=\"%1\" style=\"text-decoration: none\">%2</a>");
+    static const QString LINK = LINK_TEMPLATE.arg(THREAD_LINK, THREAD_SYMBOL_STRING);
+
+    int index = text.lastIndexOf(THREAD_SYMBOL_STRING);
+
+    if (index < 0)
+        return text;
+
+    QString result(text);
+    return result.replace(index, THREAD_SYMBOL_STRING.size(), LINK);
+}
+
 }

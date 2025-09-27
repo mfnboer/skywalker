@@ -57,6 +57,7 @@ Column {
         postContentWarning: ""
         postMuted: QEnums.MUTED_POST_NONE
         postIsThread: false
+        postIsThreadReply: false
         postDateTime: postDateTime
         maxTextLines: 5
         bodyBackgroundColor: quoteColumn.ellipsisBackgroundColor

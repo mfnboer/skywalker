@@ -10,7 +10,7 @@ Dialog {
 
     id: page
     width: parent.width - 40
-    contentHeight: emojiListView.contentHeight
+    contentHeight: emojiList.length > 0 ? emojiListView.contentHeight : 200
     modal: true
     title: qsTr("Emoji names")
     standardButtons: Dialog.Ok
@@ -51,6 +51,12 @@ Dialog {
             fillMode: Image.PreserveAspectFit
             source: "/images/dont_panic.png"
             visible: emojiListView.verticalOvershoot !== 0
+        }
+
+        EmptyListIndication {
+            text: qsTr("No emoji found")
+            svg: SvgOutline.emojiLanguage
+            list: emojiListView
         }
     }
 
