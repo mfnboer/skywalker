@@ -6,7 +6,6 @@
 
 namespace Skywalker {
 
-// TODO: strip post counters
 std::deque<Post> ThreadUnroller::unrollThread(const std::deque<Post>& thread)
 {
     if (thread.size() <= 1)
@@ -34,7 +33,7 @@ std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& th
     Q_ASSERT(startIndex < (int)thread.size());
 
     const Post& firstPost = thread[startIndex];
-    QString plainText = firstPost.getText();
+    QString plainText = UnicodeFonts::rtrim(firstPost.getText());
     QString counter = getCounter(plainText);
     removeCounterFromPlainText(plainText, counter);
     QString formattedText = firstPost.getFormattedText();
@@ -52,7 +51,7 @@ std::pair<int, Post> ThreadUnroller::createThreadPart(const std::deque<Post>& th
     for (; postIndex < (int)thread.size(); ++postIndex)
     {
         const auto& post = thread[postIndex];
-        QString postText = post.getText();
+        QString postText = UnicodeFonts::rtrim(post.getText());
         counter = getCounter(postText);
         removeCounterFromPlainText(postText, counter);
         QString postFormattedText = post.getFormattedText();
@@ -174,13 +173,15 @@ static QString matchRegexes(const std::vector<QRegularExpression>& regexes, cons
 QString ThreadUnroller::getCounter(const QString& text)
 {
     static const std::vector<QRegularExpression> counterREs = {
-        QRegularExpression{ R"(\( *[0-9]+ */ *[0-9]+ *\) *$)" },
-        QRegularExpression{ R"(\[ *[0-9]+ */ *[0-9]+ *\] *$)" },
-        QRegularExpression{ R"([0-9]+ */ *[0-9]+ *$)" },
-        QRegularExpression{ R"([0-9]+ */ *n *$)" },
-        QRegularExpression{ R"([0-9]+ */ *$)" },
-        QRegularExpression{ R"(/ *[0-9]+ *$)" },
-        QRegularExpression{ R"(🧵 *$)" }
+        QRegularExpression{ R"(\( *[0-9]+ */ *[0-9]+ *\)$)" }, // (#/#)
+        QRegularExpression{ R"(\[ *[0-9]+ */ *[0-9]+ *\]$)" }, // [#/#]
+        QRegularExpression{ R"(\< *[0-9]+ */ *[0-9]+ *\>$)" }, // <#/#>
+        QRegularExpression{ R"(- *[0-9]+ */ *[0-9]+ *-$)" },   // -#/#-
+        QRegularExpression{ R"([0-9]+ */ *[0-9]+$)" },         // #/#
+        QRegularExpression{ R"([0-9]+ */ *[a-zA-Z\*]$)" },     // #/x, #/N, #/*
+        QRegularExpression{ R"([0-9]+ */$)" },                 // #/
+        QRegularExpression{ R"(/ *[0-9]+$)" },                 // /#
+        QRegularExpression{ R"(🧵$)" }                         // 🧵
     };
 
     QString counter = matchRegexes(counterREs, text);
@@ -247,7 +248,7 @@ void ThreadUnroller::removeCounterFromFormattedText(QString& text, const QString
     if (counter.isEmpty())
         return;
 
-    QString htmlCounter(counter);
+    QString htmlCounter(counter.toHtmlEscaped());
     htmlCounter.replace('\n', "<br>");
     int index = text.lastIndexOf(htmlCounter);
 
