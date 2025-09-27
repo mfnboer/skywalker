@@ -198,6 +198,7 @@ Rectangle {
                 height: width
                 fillMode: Image.PreserveAspectFit
                 source: "/images/verified_check.svg"
+                asynchronous: true
                 visible: [QEnums.NOTIFICATION_REASON_VERIFIED, QEnums.NOTIFICATION_REASON_UNVERIFIED].includes(notificationReason)
             }
             Rectangle {

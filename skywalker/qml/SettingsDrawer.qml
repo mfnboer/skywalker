@@ -218,6 +218,7 @@ Drawer {
                 width: parent.width - 60
                 fillMode: Image.PreserveAspectFit
                 source: "/images/buycoffee.png"
+                asynchronous: true
 
                 MouseArea {
                     anchors.fill: parent

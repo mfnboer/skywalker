@@ -31,6 +31,7 @@ Loader {
                 height: width
                 fillMode: Image.PreserveAspectFit
                 source: guiSettings.isLightMode ? "/images/songlink-odesli-logo-light.png" : "/images/songlink-odesli-logo-dark.png"
+                asynchronous: true
 
                 BusyIndicator {
                     anchors.centerIn: parent
@@ -80,6 +81,7 @@ Loader {
                             height: width
                             fillMode: Image.PreserveAspectFit
                             source: linkItem.modelData.logo
+                            asynchronous: true
                         }
 
                         AccessibleText {
