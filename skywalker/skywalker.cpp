@@ -1680,11 +1680,10 @@ void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVis
         saveFeedSyncTimestamp(*model, lastVisibleIndex, lastVisibleOffsetY);
 }
 
-// TODO: drop modelId?
-void Skywalker::getPostThread(const QString& uri, bool unrollThread, int modelId)
+void Skywalker::getPostThread(const QString& uri, bool unrollThread)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get post thread:" << uri << "unroll:" << unrollThread << "model:" << modelId;
+    qDebug() << "Get post thread:" << uri << "unroll:" << unrollThread;
 
     if (mGetPostThreadInProgress)
     {
@@ -1694,59 +1693,46 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread, int modelId
 
     setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, {},
-        [this, uri, unrollThread, modelId](auto thread){
+        [this, uri, unrollThread](auto thread){
             setGetPostThreadInProgress(false);
 
-            if (modelId < 0)
+            auto model = std::make_unique<PostThreadModel>(uri, unrollThread,
+                mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+                mMutedWords, *mFocusHashtags, mSeenHashtags, this);
+
+            int postEntryIndex = model->setPostThread(thread);
+
+            if (postEntryIndex < 0)
             {
-                auto model = std::make_unique<PostThreadModel>(uri, unrollThread,
-                    mUserDid, mUserFollows, mMutedReposts, mContentFilter,
-                    mMutedWords, *mFocusHashtags, mSeenHashtags, this);
+                qDebug() << "No thread posts";
+                emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
+                return;
+            }
 
-                int postEntryIndex = model->setPostThread(thread);
+            const QString uri = model->getPostToAttachMore();
+            const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
 
-                if (postEntryIndex < 0)
-                {
-                    qDebug() << "No thread posts";
-                    emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
-                    return;
-                }
-
-                const QString uri = model->getPostToAttachMore();
-                const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
-
-                if (!uri.isEmpty())
-                {
-                    addPostThread(uri, id);
-                }
-                else
-                {
-                    qDebug() << "No more posts to add";
-
-                    if (unrollThread)
-                    {
-                        auto* m = getPostThreadModel(id);
-                        Q_ASSERT(m);
-
-                        if (m)
-                            m->unrollThread();
-                        else
-                            qWarning() << "Model does not exist:" << id;
-                    }
-                }
-
-                emit postThreadOk(id, postEntryIndex);
+            if (!uri.isEmpty())
+            {
+                addPostThread(uri, id);
             }
             else
             {
-                // TODO: can be dropped when we drop modelId
-                auto model = getPostThreadModel(modelId);
+                qDebug() << "No more posts to add";
 
-                if (model)
-                    model->setPostThread(thread);
-                else
-                    qWarning() << "Model does not exist:" << modelId;
+                if (unrollThread)
+                {
+                    auto* m = getPostThreadModel(id);
+                    Q_ASSERT(m);
+
+                    if (m)
+                        m->unrollThread();
+                    else
+                        qWarning() << "Model does not exist:" << id;
+                }
             }
+
+            emit postThreadOk(id, postEntryIndex);
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
