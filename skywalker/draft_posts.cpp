@@ -309,6 +309,9 @@ void DraftPosts::loadDraftPosts()
 
 DraftPostsModel* DraftPosts::getDraftPostsModel()
 {
+    if (!mDraftPostsModel)
+        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+
     return mDraftPostsModel.get();
 }
 
