@@ -244,6 +244,7 @@ class BasicProfile
     Q_PROPERTY(QString handleOrDid READ getHandleOrDid FINAL)
     Q_PROPERTY(QString displayName READ getDisplayName FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
+    Q_PROPERTY(QString pronouns READ getPronouns FINAL)
     Q_PROPERTY(QString avatarUrl READ getAvatarUrl FINAL)
     Q_PROPERTY(QString avatarThumbUrl READ getAvatarThumbUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
@@ -274,6 +275,7 @@ public:
     QString getName() const;
     const QString& getDisplayName() const;
     const QString& getHandle() const;
+    const QString& getPronouns() const;
     const QString& getAvatarUrl() const;
     QString getAvatarThumbUrl() const;
     ImageView getImageView() const;
@@ -294,6 +296,7 @@ public:
     const QString& getHandleOrDid() const;
 
     void setDisplayName(const QString& displayName);
+    void setPronouns(const QString& pronouns);
 
     // If avatarUrl is a "image://", then the profile takes ownership of the image
     void setAvatarUrl(const QString& avatarUrl);
@@ -319,6 +322,7 @@ private:
         std::optional<QString> mDid;
         std::optional<QString> mHandle;
         std::optional<QString> mDisplayName;
+        std::optional<QString> mPronouns;
         std::optional<QString> mAvatarUrl;
         SharedImageSource::SharedPtr mAvatarSource;
         std::optional<ProfileAssociated> mAssociated;
@@ -356,6 +360,7 @@ using ProfileList = QList<Profile>;
 class DetailedProfile : public Profile
 {
     Q_GADGET
+    Q_PROPERTY(QString website READ getWebsite FINAL)
     Q_PROPERTY(QString banner READ getBanner FINAL)
     Q_PROPERTY(int followersCount READ getFollowersCount FINAL)
     Q_PROPERTY(int followsCount READ getFollowsCount FINAL)
@@ -367,6 +372,7 @@ public:
     DetailedProfile() = default;
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
 
+    QString getWebsite() const;
     QString getBanner() const;
     int getFollowersCount() const;
     int getFollowsCount() const;

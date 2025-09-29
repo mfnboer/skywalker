@@ -311,6 +311,7 @@ BasicProfile::BasicProfile(const QString& did, const QString& handle, const QStr
         did,
         handle,
         displayName,
+        std::nullopt,
         avatarUrl,
         nullptr,
         associated,
@@ -376,6 +377,26 @@ const QString& BasicProfile::getDisplayName() const
 
     if (mProfileDetailedView)
         return mProfileDetailedView->mDisplayName ? *mProfileDetailedView->mDisplayName : NULL_STRING;
+
+    return NULL_STRING;
+}
+
+const QString& BasicProfile::getPronouns() const
+{
+    if (mPrivate)
+    {
+        if (mPrivate->mPronouns)
+            return *mPrivate->mPronouns;
+
+        if (mPrivate->mProfileBasicView)
+            return mPrivate->mProfileBasicView->mPronouns ? *mPrivate->mProfileBasicView->mPronouns : NULL_STRING;
+    }
+
+    if (mProfileView)
+        return mProfileView->mPronouns ? *mProfileView->mPronouns : NULL_STRING;
+
+    if (mProfileDetailedView)
+        return mProfileDetailedView->mPronouns ? *mProfileDetailedView->mPronouns : NULL_STRING;
 
     return NULL_STRING;
 }
@@ -628,6 +649,14 @@ void BasicProfile::setDisplayName(const QString& displayName)
     mPrivate->mDisplayName = displayName;
 }
 
+void BasicProfile::setPronouns(const QString& pronouns)
+{
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
+
+    mPrivate->mPronouns = pronouns;
+}
+
 void BasicProfile::setAvatarUrl(const QString& avatarUrl)
 {
     if (!mPrivate)
@@ -724,6 +753,11 @@ QString Profile::getDescription() const
 DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile) :
     Profile(profile)
 {
+}
+
+QString DetailedProfile::getWebsite() const
+{
+    return mProfileDetailedView ? mProfileDetailedView->mWebsite.value_or("") : "";
 }
 
 QString DetailedProfile::getBanner() const

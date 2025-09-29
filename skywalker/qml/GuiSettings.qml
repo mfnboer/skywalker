@@ -456,4 +456,15 @@ Item {
     function getDisplayCutoutSize(side) {
         return displayUtils.getDisplayCutoutSize(side) / Screen.devicePixelRatio
     }
+
+    function toHtmlLink(link) {
+        let text = link
+
+        if (text.startsWith("https://"))
+            text = text.slice(8)
+        else if (text.startsWith("http://"))
+            text = text.slice(7)
+
+        return `<a href="${link}" style="color: ${guiSettings.linkColor}; text-decoration: none">${text}</a>`
+    }
 }

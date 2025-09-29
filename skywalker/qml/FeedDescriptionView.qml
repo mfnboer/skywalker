@@ -252,7 +252,7 @@ SkyPage {
             }
         }
 
-        AccessibleText {
+        SkyCleanedText {
             topPadding: 5
             bottomPadding: 10
             Layout.columnSpan: 3
@@ -262,7 +262,7 @@ SkyPage {
             elide: Text.ElideRight
             textFormat: Text.RichText
             color: guiSettings.textColor
-            text: feed.formattedDescription
+            plainText: feed.formattedDescription
 
             LinkCatcher {
                 containingText: feed.description
