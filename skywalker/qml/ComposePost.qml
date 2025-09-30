@@ -240,6 +240,10 @@ SkyPage {
                         postUtils.getVideoUploadLimits()
                     }
                 }
+                AccessibleMenuItem {
+                    text: "Debug drafts"
+                    onTriggered: showDebugDrafts(draftPosts.dumpDraftFeed())
+                }
             }
         }
 
@@ -2851,6 +2855,13 @@ SkyPage {
         let limitsPage = component.createObject(page, { limits: limits })
         limitsPage.onAccepted.connect(() => limitsPage.destroy())
         limitsPage.open()
+    }
+
+    function showDebugDrafts(draftsDump) {
+        let component = guiSettings.createComponent("DebugDump.qml")
+        let debugPage = component.createObject(page, { title: "Debug drafts", dumpData: draftsDump })
+        debugPage.onClosed.connect(() => root.popStack())
+        root.pushStack(debugPage)
     }
 
     VirtualKeyboardHandler {

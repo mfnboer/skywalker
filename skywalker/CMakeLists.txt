@@ -563,6 +563,7 @@ qt_add_qml_module(libskywalker
         SOURCES filtered_search_post_feed_model.cpp
         SOURCES thread_unroller.h
         SOURCES thread_unroller.cpp
+        QML_FILES qml/DebugDump.qml
 )
 
 if (NOT ANDROID)

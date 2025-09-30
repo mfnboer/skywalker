@@ -1139,6 +1139,39 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
     return view;
 }
 
+QString DraftPosts::dumpDraftFeed()
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString draftsPath = getDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return "No drafts path";
+
+    QDir draftsDir(draftsPath);
+    QString draftFeed;
+    const auto fileList = getDraftPostFiles(draftsPath);
+    draftFeed.append(QString("#drafts: %1\n").arg(fileList.size()));
+
+    for (const auto& fileName : fileList)
+    {
+        draftFeed.append(QString("\n%1\n").arg(fileName));
+        const QString absFileName = draftsDir.absoluteFilePath(fileName);
+        QFile file(absFileName);
+
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            draftFeed.append(QString("Cannot open file: %1\n").arg(absFileName));
+            continue;
+        }
+
+        const QByteArray data = file.readAll();
+        draftFeed.append(QString(data));
+        draftFeed.append("\n");
+    }
+
+    return draftFeed;
+}
+
 void DraftPosts::loadDraftFeed()
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);

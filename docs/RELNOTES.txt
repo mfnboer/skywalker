@@ -1,6 +1,6 @@
-next
-====
-* Show pronouns and website on profile page
+4.16.1
+======
+* Show pronouns and website on profile page (when available)
 * Bug fixes
 
 4.16
