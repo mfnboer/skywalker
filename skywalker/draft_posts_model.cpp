@@ -90,10 +90,11 @@ std::vector<Post> DraftPostsModel::getThread(int index) const
         return {};
 
     std::vector<Post> thread;
+    const auto& rawThread = mRawFeed[index];
 
-    for (int i = 0; i < (int)mRawFeed[index].size(); ++i)
+    for (int i = 0; i < (int)rawThread.size(); ++i)
     {
-        const auto& feedViewPost = mRawFeed[index][i];
+        const auto& feedViewPost = rawThread[i];
         Post post(feedViewPost);
         thread.push_back(post);
     }
