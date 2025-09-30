@@ -145,7 +145,7 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
 
 QList<ImageView> DraftPostsModel::createDraftImages(const Post& post) const
 {
-    QList<ImageView> imageViews = post.getDraftImages();
+    const QList<ImageView> imageViews = post.getDraftImages();
 
     if (imageViews.empty())
         return {};
@@ -154,6 +154,7 @@ QList<ImageView> DraftPostsModel::createDraftImages(const Post& post) const
         return mPostUriDraftImagesMap.at(post.getUri());
 
     QList<ImageView> draftViews;
+    draftViews.reserve(imageViews.size());
 
     for (const auto& view : imageViews)
     {

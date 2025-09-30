@@ -79,7 +79,7 @@ Rectangle {
             width: visible ? height : 0
             height: parent.height - 10
             color: parent.color
-            svg: svgIcon
+            svg: visible ? svgIcon : SvgOutline.check
             visible: svgIcon && !svgIcon.isNull()
             Accessible.ignored: true
         }
