@@ -1,3 +1,7 @@
+next
+====
+* Bug fix for crash in draft posts
+
 4.16.1
 ======
 * Show pronouns and website on profile page (when available)

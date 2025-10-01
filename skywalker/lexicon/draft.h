@@ -46,7 +46,7 @@ struct Quote
 
     static RecordType stringToRecordType(const QString& str);
 
-    RecordType mRecordType;
+    RecordType mRecordType = RecordType::UNKNOWN;
 
     std::variant<QuotePost::SharedPtr,
                  ATProto::AppBskyFeed::GeneratorView::SharedPtr,
