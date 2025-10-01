@@ -240,6 +240,7 @@ SkyPage {
                         postUtils.getVideoUploadLimits()
                     }
                 }
+                // TODO: remove
                 AccessibleMenuItem {
                     text: "Debug drafts"
                     onTriggered: showDebugDrafts(draftPosts.dumpDraftFeed())

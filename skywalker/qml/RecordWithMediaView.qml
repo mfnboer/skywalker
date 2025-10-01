@@ -7,6 +7,7 @@ Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property bool highlight: false
+    property bool isDraft: false
     property bool swipeMode: false
 
     id: recordItem
@@ -76,6 +77,16 @@ Item {
         }
 
         Component {
+            id: videoThumbnailComponent
+
+            VideoThumbnail {
+                width: Math.min(180 * 1.777, record.width)
+                height: 180
+                videoSource: record.video.playlistUrl
+            }
+        }
+
+        Component {
             id: videoViewComponent
 
             VideoView {
@@ -115,8 +126,14 @@ Item {
                 mediaLoader.active = true
             }
             else if (record.video) {
-                mediaLoader.sourceComponent = videoViewComponent
-                mediaLoader.active = true
+                if (isDraft) {
+                    mediaLoader.sourceComponent = videoThumbnailComponent
+                    mediaLoader.active = true
+                }
+                else {
+                    mediaLoader.sourceComponent = videoViewComponent
+                    mediaLoader.active = true
+                }
             }
             else if (record.external) {
                 mediaLoader.sourceComponent = externalViewComponent

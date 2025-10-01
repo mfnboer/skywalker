@@ -440,6 +440,7 @@ Column {
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
+                                   isDraft: isDraft,
                                    swipeMode: swipeMode })
     }
 
