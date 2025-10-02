@@ -20,7 +20,8 @@ Item {
     required property bool authorIsUser
     required property bool isBookmarked
     required property bool bookmarkTransient
-    property string plainTextForEmoji: ""
+    required property bool isThread
+    property bool isUnrolledThread: false
     property bool showViewThread: false
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
@@ -34,6 +35,7 @@ Item {
     signal quotePost()
     signal like()
     signal viewThread()
+    signal unrollThread()
     signal muteThread()
     signal bookmark()
     signal share()
@@ -199,6 +201,13 @@ Item {
                     MenuItemSvg { svg: SvgOutline.chat }
                 }
                 AccessibleMenuItem {
+                    text: qsTr("Unroll thread")
+                    visible: isThread && !isUnrolledThread
+                    onTriggered: unrollThread()
+
+                    MenuItemSvg { svg: SvgOutline.thread }
+                }
+                AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
                     visible: !isReply || replyRootUri
                     onTriggered: muteThread()
@@ -232,7 +241,7 @@ Item {
 
                 AccessibleMenuItem {
                     text: viewerStatePinned ? qsTr("Unpin from profile") : qsTr("Pin to profile")
-                    visible: authorIsUser
+                    visible: authorIsUser && !isUnrolledThread
                     onTriggered: {
                         if (viewerStatePinned)
                             unpin()
@@ -245,14 +254,14 @@ Item {
 
                 AccessibleMenuItem {
                     text: qsTr("Delete")
-                    visible: authorIsUser
+                    visible: authorIsUser && !isUnrolledThread
                     onTriggered: deletePost()
 
                     MenuItemSvg { svg: SvgOutline.delete }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report post")
-                    visible: !authorIsUser
+                    visible: !authorIsUser && !isUnrolledThread
                     onTriggered: reportPost()
 
                     MenuItemSvg { svg: SvgOutline.report }
@@ -266,7 +275,6 @@ Item {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Emoji names")
-                    visible: UnicodeFonts.hasEmoji(plainTextForEmoji)
                     onTriggered: showEmojiNames()
 
                     MenuItemSvg { svg: SvgOutline.emojiLanguage }

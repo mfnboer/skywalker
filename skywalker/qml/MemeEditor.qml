@@ -74,6 +74,7 @@ SkyPage {
             fillMode: Image.PreserveAspectFit
             autoTransform: true
             source: memeMaker.memeImgSource
+            asynchronous: true
         }
     }
 

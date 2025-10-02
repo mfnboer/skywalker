@@ -114,22 +114,20 @@ public class ScreenUtils {
 
         @Override
         public void run() {
+            Window window = mActivity.getWindow();
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                window.setStatusBarColor(mTransparent ? Color.TRANSPARENT : mColor);
+                //window.setDecorFitsSystemWindows(!mTransparent);
+            }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Window window = mActivity.getWindow();
+                WindowInsetsController insetsController = window.getInsetsController();
 
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                    window.setStatusBarColor(mTransparent ? Color.TRANSPARENT : mColor);
-                    window.setDecorFitsSystemWindows(!mTransparent);
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    WindowInsetsController insetsController = window.getInsetsController();
-
-                    if (insetsController != null)
-                        insetsController.setSystemBarsAppearance(mIsLightMode ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-                    else
-                        Log.w(LOGTAG, "Cannot get window insets controller");
-                }
+                if (insetsController != null)
+                    insetsController.setSystemBarsAppearance(mIsLightMode ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0, WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
+                else
+                    Log.w(LOGTAG, "Cannot get window insets controller");
             }
         }
     }

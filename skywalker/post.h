@@ -48,23 +48,32 @@ public:
     const QString& getCid() const;
     const QString& getUri() const;
 
+    void setOverrideCid(const QString& cid) { mOverrideCid = cid; }
+    void setOverrideUri(const QString& uri) { mOverrideUri = uri; }
+
     // The indexedAt of a post or repost
     QDateTime getTimelineTimestamp() const;
     QDateTime getRepostTimestamp() const;
 
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
 
+    void setOverrideText(const QString& text) { mOverrideText = text; }
+    void setOverrideFormattedText(const QString& formattedText) { mOverrideFormattedText = formattedText; }
+
     QString getText() const override;
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
+
     WebLink::List getDraftEmbeddedLinks() const;
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
+    void setOverrideIndexedAt(QDateTime dateTime) { mOverrideIndexedAt = dateTime; }
     bool isRepost() const;
     std::optional<BasicProfile> getRepostedBy() const;
     QString getReasonRepostUri() const;
     QString getReasonRepostCid() const;
     bool isReply() const;
+    void setOverrideIsReply(bool isReply) { mOverrideIsReply = isReply; }
     std::optional<PostReplyRef> getViewPostReplyRef() const;
     std::optional<BasicProfile> getReplyToAuthor() const;
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyToRef() const;
@@ -80,27 +89,41 @@ public:
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const override;
+    bool hasImages() const;
     QList<ImageView> getDraftImages() const;
     VideoView::Ptr getVideoView() const override;
+    bool hasVideo() const;
     VideoView::Ptr getDraftVideoView() const;
     ExternalView::Ptr getExternalView() const override;
+    bool hasExternal() const;
     RecordView::Ptr getRecordView() const;
     RecordWithMediaView::Ptr getRecordWithMediaView() const;
     RecordView::SharedPtr getRecordViewFromRecordOrRecordWithMedia() const;
     bool isQuotePost() const;
 
     int getReplyCount() const;
+    void setOverrideReplyCount(int count) { mOverrideReplyCount = count; }
     int getRepostCount() const;
+    void setOverrideRepostCount(int count) { mOverrideRepostCount = count; }
     int getLikeCount() const;
+    void setOverrideLikeCount(int count) { mOverrideLikeCount = count; }
     int getQuoteCount() const;
+    void setOverrideQuoteCount(int count) { mOverrideQuoteCount = count; }
     QString getRepostUri() const;
+    void setOverrideRepostUri(const QString& uri) { mOverrideRepostUri = uri; }
     QString getLikeUri() const;
+    void setOverrideLikeUri(const QString& uri) { mOverrideLikeUri = uri; }
     void setBookmarked(bool bookmarked) { mIsBookmarked = bookmarked; }
     bool isBookmarked() const;
+    void setOverrideBookmarked(bool bookmarked) { mOverrideIsBookmarked = bookmarked; }
     bool isThreadMuted() const;
+    void setOverrideThreadMuted(bool muted) { mOverrideThreadMuted = muted; }
     bool isReplyDisabled() const;
+    void setOverrideReplyDisabled(bool disabled) { mOverrideReplyDisabled = disabled; }
     bool isEmbeddingDisabled() const;
+    void setOverrideEmbeddingDisabled(bool disabled) { mOverrideEmbeddingDisabled = disabled; }
     bool isViewerStatePinned() const;
+
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr getThreadgateView() const;
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgate) { mThreadgateView = threadgate; }
     QString getThreadgateUri() const;
@@ -119,6 +142,7 @@ public:
     void setFoldedPostType(QEnums::FoldedPostType foldedPostType) { mFoldedPostType = foldedPostType; }
 
     int getThreadType() const { return mThreadType; }
+    void setThreadType(int threadType) { mThreadType = threadType; }
     void addThreadType(QEnums::ThreadPostType threadType) { mThreadType |= threadType; }
     void removeThreadType(QEnums::ThreadPostType threadType) { mThreadType &= ~threadType; }
     int getThreadIndentLevel() const { return mThreadIndentLevel; }
@@ -144,6 +168,7 @@ public:
     void setPinned(bool pinned) { mPinned = pinned; }
 
     QEnums::TripleBool isThread() const;
+    bool isThreadReply() const;
 
     QJsonObject toJson() const;
 
@@ -156,6 +181,15 @@ private:
 
     QString mUri;
     QString mCid;
+
+    QString mOverrideUri;
+    QString mOverrideCid;
+
+    QString mOverrideText;
+    QString mOverrideFormattedText;
+
+    QDateTime mOverrideIndexedAt;
+    std::optional<bool> mOverrideIsReply;
 
     int mGapId = 0;
 
@@ -182,6 +216,18 @@ private:
     bool mNotSupported = false;
     QString mUnsupportedType;
     bool mIsBookmarked = false;
+
+    QString mOverrideRepostUri;
+    QString mOverrideLikeUri;
+    std::optional<bool> mOverrideIsBookmarked;
+    std::optional<bool> mOverrideThreadMuted;
+    std::optional<bool> mOverrideEmbeddingDisabled;
+    std::optional<bool> mOverrideReplyDisabled;
+
+    std::optional<int> mOverrideReplyCount;
+    std::optional<int> mOverrideRepostCount;
+    std::optional<int> mOverrideLikeCount;
+    std::optional<int> mOverrideQuoteCount;
 
     LanguageList mLanguages;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;

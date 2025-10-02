@@ -52,7 +52,8 @@ public class SkywalkerActivity extends QtActivity {
         sActivity = this;
 
         // Enable EdgeToEdge mode, i.e. full screen.
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        // WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        WindowCompat.enableEdgeToEdge(getWindow());
 
         Log.d(LOGTAG, "onCreate");
         ScreenUtils.init(this);

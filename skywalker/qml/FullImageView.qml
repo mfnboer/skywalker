@@ -168,7 +168,7 @@ SkyPage {
     }
 
     function setSystemBarsColor() {
-        displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setNavigationBarColorAndMode("transparent", false)
         displayUtils.setStatusBarTransparentAndMode(true, guiSettings.fullScreenColor, false)
     }
 

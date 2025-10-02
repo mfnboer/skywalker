@@ -1,10 +1,12 @@
 import QtQuick
+import skywalker
 
 // Should be used inside a Text element
 MouseArea {
     property string containingText
 
     signal longPress
+    signal unrollThread
 
     anchors.fill: parent
     propagateComposedEvents: true
@@ -12,10 +14,15 @@ MouseArea {
     onClicked: (mouse) => {
         const link = parent.linkAt(mouse.x, mouse.y)
 
-        if (link)
-            root.openLink(link, containingText)
-        else
+        if (link) {
+            if (link === UnicodeFonts.THREAD_LINK)
+                unrollThread()
+            else
+                root.openLink(link, containingText)
+        }
+        else {
             mouse.accepted = false
+        }
     }
 
     onPressAndHold: (mouse) => {

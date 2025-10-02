@@ -309,6 +309,9 @@ void DraftPosts::loadDraftPosts()
 
 DraftPostsModel* DraftPosts::getDraftPostsModel()
 {
+    if (!mDraftPostsModel)
+        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+
     return mDraftPostsModel.get();
 }
 
@@ -1103,6 +1106,8 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
         break;
     default:
         qWarning() << "Unknown record type" << (int)quote->mRecordType;
+        view->mRecordType = ATProto::RecordType::UNKNOWN;
+        view->mUnsupportedType = QString::number((int)quote->mRecordType);
         break;
     }
 
@@ -1128,12 +1133,51 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
         view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
         view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::SharedPtr>(record->mMedia).get());
         break;
+    case ATProto::AppBskyEmbed::EmbedType::VIDEO:
+        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+        view->mMedia = createVideoView(std::get<ATProto::AppBskyEmbed::Video::SharedPtr>(record->mMedia).get());
+        break;
     default:
         qWarning() << "Invalid media type:" << (int)record->mMediaType;
+        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN;
+        view->mRawMediaType = QString::number((int)record->mMediaType);
         break;
     }
 
     return view;
+}
+
+QString DraftPosts::dumpDraftFeed()
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString draftsPath = getDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return "No drafts path";
+
+    QDir draftsDir(draftsPath);
+    QString draftFeed;
+    const auto fileList = getDraftPostFiles(draftsPath);
+    draftFeed.append(QString("#drafts: %1\n").arg(fileList.size()));
+
+    for (const auto& fileName : fileList)
+    {
+        draftFeed.append(QString("\n%1\n").arg(fileName));
+        const QString absFileName = draftsDir.absoluteFilePath(fileName);
+        QFile file(absFileName);
+
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            draftFeed.append(QString("Cannot open file: %1\n").arg(absFileName));
+            continue;
+        }
+
+        const QByteArray data = file.readAll();
+        draftFeed.append(QString(data));
+        draftFeed.append("\n");
+    }
+
+    return draftFeed;
 }
 
 void DraftPosts::loadDraftFeed()

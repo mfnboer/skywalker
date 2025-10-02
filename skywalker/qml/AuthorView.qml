@@ -18,6 +18,7 @@ SkyPage {
     // Must have something to do with those properties being in subclasses of BasicProfile.
     property string authorName
     property string authorDescription
+    property string authorWebsite
     property string authorAvatar
     property string authorBanner
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
@@ -428,6 +429,14 @@ SkyPage {
                 }
             }
 
+            SkyCleanedText {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 5
+                bottomPadding: 5
+                plainText: `${author.pronouns}`
+                visible: Boolean(author.pronouns)
+            }
+
             Rectangle {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 height: contentLabels.height
@@ -500,17 +509,28 @@ SkyPage {
                 }
             }
 
-            Text {
+            SkyCleanedText {
                 id: descriptionText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
                 color: guiSettings.textColor
-                text: postUtils.linkiFy(authorDescription, guiSettings.linkColor)
+                plainText: postUtils.linkiFy(authorDescription, guiSettings.linkColor)
                 visible: contentVisible()
 
                 LinkCatcher {}
+            }
+
+            AccessibleText {
+                id: websiteText
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                textFormat: Text.RichText
+                text: qsTr(`🌐 ${guiSettings.toHtmlLink(authorWebsite)}`)
+                visible: contentVisible() && Boolean(authorWebsite)
+
+                onLinkActivated: (link) => root.openLink(link)
             }
 
             AccessibleText {
@@ -519,7 +539,6 @@ SkyPage {
 
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
-                color: guiSettings.textColor
                 text: qsTr(`${statusIcon} Last activity: ${guiSettings.dateTimeIndication(lastActive)}`)
                 visible: !isNaN(lastActive.getTime())
             }
@@ -528,7 +547,6 @@ SkyPage {
                 id: firstAppearanceText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
-                color: guiSettings.textColor
                 text: qsTr(`🗓 First appearance: ${firstAppearanceDate}`)
                 visible: contentVisible()
             }
@@ -1632,12 +1650,15 @@ SkyPage {
 
         authorName = author.name
         authorDescription = author.description
+        authorWebsite = author.website
         authorAvatar = author.avatarUrl
         authorBanner = author.banner
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
+
+        console.debug("AUTHOR:", authorName, "PRONOUNS:", author.pronouns, "WWW:", authorWebsite)
 
         getFeed(modelId)
 

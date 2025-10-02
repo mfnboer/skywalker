@@ -2,10 +2,11 @@
 // License: GPLv3
 #include "post_thread_model.h"
 #include "author_cache.h"
+#include "thread_unroller.h"
 
 namespace Skywalker {
 
-PostThreadModel::PostThreadModel(const QString& threadEntryUri,
+PostThreadModel::PostThreadModel(const QString& threadEntryUri, bool unrollThread,
                                  const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
@@ -15,7 +16,8 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri,
     AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
-    mThreadEntryUri(threadEntryUri)
+    mThreadEntryUri(threadEntryUri),
+    mUnrollThread(unrollThread)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -214,6 +216,62 @@ void PostThreadModel::showHiddenReplies()
     qDebug() << "New feed size:" << mFeed.size();
 }
 
+void PostThreadModel::unrollThread()
+{
+    qDebug() << "Unroll thread, feed size:" << mFeed.size();
+
+    if (mFeed.empty())
+        return;
+
+    if (!mUnrollThread)
+        return;
+
+    mFirstPostFromUnrolledThread = mFeed.front();
+    const auto unrolledFeed = ThreadUnroller::unrollThread(mFeed);
+    qDebug() << "Unrolled feeds szie:" << unrolledFeed.size();
+
+    beginRemoveRows({}, 0, mFeed.size() - 1);
+    mFeed.clear();
+    endRemoveRows();
+
+    beginInsertRows({}, 0, unrolledFeed.size() - 1);
+    mFeed = unrolledFeed;
+    endInsertRows();
+}
+
+QString PostThreadModel::getFirstUnrolledPostText() const
+{
+    if (!mFirstPostFromUnrolledThread)
+        return "";
+
+    return mFirstPostFromUnrolledThread->getFormattedText();
+}
+
+QString PostThreadModel::getFirstUnrolledPostPlainText() const
+{
+    if (!mFirstPostFromUnrolledThread)
+        return "";
+
+    return mFirstPostFromUnrolledThread->getText();
+}
+
+QString PostThreadModel::getFullThreadPlainText() const
+{
+    if (mFeed.empty())
+        return "";
+
+    QString text = mFeed.front().getText();
+
+    for (int i = 1; i < (int)mFeed.size(); ++i)
+    {
+        const Post& post = mFeed[i];
+        text += '\n';
+        text += post.getText();
+    }
+
+    return text;
+}
+
 QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
 {
     if (mFeed.empty())
@@ -334,9 +392,23 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
             // The user will see the current post as a post with a non-zero reply count.
             // By clicking on this post the hidden replies can be accessed.
             if (!mPostFeedModel.isHiddenReply(*nextReply))
-                addReplyThread(*nextReply, false, false, indentLevel);
+            {
+                if (mPostFeedModel.mUnrollThread)
+                {
+                    auto nextReplyPost = Post::createPost(*nextReply, mPostFeedModel.mThreadgateView);
+
+                    if (nextReplyPost.getAuthorDid() == threadPost.getAuthorDid())
+                        addReplyThread(*nextReply, false, false, indentLevel);
+                }
+                else
+                {
+                    addReplyThread(*nextReply, false, false, indentLevel);
+                }
+            }
             else
+            {
                 mFeed.back().addThreadType(QEnums::THREAD_LEAF);
+            }
         }
         else
         {
@@ -459,6 +531,13 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                 return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
             }
 
+            // When we unroll a thread we filter out all posts from the same author.
+            // If the author made multiple replies on a post, then we want the oldest,
+            // assuming that the thread was posted in one go, the oldest is most likely
+            // the thread continuation.
+            if (mUnrollThread)
+                return lhsPost->mIndexedAt < rhsPost->mIndexedAt;
+
             // New before old
             return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
         });
@@ -473,6 +552,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
     const auto& postThread = page->mRawThread->mThread;
     Post post = Post::createPost(*postThread, mThreadgateView);
     post.addThreadType(QEnums::THREAD_ENTRY);
+    const auto postEntryDid = post.getAuthorDid();
 
     if (!post.isPlaceHolder())
     {
@@ -503,6 +583,10 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         while (parent && !addMore)
         {
             Post parentPost = Post::createPost(*parent, mThreadgateView);
+
+            if (mUnrollThread && parentPost.getAuthorDid() != postEntryDid)
+                break;
+
             parentPost.addThreadType(QEnums::THREAD_PARENT);
 
             if (!parentPost.isPlaceHolder())
@@ -537,6 +621,14 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         {
             Q_ASSERT(reply);
 
+            if (mUnrollThread)
+            {
+                Post replyPost = Post::createPost(*reply, mThreadgateView);
+
+                if (replyPost.getAuthorDid() != postEntryDid)
+                    continue;
+            }
+
             if (page->mFirstHiddenReplyIndex == -1 && isHiddenReply(*reply))
             {
                 page->mFirstHiddenReplyIndex = page->mFeed.size();
@@ -545,6 +637,12 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
             page->addReplyThread(*reply, directReply, firstReply, indentLevel);
             firstReply = false;
+
+            // We only need the first reply in a thread if there are multiple by
+            // the same author. The other replies are most likely comments on the
+            // thread that have been added later.
+            if (mUnrollThread)
+                break;
         }
     }
 

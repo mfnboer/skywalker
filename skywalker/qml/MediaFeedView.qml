@@ -111,7 +111,7 @@ SkyListView {
 
     function setSystemBars() {
         displayUtils.setStatusBarTransparentAndMode(true, guiSettings.headerColor, false)
-        displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setNavigationBarColorAndMode("transparent", false)
     }
 
     function resetSystemBars() {

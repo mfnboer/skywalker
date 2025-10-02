@@ -9,6 +9,7 @@ namespace Skywalker {
 class PostThreadModel : public AbstractPostFeedModel
 {
     Q_OBJECT
+    Q_PROPERTY(bool unrollThread READ isUnrollThread CONSTANT FINAL)
     Q_PROPERTY(QEnums::ReplyRestriction replyRestriction READ getReplyRestriction NOTIFY threadReplyRestrictionChanged FINAL)
     Q_PROPERTY(BasicProfile replyRestrictionAuthor READ getReplyRestrictionAuthor NOTIFY threadReplyRestrictionChanged FINAL)
     Q_PROPERTY(ListViewBasicList replyRestrictionLists READ getReplyRestrictionLists NOTIFY threadReplyRestrictionListsChanged FINAL)
@@ -16,7 +17,7 @@ class PostThreadModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostThreadModel>;
 
-    explicit PostThreadModel(const QString& threadEntryUri,
+    explicit PostThreadModel(const QString& threadEntryUri, bool unrollThread,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
@@ -38,8 +39,14 @@ public:
     QString getPostToAttachMore() const;
 
     QString getRootUri() const;
+    bool isUnrollThread() const { return mUnrollThread; }
     Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
     Q_INVOKABLE void showHiddenReplies();
+
+    void unrollThread();
+    Q_INVOKABLE QString getFirstUnrolledPostText() const;
+    Q_INVOKABLE QString getFirstUnrolledPostPlainText() const;
+    Q_INVOKABLE QString getFullThreadPlainText() const;
 
     // May return UNKNOWN if there are reply restrictions. This will happen
     // if the root is not in the thread, but the first post has replies disabled.
@@ -87,6 +94,8 @@ private:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
     std::deque<Post> mHiddenRepliesFeed;
     QString mThreadEntryUri;
+    bool mUnrollThread = false;
+    std::optional<Post> mFirstPostFromUnrolledThread;
 };
 
 }

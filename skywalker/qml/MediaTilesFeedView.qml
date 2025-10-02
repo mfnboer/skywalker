@@ -201,6 +201,7 @@ GridView {
             width: mediaTilesView.width
             fillMode: Image.PreserveAspectFit
             source: "/images/thats_all_folks.png"
+            asynchronous: true
             visible: mediaTilesView.count > 0
         }
     }

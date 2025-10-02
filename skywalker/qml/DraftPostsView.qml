@@ -5,7 +5,7 @@ import skywalker
 
 SkyListView {
     readonly property string sideBarTitle: qsTr("Drafts")
-    readonly property string sideBarSubTitle: `${view.count} / ${view.model.getMaxDrafts()}`
+    readonly property string sideBarSubTitle: `${view.count} / ${view.model?.getMaxDrafts()}`
     readonly property SvgImage sideBarSvg: SvgOutline.chat
 
     signal closed

@@ -12,6 +12,7 @@ Image {
     readonly property bool isLoading: status == Image.Loading || (status == Image.Error && retryCount < maxRetry) || isResetting
 
     id: img
+    asynchronous: true
 
     Timer {
         id: retryTimer

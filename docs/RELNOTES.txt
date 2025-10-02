@@ -1,3 +1,18 @@
+4.16.2
+======
+* Bug fix for crash in draft posts
+
+4.16.1
+======
+* Show pronouns and website on profile page (when available)
+* Bug fixes
+
+4.16
+====
+* Thread reader (unroll threads for easy reading)
+* Document editor for editing full thread text.
+* Bug fixes
+
 4.15
 ====
 * Move feeds search into the regular search

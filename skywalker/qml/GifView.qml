@@ -32,6 +32,7 @@ Item {
         width: 50
         fillMode: Image.PreserveAspectFit
         source: "/images/via_tenor_logo_blue.svg"
+        asynchronous: true
         visible: gifUtils.isTenorLink(view.uri) && gifImage.status === Image.Ready
     }
     Image {
@@ -42,6 +43,7 @@ Item {
         width: 50
         fillMode: Image.PreserveAspectFit
         source: "/images/giphy_logo.png"
+        asynchronous: true
         visible: gifUtils.isGiphyLink(view.uri) && gifImage.status === Image.Ready
     }
 

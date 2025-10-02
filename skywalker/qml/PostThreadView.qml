@@ -6,8 +6,9 @@ SkyListView {
     required property int postEntryIndex
     property int syncToIndex: postEntryIndex
     property var skywalker: root.getSkywalker()
-    readonly property string sideBarTitle: qsTr("Post thread")
-    readonly property SvgImage sideBarSvg: SvgOutline.chat
+    readonly property bool isUnrolledThread: model?.unrollThread
+    readonly property string sideBarTitle: isUnrolledThread ? qsTr("Unrolled thread") : qsTr("Post thread")
+    readonly property SvgImage sideBarSvg: isUnrolledThread ? SvgOutline.thread : SvgOutline.chat
 
     signal closed
 
@@ -136,10 +137,10 @@ SkyListView {
             y: -height - 10
             svg: SvgOutline.reply
             overrideOnClicked: () => reply()
-            visible: !root.showSideBar
+            visible: !root.showSideBar && !isUnrolledThread
 
             Accessible.role: Accessible.Button
-            Accessible.name: qsTr(`reply to ${(getReplyToAuthor().name)}`)
+            Accessible.name: qsTr(`reply to ${(getReplyToAuthor()?.name)}`)
             Accessible.onPressAction: clicked()
         }
     }
@@ -147,6 +148,9 @@ SkyListView {
 
     delegate: PostFeedViewDelegate {
         width: view.width
+        unrollThread: isUnrolledThread
+        postThreadModel: view.model
+
         onShowHiddenReplies: {
             syncToIndex = index
             model.showHiddenReplies()
@@ -235,8 +239,12 @@ SkyListView {
     }
 
     Component.onCompleted: {
-        console.debug("Entry index:", postEntryIndex);
-        moveToIndex(postEntryIndex, sync)
+        console.debug("Entry index:", postEntryIndex)
         model.onRowsInserted.connect(rowsInsertedHandler)
+
+        if (model.unrollThread)
+            positionViewAtBeginning()
+        else
+            moveToIndex(postEntryIndex, sync)
     }
 }

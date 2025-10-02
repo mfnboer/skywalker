@@ -88,6 +88,7 @@ SkyPage {
             Layout.preferredWidth: 100
             Layout.preferredHeight: 100
             Layout.alignment: Qt.AlignTop
+            color: "transparent"
 
             ListAvatar {
                 id: listAvatar
@@ -207,7 +208,7 @@ SkyPage {
             }
         }
 
-        AccessibleText {
+        SkyCleanedText {
             topPadding: 5
             bottomPadding: 10
             Layout.columnSpan: 3
@@ -217,7 +218,7 @@ SkyPage {
             elide: Text.ElideRight
             textFormat: Text.RichText
             color: guiSettings.textColor
-            text: list.formattedDescription
+            plainText: list.formattedDescription
 
             LinkCatcher {
                 containingText: list.description

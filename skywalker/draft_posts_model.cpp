@@ -90,10 +90,11 @@ std::vector<Post> DraftPostsModel::getThread(int index) const
         return {};
 
     std::vector<Post> thread;
+    const auto& rawThread = mRawFeed[index];
 
-    for (int i = 0; i < (int)mRawFeed[index].size(); ++i)
+    for (int i = 0; i < (int)rawThread.size(); ++i)
     {
-        const auto& feedViewPost = mRawFeed[index][i];
+        const auto& feedViewPost = rawThread[i];
         Post post(feedViewPost);
         thread.push_back(post);
     }
@@ -145,7 +146,7 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
 
 QList<ImageView> DraftPostsModel::createDraftImages(const Post& post) const
 {
-    QList<ImageView> imageViews = post.getDraftImages();
+    const QList<ImageView> imageViews = post.getDraftImages();
 
     if (imageViews.empty())
         return {};
@@ -154,6 +155,7 @@ QList<ImageView> DraftPostsModel::createDraftImages(const Post& post) const
         return mPostUriDraftImagesMap.at(post.getUri());
 
     QList<ImageView> draftViews;
+    draftViews.reserve(imageViews.size());
 
     for (const auto& view : imageViews)
     {

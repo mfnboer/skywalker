@@ -383,6 +383,14 @@ QEnums::TripleBool RecordView::isThread() const
     return *postIsThread ? QEnums::TRIPLE_BOOL_YES : QEnums::TRIPLE_BOOL_NO;
 }
 
+bool RecordView::isThreadReply() const
+{
+    // NOTE: this is not fool proof as there could be replies from other authors
+    // between the root and the parent of this post.
+    const QString did = getAuthorDid();
+    return isReply() && did == getReplyToAuthorDid() && did == getReplyRootAuthorDid();
+}
+
 QString RecordView::getReplyToAuthorDid() const
 {
     if (!mPrivate->mRecord)
@@ -416,6 +424,30 @@ BasicProfile RecordView::getReplyToAuthor() const
 
     auto* profile = AuthorCache::instance().get(did);
     return profile ? *profile : BasicProfile();
+}
+
+QString RecordView::getReplyRootAuthorDid() const
+{
+    if (!mPrivate->mRecord)
+        return {};
+
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
+
+    if (!post->mReply)
+        return {};
+
+    const ATProto::ATUri atUri(post->mReply->mRoot->mUri);
+
+    if (!atUri.isValid())
+        return {};
+
+    if (atUri.authorityIsHandle())
+        return {};
+
+    return atUri.getAuthority();
 }
 
 const LanguageList& RecordView::getLanguages() const

@@ -18,12 +18,14 @@ Column {
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
     required property bool postIsThread
+    required property bool postIsThreadReply
     property var postVideo // videoView
     property var postExternal // externalview (var allows NULL)
     property var postRecord // recordview
     property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
-    property int maxTextLines: 1000
+    property int initialShowMaxTextLines: 25
+    property int maxTextLines: 10000
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property string borderColor: guiSettings.borderColor
     property bool showWarnedPost: false
@@ -33,14 +35,18 @@ Column {
     property bool isDraft: false
     property bool swipeMode: false
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
+    readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
 
     // The font-size is set to make sure the thread indicator is in normal text size when the
     // post is giant emoji only.
     // The <div> cause a line break if there is post text before. In an empty post no newline
     // is prepended.
-    readonly property string displayText: postText + (showThreadIndicator ? `<div style="font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</div>` : "")
+    readonly property string displayText:
+        (replaceThreadIndicator ? UnicodeFonts.turnLastThreadSymbolIntoLink(postText) : postText) +
+        (showThreadIndicator ? `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none; font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</a>` : "")
 
     signal activateSwipe
+    signal unrollThread
 
     id: postBody
 
@@ -49,7 +55,7 @@ Column {
         width: parent.width
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        initialShowMaxLineCount: Math.min(maxTextLines, 25)
+        initialShowMaxLineCount: Math.min(maxTextLines, initialShowMaxTextLines)
         maximumLineCount: maxTextLines
         ellipsisBackgroundColor: postBody.bodyBackgroundColor
         elide: Text.ElideRight
@@ -65,6 +71,8 @@ Column {
         LinkCatcher {
             z: parent.z - 1
             containingText: postPlainText
+
+            onUnrollThread: postBody.unrollThread()
         }
 
         Rectangle {
@@ -432,6 +440,7 @@ Column {
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
+                                   isDraft: isDraft,
                                    swipeMode: swipeMode })
     }
 
