@@ -37,7 +37,7 @@ Item {
             id: avatarImg
             width: parent.width
             height: width
-            source: avatarUrl
+            imgUrl: avatarUrl
             sourceSize.width: width * Screen.devicePixelRatio
             sourceSize.height: height * Screen.devicePixelRatio
             fillMode: Image.PreserveAspectFit

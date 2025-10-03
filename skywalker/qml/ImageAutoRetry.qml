@@ -3,6 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 Image {
+    property string imgUrl
     property int maxRetry: 5
     property int retryCount: 0
     property bool indicateLoading: true
@@ -13,6 +14,7 @@ Image {
 
     id: img
     asynchronous: true
+    source: imgUrl.startsWith("http") ? `image://scaledimage/${imgUrl}` : imgUrl
 
     Timer {
         id: retryTimer

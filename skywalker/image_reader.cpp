@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "image_reader.h"
 #include "photo_picker.h"
+#include <atproto/lib/time_monitor.h>
 #include <QImageReader>
 
 namespace Skywalker {
@@ -47,13 +48,15 @@ bool ImageReader::getImageFromWeb(const QString& urlString, const ImageCb& image
     QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply, imageCb, errorCb]{
-            replyFinished(reply, imageCb, errorCb); });
+        replyFinished(reply, imageCb, errorCb); });
 
     return true;
 }
 
 void ImageReader::replyFinished(QNetworkReply* reply, const ImageCb& imageCb, const ErrorCb& errorCb)
 {
+    ATProto::TimeMonitor timeMon("Reading image");
+
     if (reply->error() != QNetworkReply::NoError)
     {
         const QString& error = reply->errorString();

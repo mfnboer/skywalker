@@ -564,6 +564,8 @@ qt_add_qml_module(libskywalker
         SOURCES thread_unroller.h
         SOURCES thread_unroller.cpp
         QML_FILES qml/DebugDump.qml
+        SOURCES scaled_image_provider.h
+        SOURCES scaled_image_provider.cpp
 )
 
 if (NOT ANDROID)

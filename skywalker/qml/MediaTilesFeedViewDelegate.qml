@@ -123,7 +123,7 @@ Rectangle {
                 width: mediaRect.width
                 height: mediaRect.height
                 fillMode: Image.PreserveAspectCrop
-                source: filter.getImage(0).thumbUrl
+                imgUrl: filter.getImage(0).thumbUrl
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
