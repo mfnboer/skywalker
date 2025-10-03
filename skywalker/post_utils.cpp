@@ -73,6 +73,19 @@ ImageReader* PostUtils::imageReader()
     return mImageReader.get();
 }
 
+bool PostUtils::isPostUri(const QString& uri)
+{
+    const ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid at-uri:" << uri;
+        return false;
+    }
+
+    return atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST;
+}
+
 QString PostUtils::extractDidFromUri(const QString& uri)
 {
     const ATProto::ATUri atUri(uri);

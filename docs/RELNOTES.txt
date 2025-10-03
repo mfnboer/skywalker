@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.16.2
 ======
 * Bug fix for crash in draft posts

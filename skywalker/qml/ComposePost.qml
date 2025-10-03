@@ -2239,7 +2239,8 @@ SkyPage {
     function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
         const qUri = postItem.getQuoteUri()
 
-        if (Boolean(qUri)) {
+        // NOTE: quote uri can be a post, feed, list or starter pack uri
+        if (Boolean(qUri) && postUtils.isPostUri(qUri)) {
             postUtils.checkCanQuotePost(qUri,
                 (canQuote) => {
                     if (canQuote)

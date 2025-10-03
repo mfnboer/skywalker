@@ -26,6 +26,7 @@ class PostUtils : public WrappedSkywalker, public Presence
 public:
     explicit PostUtils(QObject* parent = nullptr);
 
+    Q_INVOKABLE static bool isPostUri(const QString& uri);
     Q_INVOKABLE static QString extractDidFromUri(const QString& uri);
     Q_INVOKABLE void checkPostExists(const QString& uri, const QString& cid);
     Q_INVOKABLE void canQuotePost(const QString& uri);
