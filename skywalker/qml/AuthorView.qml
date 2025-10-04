@@ -17,6 +17,7 @@ SkyPage {
     // For some weird reason description and banner are not available here.
     // Must have something to do with those properties being in subclasses of BasicProfile.
     property string authorName
+    property string authorPronouns
     property string authorDescription
     property string authorWebsite
     property string authorAvatar
@@ -433,8 +434,8 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 5
                 bottomPadding: 5
-                plainText: `${author.pronouns}`
-                visible: Boolean(author.pronouns)
+                plainText: `${authorPronouns}`
+                visible: Boolean(authorPronouns)
             }
 
             Rectangle {
@@ -1405,20 +1406,24 @@ SkyPage {
                 skywalker: skywalker,
                 authorDid: author.did,
                 authorName: authorName,
+                authorPronouns: authorPronouns,
                 authorDescription: authorDescription,
+                authorWebsite: authorWebsite,
                 authorAvatar: authorAvatar,
                 authorBanner: authorBanner,
                 authorVerified: authorVerified
             })
-        editPage.profileUpdated.connect((name, description, avatar, banner) => {
+        editPage.profileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
             statusPopup.show(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
             authorName = name
+            authorPronouns = pronouns
             authorDescription = description
+            authorWebsite = website
             authorAvatar = avatar
             setAuthorBanner(banner)
 
             // NOTE: if avatar is an "image://" source, then the profile takes ownership
-            skywalker.updateUserProfile(name, description, avatar)
+            skywalker.updateUserProfile(name, description, avatar, pronouns)
 
             root.popStack()
         })
@@ -1649,6 +1654,7 @@ SkyPage {
         }
 
         authorName = author.name
+        authorPronouns = author.pronouns
         authorDescription = author.description
         authorWebsite = author.website
         authorAvatar = author.avatarUrl
@@ -1657,8 +1663,6 @@ SkyPage {
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
-
-        console.debug("AUTHOR:", authorName, "PRONOUNS:", author.pronouns, "WWW:", authorWebsite)
 
         getFeed(modelId)
 

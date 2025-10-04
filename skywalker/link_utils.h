@@ -14,6 +14,8 @@ class LinkUtils : public WrappedSkywalker, public Presence
 
 public:
     Q_INVOKABLE static bool isDomain(const QString& value);
+    Q_INVOKABLE static bool isWebLink(const QString& link);
+    Q_INVOKABLE static bool hasScheme(const QString& link);
 
     explicit LinkUtils(QObject* parent = nullptr);
 

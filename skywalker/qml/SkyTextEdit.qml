@@ -10,6 +10,7 @@ TextEdit {
     property int maxLength: -1
     property bool strictMax: false
     property var fontSelectorCombo
+    property var parentFlick
     property bool textChangeInProgress: false
 
     id: skyTextEdit
@@ -56,6 +57,15 @@ TextEdit {
 
         if (added > 0)
             updateTextTimer.set(added)
+    }
+
+    onCursorRectangleChanged: {
+        ensureVisible(cursorRectangle)
+    }
+
+    onFocusChanged: {
+        if (focus)
+            ensureVisible(cursorRectangle)
     }
 
     function updateGraphemeLength() {
@@ -139,6 +149,19 @@ TextEdit {
             skyTextEdit.text = fullText
             skyTextEdit.cursorPosition = modifiedTillCursor.length
         }
+    }
+
+    function ensureVisible(cursor) {
+        if (!parentFlick || parentFlick.dragging)
+            return
+
+        const editTextY = skyTextEdit.mapToItem(parentFlick, 0, 0).y
+        let cursorY = cursor.y + editTextY
+
+        if (cursorY < 0)
+            parentFlick.contentY += cursorY;
+        else if (parentFlick.height < cursorY + cursor.height)
+            parentFlick.contentY += cursorY + cursor.height - parentFlick.height
     }
 
     Component.onCompleted: {

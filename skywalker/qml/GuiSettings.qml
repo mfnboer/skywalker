@@ -101,6 +101,7 @@ Item {
     readonly property string statsColor: Material.color(Material.Grey)
     property string textColor: Material.foreground
     readonly property string textInputBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string textInputInvalidColor: "palevioletred"
     readonly property string textLengthExceededColor: "palevioletred"
 
     // Opacity

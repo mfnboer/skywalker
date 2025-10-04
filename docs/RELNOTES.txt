@@ -1,5 +1,6 @@
 next
 ====
+* Edit pronouns and website on your profile
 * Bug fixes
 
 4.16.2

@@ -7,7 +7,9 @@ SkyPage {
     required property var skywalker
     required property string authorDid
     required property string authorName
+    required property string authorPronouns
     required property string authorDescription
+    required property string authorWebsite
     required property string authorAvatar
     required property string authorBanner
     required property bool authorVerified
@@ -21,7 +23,7 @@ SkyPage {
     readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
 
     signal closed
-    signal profileUpdated(string name, string description, string avatar, string banner)
+    signal profileUpdated(string name, string description, string avatar, string banner, string pronouns, string website)
 
     id: editProfilePage
     width: parent.width
@@ -43,7 +45,7 @@ SkyPage {
             svg: SvgOutline.check
             iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             accessibleName: qsTr("save profile")
-            enabled: changesMade() && !nameField.maxGraphemeLengthExceeded()
+            enabled: changesMade() && allFieldsValid()
 
             onClicked: {
                 updateProfileButton.enabled = false
@@ -58,7 +60,7 @@ SkyPage {
         height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
-        visible: nameField.activeFocus || descriptionField.activeFocus
+        visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus || websiteField.activeFocus
 
         TextLengthBar {
             textField: nameField
@@ -71,6 +73,19 @@ SkyPage {
             anchors.right: parent.right
             textField: nameField
             visible: nameField.activeFocus
+        }
+
+        TextLengthBar {
+            textField: pronounsField
+            visible: pronounsField.activeFocus
+        }
+
+        TextLengthCounter {
+            y: 10
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            textField: pronounsField
+            visible: pronounsField.activeFocus
         }
 
         TextLengthBar {
@@ -92,6 +107,7 @@ SkyPage {
             y: 10
             popup.height: Math.min(editProfilePage.usableHeight, popup.contentHeight)
             focusPolicy: Qt.NoFocus
+            visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus
         }
     }
 
@@ -100,10 +116,19 @@ SkyPage {
         anchors.fill: parent
         clip: true
         contentWidth: pageColumn.width
-        contentHeight: pageColumn.y + descriptionRect.y + descriptionField.y + descriptionField.height
+        contentHeight: pageColumn.y + websiteRect.y + websiteField.y + websiteField.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: descriptionField.ensureVisible(descriptionField.cursorRectangle)
+        onHeightChanged: {
+            if (nameField.activeFocus)
+                nameField.ensureVisible(nameField.cursorRectangle)
+            else if (pronounsField.activeFocus)
+                pronounsField.ensureVisible(pronounsField.cursorRectangle)
+            else if (descriptionField.activeFocus)
+                descriptionField.ensureVisible(descriptionField.cursorRectangle)
+            else if (websiteField.activeFocus)
+                websiteField.ensureVisible(websiteField.cursorRectangle)
+        }
 
         ColumnLayout {
             id: pageColumn
@@ -236,6 +261,7 @@ SkyPage {
                     topPadding: 10
                     bottomPadding: 10
                     focus: true
+                    parentFlick: flick
                     initialText: authorName
                     placeholderText: qsTr("Your name")
                     singleLine: true
@@ -251,6 +277,37 @@ SkyPage {
                 wrapMode: Text.Wrap
                 text: qsTr("⚠️ Changing your name will invalidate your verified status.")
                 visible: authorVerified
+            }
+
+            AccessibleText {
+                Layout.fillWidth: true
+                topPadding: 10
+                font.bold: true
+                color: guiSettings.textColor
+                text: qsTr("Pronouns")
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: pronounsField.height
+                radius: 5
+                border.width: 1
+                border.color: guiSettings.borderColor
+                color: "transparent"
+
+                SkyTextEdit {
+                    id: pronounsField
+                    width: parent.width
+                    topPadding: 10
+                    bottomPadding: 10
+                    focus: true
+                    parentFlick: flick
+                    initialText: authorPronouns
+                    placeholderText: qsTr("Your pronouns")
+                    singleLine: true
+                    maxLength: 20
+                    fontSelectorCombo: fontSelector
+                }
             }
 
             AccessibleText {
@@ -283,6 +340,58 @@ SkyPage {
                     maxLength: 256
                     enableLinkShortening: false
                     fontSelectorCombo: fontSelector
+                }
+            }
+
+            AccessibleText {
+                Layout.fillWidth: true
+                topPadding: 10
+                font.bold: true
+                color: guiSettings.textColor
+                text: qsTr("Website")
+            }
+
+            Rectangle {
+                id: websiteRect
+                Layout.fillWidth: true
+                Layout.preferredHeight: websiteField.height
+                radius: 5
+                border.width: 1
+                border.color: guiSettings.borderColor
+                color: websiteField.isValid() ? "transparent" : guiSettings.textInputInvalidColor
+
+                SkyTextEdit {
+                    id: websiteField
+                    width: parent.width
+                    topPadding: 10
+                    bottomPadding: 10
+                    focus: true
+                    parentFlick: flick
+                    initialText: authorWebsite
+                    placeholderText: qsTr("Your website")
+                    singleLine: true
+                    inputMethodHints: Qt.ImhNoPredictiveText
+
+                    onActiveFocusChanged: {
+                        if (activeFocus)
+                            websiteField.ensur
+                    }
+
+                    function getLink() {
+                        const link = text.trim()
+
+                        if (!Boolean(link))
+                            return ""
+                        else if (linkUtils.hasScheme(link))
+                            return link
+                        else
+                            return "https://" + link
+                    }
+
+                    function isValid() {
+                        const link = getLink()
+                        return !Boolean(link) || linkUtils.isWebLink(link)
+                    }
                 }
             }
         }
@@ -327,6 +436,11 @@ SkyPage {
         onUpdateProfileOk: () => editProfilePage.updateProfileDone()
     }
 
+    LinkUtils {
+        id: linkUtils
+        skywalker: editProfilePage.skywalker
+    }
+
     VirtualKeyboardHandler {
         id: keyboardHandler
     }
@@ -343,8 +457,10 @@ SkyPage {
     }
 
     function updateProfile() {
-        profileUtils.updateProfile(authorDid, nameField.text, descriptionField.text,
-                                   avatar.avatarUrl, avatar.isUpdated, banner.source, banner.isUpdated)
+        profileUtils.updateProfile(authorDid, nameField.text.trim(), descriptionField.text.trim(),
+                                   avatar.avatarUrl, avatar.isUpdated,
+                                   banner.source, banner.isUpdated,
+                                   pronounsField.text.trim(), websiteField.getLink())
     }
 
     function updateProfileDone() {
@@ -353,8 +469,9 @@ SkyPage {
         createdAvatarSource = ""
         createdBannerSource = ""
         statusPopup.close()
-        editProfilePage.profileUpdated(nameField.text, descriptionField.text,
-                                       avatar.avatarUrl, banner.source)
+        editProfilePage.profileUpdated(nameField.text.trim(), descriptionField.text.trim(),
+                                       avatar.avatarUrl, banner.source,
+                                       pronounsField.text.trim(), websiteField.getLink())
     }
 
     function pickAvatarPhoto() {
@@ -443,10 +560,19 @@ SkyPage {
     }
 
     function changesMade() {
-        return authorName !== nameField.text ||
-                authorDescription !== descriptionField.text ||
+        return authorName !== nameField.text.trim() ||
+                authorDescription !== descriptionField.text.trim() ||
                 authorAvatar !== avatar.avatarUrl ||
-                authorBanner !== banner.source.toString()
+                authorBanner !== banner.source.toString() ||
+                authorPronouns !== pronounsField.text.trim() ||
+                authorWebsite !== websiteField.getLink()
+    }
+
+    function allFieldsValid() {
+        return !nameField.maxGraphemeLengthExceeded() &&
+                !descriptionField.maxGraphemeLengthExceeded() &&
+                !pronounsField.maxGraphemeLengthExceeded() &&
+                websiteField.isValid()
     }
 
     function cancel() {

@@ -2105,9 +2105,10 @@ void Skywalker::getDetailedProfile(const QString& author)
 }
 
 void Skywalker::updateUserProfile(const QString& displayName, const QString& description,
-                                  const QString& avatar)
+                                const QString& avatar, const QString& pronouns)
 {
     mUserProfile.setDisplayName(displayName);
+    mUserProfile.setPronouns(pronouns);
     mUserProfile.setDescription(description);
     mUserProfile.setAvatarUrl(avatar);
     AuthorCache::instance().setUser(mUserProfile);
