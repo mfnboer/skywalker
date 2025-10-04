@@ -966,6 +966,8 @@ SkyPage {
             if (query.length > 0) {
                 if (searchStack.currentItem)
                     searchStack.currentItem.refreshSearch()
+
+                searchUtils.addLastSearch(query)
             }
             else {
                 currentText = "*"
