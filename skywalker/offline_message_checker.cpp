@@ -692,6 +692,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     const PostCache& reasonPostCache = mNotificationListModel.getReasonPostCache();
     const PostRecord postRecord = notification.getPostRecord();
 
+    // TODO: get image/video alt or record text if postText is empty
     // NOTE: postText can be empty if there is only an image.
     QString msg = !postRecord.isNull() ? postRecord.getFormattedText() : "";
     QString channelId = CHANNEL_POST;
@@ -708,7 +709,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
                 QObject::tr("<b>Liked your post</b>") :
                 QObject::tr("<b>Liked your repost</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
-        const auto reasonPostText = post.getFormattedText();
+        const auto reasonPostText = getNotificationText(post);
 
         if (!reasonPostText.isEmpty())
             msg.append("<br>" + reasonPostText);
@@ -724,7 +725,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
                 QObject::tr("<b>Reposted your post</b>") :
                 QObject::tr("<b>Reposted your repost</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
-        const auto reasonPostText = post.getFormattedText();
+        const auto reasonPostText = getNotificationText(post);
 
         if (!reasonPostText.isEmpty())
             msg.append("<br>" + reasonPostText);
@@ -788,6 +789,98 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         when = QDateTime::currentDateTimeUtc();
 
     createNotification(channelId, notification.getAuthor(), msg, when, iconType);
+}
+
+template<class Entity>
+QString getEntityAttachmentNotificationText(const Entity& entity)
+{
+    const auto images = entity.getImages();
+
+    for (const auto& image : images)
+    {
+        const auto altText = image.getAlt();
+
+        if (!altText.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(altText);
+    }
+
+    const auto video = entity.getVideoView();
+
+    if (video)
+    {
+        const auto altText = video->getAlt();
+
+        if (!altText.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(altText);
+    }
+
+    const auto external = entity.getExternalView();
+
+    if (external)
+    {
+        const auto title = external->getTitle();
+
+        if (!title.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(title);
+
+        const auto description = external->getDescription();
+
+        if (!description.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(description);
+    }
+
+    return {};
+}
+
+template<class Entity>
+QString getEntityNotificationText(const Entity& entity)
+{
+    const auto text = entity.getFormattedText();
+
+    if (!text.isEmpty())
+        return text;
+
+    return getEntityAttachmentNotificationText(entity);
+}
+
+QString OffLineMessageChecker::getNotificationText(const Post& post) const
+{
+    const auto postText = getEntityNotificationText(post);
+
+    if (!postText.isEmpty())
+        return postText;
+
+    const auto record = post.getRecordView();
+
+    if (record)
+    {
+        const auto recordText = getEntityNotificationText(*record);
+
+        if (!recordText.isEmpty())
+            return recordText;
+    }
+
+    const auto recordWithMedia = post.getRecordWithMediaView();
+
+    if (recordWithMedia)
+    {
+        const auto recordText = getEntityAttachmentNotificationText(*recordWithMedia);
+
+        if (!recordText.isEmpty())
+            return recordText;
+
+        const auto record = recordWithMedia->getRecord();
+
+        if (!record.isNull())
+        {
+            const auto recordText = getEntityNotificationText(record);
+
+            if (!recordText.isEmpty())
+                return recordText;
+        }
+    }
+
+    return {};
 }
 
 void OffLineMessageChecker::checkNotificationPermission()

@@ -71,20 +71,40 @@ QList<ImageView> RecordWithMediaView::getImages() const
 
 QVariant RecordWithMediaView::getVideo() const
 {
+    auto videoView = getVideoView();
+
+    if (!videoView)
+        return {};
+
+    return QVariant::fromValue(*videoView);
+}
+
+VideoView::Ptr RecordWithMediaView::getVideoView() const
+{
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
         return {};
 
     const auto& video = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(mView->mMedia);
-    return  QVariant::fromValue(VideoView(video));
+    return std::make_unique<VideoView>(video);
 }
 
 QVariant RecordWithMediaView::getExternal() const
+{
+    auto externalView = getExternalView();
+
+    if (!externalView)
+        return {};
+
+    return QVariant::fromValue(*externalView);
+}
+
+ExternalView::Ptr RecordWithMediaView::getExternalView() const
 {
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(mView->mMedia)->mExternal;
-    return QVariant::fromValue(ExternalView(external));
+    return std::make_unique<ExternalView>(external);
 }
 
 }

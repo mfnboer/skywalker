@@ -139,6 +139,7 @@ public:
     int getIndexOldestUnread() const;
     const NotificationList& getNotifications() const { return mList; }
     QDateTime getTimestampLatestNotifcation() const;
+    const PostCache& getPostCache() const { return mPostCache; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
 
