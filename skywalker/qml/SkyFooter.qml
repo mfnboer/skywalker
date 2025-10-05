@@ -8,7 +8,6 @@ Rectangle {
     required property var skywalker
     property var searchView
     property int activePage: QEnums.UI_PAGE_NONE
-    property bool floatingButtons: root.getSkywalker().getUserSettings().floatingNavigationButtons
     property int extraFooterMargin: 0
     property bool footerVisible: true
 
@@ -22,7 +21,7 @@ Rectangle {
     width: parent.width
     height: (visible && footerVisible) ? guiSettings.footerHeight : 0
     z: guiSettings.footerZLevel
-    color: floatingButtons ? "transparent" : guiSettings.backgroundColor
+    color: guiSettings.backgroundColor
 
     RowLayout {
         width: parent.width
@@ -33,10 +32,9 @@ Rectangle {
         SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            floating: floatingButtons
             svg: isHomeActive() ? SvgFilled.home : SvgOutline.home
             counter: isHomeActive() && timeline ? timeline.unreadPosts : 0
-            counterBackgroundColor: floatingButtons ? guiSettings.buttonNeutralColor : guiSettings.backgroundColor
+            counterBackgroundColor: guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
             Accessible.name: getHomeSpeech()
             onClicked: homeClicked()
@@ -45,7 +43,6 @@ Rectangle {
         SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            floating: floatingButtons
             svg: isSearchActive() ? SvgFilled.search : SvgOutline.search
             Accessible.name: qsTr("search")
             onClicked: searchClicked()
@@ -72,7 +69,6 @@ Rectangle {
         SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            floating: floatingButtons
             svg: isMessagesActive() ? SvgFilled.directMessage : SvgOutline.directMessage
             counter: skywalker.chat.unreadCount
             Accessible.name: skywalker.chat.unreadCount === 0 ? qsTr("direct messages") : qsTr(`${skywalker.chat.unreadCount} new direct messages`)
@@ -82,7 +78,6 @@ Rectangle {
         SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            floating: floatingButtons
             svg: isNotificationsActive() ? SvgFilled.notifications : SvgOutline.notifications
             counter: root.getSkywalker().unreadNotificationCount
             Accessible.name: root.getSkywalker().unreadNotificationCount === 0 ? qsTr("notifications") : qsTr(`${skywalker.unreadNotificationCount} new notifications`)

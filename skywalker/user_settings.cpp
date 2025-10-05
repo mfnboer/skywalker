@@ -978,24 +978,6 @@ bool UserSettings::getSonglinkEnabled() const
     return mSettings.value("songlinkEnabled", true).toBool();
 }
 
-void UserSettings::setFloatingNavigationButtons(bool floating)
-{
-    if (floating == getFloatingNavigationButtons())
-        return;
-
-    mSettings.setValue("floatingNavButtons", floating);
-    emit floatingNavigationButtonsChanged();
-}
-
-// TODO
-// Floating buttons do not play well with full screen margin settings.
-// Disabled for now.
-bool UserSettings::getFloatingNavigationButtons() const
-{
-    return false;
-    // return mSettings.value("floatingNavButtons", false).toBool();
-}
-
 void UserSettings::setShowFollowsActiveStatus(bool show)
 {
     if (show == getShowFollowsActiveStatus())
@@ -1549,6 +1531,7 @@ void UserSettings::setPinnedSearchFeeds(const QString& did, const SearchFeed::Li
 void UserSettings::cleanup()
 {
     mSettings.remove("draftRepoToFileMigration");
+    mSettings.remove("floatingNavButtons");
 }
 
 }

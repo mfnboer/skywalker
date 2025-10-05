@@ -10,7 +10,6 @@ Pane {
     property bool notificationsActive: false
     property bool searchActive: false
     property bool messagesActive: false
-    property bool floatingButtons: false
     property var rootItem: root.currentStackItem()
     property bool isBasePage: root.currentStack().depth === 1
 

@@ -508,7 +508,7 @@ Column {
         ComboBox {
             id: speedComboBox
             anchors.right: soundButton.left
-            anchors.rightMargin: 5
+            anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             implicitWidth: contentItem.implicitWidth
             height: 32

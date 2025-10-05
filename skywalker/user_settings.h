@@ -40,7 +40,6 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoLoopPlay READ getVideoLoopPlay WRITE setVideoLoopPlay NOTIFY videoLoopPlayChanged FINAL)
     Q_PROPERTY(bool videoStreamingEnabled READ getVideoStreamingEnabled WRITE setVideoStreamingEnabled NOTIFY videoStreamingEnabledChanged FINAL)
     Q_PROPERTY(QEnums::VideoQuality videoQuality READ getVideoQuality WRITE setVideoQuality NOTIFY videoQualityChanged FINAL)
-    Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
     Q_PROPERTY(bool showSuggestedFeeds READ getShowSuggestedFeeds WRITE setShowSuggestedFeeds NOTIFY showSuggestedFeedsChanged FINAL)
@@ -239,9 +238,6 @@ public:
     void setSonglinkEnabled(bool enabled);
     bool getSonglinkEnabled() const;
 
-    void setFloatingNavigationButtons(bool floating);
-    bool getFloatingNavigationButtons() const;
-
     void setShowFollowsActiveStatus(bool show);
     bool getShowFollowsActiveStatus() const;
 
@@ -390,7 +386,6 @@ signals:
     void videoLoopPlayChanged();
     void videoQualityChanged();
     void videoStreamingEnabledChanged();
-    void floatingNavigationButtonsChanged();
     void scriptRecognitionChanged();
     void showTrendingTopicsChanged();
     void showSuggestedFeedsChanged();
