@@ -519,7 +519,7 @@ Column {
             popup.background: Rectangle {
                 radius: 5
                 color: videoStack.backgroundColor
-                opacity: 0.7
+                opacity: 0.9
             }
 
             model: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
