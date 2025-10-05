@@ -25,6 +25,7 @@ Column {
 
     property bool autoLoad: (userSettings.videoAutoPlay || userSettings.videoAutoLoad) && !swipeMode || isFullVideoFeedViewMode || streamingEnabled
     property bool autoPlay: (userSettings.videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
+    property double playbackRate: 1.0
 
     property int useIfNeededHeight: 0
     property bool tileMode: false
@@ -250,6 +251,7 @@ Column {
                 loops: userSettings.videoLoopPlay ? MediaPlayer.Infinite : 1
                 videoOutput: videoOutput
                 audioOutput: audioOutput
+                playbackRate: videoStack.playbackRate
 
                 onHasVideoChanged: {
                     if (hasVideo)
@@ -495,12 +497,73 @@ Column {
 
         AccessibleText {
             id: remainingTimeText
-            anchors.right: soundButton.left
+            anchors.right: speedComboBox.left
             anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             font.pointSize: guiSettings.scaledFont(6/8)
             color: controlColor
             text: guiSettings.videoDurationToString(videoPlayer.duration - videoPlayer.position)
+        }
+
+        ComboBox {
+            id: speedComboBox
+            anchors.right: soundButton.left
+            anchors.rightMargin: 5
+            anchors.verticalCenter: parent.verticalCenter
+            implicitWidth: contentItem.implicitWidth
+            height: 32
+            popup.x: speedComboBox.width - popup.width
+            popup.width: 60
+            popup.topMargin: guiSettings.headerMargin
+            popup.bottomMargin: guiSettings.footerMargin
+            popup.background: Rectangle {
+                radius: 5
+                color: videoStack.backgroundColor
+                opacity: 0.7
+            }
+
+            model: [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
+            currentIndex: model.indexOf(playbackRate)
+
+            onCurrentIndexChanged: {
+                if (currentIndex >= 0)
+                    playbackRate = model[currentIndex]
+            }
+
+            indicator: Item {}
+
+            background: Rectangle {
+                implicitWidth: speedComboBox.contentItem.implicitWidth
+                implicitHeight: speedComboBox.height
+                color: "transparent"
+            }
+
+            contentItem: Text {
+                leftPadding: 4
+                rightPadding: 4
+                verticalAlignment: Text.AlignVCenter
+                color: controlColor
+                font.pointSize: guiSettings.scaledFont(6/8)
+                font.bold: true
+                text: `${speedComboBox.displayText}x`
+            }
+
+            delegate: ItemDelegate {
+                required property int index
+                required property var modelData
+
+                id: delegate
+                width: speedComboBox.popup.width
+
+                contentItem: Text {
+                    width: delegate.width
+                    verticalAlignment: Text.AlignVCenter
+                    color: controlColor
+                    font.pointSize: guiSettings.scaledFont(6/8)
+                    font.bold: delegate.index === speedComboBox.currentIndex
+                    text: `${delegate.modelData}x`
+                }
+            }
         }
 
         SvgTransparentButton {

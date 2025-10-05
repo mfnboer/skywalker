@@ -4,6 +4,7 @@ import QtQuick.Controls.Material
 
 RoundButton {
     property string textColor: guiSettings.buttonTextColor
+    property int textPadding: 10
 
     id: button
 
@@ -13,8 +14,8 @@ RoundButton {
     icon.source: ""
 
     contentItem: Text {
-        leftPadding: 10
-        rightPadding: 10
+        leftPadding: button.textPadding
+        rightPadding: button.textPadding
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: textColor

@@ -1,6 +1,7 @@
 next
 ====
 * Edit pronouns and website on your profile
+* Change video playback rate
 * Bug fixes
 
 4.16.2
