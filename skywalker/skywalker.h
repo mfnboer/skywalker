@@ -75,7 +75,7 @@ public:
 
     Q_INVOKABLE void login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken);
     Q_INVOKABLE bool autoLogin();
-    Q_INVOKABLE bool resumeSession(bool retry = false);
+    Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
     Q_INVOKABLE void switchUser(const QString& did);
     Q_INVOKABLE void getUserProfileAndFollows();
@@ -318,7 +318,6 @@ private:
     void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
-    void refreshSession(const std::function<void()>& cbDone = {});
     void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
@@ -375,7 +374,6 @@ private:
     bool mGetPostThreadInProgress = false;
     bool mSignOutInProgress = false;
 
-    QTimer mRefreshTimer;
     QTimer mRefreshNotificationTimer;
     QTimer mTimelineUpdateTimer;
     QDateTime mTimelineUpdatePaused;
