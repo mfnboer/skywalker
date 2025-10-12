@@ -10,6 +10,7 @@ using namespace std::chrono_literals;
 static constexpr auto SESSION_REFRESH_DELAY = 11s;
 static constexpr auto NOTIFICATION_REFRESH_DELAY = 5s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 61s;
+static constexpr auto NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL = 29s;
 
 SessionManager::SessionManager(UserSettings& userSettings, QObject* parent) :
     QObject(parent),
@@ -34,6 +35,13 @@ void SessionManager::clear()
     mDidSessionMap.clear();
 }
 
+void SessionManager::insertSession(const QString& did, ATProto::Client* client)
+{
+    Session::Ptr managedSession = createSession(did);
+    managedSession->mBsky = client;
+    mDidSessionMap[did] = std::move(managedSession);
+}
+
 bool SessionManager::resumeAndRefreshSession(const QString& did)
 {
     qDebug() << "Resume and refresh session:" << did;
@@ -51,34 +59,54 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     xrpc->setUserAgent(Skywalker::getUserAgentString());
 
     Session::Ptr managedSession = createSession(did);
-    managedSession->mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    managedSession->mRawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    managedSession->mBsky = managedSession->mRawBsky.get();
     mDidSessionMap[did] = std::move(managedSession);
-    const int refreshDelayCount = mDidSessionMap.size();
+    const int refreshDelayCount = mDidSessionMap.size() - 1;
+    resumeAndRefreshSession(mDidSessionMap[did]->mBsky, *session, refreshDelayCount);
+    return true;
+}
 
-    mDidSessionMap[did]->mBsky->resumeAndRefreshSession(*session,
-        [this, did, refreshDelayCount]{
+void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATProto::ComATProtoServer::Session& session,
+                                             int refreshDelayCount, const SuccessCb& successCb, const ErrorCb& errorCb)
+{
+    const QString did = session.mDid;
+
+    client->resumeAndRefreshSession(session,
+        [this, did, refreshDelayCount, successCb, errorCb]{
             qDebug() << "Session resumed:" << did;
             auto* session = getSession(did);
 
             if (!session)
+            {
+                if (errorCb)
+                    errorCb("NoSession", "No session");
+
                 return;
+            }
 
             auto& bsky = session->mBsky;
             mUserSettings.saveSession(*bsky->getSession());
             mUserSettings.sync();
-            startRefreshTimers(did, refreshDelayCount);
+
+            // Timers for the active user are started by Skywalker::resumeAndRefreshSession()
+            if (did != mUserSettings.getActiveUserDid())
+                startRefreshTimers(did, refreshDelayCount);
+
+            if (successCb)
+                successCb();
         },
-        [this, did](const QString& error, const QString& msg){
+        [this, did, errorCb](const QString& error, const QString& msg){
             qDebug() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
 
             if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_FAILED)
                 mUserSettings.clearTokens(did); // calls sync
 
             mDidSessionMap.erase(did);
+
+            if (errorCb)
+                errorCb(error, msg);
         });
-
-
-    return true;
 }
 
 void SessionManager::startRefreshTimers()
@@ -86,7 +114,12 @@ void SessionManager::startRefreshTimers()
     int refreshDelayCount = 1;
 
     for (const auto& [did, _] : mDidSessionMap)
-        startRefreshTimers(did, refreshDelayCount++);
+    {
+        if (did == mUserSettings.getActiveUserDid())
+            startRefreshTimers(did, 0);
+        else
+            startRefreshTimers(did, refreshDelayCount++);
+    }
 }
 
 void SessionManager::stopRefreshTimers()
@@ -130,7 +163,12 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did)
         auto* session = getSession(did);
 
         if (session)
-            session->mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
+        {
+            if (did == mUserSettings.getActiveUserDid())
+                session->mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL);
+            else
+                session->mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
+        }
     });
     connect(&session->mRefreshNotificationTimer, &QTimer::timeout, this, [this, did]{
         refreshNotificationCount(did);
@@ -193,8 +231,15 @@ void SessionManager::startRefreshTimers(const QString& did, int initialDelayCoun
         },
         [this, did](const QString& msg){
             qWarning() << "Session refresh failed:" << msg;
-            mDidSessionMap.erase(did);
+
+            if (did == mUserSettings.getActiveUserDid())
+                emit activeSessionExpired(msg);
+            else
+                mDidSessionMap.erase(did);
         });
+
+    if (did == mUserSettings.getActiveUserDid())
+        refreshNotificationCount(did);
 
     session->mRefreshNotificationInitialDelayTimer.start(initialDelayCount * NOTIFICATION_REFRESH_DELAY);
 }
@@ -237,7 +282,11 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
     if (!session)
         return;
 
-    session->mUnreadNotificationCount = unread;
+    if (session->mUnreadNotificationCount != unread)
+    {
+        session->mUnreadNotificationCount = unread;
+        emit unreadNotificationCountChanged(did, unread);
+    }
 }
 
 }

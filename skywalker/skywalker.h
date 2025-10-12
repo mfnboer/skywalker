@@ -319,7 +319,6 @@ private:
     void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
-    void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
@@ -376,7 +375,6 @@ private:
     bool mGetPostThreadInProgress = false;
     bool mSignOutInProgress = false;
 
-    QTimer mRefreshNotificationTimer;
     QTimer mTimelineUpdateTimer;
     QDateTime mTimelineUpdatePaused;
 
