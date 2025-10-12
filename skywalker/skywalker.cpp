@@ -34,7 +34,6 @@ using namespace std::chrono_literals;
 // allows for better reply thread construction as we receive more posts per update.
 static constexpr auto TIMELINE_UPDATE_INTERVAL = 91s;
 
-static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 100;
 static constexpr int TIMELINE_GAP_FILL_SIZE = 100;
@@ -76,7 +75,6 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
-    connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
     connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
 
@@ -205,9 +203,9 @@ bool Skywalker::autoLogin()
     return true;
 }
 
-bool Skywalker::resumeSession(bool retry)
+bool Skywalker::resumeAndRefreshSession()
 {
-    qDebug() << "Resume session, retry:" << retry;
+    qDebug() << "Resume and refresh session";
     const auto session = getSavedSession();
 
     if (!session)
@@ -216,66 +214,28 @@ bool Skywalker::resumeSession(bool retry)
         return false;
     }
 
-    qInfo() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
+    qDebug() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
 
-    mBsky->resumeSession(*session,
-        [this, retry] {
-            qInfo() << "Session resumed";
+    mBsky->resumeAndRefreshSession(*session,
+        [this]{
+            qDebug() << "Session resumed";
             mUserSettings.saveSession(*mBsky->getSession());
             mUserSettings.sync();
             mUserDid = mBsky->getSession()->mDid;
-
-            if (!retry)
-            {
-                mBsky->refreshSession(
-                    [this]{
-                        qDebug() << "Session refreshed";
-                        mUserSettings.saveSession(*mBsky->getSession());
-                        mUserSettings.sync();
-                        startRefreshTimers();
-                        emit resumeSessionOk();
-                    },
-                    [this](const QString& error, const QString& msg){
-                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearTokens(mUserDid); // calls sync
-                        mBsky->clearSession();
-                        emit resumeSessionFailed(msg);
-                    });
-            }
-            else
-            {
-                startRefreshTimers();
-                emit resumeSessionOk();
-            }
+            startRefreshTimers();
+            emit resumeSessionOk();
         },
-        [this, retry, session](const QString& error, const QString& msg){
-            qInfo() << "Session could not be resumed:" << error << " - " << msg;
+        [this](const QString& error, const QString& msg){
+            qDebug() << "Session could not be resumed:" << error << " - " << msg;
 
-            if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
-            {
-                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
-                mBsky->refreshSession(
-                    [this]{
-                        qDebug() << "Session refreshed";
-                        mUserSettings.saveSession(*mBsky->getSession());
-                        mUserSettings.sync();
-                        resumeSession(true);
-                    },
-                    [this, did=session->mDid](const QString& error, const QString& msg){
-                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearTokens(did); // calls sync
-                        mBsky->clearSession();
-                        emit resumeSessionFailed(msg);
-                    });
-            }
-            else
-            {
-                emit resumeSessionFailed(msg);
-            }
+            if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_FAILED)
+                mUserSettings.clearTokens(mUserDid); // calls sync
+
+            emit resumeSessionFailed(msg);
         });
 
     return true;
@@ -331,7 +291,18 @@ void Skywalker::stopTimelineAutoUpdate()
 void Skywalker::startRefreshTimers()
 {
     qDebug() << "Refresh timers started";
-    mRefreshTimer.start(SESSION_REFRESH_INTERVAL);
+
+    Q_ASSERT(mBsky);
+    mBsky->startAutoRefresh(
+        [this]{
+            mUserSettings.saveSession(*mBsky->getSession());
+            mUserSettings.syncLater();
+        },
+        [this](const QString& msg){
+            stopRefreshTimers();
+            emit sessionExpired(msg);
+        });
+
     refreshNotificationCount();
     mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
     mGraphUtils.startExpiryCheckTimer();
@@ -339,75 +310,13 @@ void Skywalker::startRefreshTimers()
 
 void Skywalker::stopRefreshTimers()
 {
-    qInfo() << "Refresh timers stopped";
-    mRefreshTimer.stop();
+    qDebug() << "Refresh timers stopped";
+
+    if (mBsky)
+        mBsky->stopAutoRefresh();
+
     mRefreshNotificationTimer.stop();
     mGraphUtils.stopExpiryCheckTimer();
-}
-
-void Skywalker::refreshSession(const std::function<void()>& cbDone)
-{
-    Q_ASSERT(mBsky);
-    qDebug() << "Refresh session";
-
-    const auto* session = mBsky->getSession();
-    if (!session)
-    {
-        qWarning() << "No session to refresh.";
-
-        if (cbDone)
-            cbDone();
-
-        stopRefreshTimers();
-        emit sessionExpired("Session lost");
-        return;
-    }
-
-    // TODO: would be nicer to have session refreshment done by the atproto stack
-    mBsky->refreshSession(
-        [this, cbDone]{
-            qDebug() << "Session refreshed";
-            mUserSettings.saveSession(*mBsky->getSession());
-            mUserSettings.syncLater();
-
-            if (cbDone)
-                cbDone();
-        },
-        [this, cbDone](const QString& error, const QString& msg){
-            qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-
-            if (error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
-            {
-                qWarning() << "Token expired, need to login again";
-
-                if (cbDone)
-                    cbDone();
-
-                stopRefreshTimers();
-                emit sessionExpired(msg);
-            }
-            else if (error == ATProto::ATProtoErrorMsg::XRPC_TIMEOUT)
-            {
-                // Maybe the token got refreshed, but the response never reached us.
-                // With the old token we can send one more request, so let's retry.
-                // NOTE: this is not fool proof; ideally no other requests should be sent
-                // during refresh.
-                qDebug() << "Request timed out, retry";
-                refreshSession(cbDone);
-            }
-            else
-            {
-                qDebug() << "Refresh failed, wait for the next interval to refresh.";
-
-                if (cbDone) {
-                    qWarning() << "Refresh failed:" << error << " - " << msg;
-
-                    // There is nothing we can do now. Signal that we are done.
-                    // Session will expire later if token is not valid anymore.
-                    cbDone();
-                }
-            }
-        });
 }
 
 void Skywalker::refreshNotificationCount()
@@ -4009,7 +3918,7 @@ void Skywalker::resumeApp()
     const auto postCount = mTimelineModel.rowCount();
     qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << lastSyncCid << "post count:" << postCount;
 
-    refreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
+    mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
 

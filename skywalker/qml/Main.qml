@@ -863,7 +863,7 @@ ApplicationWindow {
                 signOutCurrentUser()
                 skywalker.switchUser(profile.did)
 
-                if (skywalker.resumeSession()) {
+                if (skywalker.resumeAndRefreshSession()) {
                     showStartupStatus()
                 }
                 else if (skywalker.autoLogin()) {
@@ -1348,7 +1348,7 @@ ApplicationWindow {
 
                 skywalker.switchUser(profile.did)
 
-                if (skywalker.resumeSession()) {
+                if (skywalker.resumeAndRefreshSession()) {
                     showStartupStatus()
                 }
                 else {
@@ -2237,7 +2237,7 @@ ApplicationWindow {
         initHandlers()
 
         // Try to resume the previous session. If that fails, then ask the user to login.
-        if (skywalker.resumeSession())
+        if (skywalker.resumeAndRefreshSession())
             showStartupStatus()
         else if (skywalker.autoLogin())
             showStartupStatus()
