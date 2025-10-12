@@ -564,6 +564,8 @@ qt_add_qml_module(libskywalker
         SOURCES thread_unroller.h
         SOURCES thread_unroller.cpp
         QML_FILES qml/DebugDump.qml
+        SOURCES session_manager.h
+        SOURCES session_manager.cpp
 )
 
 if (NOT ANDROID)

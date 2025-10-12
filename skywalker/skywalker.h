@@ -25,6 +25,7 @@
 #include "post_thread_model.h"
 #include "profile_store.h"
 #include "search_post_feed_model.h"
+#include "session_manager.h"
 #include "starter_pack_list_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
@@ -359,6 +360,7 @@ private:
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     UserSettings mUserSettings;
+    SessionManager mSessionManager;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;

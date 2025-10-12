@@ -53,6 +53,7 @@ Skywalker::Skywalker(QObject* parent) :
     mFollowsActivityStore(mUserFollows, this),
     mTimelineHide(this),
     mUserSettings(this),
+    mSessionManager(mUserSettings, this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
@@ -151,7 +152,7 @@ void Skywalker::login(const QString host, const QString user, QString password, 
 {
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
         [this, host, user, password, rememberPassword]{
@@ -166,6 +167,7 @@ void Skywalker::login(const QString host, const QString user, QString password, 
 
             emit loginOk();
             startRefreshTimers();
+            mSessionManager.resumeAndRefreshNonActiveUsers();
         },
         [this, host, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
@@ -218,7 +220,7 @@ bool Skywalker::resumeAndRefreshSession()
 
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->resumeAndRefreshSession(*session,
         [this]{
@@ -227,6 +229,7 @@ bool Skywalker::resumeAndRefreshSession()
             mUserSettings.sync();
             mUserDid = mBsky->getSession()->mDid;
             startRefreshTimers();
+            mSessionManager.resumeAndRefreshNonActiveUsers();
             emit resumeSessionOk();
         },
         [this](const QString& error, const QString& msg){
@@ -293,7 +296,7 @@ void Skywalker::startRefreshTimers()
     qDebug() << "Refresh timers started";
 
     Q_ASSERT(mBsky);
-    mBsky->startAutoRefresh(
+    mBsky->startAutoRefresh(0s,
         [this]{
             mUserSettings.saveSession(*mBsky->getSession());
             mUserSettings.syncLater();
@@ -3864,6 +3867,8 @@ void Skywalker::pauseApp()
         mUserSettings.sync();
     }
 
+    mSessionManager.saveTokens();
+
     saveHashtags();
     mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
@@ -3878,6 +3883,7 @@ void Skywalker::pauseApp()
         qDebug() << "Pause timeline auto update";
         stopTimelineAutoUpdate();
         stopRefreshTimers();
+        mSessionManager.stopRefreshTimers();
         mTimelineUpdatePaused = QDateTime::currentDateTimeUtc();
     }
 
@@ -3903,6 +3909,8 @@ void Skywalker::resumeApp()
             qWarning() << "No tokens";
     }
 
+    mSessionManager.updateTokens();
+
     if (mTimelineUpdatePaused.isNull())
     {
         qDebug() << "Timeline update was not paused.";
@@ -3921,6 +3929,7 @@ void Skywalker::resumeApp()
     mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
+        mSessionManager.startRefreshTimers();
 
         if (pauseInterval > 60s)
         {
@@ -4002,9 +4011,11 @@ void Skywalker::signOut()
         mUserSettings.saveSession(*mBsky->getSession());
 
     mUserSettings.sync();
+    mSessionManager.saveTokens();
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();
+    mSessionManager.clear();
     mTimelineUpdatePaused = {};
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();

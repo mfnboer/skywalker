@@ -324,7 +324,7 @@ void OffLineMessageChecker::resumeSession(bool retry)
     // Need a longer network transfer timeout for an Android background process.
     auto xrpc = std::make_unique<Xrpc::Client>("", 30000);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->resumeSession(*session,
         [this] {
