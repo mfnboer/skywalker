@@ -52,7 +52,7 @@ Skywalker::Skywalker(QObject* parent) :
     mFollowsActivityStore(mUserFollows, this),
     mTimelineHide(this),
     mUserSettings(this),
-    mSessionManager(mUserSettings, this),
+    mSessionManager(this, this),
     mContentFilter(mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
@@ -1752,6 +1752,7 @@ void Skywalker::refreshAllModels()
     mTimelineModel.refreshAllData();
     mNotificationListModel.refreshAllData();
     mMentionListModel.refreshAllData();
+    mSessionManager.refreshAllData();
 
     for (auto& [_, model] : mPostThreadModels.items())
         model->refreshAllData();

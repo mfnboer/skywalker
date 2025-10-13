@@ -39,8 +39,9 @@ SkyPage {
         leftPadding: page.margin
         rightPadding: page.margin
 
-        AccessibleTabButton {
+        SkyTabCounterButton {
             id: tabAll
+            counter: sessionManager.activeUserUnreadNotificationCount
             text: qsTr("All")
             width: implicitWidth;
         }
@@ -89,8 +90,14 @@ SkyPage {
             }
 
             SwipeView.onIsCurrentItemChanged: {
-                if (!SwipeView.isCurrentItem)
+                if (!SwipeView.isCurrentItem) {
                     cover()
+                } else {
+                    if (sessionManager.activeUserUnreadNotificationCount > 0) {
+                        skywalker.getNotifications(25, true, false)
+                        skywalker.getNotifications(25, false, true)
+                    }
+                }
             }
 
             onContentYChanged: {
@@ -116,7 +123,7 @@ SkyPage {
                 y: parent.headerItem ? parent.headerItem.height : 0
                 svg: SvgOutline.noPosts
                 text: skywalker.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
-                list: page
+                list: allList
             }
 
             BusyIndicator {
@@ -175,7 +182,7 @@ SkyPage {
                 y: parent.headerItem ? parent.headerItem.height : 0
                 svg: SvgOutline.noPosts
                 text: qsTr("No mentions")
-                list: page
+                list: mentionList
             }
 
             BusyIndicator {
@@ -189,6 +196,61 @@ SkyPage {
                 console.debug("Move to mention:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
                 positionViewAtIndex(index, ListView.Center)
                 return (firstVisibleIndex <= index && lastVisibleIndex >= index)
+            }
+        }
+
+        Repeater {
+            model: sessionManager.nonActiveUsers
+
+            SkyListView {
+                id: nonActiveUserList
+                Layout.preferredWidth: parent.width
+                Layout.preferredHeight: parent.height
+                model: modelData.notificationListModel
+                clip: true
+
+                delegate: NotificationViewDelegate {
+                    width: page.width
+                }
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (!SwipeView.isCurrentItem) {
+                        cover()
+                    } else {
+                        if (modelData.unreadNotificationCount > 0)
+                            modelData.getNotifications(25, true)
+                        else if (nonActiveUserList.count === 0)
+                            modelData.getNotifications(25, false)
+                    }
+                }
+
+                onContentYChanged: {
+                    const lastVisibleIndex = getLastVisibleIndex()
+
+                    if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
+                        console.debug("Get next notification page:", modelData.profile.handle)
+                        modelData.getNotificationsNextPage()
+                    }
+                }
+
+                FlickableRefresher {
+                    inProgress: nonActiveUserList.model?.getFeedInProgress
+                    topOvershootFun: () => modelData.getNotifications(25, true)
+                    bottomOvershootFun: () => modelData.getNotificationsNextPage()
+                    topText: qsTr("Pull down to refresh")
+                }
+
+                EmptyListIndication {
+                    y: parent.headerItem ? parent.headerItem.height : 0
+                    svg: SvgOutline.noPosts
+                    text: modelData.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
+                    list: nonActiveUserList
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: nonActiveUserList.model?.getFeedInProgress
+                }
             }
         }
     }
@@ -235,5 +297,9 @@ SkyPage {
 
     function positionViewAtBeginning() {
         swipeView.currentItem.positionViewAtBeginning()
+    }
+
+    function showOwnNotificationsTab() {
+        tabBar.setCurrentIndex(0)
     }
 }

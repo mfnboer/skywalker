@@ -9,16 +9,19 @@
 
 namespace Skywalker {
 
+class Skywalker;
+
 class SessionManager : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int activeUserUnreadNotificationCount READ getActiveUserUnreadNotificationCount NOTIFY activeUserUnreadNotificationCountChanged FINAL)
     Q_PROPERTY(NonActiveUser::List nonActiveUsers READ getNonActiveUsers NOTIFY nonActiveUsersChanged FINAL)
 
 public:
     using SuccessCb = std::function<void()>;
     using ErrorCb = std::function<void(const QString& error, const QString& message)>;
 
-    explicit SessionManager(UserSettings& userSettings, QObject* parent = nullptr);
+    explicit SessionManager(Skywalker* skywalker, QObject* parent = nullptr);
 
     void clear();
 
@@ -36,14 +39,22 @@ public:
     void updateTokens();
 
     void setUnreadNotificationCount(const QString& did, int unread);
-    int getUnreadNotificationCount(const QString& did);
+    int getUnreadNotificationCount(const QString& did) const;
     int getTotalUnreadNotificationCount() const;
+    int getActiveUserUnreadNotificationCount() const;
 
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
+
+    ATProto::Client* getActiveUserBskyClient() const;
+
+    void refreshAllData();
+    void makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update);
+    void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
 signals:
     void activeSessionExpired(const QString& msg);
     void totalUnreadNotificationCountChanged(int count);
+    void activeUserUnreadNotificationCountChanged();
     void nonActiveUsersChanged();
 
 private:
@@ -65,16 +76,17 @@ private:
         NonActiveUser* mNonActiveUser = nullptr;
     };
 
-    Session::Ptr createSession(const QString& did);
+    Session::Ptr createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky);
     void insertSession(const QString& did, Session::Ptr session);
     void deleteSession(const QString& did);
-    Session* getSession(const QString& did);
+    Session* getSession(const QString& did) const;
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession(const QString& did) const;
     void startRefreshTimers(const QString& did, int initialDelayCount);
     void stopRefreshTimers(const QString& did);
     void refreshNotificationCount(const QString& did);
 
     std::unordered_map<QString, Session::Ptr> mDidSessionMap;
+    Skywalker* mSkywalker;
     UserSettings& mUserSettings;
     NonActiveUser::List mNonActiveUsers;
 };

@@ -12,10 +12,12 @@ static constexpr auto NOTIFICATION_REFRESH_DELAY = 5s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 61s;
 static constexpr auto NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL = 29s;
 
-SessionManager::SessionManager(UserSettings& userSettings, QObject* parent) :
+SessionManager::SessionManager(Skywalker* skywalker, QObject* parent) :
     QObject(parent),
-    mUserSettings(userSettings)
+    mSkywalker(skywalker),
+    mUserSettings(*skywalker->getUserSettings())
 {
+    Q_ASSERT(skywalker);
 }
 
 void SessionManager::resumeAndRefreshNonActiveUsers()
@@ -32,13 +34,15 @@ void SessionManager::resumeAndRefreshNonActiveUsers()
 
 void SessionManager::clear()
 {
+    mNonActiveUsers.clear();
     mDidSessionMap.clear();
+
+    emit nonActiveUsersChanged();
 }
 
 void SessionManager::insertSession(const QString& did, ATProto::Client* client)
 {
-    Session::Ptr managedSession = createSession(did);
-    managedSession->mBsky = client;
+    Session::Ptr managedSession = createSession(did, nullptr, client);
     insertSession(did, std::move(managedSession));
 }
 
@@ -58,10 +62,11 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
 
-    Session::Ptr managedSession = createSession(did);
-    managedSession->mRawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
-    managedSession->mBsky = managedSession->mRawBsky.get();
+    auto rawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    auto* bsky = rawBsky.get();
+    Session::Ptr managedSession = createSession(did, std::move(rawBsky), bsky);
     insertSession(did, std::move(managedSession));
+
     const int refreshDelayCount = mDidSessionMap.size() - 1;
     resumeAndRefreshSession(mDidSessionMap[did]->mBsky, *session, refreshDelayCount);
     return true;
@@ -155,9 +160,11 @@ void SessionManager::updateTokens()
     }
 }
 
-SessionManager::Session::Ptr SessionManager::createSession(const QString& did)
+SessionManager::Session::Ptr SessionManager::createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky)
 {
     auto session = std::make_unique<Session>();
+    session->mRawBsky = std::move(rawBsky);
+    session->mBsky = bsky;
     session->mRefreshNotificationInitialDelayTimer.setSingleShot(true);
 
     if (did != mUserSettings.getActiveUserDid())
@@ -165,9 +172,18 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did)
         const BasicProfile profile = mUserSettings.getUser(did);
 
         if (!profile.getHandle().isEmpty())
-            session->mNonActiveUser = new NonActiveUser(profile, false, this);
+        {
+            auto* notificationListModel = new NotificationListModel(
+                *mSkywalker->getContentFilter(), *mSkywalker->getMutedWords(),
+                mSkywalker->getFollowsActivityStore(), this);
+
+            session->mNonActiveUser = new NonActiveUser(profile, false, notificationListModel,
+                                                        session->mBsky, this, this);
+        }
         else
+        {
             qWarning() << "Invalid user:" << did;
+        }
     }
 
     connect(&session->mRefreshNotificationInitialDelayTimer, &QTimer::timeout, this, [this, did]{
@@ -225,12 +241,12 @@ void SessionManager::deleteSession(const QString& did)
     emit nonActiveUsersChanged();
 }
 
-SessionManager::Session* SessionManager::getSession(const QString& did)
+SessionManager::Session* SessionManager::getSession(const QString& did) const
 {
     if (!mDidSessionMap.contains(did))
         return nullptr;
 
-    auto& session = mDidSessionMap[did];
+    auto& session = mDidSessionMap.at(did);
 
     if (!session->mBsky)
     {
@@ -335,13 +351,15 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
 
         if (session->mNonActiveUser)
             session->mNonActiveUser->setUnreadNotificationCount(unread);
+        else if (did == mUserSettings.getActiveUserDid())
+            emit activeUserUnreadNotificationCountChanged();
 
         const int totalUnread = getTotalUnreadNotificationCount();
         emit totalUnreadNotificationCountChanged(totalUnread);
     }
 }
 
-int SessionManager::getUnreadNotificationCount(const QString& did)
+int SessionManager::getUnreadNotificationCount(const QString& did) const
 {
     auto* session = getSession(did);
     return session ? session->mUnreadNotificationCount : 0;
@@ -355,6 +373,44 @@ int SessionManager::getTotalUnreadNotificationCount() const
         unread += session->mUnreadNotificationCount;
 
     return unread;
+}
+
+int SessionManager::getActiveUserUnreadNotificationCount() const
+{
+    const auto did = mUserSettings.getActiveUserDid();
+    return getUnreadNotificationCount(did);
+}
+
+ATProto::Client* SessionManager::getActiveUserBskyClient() const
+{
+    return mSkywalker->getBskyClient();
+}
+
+void SessionManager::refreshAllData()
+{
+    for (const auto& [_, session] : mDidSessionMap)
+    {
+        if (session->mNonActiveUser && session->mNonActiveUser->getNotificationListModel())
+            session->mNonActiveUser->getNotificationListModel()->refreshAllData();
+    }
+}
+
+void SessionManager::makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update)
+{
+    for (const auto& [_, session] : mDidSessionMap)
+    {
+        if (session->mNonActiveUser && session->mNonActiveUser->getNotificationListModel())
+            update(session->mNonActiveUser->getNotificationListModel());
+    }
+}
+
+void SessionManager::makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update)
+{
+    for (const auto& [_, session] : mDidSessionMap)
+    {
+        if (session->mNonActiveUser && session->mNonActiveUser->getNotificationListModel())
+            update(session->mNonActiveUser->getNotificationListModel());
+    }
 }
 
 }

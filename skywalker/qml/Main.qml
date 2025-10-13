@@ -1784,11 +1784,15 @@ ApplicationWindow {
 
     function viewNotifications() {
         rootContent.currentIndex = rootContent.notificationIndex
+        const unread = skywalker.getSessionManager().activeUserUnreadNotificationCount
 
-        if (skywalker.unreadNotificationCount > 0) {
-            const loadCount = Math.min(100, Math.max(10, skywalker.unreadNotificationCount))
+        if (unread > 0) {
+            const loadCount = Math.min(100, Math.max(10, unread))
             skywalker.getNotifications(loadCount, true, false, true)
             skywalker.getNotifications(loadCount, false, true, true)
+
+            let view = getNotificationView()
+            view.showOwnNotificationsTab()
         }
         else {
             if (skywalker.notificationListModel.rowCount() === 0)
