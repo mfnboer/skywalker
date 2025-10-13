@@ -460,6 +460,10 @@ bool UnicodeFonts::hasPhraseStarting(const QString& text)
         return false;
 
     const auto firstChar = text.front();
+
+    if (firstChar.isSpace())
+        return false;
+
     return firstChar.isUpper() || !firstChar.isLetter();
 }
 
