@@ -63,18 +63,12 @@ private:
     {
         using Ptr = std::unique_ptr<Session>;
 
-        ~Session()
-        {
-            if (mNonActiveUser)
-                delete mNonActiveUser;
-        }
-
         ATProto::Client* mBsky = nullptr;
         ATProto::Client::Ptr mRawBsky;
         int mUnreadNotificationCount = 0;
         QTimer mRefreshNotificationInitialDelayTimer;
         QTimer mRefreshNotificationTimer;
-        NonActiveUser* mNonActiveUser = nullptr;
+        NonActiveUser::Ptr mNonActiveUser;
     };
 
     Session::Ptr createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky);

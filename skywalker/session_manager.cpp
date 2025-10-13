@@ -184,8 +184,8 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
                 *mSkywalker->getContentFilter(), *mSkywalker->getMutedWords(),
                 mSkywalker->getFollowsActivityStore(), this);
 
-            session->mNonActiveUser = new NonActiveUser(profile, false, notificationListModel,
-                                                        session->mBsky, this, this);
+            session->mNonActiveUser = std::make_unique<NonActiveUser>(
+                profile, false, notificationListModel, session->mBsky, this, this);
         }
         else
         {
@@ -214,7 +214,7 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
 
 void SessionManager::insertSession(const QString& did, Session::Ptr session)
 {
-    auto* nonActiveUser = session->mNonActiveUser;
+    auto* nonActiveUser = session->mNonActiveUser.get();
     mDidSessionMap[did] = std::move(session);
 
     if (!nonActiveUser)
@@ -228,7 +228,7 @@ void SessionManager::deleteSession(const QString& did)
     if (!mDidSessionMap.contains(did))
         return;
 
-    auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser;
+    auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser.get();
     auto expiredUser = nonActiveUser ? std::make_unique<NonActiveUser>(
             nonActiveUser->getProfile(), true, nullptr, nullptr, this, this) : nullptr;
 
