@@ -82,11 +82,8 @@ Skywalker::Skywalker(QObject* parent) :
             stopRefreshTimers();
             emit sessionExpired(msg);
         });
-    connect(&mSessionManager, &SessionManager::unreadNotificationCountChanged, this,
-        [this](const QString& did, int unread){
-            if (did == mUserDid)
-                setUnreadNotificationCount(unread);
-        });
+    connect(&mSessionManager, &SessionManager::totalUnreadNotificationCountChanged, this,
+        [this](int unread){ setUnreadNotificationCount(unread); });
 
     connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{
         const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
@@ -1885,6 +1882,7 @@ void Skywalker::updateNotificationPreferences(bool priority)
         });
 }
 
+// TODO: notused
 void Skywalker::updateNotificationsSeen()
 {
     Q_ASSERT(mBsky);

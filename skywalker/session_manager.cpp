@@ -39,7 +39,7 @@ void SessionManager::insertSession(const QString& did, ATProto::Client* client)
 {
     Session::Ptr managedSession = createSession(did);
     managedSession->mBsky = client;
-    mDidSessionMap[did] = std::move(managedSession);
+    insertSession(did, std::move(managedSession));
 }
 
 bool SessionManager::resumeAndRefreshSession(const QString& did)
@@ -61,7 +61,7 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     Session::Ptr managedSession = createSession(did);
     managedSession->mRawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
     managedSession->mBsky = managedSession->mRawBsky.get();
-    mDidSessionMap[did] = std::move(managedSession);
+    insertSession(did, std::move(managedSession));
     const int refreshDelayCount = mDidSessionMap.size() - 1;
     resumeAndRefreshSession(mDidSessionMap[did]->mBsky, *session, refreshDelayCount);
     return true;
@@ -102,7 +102,7 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_FAILED)
                 mUserSettings.clearTokens(did); // calls sync
 
-            mDidSessionMap.erase(did);
+            deleteSession(did);
 
             if (errorCb)
                 errorCb(error, msg);
@@ -159,6 +159,17 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did)
 {
     auto session = std::make_unique<Session>();
     session->mRefreshNotificationInitialDelayTimer.setSingleShot(true);
+
+    if (did != mUserSettings.getActiveUserDid())
+    {
+        const BasicProfile profile = mUserSettings.getUser(did);
+
+        if (!profile.getHandle().isEmpty())
+            session->mNonActiveUser = new NonActiveUser(profile, false, this);
+        else
+            qWarning() << "Invalid user:" << did;
+    }
+
     connect(&session->mRefreshNotificationInitialDelayTimer, &QTimer::timeout, this, [this, did]{
         auto* session = getSession(did);
 
@@ -170,10 +181,48 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did)
                 session->mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
         }
     });
+
     connect(&session->mRefreshNotificationTimer, &QTimer::timeout, this, [this, did]{
         refreshNotificationCount(did);
     });
+
     return session;
+}
+
+void SessionManager::insertSession(const QString& did, Session::Ptr session)
+{
+    auto* nonActiveUser = session->mNonActiveUser;
+    mDidSessionMap[did] = std::move(session);
+
+    if (!nonActiveUser)
+        return;
+
+    mNonActiveUsers.push_back(nonActiveUser);
+
+    std::sort(mNonActiveUsers.begin(), mNonActiveUsers.end(),
+              [](const NonActiveUser* lhs, const NonActiveUser* rhs){
+                  return lhs->getProfile().getHandle() < rhs->getProfile().getHandle();
+              });
+
+    emit nonActiveUsersChanged();
+}
+
+void SessionManager::deleteSession(const QString& did)
+{
+    if (!mDidSessionMap.contains(did))
+        return;
+
+    auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser;
+    mDidSessionMap.erase(did);
+
+    if (!nonActiveUser)
+        return;
+
+    const auto it = std::remove_if(mNonActiveUsers.begin(), mNonActiveUsers.end(),
+            [did](const NonActiveUser* elem){ return elem->getProfile().getDid() == did; });
+    mNonActiveUsers.erase(it, mNonActiveUsers.end());
+
+    emit nonActiveUsersChanged();
 }
 
 SessionManager::Session* SessionManager::getSession(const QString& did)
@@ -235,12 +284,10 @@ void SessionManager::startRefreshTimers(const QString& did, int initialDelayCoun
             if (did == mUserSettings.getActiveUserDid())
                 emit activeSessionExpired(msg);
             else
-                mDidSessionMap.erase(did);
+                deleteSession(did);
         });
 
-    if (did == mUserSettings.getActiveUserDid())
-        refreshNotificationCount(did);
-
+    refreshNotificationCount(did);
     session->mRefreshNotificationInitialDelayTimer.start(initialDelayCount * NOTIFICATION_REFRESH_DELAY);
 }
 
@@ -285,8 +332,29 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
     if (session->mUnreadNotificationCount != unread)
     {
         session->mUnreadNotificationCount = unread;
-        emit unreadNotificationCountChanged(did, unread);
+
+        if (session->mNonActiveUser)
+            session->mNonActiveUser->setUnreadNotificationCount(unread);
+
+        const int totalUnread = getTotalUnreadNotificationCount();
+        emit totalUnreadNotificationCountChanged(totalUnread);
     }
+}
+
+int SessionManager::getUnreadNotificationCount(const QString& did)
+{
+    auto* session = getSession(did);
+    return session ? session->mUnreadNotificationCount : 0;
+}
+
+int SessionManager::getTotalUnreadNotificationCount() const
+{
+    int unread = 0;
+
+    for (const auto& [_, session] : mDidSessionMap)
+        unread += session->mUnreadNotificationCount;
+
+    return unread;
 }
 
 }

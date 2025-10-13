@@ -195,6 +195,7 @@ public:
 
     const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
+    Q_INVOKABLE SessionManager* getSessionManager() { return &mSessionManager; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }

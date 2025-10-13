@@ -566,6 +566,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/DebugDump.qml
         SOURCES session_manager.h
         SOURCES session_manager.cpp
+        SOURCES non_active_user.h
+        SOURCES non_active_user.cpp
+        QML_FILES qml/SkyTabProfileButton.qml
 )
 
 if (NOT ANDROID)

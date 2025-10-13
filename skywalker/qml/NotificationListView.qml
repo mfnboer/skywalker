@@ -6,6 +6,7 @@ import skywalker
 SkyPage {
     required property var skywalker
     required property var timeline
+    property var sessionManager: skywalker.getSessionManager()
     readonly property int margin: 10
     readonly property string sideBarTitle: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
 
@@ -47,6 +48,15 @@ SkyPage {
             id: tabMentions
             text: qsTr("Mentions")
             width: implicitWidth;
+        }
+
+        Repeater {
+            model: sessionManager.nonActiveUsers
+
+            SkyTabProfileButton {
+                profile: modelData.profile
+                counter: modelData.unreadNotificationCount
+            }
         }
     }
 
