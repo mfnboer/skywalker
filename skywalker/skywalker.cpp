@@ -1883,25 +1883,6 @@ void Skywalker::updateNotificationPreferences(bool priority)
         });
 }
 
-// TODO: notused
-void Skywalker::updateNotificationsSeen()
-{
-    Q_ASSERT(mBsky);
-    auto timestamp = mNotificationListModel.getTimestampLatestNotifcation();
-    qDebug() << "Update notifications seen:" << timestamp;
-
-    if (!timestamp.isValid())
-    {
-        qDebug() << "No valid timestamp";
-        return;
-    }
-
-    mBsky->updateNotificationSeen(timestamp + 1ms, {}, {});
-    mNotificationListModel.setNotificationsSeen(true);
-    mMentionListModel.setNotificationsSeen(true);
-    mSessionManager.setUnreadNotificationCount(mUserDid, 0);
-}
-
 void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, bool emitLoadedSignal, const QString& cursor)
 {
     Q_ASSERT(mBsky);

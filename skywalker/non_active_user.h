@@ -17,6 +17,7 @@ class NonActiveUser : public QObject
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
 
 public:
+    using Ptr = std::unique_ptr<NonActiveUser>;
     using List = QList<NonActiveUser*>;
 
     NonActiveUser(const BasicProfile& profile, bool sessionExpired, NotificationListModel* notificationListModel,

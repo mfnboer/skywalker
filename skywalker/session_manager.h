@@ -46,6 +46,7 @@ public:
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
 
     ATProto::Client* getActiveUserBskyClient() const;
+    void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
 
     void refreshAllData();
     void makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update);
@@ -79,6 +80,8 @@ private:
     Session::Ptr createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky);
     void insertSession(const QString& did, Session::Ptr session);
     void deleteSession(const QString& did);
+    void addNonActiveUser(NonActiveUser* nonActiveUser);
+    void addExpiredUser(const QString& did);
     Session* getSession(const QString& did) const;
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession(const QString& did) const;
     void startRefreshTimers(const QString& did, int initialDelayCount);
@@ -89,6 +92,7 @@ private:
     Skywalker* mSkywalker;
     UserSettings& mUserSettings;
     NonActiveUser::List mNonActiveUsers;
+    std::vector<NonActiveUser::Ptr> mExpiredUsers;
 };
 
 }

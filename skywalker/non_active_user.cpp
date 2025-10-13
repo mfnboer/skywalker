@@ -69,9 +69,9 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
                 });
         },
         [this](const QString& error, const QString& msg){
-            qDebug() << "getNotifications FAILED:" << error << " - " << msg << "hanlde:" << mProfile.getHandle();
+            qDebug() << "getNotifications FAILED:" << error << " - " << msg << "handle:" << mProfile.getHandle();
             mNotificationListModel->setGetFeedInProgress(false);
-            // TODO set feed error
+            mSessionManager->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
 

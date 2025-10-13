@@ -275,12 +275,12 @@ QString UserSettings::getAvatar(const QString& did) const
 
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
-    qDebug() << "Save session";
+    qDebug() << "Save session:" << session.mHandle;
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    qDebug() << "Session saved";
+    qDebug() << "Session saved:" << session.mHandle;
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const

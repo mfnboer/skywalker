@@ -35,6 +35,7 @@ void SessionManager::resumeAndRefreshNonActiveUsers()
 void SessionManager::clear()
 {
     mNonActiveUsers.clear();
+    mExpiredUsers.clear();
     mDidSessionMap.clear();
 
     emit nonActiveUsersChanged();
@@ -54,6 +55,7 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     if (!session)
     {
         qDebug() << "No saved session:" << did;
+        addExpiredUser(did);
         return false;
     }
 
@@ -138,7 +140,12 @@ void SessionManager::saveTokens()
     for (const auto& [_, session] : mDidSessionMap)
     {
         if (session->mBsky)
-            mUserSettings.saveSession(*session->mBsky->getSession());
+        {
+            auto* atprotoSession = session->mBsky->getSession();
+
+            if (atprotoSession)
+                mUserSettings.saveSession(*atprotoSession);
+        }
     }
 
     mUserSettings.sync();
@@ -213,6 +220,45 @@ void SessionManager::insertSession(const QString& did, Session::Ptr session)
     if (!nonActiveUser)
         return;
 
+    addNonActiveUser(nonActiveUser);
+}
+
+void SessionManager::deleteSession(const QString& did)
+{
+    if (!mDidSessionMap.contains(did))
+        return;
+
+    auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser;
+    auto expiredUser = nonActiveUser ? std::make_unique<NonActiveUser>(
+            nonActiveUser->getProfile(), true, nullptr, nullptr, this, this) : nullptr;
+
+    mDidSessionMap.erase(did);
+
+    if (!nonActiveUser)
+        return;
+
+    const auto it = std::find_if(mNonActiveUsers.begin(), mNonActiveUsers.end(),
+            [did](const NonActiveUser* elem){ return elem->getProfile().getDid() == did; });
+
+    if (it != mNonActiveUsers.end())
+    {
+        *it = expiredUser.get();
+        mExpiredUsers.push_back(std::move(expiredUser));
+    }
+    else
+    {
+        qWarning() << "Cannot find non-active user:" << did;
+    }
+
+    emit nonActiveUsersChanged();
+}
+
+void SessionManager::addNonActiveUser(NonActiveUser* nonActiveUser)
+{
+    Q_ASSERT(nonActiveUser);
+    if (!nonActiveUser)
+        return;
+
     mNonActiveUsers.push_back(nonActiveUser);
 
     std::sort(mNonActiveUsers.begin(), mNonActiveUsers.end(),
@@ -223,22 +269,19 @@ void SessionManager::insertSession(const QString& did, Session::Ptr session)
     emit nonActiveUsersChanged();
 }
 
-void SessionManager::deleteSession(const QString& did)
+void SessionManager::addExpiredUser(const QString& did)
 {
-    if (!mDidSessionMap.contains(did))
+    BasicProfile profile = mUserSettings.getUser(did);
+
+    if (profile.getHandle().isEmpty())
+    {
+        qWarning() << "Invalid user:" << did;
         return;
+    }
 
-    auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser;
-    mDidSessionMap.erase(did);
-
-    if (!nonActiveUser)
-        return;
-
-    const auto it = std::remove_if(mNonActiveUsers.begin(), mNonActiveUsers.end(),
-            [did](const NonActiveUser* elem){ return elem->getProfile().getDid() == did; });
-    mNonActiveUsers.erase(it, mNonActiveUsers.end());
-
-    emit nonActiveUsersChanged();
+    auto expiredUser = std::make_unique<NonActiveUser>(profile, true, nullptr, nullptr, this, this);
+    mExpiredUsers.push_back(std::move(expiredUser));
+    addNonActiveUser(mExpiredUsers.back().get());
 }
 
 SessionManager::Session* SessionManager::getSession(const QString& did) const
@@ -384,6 +427,11 @@ int SessionManager::getActiveUserUnreadNotificationCount() const
 ATProto::Client* SessionManager::getActiveUserBskyClient() const
 {
     return mSkywalker->getBskyClient();
+}
+
+void SessionManager::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
+{
+    mSkywalker->showStatusMessage(msg, level);
 }
 
 void SessionManager::refreshAllData()

@@ -57,6 +57,7 @@ SkyPage {
             SkyTabProfileButton {
                 profile: modelData.profile
                 counter: modelData.unreadNotificationCount
+                showWarning: modelData.sessionExpired
             }
         }
     }
@@ -93,7 +94,7 @@ SkyPage {
                 if (!SwipeView.isCurrentItem) {
                     cover()
                 } else {
-                    if (sessionManager.activeUserUnreadNotificationCount > 0) {
+                    if (sessionManager?.activeUserUnreadNotificationCount > 0) {
                         skywalker.getNotifications(25, true, false)
                         skywalker.getNotifications(25, false, true)
                     }
@@ -207,6 +208,7 @@ SkyPage {
                 Layout.preferredWidth: parent.width
                 Layout.preferredHeight: parent.height
                 model: modelData.notificationListModel
+                interactive: !modelData.sessionExpired
                 clip: true
 
                 delegate: NotificationViewDelegate {
@@ -216,7 +218,7 @@ SkyPage {
                 SwipeView.onIsCurrentItemChanged: {
                     if (!SwipeView.isCurrentItem) {
                         cover()
-                    } else {
+                    } else if (!modelData.sessionExpired) {
                         if (modelData.unreadNotificationCount > 0)
                             modelData.getNotifications(25, true)
                         else if (nonActiveUserList.count === 0)
@@ -227,14 +229,14 @@ SkyPage {
                 onContentYChanged: {
                     const lastVisibleIndex = getLastVisibleIndex()
 
-                    if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
+                    if (count - lastVisibleIndex < 10 && model && !model.getFeedInProgress) {
                         console.debug("Get next notification page:", modelData.profile.handle)
                         modelData.getNotificationsNextPage()
                     }
                 }
 
                 FlickableRefresher {
-                    inProgress: nonActiveUserList.model?.getFeedInProgress
+                    inProgress: nonActiveUserList.model && nonActiveUserList.model.getFeedInProgress
                     topOvershootFun: () => modelData.getNotifications(25, true)
                     bottomOvershootFun: () => modelData.getNotificationsNextPage()
                     topText: qsTr("Pull down to refresh")
@@ -242,14 +244,14 @@ SkyPage {
 
                 EmptyListIndication {
                     y: parent.headerItem ? parent.headerItem.height : 0
-                    svg: SvgOutline.noPosts
-                    text: modelData.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
+                    svg: modelData.sessionExpired ? SvgOutline.warning : SvgOutline.noPosts
+                    text: modelData.sessionExpired ? qsTr("Not logged in") : qsTr("No notifications")
                     list: nonActiveUserList
                 }
 
                 BusyIndicator {
                     anchors.centerIn: parent
-                    running: nonActiveUserList.model?.getFeedInProgress
+                    running: nonActiveUserList.model && nonActiveUserList.model.getFeedInProgress
                 }
             }
         }

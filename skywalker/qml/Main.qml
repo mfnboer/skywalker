@@ -872,7 +872,7 @@ ApplicationWindow {
                 else {
                     const userSettings = skywalker.getUserSettings()
                     const host = userSettings.getHost(profile.did)
-                    loginUser(profile.handle, profile.did)
+                    loginUser(host, profile.handle, profile.did)
                 }
             }
 
@@ -1285,6 +1285,7 @@ ApplicationWindow {
     }
 
     function loginUser(host, handle, did, error="", msg="", password="") {
+        console.debug("login, host:", host, "handle:", handle, "did:", did)
         let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
                 host: host,

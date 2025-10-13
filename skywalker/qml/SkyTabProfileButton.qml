@@ -6,6 +6,7 @@ import skywalker
 AccessibleTabButton {
     property basicprofile profile
     property int counter: 0
+    property bool showWarning: false
 
     id: button
     implicitWidth: tabRow.implicitWidth + leftPadding + rightPadding
@@ -30,7 +31,7 @@ AccessibleTabButton {
             elide: Text.ElideRight
             font: button.font
             color: button.checked ? guiSettings.accentColor : guiSettings.textColor
-            text: '@' + profile.handle
+            text: (showWarning ? "⚠ " : "") + '@' + profile.handle
         }
 
         BadgeCounter {
