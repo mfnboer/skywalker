@@ -176,6 +176,11 @@ void OffLineMessageChecker::initNetwork()
     mNetwork->setTransferTimeout(30000);
 }
 
+void OffLineMessageChecker::reset()
+{
+    mNotificationListModel.clear();
+}
+
 int OffLineMessageChecker::startEventLoop()
 {
     qDebug() << "Starting event loop";
@@ -211,6 +216,8 @@ int OffLineMessageChecker::check()
     if (exitStatus != EXIT_OK)
         return exitStatus;
 
+    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+
     if (!mUserSettings.getNotificationsForAllAccounts(activeDid))
         return EXIT_OK;
 
@@ -222,8 +229,6 @@ int OffLineMessageChecker::check()
             check(did);
     }
 
-    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
-
     // We don't care if the check for the other users failed.
     // If the active user check succeeded, we consider the task complete.
     return EXIT_OK;
@@ -231,6 +236,7 @@ int OffLineMessageChecker::check()
 
 int OffLineMessageChecker::check(const QString& did)
 {
+    reset();
     int exitStatus = EXIT_OK;
 
     // The network is not always available in a background task for some reason ???

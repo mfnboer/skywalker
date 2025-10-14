@@ -58,6 +58,7 @@ private:
     };
 
     void initNetwork();
+    void reset();
     int startEventLoop();
     void exit(int exitCode);
     int check(const QString& did);
