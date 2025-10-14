@@ -47,10 +47,8 @@ public:
 
     ATProto::Client* getActiveUserBskyClient() const;
     void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
-
-    void refreshAllData();
-    void makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update);
-    void makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update);
+    NotificationListModel* getNotificationListModel(int id) const;
+    void removeNotificationListModel(int id);
 
 signals:
     void activeSessionExpired(const QString& msg);

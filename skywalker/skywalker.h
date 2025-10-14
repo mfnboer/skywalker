@@ -125,6 +125,9 @@ public:
 
     Q_INVOKABLE void getAuthorLikes(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getAuthorLikesNextPage(int id, int maxPages = 20, int minEntries = 10);
+    int createNotificationListModel();
+    NotificationListModel* getNotificationListModel(int id) const;
+    void removeNotificationListModel(int id);
     Q_INVOKABLE int createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter = QEnums::AUTHOR_FEED_FILTER_POSTS);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
@@ -388,6 +391,7 @@ private:
     ItemStore<StarterPackListModel::Ptr> mStarterPackListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
+    ItemStore<NotificationListModel::Ptr> mNotificationListModels;
     NotificationListModel mNotificationListModel; // All notifications
     NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;

@@ -8,19 +8,27 @@ namespace Skywalker {
 
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 50;
 
-NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, NotificationListModel* notificationListModel,
+NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
                              ATProto::Client* bsky, SessionManager* sessionManager, QObject* parent) :
     QObject(parent),
     mProfile(profile),
     mSessionExpired(sessionExpired),
-    mNotificationListModel(notificationListModel),
+    mNotificationListModelId(notificationListModelId),
     mBsky(bsky),
     mSessionManager(sessionManager)
 {
     Q_ASSERT(mSessionManager);
+}
 
-    if (mNotificationListModel)
-        mNotificationListModel->setParent(this);
+NonActiveUser::~NonActiveUser()
+{
+    if (mNotificationListModelId >= 0)
+        mSessionManager->removeNotificationListModel(mNotificationListModelId);
+}
+
+NotificationListModel* NonActiveUser::getNotificationListModel() const
+{
+    return mSessionManager->getNotificationListModel(mNotificationListModelId);
 }
 
 void NonActiveUser::setUnreadNotificationCount(int unread)
@@ -42,55 +50,87 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
         return;
     }
 
-    if (!mNotificationListModel)
+    auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+
+    if (!model)
     {
         qWarning() << "No model:" << mProfile.getHandle();
         return;
     }
 
-    if (mNotificationListModel->isGetFeedInProgress())
+    if (model->isGetFeedInProgress())
     {
         qDebug() << "Get notifications still in progress:" << mProfile.getHandle();
         return;
     }
 
-    mNotificationListModel->setGetFeedInProgress(true);
+    model->setGetFeedInProgress(true);
 
     mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {}, {},
-        [this, cursor](auto ouput){
+        [this, presence=getPresence(), cursor](auto ouput){
+            if (!presence)
+                return;
+
+            auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+
+            if (!model)
+                return;
+
             const bool clearFirst = cursor.isEmpty();
 
             // The bsky client from the active user is passed in to get the post stats from
             // the active user on a post
             auto* activeUserBsky = mSessionManager->getActiveUserBskyClient();
-            mNotificationListModel->addNotifications(std::move(ouput), *activeUserBsky, clearFirst,
-                [this]{
-                    mNotificationListModel->setGetFeedInProgress(false);
+            model->addNotifications(std::move(ouput), *activeUserBsky, clearFirst,
+                [this, presence]{
+                    if (!presence)
+                        return;
+
+                    auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+
+                    if (!model)
+                        return;
+
+                    model->setGetFeedInProgress(false);
                 });
         },
-        [this](const QString& error, const QString& msg){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg << "handle:" << mProfile.getHandle();
-            mNotificationListModel->setGetFeedInProgress(false);
+
+            if (!presence)
+                return;
+
+            auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+
+            if (!model)
+                return;
+
+            model->setGetFeedInProgress(false);
             mSessionManager->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
 
     if (updateSeen)
     {
-        mNotificationListModel->setNotificationsSeen(true);
+        model->setNotificationsSeen(true);
         mSessionManager->setUnreadNotificationCount(mProfile.getDid(), 0);
     }
 }
 
 void NonActiveUser::getNotificationsNextPage()
 {
-    if (!mNotificationListModel)
+    auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+
+    if (!model)
+        return;
+
+    if (!model)
     {
         qWarning() << "No model:" << mProfile.getHandle();
         return;
     }
 
-    const QString& cursor = mNotificationListModel->getCursor();
+    const QString& cursor = model->getCursor();
 
     if (cursor.isEmpty())
     {

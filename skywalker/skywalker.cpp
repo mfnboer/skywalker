@@ -137,6 +137,8 @@ Skywalker::~Skywalker()
     if (emojiFontSource.startsWith("file://"))
         TempFileHolder::instance().remove(emojiFontSource.sliced(7));
 
+    mSessionManager.clear();
+
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
     Q_ASSERT(mSearchPostFeedModels.empty());
@@ -145,6 +147,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mFeedListModels.empty());
     Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mContentGroupListModels.empty());
+    Q_ASSERT(mNotificationListModels.empty());
 }
 
 QString Skywalker::getUserAgentString()
@@ -1752,7 +1755,6 @@ void Skywalker::refreshAllModels()
     mTimelineModel.refreshAllData();
     mNotificationListModel.refreshAllData();
     mMentionListModel.refreshAllData();
-    mSessionManager.refreshAllData();
 
     for (auto& [_, model] : mPostThreadModels.items())
         model->refreshAllData();
@@ -1776,6 +1778,9 @@ void Skywalker::refreshAllModels()
         model->refreshAllData();
 
     for (auto& [_, model] : mAuthorListModels.items())
+        model->refreshAllData();
+
+    for (auto& [_, model] : mNotificationListModels.items())
         model->refreshAllData();
 }
 
@@ -1815,6 +1820,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
 
     for (auto& [_, model] : mListListModels.items())
         update(model.get());
+
+    for (auto& [_, model] : mNotificationListModels.items())
+        update(model.get());
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update)
@@ -1847,6 +1855,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
 
     if (mBookmarksModel)
         update(mBookmarksModel.get());
+
+    for (auto& [_, model] : mNotificationListModels.items())
+        update(model.get());
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update)
@@ -2253,6 +2264,26 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
     }
 
     getAuthorLikes(id, AUTHOR_LIKES_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
+int Skywalker::createNotificationListModel()
+{
+    auto model = std::make_unique<NotificationListModel>(mContentFilter, mMutedWords, &mFollowsActivityStore, this);
+    const int id = addModelToStore<NotificationListModel>(std::move(model), mNotificationListModels);
+    return id;
+}
+
+NotificationListModel* Skywalker::getNotificationListModel(int id) const
+{
+    qDebug() << "Get notification list model:" << id;
+    auto* model = mNotificationListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeNotificationListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mNotificationListModels.remove(id);
 }
 
 int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter)

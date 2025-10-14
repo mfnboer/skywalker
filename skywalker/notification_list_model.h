@@ -25,6 +25,7 @@ class NotificationListModel : public QAbstractListModel,
     Q_PROPERTY(bool priority READ getPriority NOTIFY priorityChanged FINAL)
 
 public:
+    using Ptr = std::unique_ptr<NotificationListModel>;
     using NotificationList = std::deque<Notification>;
 
     enum class Role {
@@ -108,6 +109,9 @@ public:
     explicit NotificationListModel(const ContentFilter& contentFilter,
                                    const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
                                    QObject* parent = nullptr);
+
+    void setModelId(int modelId) { mModelId = modelId; }
+    int getModelId() const { return mModelId; }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -218,6 +222,7 @@ private:
     NotificationList mNewLabelsNotifications;
     bool mNotificationsSeen = false;
     bool mGetFeedInProgress = false;
+    int mModelId = -1;
 };
 
 }

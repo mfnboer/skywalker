@@ -180,12 +180,9 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
 
         if (!profile.getHandle().isEmpty())
         {
-            auto* notificationListModel = new NotificationListModel(
-                *mSkywalker->getContentFilter(), *mSkywalker->getMutedWords(),
-                mSkywalker->getFollowsActivityStore(), this);
-
+            int modelId = mSkywalker->createNotificationListModel();
             session->mNonActiveUser = std::make_unique<NonActiveUser>(
-                profile, false, notificationListModel, session->mBsky, this, this);
+                profile, false, modelId, session->mBsky, this, this);
         }
         else
         {
@@ -230,7 +227,7 @@ void SessionManager::deleteSession(const QString& did)
 
     auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser.get();
     auto expiredUser = nonActiveUser ? std::make_unique<NonActiveUser>(
-            nonActiveUser->getProfile(), true, nullptr, nullptr, this, this) : nullptr;
+            nonActiveUser->getProfile(), true, -1, nullptr, this, this) : nullptr;
 
     mDidSessionMap.erase(did);
 
@@ -279,7 +276,7 @@ void SessionManager::addExpiredUser(const QString& did)
         return;
     }
 
-    auto expiredUser = std::make_unique<NonActiveUser>(profile, true, nullptr, nullptr, this, this);
+    auto expiredUser = std::make_unique<NonActiveUser>(profile, true, -1, nullptr, this, this);
     mExpiredUsers.push_back(std::move(expiredUser));
     addNonActiveUser(mExpiredUsers.back().get());
 }
@@ -434,31 +431,14 @@ void SessionManager::showStatusMessage(const QString& msg, QEnums::StatusLevel l
     mSkywalker->showStatusMessage(msg, level);
 }
 
-void SessionManager::refreshAllData()
+NotificationListModel* SessionManager::getNotificationListModel(int id) const
 {
-    for (const auto& [_, session] : mDidSessionMap)
-    {
-        if (session->mNonActiveUser && session->mNonActiveUser->getNotificationListModel())
-            session->mNonActiveUser->getNotificationListModel()->refreshAllData();
-    }
+    return mSkywalker->getNotificationListModel(id);
 }
 
-void SessionManager::makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update)
+void SessionManager::removeNotificationListModel(int id)
 {
-    for (const auto& [_, session] : mDidSessionMap)
-    {
-        if (session->mNonActiveUser && session->mNonActiveUser->getNotificationListModel())
-            update(session->mNonActiveUser->getNotificationListModel());
-    }
-}
-
-void SessionManager::makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update)
-{
-    for (const auto& [_, session] : mDidSessionMap)
-    {
-        if (session->mNonActiveUser && session->mNonActiveUser->getNotificationListModel())
-            update(session->mNonActiveUser->getNotificationListModel());
-    }
+    mSkywalker->removeNotificationListModel(id);
 }
 
 }
