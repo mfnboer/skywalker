@@ -1152,6 +1152,20 @@ bool UserSettings::getNotificationsWifiOnly() const
     return mSettings.value("notificationsWifiOnly", false).toBool();
 }
 
+void UserSettings::setNotificationsForAllAccounts(const QString& did, bool enable)
+{
+    if (enable != getNotificationsForAllAccounts(did))
+    {
+        mSettings.setValue(key(did, "notificationsForAllAccounts"), enable);
+        emit notificationsForAllAccountsChanged();
+    }
+}
+
+bool UserSettings::getNotificationsForAllAccounts(const QString& did) const
+{
+    return mSettings.value(key(did, "notificationsForAllAccounts"), true).toBool();
+}
+
 bool UserSettings::getShowQuotesWithBlockedPost(const QString& did) const
 {
     if (!mShowQuotesWithBlockedPost)

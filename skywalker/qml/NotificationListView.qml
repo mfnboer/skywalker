@@ -53,7 +53,7 @@ SkyPage {
         }
 
         Repeater {
-            model: sessionManager.nonActiveUsers
+            model: sessionManager.nonActiveNotifications
 
             SkyTabProfileButton {
                 profile: modelData.profile
@@ -202,7 +202,7 @@ SkyPage {
         }
 
         Repeater {
-            model: sessionManager.nonActiveUsers
+            model: sessionManager.nonActiveNotifications
 
             SkyListView {
                 id: nonActiveUserList
@@ -304,5 +304,18 @@ SkyPage {
 
     function showOwnNotificationsTab() {
         tabBar.setCurrentIndex(0)
+    }
+
+    function showFirstTabWithUnreadNotifications() {
+        let index = 2
+
+        for (const user of sessionManager.nonActiveNotifications) {
+            if (user.unreadNotificationCount > 0) {
+                tabBar.setCurrentIndex(index)
+                break
+            }
+
+            ++index
+        }
     }
 }

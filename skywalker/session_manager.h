@@ -16,6 +16,7 @@ class SessionManager : public QObject
     Q_OBJECT
     Q_PROPERTY(int activeUserUnreadNotificationCount READ getActiveUserUnreadNotificationCount NOTIFY activeUserUnreadNotificationCountChanged FINAL)
     Q_PROPERTY(NonActiveUser::List nonActiveUsers READ getNonActiveUsers NOTIFY nonActiveUsersChanged FINAL)
+    Q_PROPERTY(NonActiveUser::List nonActiveNotifications READ getNonActiveNotifications NOTIFY nonActiveNotificationsChanged FINAL)
 
 public:
     using SuccessCb = std::function<void()>;
@@ -36,7 +37,6 @@ public:
     void stopRefreshTimers();
 
     void saveTokens();
-    void updateTokens();
 
     void setUnreadNotificationCount(const QString& did, int unread);
     int getUnreadNotificationCount(const QString& did) const;
@@ -44,17 +44,22 @@ public:
     int getActiveUserUnreadNotificationCount() const;
 
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
+    const NonActiveUser::List& getNonActiveNotifications() const;
 
     ATProto::Client* getActiveUserBskyClient() const;
     void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
     NotificationListModel* getNotificationListModel(int id) const;
     void removeNotificationListModel(int id);
 
+    void pause();
+    void resume();
+
 signals:
     void activeSessionExpired(const QString& msg);
     void totalUnreadNotificationCountChanged(int count);
     void activeUserUnreadNotificationCountChanged();
     void nonActiveUsersChanged();
+    void nonActiveNotificationsChanged();
 
 private:
     struct Session
@@ -78,7 +83,12 @@ private:
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession(const QString& did) const;
     void startRefreshTimers(const QString& did, int initialDelayCount);
     void stopRefreshTimers(const QString& did);
+    void startNotificationRefreshTimers(const QString& did, int initialDelayCount);
+    void stopNotificationRefreshTimers(const QString& did);
+    void enableNotificationsNonActiveUsers();
+    void disableNotificatiosNonActiveUsers();
     void refreshNotificationCount(const QString& did);
+    void updateTokens();
 
     std::unordered_map<QString, Session::Ptr> mDidSessionMap;
     Skywalker* mSkywalker;

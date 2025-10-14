@@ -18,11 +18,20 @@ SessionManager::SessionManager(Skywalker* skywalker, QObject* parent) :
     mUserSettings(*skywalker->getUserSettings())
 {
     Q_ASSERT(skywalker);
+
+    connect(&mUserSettings, &UserSettings::notificationsForAllAccountsChanged, this, [this]{
+        if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+            enableNotificationsNonActiveUsers();
+        else
+            disableNotificatiosNonActiveUsers();
+
+        emit nonActiveNotificationsChanged();
+    });
 }
 
 void SessionManager::resumeAndRefreshNonActiveUsers()
 {
-    const auto activeDid = mUserSettings.getActiveUserDid();
+    const auto activeDid = mSkywalker->getUserDid();
     const auto dids = mUserSettings.getUserDidList();
 
     for (const auto& did : dids)
@@ -39,6 +48,9 @@ void SessionManager::clear()
     mDidSessionMap.clear();
 
     emit nonActiveUsersChanged();
+
+    if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+        emit nonActiveNotificationsChanged();
 }
 
 void SessionManager::insertSession(const QString& did, ATProto::Client* client)
@@ -97,7 +109,7 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             mUserSettings.sync();
 
             // Timers for the active user are started by Skywalker::resumeAndRefreshSession()
-            if (did != mUserSettings.getActiveUserDid())
+            if (did != mSkywalker->getUserDid())
                 startRefreshTimers(did, refreshDelayCount);
 
             if (successCb)
@@ -122,7 +134,7 @@ void SessionManager::startRefreshTimers()
 
     for (const auto& [did, _] : mDidSessionMap)
     {
-        if (did == mUserSettings.getActiveUserDid())
+        if (did == mSkywalker->getUserDid())
             startRefreshTimers(did, 0);
         else
             startRefreshTimers(did, refreshDelayCount++);
@@ -157,9 +169,13 @@ void SessionManager::updateTokens()
     {
         auto savedSession = mUserSettings.getSession(did);
 
-        if (!session->mBsky)
+        if (!session->mBsky || !session->mBsky->getSession())
             continue;
 
+        qDebug() << "Update tokens:" << did;
+
+        // The offline message checker may have refreshed tokens. Update these tokens
+        // so we do not use an old token for refreshing below.
         if (!savedSession.mRefreshJwt.isEmpty())
             session->mBsky->updateTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
         else
@@ -169,12 +185,13 @@ void SessionManager::updateTokens()
 
 SessionManager::Session::Ptr SessionManager::createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky)
 {
+    Q_ASSERT(!mSkywalker->getUserDid().isEmpty());
     auto session = std::make_unique<Session>();
     session->mRawBsky = std::move(rawBsky);
     session->mBsky = bsky;
     session->mRefreshNotificationInitialDelayTimer.setSingleShot(true);
 
-    if (did != mUserSettings.getActiveUserDid())
+    if (did != mSkywalker->getUserDid())
     {
         const BasicProfile profile = mUserSettings.getUser(did);
 
@@ -195,7 +212,7 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
 
         if (session)
         {
-            if (did == mUserSettings.getActiveUserDid())
+            if (did == mSkywalker->getUserDid())
                 session->mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL);
             else
                 session->mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
@@ -248,11 +265,15 @@ void SessionManager::deleteSession(const QString& did)
     }
 
     emit nonActiveUsersChanged();
+
+    if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+        emit nonActiveNotificationsChanged();
 }
 
 void SessionManager::addNonActiveUser(NonActiveUser* nonActiveUser)
 {
     Q_ASSERT(nonActiveUser);
+
     if (!nonActiveUser)
         return;
 
@@ -264,6 +285,9 @@ void SessionManager::addNonActiveUser(NonActiveUser* nonActiveUser)
               });
 
     emit nonActiveUsersChanged();
+
+    if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+        emit nonActiveNotificationsChanged();
 }
 
 void SessionManager::addExpiredUser(const QString& did)
@@ -337,14 +361,16 @@ void SessionManager::startRefreshTimers(const QString& did, int initialDelayCoun
         [this, did](const QString& msg){
             qWarning() << "Session refresh failed:" << msg;
 
-            if (did == mUserSettings.getActiveUserDid())
+            if (did == mSkywalker->getUserDid())
                 emit activeSessionExpired(msg);
             else
                 deleteSession(did);
         });
 
-    refreshNotificationCount(did);
-    session->mRefreshNotificationInitialDelayTimer.start(initialDelayCount * NOTIFICATION_REFRESH_DELAY);
+    const QString userDid = mSkywalker->getUserDid();
+
+    if (did == userDid || mUserSettings.getNotificationsForAllAccounts(userDid))
+        startNotificationRefreshTimers(did, initialDelayCount);
 }
 
 void SessionManager::stopRefreshTimers(const QString& did)
@@ -356,8 +382,52 @@ void SessionManager::stopRefreshTimers(const QString& did)
         return;
 
     session->mBsky->stopAutoRefresh();
+    stopNotificationRefreshTimers(did);
+}
+
+void SessionManager::startNotificationRefreshTimers(const QString& did, int initialDelayCount)
+{
+    auto* session = getSession(did);
+
+    if (!session)
+        return;
+
+    refreshNotificationCount(did);
+    session->mRefreshNotificationInitialDelayTimer.start(initialDelayCount * NOTIFICATION_REFRESH_DELAY);
+}
+
+void SessionManager::stopNotificationRefreshTimers(const QString& did)
+{
+    auto* session = getSession(did);
+
+    if (!session)
+        return;
+
     session->mRefreshNotificationInitialDelayTimer.stop();
     session->mRefreshNotificationTimer.stop();
+}
+
+void SessionManager::enableNotificationsNonActiveUsers()
+{
+    int refreshDelayCount = 1;
+
+    for (const auto& [did, _] : mDidSessionMap)
+    {
+        if (did != mSkywalker->getUserDid())
+            startNotificationRefreshTimers(did, refreshDelayCount++);
+    }
+}
+
+void SessionManager::disableNotificatiosNonActiveUsers()
+{
+    for (const auto& [did, _] : mDidSessionMap)
+    {
+        if (did != mSkywalker->getUserDid())
+        {
+            stopNotificationRefreshTimers(did);
+            setUnreadNotificationCount(did, 0);
+        }
+    }
 }
 
 void SessionManager::refreshNotificationCount(const QString& did)
@@ -391,7 +461,7 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
 
         if (session->mNonActiveUser)
             session->mNonActiveUser->setUnreadNotificationCount(unread);
-        else if (did == mUserSettings.getActiveUserDid())
+        else if (did == mSkywalker->getUserDid())
             emit activeUserUnreadNotificationCountChanged();
 
         const int totalUnread = getTotalUnreadNotificationCount();
@@ -417,8 +487,20 @@ int SessionManager::getTotalUnreadNotificationCount() const
 
 int SessionManager::getActiveUserUnreadNotificationCount() const
 {
-    const auto did = mUserSettings.getActiveUserDid();
+    const auto did = mSkywalker->getUserDid();
     return getUnreadNotificationCount(did);
+}
+
+const NonActiveUser::List& SessionManager::getNonActiveNotifications() const
+{
+    static const NonActiveUser::List EMPTY_LIST;
+
+    const auto did = mSkywalker->getUserDid();
+
+    if (!mUserSettings.getNotificationsForAllAccounts(did))
+        return EMPTY_LIST;
+
+    return mNonActiveUsers;
 }
 
 ATProto::Client* SessionManager::getActiveUserBskyClient() const
@@ -439,6 +521,27 @@ NotificationListModel* SessionManager::getNotificationListModel(int id) const
 void SessionManager::removeNotificationListModel(int id)
 {
     mSkywalker->removeNotificationListModel(id);
+}
+
+void SessionManager::pause()
+{
+    const QString userDid = mSkywalker->getUserDid();
+
+    for (const auto& [did, session] : mDidSessionMap)
+    {
+        if (session)
+        {
+            if (did == userDid || mUserSettings.getNotificationsForAllAccounts(userDid))
+                mUserSettings.setOfflineUnread(did, session->mUnreadNotificationCount);
+        }
+    }
+
+    saveTokens();
+}
+
+void SessionManager::resume()
+{
+    updateTokens();
 }
 
 }

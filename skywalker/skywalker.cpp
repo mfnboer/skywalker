@@ -232,17 +232,21 @@ bool Skywalker::resumeAndRefreshSession()
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+
+    // User DID must be set before inserting sessions in the session manager
+    mUserDid = session->mDid;
     mSessionManager.insertSession(session->mDid, mBsky.get());
+
     mSessionManager.resumeAndRefreshSession(mBsky.get(), *session, 0,
         [this]{
             qDebug() << "Session resumed";
-            mUserDid = mBsky->getSession()->mDid;
             startRefreshTimers();
             mSessionManager.resumeAndRefreshNonActiveUsers();
             emit resumeSessionOk();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "Session could not be resumed:" << error << " - " << msg;
+            mUserDid.clear();
             emit resumeSessionFailed(msg);
         });
 
@@ -3853,10 +3857,9 @@ void Skywalker::pauseApp()
         mUserSettings.sync();
     }
 
-    mSessionManager.saveTokens();
+    mSessionManager.pause();
 
     saveHashtags();
-    mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
     mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
     mUserSettings.setCheckOfflineChat(mUserDid, mChat->convosLoaded());
@@ -3888,19 +3891,7 @@ void Skywalker::resumeApp()
         return;
     }
 
-    if (mBsky && mBsky->getSession())
-    {
-        auto savedSession = mUserSettings.getSession(mUserDid);
-
-        // The offline message checker may have refreshed tokens. Update these tokens
-        // so we do not use an old token for refreshing below.
-        if (!savedSession.mRefreshJwt.isEmpty())
-            mBsky->updateTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
-        else
-            qWarning() << "No tokens:" << mUserDid;
-    }
-
-    mSessionManager.updateTokens();
+    mSessionManager.resume();
 
     if (mTimelineUpdatePaused.isNull())
     {

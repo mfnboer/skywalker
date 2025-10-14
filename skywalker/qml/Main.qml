@@ -1801,6 +1801,9 @@ ApplicationWindow {
 
             if (skywalker.mentionListModel.rowCount() === 0)
                 skywalker.getNotifications(10, false, true)
+
+            let view = getNotificationView()
+            view.showFirstTabWithUnreadNotifications()
         }
     }
 

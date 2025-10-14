@@ -203,21 +203,46 @@ int OffLineMessageChecker::check()
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
 
+    const QString activeDid = mUserSettings.getActiveUserDid();
+    int exitStatus = check(activeDid);
+
+    // The active user should succeed. If not, then most likely there is
+    // a network issue. Do not try other accounts. Wait for task retry.
+    if (exitStatus != EXIT_OK)
+        return exitStatus;
+
+    if (!mUserSettings.getNotificationsForAllAccounts(activeDid))
+        return EXIT_OK;
+
+    const auto dids = mUserSettings.getUserDidList();
+
+    for (const auto& did : dids)
+    {
+        if (did != activeDid)
+            check(did);
+    }
+
+    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+
+    // We don't care if the check for the other users failed.
+    // If the active user check succeeded, we consider the task complete.
+    return EXIT_OK;
+}
+
+int OffLineMessageChecker::check(const QString& did)
+{
     int exitStatus = EXIT_OK;
 
     // The network is not always available in a background task for some reason ???
     // Retry few times.
     for (int i = 0; i < 8; ++i)
     {
-        qDebug() << "Attempt:" << i + 1;
-        QTimer::singleShot(0, &mPresence, [this]{ resumeSession(); });
+        qDebug() << "Attempt:" << i + 1 << did;
+        QTimer::singleShot(0, &mPresence, [this, did]{ resumeSession(did); });
         exitStatus = startEventLoop();
 
         if (exitStatus == EXIT_OK)
-        {
-            mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
             break;
-        }
 
         if (exitStatus == EXIT_RETRY)
             break;
@@ -225,7 +250,12 @@ int OffLineMessageChecker::check()
         if (exitStatus == EXIT_NETWORK_FAILURE)
         {
             exitStatus = EXIT_RETRY;
-            std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(500ms);
+        }
+        else
+        {
+            qWarning() << "Unknown exit status:" << exitStatus;
+            break;
         }
     }
 
@@ -287,10 +317,8 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 #endif
 }
 
-std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSession() const
+std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSession(const QString& did) const
 {
-    const QString did = mUserSettings.getActiveUserDid();
-
     if (did.isEmpty())
         return {};
 
@@ -307,10 +335,10 @@ void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session
     mUserSettings.saveSession(session);
 }
 
-void OffLineMessageChecker::resumeSession(bool retry)
+void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
 {
-    qDebug() << "Resume session, retry:" << retry;
-    const auto session = getSession();
+    qDebug() << "Resume session, retry:" << retry << "did:" << did;
+    const auto session = getSession(did);
 
     if (!session)
     {
@@ -332,17 +360,17 @@ void OffLineMessageChecker::resumeSession(bool retry)
             saveSession(*mBsky->getSession());
             refreshSession();
         },
-        [this, retry, session](const QString& error, const QString& msg){
+        [this, did, retry, session](const QString& error, const QString& msg){
             qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
             if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
                 mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
                 mBsky->refreshSession(
-                    [this]{
+                    [this, did]{
                         qDebug() << "Session refreshed";
                         saveSession(*mBsky->getSession());
-                        resumeSession(true);
+                        resumeSession(did, true);
                     },
                     [this](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
