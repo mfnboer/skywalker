@@ -570,6 +570,7 @@ qt_add_qml_module(libskywalker
         SOURCES non_active_user.cpp
         QML_FILES qml/SkyTabProfileButton.qml
         QML_FILES qml/SkyTabCounterButton.qml
+        QML_FILES qml/NonActiveUsersView.qml
 )
 
 if (NOT ANDROID)

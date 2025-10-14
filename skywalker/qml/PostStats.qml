@@ -34,6 +34,7 @@ Item {
     signal repost()
     signal quotePost()
     signal like()
+    signal likeLongPress(MouseEvent mouseEvent)
     signal viewThread()
     signal unrollThread()
     signal muteThread()
@@ -92,6 +93,7 @@ Item {
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
         onClicked: like()
+        onPressAndHold: (mouseEvent) => likeLongPress(mouseEvent)
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
 

@@ -17,6 +17,7 @@ class SessionManager : public QObject
     Q_PROPERTY(int activeUserUnreadNotificationCount READ getActiveUserUnreadNotificationCount NOTIFY activeUserUnreadNotificationCountChanged FINAL)
     Q_PROPERTY(NonActiveUser::List nonActiveUsers READ getNonActiveUsers NOTIFY nonActiveUsersChanged FINAL)
     Q_PROPERTY(NonActiveUser::List nonActiveNotifications READ getNonActiveNotifications NOTIFY nonActiveNotificationsChanged FINAL)
+    QML_ELEMENT
 
 public:
     using SuccessCb = std::function<void()>;

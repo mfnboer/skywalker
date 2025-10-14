@@ -544,6 +544,7 @@ Rectangle {
                 visible: active
 
                 sourceComponent: PostStats {
+                    id: postStats
                     width: parent.width
                     topPadding: 10
                     replyCount: postReplyCount
@@ -593,6 +594,17 @@ Rectangle {
                     }
 
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
+
+                    // TODO
+                    onLikeLongPress: (mouseEvent) => {
+                        const mousePoint = postStats.mapToItem(postEntry.ListView.view, 0, mouseEvent.y)
+                        let component = guiSettings.createComponent("NonActiveUsersView.qml")
+                        let popup = component.createObject(postEntry.ListView.view, {
+                                mouseY: mousePoint.y,
+                                title: qsTr("Like with")
+                            })
+                        popup.open()
+                    }
 
                     onBookmark: {
                         if (isBookmarked)

@@ -4,9 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    required property Skywalker skywalker
     required property var timeline
-    property var sessionManager: skywalker.getSessionManager()
+    property SessionManager sessionManager: skywalker.getSessionManager()
     readonly property int margin: 10
     readonly property string sideBarTitle: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
 
