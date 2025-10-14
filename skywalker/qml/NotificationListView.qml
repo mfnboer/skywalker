@@ -34,10 +34,11 @@ SkyPage {
     SkyTabBar {
         id: tabBar
         y: !root.showSideBar ? 0 : guiSettings.headerMargin
-        width: parent.width
+        width: parent.width - (root.showSideBar ? moreOptions.width + page.margin : 0)
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
+        clip: true
 
         SkyTabCounterButton {
             id: tabAll
