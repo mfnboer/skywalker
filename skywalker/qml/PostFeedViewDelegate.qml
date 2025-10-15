@@ -7,6 +7,7 @@ Rectangle {
     readonly property int margin: 10
     readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
     readonly property string threadColor: root.getSkywalker().getUserSettings().threadColor
+    property Skywalker skywalker: root.getSkywalker()
 
     required property int index
     required property basicprofile author
@@ -595,15 +596,8 @@ Rectangle {
 
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
 
-                    // TODO
                     onLikeLongPress: (mouseEvent) => {
-                        const mousePoint = postStats.mapToItem(postEntry.ListView.view, 0, mouseEvent.y)
-                        let component = guiSettings.createComponent("NonActiveUsersView.qml")
-                        let popup = component.createObject(postEntry.ListView.view, {
-                                mouseY: mousePoint.y,
-                                title: qsTr("Like with")
-                            })
-                        popup.open()
+                        root.likeByNonAcitveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
                     }
 
                     onBookmark: {

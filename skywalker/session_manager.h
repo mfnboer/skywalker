@@ -44,13 +44,16 @@ public:
     int getTotalUnreadNotificationCount() const;
     int getActiveUserUnreadNotificationCount() const;
 
+    Q_INVOKABLE bool hasNonActiveUsers() const { return !mNonActiveUsers.empty(); }
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
     const NonActiveUser::List& getNonActiveNotifications() const;
 
+    // TODO: call via getSkywalker()
     ATProto::Client* getActiveUserBskyClient() const;
     void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
     NotificationListModel* getNotificationListModel(int id) const;
     void removeNotificationListModel(int id);
+    Skywalker* getSkywalker();
 
     void pause();
     void resume();

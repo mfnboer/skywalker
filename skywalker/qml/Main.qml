@@ -1525,6 +1525,23 @@ ApplicationWindow {
             feedUtils.like(uri, cid)
     }
 
+    function likeByNonAcitveUser(mouseEvent, mouseView, parentView, postUri, viaUri, viaCid) {
+        if (!skywalker.getSessionManager().hasNonActiveUsers()) {
+            console.debug("No non-active users")
+            return
+        }
+
+        const mousePoint = mouseView.mapToItem(parentView, 0, mouseEvent.y)
+        let component = guiSettings.createComponent("NonActiveUsersPopup.qml")
+        let popup = component.createObject(parentView, {
+                mouseY: mousePoint.y,
+                postUri: postUri,
+                title: qsTr("Like with")
+            })
+        popup.onUserClicked.connect((user) => user.like(viaUri, viaCid))
+        popup.open()
+    }
+
     function showMoreLikeThis(feedDid, postUri, feedContext) {
         feedUtils.showMoreLikeThis(postUri, feedDid, feedContext)
     }
