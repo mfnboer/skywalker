@@ -21,10 +21,25 @@ void WrappedSkywalker::setSkywalker(Skywalker* skywalker)
     }
 }
 
+void WrappedSkywalker::setNonActiveUserDid(const QString& did)
+{
+    if (did != mNonActiveUserDid)
+    {
+        mNonActiveUserDid = did;
+        emit nonActiveUserDidChanged();
+    }
+}
+
+// TODO: what if the bsky client gets destroyed due to a failing session refresh?
+// Maybe we should not detroy the client, such that the pointer stays alive. Request
+// will fail, but that is fine. Or use a shared pointer to keep it alive until it is
+// not needed here anymore?
 ATProto::Client* WrappedSkywalker::bskyClient()
 {
     Q_ASSERT(mSkywalker);
-    auto* client = mSkywalker->getBskyClient();
+    auto* client = mNonActiveUserDid.isEmpty() ?
+                       mSkywalker->getBskyClient() :
+                       mSkywalker->getSessionManager()->getBskyClientFor(mNonActiveUserDid);
     Q_ASSERT(client);
     return client;
 }

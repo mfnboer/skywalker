@@ -66,6 +66,11 @@ void PostView::setBookMarked(bool bookmarked)
     }
 }
 
+bool PostView::isReplyDisabled() const
+{
+    return mPost ? mPost->isReplyDisabled() : false;
+}
+
 bool PostView::isNotFound() const
 {
     return mPost ? mPost->isNotFound() : false;

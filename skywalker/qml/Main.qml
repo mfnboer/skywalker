@@ -1418,19 +1418,23 @@ ApplicationWindow {
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
+                          nonActiveUserDid = "")
     {
         postUtils.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, imageSource))
+                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,initialText, imageSource,
+                                 nonActiveUserDid))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
+                          nonActiveUserDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                nonActiveUserDid: nonActiveUserDid,
                 initialText: initialText,
                 initialImage: imageSource,
                 replyToPostUri: replyToUri,
@@ -1537,6 +1541,24 @@ ApplicationWindow {
                               (user) => { user.bookmark() })
     }
 
+    function replyByNonActiveUser(mouseEvent, mouseView, parentView,
+                                  replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids) {
+        actionByNonActiveUser(
+                    mouseEvent, mouseView, parentView, replyToUri,
+                    QEnums.NON_ACTIVE_USER_REPLY,
+                    (user) => {
+                        if (user.postView.replyDisabled) {
+                            console.warn("Reply disabled:", replyToUri)
+                            return
+                        }
+
+                        composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                     replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
+                                     "", "", user.profile.did)
+                    })
+    }
+
     function actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, actionType, actionCb) {
         if (!skywalker.getSessionManager().hasNonActiveUsers()) {
             console.debug("No non-active users")
@@ -1550,7 +1572,10 @@ ApplicationWindow {
                 postUri: postUri,
                 action: actionType
             })
-        popup.onUserClicked.connect((user) => actionCb(user))
+        popup.onUserClicked.connect((user) => {
+                popup.destroy()
+                actionCb(user)
+            })
         popup.open()
     }
 

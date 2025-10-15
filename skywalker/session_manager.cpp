@@ -519,6 +519,12 @@ ATProto::Client* SessionManager::getActiveUserBskyClient() const
     return mSkywalker->getBskyClient();
 }
 
+ATProto::Client* SessionManager::getBskyClientFor(const QString& did) const
+{
+    auto* session = getSession(did);
+    return session ? session->mBsky : nullptr;
+}
+
 Skywalker* SessionManager::getSkywalker()
 {
     return mSkywalker;

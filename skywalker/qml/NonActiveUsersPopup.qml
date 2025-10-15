@@ -77,6 +77,10 @@ Popup {
             return qsTr("Like with")
         case QEnums.NON_ACTIVE_USER_BOOKMARK:
             return qsTr("Bookmark with")
+        case QEnums.NON_ACTIVE_USER_REPLY:
+            return qsTr("Reply with")
+        case QEnums.NON_ACTIVE_USER_REPOST:
+            return qsTr("Repost with")
         }
 
         return ""

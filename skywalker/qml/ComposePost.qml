@@ -5,6 +5,10 @@ import skywalker
 
 SkyPage {
     required property var skywalker
+
+    // If this DID is set then the post is composed for this user instead of the active user
+    property string nonActiveUserDid: ""
+
     property string initialText
     property string initialImage
     property string initialVideo: ""
@@ -118,7 +122,7 @@ SkyPage {
             y: guiSettings.headerMargin + 5
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.height - guiSettings.headerMargin - 10
-            author: skywalker.user
+            author: nonActiveUserDid === "" ? skywalker.user : skywalker.getUserSettings().getUser(nonActiveUserDid)
             onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 
@@ -1510,6 +1514,7 @@ SkyPage {
 
         id: postUtils
         skywalker: page.skywalker // qmllint disable missing-type
+        nonActiveUserDid: page.nonActiveUserDid
 
         onPostOk: (uri, cid) => {
             postedUris.push(uri)
@@ -2173,7 +2178,14 @@ SkyPage {
             return
         }
 
-        if (draftPosts.canSaveDraft()) {
+        if (page.nonActiveUserDid !== "") {
+            // Saving a post as draft not supported for non-active users
+            guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you want to to discard your post?"),
+                    () => page.closed())
+        }
+        else if (draftPosts.canSaveDraft()) {
             guiSettings.askDiscardSaveQuestion(
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
@@ -2895,8 +2907,10 @@ SkyPage {
         restrictReply = postInteractionSettings.allowNobody || allowReplyMentioned || allowReplyFollower || allowReplyFollowing || allowListUrisFromDraft.length > 0
         allowQuoting = !postInteractionSettings.disableEmbedding
 
+        const selfDid = nonActiveUserDid === "" ? userDid : nonActiveUserDid
+
         for (const mentionDid of replyToMentionDids) {
-            if (mentionDid !== userDid)
+            if (mentionDid !== selfDid)
                 profileUtils.getBasicProfile(mentionDid)
         }
 

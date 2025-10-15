@@ -50,6 +50,7 @@ public:
     const NonActiveUser::List& getNonActiveNotifications() const;
 
     ATProto::Client* getActiveUserBskyClient() const;
+    ATProto::Client* getBskyClientFor(const QString& did) const;
     Skywalker* getSkywalker();
 
     void pause();

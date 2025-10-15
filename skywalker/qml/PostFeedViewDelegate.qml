@@ -581,6 +581,17 @@ Rectangle {
                                           postMentionDids)
                     }
 
+                    onReplyLongPress: (mouseEvent) => {
+                        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                        root.replyByNonActiveUser(
+                                mouseEvent, postStats, postEntry.ListView.view,
+                                postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime,
+                                author, postReplyRootUri, postReplyRootCid, lang,
+                                postMentionDids)
+                    }
+
                     onRepost: {
                         root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,

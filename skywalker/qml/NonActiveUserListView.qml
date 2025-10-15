@@ -91,10 +91,19 @@ ListView {
             }
 
             NonActiveUserActionIcon {
+                id: replyIcon
+                svg: SvgOutline.reply
+                iconColor: user.postView?.replyDisabled ? guiSettings.disabledColor : guiSettings.statsColor
+                visible: action === QEnums.NON_ACTIVE_USER_REPLY && !user.sessionExpired &&
+                         Boolean(user.postView) && user.postView.uri === postUri &&
+                         user.postView.isGood()
+            }
+
+            NonActiveUserActionIcon {
                 id: likeIcon
                 svg: user.postView?.likeUri ? SvgFilled.like : SvgOutline.like
-                iconColor: guiSettings.likeColor
-                visible: action == QEnums.NON_ACTIVE_USER_LIKE && !user.sessionExpired &&
+                iconColor: user.postView?.likeUri ? guiSettings.likeColor : guiSettings.statsColor
+                visible: action === QEnums.NON_ACTIVE_USER_LIKE && !user.sessionExpired &&
                          Boolean(user.postView) && user.postView.uri === postUri &&
                          user.postView.isGood()
 
@@ -107,8 +116,8 @@ ListView {
             NonActiveUserActionIcon {
                 id: bookmarkIcon
                 svg: user.postView?.bookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
-                iconColor: guiSettings.buttonColor
-                visible: action == QEnums.NON_ACTIVE_USER_BOOKMARK && !user.sessionExpired &&
+                iconColor: user.postView?.bookmarked ?  guiSettings.buttonColor : guiSettings.statsColor
+                visible: action === QEnums.NON_ACTIVE_USER_BOOKMARK && !user.sessionExpired &&
                          Boolean(user.postView) && user.postView.uri === postUri &&
                          user.postView.isGood()
 
@@ -132,7 +141,8 @@ ListView {
                 Layout.preferredHeight: 44
                 color: "transparent"
                 visible: !expiredIcon.visible && !notFoundIcon.visible && !errorIcon.visible &&
-                         !likeIcon.visible && !bookmarkIcon.visible && !progressIcon.visible
+                         !likeIcon.visible && !bookmarkIcon.visible && !replyIcon.visible &&
+                         !progressIcon.visible
             }
 
             Text {

@@ -31,6 +31,7 @@ Item {
     property int topPadding: 0
 
     signal reply()
+    signal replyLongPress(MouseEvent mouseEvent)
     signal repost()
     signal quotePost()
     signal like()
@@ -68,6 +69,7 @@ Item {
         visible: !limitedStats
         enabled: !replyDisabled
         onClicked: reply()
+        onPressAndHold: (mouseEvent) => replyLongPress(mouseEvent)
 
         Accessible.name: (replyDisabled ? qsTr("reply not allowed") : qsTr("reply")) + statSpeech(replyCount, "reply", "replies")
     }
