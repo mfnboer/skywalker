@@ -4,6 +4,11 @@
 
 namespace Skywalker {
 
+PostView::PostView(QObject* parent) :
+    QObject(parent)
+{
+}
+
 PostView::PostView(Post::Ptr post, QObject* parent) :
     QObject(parent),
     mPost(std::move(post)),
@@ -37,21 +42,33 @@ QString PostView::getLikeUri() const
 
 void PostView::setLikeUri(const QString& likeUri)
 {
-    if (!mLikeUri || *mLikeUri != likeUri)
+    if (!mLikeUri || *mLikeUri != mLikeUri)
     {
         mLikeUri = likeUri;
         emit likeUriChanged();
     }
 }
 
+bool PostView::isBookmarked() const
+{
+    if (mBookmarked)
+        return *mBookmarked;
+
+    return mPost ? mPost->isBookmarked() : false;
+}
+
+void PostView::setBookMarked(bool bookmarked)
+{
+    if (!mBookmarked || bookmarked != mBookmarked)
+    {
+        mBookmarked = bookmarked;
+        emit bookmarkedChanged();
+    }
+}
+
 bool PostView::isNotFound() const
 {
     return mPost ? mPost->isNotFound() : false;
-}
-
-bool PostView::isBlocked() const
-{
-    return mPost ? mPost->isBlocked() : false;
 }
 
 }

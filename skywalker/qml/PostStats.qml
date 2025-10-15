@@ -39,6 +39,7 @@ Item {
     signal unrollThread()
     signal muteThread()
     signal bookmark()
+    signal bookmarkLongPress(MouseEvent mouseEvent)
     signal share()
     signal threadgate()
     signal hideReply()
@@ -115,6 +116,7 @@ Item {
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
         visible: !limitedStats
         onClicked: bookmark()
+        onPressAndHold: (mouseEvent) => bookmarkLongPress(mouseEvent)
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
 

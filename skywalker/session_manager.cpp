@@ -12,15 +12,20 @@ static constexpr auto NOTIFICATION_REFRESH_DELAY = 5s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 61s;
 static constexpr auto NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL = 29s;
 
+SessionManager::SessionManager(QObject* parent) :
+    QObject(parent)
+{
+}
+
 SessionManager::SessionManager(Skywalker* skywalker, QObject* parent) :
     QObject(parent),
     mSkywalker(skywalker),
-    mUserSettings(*skywalker->getUserSettings())
+    mUserSettings(skywalker->getUserSettings())
 {
     Q_ASSERT(skywalker);
 
-    connect(&mUserSettings, &UserSettings::notificationsForAllAccountsChanged, this, [this]{
-        if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+    connect(mUserSettings, &UserSettings::notificationsForAllAccountsChanged, this, [this]{
+        if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
             enableNotificationsNonActiveUsers();
         else
             disableNotificatiosNonActiveUsers();
@@ -32,7 +37,7 @@ SessionManager::SessionManager(Skywalker* skywalker, QObject* parent) :
 void SessionManager::resumeAndRefreshNonActiveUsers()
 {
     const auto activeDid = mSkywalker->getUserDid();
-    const auto dids = mUserSettings.getUserDidList();
+    const auto dids = mUserSettings->getUserDidList();
 
     for (const auto& did : dids)
     {
@@ -49,7 +54,7 @@ void SessionManager::clear()
 
     emit nonActiveUsersChanged();
 
-    if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+    if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
         emit nonActiveNotificationsChanged();
 }
 
@@ -111,8 +116,8 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             }
 
             auto& bsky = session->mBsky;
-            mUserSettings.saveSession(*bsky->getSession());
-            mUserSettings.sync();
+            mUserSettings->saveSession(*bsky->getSession());
+            mUserSettings->sync();
 
             // Timers for the active user are started by Skywalker::resumeAndRefreshSession()
             if (did != mSkywalker->getUserDid())
@@ -125,7 +130,7 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             qDebug() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
 
             if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_FAILED)
-                mUserSettings.clearTokens(did); // calls sync
+                mUserSettings->clearTokens(did); // calls sync
 
             deleteSession(did);
 
@@ -162,18 +167,18 @@ void SessionManager::saveTokens()
             auto* atprotoSession = session->mBsky->getSession();
 
             if (atprotoSession)
-                mUserSettings.saveSession(*atprotoSession);
+                mUserSettings->saveSession(*atprotoSession);
         }
     }
 
-    mUserSettings.sync();
+    mUserSettings->sync();
 }
 
 void SessionManager::updateTokens()
 {
     for (const auto& [did, session] : mDidSessionMap)
     {
-        auto savedSession = mUserSettings.getSession(did);
+        auto savedSession = mUserSettings->getSession(did);
 
         if (!session->mBsky || !session->mBsky->getSession())
             continue;
@@ -199,7 +204,7 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
 
     if (did != mSkywalker->getUserDid())
     {
-        const BasicProfile profile = mUserSettings.getUser(did);
+        const BasicProfile profile = mUserSettings->getUser(did);
 
         if (!profile.getHandle().isEmpty())
         {
@@ -272,7 +277,7 @@ void SessionManager::deleteSession(const QString& did)
 
     emit nonActiveUsersChanged();
 
-    if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+    if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
         emit nonActiveNotificationsChanged();
 }
 
@@ -292,13 +297,13 @@ void SessionManager::addNonActiveUser(NonActiveUser* nonActiveUser)
 
     emit nonActiveUsersChanged();
 
-    if (mUserSettings.getNotificationsForAllAccounts(mSkywalker->getUserDid()))
+    if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
         emit nonActiveNotificationsChanged();
 }
 
 void SessionManager::addExpiredUser(const QString& did)
 {
-    BasicProfile profile = mUserSettings.getUser(did);
+    BasicProfile profile = mUserSettings->getUser(did);
 
     if (profile.getHandle().isEmpty())
     {
@@ -335,7 +340,7 @@ std::optional<ATProto::ComATProtoServer::Session> SessionManager::getSavedSessio
         return {};
     }
 
-    const auto session = mUserSettings.getSession(did);
+    const auto session = mUserSettings->getSession(did);
 
     if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
     {
@@ -361,8 +366,8 @@ void SessionManager::startRefreshTimers(const QString& did, int initialDelayCoun
             if (!session)
                 return;
 
-            mUserSettings.saveSession(*session->mBsky->getSession());
-            mUserSettings.syncLater();
+            mUserSettings->saveSession(*session->mBsky->getSession());
+            mUserSettings->syncLater();
         },
         [this, did](const QString& msg){
             qWarning() << "Session refresh failed:" << msg;
@@ -375,7 +380,7 @@ void SessionManager::startRefreshTimers(const QString& did, int initialDelayCoun
 
     const QString userDid = mSkywalker->getUserDid();
 
-    if (did == userDid || mUserSettings.getNotificationsForAllAccounts(userDid))
+    if (did == userDid || mUserSettings->getNotificationsForAllAccounts(userDid))
         startNotificationRefreshTimers(did, initialDelayCount);
 }
 
@@ -503,7 +508,7 @@ const NonActiveUser::List& SessionManager::getNonActiveNotifications() const
 
     const auto did = mSkywalker->getUserDid();
 
-    if (!mUserSettings.getNotificationsForAllAccounts(did))
+    if (!mUserSettings->getNotificationsForAllAccounts(did))
         return EMPTY_LIST;
 
     return mNonActiveUsers;
@@ -512,21 +517,6 @@ const NonActiveUser::List& SessionManager::getNonActiveNotifications() const
 ATProto::Client* SessionManager::getActiveUserBskyClient() const
 {
     return mSkywalker->getBskyClient();
-}
-
-void SessionManager::showStatusMessage(const QString& msg, QEnums::StatusLevel level)
-{
-    mSkywalker->showStatusMessage(msg, level);
-}
-
-NotificationListModel* SessionManager::getNotificationListModel(int id) const
-{
-    return mSkywalker->getNotificationListModel(id);
-}
-
-void SessionManager::removeNotificationListModel(int id)
-{
-    mSkywalker->removeNotificationListModel(id);
 }
 
 Skywalker* SessionManager::getSkywalker()
@@ -542,8 +532,8 @@ void SessionManager::pause()
     {
         if (session)
         {
-            if (did == userDid || mUserSettings.getNotificationsForAllAccounts(userDid))
-                mUserSettings.setOfflineUnread(did, session->mUnreadNotificationCount);
+            if (did == userDid || mUserSettings->getNotificationsForAllAccounts(userDid))
+                mUserSettings->setOfflineUnread(did, session->mUnreadNotificationCount);
         }
     }
 

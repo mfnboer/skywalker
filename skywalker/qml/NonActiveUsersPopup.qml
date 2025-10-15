@@ -5,7 +5,7 @@ import skywalker
 Popup {
     required property int mouseY // in parent coordinates
     required property string postUri
-    property string title
+    required property int action // QEnums::NonActiveUserAction
     property Skywalker skywalker: root.getSkywalker()
     property SessionManager sessionManager: skywalker.getSessionManager()
 
@@ -21,6 +21,7 @@ Popup {
         anchors.fill: parent
         model: sessionManager.nonActiveNotifications
         postUri: popup.postUri
+        action: popup.action
 
         onContentHeightChanged: {
             setPosition()
@@ -28,9 +29,15 @@ Popup {
 
         onUserClicked: (user) => {
             if (user.sessionExpired)
-                skywalker.showStatusMessage(qsTr(`@${user.profile.handle} not logged in`), QEnums.STATUS_LEVEL_ERROR)
-            else if (!Boolean(user.postView) || !user.postView.isGood())
-                skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: TODO ERROR`), QEnums.STATUS_LEVEL_ERROR)
+                skywalker.showStatusMessage(qsTr(`@${user.profile.handle} not logged in`), QEnums.STATUS_LEVEL_INFO)
+            else if (!Boolean(user.postView))
+                console.debug("No post view available")
+            else if (user.postView.uri !== postUri)
+                console.debug("Post not loaded:", postUri)
+            else if (user.postView.hasError())
+                skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: ${user.postView.error}`), QEnums.STATUS_LEVEL_ERROR)
+            else if (user.postView.notFound)
+                skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: post not available`), QEnums.STATUS_LEVEL_INFO)
             else
                 popup.userClicked(user)
         }
@@ -48,7 +55,7 @@ Popup {
                 anchors.verticalCenter: parent.verticalCenter
                 font.bold: true
                 elide: Text.ElideRight
-                text: popup.title
+                text: getTitle()
             }
 
             SvgButton {
@@ -62,6 +69,17 @@ Popup {
                 onClicked: popup.destroy()
             }
         }
+    }
+
+    function getTitle() {
+        switch (action) {
+        case QEnums.NON_ACTIVE_USER_LIKE:
+            return qsTr("Like with")
+        case QEnums.NON_ACTIVE_USER_BOOKMARK:
+            return qsTr("Bookmark with")
+        }
+
+        return ""
     }
 
     function setPosition() {

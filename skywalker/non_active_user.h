@@ -27,6 +27,7 @@ public:
     using Ptr = std::unique_ptr<NonActiveUser>;
     using List = QList<NonActiveUser*>;
 
+    NonActiveUser(QObject* parent = nullptr);
     NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
                   ATProto::Client* bsky, SessionManager* sessionManager, QObject* parent = nullptr);
     ~NonActiveUser();
@@ -45,6 +46,7 @@ public:
     void clearPostView();
     Q_INVOKABLE void getPost(const QString& uri);
     Q_INVOKABLE void like(const QString& viaUri = {}, const QString& viaCid = {});
+    Q_INVOKABLE void bookmark();
 
     bool isGetPostInProgress() const { return mGetPostInProgress; }
     void setPostInProgress(bool inProgress);
@@ -62,6 +64,9 @@ private:
     void doLike(const QString& viaUri, const QString& viaCid);
     void undoLike();
 
+    void addBookmark();
+    void removeBookmark();
+
     ATProto::PostMaster* postMaster();
 
     BasicProfile mProfile;
@@ -69,7 +74,7 @@ private:
     bool mSessionExpired = false;
     int mNotificationListModelId;
     ATProto::Client* mBsky = nullptr;
-    SessionManager* mSessionManager;
+    SessionManager* mSessionManager = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     PostView::Ptr mPostView;
     bool mGetPostInProgress = false;

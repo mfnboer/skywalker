@@ -422,6 +422,15 @@ public:
         TREND_STATUS_UNKNOWN = (int)ATProto::AppBskyUnspecced::TrendStatus::UNKNOWN
     };
     Q_ENUM(TrendStatus)
+
+    enum NonActiveUserAction
+    {
+        NON_ACTIVE_USER_LIKE,
+        NON_ACTIVE_USER_BOOKMARK,
+        NON_ACTIVE_USER_REPLY,
+        NON_ACTIVE_USER_REPOST
+    };
+    Q_ENUM(NonActiveUserAction)
 };
 
 }

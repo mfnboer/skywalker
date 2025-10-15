@@ -597,7 +597,7 @@ Rectangle {
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
 
                     onLikeLongPress: (mouseEvent) => {
-                        root.likeByNonAcitveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
+                        root.likeByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
                     }
 
                     onBookmark: {
@@ -605,6 +605,10 @@ Rectangle {
                             skywalker.getBookmarks().removeBookmark(postUri, postCid)
                         else
                             skywalker.getBookmarks().addBookmark(postUri, postCid)
+                    }
+
+                    onBookmarkLongPress: (mouseEvent) => {
+                        root.bookmarkByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri)
                     }
 
                     onViewThread: {

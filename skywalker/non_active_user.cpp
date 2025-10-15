@@ -9,6 +9,11 @@ namespace Skywalker {
 
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 50;
 
+NonActiveUser::NonActiveUser(QObject* parent) :
+    QObject(parent)
+{
+}
+
 NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
                              ATProto::Client* bsky, SessionManager* sessionManager, QObject* parent) :
     QObject(parent),
@@ -24,12 +29,12 @@ NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, i
 NonActiveUser::~NonActiveUser()
 {
     if (mNotificationListModelId >= 0)
-        mSessionManager->removeNotificationListModel(mNotificationListModelId);
+        mSessionManager->getSkywalker()->removeNotificationListModel(mNotificationListModelId);
 }
 
 NotificationListModel* NonActiveUser::getNotificationListModel() const
 {
-    return mSessionManager->getNotificationListModel(mNotificationListModelId);
+    return mSessionManager->getSkywalker()->getNotificationListModel(mNotificationListModelId);
 }
 
 void NonActiveUser::setUnreadNotificationCount(int unread)
@@ -51,7 +56,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
         return;
     }
 
-    auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+    auto* model = getNotificationListModel();
 
     if (!model)
     {
@@ -72,7 +77,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
             if (!presence)
                 return;
 
-            auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+            auto* model = getNotificationListModel();
 
             if (!model)
                 return;
@@ -87,7 +92,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
                     if (!presence)
                         return;
 
-                    auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+                    auto* model = getNotificationListModel();
 
                     if (!model)
                         return;
@@ -101,13 +106,13 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
             if (!presence)
                 return;
 
-            auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+            auto* model = getNotificationListModel();
 
             if (!model)
                 return;
 
             model->setGetFeedInProgress(false);
-            mSessionManager->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
 
@@ -120,7 +125,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
 
 void NonActiveUser::getNotificationsNextPage()
 {
-    auto* model = mSessionManager->getNotificationListModel(mNotificationListModelId);
+    auto* model = getNotificationListModel();
 
     if (!model)
         return;
@@ -188,6 +193,7 @@ void NonActiveUser::getPost(const QString& uri)
 
             setPostInProgress(false);
 
+            // If a post is blocked or deleted we simply do not receive the post
             if (posts.empty())
             {
                 qWarning() << "Got no posts for:" << uri << "handle:" << mProfile.getHandle();
@@ -197,7 +203,6 @@ void NonActiveUser::getPost(const QString& uri)
                 return;
             }
 
-            // TODO: check if blocked and notFound posts have uri set
             auto post = std::make_unique<Post>(posts.front());
             auto postView = std::make_unique<PostView>(std::move(post));
             qDebug() << "Post view:" << postView->getUri() << postView->isGood();
@@ -267,7 +272,7 @@ void NonActiveUser::doLike(const QString& viaUri, const QString& viaCid)
 
             qDebug() << "Like failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
             setActionInProgress(false);
-            mSessionManager->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -299,7 +304,92 @@ void NonActiveUser::undoLike()
 
             qDebug() << "Undo like failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
             setActionInProgress(false);
-            mSessionManager->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void NonActiveUser::bookmark()
+{
+    qDebug() << "Bookmark by:" << mProfile.getHandle();
+
+    if (!mPostView || !mPostView->isGood())
+    {
+        qWarning() << "No post to bookmar:" << mProfile.getHandle();
+        return;
+    }
+
+    if (!mBsky)
+        return;
+
+    if (isActionInProgress())
+    {
+        qDebug() << "Action still in progress";
+        return;
+    }
+
+    if (!mPostView->isBookmarked())
+        addBookmark();
+    else
+        removeBookmark();
+}
+
+void NonActiveUser::addBookmark()
+{
+    const auto postUri = mPostView->getUri();
+    const auto postCid = mPostView->getCid();
+
+    setActionInProgress(true);
+
+    mBsky->createBookmark(postUri, postCid,
+        [this, presence=getPresence(), postUri, postCid]{
+            qDebug() << "Bookmark added:" << postUri << "cid:" << postCid << "handle:" << mProfile.getHandle();
+
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+
+            if (mPostView)
+                mPostView->setBookMarked(true);
+        },
+        [this, presence=getPresence(), postCid](const QString& error, const QString& msg){
+            qWarning() << "Add bookmark failed:" << error << "-" << msg << "handle:" << mProfile.getHandle();
+
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void NonActiveUser::removeBookmark()
+{
+    const auto postUri = mPostView->getUri();
+    const auto postCid = mPostView->getCid();
+
+    setActionInProgress(true);
+
+    mBsky->deleteBookmark(postUri,
+        [this, presence=getPresence(), postUri, postCid]{
+            qDebug() << "Bookmark removed:" << postUri << "cid:" << postCid << "handle:" << mProfile.getHandle();
+
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+
+            if (mPostView)
+                mPostView->setBookMarked(false);
+        },
+        [this, presence=getPresence(), postCid](const QString& error, const QString& msg){
+            qWarning() << "Remove bookmark failed:" << error << "-" << msg << "handle:" << mProfile.getHandle();
+
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

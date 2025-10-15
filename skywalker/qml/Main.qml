@@ -1525,7 +1525,19 @@ ApplicationWindow {
             feedUtils.like(uri, cid)
     }
 
-    function likeByNonAcitveUser(mouseEvent, mouseView, parentView, postUri, viaUri, viaCid) {
+    function likeByNonActiveUser(mouseEvent, mouseView, parentView, postUri, viaUri, viaCid) {
+        actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+                              QEnums.NON_ACTIVE_USER_LIKE,
+                              (user) => { user.like(viaUri, viaCid) })
+    }
+
+    function bookmarkByNonActiveUser(mouseEvent, mouseView, parentView, postUri) {
+        actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+                              QEnums.NON_ACTIVE_USER_BOOKMARK,
+                              (user) => { user.bookmark() })
+    }
+
+    function actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, actionType, actionCb) {
         if (!skywalker.getSessionManager().hasNonActiveUsers()) {
             console.debug("No non-active users")
             return
@@ -1536,9 +1548,9 @@ ApplicationWindow {
         let popup = component.createObject(parentView, {
                 mouseY: mousePoint.y,
                 postUri: postUri,
-                title: qsTr("Like with")
+                action: actionType
             })
-        popup.onUserClicked.connect((user) => user.like(viaUri, viaCid))
+        popup.onUserClicked.connect((user) => actionCb(user))
         popup.open()
     }
 

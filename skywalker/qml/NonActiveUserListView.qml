@@ -6,6 +6,7 @@ import skywalker
 ListView {
     required model
     required property string postUri
+    required property int action // QEnums::NonActiveUserAction
     property int rowPadding: 2
 
     signal userClicked(NonActiveUser user)
@@ -74,14 +75,45 @@ ListView {
             }
 
             NonActiveUserActionIcon {
+                id: notFoundIcon
+                svg: SvgOutline.block
+                iconColor: guiSettings.disabledColor
+                visible: !user.sessionExpired && Boolean(user.postView) &&
+                         user.postView.uri === postUri && user.postView.notFound
+            }
+
+            NonActiveUserActionIcon {
+                id: errorIcon
+                svg: SvgOutline.error
+                iconColor: guiSettings.errorColor
+                visible: !user.sessionExpired && Boolean(user.postView) &&
+                         user.postView.uri === postUri && user.postView.hasError()
+            }
+
+            NonActiveUserActionIcon {
                 id: likeIcon
                 svg: user.postView?.likeUri ? SvgFilled.like : SvgOutline.like
                 iconColor: guiSettings.likeColor
-                visible: !user.sessionExpired && Boolean(user.postView) &&
-                         user.postView.uri === postUri && user.postView.isGood()
+                visible: action == QEnums.NON_ACTIVE_USER_LIKE && !user.sessionExpired &&
+                         Boolean(user.postView) && user.postView.uri === postUri &&
+                         user.postView.isGood()
 
                 BlinkingOpacity {
                     target: likeIcon
+                    running: user.actionInProgress
+                }
+            }
+
+            NonActiveUserActionIcon {
+                id: bookmarkIcon
+                svg: user.postView?.bookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
+                iconColor: guiSettings.buttonColor
+                visible: action == QEnums.NON_ACTIVE_USER_BOOKMARK && !user.sessionExpired &&
+                         Boolean(user.postView) && user.postView.uri === postUri &&
+                         user.postView.isGood()
+
+                BlinkingOpacity {
+                    target: bookmarkIcon
                     running: user.actionInProgress
                 }
             }
@@ -99,7 +131,8 @@ ListView {
                 Layout.rowSpan: 2
                 Layout.preferredHeight: 44
                 color: "transparent"
-                visible: !expiredIcon.visible && !likeIcon.visible && !progressIcon.visible
+                visible: !expiredIcon.visible && !notFoundIcon.visible && !errorIcon.visible &&
+                         !likeIcon.visible && !bookmarkIcon.visible && !progressIcon.visible
             }
 
             Text {

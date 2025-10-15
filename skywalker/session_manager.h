@@ -23,6 +23,7 @@ public:
     using SuccessCb = std::function<void()>;
     using ErrorCb = std::function<void(const QString& error, const QString& message)>;
 
+    SessionManager(QObject* parent = nullptr);
     explicit SessionManager(Skywalker* skywalker, QObject* parent = nullptr);
 
     void clear();
@@ -48,11 +49,7 @@ public:
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
     const NonActiveUser::List& getNonActiveNotifications() const;
 
-    // TODO: call via getSkywalker()
     ATProto::Client* getActiveUserBskyClient() const;
-    void showStatusMessage(const QString& msg, QEnums::StatusLevel level);
-    NotificationListModel* getNotificationListModel(int id) const;
-    void removeNotificationListModel(int id);
     Skywalker* getSkywalker();
 
     void pause();
@@ -95,8 +92,8 @@ private:
     void updateTokens();
 
     std::unordered_map<QString, Session::Ptr> mDidSessionMap;
-    Skywalker* mSkywalker;
-    UserSettings& mUserSettings;
+    Skywalker* mSkywalker = nullptr;
+    UserSettings* mUserSettings = nullptr;
     NonActiveUser::List mNonActiveUsers;
     std::vector<NonActiveUser::Ptr> mExpiredUsers;
 };
