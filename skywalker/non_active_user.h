@@ -16,7 +16,7 @@ class NonActiveUser : public QObject, public Presence
     Q_OBJECT
     Q_PROPERTY(BasicProfile profile READ getProfile CONSTANT FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
-    Q_PROPERTY(bool sessionExpired READ isSessionExpired CONSTANT FINAL)
+    Q_PROPERTY(bool sessionExpired READ isSessionExpired NOTIFY sessionExpiredChanged FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(PostView* postView READ getPostView NOTIFY postViewChanged FINAL)
     Q_PROPERTY(bool getPostInProgress READ isGetPostInProgress NOTIFY getPostInProgressChanged FINAL)
@@ -29,13 +29,16 @@ public:
 
     NonActiveUser(QObject* parent = nullptr);
     NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
-                  ATProto::Client* bsky, SessionManager* sessionManager, QObject* parent = nullptr);
+                  ATProto::Client::SharedPtr bsky, SessionManager* sessionManager, QObject* parent = nullptr);
     ~NonActiveUser();
 
     const BasicProfile& getProfile() const { return mProfile; }
+
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
+
     bool isSessionExpired() const { return mSessionExpired; }
+    void expireSession();
 
     NotificationListModel* getNotificationListModel() const;
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, const QString& cursor = {});
@@ -44,6 +47,7 @@ public:
     PostView* getPostView() const;
     void setPostView(PostView::Ptr postView);
     void clearPostView();
+
     Q_INVOKABLE void getPost(const QString& uri);
     Q_INVOKABLE void like(const QString& viaUri = {}, const QString& viaCid = {});
     Q_INVOKABLE void bookmark();
@@ -56,6 +60,7 @@ public:
 
 signals:
     void unreadNotificationCountChanged();
+    void sessionExpiredChanged();
     void postViewChanged();
     void getPostInProgressChanged();
     void actionInProgressChanged();
@@ -67,13 +72,15 @@ private:
     void addBookmark();
     void removeBookmark();
 
+    void removeNotificationListModel();
+
     ATProto::PostMaster* postMaster();
 
     BasicProfile mProfile;
     int mUnreadNotificationCount = 0;
     bool mSessionExpired = false;
     int mNotificationListModelId;
-    ATProto::Client* mBsky = nullptr;
+    ATProto::Client::SharedPtr mBsky;
     SessionManager* mSessionManager = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     PostView::Ptr mPostView;

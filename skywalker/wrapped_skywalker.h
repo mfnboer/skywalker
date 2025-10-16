@@ -29,6 +29,7 @@ public:
 signals:
     void skywalkerChanged();
     void nonActiveUserDidChanged();
+    void nonActiveUserSessionExpired();
 
 protected:
     ATProto::Client* bskyClient();
@@ -38,6 +39,7 @@ protected:
     // If this DID is set, then the bsky session (client) for this user
     // will be used, otherwise the active user session is used.
     QString mNonActiveUserDid;
+    ATProto::Client::SharedPtr mNonActiveUserBsky;
 };
 
 }

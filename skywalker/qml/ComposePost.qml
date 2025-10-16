@@ -1516,6 +1516,13 @@ SkyPage {
         skywalker: page.skywalker // qmllint disable missing-type
         nonActiveUserDid: page.nonActiveUserDid
 
+        // This can only happen just after the ComposePost pages has been created.
+        // See WrappedSkywalker::setNonActiveUserDid
+        onNonActiveUserSessionExpired: {
+            skywalker.showStatusMessage(qsTr("Session expired"), QEnums.STATUS_LEVEL_ERROR)
+            page.closed()
+        }
+
         onPostOk: (uri, cid) => {
             postedUris.push(uri)
 

@@ -54,6 +54,9 @@ void SessionManager::clear()
 
     emit nonActiveUsersChanged();
 
+    // All sessions are cleared, so count is now zero.
+    emit activeUserUnreadNotificationCountChanged();
+
     if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
         emit nonActiveNotificationsChanged();
 }
@@ -194,11 +197,11 @@ void SessionManager::updateTokens()
     }
 }
 
-SessionManager::Session::Ptr SessionManager::createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky)
+SessionManager::Session::Ptr SessionManager::createSession(const QString& did, ATProto::Client::SharedPtr rawBsky, ATProto::Client* bsky)
 {
     Q_ASSERT(!mSkywalker->getUserDid().isEmpty());
     auto session = std::make_unique<Session>();
-    session->mRawBsky = std::move(rawBsky);
+    session->mSharedBsky = rawBsky;
     session->mBsky = bsky;
     session->mRefreshNotificationInitialDelayTimer.setSingleShot(true);
 
@@ -210,7 +213,7 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
         {
             int modelId = mSkywalker->createNotificationListModel();
             session->mNonActiveUser = std::make_unique<NonActiveUser>(
-                profile, false, modelId, session->mBsky, this, this);
+                profile, false, modelId, session->mSharedBsky, this, this);
         }
         else
         {
@@ -253,29 +256,21 @@ void SessionManager::deleteSession(const QString& did)
     if (!mDidSessionMap.contains(did))
         return;
 
-    auto* nonActiveUser = mDidSessionMap[did]->mNonActiveUser.get();
-    auto expiredUser = nonActiveUser ? std::make_unique<NonActiveUser>(
-            nonActiveUser->getProfile(), true, -1, nullptr, this, this) : nullptr;
+    qDebug() << "Delete session:" << did;
 
+    // Do not destroy the active user, it can be in use e.g. in a list of non-active
+    // users showing in the UI.
+    auto& session = mDidSessionMap[did];
+    NonActiveUser::Ptr nonActiveUser = std::move(session->mNonActiveUser);
     mDidSessionMap.erase(did);
 
     if (!nonActiveUser)
         return;
 
-    const auto it = std::find_if(mNonActiveUsers.begin(), mNonActiveUsers.end(),
-            [did](const NonActiveUser* elem){ return elem->getProfile().getDid() == did; });
+    nonActiveUser->expireSession();
+    mExpiredUsers.push_back(std::move(nonActiveUser));
 
-    if (it != mNonActiveUsers.end())
-    {
-        *it = expiredUser.get();
-        mExpiredUsers.push_back(std::move(expiredUser));
-    }
-    else
-    {
-        qWarning() << "Cannot find non-active user:" << did;
-    }
-
-    emit nonActiveUsersChanged();
+    qDebug() << "Session expired:" << did;
 
     if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
         emit nonActiveNotificationsChanged();
@@ -519,10 +514,10 @@ ATProto::Client* SessionManager::getActiveUserBskyClient() const
     return mSkywalker->getBskyClient();
 }
 
-ATProto::Client* SessionManager::getBskyClientFor(const QString& did) const
+ATProto::Client::SharedPtr SessionManager::getBskyClientFor(const QString& did) const
 {
     auto* session = getSession(did);
-    return session ? session->mBsky : nullptr;
+    return session ? session->mSharedBsky : nullptr;
 }
 
 Skywalker* SessionManager::getSkywalker()

@@ -50,7 +50,7 @@ public:
     const NonActiveUser::List& getNonActiveNotifications() const;
 
     ATProto::Client* getActiveUserBskyClient() const;
-    ATProto::Client* getBskyClientFor(const QString& did) const;
+    ATProto::Client::SharedPtr getBskyClientFor(const QString& did) const;
     Skywalker* getSkywalker();
 
     void pause();
@@ -69,14 +69,20 @@ private:
         using Ptr = std::unique_ptr<Session>;
 
         ATProto::Client* mBsky = nullptr;
-        ATProto::Client::Ptr mRawBsky;
+
+        // The session may get deleted when refreshing fails. Other components,
+        // e.g. PostUtils in the composer may still have a reference to the client.
+        // By making this a shared reference, there will be no null ptrs. An expired
+        // client will simply fail any requests that are made. That is fine.
+        ATProto::Client::SharedPtr mSharedBsky;
+
         int mUnreadNotificationCount = 0;
         QTimer mRefreshNotificationInitialDelayTimer;
         QTimer mRefreshNotificationTimer;
         NonActiveUser::Ptr mNonActiveUser;
     };
 
-    Session::Ptr createSession(const QString& did, ATProto::Client::Ptr rawBsky, ATProto::Client* bsky);
+    Session::Ptr createSession(const QString& did, ATProto::Client::SharedPtr rawBsky, ATProto::Client* bsky);
     void insertSession(const QString& did, Session::Ptr session);
     void deleteSession(const QString& did);
     void addNonActiveUser(NonActiveUser* nonActiveUser);
@@ -96,6 +102,8 @@ private:
     Skywalker* mSkywalker = nullptr;
     UserSettings* mUserSettings = nullptr;
     NonActiveUser::List mNonActiveUsers;
+
+    // Container to keep alive expired non-active users
     std::vector<NonActiveUser::Ptr> mExpiredUsers;
 };
 

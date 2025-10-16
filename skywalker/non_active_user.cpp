@@ -10,12 +10,13 @@ namespace Skywalker {
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 50;
 
 NonActiveUser::NonActiveUser(QObject* parent) :
-    QObject(parent)
+    QObject(parent),
+    mSessionExpired(true)
 {
 }
 
 NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
-                             ATProto::Client* bsky, SessionManager* sessionManager, QObject* parent) :
+                             ATProto::Client::SharedPtr bsky, SessionManager* sessionManager, QObject* parent) :
     QObject(parent),
     mProfile(profile),
     mSessionExpired(sessionExpired),
@@ -28,8 +29,31 @@ NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, i
 
 NonActiveUser::~NonActiveUser()
 {
+    removeNotificationListModel();
+}
+
+void NonActiveUser::removeNotificationListModel()
+{
     if (mNotificationListModelId >= 0)
+    {
         mSessionManager->getSkywalker()->removeNotificationListModel(mNotificationListModelId);
+        mNotificationListModelId = -1;
+    }
+}
+
+void NonActiveUser::expireSession()
+{
+    if (mSessionExpired)
+        return;
+
+    setUnreadNotificationCount(0);
+    removeNotificationListModel();
+
+    mSessionExpired = true;
+    mPostMaster = nullptr;
+    mBsky = nullptr;
+
+    emit sessionExpiredChanged();
 }
 
 NotificationListModel* NonActiveUser::getNotificationListModel() const
@@ -85,7 +109,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
             const bool clearFirst = cursor.isEmpty();
 
             // The bsky client from the active user is passed in to get the post stats from
-            // the active user on a post
+            // the active user on a post. This client is never destroyed
             auto* activeUserBsky = mSessionManager->getActiveUserBskyClient();
             model->addNotifications(std::move(ouput), *activeUserBsky, clearFirst,
                 [this, presence]{
