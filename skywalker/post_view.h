@@ -11,6 +11,7 @@ class PostView : public QObject
     Q_OBJECT
     Q_PROPERTY(QString uri READ getUri CONSTANT FINAL)
     Q_PROPERTY(QString likeUri READ getLikeUri NOTIFY likeUriChanged FINAL)
+    Q_PROPERTY(QString repostUri READ getRepostUri NOTIFY repostUriChanged FINAL)
     Q_PROPERTY(bool bookmarked READ isBookmarked NOTIFY bookmarkedChanged FINAL)
     Q_PROPERTY(bool replyDisabled READ isReplyDisabled CONSTANT FINAL)
     Q_PROPERTY(bool notFound READ isNotFound CONSTANT FINAL)
@@ -30,6 +31,9 @@ public:
     QString getLikeUri() const;
     void setLikeUri(const QString& likeUri);
 
+    QString getRepostUri() const;
+    void setRepostUri(const QString& repostUri);
+
     bool isBookmarked() const;
     void setBookMarked(bool bookmarked);
 
@@ -43,12 +47,14 @@ public:
 
 signals:
     void likeUriChanged();
+    void repostUriChanged();
     void bookmarkedChanged();
 
 private:
     Post::Ptr mPost;
     QString mUri;
     std::optional<QString> mLikeUri;
+    std::optional<QString> mRepostUri;
     std::optional<bool> mBookmarked;
     QString mError;
 };

@@ -50,6 +50,7 @@ public:
 
     Q_INVOKABLE void getPost(const QString& uri);
     Q_INVOKABLE void like(const QString& viaUri = {}, const QString& viaCid = {});
+    Q_INVOKABLE void repost(const QString& viaUri = {}, const QString& viaCid = {});
     Q_INVOKABLE void bookmark();
 
     bool isGetPostInProgress() const { return mGetPostInProgress; }
@@ -68,6 +69,11 @@ signals:
 private:
     void doLike(const QString& viaUri, const QString& viaCid);
     void undoLike();
+
+    void doRepost(const QString& viaUri, const QString& viaCid);
+    void continueDoRepost(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid);
+    void undoRepost();
+
 
     void addBookmark();
     void removeBookmark();

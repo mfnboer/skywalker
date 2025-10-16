@@ -599,10 +599,18 @@ Rectangle {
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText)
                     }
 
-                    onQuotePost: {
-                        root.quotePost(postUri, postCid,
-                                       postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                       postIndexedDateTime, author, postEmbeddingDisabled)
+                    onRepostLongPress: (mouseEvent) => {
+                        const actionDone = root.repostByNonActiveUser(
+                                mouseEvent, postStats, postEntry.ListView.view, postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                postReasonRepostUri, postReasonRepostCid)
+
+                        if (!actionDone) {
+                            root.quotePost(postUri, postCid,
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                    postIndexedDateTime, author, postEmbeddingDisabled)
+                        }
                     }
 
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)

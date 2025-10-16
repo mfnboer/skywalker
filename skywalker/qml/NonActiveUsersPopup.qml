@@ -10,11 +10,18 @@ Popup {
     property SessionManager sessionManager: skywalker.getSessionManager()
 
     signal userClicked(NonActiveUser user)
+    signal repostClicked(NonActiveUser user)
+    signal quoteClicked(NonActiveUser user)
 
     id: popup
     x: 10
     width: parent.width - 20
     modal: true
+
+    background: Rectangle {
+        radius: 5
+        color: guiSettings.backgroundColor
+    }
 
     NonActiveUserListView {
         id: view
@@ -41,6 +48,9 @@ Popup {
             else
                 popup.userClicked(user)
         }
+
+        onRepostClicked: (user) => popup.repostClicked(user)
+        onQuoteClicked: (user) => popup.quoteClicked(user)
 
         header: Rectangle {
             width: parent.width
@@ -80,7 +90,7 @@ Popup {
         case QEnums.NON_ACTIVE_USER_REPLY:
             return qsTr("Reply with")
         case QEnums.NON_ACTIVE_USER_REPOST:
-            return qsTr("Repost with")
+            return qsTr("Repost or quote with")
         }
 
         return ""

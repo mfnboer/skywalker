@@ -332,6 +332,122 @@ void NonActiveUser::undoLike()
         });
 }
 
+void NonActiveUser::repost(const QString& viaUri, const QString& viaCid)
+{
+    qDebug() << "Repost by:" << mProfile.getHandle();
+
+    if (!mPostView || !mPostView->isGood())
+    {
+        qWarning() << "No post to repost:" << mProfile.getHandle();
+        return;
+    }
+
+    if (!postMaster())
+        return;
+
+    if (isActionInProgress())
+    {
+        qDebug() << "Action still in progress";
+        return;
+    }
+
+    if (mPostView->getRepostUri().isEmpty())
+        doRepost(viaUri, viaCid);
+    else
+        undoRepost();
+}
+
+void NonActiveUser::doRepost(const QString& viaUri, const QString& viaCid)
+{
+    const auto uri = mPostView->getUri();
+    const auto cid = mPostView->getCid();
+
+    setActionInProgress(true);
+
+    postMaster()->checkRecordExists(uri, cid,
+        [this, presence=getPresence(), uri, cid, viaUri, viaCid]{
+            if (presence)
+                continueDoRepost(uri, cid, viaUri, viaCid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Repost failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void NonActiveUser::continueDoRepost(const QString& uri, const QString& cid,const QString& viaUri, const QString& viaCid)
+{
+    if (!postMaster())
+    {
+        setActionInProgress(false);
+        return;
+    }
+
+    postMaster()->repost(uri, cid, viaUri, viaCid,
+        [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+
+            mSessionManager->getSkywalker()->makeLocalModelChange(
+                [cid, repostUri](LocalPostModelChanges* model){
+                    model->updateRepostCountDelta(cid, 1);
+                });
+
+            if (mPostView)
+                mPostView->setRepostUri(repostUri);
+
+            mSessionManager->getSkywalker()->showStatusMessage(tr("Reposted"), QEnums::STATUS_LEVEL_INFO);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Repost failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void NonActiveUser::undoRepost()
+{
+    const auto origPostCid = mPostView->getCid();
+    const auto repostUri = mPostView->getRepostUri();
+
+    setActionInProgress(true);
+
+    postMaster()->undo(repostUri,
+        [this, presence=getPresence(), origPostCid]{
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+
+            mSessionManager->getSkywalker()->makeLocalModelChange(
+                [origPostCid](LocalPostModelChanges* model){
+                    model->updateRepostCountDelta(origPostCid, -1);
+                });
+
+            if (mPostView)
+                mPostView->setRepostUri("");
+
+            mSessionManager->getSkywalker()->showStatusMessage(tr("Repost undone"), QEnums::STATUS_LEVEL_INFO);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo repost failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void NonActiveUser::bookmark()
 {
     qDebug() << "Bookmark by:" << mProfile.getHandle();

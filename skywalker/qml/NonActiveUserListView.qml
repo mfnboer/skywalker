@@ -10,8 +10,10 @@ ListView {
     property int rowPadding: 2
 
     signal userClicked(NonActiveUser user)
+    signal repostClicked(NonActiveUser user)
+    signal quoteClicked(NonActiveUser user)
 
-    id: searchList
+    id: listView
     spacing: 0
     boundsBehavior: Flickable.StopAtBounds
     clip: true
@@ -26,13 +28,16 @@ ListView {
         property alias user: userEntry.modelData
 
         id: userEntry
-        width: searchList.width
+        width: listView.width
         height: grid.height
         color: guiSettings.backgroundColor
 
         Accessible.role: Accessible.Button
         Accessible.name: user.profile.name
-        Accessible.onPressAction: userClicked(user)
+        Accessible.onPressAction: {
+            if (action !== QEnums.NON_ACTIVE_USER_REPOST)
+                userClicked(user)
+        }
 
         GridLayout {
             id: grid
@@ -57,7 +62,10 @@ ListView {
                     anchors.centerIn: parent
                     width: parent.width - 12
                     author: userEntry.user.profile
-                    onClicked: userClicked(userEntry.user)
+                    onClicked: {
+                        if (action !== QEnums.NON_ACTIVE_USER_REPOST)
+                            userClicked(userEntry.user)
+                    }
                 }
             }
 
@@ -91,39 +99,86 @@ ListView {
             }
 
             NonActiveUserActionIcon {
-                id: replyIcon
-                svg: SvgOutline.reply
-                iconColor: user.postView?.replyDisabled ? guiSettings.disabledColor : guiSettings.statsColor
-                visible: action === QEnums.NON_ACTIVE_USER_REPLY && !user.sessionExpired &&
-                         Boolean(user.postView) && user.postView.uri === postUri &&
-                         user.postView.isGood()
-            }
-
-            NonActiveUserActionIcon {
-                id: likeIcon
-                svg: user.postView?.likeUri ? SvgFilled.like : SvgOutline.like
-                iconColor: user.postView?.likeUri ? guiSettings.likeColor : guiSettings.statsColor
-                visible: action === QEnums.NON_ACTIVE_USER_LIKE && !user.sessionExpired &&
+                id: actionIcon
+                svg: actionSvg()
+                iconColor: actionIconColor()
+                visible: actionVisible() && !user.sessionExpired &&
                          Boolean(user.postView) && user.postView.uri === postUri &&
                          user.postView.isGood()
 
                 BlinkingOpacity {
-                    target: likeIcon
+                    target: actionIcon
                     running: user.actionInProgress
+                }
+
+                function actionVisible() {
+                    switch (action) {
+                    case QEnums.NON_ACTIVE_USER_LIKE:
+                    case QEnums.NON_ACTIVE_USER_BOOKMARK:
+                    case QEnums.NON_ACTIVE_USER_REPLY:
+                        return true
+                    }
+
+                    return false
+                }
+
+                function actionSvg() {
+                    switch (action) {
+                    case QEnums.NON_ACTIVE_USER_LIKE:
+                        return user.postView?.likeUri ? SvgFilled.like : SvgOutline.like
+                    case QEnums.NON_ACTIVE_USER_BOOKMARK:
+                        return user.postView?.bookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
+                    case QEnums.NON_ACTIVE_USER_REPLY:
+                        return SvgOutline.reply
+                    }
+
+                    return SvgOutline.error
+                }
+
+                function actionIconColor() {
+                    switch (action) {
+                    case QEnums.NON_ACTIVE_USER_LIKE:
+                        return user.postView?.likeUri ? guiSettings.likeColor : guiSettings.statsColor
+                    case QEnums.NON_ACTIVE_USER_BOOKMARK:
+                        return user.postView?.bookmarked ?  guiSettings.buttonColor : guiSettings.statsColor
+                    case QEnums.NON_ACTIVE_USER_REPLY:
+                        return user.postView?.replyDisabled ? guiSettings.disabledColor : guiSettings.statsColor
+                    }
+
+                    return guiSettings.errorColor
                 }
             }
 
-            NonActiveUserActionIcon {
-                id: bookmarkIcon
-                svg: user.postView?.bookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
-                iconColor: user.postView?.bookmarked ?  guiSettings.buttonColor : guiSettings.statsColor
-                visible: action === QEnums.NON_ACTIVE_USER_BOOKMARK && !user.sessionExpired &&
+            Row {
+                id: repostAction
+                Layout.rowSpan: 2
+                visible: action === QEnums.NON_ACTIVE_USER_REPOST && !user.sessionExpired &&
                          Boolean(user.postView) && user.postView.uri === postUri &&
                          user.postView.isGood()
 
-                BlinkingOpacity {
-                    target: bookmarkIcon
-                    running: user.actionInProgress
+                SvgButton {
+                    width: 44
+                    height: width
+                    svg: SvgOutline.quote
+                    accessibleName: qsTr("quote post")
+
+                    onClicked: quoteClicked(user)
+                }
+
+                SvgButton {
+                    id: repostButton
+                    width: 44
+                    height: width
+                    flat: Boolean(user.postView?.repostUri)
+                    svg: SvgOutline.repost
+                    accessibleName: user.postView?.repostUri ? qsTr("undo repost") : qsTr("repost")
+
+                    onClicked: repostClicked(user)
+
+                    BlinkingOpacity {
+                        target: repostButton
+                        running: user.actionInProgress
+                    }
                 }
             }
 
@@ -141,8 +196,7 @@ ListView {
                 Layout.preferredHeight: 44
                 color: "transparent"
                 visible: !expiredIcon.visible && !notFoundIcon.visible && !errorIcon.visible &&
-                         !likeIcon.visible && !bookmarkIcon.visible && !replyIcon.visible &&
-                         !progressIcon.visible
+                         !actionIcon.visible && !repostAction.visible && !progressIcon.visible
             }
 
             Text {
@@ -184,6 +238,7 @@ ListView {
         MouseArea {
             z: -1
             anchors.fill: parent
+            enabled: action !== QEnums.NON_ACTIVE_USER_REPOST
             onClicked: userClicked(user)
         }
 

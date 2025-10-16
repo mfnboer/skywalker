@@ -42,10 +42,27 @@ QString PostView::getLikeUri() const
 
 void PostView::setLikeUri(const QString& likeUri)
 {
-    if (!mLikeUri || *mLikeUri != mLikeUri)
+    if (!mLikeUri || *mLikeUri != likeUri)
     {
         mLikeUri = likeUri;
         emit likeUriChanged();
+    }
+}
+
+QString PostView::getRepostUri() const
+{
+    if (mRepostUri)
+        return *mRepostUri;
+
+    return mPost ? mPost->getRepostUri() : "";
+}
+
+void PostView::setRepostUri(const QString& repostUri)
+{
+    if (!mRepostUri || *mRepostUri != repostUri)
+    {
+        mRepostUri = repostUri;
+        emit repostUriChanged();
     }
 }
 

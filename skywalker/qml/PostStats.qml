@@ -33,7 +33,8 @@ Item {
     signal reply()
     signal replyLongPress(MouseEvent mouseEvent)
     signal repost()
-    signal quotePost()
+    signal repostLongPress(MouseEvent mouseEvent)
+    signal quotePost() // TODO: remove
     signal like()
     signal likeLongPress(MouseEvent mouseEvent)
     signal viewThread()
@@ -83,7 +84,7 @@ Item {
         statistic: repostCount
         visible: !limitedStats
         onClicked: repost()
-        onPressAndHold: quotePost()
+        onPressAndHold: (mouseEvent) => repostLongPress(mouseEvent)
 
         Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
     }
