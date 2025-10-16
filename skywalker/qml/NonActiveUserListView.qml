@@ -161,6 +161,7 @@ ListView {
                     height: width
                     svg: SvgOutline.quote
                     accessibleName: qsTr("quote post")
+                    enabled: !user.postView?.embeddingDisabled
 
                     onClicked: quoteClicked(user)
                 }

@@ -1563,7 +1563,7 @@ ApplicationWindow {
     }
 
     function repostByNonActiveUser(mouseEvent, mouseView, parentView, postUri, postCid,
-                                   text, dateTime, author, embeddingDisabled, viaUri, viaCid) {
+                                   text, dateTime, author, embeddingDisabled, viaUri = "", viaCid = "") {
         return actionByNonActiveUser(
                     mouseEvent, mouseView, parentView, postUri,
                     QEnums.NON_ACTIVE_USER_REPOST,

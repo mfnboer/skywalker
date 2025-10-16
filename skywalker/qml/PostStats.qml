@@ -34,7 +34,6 @@ Item {
     signal replyLongPress(MouseEvent mouseEvent)
     signal repost()
     signal repostLongPress(MouseEvent mouseEvent)
-    signal quotePost() // TODO: remove
     signal like()
     signal likeLongPress(MouseEvent mouseEvent)
     signal viewThread()

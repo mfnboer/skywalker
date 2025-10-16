@@ -88,6 +88,11 @@ bool PostView::isReplyDisabled() const
     return mPost ? mPost->isReplyDisabled() : false;
 }
 
+bool PostView::isEmbeddingDisabled() const
+{
+    return mPost ? mPost->isEmbeddingDisabled() : false;
+}
+
 bool PostView::isNotFound() const
 {
     return mPost ? mPost->isNotFound() : false;

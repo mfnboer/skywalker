@@ -14,6 +14,7 @@ class PostView : public QObject
     Q_PROPERTY(QString repostUri READ getRepostUri NOTIFY repostUriChanged FINAL)
     Q_PROPERTY(bool bookmarked READ isBookmarked NOTIFY bookmarkedChanged FINAL)
     Q_PROPERTY(bool replyDisabled READ isReplyDisabled CONSTANT FINAL)
+    Q_PROPERTY(bool embeddingDisabled READ isEmbeddingDisabled CONSTANT FINAL)
     Q_PROPERTY(bool notFound READ isNotFound CONSTANT FINAL)
     Q_PROPERTY(QString error READ getError CONSTANT FINAL)
     QML_ELEMENT
@@ -38,6 +39,7 @@ public:
     void setBookMarked(bool bookmarked);
 
     bool isReplyDisabled() const;
+    bool isEmbeddingDisabled() const;
 
     bool isNotFound() const;
     Q_INVOKABLE bool hasError() const { return !mError.isEmpty(); }

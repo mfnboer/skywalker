@@ -355,6 +355,7 @@ Rectangle {
             asynchronous: true
 
             sourceComponent: PostStats {
+                id: postStats
                 width: parent.width
                 topPadding: 10
                 replyCount: postReplyCount
@@ -387,23 +388,47 @@ Rectangle {
                                       postMentionDids)
                 }
 
+                onReplyLongPress: (mouseEvent) => {
+                    const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                    root.replyByNonActiveUser(
+                            mouseEvent, postStats, videoPage.ListView.view,
+                            postUri, postCid, postText, postIndexedDateTime,
+                            author, postReplyRootUri, postReplyRootCid, lang,
+                            postMentionDids)
+                }
+
                 onRepost: {
                     root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
                                 postIndexedDateTime, author, postEmbeddingDisabled, postPlainText)
                 }
 
-                onQuotePost: {
-                    root.quotePost(postUri, postCid, postText, postIndexedDateTime,
-                                   author, postEmbeddingDisabled)
+                onRepostLongPress: (mouseEvent) => {
+                    const actionDone = root.repostByNonActiveUser(
+                            mouseEvent, postStats, videoPage.ListView.view, postUri, postCid,
+                            postText, postIndexedDateTime, author, postEmbeddingDisabled,
+                            postReasonRepostUri, postReasonRepostCid)
+
+                    if (!actionDone) {
+                        root.quotePost(postUri, postCid,
+                                postText, postIndexedDateTime, author, postEmbeddingDisabled)
+                    }
                 }
 
                 onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
+
+                onLikeLongPress: (mouseEvent) => {
+                    root.likeByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
+                }
 
                 onBookmark: {
                     if (isBookmarked)
                         skywalker.getBookmarks().removeBookmark(postUri, postCid)
                     else
                         skywalker.getBookmarks().addBookmark(postUri, postCid)
+                }
+
+                onBookmarkLongPress: (mouseEvent) => {
+                    root.bookmarkByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri)
                 }
 
                 onShare: skywalker.sharePost(postUri)

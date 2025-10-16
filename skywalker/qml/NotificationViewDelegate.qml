@@ -301,6 +301,7 @@ Rectangle {
                     asynchronous: true
 
                     sourceComponent: PostStats {
+                        id: postStats
                         width: parent.width
                         topPadding: 10
                         replyCount: notificationPostReplyCount
@@ -335,25 +336,54 @@ Rectangle {
                                               lang, notificationPostMentionDids)
                         }
 
+                        onReplyLongPress: (mouseEvent) => {
+                            const lang = notificationPostLanguages.length > 0 ?
+                                            notificationPostLanguages[0].shortCode : ""
+
+                            root.replyByNonActiveUser(
+                                    mouseEvent, postStats, notification.ListView.view,
+                                    notificationPostUri, notificationCid, notificationPostText,
+                                    notificationPostTimestamp, notificationAuthor,
+                                    notificationPostReplyRootUri, notificationPostReplyRootCid,
+                                    lang, notificationPostMentionDids)
+                        }
+
                         onRepost: {
                             root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
                                         "", "", notificationPostText, notificationPostTimestamp,
                                         notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText)
                         }
 
-                        onQuotePost: {
-                            root.quotePost(notificationPostUri, notificationCid,
-                                           notificationPostText, notificationPostTimestamp,
-                                           notificationAuthor, notificationPostEmbeddingDisabled)
+                        onRepostLongPress: (mouseEvent) => {
+                            const actionDone = root.repostByNonActiveUser(
+                                    mouseEvent, postStats, notification.ListView.view,
+                                    notificationPostUri, notificationCid,
+                                    notificationPostText, notificationPostTimestamp,
+                                    notificationAuthor, notificationPostEmbeddingDisabled)
+
+                            if (!actionDone) {
+                                root.quotePost(notificationPostUri, notificationCid,
+                                        notificationPostText, notificationPostTimestamp,
+                                        notificationAuthor, notificationPostEmbeddingDisabled)
+                            }
                         }
 
                         onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+
+                        onLikeLongPress: (mouseEvent) => {
+                            root.likeByNonActiveUser(mouseEvent, postStats, notification.ListView.view,
+                                                     notificationPostUri)
+                        }
 
                         onBookmark: {
                             if (isBookmarked)
                                 skywalker.getBookmarks().removeBookmark(notificationPostUri, notificationCid)
                             else
                                 skywalker.getBookmarks().addBookmark(notificationPostUri, notificationCid)
+                        }
+
+                        onBookmarkLongPress: (mouseEvent) => {
+                            root.bookmarkByNonActiveUser(mouseEvent, postStats, notification.ListView.view, notificationPostUri)
                         }
 
                         onShare: skywalker.sharePost(notificationPostUri)
