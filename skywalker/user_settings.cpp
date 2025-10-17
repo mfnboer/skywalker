@@ -275,12 +275,12 @@ QString UserSettings::getAvatar(const QString& did) const
 
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
-    qDebug() << "Save session";
+    qDebug() << "Save session:" << session.mHandle;
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    qDebug() << "Session saved";
+    qDebug() << "Session saved:" << session.mHandle;
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -1150,6 +1150,20 @@ void UserSettings::setNotificationsWifiOnly(bool enable)
 bool UserSettings::getNotificationsWifiOnly() const
 {
     return mSettings.value("notificationsWifiOnly", false).toBool();
+}
+
+void UserSettings::setNotificationsForAllAccounts(const QString& did, bool enable)
+{
+    if (enable != getNotificationsForAllAccounts(did))
+    {
+        mSettings.setValue(key(did, "notificationsForAllAccounts"), enable);
+        emit notificationsForAllAccountsChanged();
+    }
+}
+
+bool UserSettings::getNotificationsForAllAccounts(const QString& did) const
+{
+    return mSettings.value(key(did, "notificationsForAllAccounts"), true).toBool();
 }
 
 bool UserSettings::getShowQuotesWithBlockedPost(const QString& did) const

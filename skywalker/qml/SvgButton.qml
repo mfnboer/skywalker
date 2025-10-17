@@ -10,7 +10,9 @@ RoundButton {
     property int imageMargin: 10
 
     id: button
-    Material.background: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
+    Material.background: enabled ?
+                (flat ? guiSettings.buttonFlatColor : guiSettings.buttonColor) :
+                guiSettings.disabledColor
     display: AbstractButton.TextOnly
     icon.name: ""
     icon.source: ""

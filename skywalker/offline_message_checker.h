@@ -58,10 +58,12 @@ private:
     };
 
     void initNetwork();
+    void reset();
     int startEventLoop();
     void exit(int exitCode);
-    void resumeSession(bool retry = false);
-    std::optional<ATProto::ComATProtoServer::Session> getSession() const;
+    int check(const QString& did);
+    void resumeSession(const QString& did, bool retry = false);
+    std::optional<ATProto::ComATProtoServer::Session> getSession(const QString& did) const;
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
     void getUserPreferences();

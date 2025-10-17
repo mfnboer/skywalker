@@ -285,6 +285,9 @@ public:
     Q_INVOKABLE void setNotificationsWifiOnly(bool enable);
     Q_INVOKABLE bool getNotificationsWifiOnly() const;
 
+    Q_INVOKABLE void setNotificationsForAllAccounts(const QString& did, bool enable);
+    Q_INVOKABLE bool getNotificationsForAllAccounts(const QString& did) const;
+
     Q_INVOKABLE bool getShowQuotesWithBlockedPost(const QString& did) const;
     Q_INVOKABLE void setShowQuotesWithBlockedPost(const QString& did, bool show);
 
@@ -365,7 +368,7 @@ public:
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
     void sync() { mSettings.sync(); }
-    void syncLater() { QTimer::singleShot(0, [this]{ sync(); }); }
+    void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }
 
 signals:
     void contentLanguageFilterChanged();
@@ -395,6 +398,7 @@ signals:
     void mutesWithExpiryChanged();
     void feedHideRepliesChanged(QString did, QString feedUri);
     void feedHideFollowingChanged(QString did, QString feedUri);
+    void notificationsForAllAccountsChanged();
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;

@@ -7,6 +7,7 @@ Rectangle {
     readonly property int margin: 10
     readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
     readonly property string threadColor: root.getSkywalker().getUserSettings().threadColor
+    property Skywalker skywalker: root.getSkywalker()
 
     required property int index
     required property basicprofile author
@@ -544,6 +545,7 @@ Rectangle {
                 visible: active
 
                 sourceComponent: PostStats {
+                    id: postStats
                     width: parent.width
                     topPadding: 10
                     replyCount: postReplyCount
@@ -579,6 +581,17 @@ Rectangle {
                                           postMentionDids)
                     }
 
+                    onReplyLongPress: (mouseEvent) => {
+                        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                        root.replyByNonActiveUser(
+                                mouseEvent, postStats, postEntry.ListView.view,
+                                postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime,
+                                author, postReplyRootUri, postReplyRootCid, lang,
+                                postMentionDids)
+                    }
+
                     onRepost: {
                         root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
@@ -586,19 +599,35 @@ Rectangle {
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText)
                     }
 
-                    onQuotePost: {
-                        root.quotePost(postUri, postCid,
-                                       postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                       postIndexedDateTime, author, postEmbeddingDisabled)
+                    onRepostLongPress: (mouseEvent) => {
+                        const actionDone = root.repostByNonActiveUser(
+                                mouseEvent, postStats, postEntry.ListView.view, postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                postReasonRepostUri, postReasonRepostCid)
+
+                        if (!actionDone) {
+                            root.quotePost(postUri, postCid,
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                    postIndexedDateTime, author, postEmbeddingDisabled)
+                        }
                     }
 
                     onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
+
+                    onLikeLongPress: (mouseEvent) => {
+                        root.likeByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
+                    }
 
                     onBookmark: {
                         if (isBookmarked)
                             skywalker.getBookmarks().removeBookmark(postUri, postCid)
                         else
                             skywalker.getBookmarks().addBookmark(postUri, postCid)
+                    }
+
+                    onBookmarkLongPress: (mouseEvent) => {
+                        root.bookmarkByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri)
                     }
 
                     onViewThread: {

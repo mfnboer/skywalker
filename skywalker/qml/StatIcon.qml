@@ -6,10 +6,9 @@ Rectangle {
     property int statistic: -1
     property SvgImage svg
     property string iconColor: guiSettings.statsColor
-    property var onClicked
 
-    signal clicked()
-    signal pressAndHold()
+    signal clicked
+    signal pressAndHold(MouseEvent event)
 
     id: control
     height: statIcon.height
@@ -43,7 +42,6 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: control.clicked()
-        onPressAndHold: control.pressAndHold()
+        onPressAndHold: (mouseEvent) => control.pressAndHold(mouseEvent)
     }
-
 }

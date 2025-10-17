@@ -25,6 +25,7 @@
 #include "post_thread_model.h"
 #include "profile_store.h"
 #include "search_post_feed_model.h"
+#include "session_manager.h"
 #include "starter_pack_list_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
@@ -108,7 +109,6 @@ public:
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
-    Q_INVOKABLE void updateNotificationsSeen();
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
@@ -125,6 +125,9 @@ public:
 
     Q_INVOKABLE void getAuthorLikes(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getAuthorLikesNextPage(int id, int maxPages = 20, int minEntries = 10);
+    int createNotificationListModel();
+    NotificationListModel* getNotificationListModel(int id) const;
+    void removeNotificationListModel(int id);
     Q_INVOKABLE int createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter = QEnums::AUTHOR_FEED_FILTER_POSTS);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
@@ -194,6 +197,7 @@ public:
 
     const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
+    Q_INVOKABLE SessionManager* getSessionManager() { return &mSessionManager; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
@@ -318,7 +322,6 @@ private:
     void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
-    void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
@@ -359,6 +362,7 @@ private:
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     UserSettings mUserSettings;
+    SessionManager mSessionManager;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;
@@ -374,7 +378,6 @@ private:
     bool mGetPostThreadInProgress = false;
     bool mSignOutInProgress = false;
 
-    QTimer mRefreshNotificationTimer;
     QTimer mTimelineUpdateTimer;
     QDateTime mTimelineUpdatePaused;
 
@@ -388,6 +391,7 @@ private:
     ItemStore<StarterPackListModel::Ptr> mStarterPackListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
+    ItemStore<NotificationListModel::Ptr> mNotificationListModels;
     NotificationListModel mNotificationListModel; // All notifications
     NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;

@@ -872,7 +872,7 @@ ApplicationWindow {
                 else {
                     const userSettings = skywalker.getUserSettings()
                     const host = userSettings.getHost(profile.did)
-                    loginUser(profile.handle, profile.did)
+                    loginUser(host, profile.handle, profile.did)
                 }
             }
 
@@ -1285,6 +1285,7 @@ ApplicationWindow {
     }
 
     function loginUser(host, handle, did, error="", msg="", password="") {
+        console.debug("login, host:", host, "handle:", handle, "did:", did)
         let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
                 host: host,
@@ -1417,19 +1418,23 @@ ApplicationWindow {
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
+                          nonActiveUserDid = "")
     {
         postUtils.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, imageSource))
+                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,initialText, imageSource,
+                                 nonActiveUserDid))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
+                          nonActiveUserDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                nonActiveUserDid: nonActiveUserDid,
                 initialText: initialText,
                 initialImage: imageSource,
                 replyToPostUri: replyToUri,
@@ -1476,10 +1481,13 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor, initialText = "") {
+    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor,
+                            initialText = "", nonActiveUserDid = "")
+    {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 skywalker: skywalker,
+                nonActiveUserDid: nonActiveUserDid,
                 initialText: initialText,
                 openedAsQuotePost: true,
                 quoteUri: quoteUri,
@@ -1501,13 +1509,13 @@ ApplicationWindow {
         repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText)
     }
 
-    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled) {
+    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, nonActiveUserDid = "") {
         if (embeddingDisabled) {
             skywalker.showStatusMessage(qsTr("Quoting not allowed"), QEnums.STATUS_LEVEL_INFO)
             return
         }
 
-        postUtils.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author))
+        postUtils.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", nonActiveUserDid))
     }
 
     function like(likeUri, uri, cid, viaUri = "", viaCid = "") {
@@ -1522,6 +1530,86 @@ ApplicationWindow {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function likeByNonActiveUser(mouseEvent, mouseView, parentView, postUri, viaUri, viaCid) {
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+                              QEnums.NON_ACTIVE_USER_LIKE,
+                              (user) => { user.like(viaUri, viaCid) })
+    }
+
+    function bookmarkByNonActiveUser(mouseEvent, mouseView, parentView, postUri) {
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+                              QEnums.NON_ACTIVE_USER_BOOKMARK,
+                              (user) => { user.bookmark() })
+    }
+
+    function replyByNonActiveUser(mouseEvent, mouseView, parentView,
+                                  replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids) {
+        return actionByNonActiveUser(
+                    mouseEvent, mouseView, parentView, replyToUri,
+                    QEnums.NON_ACTIVE_USER_REPLY,
+                    (user) => {
+                        if (user.postView.replyDisabled) {
+                            console.warn("Reply disabled:", replyToUri)
+                            return
+                        }
+
+                        composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                     replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
+                                     "", "", user.profile.did)
+                    })
+    }
+
+    function repostByNonActiveUser(mouseEvent, mouseView, parentView, postUri, postCid,
+                                   text, dateTime, author, embeddingDisabled, viaUri = "", viaCid = "") {
+        return actionByNonActiveUser(
+                    mouseEvent, mouseView, parentView, postUri,
+                    QEnums.NON_ACTIVE_USER_REPOST,
+                    (user) => { // fist action: repost
+                        user.repost(viaUri, viaCid)
+                    },
+                    (user) => { // second action: quote post
+                        if (embeddingDisabled) {
+                            console.warn("Embedding disabled:", postUri)
+                            return
+                        }
+
+                        quotePost(postUri, postCid, text, dateTime, author, embeddingDisabled,
+                                  user.profile.did)
+                    })
+    }
+
+    function actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, actionType, actionCb, secondActionCb) {
+        if (!skywalker.getSessionManager().hasNonActiveUsers()) {
+            console.debug("No non-active users")
+            return false
+        }
+
+        const mousePoint = mouseView.mapToItem(parentView, 0, mouseEvent.y)
+        let component = guiSettings.createComponent("NonActiveUsersPopup.qml")
+        let popup = component.createObject(parentView, {
+                mouseY: mousePoint.y,
+                postUri: postUri,
+                action: actionType
+            })
+        popup.onUserClicked.connect((user) => {
+                if (actionType === QEnums.NON_ACTIVE_USER_REPLY)
+                    popup.destroy()
+
+                actionCb(user)
+            })
+        popup.onRepostClicked.connect((user) => {
+                actionCb(user)
+            })
+        popup.onQuoteClicked.connect((user) => {
+                popup.destroy()
+                secondActionCb(user)
+            })
+        popup.open()
+
+        return true
     }
 
     function showMoreLikeThis(feedDid, postUri, feedContext) {
@@ -1784,11 +1872,15 @@ ApplicationWindow {
 
     function viewNotifications() {
         rootContent.currentIndex = rootContent.notificationIndex
+        const unread = skywalker.getSessionManager().activeUserUnreadNotificationCount
 
-        if (skywalker.unreadNotificationCount > 0) {
-            const loadCount = Math.min(100, Math.max(10, skywalker.unreadNotificationCount))
+        if (unread > 0) {
+            const loadCount = Math.min(100, Math.max(10, unread))
             skywalker.getNotifications(loadCount, true, false, true)
             skywalker.getNotifications(loadCount, false, true, true)
+
+            let view = getNotificationView()
+            view.showOwnNotificationsTab()
         }
         else {
             if (skywalker.notificationListModel.rowCount() === 0)
@@ -1796,6 +1888,9 @@ ApplicationWindow {
 
             if (skywalker.mentionListModel.rowCount() === 0)
                 skywalker.getNotifications(10, false, true)
+
+            let view = getNotificationView()
+            view.showFirstTabWithUnreadNotifications()
         }
     }
 

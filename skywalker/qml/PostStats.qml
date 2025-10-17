@@ -31,13 +31,16 @@ Item {
     property int topPadding: 0
 
     signal reply()
+    signal replyLongPress(MouseEvent mouseEvent)
     signal repost()
-    signal quotePost()
+    signal repostLongPress(MouseEvent mouseEvent)
     signal like()
+    signal likeLongPress(MouseEvent mouseEvent)
     signal viewThread()
     signal unrollThread()
     signal muteThread()
     signal bookmark()
+    signal bookmarkLongPress(MouseEvent mouseEvent)
     signal share()
     signal threadgate()
     signal hideReply()
@@ -66,6 +69,7 @@ Item {
         visible: !limitedStats
         enabled: !replyDisabled
         onClicked: reply()
+        onPressAndHold: (mouseEvent) => replyLongPress(mouseEvent)
 
         Accessible.name: (replyDisabled ? qsTr("reply not allowed") : qsTr("reply")) + statSpeech(replyCount, "reply", "replies")
     }
@@ -79,7 +83,7 @@ Item {
         statistic: repostCount
         visible: !limitedStats
         onClicked: repost()
-        onPressAndHold: quotePost()
+        onPressAndHold: (mouseEvent) => repostLongPress(mouseEvent)
 
         Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
     }
@@ -92,6 +96,7 @@ Item {
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
         onClicked: like()
+        onPressAndHold: (mouseEvent) => likeLongPress(mouseEvent)
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
 
@@ -113,6 +118,7 @@ Item {
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
         visible: !limitedStats
         onClicked: bookmark()
+        onPressAndHold: (mouseEvent) => bookmarkLongPress(mouseEvent)
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
 
