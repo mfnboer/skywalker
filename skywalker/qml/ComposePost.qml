@@ -1123,7 +1123,7 @@ SkyPage {
         font.italic: true
         wrapMode: Text.Wrap
         text: qsTr("In the document editor you can write a long text. When you are done, you switch back to the normal post editor. Your long text will be converted to a thread of posts. From the post editor you can send the full thread.")
-        visible: largeEditor && !hasFullContent()
+        visible: largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
     }
 
     footer: Rectangle {

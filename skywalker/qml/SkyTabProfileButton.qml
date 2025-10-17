@@ -14,7 +14,7 @@ AccessibleTabButton {
     contentItem: Row {
         id: tabRow
         height: parent.height
-        spacing: 5
+        spacing: 0
 
         Avatar {
             id: avatar
@@ -36,8 +36,6 @@ AccessibleTabButton {
 
         BadgeCounter {
             id: badge
-            color: guiSettings.backgroundColor
-            counterColor: tabText.color
             counter: button.counter
         }
     }
