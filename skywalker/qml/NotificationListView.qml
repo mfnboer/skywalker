@@ -25,7 +25,14 @@ SkyPage {
         skywalker: page.skywalker
         activePage: QEnums.UI_PAGE_NOTIFICATIONS
         onHomeClicked: root.viewTimeline()
-        onNotificationsClicked: positionViewAtBeginning()
+        onNotificationsClicked: {
+            if (sessionManager.activeUserUnreadNotificationCount > 0)
+                showOwnNotificationsTab()
+            else
+                showFirstTabWithUnreadNotifications()
+
+            positionViewAtBeginning()
+        }
         onSearchClicked: root.viewSearchView()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
@@ -320,5 +327,13 @@ SkyPage {
 
             ++index
         }
+    }
+
+    function reset() {
+        if (tabBar.currentIndex > 1)
+            tabBar.setCurrentIndex(0)
+
+        for (const nonActiveUser of sessionManager.nonActiveNotifications)
+            nonActiveUser.notificationListModel.clear()
     }
 }

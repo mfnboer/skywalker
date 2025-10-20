@@ -116,7 +116,7 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void clear();
+    Q_INVOKABLE void clear();
     bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
                           ATProto::Client::SharedPtr bsky, bool clearFirst = false,
                           const std::function<void()>& doneCb = nullptr);

@@ -671,6 +671,8 @@ ApplicationWindow {
             if (prevIndex === notificationIndex) {
                 skywalker.notificationListModel.updateRead()
                 skywalker.mentionListModel.updateRead()
+                getNotificationView().reset()
+                unwindStack(notificationStack)
             }
 
             prevIndex = currentIndex
