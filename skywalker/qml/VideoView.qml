@@ -641,7 +641,6 @@ Column {
 
     VideoUtils {
         id: videoUtils
-        skywalker: root.getSkywalker() // qmllint disable missing-type
 
         onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
             console.debug("Set MP4 source:", outputFileName)

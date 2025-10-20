@@ -5,8 +5,9 @@ import QtQuick.Layouts
 import skywalker
 
 Dialog {
+    property string userDid
     required property basicprofile author
-    property var skywalker: root.getSkywalker()
+    property var skywalker: root.getSkywalker(userDid)
 
     id: page
     width: parent.width - 40
@@ -80,6 +81,7 @@ Dialog {
                         x: 10
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 13
+                        userDid: page.userDid
                         author: issuer
                         onClicked: {
                             skywalker.getDetailedProfile(modelData.issuer)
@@ -94,6 +96,7 @@ Dialog {
 
                     AuthorNameAndStatus {
                         width: parent.width
+                        userDid: page.userDid
                         author: issuer
                     }
 

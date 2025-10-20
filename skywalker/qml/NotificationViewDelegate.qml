@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
+    required property basicprofile owner
+    property Skywalker skywalker: root.getSkywalker(owner.did)
     property int margin: 10
     required property int index
     required property basicprofile notificationAuthor
@@ -127,6 +129,7 @@ Rectangle {
                 x: 8
                 y: 10
                 width: parent.width - 13
+                userDid: owner.did
                 author: notificationAuthor
                 visible: showAvatarAsIcon()
 
@@ -244,12 +247,14 @@ Rectangle {
                 PostHeader {
                     id: postHeader
                     width: parent.width
+                    userDid: owner.did
                     author: notificationPostAuthor
                     postIndexedSecondsAgo: notificationSecondsAgo
                     visible: showAvatarAsIcon()
                 }
                 PostHeaderWithAvatar {
                     width: parent.width
+                    userDid: owner.did
                     author: notificationPostAuthor
                     postIndexedSecondsAgo: notificationSecondsAgo
                     visible: !showAvatarAsIcon()
@@ -272,6 +277,7 @@ Rectangle {
                 PostBody {
                     id: postBody
                     width: parent.width
+                    userDid: owner.did
                     postAuthor: notificationAuthor
                     postText: notificationPostBlocked ? qsTr("🚫 Blocked") : notificationPostText
                     postPlainText: notificationPostBlocked ? "" : notificationPostPlainText
@@ -304,6 +310,7 @@ Rectangle {
                         id: postStats
                         width: parent.width
                         topPadding: 10
+                        skywalker: notification.skywalker
                         replyCount: notificationPostReplyCount
                         repostCount: notificationPostRepostCount + notificationPostQuoteCount
                         likeCount: notificationPostLikeCount
@@ -326,17 +333,23 @@ Rectangle {
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
 
-                        onReply: {
+                        function replyToNotification(postByDid = "") {
                             const lang = notificationPostLanguages.length > 0 ?
                                            notificationPostLanguages[0].shortCode : ""
 
                             root.composeReply(notificationPostUri, notificationCid, notificationPostText,
                                               notificationPostTimestamp, notificationAuthor,
                                               notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                              lang, notificationPostMentionDids)
+                                              lang, notificationPostMentionDids, "", "",
+                                              "", postByDid)
                         }
 
+                        onReply: replyToNotification(notification.owner.did)
+
                         onReplyLongPress: (mouseEvent) => {
+                            if (!root.isActiveUser(owner.did))
+                                return
+
                             const lang = notificationPostLanguages.length > 0 ?
                                             notificationPostLanguages[0].shortCode : ""
 
@@ -348,29 +361,46 @@ Rectangle {
                                     lang, notificationPostMentionDids)
                         }
 
-                        onRepost: {
+                        function repostNotification(nonActiveUserDid = "") {
                             root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
                                         "", "", notificationPostText, notificationPostTimestamp,
-                                        notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText)
+                                        notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText,
+                                        nonActiveUserDid)
+                        }
+
+                        onRepost: repostNotification(notification.owner.did)
+
+                        function quoteNotification(nonActiveUserDid = "") {
+                            root.quotePost(notificationPostUri, notificationCid,
+                                    notificationPostText, notificationPostTimestamp,
+                                    notificationAuthor, notificationPostEmbeddingDisabled,
+                                    nonActiveUserDid)
                         }
 
                         onRepostLongPress: (mouseEvent) => {
+                            if (!root.isActiveUser(owner.did)) {
+                                quoteNotification(notification.owner.did)
+                                return
+                            }
+
                             const actionDone = root.repostByNonActiveUser(
                                     mouseEvent, postStats, notification.ListView.view,
                                     notificationPostUri, notificationCid,
                                     notificationPostText, notificationPostTimestamp,
                                     notificationAuthor, notificationPostEmbeddingDisabled)
 
-                            if (!actionDone) {
-                                root.quotePost(notificationPostUri, notificationCid,
-                                        notificationPostText, notificationPostTimestamp,
-                                        notificationAuthor, notificationPostEmbeddingDisabled)
-                            }
+                            if (!actionDone)
+                                quoteNotification()
                         }
 
-                        onLike: root.like(notificationPostLikeUri, notificationPostUri, notificationCid)
+                        onLike: {
+                            root.like(notificationPostLikeUri, notificationPostUri, notificationCid, "", "", notification.owner.did)
+                        }
 
                         onLikeLongPress: (mouseEvent) => {
+                            if (!root.isActiveUser(owner.did))
+                                return
+
                             root.likeByNonActiveUser(mouseEvent, postStats, notification.ListView.view,
                                                      notificationPostUri)
                         }
@@ -383,20 +413,23 @@ Rectangle {
                         }
 
                         onBookmarkLongPress: (mouseEvent) => {
+                            if (!root.isActiveUser(owner.did))
+                                return
+
                             root.bookmarkByNonActiveUser(mouseEvent, postStats, notification.ListView.view, notificationPostUri)
                         }
 
                         onShare: skywalker.sharePost(notificationPostUri)
-                        onMuteThread: root.muteThread(notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostThreadMuted)
-                        onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
-                        onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies)
+                        onMuteThread: root.muteThread(notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostThreadMuted, owner.did)
+                        onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies, owner.did)
+                        onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies, owner.did)
                         onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
-                        onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor)
+                        onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor, owner.did)
                         onTranslatePost: root.translateText(notificationPostPlainText)
-                        onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach)
-                        onPin: root.pinPost(notificationPostUri, notificationCid)
-                        onUnpin: root.unpinPost(notificationCid)
-                        onBlockAuthor: root.blockAuthor(notificationPostAuthor)
+                        onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach, owner.did)
+                        onPin: root.pinPost(notificationPostUri, notificationCid, owner.did)
+                        onUnpin: root.unpinPost(notificationCid, owner.did)
+                        onBlockAuthor: root.blockAuthor(notificationPostAuthor, owner.did)
                         onShowEmojiNames: root.showEmojiNamesList(notificationPostPlainText)
                     }
                 }
@@ -429,6 +462,7 @@ Rectangle {
                     Avatar {
                         id: authorAvatar
                         width: 34
+                        userDid: owner.did
                         author: notificationAuthor
 
                         onClicked: skywalker.getDetailedProfile(notificationAuthor.did)
@@ -484,6 +518,7 @@ Rectangle {
 
                 PostHeaderWithAvatar {
                     width: parent.width
+                    userDid: owner.did
                     author: notificationReasonPostAuthor
                     postIndexedSecondsAgo: -1
                     visible: [QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST,
@@ -501,6 +536,7 @@ Rectangle {
                     id: reasonPostBody
                     topPadding: 5
                     width: parent.width
+                    userDid: owner.did
                     postAuthor: notificationReasonPostAuthor
                     postText: {
                         if (notificationReasonPostLocallyDeleted)
@@ -647,7 +683,7 @@ Rectangle {
             break
         }
 
-        root.viewSimpleAuthorList(title, notificationAllAuthors)
+        root.viewSimpleAuthorList(title, notificationAllAuthors, owner.did)
     }
 
     function showAvatarAsIcon() {

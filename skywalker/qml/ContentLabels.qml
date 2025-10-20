@@ -3,10 +3,11 @@ import QtQuick.Controls
 import skywalker
 
 ScrollView {
-    property var skywalker: root.getSkywalker()
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
-    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentLabels)
+    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentLabels, userDid)
     property int parentWidth: parent.width
 
     id: labelView
@@ -78,7 +79,7 @@ ScrollView {
 
                 ProfileUtils {
                     id: profileUtils
-                    skywalker: root.getSkywalker() // qmllint disable missing-type
+                    skywalker: labelView.skywalker
 
                     onBasicProfileOk: (profile) => labeler = profile // qmllint disable signal-handler-parameters
                 }
@@ -100,6 +101,7 @@ ScrollView {
     function appeal(contentLabel, contentGroup, labelerHandle) {
         let component = guiSettings.createComponent("ReportAppeal.qml")
         let page = component.createObject(root.currentStackItem(), {
+            userDid: labelView.userDid,
             label: contentLabel,
             contentGroup: contentGroup,
             labelerHandle: labelerHandle
@@ -110,8 +112,11 @@ ScrollView {
 
     function showInfo(contentLabel) {
         let component = guiSettings.createComponent("ContentLabelInfo.qml")
-        let infoPage = component.createObject(root.currentStackItem(),
-                { contentAuthorDid: contentAuthorDid, label: contentLabel })
+        let infoPage = component.createObject(root.currentStackItem(), {
+                userDid: labelView.userDid,
+                contentAuthorDid: contentAuthorDid,
+                label: contentLabel
+        })
         infoPage.onAccepted.connect(() => infoPage.destroy())
         infoPage.onRejected.connect(() => infoPage.destroy())
         infoPage.onAppeal.connect((contentGroup, labelerHandle) => {

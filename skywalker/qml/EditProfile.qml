@@ -4,8 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
     required property string authorDid
+    property Skywalker skywalker: root.getSkywalker(authorDid)
     required property string authorName
     required property string authorPronouns
     required property string authorDescription

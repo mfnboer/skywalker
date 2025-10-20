@@ -5,7 +5,7 @@ import skywalker
 Rectangle {
     required property reactionview reaction
     required property convoview convo
-    property basicprofile author: guiSettings.isUserDid(reaction.senderDid) ? skywalker.user : convo.getMember(reaction.senderDid).basicProfile
+    property basicprofile author: root.isActiveUser(reaction.senderDid) ? skywalker.user : convo.getMember(reaction.senderDid).basicProfile
     property var skywalker: root.getSkywalker()
     property int rowPadding: 3
 
@@ -99,7 +99,7 @@ Rectangle {
         }
 
         Item {
-            visible: guiSettings.isUserDid(reaction.senderDid)
+            visible: root.isActiveUser(reaction.senderDid)
         }
 
         AccessibleText {
@@ -109,13 +109,13 @@ Rectangle {
             color: guiSettings.linkColor
             font.pointSize: guiSettings.scaledFont(7/8)
             text: qsTr("tap to delete")
-            visible: guiSettings.isUserDid(reaction.senderDid)
+            visible: root.isActiveUser(reaction.senderDid)
         }
     }
     MouseArea {
         z: -1
         anchors.fill: parent
-        enabled: guiSettings.isUserDid(reaction.senderDid)
+        enabled: root.isActiveUser(reaction.senderDid)
         onClicked: reactionRect.clicked()
     }
 

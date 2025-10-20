@@ -575,6 +575,12 @@ qt_add_qml_module(libskywalker
         SOURCES post_view.cpp
         QML_FILES qml/NonActiveUserListView.qml
         QML_FILES qml/NonActiveUserActionIcon.qml
+        QML_FILES qml/MainPostUtils.qml
+        QML_FILES qml/CurrentUserAvatar.qml
+        QML_FILES qml/MainProfileUtils.qml
+        QML_FILES qml/MainGraphUtils.qml
+        QML_FILES qml/MainFeedUtils.qml
+        QML_FILES qml/MainLinkUtils.qml
 )
 
 if (NOT ANDROID)

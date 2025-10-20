@@ -4,8 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
+    property string userDid
     required property string title
-    required property var skywalker
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     property string description
     property bool showFollow: true
@@ -31,6 +32,7 @@ SkyListView {
 
         SimpleDescriptionHeader {
             id: portraitHeader
+            userDid: authorListView.userDid
             title: sideBarTitle
             description: sideBarDescription
             visible: authorListView.title && !root.showSideBar
@@ -50,6 +52,7 @@ SkyListView {
         required property int index
 
         width: authorListView.width
+        userDid: authorListView.userDid
         showFollow: authorListView.showFollow
         showActivitySubscription: authorListView.showActivitySubscription
         allowDeleteItem: authorListView.allowDeleteItem
@@ -86,8 +89,8 @@ SkyListView {
         id: graphUtils
         skywalker: authorListView.skywalker
 
-        onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
-        onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
         onRemoveListUserFailed: (error) => {
             statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
             refresh()

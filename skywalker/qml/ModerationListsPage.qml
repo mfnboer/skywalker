@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property Skywalker skywalker: root.getSkywalker()
     required property int modelId
     readonly property string sideBarTitle: qsTr("Moderation lists")
     readonly property SvgImage sideBarSvg: SvgOutline.list
@@ -54,7 +54,6 @@ SkyPage {
 
         ListListView {
             id: yourLists
-            skywalker: page.skywalker
             modelId: page.modelId
             ownLists: true
             description: qsTr("Public, shareable lists of users to mute or block in bulk.")
@@ -62,7 +61,6 @@ SkyPage {
 
         ListListView {
             id: blockedLists
-            skywalker: page.skywalker
             modelId: skywalker.createListListModel(QEnums.LIST_TYPE_BLOCKS, QEnums.LIST_PURPOSE_MOD, "")
             ownLists: false
             description: qsTr("Lists blocked by you.")
@@ -70,7 +68,6 @@ SkyPage {
 
         ListListView {
             id: mutedLists
-            skywalker: page.skywalker
             modelId: skywalker.createListListModel(QEnums.LIST_TYPE_MUTES, QEnums.LIST_PURPOSE_MOD, "")
             ownLists: false
             description: qsTr("Lists muted by you.")

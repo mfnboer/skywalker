@@ -5,6 +5,7 @@ import skywalker
 
 Rectangle {
     readonly property int margin: 10
+    property string userDid
     required property starterpackviewbasic starterPack
     property int maxTextLines: 25
 
@@ -62,6 +63,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.leftMargin: margin
             anchors.right: undefined
+            userDid: view.userDid
             contentLabels: starterPack.labels
             contentAuthorDid: starterPack.creator.did
         }
@@ -93,7 +95,7 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas on top
         anchors.fill: parent
-        onClicked: skywalker.getStarterPackView(starterPack.uri)
+        onClicked: root.getSkywalker(userDid).getStarterPackView(starterPack.uri)
     }
 
 }

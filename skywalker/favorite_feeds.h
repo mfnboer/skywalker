@@ -30,7 +30,9 @@ public:
     ~FavoriteFeeds();
 
     void clear();
-    void init(const SearchFeed::List& searchFeeds, const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
+    void init(const SearchFeed::List& searchFeeds,
+              const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref,
+              const ATProto::UserPreferences::SavedFeedsPrefV2& savedFeedsPrefV2);
 
     // Can also be called for list uri's
     Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.contains(uri); }
@@ -87,6 +89,9 @@ signals:
     void userOrderedPinnedFeedsChanged();
 
 private:
+    void addToSavedFeedsPrefsV2(const QString& uri, ATProto::AppBskyActor::SavedFeedType type);
+    void pinToSavedFeedsPrefsV2(const QString& uri, bool pinned);
+    void removeFromSavedFeedsPrefsV2(const QString& uri);
     void addFeeds(QList<GeneratorView>& feeds, ATProto::AppBskyFeed::GeneratorView::List&& generators);
     void addFeeds(QList<FavoriteFeedView>& feeds, ATProto::AppBskyFeed::GeneratorView::List&& generators);
     void addToUserOrderedPinnedFeeds(const FavoriteFeedView& favorite);
@@ -110,11 +115,13 @@ private:
     void updatePinnedListViews(std::vector<QString> listUris);
     void updateSavedFeedsModel();
     void updateSavedListsModel();
-    std::vector<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
+    std::unordered_set<QString> filterUris(const std::vector<QString> uris, char const* collection) const;
+    void addFilterUrisV2(std::unordered_set<QString>& filteredUris, ATProto::AppBskyActor::SavedFeedType type, std::optional<bool> pinned = {}) const;
     void saveSearchFeedsTo(UserSettings& settings) const;
     void saveUserOrderedPinnedFeeds() const;
     void initUserOrderedPinnedFeeds();
     void set(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref);
+    void set(const ATProto::UserPreferences::SavedFeedsPrefV2& savedFeedsPrefV2);
     void set(const SearchFeed::List& searchFeeds);
     void cleanupSettings();
 
@@ -125,6 +132,7 @@ private:
     void removeNonPinnedSearches(const Container& searchQueries, const std::function<void(const QString& searchQuery)>& removeFun);
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
+    ATProto::UserPreferences::SavedFeedsPrefV2 mSavedFeedsPrefV2;
     std::unordered_set<QString> mSavedUris;
     std::unordered_set<QString> mPinnedUris;
     std::unordered_set<QString> mPinnedSearches;

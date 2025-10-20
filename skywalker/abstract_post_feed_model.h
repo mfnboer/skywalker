@@ -33,7 +33,8 @@ public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
     enum class Role {
-        Author = Qt::UserRole + 1,
+        UserDid = Qt::UserRole + 1,
+        Author,
         PostUri,
         PostCid,
         PostText, // Formatted

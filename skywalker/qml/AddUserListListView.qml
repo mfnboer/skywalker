@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     required property detailedprofile author
     readonly property string sideBarTitle: qsTr("Update lists")
@@ -28,6 +29,7 @@ ListView {
 
         SimpleDescriptionHeader {
             id: portraitHeader
+            userDid: view.userDid
             title: sideBarTitle
             description: sideBarDescription
             visible: !root.showSideBar

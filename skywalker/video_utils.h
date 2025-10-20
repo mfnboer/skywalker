@@ -3,13 +3,12 @@
 #pragma once
 #include "video_cache.h"
 #include "signal_object.h"
-#include "wrapped_skywalker.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
 
-class VideoUtils : public WrappedSkywalker
+class VideoUtils : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool transcoding READ isTranscoding NOTIFY transcodingChanged FINAL)

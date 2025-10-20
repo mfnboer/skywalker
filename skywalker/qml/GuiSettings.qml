@@ -333,23 +333,26 @@ Item {
         return SvgOutline.feed
     }
 
-    function contentVisible(author)
+    function contentVisible(author, userDid = "")
     {
         if (author.viewer.blockedBy)
             return false
 
-        let visibility = skywalker.getContentVisibility(author.labels)
+        const sw = getSkywalker(userDid)
+        let visibility = sw.getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function feedContentVisible(feed)
+    function feedContentVisible(feed, userDid = "")
     {
-        let visibility = skywalker.getContentVisibility(feed.labels)
+        const sw = getSkywalker(userDid)
+        let visibility = sw.getContentVisibility(feed.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function filterContentLabelsToShow(contentLabels) {
-        let contentFilter = skywalker.getContentFilter()
+    function filterContentLabelsToShow(contentLabels, userDid = "") {
+        const sw = getSkywalker(userDid)
+        let contentFilter = sw.getContentFilter()
         let labels = []
 
         for (let i = 0; i < contentLabels.length; ++i) {
@@ -390,14 +393,6 @@ Item {
         default:
             return SvgOutline.chat
         }
-    }
-
-    function isUserDid(did) {
-        return skywalker.getUserDid() === did
-    }
-
-    function isUser(author) {
-        return isUserDid(author.did)
     }
 
     function threadStartColor(color) {

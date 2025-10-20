@@ -211,9 +211,8 @@ SessionManager::Session::Ptr SessionManager::createSession(const QString& did, A
 
         if (!profile.getHandle().isEmpty())
         {
-            int modelId = mSkywalker->createNotificationListModel();
             session->mNonActiveUser = std::make_unique<NonActiveUser>(
-                profile, false, modelId, session->mSharedBsky, this, this);
+                profile, false, session->mSharedBsky, this, this);
         }
         else
         {
@@ -306,7 +305,7 @@ void SessionManager::addExpiredUser(const QString& did)
         return;
     }
 
-    auto expiredUser = std::make_unique<NonActiveUser>(profile, true, -1, nullptr, this, this);
+    auto expiredUser = std::make_unique<NonActiveUser>(profile, true, nullptr, this, this);
     mExpiredUsers.push_back(std::move(expiredUser));
     addNonActiveUser(mExpiredUsers.back().get());
 }
@@ -507,6 +506,12 @@ const NonActiveUser::List& SessionManager::getNonActiveNotifications() const
         return EMPTY_LIST;
 
     return mNonActiveUsers;
+}
+
+NonActiveUser* SessionManager::getNonActiveUserUnexpired(const QString& did) const
+{
+    auto* session = getSession(did);
+    return session ? session->mNonActiveUser.get() : nullptr;
 }
 
 ATProto::Client* SessionManager::getActiveUserBskyClient() const

@@ -4,10 +4,11 @@ import QtQuick.Layouts
 import skywalker
 
 Item {
+    property string userDid
     property basicprofile author
     property int radius: width / 2
     property SvgImage unknownSvg: SvgFilled.unknownAvatar
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker(userDid)
     property var userSettings: skywalker.getUserSettings()
     readonly property int contentVisibility: skywalker.getContentVisibility(author.labels)
     property bool showWarnedMedia: false
@@ -17,6 +18,7 @@ Item {
     readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author.did)
     readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
     readonly property bool isActive: activityStatus ? activityStatus.active : false
+    property bool showActivityStatus: true
 
     signal clicked
     signal pressAndHold
@@ -91,7 +93,7 @@ Item {
 
     Loader {
         id: activeLoader
-        active: avatarItem.isActive && userSettings.showFollowsActiveStatus
+        active: avatarItem.isActive && userSettings.showFollowsActiveStatus && showActivityStatus
 
         sourceComponent: Rectangle {
             x: avatarItem.width - width
@@ -123,7 +125,7 @@ Item {
     }
 
     function contentVisible() {
-        return showWarnedMedia || guiSettings.contentVisible(author)
+        return showWarnedMedia || guiSettings.contentVisible(author, userDid)
     }
 
     function getImage() {

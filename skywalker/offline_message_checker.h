@@ -85,7 +85,7 @@ private:
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;
     UserSettings mUserSettings;
-    std::unique_ptr<ATProto::Client> mBsky;
+    ATProto::Client::SharedPtr mBsky;
     QString mUserDid;
     ImageReader mImageReader;
     ATProto::UserPreferences mUserPreferences;

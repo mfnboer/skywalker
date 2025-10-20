@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import skywalker
 
 RowLayout {
+    property string userDid
     required property basicprofile author
 
     id: knownOthersRow
@@ -58,7 +59,7 @@ RowLayout {
 
     function showKnownFollowers() {
         let modelId = root.getSkywalker().createAuthorListModel(QEnums.AUTHOR_LIST_KNOWN_FOLLOWERS, author.did)
-        root.viewAuthorList(modelId, qsTr(`Followers you follow`));
+        root.viewAuthorListByUser(userDid, modelId, qsTr(`Followers you follow`));
     }
 
     function getKnownFollowersText() {

@@ -1,5 +1,6 @@
 next
 ====
+* Improve sharing of saved/pinned feeds with the Bluesky app
 * Edit pronouns and website on your profile
 * Change video playback rate
 * Get notifications from all your accounts

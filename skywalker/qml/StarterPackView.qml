@@ -4,8 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property starterpackview starterPack
-    property var skywalker: root.getSkywalker()
     readonly property int postFeedModelId: skywalker.createPostFeedModel(starterPack.list)
     readonly property int feedListModelId: skywalker.createFeedListModel()
     readonly property int margin: 10
@@ -17,6 +18,7 @@ SkyPage {
     id: page
 
     header: SimpleHeader {
+        userDid: page.userDid
         text: sideBarTitle
         visible: !root.showSideBar
         onBack: page.closed()
@@ -38,7 +40,7 @@ SkyPage {
         AuthorListView {
             id: authorListView
             title: ""
-            skywalker: page.skywalker
+            userDid: page.userDid
             modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, starterPack.list.uri)
             listUri: starterPack.list.uri
             clip: true
@@ -61,6 +63,7 @@ SkyPage {
 
             delegate: GeneratorViewDelegate {
                 width: feedListView.width
+                userDid: page.userDid
 
                 onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
             }
@@ -164,6 +167,7 @@ SkyPage {
             anchors.left: parent.left
             anchors.leftMargin: margin
             anchors.right: undefined
+            userDid: page.userDid
             contentLabels: starterPack.labels
             contentAuthorDid: starterPack.creator.did
         }
@@ -251,7 +255,7 @@ SkyPage {
             }
             AccessibleMenuItem {
                 text: qsTr("Report starter pack")
-                onTriggered: root.reportStarterPack(starterPack)
+                onTriggered: root.reportStarterPack(starterPack, userDid)
 
                 MenuItemSvg { svg: SvgOutline.report }
             }
@@ -296,7 +300,7 @@ SkyPage {
 
         onCreatedListFromStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
-        onGetListOk: (list) => root.viewListFeedDescription(list)
+        onGetListOk: (list) => root.viewListFeedDescription(list, page.userDid)
         onGetListFailed: (error) => {
             // The network may take a while before you can retrieve a new list.
             console.warn(error)

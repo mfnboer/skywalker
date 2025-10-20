@@ -3,6 +3,7 @@ import skywalker
 
 // Should be used inside a Text element
 MouseArea {
+    property string userDid
     property string containingText
 
     signal longPress
@@ -18,7 +19,7 @@ MouseArea {
             if (link === UnicodeFonts.THREAD_LINK)
                 unrollThread()
             else
-                root.openLink(link, containingText)
+                root.openLink(link, containingText, userDid)
         }
         else {
             mouse.accepted = false

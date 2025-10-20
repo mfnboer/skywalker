@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string userDid
     readonly property int margin: 10
     required property basicprofile postAuthor
     required property string postText
@@ -71,6 +72,7 @@ Column {
         LinkCatcher {
             z: parent.z - 1
             containingText: postPlainText
+            userDid: postBody.userDid
 
             onUnrollThread: postBody.unrollThread()
         }
@@ -373,6 +375,7 @@ Column {
         id: externalViewComponent
 
         ExternalView {
+            userDid: postBody.userDid
             postExternal: postBody.postExternal
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
@@ -428,6 +431,7 @@ Column {
         // Cannot use a direct component here, because of cyclic dependency.
         // RecordView has a PostBody
         recordLoader.setSource("RecordView.qml", {
+                                   userDid: postBody.userDid,
                                    record: postRecord,
                                    backgroundColor: bodyBackgroundColor,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor })
@@ -435,6 +439,7 @@ Column {
 
     function showPostRecordWidthMedia() {
         recordLoader.setSource("RecordWithMediaView.qml", {
+                                   userDid: postBody.userDid,
                                    record: postRecordWithMedia,
                                    backgroundColor: bodyBackgroundColor,
                                    contentVisibility: postContentVisibility,

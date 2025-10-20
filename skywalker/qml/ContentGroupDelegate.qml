@@ -5,6 +5,8 @@ import skywalker
 
 Rectangle {
     property int margin: 10
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property var model
     required property bool isSubscribed
     required property bool adultContent
@@ -52,9 +54,9 @@ Rectangle {
 
                 onClicked: {
                     if (contentGroup.target === QEnums.LABEL_TARGET_CONTENT)
-                        root.getSkywalker().showStatusMessage(qsTr("Label targets full content"), QEnums.STATUS_LEVEL_INFO)
+                        skywalker.showStatusMessage(qsTr("Label targets full content"), QEnums.STATUS_LEVEL_INFO)
                     else
-                        root.getSkywalker().showStatusMessage(qsTr("Label targets images"), QEnums.STATUS_LEVEL_INFO)
+                        skywalker.showStatusMessage(qsTr("Label targets images"), QEnums.STATUS_LEVEL_INFO)
                 }
             }
         }
@@ -131,7 +133,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: root.getSkywalker().showStatusMessage(qsTr("Adult content disabled"), QEnums.STATUS_LEVEL_INFO)
+                    onClicked: skywalker.showStatusMessage(qsTr("Adult content disabled"), QEnums.STATUS_LEVEL_INFO)
                 }
             }
         }

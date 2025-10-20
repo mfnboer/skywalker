@@ -89,6 +89,7 @@ SkyPage {
 
             delegate: NotificationViewDelegate {
                 width: page.width
+                owner: skywalker.user
             }
 
             SwipeView.onIsCurrentItemChanged: {
@@ -151,6 +152,7 @@ SkyPage {
 
             delegate: NotificationViewDelegate {
                 width: page.width
+                owner: skywalker.user
             }
 
             SwipeView.onIsCurrentItemChanged: {
@@ -214,6 +216,7 @@ SkyPage {
 
                 delegate: NotificationViewDelegate {
                     width: page.width
+                    owner: modelData.profile
                 }
 
                 SwipeView.onIsCurrentItemChanged: {

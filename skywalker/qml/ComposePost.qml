@@ -4,9 +4,13 @@ import QtQuick.Window 2.2
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property string postByDid: ""
+    property Skywalker skywalker: root.getSkywalker(postByDid)
 
     // If this DID is set then the post is composed for this user instead of the active user
+    // When a non-active user is selected for a post interaction (long press), then
+    // postByDid refers to the active user, so all models from the active user get updated
+    // but the interaction, e.g. increasing/decreasing like count
     property string nonActiveUserDid: ""
 
     property string initialText
@@ -118,13 +122,12 @@ SkyPage {
             onClicked: page.cancel()
         }
 
-        Avatar {
+        CurrentUserAvatar {
             y: guiSettings.headerMargin + 5
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.height - guiSettings.headerMargin - 10
-            author: nonActiveUserDid === "" ? skywalker.user : skywalker.getUserSettings().getUser(nonActiveUserDid)
-            onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
-            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
+            userDid: getAuthorDid()
+            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("your avatar")
@@ -225,7 +228,7 @@ SkyPage {
                 AccessibleMenuItem {
                     text: qsTr("Auto split")
                     checkable: true
-                    checked: threadAutoSplit //skywalker.getUserSettings().getThreadAutoSplit()
+                    checked: threadAutoSplit
 
                     onToggled: {
                         threadAutoSplit = checked
@@ -291,6 +294,7 @@ SkyPage {
             width: parent.width - 2 * page.margin
             anchors.horizontalCenter: parent.horizontalCenter
             author: replyToAuthor
+            userDid: postByDid
             postText: replyToPostText
             postDateTime: replyToPostDateTime
             ellipsisBackgroundColor: guiSettings.postHighLightColor
@@ -779,6 +783,7 @@ SkyPage {
                         height: card ? columnHeight : 0
                         anchors.top: gifAttachment.bottom
                         anchors.topMargin: card ? 10 : 0
+                        userDid: postByDid
                         uri: card ? card.link : ""
                         title: card ? card.title : ""
                         description: card ? card.description : ""
@@ -835,6 +840,7 @@ SkyPage {
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
+                        userDid: postByDid
                         author: postItem.quoteAuthor
                         postText: postItem.quoteText
                         postDateTime: postItem.quoteDateTime
@@ -863,6 +869,7 @@ SkyPage {
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
+                        userDid: postByDid
                         feed: postItem.quoteFeed
                         showCloseButton: postItem.quoteFixed
                         visible: !postItem.quoteFeed.isNull()
@@ -888,6 +895,7 @@ SkyPage {
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
+                        userDid: postByDid
                         list: postItem.quoteList
                         showCloseButton: postItem.quoteFixed
                         visible: !postItem.quoteList.isNull()
@@ -1513,7 +1521,7 @@ SkyPage {
         property var callbackCanQuotePostFailed: (error) => {}
 
         id: postUtils
-        skywalker: page.skywalker // qmllint disable missing-type
+        skywalker: page.skywalker
         nonActiveUserDid: page.nonActiveUserDid
 
         // This can only happen just after the ComposePost pages has been created.
@@ -1769,7 +1777,6 @@ SkyPage {
         property var callbackFailed: (error) => {}
 
         id: videoUtils
-        skywalker: page.skywalker // qmllint disable missing-property
 
         onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
             const source = "file://" + outputFileName
@@ -2554,6 +2561,7 @@ SkyPage {
 
         let component = guiSettings.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(page, {
+                userDid: postByDid,
                 rootUri: "",
                 postUri: "",
                 restrictReply: page.restrictReply,
@@ -2586,7 +2594,7 @@ SkyPage {
         if (allowListUrisFromDraft.length > 0)
             return allowListUrisFromDraft
 
-        return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes)
+        return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes, postByDid)
     }
 
     function getListNamesFromDraft() {
@@ -2873,6 +2881,16 @@ SkyPage {
         limitsPage.open()
     }
 
+    function getAuthorDid() {
+        if (nonActiveUserDid)
+            return nonActiveUserDid
+
+        if (postByDid)
+            return postByDid
+
+        return userDid
+    }
+
     VirtualKeyboardHandler {
         id: keyboardHandler
     }
@@ -2914,7 +2932,7 @@ SkyPage {
         restrictReply = postInteractionSettings.allowNobody || allowReplyMentioned || allowReplyFollower || allowReplyFollowing || allowListUrisFromDraft.length > 0
         allowQuoting = !postInteractionSettings.disableEmbedding
 
-        const selfDid = nonActiveUserDid === "" ? userDid : nonActiveUserDid
+        const selfDid = getAuthorDid()
 
         for (const mentionDid of replyToMentionDids) {
             if (mentionDid !== selfDid)

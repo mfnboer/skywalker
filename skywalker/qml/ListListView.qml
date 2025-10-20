@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
-    required property var skywalker
+    property Skywalker skywalker: root.getSkywalker()
     required property int modelId
     property string description
     property bool ownLists: true

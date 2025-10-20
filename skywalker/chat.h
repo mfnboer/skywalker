@@ -24,7 +24,7 @@ class Chat : public QObject
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
-    explicit Chat(ATProto::Client::Ptr& bsky, const QString& mUserDid, FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
+    explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid, FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
 
     void reset();
     void initSettings();
@@ -125,7 +125,7 @@ private:
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message);
 
     std::unique_ptr<Presence> mPresence;
-    ATProto::Client::Ptr& mBsky;
+    ATProto::Client::SharedPtr& mBsky;
     std::unique_ptr<ATProto::ChatMaster> mChatMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     const QString& mUserDid;

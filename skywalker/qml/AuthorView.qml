@@ -6,8 +6,8 @@ import skywalker
 import atproto.lib
 
 SkyPage {
-    required property var skywalker
-    required property var rootProfileUtils
+    required property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property detailedprofile author
     required property int modelId
     readonly property string sideBarTitle: author.name
@@ -163,6 +163,20 @@ SkyPage {
                     onClicked: page.closed()
                 }
 
+                Loader {
+                    anchors.top: parent.top
+                    anchors.topMargin: 10
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    height: guiSettings.headerHeight - 10
+                    width: height
+                    active: !root.isActiveUser(userDid)
+
+                    sourceComponent: CurrentUserAvatar {
+                        userDid: page.userDid
+                    }
+                }
+
                 Rectangle {
                     id: avatar
                     x: parent.width - width - 10
@@ -176,6 +190,7 @@ SkyPage {
                         id: avatarImg
                         anchors.centerIn: parent
                         width: parent.width - 4
+                        userDid: page.userDid
                         author: page.author
                         showWarnedMedia: page.showWarnedMedia
                         onClicked:  {
@@ -205,7 +220,7 @@ SkyPage {
                     svg: SvgOutline.edit
                     onClicked: editAuthor(author)
                     accessibleName: qsTr("edit your profile")
-                    visible: guiSettings.isUser(author)
+                    visible: page.isUser(author)
                 }
 
                 SvgButton {
@@ -253,7 +268,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: following ? qsTr("Unfollow") : qsTr("Follow")
-                                visible: isLabeler && !guiSettings.isUser(author) && contentVisible()
+                                visible: isLabeler && !page.isUser(author) && contentVisible()
                                 onClicked: {
                                     if (following)
                                         graphUtils.unfollow(author.did, following)
@@ -271,7 +286,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
-                                visible: !guiSettings.isUser(author) && author.viewer.mutedByList.isNull()
+                                visible: !page.isUser(author) && author.viewer.mutedByList.isNull()
                                 onTriggered: {
                                     if (authorMuted) {
                                         graphUtils.unmute(author.did)
@@ -279,7 +294,7 @@ SkyPage {
                                     else {
                                         let gu = graphUtils
                                         let did = author.did
-                                        root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt))
+                                        root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt), page.userDid)
                                     }
                                 }
 
@@ -287,7 +302,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: blocking ? qsTr("Unblock account") : qsTr("Block account")
-                                visible: !guiSettings.isUser(author) && author.viewer.blockingByList.isNull()
+                                visible: !page.isUser(author) && author.viewer.blockingByList.isNull()
                                 onTriggered: {
                                     if (blocking) {
                                         graphUtils.unblock(author.did, blocking)
@@ -295,7 +310,7 @@ SkyPage {
                                     else {
                                         let gu = graphUtils
                                         let did = author.did
-                                        root.showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt))
+                                        root.showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt), page.userDid)
                                     }
                                 }
 
@@ -303,7 +318,7 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
-                               visible: !guiSettings.isUser(author)
+                               visible: !page.isUser(author)
                                onTriggered: {
                                    if (authorMutedReposts)
                                        graphUtils.unmuteReposts(author.did)
@@ -322,8 +337,8 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Report account")
-                                visible: !guiSettings.isUser(author)
-                                onTriggered: root.reportAuthor(author)
+                                visible: !page.isUser(author)
+                                onTriggered: root.reportAuthor(author, userDid)
 
                                 MenuItemSvg { svg: SvgOutline.report }
                             }
@@ -342,7 +357,7 @@ SkyPage {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: width
                     svg: SvgOutline.notificationsAdd
-                    visible: !guiSettings.isUser(author) && !activitySubscription.isSubscribed && author.allowsActivitySubscriptions()
+                    visible: !page.isUser(author) && !activitySubscription.isSubscribed && author.allowsActivitySubscriptions()
                     onClicked: subscribeActivity()
                     Accessible.name: qsTr(`press to subscribe to posts from ${author.name}`)
                 }
@@ -350,7 +365,7 @@ SkyPage {
                     Layout.preferredWidth: 40
                     Layout.preferredHeight: width
                     svg: SvgFilled.notificationsActive
-                    visible: !guiSettings.isUser(author) && activitySubscription.isSubscribed
+                    visible: !page.isUser(author) && activitySubscription.isSubscribed
                     onClicked: subscribeActivity()
                     Accessible.name: qsTr(`press to modify post subscription from ${author.name}`)
                 }
@@ -361,13 +376,13 @@ SkyPage {
                     svg: SvgOutline.directMessage
                     accessibleName: qsTr(`direct message ${author.name}`)
                     onClicked: skywalker.chat.startConvoForMember(author.did)
-                    visible: author.canSendDirectMessage() && !guiSettings.isUser(author) && !skywalker.chat.messageConvoOpen()
+                    visible: author.canSendDirectMessage() && !page.isUser(author) && !skywalker.chat.messageConvoOpen() && root.isActiveUser(page.userDid)
                 }
 
                 SkyButton {
                     Layout.preferredHeight: 40
                     text: qsTr("Follow")
-                    visible: !following && !guiSettings.isUser(author) && contentVisible() && !isLabeler
+                    visible: !following && !page.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.follow(author)
                     Accessible.name: qsTr(`press to follow ${author.name}`)
                 }
@@ -375,7 +390,7 @@ SkyPage {
                     Layout.preferredHeight: 40
                     flat: true
                     text: qsTr("Following")
-                    visible: following && !guiSettings.isUser(author) && contentVisible() && !isLabeler
+                    visible: following && !page.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.unfollow(author.did, following)
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
                 }
@@ -400,6 +415,7 @@ SkyPage {
             AuthorNameAndStatusMultiLine {
                 topPadding: author.actorStatus.isActive ? 10 : 0
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
+                userDid: page.userDid
                 author: page.author
                 pointSize: guiSettings.scaledFont(12/8)
                 maximumLineCount: 3
@@ -447,6 +463,7 @@ SkyPage {
                     id: contentLabels
                     anchors.left: parent.left
                     anchors.right: undefined
+                    userDid: page.userDid
                     contentLabels: author.labels
                     contentAuthorDid: author.did
                 }
@@ -486,6 +503,7 @@ SkyPage {
                 visible: contentVisible()
 
                 StatAuthors {
+                    userDid: page.userDid
                     atUri: author.did
                     count: author.followersCount
                     nameSingular: qsTr("follower")
@@ -494,6 +512,7 @@ SkyPage {
                     authorListHeader: qsTr("Followers")
                 }
                 StatAuthors {
+                    userDid: page.userDid
                     atUri: author.did
                     count: author.followsCount
                     nameSingular: qsTr("following")
@@ -520,7 +539,9 @@ SkyPage {
                 plainText: postUtils.linkiFy(authorDescription, guiSettings.linkColor)
                 visible: contentVisible()
 
-                LinkCatcher {}
+                LinkCatcher {
+                    userDid: page.userDid
+                }
             }
 
             AccessibleText {
@@ -531,7 +552,7 @@ SkyPage {
                 text: qsTr(`🌐 ${guiSettings.toHtmlLink(authorWebsite)}`)
                 visible: contentVisible() && Boolean(authorWebsite)
 
-                onLinkActivated: (link) => root.openLink(link)
+                onLinkActivated: (link) => root.openLink(link, "", page.userDid)
             }
 
             AccessibleText {
@@ -555,6 +576,7 @@ SkyPage {
             Loader {
                 active: author.viewer.knownFollowers.count > 0
                 sourceComponent: KnownFollowers {
+                    userDid: page.userDid
                     author: page.author
                     width: viewHeader.width - (viewHeader.leftPadding + viewHeader.rightPadding)
                 }
@@ -572,6 +594,7 @@ SkyPage {
                         id: labelerContentLabels
                         anchors.left: parent.left
                         anchors.right: undefined
+                        userDid: page.userDid
                         contentLabels: labeler.contentLabels
                         contentAuthorDid: author.did
                     }
@@ -600,6 +623,7 @@ SkyPage {
                     }
 
                     StatAuthors {
+                        userDid: page.userDid
                         atUri: labeler.uri
                         count: labelerLikeCount
                         nameSingular: qsTr("like")
@@ -664,7 +688,7 @@ SkyPage {
                     if (!isLabeler)
                         removeItem(labelsTab)
 
-                    if (!guiSettings.isUser(author))
+                    if (!page.isUser(author))
                         removeItem(likesTab)
 
                     if (!hasFeeds)
@@ -777,6 +801,7 @@ SkyPage {
 
                     delegate: ContentGroupDelegate {
                         width: authorFeedView.width
+                        userDid: page.userDid
                         isSubscribed: page.isSubscribed
                         adultContent: labelList.model.adultContent
                     }
@@ -791,6 +816,7 @@ SkyPage {
             // Posts
             AuthorPostsList {
                 id: authorPostsList
+                userDid: page.userDid
                 author: page.author
                 enclosingView: authorFeedView
                 getFeed: (id) => page.getFeed(id)
@@ -816,6 +842,7 @@ SkyPage {
                     id: authorRepliesList
                     width: parent.width
                     height: parent.height
+                    userDid: page.userDid
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -842,6 +869,7 @@ SkyPage {
                     id: authorMediaList
                     width: parent.width
                     height: parent.height
+                    userDid: page.userDid
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -868,6 +896,7 @@ SkyPage {
                     id: authorMediaGallery
                     width: parent.width
                     height: parent.height
+                    userDid: page.userDid
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -895,6 +924,7 @@ SkyPage {
                     id: authorVideoList
                     width: parent.width
                     height: parent.height
+                    userDid: page.userDid
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -921,6 +951,7 @@ SkyPage {
                     id: authorVideoGallery
                     width: parent.width
                     height: parent.height
+                    userDid: page.userDid
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => page.getFeed(id)
@@ -937,7 +968,7 @@ SkyPage {
             // Likes
             Loader {
                 id: likesView
-                active: guiSettings.isUser(author)
+                active: page.isUser(author)
                 asynchronous: true
 
                 SwipeView.onIsCurrentItemChanged: {
@@ -949,6 +980,7 @@ SkyPage {
                     id: authorLikesList
                     width: parent.width
                     height: parent.height
+                    userDid: page.userDid
                     author: page.author
                     enclosingView: authorFeedView
                     getFeed: (id) => skywalker.getAuthorLikes(id)
@@ -990,6 +1022,7 @@ SkyPage {
 
                     delegate: GeneratorViewDelegate {
                         width: authorFeedView.width
+                        userDid: page.userDid
 
                         onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
                     }
@@ -1049,6 +1082,7 @@ SkyPage {
 
                     delegate: StarterPackViewDelegate {
                         width: authorFeedView.width
+                        userDid: page.userDid
                     }
 
                     FlickableRefresher {
@@ -1106,6 +1140,7 @@ SkyPage {
 
                     delegate: ListViewDelegate {
                         width: authorFeedView.width
+                        userDid: page.userDid
                         allowEdit: false
 
                         onBlockList: (list) => graphUtils.blockList(list.uri)
@@ -1149,7 +1184,7 @@ SkyPage {
                 if (!isLabeler)
                     removeItem(labelsView)
 
-                if (!guiSettings.isUser(author))
+                if (!page.isUser(author))
                     removeItem(likesView)
 
                 if (!hasFeeds)
@@ -1240,17 +1275,17 @@ SkyPage {
 
     PostUtils {
         id: postUtils
-        skywalker: page.skywalker // qmllint disable missing-type
+        skywalker: page.skywalker
     }
 
     FeedUtils {
         id: feedUtils
-        skywalker: page.skywalker // qmllint disable missing-type
+        skywalker: page.skywalker
     }
 
     GraphUtils {
         id: graphUtils
-        skywalker: page.skywalker // qmllint disable missing-type
+        skywalker: page.skywalker
 
         onFollowOk: (uri) => { following = uri }
         onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
@@ -1381,7 +1416,7 @@ SkyPage {
     }
 
     function authorCanBeMentioned() {
-        return !guiSettings.isUser(author) && !author.hasInvalidHandle()
+        return !page.isUser(author) && !author.hasInvalidHandle()
     }
 
     function subscribeActivity() {
@@ -1403,7 +1438,6 @@ SkyPage {
     function editAuthor(author) {
         let component = guiSettings.createComponent("EditProfile.qml")
         let editPage = component.createObject(page, {
-                skywalker: skywalker,
                 authorDid: author.did,
                 authorName: authorName,
                 authorPronouns: authorPronouns,
@@ -1442,13 +1476,13 @@ SkyPage {
     }
 
     function mentionPost(text = "", imgSource = "") {
-        const mentionText = (guiSettings.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
-        root.composePost(mentionText, imgSource)
+        const mentionText = (page.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
+        root.composePost(mentionText, imgSource, page.userDid)
     }
 
     function mentionVideoPost(text = "", videoSource = "") {
-        const mentionText = (guiSettings.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
-        root.composeVideoPost(mentionText, videoSource)
+        const mentionText = (page.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
+        root.composeVideoPost(mentionText, videoSource, page.userDid)
     }
 
     function feedOkHandler(modelId) {
@@ -1526,7 +1560,11 @@ SkyPage {
         listModel.setMemberCheckDid(author.did)
         listModel.setExcludeInternalLists(true)
         let component = guiSettings.createComponent("AddUserListListView.qml")
-        let view = component.createObject(page, { author: author, modelId: listModelId, skywalker: skywalker })
+        let view = component.createObject(page, {
+                userDid: page.userDid,
+                author: author,
+                modelId: listModelId
+        })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
         skywalker.getListList(listModelId)
@@ -1537,7 +1575,7 @@ SkyPage {
     }
 
     function contentVisible() {
-        return showWarnedMedia || guiSettings.contentVisible(author)
+        return showWarnedMedia || guiSettings.contentVisible(author, page.userDid)
     }
 
     function contentVisibilityIsWarning() {
@@ -1623,13 +1661,22 @@ SkyPage {
             profileUtils.likeLabeler(uri, cid)
     }
 
-    Component.onDestruction: {
-        skywalker.onAuthorFeedError.disconnect(feedFailedHandler)
-        skywalker.onAuthorFeedOk.disconnect(feedOkHandler)
+    function isUserDid(did) {
+        return did === userDid
+    }
 
-        if (guiSettings.isUser(author)) {
-            rootProfileUtils.onSetPinnedPostOk.disconnect(pinnedPostHandler)
-            rootProfileUtils.onClearPinnedPostOk.disconnect(unpinnedPostHandler)
+    function isUser(author) {
+        return isUserDid(author.did)
+    }
+
+    Component.onDestruction: {
+        skywalker.onGetAuthorFeedFailed.disconnect(feedFailedHandler)
+        skywalker.onGetAuthorFeedOk.disconnect(feedOkHandler)
+
+        if (isUser(author)) {
+            const pu = root.getProfileUtils()
+            pu.onSetPinnedPostOk.disconnect(pinnedPostHandler)
+            pu.onClearPinnedPostOk.disconnect(unpinnedPostHandler)
         }
 
         setAuthorBanner("")
@@ -1645,12 +1692,13 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        skywalker.onAuthorFeedError.connect(feedFailedHandler)
-        skywalker.onAuthorFeedOk.connect(feedOkHandler)
+        skywalker.onGetAuthorFeedFailed.connect(feedFailedHandler)
+        skywalker.onGetAuthorFeedOk.connect(feedOkHandler)
 
-        if (guiSettings.isUser(author)) {
-            rootProfileUtils.onSetPinnedPostOk.connect(pinnedPostHandler)
-            rootProfileUtils.onClearPinnedPostOk.connect(unpinnedPostHandler)
+        if (isUser(author)) {
+            const pu = root.getProfileUtils()
+            pu.onSetPinnedPostOk.connect(pinnedPostHandler)
+            pu.onClearPinnedPostOk.connect(unpinnedPostHandler)
         }
 
         authorName = author.name

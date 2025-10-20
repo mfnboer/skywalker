@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property listview list
     property string listBlockedUri: list.viewer.blocked
     property bool listMuted: list.viewer.muted
@@ -40,6 +41,7 @@ SkyPage {
     }
 
     header: SimpleHeader {
+        userDid: page.userDid
         text: guiSettings.listTypeName(list.purpose)
         visible: !root.showSideBar
         onBack: closed()
@@ -54,7 +56,7 @@ SkyPage {
         anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
         title: ""
-        skywalker: page.skywalker
+        userDid: page.userDid
         modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
         allowDeleteItem: isOwnList()
         listUri: list.uri
@@ -94,6 +96,7 @@ SkyPage {
                 id: listAvatar
                 width: parent.width
                 height: parent.height
+                userDid: page.userDid
                 avatarUrl: !contentVisible() ? "" : list.avatar
                 onClicked: {
                     if (list.avatar) {
@@ -141,6 +144,7 @@ SkyPage {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: page.userDid
                 author: list.creator
 
                 Accessible.role: Accessible.Link
@@ -185,6 +189,7 @@ SkyPage {
                 id: contentLabels
                 anchors.left: parent.left
                 anchors.right: undefined
+                userDid: page.userDid
                 contentLabels: list.labels
                 contentAuthorDid: list.creator.did
             }
@@ -339,7 +344,7 @@ SkyPage {
         }
         AccessibleMenuItem {
             text: qsTr("Report list")
-            onTriggered: root.reportList(list)
+            onTriggered: root.reportList(list, userDid)
 
             MenuItemSvg { svg: SvgOutline.report }
         }

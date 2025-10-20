@@ -358,7 +358,7 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
     // Need a longer network transfer timeout for an Android background process.
     auto xrpc = std::make_unique<Xrpc::Client>("", 30000);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->resumeSession(*session,
         [this] {
@@ -492,7 +492,7 @@ void OffLineMessageChecker::getNotifications(int toRead)
     mBsky->listNotifications(limit, {}, {}, false, {},
         [this, toRead](auto notifications){
             filterNotifications(notifications);
-            const bool added = mNotificationListModel.addNotifications(std::move(notifications), *mBsky, false,
+            const bool added = mNotificationListModel.addNotifications(std::move(notifications), mBsky, false,
                 [this]{ getChatNotifications(); });
 
             const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);

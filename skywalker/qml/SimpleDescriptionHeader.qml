@@ -7,6 +7,7 @@ Rectangle {
     required property string title
     property string description
     property bool isSideBar: false
+    property string userDid
 
     signal closed
 
@@ -51,6 +52,17 @@ Rectangle {
                     Accessible.role: Accessible.TitleBar
                     Accessible.name: text
                     Accessible.description: Accessible.name
+                }
+                Loader {
+                    Layout.rightMargin: 10
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                    Layout.preferredHeight: parent.height - 10
+                    Layout.preferredWidth: Layout.preferredHeight
+                    active: !root.isActiveUser(header.userDid)
+
+                    sourceComponent: CurrentUserAvatar {
+                        userDid: header.userDid
+                    }
                 }
             }
         }

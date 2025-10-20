@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Rectangle {
+    property string userDid
     required property basicprofile author
     property double pointSize: guiSettings.scaledFont(1)
     readonly property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
@@ -24,7 +25,7 @@ Rectangle {
 
     Loader {
         id: verificationStatusLoader
-        active: authorVerified && !root.getSkywalker().hideVerificationBadges
+        active: authorVerified && !root.getSkywalker(userDid).hideVerificationBadges
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
@@ -32,13 +33,14 @@ Rectangle {
             y: (nameText.height - height) / 2
             width: badgeSize
             height: width
+            userDid: nameRect.userDid
             author: nameRect.author
         }
     }
 
     Loader {
         id: verifierStatusLoader
-        active: isTrustedVerifier && !root.getSkywalker().hideVerificationBadges
+        active: isTrustedVerifier && !root.getSkywalker(userDid).hideVerificationBadges
 
         sourceComponent: VerifierBadge {
             id: verifierStatus

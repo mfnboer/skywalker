@@ -4,6 +4,8 @@ import skywalker
 
 
 Rectangle {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property profile author
     required property string followingUri
     required property string blockingUri
@@ -56,6 +58,7 @@ Rectangle {
                 x: parent.x + 8
                 y: parent.y + 5
                 width: parent.width - 13
+                userDid: authorRect.userDid
                 author: authorRect.author
                 onClicked: skywalker.getDetailedProfile(author.did)
             }
@@ -67,6 +70,7 @@ Rectangle {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: authorRect.userDid
                 author: authorRect.author
             }
             Text {
@@ -80,6 +84,7 @@ Rectangle {
             }
 
             AuthorViewerState {
+                userDid: authorRect.userDid
                 did: author.did
                 followedBy: author.viewer.followedBy && showFollow
                 blockingUri: authorRect.blockingUri
@@ -97,6 +102,7 @@ Rectangle {
                 id: contentLabels
                 anchors.left: parent.left
                 anchors.right: undefined
+                userDid: authorRect.userDid
                 contentLabels: author.labels
                 contentAuthorDid: author.did
             }
@@ -108,14 +114,14 @@ Rectangle {
 
             SkyButton {
                 text: qsTr("Follow")
-                visible: !followingUri && !guiSettings.isUser(author) && showAuthor && showFollow && !author.associated.isLabeler
+                visible: !followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: follow(author)
                 Accessible.name: qsTr(`press to follow ${author.name}`)
             }
             SkyButton {
                 flat: true
                 text: qsTr("Following")
-                visible: followingUri && !guiSettings.isUser(author) && showAuthor && showFollow && !author.associated.isLabeler
+                visible: followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: unfollow(author.did, followingUri)
                 Accessible.name: qsTr(`press to unfollow ${author.name}`)
             }
@@ -177,6 +183,6 @@ Rectangle {
     }
 
     function authorVisible() {
-        return guiSettings.contentVisible(author)
+        return guiSettings.contentVisible(author, userDid)
     }
 }

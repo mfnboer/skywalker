@@ -3,7 +3,8 @@ import QtQuick.Controls
 import skywalker
 
 SkyListView {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     property bool showAsHome: false
     property bool showFavorites: false
@@ -30,7 +31,7 @@ SkyListView {
     Accessible.name: feedName
 
     header: PostFeedHeader {
-        skywalker: postFeedView.skywalker
+        userDid: postFeedView.userDid
         feedName: postFeedView.feedName
         feedAvatar: postFeedView.getFeedAvatar()
         defaultSvg: postFeedView.getFeedDefaultAvatar()
@@ -61,7 +62,7 @@ SkyListView {
 
         onActivateSwipe: {
             let view = postFeedView
-            root.viewMediaFeed(model, index, (newIndex) => { view.positionViewAtIndex(newIndex, ListView.Beginning) })
+            root.viewMediaFeed(model, index, (newIndex) => { view.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
         }
 
         Loader {
@@ -260,10 +261,10 @@ SkyListView {
 
         switch (underlyingModel.feedType) {
         case QEnums.FEED_GENERATOR:
-            return guiSettings.feedContentVisible(underlyingModel.getGeneratorView()) ?
+            return guiSettings.feedContentVisible(underlyingModel.getGeneratorView(), userDid) ?
                 underlyingModel.getGeneratorView().avatarThumb : ""
         case QEnums.FEED_LIST:
-            return guiSettings.feedContentVisible(underlyingModel.getListView()) ?
+            return guiSettings.feedContentVisible(underlyingModel.getListView(), userDid) ?
                 underlyingModel.getListView().avatarThumb : ""
         default:
             console.warn("Unexpected feed type:", underlyingModel.feedType)

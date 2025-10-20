@@ -10,13 +10,17 @@
 namespace Skywalker {
 
 class SessionManager;
+class Skywalker;
 
 class NonActiveUser : public QObject, public Presence
 {
+    Q_MOC_INCLUDE("skywalker.h")
+
     Q_OBJECT
     Q_PROPERTY(BasicProfile profile READ getProfile CONSTANT FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(bool sessionExpired READ isSessionExpired NOTIFY sessionExpiredChanged FINAL)
+    Q_PROPERTY(Skywalker* skywalker READ getSkywalker CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(PostView* postView READ getPostView NOTIFY postViewChanged FINAL)
     Q_PROPERTY(bool getPostInProgress READ isGetPostInProgress NOTIFY getPostInProgressChanged FINAL)
@@ -28,8 +32,9 @@ public:
     using List = QList<NonActiveUser*>;
 
     NonActiveUser(QObject* parent = nullptr);
-    NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
-                  ATProto::Client::SharedPtr bsky, SessionManager* sessionManager, QObject* parent = nullptr);
+    NonActiveUser(const BasicProfile& profile, bool sessionExpired,
+                  ATProto::Client::SharedPtr bsky, SessionManager* sessionManager,
+                  QObject* parent = nullptr);
     ~NonActiveUser();
 
     const BasicProfile& getProfile() const { return mProfile; }
@@ -39,6 +44,8 @@ public:
 
     bool isSessionExpired() const { return mSessionExpired; }
     void expireSession();
+
+    Skywalker* getSkywalker() const;
 
     NotificationListModel* getNotificationListModel() const;
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, const QString& cursor = {});
@@ -85,8 +92,9 @@ private:
     BasicProfile mProfile;
     int mUnreadNotificationCount = 0;
     bool mSessionExpired = false;
-    int mNotificationListModelId;
+    int mNotificationListModelId = -1;
     ATProto::Client::SharedPtr mBsky;
+    std::unique_ptr<Skywalker> mSkywalker;
     SessionManager* mSessionManager = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     PostView::Ptr mPostView;

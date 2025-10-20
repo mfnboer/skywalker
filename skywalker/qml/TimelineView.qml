@@ -24,7 +24,6 @@ SkyListView {
     Accessible.name: model ? model.feedName : ""
 
     header: PostFeedHeader {
-        skywalker: page.skywalker
         feedName: skywalker.timelineModel.feedName
         showAsHome: true
         isHomeFeed: true

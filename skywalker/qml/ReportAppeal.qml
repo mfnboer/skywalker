@@ -2,10 +2,11 @@ import QtQuick
 import skywalker
 
 SkyPage {
+    property string userDid
     required property contentlabel label
     required property contentgroup contentGroup
     required property string labelerHandle
-    property var skywalker: root.getSkywalker()
+    property string skywalker: root.getSkywalker(userDid)
     readonly property int margin: 10
 
     signal closed
@@ -16,6 +17,7 @@ SkyPage {
     bottomPadding: 10
 
     header: SimpleHeader {
+        userDid: page.userDid
         text: qsTr("Appeal")
         backIsCancel: true
         onBack: { console.debug("CANCEL"); page.closed() }

@@ -48,6 +48,7 @@ public:
     Q_INVOKABLE bool hasNonActiveUsers() const { return !mNonActiveUsers.empty(); }
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
     const NonActiveUser::List& getNonActiveNotifications() const;
+    Q_INVOKABLE NonActiveUser* getNonActiveUserUnexpired(const QString& did) const;
 
     ATProto::Client* getActiveUserBskyClient() const;
     ATProto::Client::SharedPtr getBskyClientFor(const QString& did) const;

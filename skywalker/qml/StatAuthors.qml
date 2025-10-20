@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Text {
+    property string userDid
     required property string atUri
     required property int count
     required property string nameSingular
@@ -24,8 +25,8 @@ Text {
     }
 
     function showAuthors() {
-        let modelId = root.getSkywalker().createAuthorListModel(authorListType, atUri)
-        root.viewAuthorList(modelId, authorListHeader);
+        let modelId = root.getSkywalker(userDid).createAuthorListModel(authorListType, atUri)
+        root.viewAuthorListByUser(userDid, modelId, authorListHeader);
     }
 
 

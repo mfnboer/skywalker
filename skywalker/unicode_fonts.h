@@ -50,6 +50,7 @@ public:
     static bool isEmoji(const QString& grapheme);
     static bool isKeycapEmoji(const QString& grapheme);
     static QString setEmojiFontCombinedEmojis(const QString& text);
+    static QString removeEmojis(const QString& text);
 
     static bool hasPhraseEnding(const QString& text);
     static bool hasPhraseStarting(const QString& text);

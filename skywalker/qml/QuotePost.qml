@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string userDid
     property basicprofile author
     property string postText
     property date postDateTime
@@ -28,6 +29,7 @@ Column {
 
         PostHeaderWithAvatar {
             Layout.fillWidth: true
+            userDid:quoteColumn.userDid
             author: quoteColumn.author
             postIndexedSecondsAgo: (new Date() - postDateTime) / 1000
         }
@@ -45,6 +47,7 @@ Column {
 
     PostBody {
         width: parent.width - 20
+        userDid: quoteColumn.userDid
         postAuthor: author
         postText: quoteColumn.postText
         postPlainText: quoteColumn.postText

@@ -3,7 +3,8 @@ import QtQuick.Controls
 import skywalker
 
 SkyListView {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     readonly property string sideBarTitle: model.feedName
     readonly property SvgImage sideBarSvg: SvgOutline.repost
@@ -16,7 +17,7 @@ SkyListView {
     Accessible.name: sideBarTitle
 
     header: PostFeedHeader {
-        skywalker: postFeedView.skywalker
+        userDid: postFeedView.userDid
         feedName: sideBarTitle
         defaultSvg: SvgFilled.repost
         visible: !root.showSideBar

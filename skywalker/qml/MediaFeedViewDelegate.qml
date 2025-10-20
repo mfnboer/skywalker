@@ -4,7 +4,8 @@ import skywalker
 
 Rectangle {
     required property int index
-    property var skywalker: root.getSkywalker()
+    required property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property basicprofile author
     required property string postUri
     required property string postCid
@@ -230,8 +231,8 @@ Rectangle {
 
     SvgButton {
         id: optionsButton
-        anchors.right: parent.right
-        anchors.rightMargin: rightMarginWidth + 10
+        anchors.right: currentUserAvatar.active ? currentUserAvatar.left : parent.right
+        anchors.rightMargin: currentUserAvatar.active ? 0 : rightMarginWidth + 10
         y: headerHeight + 10
         iconColor: "white"
         Material.background: "transparent"
@@ -272,6 +273,21 @@ Rectangle {
         }
     }
 
+    Loader {
+        id: currentUserAvatar
+        anchors.right: parent.right
+        anchors.rightMargin: rightMarginWidth + 10
+        y: headerHeight + 15
+        height: guiSettings.headerHeight - 10
+        width: height
+        active: !root.isActiveUser(userDid)
+        visible: mediaRect.showDetails
+
+        sourceComponent: CurrentUserAvatar {
+            userDid: videoPage.userDid
+        }
+    }
+
     Rectangle {
         width: parent.width
         anchors.top: postColumn.top
@@ -308,6 +324,7 @@ Rectangle {
 
         PostHeaderWithAvatar {
             width: parent.width
+            userDid: videoPage.userDid
             author: videoPage.author
             postIndexedSecondsAgo: videoPage.postIndexedSecondsAgo
         }
@@ -325,6 +342,7 @@ Rectangle {
 
         PostBody {
             width: parent.width
+            userDid: videoPage.userDid
             postAuthor: videoPage.author
             postText: videoPage.postText
             postPlainText: videoPage.postPlainText
@@ -358,6 +376,7 @@ Rectangle {
                 id: postStats
                 width: parent.width
                 topPadding: 10
+                skywalker: videoPage.skywalker
                 replyCount: postReplyCount
                 repostCount: postRepostCount + postQuoteCount
                 likeCount: postLikeCount
@@ -372,7 +391,7 @@ Rectangle {
                 isReply: postIsReply
                 replyRootAuthorDid: postReplyRootAuthorDid
                 replyRootUri: postReplyRootUri
-                authorIsUser: guiSettings.isUser(author)
+                authorIsUser: author.did === userDid
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
                 isThread: postIsThread || postIsThreadReply
@@ -385,10 +404,13 @@ Rectangle {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                                       author, postReplyRootUri, postReplyRootCid, lang,
-                                      postMentionDids)
+                                      postMentionDids, "", "", "", userDid)
                 }
 
                 onReplyLongPress: (mouseEvent) => {
+                    if (!root.isActiveUser(userDid))
+                        return
+
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.replyByNonActiveUser(
                             mouseEvent, postStats, videoPage.ListView.view,
@@ -399,25 +421,36 @@ Rectangle {
 
                 onRepost: {
                     root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled, postPlainText)
+                                postIndexedDateTime, author, postEmbeddingDisabled, postPlainText,
+                                userDid)
+                }
+
+                function quote(quoteByDid = "") {
+                    root.quotePost(postUri, postCid,
+                            postText, postIndexedDateTime, author, postEmbeddingDisabled,
+                            "", quoteByDid)
                 }
 
                 onRepostLongPress: (mouseEvent) => {
+                    if (!root.isActiveUser(userDid)) {
+                        quote(userDid)
+                        return
+                    }
+
                     const actionDone = root.repostByNonActiveUser(
                             mouseEvent, postStats, videoPage.ListView.view, postUri, postCid,
                             postText, postIndexedDateTime, author, postEmbeddingDisabled,
                             postReasonRepostUri, postReasonRepostCid)
 
-                    if (!actionDone) {
-                        root.quotePost(postUri, postCid,
-                                postText, postIndexedDateTime, author, postEmbeddingDisabled)
-                    }
+                    if (!actionDone)
+                        quote()
                 }
 
-                onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
+                onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, userDid)
 
                 onLikeLongPress: (mouseEvent) => {
-                    root.likeByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
+                    if (root.isActiveUser(userDid))
+                        root.likeByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
                 }
 
                 onBookmark: {
@@ -428,7 +461,8 @@ Rectangle {
                 }
 
                 onBookmarkLongPress: (mouseEvent) => {
-                    root.bookmarkByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri)
+                    if (root.isActiveUser(userDid))
+                        root.bookmarkByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri)
                 }
 
                 onShare: skywalker.sharePost(postUri)
@@ -443,20 +477,20 @@ Rectangle {
                         skywalker.getPostThread(postUri, true)
                 }
 
-                onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
-                onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
-                onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
+                onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
+                onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
-                onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author)
+                onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)
                 onTranslatePost: root.translateText(postPlainText)
-                onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
-                onPin: root.pinPost(postUri, postCid)
-                onUnpin: root.unpinPost(postCid)
-                onBlockAuthor: root.blockAuthor(author)
+                onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
+                onPin: root.pinPost(postUri, postCid, userDid)
+                onUnpin: root.unpinPost(postCid, userDid)
+                onBlockAuthor: root.blockAuthor(author, userDid)
                 onShowEmojiNames: root.showEmojiNamesList(postPlainText)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
-                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
+                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
             }
         }
 
@@ -504,6 +538,13 @@ Rectangle {
                 asynchronous: true
             }
         }
+    }
+
+    function confirmDelete() {
+        guiSettings.askYesNoQuestion(
+                    videoPage,
+                    qsTr("Do you really want to delete your post?"),
+                    () => root.deletePost(postUri, postCid, userDid))
     }
 
     function cover() {

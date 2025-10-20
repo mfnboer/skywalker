@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property string feedName
     property SvgImage defaultSvg: SvgFilled.feed
     property string feedAvatar
@@ -111,6 +112,7 @@ Rectangle {
             Layout.rightMargin: 10
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: height
+            userDid: header.userDid
             avatarUrl: header.feedAvatar
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
@@ -199,6 +201,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: Layout.preferredHeight
+            userDid: header.userDid
             avatarUrl: header.feedAvatar
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
@@ -211,6 +214,17 @@ Rectangle {
             Accessible.name: header.feedName
             Accessible.description: Accessible.name
             Accessible.onPressAction: header.feedAvatarClicked()
+        }
+        Loader {
+            Layout.rightMargin: 10
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+            Layout.preferredHeight: parent.height - 10
+            Layout.preferredWidth: Layout.preferredHeight
+            active: !root.isActiveUser(userDid)
+
+            sourceComponent: CurrentUserAvatar {
+                userDid: header.userDid
+            }
         }
         Item {
             id: userAvatar

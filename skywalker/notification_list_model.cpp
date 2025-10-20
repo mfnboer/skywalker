@@ -107,7 +107,7 @@ void NotificationListModel::updateNewLabelsNotifications()
 }
 
 bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
-                                             ATProto::Client& bsky, bool clearFirst,
+                                             ATProto::Client::SharedPtr bsky, bool clearFirst,
                                              const std::function<void()>& doneCb)
 {
     qDebug() << "Add notifications:" << notifications->mNotifications.size();
@@ -149,7 +149,7 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
 
     auto notificationList = createNotificationList(notifications->mNotifications);
 
-    getPosts(bsky, notificationList, [this, notificationList, clearFirst, doneCb]{
+    getPosts(*bsky, notificationList, [this, notificationList, clearFirst, doneCb]{
         auto list = std::move(notificationList);
         filterNotificationList(list);
         addNotificationList(list, clearFirst);

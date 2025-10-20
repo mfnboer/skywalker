@@ -233,7 +233,7 @@ Rectangle {
                         }
                         AccessibleMenuItem {
                             text: firstMember.viewer.blocking ? qsTr("Unblock account") : qsTr("Block account")
-                            visible: !guiSettings.isUser(firstMember)
+                            visible: !root.isActiveUser(firstMember.did)
                             onTriggered: {
                                 if (firstMember.viewer.blocking)
                                     unblockAuthor(firstMember)

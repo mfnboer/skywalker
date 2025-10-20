@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "non_active_user.h"
+#include "post_utils.h"
 #include "session_manager.h"
 #include "skywalker.h"
 #include "utils.h"
@@ -15,16 +16,22 @@ NonActiveUser::NonActiveUser(QObject* parent) :
 {
 }
 
-NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired, int notificationListModelId,
-                             ATProto::Client::SharedPtr bsky, SessionManager* sessionManager, QObject* parent) :
+NonActiveUser::NonActiveUser(const BasicProfile& profile, bool sessionExpired,
+                             ATProto::Client::SharedPtr bsky, SessionManager* sessionManager,
+                             QObject* parent) :
     QObject(parent),
     mProfile(profile),
     mSessionExpired(sessionExpired),
-    mNotificationListModelId(notificationListModelId),
     mBsky(bsky),
     mSessionManager(sessionManager)
 {
     Q_ASSERT(mSessionManager);
+
+    if (mBsky)
+    {
+        mSkywalker = sessionManager->getSkywalker()->createSkywalker(profile.getDid(), mBsky, this);
+        mNotificationListModelId = mSkywalker->createNotificationListModel();
+    }
 }
 
 NonActiveUser::~NonActiveUser()
@@ -36,7 +43,7 @@ void NonActiveUser::removeNotificationListModel()
 {
     if (mNotificationListModelId >= 0)
     {
-        mSessionManager->getSkywalker()->removeNotificationListModel(mNotificationListModelId);
+        mSkywalker->removeNotificationListModel(mNotificationListModelId);
         mNotificationListModelId = -1;
     }
 }
@@ -56,9 +63,14 @@ void NonActiveUser::expireSession()
     emit sessionExpiredChanged();
 }
 
+Skywalker* NonActiveUser::getSkywalker() const
+{
+    return mSkywalker.get();
+}
+
 NotificationListModel* NonActiveUser::getNotificationListModel() const
 {
-    return mSessionManager->getSkywalker()->getNotificationListModel(mNotificationListModelId);
+    return mSkywalker->getNotificationListModel(mNotificationListModelId);
 }
 
 void NonActiveUser::setUnreadNotificationCount(int unread)
@@ -108,10 +120,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
 
             const bool clearFirst = cursor.isEmpty();
 
-            // The bsky client from the active user is passed in to get the post stats from
-            // the active user on a post. This client is never destroyed
-            auto* activeUserBsky = mSessionManager->getActiveUserBskyClient();
-            model->addNotifications(std::move(ouput), *activeUserBsky, clearFirst,
+            model->addNotifications(std::move(ouput), mBsky, clearFirst,
                 [this, presence]{
                     if (!presence)
                         return;

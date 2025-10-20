@@ -3,6 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 Item {
+    required property Skywalker skywalker
     required property int replyCount
     required property int repostCount
     required property int likeCount
@@ -317,11 +318,13 @@ Item {
     }
 
     function hasOwnRecord() {
+        const userDid = skywalker.getUserDid()
+
         if (record)
-            return record.detached ? guiSettings.isUserDid(record.detachedByDid) : guiSettings.isUserDid(record.author.did)
+            return record.detached ? record.detachedByDid === userDid : record.author.did === userDid
 
         if (recordWithMedia)
-            return recordWithMedia.record.detached ? guiSettings.isUserDid(recordWithMedia.record.detachedByDid)  : guiSettings.isUserDid(recordWithMedia.record.author.did)
+            return recordWithMedia.record.detached ? recordWithMedia.record.detachedByDid === userDid  : recordWithMedia.record.author.did === userDid
 
         return false
     }
@@ -330,7 +333,7 @@ Item {
         if (!isReply)
             return authorIsUser
 
-        return guiSettings.isUserDid(replyRootAuthorDid)
+        return replyRootAuthorDid === skywalker.getUserDid()
     }
 
     function statSpeech(stat, textSingular, textPlural) {

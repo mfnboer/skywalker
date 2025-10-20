@@ -4,8 +4,9 @@ import skywalker
 
 // This is a full screen swipe view
 SkyListView {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property int closeTransition: StackView.Immediate
-    required property var skywalker
     property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
     property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
     property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)

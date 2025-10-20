@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import skywalker
 
 Item {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     property recordview record
     property bool highlight: false
     property string backgroundColor: "transparent"
@@ -33,6 +35,7 @@ Item {
 
         PostHeaderWithAvatar {
             width: parent.width
+            userDid: recordView.userDid
             author: record.author
             postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
             visible: record.available
@@ -52,6 +55,7 @@ Item {
 
             sourceComponent: PostBody {
                 width: parent.width
+                userDid: recordView.userDid
                 postAuthor: record.author
                 postText: record.postTextFormatted
                 postPlainText: record.postPlainText
@@ -83,6 +87,7 @@ Item {
 
             sourceComponent: QuoteFeed {
                 width: parent.width
+                userDid: recordView.userDid
                 feed: record.feed
                 Accessible.ignored: true
             }
@@ -94,6 +99,7 @@ Item {
 
             sourceComponent: QuoteList {
                 width: parent.width
+                userDid: recordView.userDid
                 list: record.list
                 Accessible.ignored: true
             }
@@ -105,6 +111,7 @@ Item {
 
             sourceComponent: QuoteLabeler {
                 width: parent.width
+                userDid: recordView.userDid
                 labeler: record.labeler
             }
         }
@@ -115,6 +122,7 @@ Item {
 
             sourceComponent: QuoteStarterPack {
                 width: parent.width
+                userDid: recordView.userDid
                 starterPack: record.starterPack
             }
         }
@@ -149,7 +157,7 @@ Item {
             sourceComponent: Text {
                 width: parent.width
                 color: guiSettings.textColor
-                text: guiSettings.isUserDid(record.detachedByDid) ?
+                text: record.detachedByDid === skywalker.getUserDid() ?
                           qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
                           qsTr("🗑 Detached by author")
 
@@ -190,9 +198,9 @@ Item {
         if (record.postUri)
             skywalker.getPostThread(record.postUri)
         else if (record.feedAvailable)
-            root.viewPostFeed(record.feed)
+            root.viewPostFeed(record.feed, recordView.userDid)
         else if (record.listAvailable)
-            root.viewList(record.list)
+            root.viewList(record.list, recordView.userDid)
         else if (record.labelerAvailable)
             skywalker.getDetailedProfile(record.labeler.creator.did)
         else if (record.starterPackAvailable)
@@ -222,7 +230,7 @@ Item {
         }
 
         if (record.detached)
-            return guiSettings.isUserDid(record.detachedByDid) ? qsTr("quote removed by you") : qsTr("quote removed by author")
+            return record.detachedByDid === skywalker.getUserDid() ? qsTr("quote removed by you") : qsTr("quote removed by author")
 
         return accessibilityUtils.getPostNotAvailableSpeech(
                 record.notFound, record.blocked, record.notSupported)

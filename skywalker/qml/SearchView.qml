@@ -6,7 +6,7 @@ import skywalker
 import atproto.lib
 
 SkyPage {
-    required property var skywalker
+    property Skywalker skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
     property var timeline

@@ -64,6 +64,8 @@ class Skywalker : public IFeedPager
     QML_ELEMENT
 
 public:
+    using Ptr = std::unique_ptr<Skywalker>;
+
     static constexpr const char* APP_NAME = "Skywalker";
     static constexpr const char* VERSION = APP_VERSION;
     static QString getUserAgentString();
@@ -73,6 +75,8 @@ public:
 
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
+
+    Ptr createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
 
     Q_INVOKABLE void login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken);
     Q_INVOKABLE bool autoLogin();
@@ -244,6 +248,9 @@ public:
     bool getHideVerificationBadges() const { return mUserPreferences.getVerificationPrefs().mHideBadges; };
 
 signals:
+    void deleted();
+    void skywalkerCreated(const QString& did, Skywalker* skywalker);
+    void skywalkerDestroyed(const QString& did);
     void loginOk();
     void loginFailed(QString error, QString msg, const QString host, QString handle, QString password);
     void resumeSessionOk();
@@ -272,13 +279,13 @@ signals:
     void getAuthorFeedOk(int modelId);
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
     void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO, int seconds = 0);
-    void postThreadOk(int id, int postEntryIndex);
+    void postThreadOk(QString did, int id, int postEntryIndex);
     void userChanged();
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
-    void getDetailedProfileOK(DetailedProfile);
-    void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
-    void getStarterPackViewOk(StarterPackView starterPack);
+    void getDetailedProfileOK(QString userDid, DetailedProfile);
+    void getFeedGeneratorOK(QString userDid, GeneratorView generatorView, bool viewPosts);
+    void getStarterPackViewOk(QString userDid, StarterPackView starterPack);
     void getPostThreadInProgressChanged();
     void hideVerificationBadgesChanged();
     void sharedTextReceived(QString text); // Shared from another app
@@ -294,6 +301,8 @@ signals:
     void appResumed();
 
 private:
+    Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
+
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getLabelersAuthorList(int modelId);
     void getActiveFollowsAuthorList(int modelId, const QString& cursor);
@@ -346,12 +355,11 @@ private:
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
 
     QNetworkAccessManager* mNetwork;
-    ATProto::Client::Ptr mBsky;
+    ATProto::Client::SharedPtr mBsky;
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
 
-    QString mAvatarUrl;
     QString mUserDid;
-    Profile mUserProfile;
+    Profile mUserProfile; // TODO: need this?
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;

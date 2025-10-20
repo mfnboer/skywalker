@@ -128,9 +128,45 @@ Skywalker::Skywalker(QObject* parent) :
     qDebug() << getUserAgentString();
 }
 
+// TODO: pass in UserSettings?
+Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent) :
+    IFeedPager(parent),
+    mNetwork(new QNetworkAccessManager(this)),
+    mBsky(bsky),
+    mUserDid(did),
+    mFollowsActivityStore(mUserFollows, this),
+    mTimelineHide(this),
+    mUserSettings(this),
+    mSessionManager(this, this),
+    mContentFilter(mUserPreferences, &mUserSettings, this),
+    mMutedWords(mUserFollows, this),
+    mFocusHashtags(new FocusHashtags(this)),
+    mGraphUtils(this),
+    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mChat(nullptr),
+    mUserHashtags(USER_HASHTAG_INDEX_SIZE),
+    mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
+    mFavoriteFeeds(this),
+    mAnniversary(mUserDid, mUserSettings, this),
+    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+                   mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
+                   mUserPreferences, mUserSettings, mFollowsActivityStore, this)
+{
+    Q_ASSERT(!mUserSettings.getUser(did).isNull());
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
+    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
+    mGraphUtils.setSkywalker(this);
+
+    // TODO: AuthorCache::instance().addProfileStore(&mUserFollows);
+    // What about the other caches?
+}
+
 Skywalker::~Skywalker()
 {
     qDebug() << "Destructor";
+    emit deleted();
     saveHashtags();
 
     const auto& emojiFontSource = FontDownloader::getEmojiFontSource();
@@ -150,6 +186,22 @@ Skywalker::~Skywalker()
     Q_ASSERT(mNotificationListModels.empty());
 }
 
+Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent)
+{
+    Skywalker::Ptr skywalker(new Skywalker(did, bsky, parent));
+
+    // TODO: pass DID
+    connect(skywalker.get(), &Skywalker::deleted, this, [this, did]{ emit skywalkerDestroyed(did); });
+    connect(skywalker.get(), &Skywalker::statusMessage, this, [this](auto msg, auto level, auto seconds){ emit statusMessage(msg, level, seconds); });
+    connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
+    connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile){ emit getDetailedProfileOK(did, profile); });
+    connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
+    connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack){ emit getStarterPackViewOk(did, starterPack); });
+
+    emit skywalkerCreated(did, skywalker.get());
+    return skywalker;
+}
+
 QString Skywalker::getUserAgentString()
 {
     // NOTE: The "(android)" part is needed for LinkCardReader
@@ -161,7 +213,7 @@ void Skywalker::login(const QString host, const QString user, QString password, 
 {
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
         [this, host, user, password, rememberPassword]{
@@ -231,7 +283,7 @@ bool Skywalker::resumeAndRefreshSession()
 
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
     // User DID must be set before inserting sessions in the session manager
     mUserDid = session->mDid;
@@ -419,7 +471,8 @@ void Skywalker::updateFavoriteFeeds()
     qDebug() << "Update favorite feeds";
     const auto searchFeeds = mUserSettings.getPinnedSearchFeeds(mUserDid);
     const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
-    mFavoriteFeeds.init(searchFeeds, savedFeedsPref);
+    const auto& savedFeedsPrefV2 = mUserPreferences.getSavedFeedsPrefV2();
+    mFavoriteFeeds.init(searchFeeds, savedFeedsPref, savedFeedsPrefV2);
 }
 
 void Skywalker::saveFavoriteFeeds()
@@ -1623,7 +1676,7 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread)
                 }
             }
 
-            emit postThreadOk(id, postEntryIndex);
+            emit postThreadOk(mUserDid, id, postEntryIndex);
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
@@ -1924,7 +1977,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
             const bool clearFirst = cursor.isEmpty();
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
-            model.addNotifications(std::move(ouput), *mBsky, clearFirst,
+            model.addNotifications(std::move(ouput), mBsky, clearFirst,
                 [this, mentionsOnly, emitLoadedSignal]{
                     auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
                     model.setGetFeedInProgress(false);
@@ -1977,7 +2030,7 @@ void Skywalker::getDetailedProfile(const QString& author)
             decGetDetailedProfileInProgress();
             const DetailedProfile detailedProfile(profile);
             AuthorCache::instance().put(detailedProfile);
-            emit getDetailedProfileOK(detailedProfile);
+            emit getDetailedProfileOK(mUserDid, detailedProfile);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getDetailedProfile failed:" << error << " - " << msg;
@@ -2008,7 +2061,7 @@ void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 
     mBsky->getFeedGenerator(feedUri,
         [this, viewPosts](auto output){
-            emit getFeedGeneratorOK(GeneratorView(output->mView), viewPosts);
+            emit getFeedGeneratorOK(mUserDid, GeneratorView(output->mView), viewPosts);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getFeedGenerator failed:" << error << " - " << msg;
@@ -2023,7 +2076,7 @@ void Skywalker::getStarterPackView(const QString& starterPackUri)
 
     mBsky->getStarterPack(starterPackUri,
         [this](auto starterPackView){
-            emit getStarterPackViewOk(StarterPackView(starterPackView));
+            emit getStarterPackViewOk(mUserDid, StarterPackView(starterPackView));
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getStarterPackView failed:" << error << " - " << msg;

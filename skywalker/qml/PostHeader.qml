@@ -4,9 +4,10 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string userDid
     required property basicprofile author
     required property double postIndexedSecondsAgo
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels, userDid)
 
     id: postHeader
 
@@ -24,6 +25,7 @@ Column {
 
             AuthorNameAndStatus {
                 Layout.fillWidth: true
+                userDid: postHeader.userDid
                 author: postHeader.author
             }
             DurationLabel {
@@ -62,6 +64,7 @@ Column {
                 id: contentLabels
                 anchors.left: parent.left
                 anchors.right: undefined
+                userDid: postHeader.userDid
                 contentLabels: author.labels
                 labelsToShow: postHeader.labelsToShow
                 contentAuthorDid: author.did

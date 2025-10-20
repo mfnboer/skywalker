@@ -118,7 +118,7 @@ public:
 
     void clear();
     bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
-                          ATProto::Client& bsky, bool clearFirst = false,
+                          ATProto::Client::SharedPtr bsky, bool clearFirst = false,
                           const std::function<void()>& doneCb = nullptr);
     QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput,
                           const QString& lastRev, const QString& userDid);

@@ -2,10 +2,11 @@ import QtQuick
 import skywalker
 
 SkyListView {
+    property string viewerDid
     required property int modelId
     required property int postEntryIndex
     property int syncToIndex: postEntryIndex
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker(viewerDid)
     readonly property bool isUnrolledThread: model?.unrollThread
     readonly property string sideBarTitle: isUnrolledThread ? qsTr("Unrolled thread") : qsTr("Post thread")
     readonly property SvgImage sideBarSvg: isUnrolledThread ? SvgOutline.thread : SvgOutline.chat
@@ -20,6 +21,7 @@ SkyListView {
     header: SimpleHeader {
         height: (headerVisible ? guiSettings.headerHeight : guiSettings.headerMargin) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
+        userDid: viewerDid
         headerVisible: !root.showSideBar
         onBack: view.closed()
 
@@ -28,7 +30,7 @@ SkyListView {
             width: parent.width
             height: restrictionRow.height + 5
             anchors.bottom: parent.bottom
-            color: guiSettings.threadStartColor(root.getSkywalker().getUserSettings().threadColor)
+            color: guiSettings.threadStartColor(skywalker.getUserSettings().threadColor)
             visible: model.replyRestriction !== QEnums.REPLY_RESTRICTION_NONE
 
             Accessible.role: Accessible.StaticText
@@ -71,7 +73,7 @@ SkyListView {
                             skywalker.getDetailedProfile(link)
                         }
                         else if (link.startsWith("at:")) {
-                            root.viewListByUri(link, false)
+                            root.viewListByUri(link, false, viewerDid)
                         }
                     }
 
@@ -192,7 +194,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                           author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                          initialText, imageSource)
+                          initialText, imageSource, viewerDid)
     }
 
     function videoReply(initialText, videoSource) {
@@ -209,7 +211,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeVideoReply(postUri, postCid, postText, postIndexedDateTime,
                                author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                               initialText, videoSource)
+                               initialText, videoSource, viewerDid)
     }
 
     function sync(index) {

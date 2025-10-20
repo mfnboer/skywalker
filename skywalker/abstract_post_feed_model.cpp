@@ -318,6 +318,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
     switch (Role(role))
     {
+    case Role::UserDid:
+        return mUserDid;
     case Role::Author:
     {
         const auto author = post.getAuthor();
@@ -664,6 +666,7 @@ void AbstractPostFeedModel::setEndOfFeed(bool endOfFeed)
 QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
+        { int(Role::UserDid), "userDid" },
         { int(Role::Author), "author" },
         { int(Role::PostUri), "postUri" },
         { int(Role::PostCid), "postCid" },

@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 GridView {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     property bool acceptsInteractions: false
     property string feedDid: ""
     readonly property int columns: 3
@@ -87,7 +88,7 @@ GridView {
                     item.goToIndex(newIndex)
                 else
                     console.warn("NO MEDIA TILES VIEW")
-            })
+            }, userDid)
         }
     }
 

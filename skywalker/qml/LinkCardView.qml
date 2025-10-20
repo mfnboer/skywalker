@@ -3,6 +3,7 @@ import QtQuick.Controls.Material
 import skywalker
 
 RoundCornerMask {
+    property string userDid
     property string uri
     property string title
     property string description
@@ -33,22 +34,6 @@ RoundCornerMask {
         Loader {
             active: filter.imageVisible() && Boolean(card.thumbUrl)
 
-            // Dynamic sizing of an image of unknown size does now work well with list views
-            // sourceComponent: ThumbImageUnknownSizeView {
-            //     x: (externalColumn.width - width) / 2
-            //     maxWidth: externalColumn.width - 2
-            //     maxHeight: guiSettings.maxImageHeight
-            //     image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
-            //     noCrop: true
-            //     indicateLoading: false
-
-            //     onStatusChanged: {
-            //         if (status === Image.Error)
-            //             height = 0
-            //     }
-
-            //     onSourceSizeChanged: console.debug("SOURCE SIZE:", sourceSize, card.uri)
-            // }
             sourceComponent: ThumbImageFixedSizeView {
                 x: (externalColumn.width - width) / 2
                 width: calcWidth()
@@ -113,7 +98,7 @@ RoundCornerMask {
 
             sourceComponent: SkyButton {
                 text: qsTr("Watch now")
-                onClicked: root.openLink(card.uri)
+                onClicked: root.openLink(card.uri, "", userDid)
             }
         }
     }

@@ -49,7 +49,6 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                skywalker: sideBar.skywalker
                 feedName: skywalker.timelineModel.feedName
                 showAsHome: true
                 isHomeFeed: true
@@ -75,7 +74,6 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                skywalker: sideBar.skywalker
                 feedName: postFeedView ? postFeedView.headerItem.feedName : ""
                 feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
                 defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
@@ -129,7 +127,6 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                skywalker: sideBar.skywalker
                 feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
                 defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
                 feedAvatar: ""

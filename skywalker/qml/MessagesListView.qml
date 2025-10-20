@@ -408,13 +408,13 @@ SkyPage {
             () => chat.deleteMessage(convo.id, messageId))
     }
 
-    function reportDirectMessage(msg) {
+    function reportDirectMessage(msg, reportByDid = "") {
         const lastVisible = messagesView.getLastVisibleIndex()
         const lastOffset = messagesView.calcVisibleOffsetY(lastVisible)
 
         let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(page, {
-                skywalker: skywalker,
+                userDid: reportByDid,
                 message: msg,
                 convoId: convo.id,
                 author: convo.getMember(msg.senderDid).basicProfile })

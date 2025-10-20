@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    required property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     property basicprofile author
     property string postUri
     property string postCid
@@ -34,6 +35,7 @@ SkyPage {
         color: guiSettings.headerColor
 
         SvgPlainButton {
+            id: cancelButton
             y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
             anchors.left: parent.left
             svg: SvgOutline.cancel
@@ -43,7 +45,8 @@ SkyPage {
 
         Text {
             y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.left: cancelButton.right
+            anchors.right: reportButton.left
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
@@ -53,11 +56,24 @@ SkyPage {
         SkyButton {
             id: reportButton
             y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
-            anchors.rightMargin: 10
-            anchors.right: parent.right
+            anchors.right: avatar.left
             text: qsTr("Send")
             enabled: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
             onClicked: sendReport()
+        }
+
+        Loader {
+            id: avatar
+            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            height: parent.height - 10
+            width: active ? height : 0
+            active: !root.isActiveUser(userDid)
+
+            sourceComponent: CurrentUserAvatar {
+                userDid: page.userDid
+            }
         }
     }
 
@@ -137,6 +153,7 @@ SkyPage {
                         x: 10
                         y: 10
                         width: 40
+                        userDid: page.userDid
                         author: page.author
                     }
                 }
@@ -145,6 +162,7 @@ SkyPage {
 
                     AuthorNameAndStatus {
                         width: parent.width
+                        userDid: page.userDid
                         author: page.author
                     }
                     Text {
@@ -162,6 +180,7 @@ SkyPage {
             QuotePost {
                 id: quotePost
                 width: parent.width
+                userDid: page.userDid
                 author: page.author
                 postText: page.postText
                 postDateTime: page.postDateTime
@@ -172,6 +191,7 @@ SkyPage {
             QuotePost {
                 id: quoteMessage
                 width: parent.width
+                userDid: page.userDid
                 author: page.author
                 postText: page.message.formattedText
                 postDateTime: message.sentAt
@@ -182,6 +202,7 @@ SkyPage {
             QuoteFeed {
                 id: quoteFeed
                 width: parent.width
+                userDid: page.userDid
                 feed: page.feed
                 visible: !page.feed.isNull();
             }
@@ -189,6 +210,7 @@ SkyPage {
             QuoteList {
                 id: quoteList
                 width: parent.width
+                userDid: page.userDid
                 list: page.list
                 visible: !page.list.isNull();
             }
@@ -196,6 +218,7 @@ SkyPage {
             QuoteStarterPack {
                 id: quoteStarterPack
                 width: parent.width
+                userDid: page.userDid
                 starterPack: page.starterPack
                 visible: !page.starterPack.isNull()
             }
