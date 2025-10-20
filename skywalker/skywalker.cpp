@@ -128,12 +128,12 @@ Skywalker::Skywalker(QObject* parent) :
     qDebug() << getUserAgentString();
 }
 
-// TODO: pass in UserSettings?
 Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent) :
     IFeedPager(parent),
     mNetwork(new QNetworkAccessManager(this)),
     mBsky(bsky),
     mUserDid(did),
+    mIsActiveUser(false),
     mFollowsActivityStore(mUserFollows, this),
     mTimelineHide(this),
     mUserSettings(this),
@@ -158,9 +158,13 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mNetwork->setTransferTimeout(10000);
     mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
     mGraphUtils.setSkywalker(this);
+    mTimelineHide.setSkywalker(this);
 
-    // TODO: AuthorCache::instance().addProfileStore(&mUserFollows);
-    // What about the other caches?
+    // The author and post caches are global. When multiple sessions are used
+    // this will be mostly fine. The profiles and post content is good. Only
+    // labels may be different as different accounts may have different labeler
+    // subscriptions.
+    // If we want to change this, we need caches per skywalker instance.
 }
 
 Skywalker::~Skywalker()
@@ -200,6 +204,14 @@ Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::S
 
     emit skywalkerCreated(did, skywalker.get());
     return skywalker;
+}
+
+void Skywalker::initNonActiveUser()
+{
+    Q_ASSERT(!mIsActiveUser);
+    qDebug() << "Initialize:" << mUserDid;
+    initUserProfile();
+    getUserPreferences();
 }
 
 QString Skywalker::getUserAgentString()
@@ -368,6 +380,26 @@ void Skywalker::stopRefreshTimers()
     mGraphUtils.stopExpiryCheckTimer();
 }
 
+void Skywalker::initUserProfile()
+{
+    Q_ASSERT(mBsky);
+    const auto* session = mBsky->getSession();
+    Q_ASSERT(session);
+    qDebug() << "Init user profile, handle:" << session->mHandle << "did:" << session->mDid;
+
+    mBsky->getProfile(session->mDid,
+        [this](auto profile){
+            qDebug() << "Initialized user profile:" << mUserProfile.getHandle();
+            mUserProfile = Profile(profile);
+        },
+        [this, did=session->mDid](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            auto profile = mUserSettings.getUser(did);
+            mUserProfile = Profile(profile.getDid(), profile.getHandle(), profile.getDisplayName(),
+                                   profile.getAvatarUrl());
+        });
+}
+
 void Skywalker::getUserProfileAndFollows()
 {
     Q_ASSERT(mBsky);
@@ -449,7 +481,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Share
 void Skywalker::getUserPreferences()
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get user preferences";
+    qDebug() << "Get user preferences:" << mUserDid;
 
     mBsky->getPreferences(
         [this](auto prefs){
@@ -458,7 +490,9 @@ void Skywalker::getUserPreferences()
             updateFavoriteFeeds();
             initLabelers();
             loadLabelSettings();
-            mChat->initSettings();
+
+            if (mChat)
+                mChat->initSettings();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -611,6 +645,14 @@ void Skywalker::loadTimelineHide(QStringList uris)
 void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
+
+    if (!mIsActiveUser)
+    {
+        qDebug() << "Do not load muted repost for other users than the active user";
+        emit getUserPreferencesOK();
+        return;
+    }
+
     qDebug() << "Load muted reposts, maxPages:" << maxPages << "cursor:" << cursor;
 
     const QString uri = mUserSettings.getMutedRepostsListUri(mUserDid);
@@ -3416,7 +3458,8 @@ void Skywalker::removeListListModel(int id)
 
 BasicProfile Skywalker::getUser() const
 {
-    return AuthorCache::instance().getUser();
+    const BasicProfile profile = mUserProfile;
+    return profile;
 }
 
 void Skywalker::sharePost(const QString& postUri)

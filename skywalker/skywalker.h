@@ -77,12 +77,14 @@ public:
     ~Skywalker();
 
     Ptr createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
+    void initNonActiveUser();
 
     Q_INVOKABLE void login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
     Q_INVOKABLE void switchUser(const QString& did);
+    void initUserProfile();
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void dataMigration();
@@ -359,7 +361,8 @@ private:
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
 
     QString mUserDid;
-    Profile mUserProfile; // TODO: need this?
+    Profile mUserProfile;
+    bool mIsActiveUser = true;
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;

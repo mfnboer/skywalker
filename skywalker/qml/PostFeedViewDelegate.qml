@@ -7,10 +7,8 @@ Rectangle {
     readonly property int margin: 10
     required property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
-
-    // TODO: should we take the colors userdDid instead of that active user?
-    readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
-    readonly property string threadColor: root.getSkywalker().getUserSettings().threadColor
+    readonly property int threadStyle: skywalker.getUserSettings().threadStyle
+    readonly property string threadColor: skywalker.getUserSettings().threadColor
 
     required property int index
     required property basicprofile author

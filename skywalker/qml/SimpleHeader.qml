@@ -11,6 +11,7 @@ Rectangle {
     property bool headerVisible: true
     property bool isSideBar: false
     property string userDid
+    readonly property int usedRightMargin: currentUserAvatar.active ? currentUserAvatar.width : 0
 
     signal back
 
@@ -63,6 +64,7 @@ Rectangle {
         }
 
         Loader {
+            id: currentUserAvatar
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10

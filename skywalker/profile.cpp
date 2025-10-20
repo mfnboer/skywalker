@@ -736,6 +736,12 @@ Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& pr
 {
 }
 
+Profile::Profile(const QString& did, const QString& handle, const QString& displayName,
+        const QString& avatarUrl) :
+    BasicProfile(did, handle, displayName, avatarUrl)
+{
+}
+
 QString Profile::getDescription() const
 {
     if (mDescription)

@@ -85,12 +85,6 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     xrpc->setUserAgent(Skywalker::getUserAgentString());
 
     auto rawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
-
-    // NOTE: we set the labelers from the active user. So the posts you see
-    // for your other accounts will be labeled by the labelers you subscribed to
-    // with your active account.
-    const auto& dids = mSkywalker->getContentFilter()->getSubscribedLabelerDids();
-
     auto* bsky = rawBsky.get();
     Session::Ptr managedSession = createSession(did, std::move(rawBsky), bsky);
     insertSession(did, std::move(managedSession));
@@ -124,7 +118,12 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
 
             // Timers for the active user are started by Skywalker::resumeAndRefreshSession()
             if (did != mSkywalker->getUserDid())
+            {
                 startRefreshTimers(did, refreshDelayCount);
+
+                if (session->mNonActiveUser && session->mNonActiveUser->getSkywalker())
+                    session->mNonActiveUser->getSkywalker()->initNonActiveUser();
+            }
 
             if (successCb)
                 successCb();
