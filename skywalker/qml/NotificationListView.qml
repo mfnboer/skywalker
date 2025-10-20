@@ -333,7 +333,9 @@ SkyPage {
         if (tabBar.currentIndex > 1)
             tabBar.setCurrentIndex(0)
 
-        for (const nonActiveUser of sessionManager.nonActiveNotifications)
-            nonActiveUser.notificationListModel.clear()
+        for (const nonActiveUser of sessionManager.nonActiveNotifications) {
+            if (nonActiveUser.notificationListModel)
+                nonActiveUser.notificationListModel.clear()
+        }
     }
 }

@@ -70,6 +70,9 @@ Skywalker* NonActiveUser::getSkywalker() const
 
 NotificationListModel* NonActiveUser::getNotificationListModel() const
 {
+    if (!mSkywalker)
+        return nullptr;
+
     return mSkywalker->getNotificationListModel(mNotificationListModelId);
 }
 
