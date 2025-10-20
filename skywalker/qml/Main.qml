@@ -331,7 +331,7 @@ ApplicationWindow {
             }
 
             if (error)
-                statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+                statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
 
             signOutCurrentUser()
             signIn()
@@ -339,7 +339,7 @@ ApplicationWindow {
 
         onSessionExpired: (error) => {
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -349,9 +349,9 @@ ApplicationWindow {
             signIn()
         }
 
-        onStatusMessage: (msg, level, seconds) => { // qmllint disable signal-handler-parameters
+        onStatusMessage: (did, msg, level, seconds) => { // qmllint disable signal-handler-parameters
                 const period = seconds > 0 ? seconds : (level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
-                statusPopup.show(msg, level, period)
+                statusPopup.show(did, msg, level, period)
         }
 
         onPostThreadOk: (did, modelId, postEntryIndex) => viewPostThread(did, modelId, postEntryIndex)
@@ -360,7 +360,7 @@ ApplicationWindow {
         onGetUserProfileFailed: (error) => {
             console.warn("FAILED TO LOAD USER PROFILE:", error)
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -386,7 +386,7 @@ ApplicationWindow {
         onGetUserPreferencesFailed: (error) => {
             console.warn("FAILED TO LOAD USER PREFERENCES")
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -582,7 +582,7 @@ ApplicationWindow {
         onConversionFailed: (error) => {
             progressDialog.destroy()
             postUtils.dropVideo("file://" + gifFileName)
-            statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(skywalker.getUserDid(), qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
 
         onConversionProgress: (progress) => progressDialog.setProgress(progress)
@@ -1038,19 +1038,16 @@ ApplicationWindow {
     MainPostUtils {
         id: postUtils
         skywalker: skywalker
-        statusPopup: statusPopup
     }
 
     MainProfileUtils {
         id: profileUtils
         skywalker: skywalker
-        statusPopup: statusPopup
     }
 
     MainFeedUtils {
         id: feedUtils
         skywalker: skywalker
-        statusPopup: statusPopup
     }
 
     MainLinkUtils {
@@ -1061,7 +1058,6 @@ ApplicationWindow {
     MainGraphUtils {
         id: graphUtils
         skywalker: skywalker
-        statusPopup: statusPopup
     }
 
     M3U8Reader {

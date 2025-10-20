@@ -134,7 +134,7 @@ void LinkUtils::openLink(const ATProto::ATUri& atUri, const std::function<void(c
                 return;
 
             qWarning() << error << " - " << msg;
-            mSkywalker->statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

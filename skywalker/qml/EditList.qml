@@ -267,7 +267,7 @@ SkyPage {
 
         onPhotoPickFailed: (error) => {
             pickingImage = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onPhotoPickCanceled: {
@@ -302,12 +302,12 @@ SkyPage {
 
     function createListProgress(msg) {
         busyIndicator.running = true
-        statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
+        skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
     function createListFailed(error) {
         busyIndicator.running = false
-        statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         createListButton.enabled = true
     }
 

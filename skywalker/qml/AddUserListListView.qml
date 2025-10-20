@@ -70,8 +70,8 @@ ListView {
         id: graphUtils
         skywalker: view.skywalker
 
-        onAddListUserFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onRemoveListUserFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onAddListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onRemoveListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
     }
 

@@ -92,7 +92,7 @@ SkyListView {
         onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
         onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
         onRemoveListUserFailed: (error) => {
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             refresh()
         }
     }

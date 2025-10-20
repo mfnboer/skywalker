@@ -91,16 +91,16 @@ SkyListView {
         skywalker: view.skywalker // qmllint disable missing-type
 
         onDeleteListFailed: (error) => {
-            statusPopup.show(qsTr(`Failed to delete list: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(qsTr(`Failed to delete list: ${error}`), QEnums.STATUS_LEVEL_ERROR)
             skywalker.getListList(modelId)
         }
 
-        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onHideListOk: statusPopup.show(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
-        onHideListFailed: (error) => statusPopup.show(qsTr(`Failed to hide list from timeline: ${error}`), QEnums.STATUS_LEVEL_INFO, 2)
+        onBlockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onHideListOk: skywalker.showStatusMessage(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
+        onHideListFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to hide list from timeline: ${error}`), QEnums.STATUS_LEVEL_INFO, 2)
     }
 
 
@@ -113,10 +113,10 @@ SkyListView {
         page.onListCreated.connect((list) => {
             if (list.isNull()) {
                 // This should rarely happen. Let the user refresh.
-                statusPopup.show(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
+                skywalker.showStatusMessage(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
             }
             else {
-                statusPopup.show(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
+                skywalker.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
                 view.model.prependList(list)
             }
 
@@ -134,7 +134,7 @@ SkyListView {
                 list: list
             })
         page.onListUpdated.connect((cid, name, description, embeddedLinks, avatar) => {
-            statusPopup.show(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("List updated."), QEnums.STATUS_LEVEL_INFO, 2)
             let oldList = view.model.getEntry(index)
             let newList = view.model.updateEntry(index, cid, name, description, embeddedLinks, avatar)
 

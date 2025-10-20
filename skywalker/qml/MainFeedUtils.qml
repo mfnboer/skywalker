@@ -2,12 +2,10 @@ import QtQuick
 import skywalker
 
 FeedUtils {
-    required property StatusPopup statusPopup
-
     id: feedUtils
 
-    onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-    onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-    onInteractionsSent: statusPopup.show(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO)
-    onFailure: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+    onLikeFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    onUndoLikeFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    onInteractionsSent: skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO)
+    onFailure: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 }

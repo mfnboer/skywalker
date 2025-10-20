@@ -325,7 +325,7 @@ SkyPage {
         }
         onLikeFailed: (error) => {
             feedLikeTransient = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onUndoLikeOk: {
@@ -335,7 +335,7 @@ SkyPage {
         }
         onUndoLikeFailed: (error) => {
             feedLikeTransient = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
     }
 

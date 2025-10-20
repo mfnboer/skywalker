@@ -417,32 +417,32 @@ SkyPage {
         skywalker: page.skywalker
 
         onAddListUserOk: (did, itemUri, itemCid) => profileUtils.getProfileView(did, itemUri)
-        onAddListUserFailed: (error) => statusPopup.show(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        onAddListUserFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         onBlockListOk: (uri) => {
             listBlockedUri = uri
             authorListView.refresh()
         }
-        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onBlockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onUnblockListOk: {
             listBlockedUri = ""
             authorListView.refresh()
         }
-        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onMuteListOk: {
             listMuted = true
             authorListView.refresh()
         }
-        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteListOk: {
             listMuted = false
             authorListView.refresh()
         }
-        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onHideListOk: {
             listHideFromTimeline = true
-            statusPopup.show(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
         }
-        onHideListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onHideListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
     }
 
@@ -451,7 +451,7 @@ SkyPage {
         skywalker: page.skywalker
 
         onProfileViewOk: (profile, listItemUri) => authorListView.model.prependAuthor(profile, listItemUri)
-        onProfileViewFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onProfileViewFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
 

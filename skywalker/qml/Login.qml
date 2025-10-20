@@ -219,6 +219,6 @@ SkyPage {
             passwordField.setFocus()
 
         if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
-            statusPopup.show(errorMsg, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(errorMsg, QEnums.STATUS_LEVEL_ERROR)
     }
 }

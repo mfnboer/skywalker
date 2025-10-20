@@ -1412,10 +1412,6 @@ SkyPage {
         }
     }
 
-    StatusPopup {
-        id: statusPopup
-    }
-
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
@@ -1563,7 +1559,7 @@ SkyPage {
 
         onThreadgateFailed: (error) => page.postFailed(error)
 
-        onPostgateFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onPostgateFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onPostProgress: (msg) => page.postProgress(msg)
 
@@ -1580,13 +1576,13 @@ SkyPage {
 
         onVideoPickedFailed: (error) => {
             pickingImage = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
         onPhotoPickFailed: (error) => {
             pickingImage = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
@@ -1814,7 +1810,7 @@ SkyPage {
 
         onConversionFailed: (error) => {
             progressDialog.destroy()
-            statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
 
         onConversionProgress: (progress) => {
@@ -1842,13 +1838,13 @@ SkyPage {
         storageType: DraftPosts.STORAGE_FILE
 
         onSaveDraftPostOk: {
-            statusPopup.show(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
+            skywalker.showStatusMessage(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
             page.closed()
         }
 
-        onSaveDraftPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUploadingImage: (seq) => statusPopup.show(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
-        onLoadDraftPostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onUploadingImage: (seq) => skywalker.showStatusMessage(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
+        onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
 
@@ -1965,7 +1961,7 @@ SkyPage {
 
     function postFailed(error) {
         busyIndicator.running = false
-        statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         // Delete posts already posted (in a thread, or on failed thread gate creation)
         postUtils.batchDeletePosts(postedUris)
@@ -1986,9 +1982,9 @@ SkyPage {
         busyIndicator.running = true
 
         if (sendingThreadPost < 0)
-            statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO, 300)
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 300)
         else
-            statusPopup.show(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO, 300)
+            skywalker.showStatusMessage(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO, 300)
     }
 
     function checkAltText() {
@@ -2082,7 +2078,7 @@ SkyPage {
             return
 
         if (!canAddImage()) {
-            statusPopup.show(qsTr("Cannot add an image to this post."), QEnums.STATUS_LEVEL_INFO, 30)
+            skywalker.showStatusMessage(qsTr("Cannot add an image to this post."), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropPhoto(source)
             return
         }
@@ -2098,7 +2094,7 @@ SkyPage {
             return
 
         if (!canAddVideo()) {
-            statusPopup.show(qsTr("Cannot add video to this post."), QEnums.STATUS_LEVEL_INFO, 30)
+            skywalker.showStatusMessage(qsTr("Cannot add video to this post."), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropVideo(source)
             return
         }

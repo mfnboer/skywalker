@@ -376,7 +376,7 @@ SkyPage {
                     svg: SvgOutline.directMessage
                     accessibleName: qsTr(`direct message ${author.name}`)
                     onClicked: skywalker.chat.startConvoForMember(author.did)
-                    visible: author.canSendDirectMessage() && !page.isUser(author) && !skywalker.chat.messageConvoOpen() && root.isActiveUser(page.userDid)
+                    visible: author.canSendDirectMessage() && !page.isUser(author) && skywalker.chat && !skywalker.chat.messageConvoOpen()
                 }
 
                 SkyButton {
@@ -1257,7 +1257,7 @@ SkyPage {
             if (error === ATProtoErrorMsg.BLOCKED_ACTOR && itemAtIndex(0).retryGetFeed(modelId)) // qmllint disable missing-property
                 return
 
-            statusPopup.show(msg, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_ERROR)
         }
 
         function refresh() {
@@ -1267,10 +1267,6 @@ SkyPage {
         function clear() {
             itemAtIndex(0).clear() // qmllint disable missing-property
         }
-    }
-
-    StatusPopup {
-        id: statusPopup
     }
 
     PostUtils {
@@ -1288,68 +1284,68 @@ SkyPage {
         skywalker: page.skywalker
 
         onFollowOk: (uri) => { following = uri }
-        onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
         onUnfollowOk: following = ""
-        onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onBlockOk: (uri, expiresAt) => {
                        blocking = uri
                        authorFeedView.clear()
 
                         if (isNaN(expiresAt.getTime()))
-                            statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
+                            skywalker.showStatusMessage(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
                         else
-                            statusPopup.show(qsTr(`Blocked till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
+                            skywalker.showStatusMessage(qsTr(`Blocked till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
                    }
 
-        onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onBlockFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onUnblockOk: {
             blocking = ""
             authorFeedView.refresh()
-            statusPopup.show(qsTr("Unblocked"), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("Unblocked"), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
-        onUnblockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnblockFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onMuteOk: (expiresAt) => {
             authorMuted = true
             authorFeedView.clear()
 
             if (isNaN(expiresAt.getTime()))
-                statusPopup.show(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
+                skywalker.showStatusMessage(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
             else
-                statusPopup.show(qsTr(`Muted till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
+                skywalker.showStatusMessage(qsTr(`Muted till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
-        onMuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onMuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onUnmuteOk: {
             authorMuted = false
             authorFeedView.refresh()
-            statusPopup.show(qsTr("Unmuted"), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("Unmuted"), QEnums.STATUS_LEVEL_INFO, 2)
         }
 
-        onUnmuteFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnmuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
-        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onBlockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onMuteRepostsOk: {
             authorMutedReposts = graphUtils.areRepostsMuted(author.did)
             authorFeedView.refresh()
-            statusPopup.show(qsTr("Muted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("Muted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
         }
-        onMuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteRepostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onUnmuteRepostsOk: {
             authorMutedReposts = graphUtils.areRepostsMuted(author.did)
             authorFeedView.refresh()
-            statusPopup.show(qsTr("Unmuted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("Unmuted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
         }
-        onUnmuteRepostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteRepostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     ProfileUtils {
@@ -1357,7 +1353,7 @@ SkyPage {
         skywalker: page.skywalker // qmllint disable missing-type
 
         onGetLabelerViewDetailedOk: (view) => setLabeler(view)
-        onGetLabelerViewDetailedFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onGetLabelerViewDetailedFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onLikeLabelerOk: (likeUri) => {
             labelerLikeUri = likeUri
@@ -1367,7 +1363,7 @@ SkyPage {
 
         onLikeLabelerFailed: (error) => {
             labelerLikeTransient = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onUndoLikeLabelerOk: {
@@ -1378,7 +1374,7 @@ SkyPage {
 
         onUndoLikeLabelerFailed: (error) => {
             labelerLikeTransient = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
@@ -1392,7 +1388,7 @@ SkyPage {
             page.activitySubscription = subscription
 
             if (!subscription.post && !subscription.reply) {
-                statusPopup.show(qsTr(`Unsubscribed from activities from ${author.name}`), QEnums.STATUS_LEVEL_INFO, 4)
+                skywalker.showStatusMessage(qsTr(`Unsubscribed from activities from ${author.name}`), QEnums.STATUS_LEVEL_INFO, 4)
                 return
             }
 
@@ -1405,10 +1401,10 @@ SkyPage {
                 activityList.push(qsTr("replies"))
 
             const activityText = guiSettings.toWordSequence(activityList)
-            statusPopup.show(qsTr(`Subscribed to ${activityText} from ${author.name}`), QEnums.STATUS_LEVEL_INFO, 4)
+            skywalker.showStatusMessage(qsTr(`Subscribed to ${activityText} from ${author.name}`), QEnums.STATUS_LEVEL_INFO, 4)
         }
 
-        onSubscribeActivityFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onSubscribeActivityFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     AccessibilityUtils {
@@ -1448,7 +1444,7 @@ SkyPage {
                 authorVerified: authorVerified
             })
         editPage.profileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
-            statusPopup.show(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
             authorName = name
             authorPronouns = pronouns
             authorDescription = description
