@@ -17,7 +17,7 @@ RoundCornerMask {
 
     id: card
     height: columnHeight
-    cornerRadius: 10
+    cornerRadius: guiSettings.radius
 
     Column {
         id: externalColumn

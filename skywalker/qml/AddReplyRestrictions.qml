@@ -124,7 +124,7 @@ Dialog {
             Rectangle {
                 width: parent.width
                 height: allowQuoteCheckBox.height
-                radius: 10
+                radius: guiSettings.radius
                 color: guiSettings.settingsHighLightColor
 
                 AccessibleCheckBox {
@@ -147,7 +147,7 @@ Dialog {
             Rectangle {
                 width: parent.width
                 height: replyRestrictionsColumn.height
-                radius: 10
+                radius: guiSettings.radius
                 color: guiSettings.settingsHighLightColor
 
                 Column {
@@ -302,7 +302,7 @@ Dialog {
             Rectangle {
                 width: parent.width
                 height: saveAsDefaultCheckBox.height
-                radius: 10
+                radius: guiSettings.radius
                 color: guiSettings.settingsHighLightColor
                 visible: allowSaveAsDefault
 

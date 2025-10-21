@@ -25,7 +25,7 @@ Item {
         border.width: 1
         border.color: recordView.borderColor
         color: recordView.backgroundColor
-        radius: 10
+        radius: guiSettings.radius
     }
 
     Column {

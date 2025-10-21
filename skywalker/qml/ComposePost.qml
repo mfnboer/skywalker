@@ -275,7 +275,7 @@ SkyPage {
 
         // Reply-to
         Rectangle {
-            radius: 10
+            radius: guiSettings.radius
             anchors.fill: replyToColumn
             border.width: 1
             border.color: guiSettings.borderHighLightColor
@@ -821,7 +821,7 @@ SkyPage {
 
                     // Quote post
                     Rectangle {
-                        radius: 10
+                        radius: guiSettings.radius
                         anchors.fill: quoteColumn
                         border.width: 1
                         border.color: guiSettings.borderHighLightColor
@@ -850,7 +850,7 @@ SkyPage {
 
                     // Quote feed
                     Rectangle {
-                        radius: 10
+                        radius: guiSettings.radius
                         anchors.fill: quoteFeedColumn
                         border.width: 1
                         border.color: guiSettings.borderHighLightColor
@@ -876,7 +876,7 @@ SkyPage {
 
                     // Quote list
                     Rectangle {
-                        radius: 10
+                        radius: guiSettings.radius
                         anchors.fill: quoteListColumn
                         border.width: 1
                         border.color: guiSettings.borderHighLightColor

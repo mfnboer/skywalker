@@ -228,7 +228,7 @@ SkyPage {
         z: -1
         width: newMessageText.width
         height: flick.height + newMessageText.bottomPadding
-        radius: 10
+        radius: guiSettings.radius
         color: guiSettings.messageNewBackgroundColor
         border.width: newMessageText.activeFocus ? 1 : 0
         border.color: guiSettings.buttonColor
@@ -236,7 +236,7 @@ SkyPage {
 
         // Quote post
         Rectangle {
-            radius: 10
+            radius: guiSettings.radius
             anchors.fill: quoteColumn
             border.width: 1
             border.color: guiSettings.borderHighLightColor
@@ -263,7 +263,7 @@ SkyPage {
 
         // Quote feed
         Rectangle {
-            radius: 10
+            radius: guiSettings.radius
             anchors.fill: quoteFeedColumn
             border.width: 1
             border.color: guiSettings.borderHighLightColor

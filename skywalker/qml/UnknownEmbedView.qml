@@ -5,7 +5,7 @@ Rectangle {
     required property string unknownEmbedType
 
     height: unknownEmbedText.height
-    radius: 10
+    radius: guiSettings.radius
     border.width: 1
     border.color: guiSettings.borderColor
     color: "transparent"

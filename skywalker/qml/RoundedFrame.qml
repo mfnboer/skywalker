@@ -6,7 +6,7 @@ Rectangle {
 
     id: frame
     color: "transparent"
-    radius: 10
+    radius: guiSettings.radius
     height: objectToRound.height
 
     Rectangle {

@@ -584,7 +584,7 @@ Column {
     Rectangle {
         width: parent.width
         height: errorText.height
-        radius: 10
+        radius: guiSettings.radius
         border.width: 1
         border.color: videoStack.borderColor
         color: "transparent"
