@@ -325,7 +325,7 @@ SkyPage {
         // Erase the created avatar source such that the image will not be dropped
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
-        statusPopup.close()
+        skywalker.clearStatusMessage()
         editListPage.listUpdated(cid, nameField.text, descriptionField.text, descriptionField.embeddedLinks, avatar.avatarUrl)
     }
 
