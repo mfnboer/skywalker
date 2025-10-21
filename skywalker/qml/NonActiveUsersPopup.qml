@@ -110,7 +110,12 @@ Popup {
         y = mouseY - height
     }
 
+    Component.onDestruction: {
+        sessionManager.startPostCacheTimeout()
+    }
+
     Component.onCompleted: {
         setPosition()
+        sessionManager.stopPostCacheTimeout()
     }
 }

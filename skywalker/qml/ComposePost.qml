@@ -2919,6 +2919,5 @@ SkyPage {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
-        console.debug("POST, postByDid:", postByDid, "userDid:", userDid, "swDid:", skywalker.getUserDid())
     }
 }

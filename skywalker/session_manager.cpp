@@ -11,6 +11,7 @@ static constexpr auto SESSION_REFRESH_DELAY = 11s;
 static constexpr auto NOTIFICATION_REFRESH_DELAY = 5s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 61s;
 static constexpr auto NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL = 29s;
+static constexpr auto POST_CACHE_TIMEOUT = 30s;
 
 SessionManager::SessionManager(QObject* parent) :
     QObject(parent)
@@ -23,6 +24,10 @@ SessionManager::SessionManager(Skywalker* skywalker, QObject* parent) :
     mUserSettings(skywalker->getUserSettings())
 {
     Q_ASSERT(skywalker);
+
+    mPostCacheTimer.setSingleShot(true);
+
+    connect(&mPostCacheTimer, &QTimer::timeout, this, [this]{ clearPostCache(); });
 
     connect(mUserSettings, &UserSettings::notificationsForAllAccountsChanged, this, [this]{
         if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
@@ -193,6 +198,17 @@ void SessionManager::updateTokens()
             session->mBsky->updateTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
         else
             qWarning() << "No tokens:" << did;
+    }
+}
+
+void SessionManager::clearPostCache()
+{
+    qDebug() << "Clear post cache";
+
+    for (const auto& [_, session] : mDidSessionMap)
+    {
+        if (session->mNonActiveUser)
+            session->mNonActiveUser->clearPostView();
     }
 }
 
@@ -424,12 +440,15 @@ void SessionManager::enableNotificationsNonActiveUsers()
 
 void SessionManager::disableNotificatiosNonActiveUsers()
 {
-    for (const auto& [did, _] : mDidSessionMap)
+    for (const auto& [did, session] : mDidSessionMap)
     {
         if (did != mSkywalker->getUserDid())
         {
             stopNotificationRefreshTimers(did);
             setUnreadNotificationCount(did, 0);
+
+            if (session->mNonActiveUser)
+                session->mNonActiveUser->clearPostView();
         }
     }
 }
@@ -527,6 +546,18 @@ ATProto::Client::SharedPtr SessionManager::getBskyClientFor(const QString& did) 
 Skywalker* SessionManager::getSkywalker()
 {
     return mSkywalker;
+}
+
+void SessionManager::startPostCacheTimeout()
+{
+    qDebug() << "Start post cache time out";
+    mPostCacheTimer.start(POST_CACHE_TIMEOUT);
+}
+
+void SessionManager::stopPostCacheTimeout()
+{
+    qDebug() << "Stop post cache time out";
+    mPostCacheTimer.stop();
 }
 
 void SessionManager::pause()
