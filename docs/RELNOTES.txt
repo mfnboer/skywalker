@@ -5,6 +5,7 @@ next
 * Change video playback rate
 * Get notifications from all your accounts
 * Reply, repost, like, bookmark with any of your accounts
+* Sort lists by name
 * Bug fixes
 
 4.16.2

@@ -4,6 +4,7 @@
 #include "graph_utils.h"
 #include "skywalker.h"
 #include "favorite_feeds.h"
+#include "search_utils.h"
 
 namespace Skywalker {
 
@@ -106,13 +107,18 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListView::List lists, const Q
     Q_ASSERT(mMemberCheckDid.isEmpty());
     mCursor = cursor;
 
-    const auto filteredLists = filterLists(std::move(lists));
+    auto filteredLists = filterLists(std::move(lists));
 
     if (filteredLists.empty())
     {
         qDebug() << "No new lists";
         return 0;
     }
+
+    std::sort(filteredLists.begin(), filteredLists.end(),
+            [](const auto& lhs, const auto& rhs){
+                return SearchUtils::normalizedCompare(lhs.getName(), rhs.getName()) < 0;
+            });
 
     const size_t newRowCount = mLists.size() + filteredLists.size();
 
@@ -131,6 +137,11 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListWithMembership::List list
     mCursor = cursor;
     ATProto::AppBskyGraph::ListView::List lists;
     lists.reserve(listsWithMembership.size());
+
+    std::sort(listsWithMembership.begin(), listsWithMembership.end(),
+            [](const auto& lhs, const auto& rhs){
+                return SearchUtils::normalizedCompare(lhs->mList->mName, rhs->mList->mName) < 0;
+            });
 
     for (const auto& list : listsWithMembership)
     {

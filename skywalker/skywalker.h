@@ -162,8 +162,8 @@ public:
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
     Q_INVOKABLE AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
-    Q_INVOKABLE void getListList(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getListListNextPage(int id, int limit = 50, int maxPages = 20, int minEntries = 10);
+    Q_INVOKABLE void getListList(int id, int limit = 100, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getListListNextPage(int id, int limit = 100, int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE int createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId);
     Q_INVOKABLE ListListModel* getListListModel(int id) const;
     Q_INVOKABLE void removeListListModel(int id);

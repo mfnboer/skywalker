@@ -84,12 +84,19 @@ Rectangle {
             }
         }
 
-        SvgButton {
+        // SvgButton {
+        //     Layout.alignment: Qt.AlignTop
+        //     svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? SvgOutline.remove : SvgOutline.add
+        //     accessibleName: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
+        //     visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
+        //     onClicked: updateList()
+        // }
+        AccessibleCheckBox {
             Layout.alignment: Qt.AlignTop
-            svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? SvgOutline.remove : SvgOutline.add
-            accessibleName: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
+            Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("in list") : qsTr("not in list")
+            checked: memberCheck === QEnums.TRIPLE_BOOL_YES
             visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
-            onClicked: updateList()
+            onCheckedChanged: updateList(checked)
         }
 
         Rectangle {
@@ -108,13 +115,15 @@ Rectangle {
     }
 
 
-    function updateList() {
+    function updateList(add) {
         switch (memberCheck) {
         case QEnums.TRIPLE_BOOL_NO:
-            addToList(list.uri)
+            if (add)
+                addToList(list.uri)
             break
         case QEnums.TRIPLE_BOOL_YES:
-            removeFromList(list.uri, memberListItemUri)
+            if (!add)
+                removeFromList(list.uri, memberListItemUri)
             break
         }
     }

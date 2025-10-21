@@ -169,6 +169,7 @@ SkyPage {
         id: moreOptions
         parent: page.header.visible ? page.header : page
         anchors.top: parent.top
+        anchors.topMargin: guiSettings.headerMargin
         anchors.right: parent.right
         anchors.rightMargin: page.margin
         svg: SvgOutline.moreVert

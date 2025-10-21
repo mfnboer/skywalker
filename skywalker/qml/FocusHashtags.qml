@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker()
     readonly property string sideBarTitle: qsTr("Focus hashtags")
     readonly property string sideBarSubTitle: `${view.count} / ${skywalker.focusHashtags.maxSize}`
     readonly property SvgImage sideBarSvg: SvgOutline.hashtag
@@ -37,6 +37,8 @@ ListView {
             onBack: view.closed()
 
             SvgPlainButton {
+                anchors.top: parent.top
+                anchors.topMargin: guiSettings.headerMargin
                 anchors.right: parent.right
                 svg: SvgOutline.add
                 onClicked: addHashtagEntry()
