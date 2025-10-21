@@ -43,7 +43,7 @@ SkyListView {
                 svg: SvgOutline.add
                 accessibleName: qsTr("create new list")
                 visible: ownLists
-                onClicked: newList()
+                onClicked: root.newList(view.model)
             }
         }
     }
@@ -101,29 +101,6 @@ SkyListView {
         onUnmuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onHideListOk: skywalker.showStatusMessage(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
         onHideListFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to hide list from timeline: ${error}`), QEnums.STATUS_LEVEL_INFO, 2)
-    }
-
-
-    function newList() {
-        let component = guiSettings.createComponent("EditList.qml")
-        let page = component.createObject(view, {
-                skywalker: skywalker,
-                purpose: model.getPurpose()
-            })
-        page.onListCreated.connect((list) => {
-            if (list.isNull()) {
-                // This should rarely happen. Let the user refresh.
-                skywalker.showStatusMessage(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
-            }
-            else {
-                skywalker.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
-                view.model.prependList(list)
-            }
-
-            root.popStack()
-        })
-        page.onClosed.connect(() => { root.popStack() })
-        root.pushStack(page)
     }
 
     function editList(list, index) {

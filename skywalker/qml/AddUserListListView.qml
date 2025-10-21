@@ -34,6 +34,37 @@ ListView {
             description: sideBarDescription
             visible: !root.showSideBar
             onClosed: view.closed()
+
+            SvgPlainButton {
+                anchors.top: parent.top
+                anchors.topMargin: guiSettings.headerMargin
+                anchors.right: parent.right
+                anchors.rightMargin: parent.usedRightMargin + 10
+                svg: SvgOutline.add
+                onClicked: newListMenu.open()
+                accessibleName: qsTr(`add new list`)
+
+                SkyMenu {
+                    id: newListMenu
+                    onAboutToShow: root.enablePopupShield(true)
+                    onAboutToHide: root.enablePopupShield(false)
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Create list</b>")
+                        Accessible.name: qsTr("close create list menu")
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("User list")
+                        onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
+                        MenuItemSvg { svg: SvgOutline.user }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Moderation list")
+                        onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
+                        MenuItemSvg { svg: SvgOutline.moderation }
+                    }
+                }
+            }
         }
         DeadHeaderMargin {
             id: landscapeHeader
@@ -51,7 +82,9 @@ ListView {
 
     FlickableRefresher {
         inProgress: view.model?.getFeedInProgress
+        topOvershootFun: () => skywalker.getListList(modelId)
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
+        topText: qsTr("Refresh lists")
     }
 
     EmptyListIndication {
@@ -74,7 +107,6 @@ ListView {
         onRemoveListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
     }
-
 
     function refresh() {
         skywalker.getListList(modelId)

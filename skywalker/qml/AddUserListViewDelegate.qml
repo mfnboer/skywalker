@@ -18,7 +18,7 @@ Rectangle {
     color: guiSettings.backgroundColor
 
     Accessible.role: Accessible.StaticText
-    Accessible.name: `${listTypeNameText.text} ${list.name} by ${listCreatorHandleText.text}`
+    Accessible.name: `${listTypeNameText.text} ${list.name}`
 
     GridLayout {
         id: grid
@@ -70,27 +70,8 @@ Rectangle {
 
                 Accessible.ignored: true
             }
-
-            Text {
-                id: listCreatorHandleText
-                topPadding: 5
-                width: parent.width
-                elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
-                text: `@${listCreator.handle}`
-
-                Accessible.ignored: true
-            }
         }
 
-        // SvgButton {
-        //     Layout.alignment: Qt.AlignTop
-        //     svg: memberCheck === QEnums.TRIPLE_BOOL_YES ? SvgOutline.remove : SvgOutline.add
-        //     accessibleName: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("add") : qsTr("remove")
-        //     visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
-        //     onClicked: updateList()
-        // }
         AccessibleCheckBox {
             Layout.alignment: Qt.AlignTop
             Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("in list") : qsTr("not in list")

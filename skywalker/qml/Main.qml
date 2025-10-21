@@ -2127,6 +2127,29 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "") {
+        const sw = getSkywalker(userDid)
+        let component = guiSettings.createComponent("EditList.qml")
+        let page = component.createObject(root, {
+                skywalker: sw,
+                purpose: purpose !== QEnums.LIST_PURPOSE_UNKNOWN ? purpose : listModel.getPurpose()
+            })
+        page.onListCreated.connect((list) => {
+            if (list.isNull()) {
+                // This should rarely happen. Let the user refresh.
+                sw.showStatusMessage(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
+            }
+            else {
+                sw.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
+                listModel.prependList(list)
+            }
+
+            root.popStack()
+        })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
+    }
+
     function translateText(text) {
         if (Qt.platform.os === "android") {
             if (utils.translate(text))

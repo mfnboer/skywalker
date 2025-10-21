@@ -8,6 +8,7 @@ Rectangle {
     property string description
     property bool isSideBar: false
     property string userDid
+    readonly property int usedRightMargin: currentUserAvatar.active ? currentUserAvatar.width : 0
 
     signal closed
 
@@ -54,6 +55,7 @@ Rectangle {
                     Accessible.description: Accessible.name
                 }
                 Loader {
+                    id: currentUserAvatar
                     Layout.rightMargin: 10
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
                     Layout.preferredHeight: parent.height - 10

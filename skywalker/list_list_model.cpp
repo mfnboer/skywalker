@@ -190,10 +190,14 @@ void ListListModel::addLists(const QList<ListView>& lists)
 void ListListModel::prependList(const ListView& list)
 {
     qDebug() << "Prepend list:" << list.getName();
-    Q_ASSERT(mMemberCheckDid.isEmpty());
 
     beginInsertRows({}, 0, 0);
+
     mLists.push_front(list);
+
+    if (!mMemberCheckDid.isEmpty())
+        mMemberCheckResults[list.getUri()] = "";
+
     endInsertRows();
 
     qDebug() << "New lists size:" << mLists.size();

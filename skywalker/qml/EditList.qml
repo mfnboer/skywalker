@@ -446,6 +446,12 @@ SkyPage {
     }
 
     Component.onCompleted: {
+        if (purpose === QEnums.LIST_PURPOSE_UNKNOWN) {
+            skywalker.showStatusMessage("No purpose set for list", QEnums.STATUS_LEVEL_ERROR)
+            Qt.callLater(closed)
+            return
+        }
+
         if (!list.isNull())
             descriptionField.setEmbeddedLinks(list.embeddedLinksDescription)
 
