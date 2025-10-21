@@ -278,7 +278,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: rightMarginWidth + 10
         y: headerHeight + 15
-        height: guiSettings.headerHeight - 10
+        height: 40
         width: height
         active: !root.isActiveUser(userDid)
         visible: mediaRect.showDetails
@@ -404,7 +404,7 @@ Rectangle {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                                       author, postReplyRootUri, postReplyRootCid, lang,
-                                      postMentionDids, "", "", "", userDid)
+                                      postMentionDids, "", "", userDid)
                 }
 
                 onReplyLongPress: (mouseEvent) => {
@@ -428,7 +428,7 @@ Rectangle {
                 function quote(quoteByDid = "") {
                     root.quotePost(postUri, postCid,
                             postText, postIndexedDateTime, author, postEmbeddingDisabled,
-                            "", quoteByDid)
+                            quoteByDid)
                 }
 
                 onRepostLongPress: (mouseEvent) => {

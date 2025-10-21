@@ -587,7 +587,7 @@ Rectangle {
                                           postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                           postIndexedDateTime,
                                           author, postReplyRootUri, postReplyRootCid, lang,
-                                          postMentionDids, "", "", "", userDid)
+                                          postMentionDids, "", "", userDid)
                     }
 
                     onReplyLongPress: (mouseEvent) => {
@@ -615,7 +615,7 @@ Rectangle {
                     function quote(quoteByDid = "") {
                         root.quotePost(postUri, postCid,
                             postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                            postIndexedDateTime, author, postEmbeddingDisabled, "", quoteByDid)
+                            postIndexedDateTime, author, postEmbeddingDisabled, quoteByDid)
                     }
 
                     onRepostLongPress: (mouseEvent) => {

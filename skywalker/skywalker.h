@@ -205,6 +205,7 @@ public:
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE SessionManager* getSessionManager() { return &mSessionManager; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
+    Q_INVOKABLE void clearStatusMessage();
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void signOut();
@@ -281,6 +282,7 @@ signals:
     void getAuthorFeedOk(int modelId);
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
     void statusMessage(QString userDid, QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO, int seconds = 0);
+    void statusClear();
     void postThreadOk(QString did, int id, int postEntryIndex);
     void userChanged();
     void unreadNotificationCountChanged();

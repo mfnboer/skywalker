@@ -468,7 +468,7 @@ SkyPage {
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
         createdBannerSource = ""
-        statusPopup.close()
+        skywalker.clearStatusMessage()
         editProfilePage.profileUpdated(nameField.text.trim(), descriptionField.text.trim(),
                                        avatar.avatarUrl, banner.source,
                                        pronounsField.text.trim(), websiteField.getLink())

@@ -275,19 +275,19 @@ ApplicationWindow {
             didSkywalkerMap.set(did, sw)
 
             const puComp = guiSettings.createComponent("MainPostUtils.qml")
-            const pu = puComp.createObject(root, { skywalker: sw, statusPopup: statusPopup })
+            const pu = puComp.createObject(root, { skywalker: sw })
             didPostUtilsMap.set(did, pu)
 
             const profComp = guiSettings.createComponent("MainProfileUtils.qml")
-            const profUtils = profComp.createObject(root, { skywalker: sw, statusPopup: statusPopup })
+            const profUtils = profComp.createObject(root, { skywalker: sw })
             didProfileUtilsMap.set(did, profUtils)
 
             const guComp = guiSettings.createComponent("MainGraphUtils.qml")
-            const gu = guComp.createObject(root, { skywalker: sw, statusPopup: statusPopup })
+            const gu = guComp.createObject(root, { skywalker: sw })
             didGraphUtilsMap.set(did, gu)
 
             const fuComp = guiSettings.createComponent("MainFeedUtils.qml")
-            const fu = fuComp.createObject(root, { skywalker: sw, statusPopup: statusPopup })
+            const fu = fuComp.createObject(root, { skywalker: sw })
             didFeedUtilsMap.set(did, fu)
 
             const luComp = guiSettings.createComponent("MainLinkUtils.qml")
@@ -353,6 +353,8 @@ ApplicationWindow {
                 const period = seconds > 0 ? seconds : (level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
                 statusPopup.show(did, msg, level, period)
         }
+
+        onStatusClear: statusPopup.clear()
 
         onPostThreadOk: (did, modelId, postEntryIndex) => viewPostThread(did, modelId, postEntryIndex)
         onGetUserProfileOK: () => skywalker.getUserPreferences()
@@ -624,7 +626,7 @@ ApplicationWindow {
             if (!notificationsActive)
                 viewNotifications()
             else if (currentStackItem() instanceof NotificationListView)
-                currentStackItem().positionViewAtBeginning()
+                currentStackItem().handleNotificationsClicked()
         }
         onSearchClicked: {
             if (!searchActive)
@@ -986,7 +988,7 @@ ApplicationWindow {
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor, "", "", repostDrawer.repostByDid)
+                                      repostDrawer.repostAuthor, "", repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -1002,7 +1004,7 @@ ApplicationWindow {
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
                                       repostDrawer.repostAuthor, repostDrawer.repostPlainText,
-                                      "", repostDrawer.repostByDid)
+                                      repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -1341,23 +1343,22 @@ ApplicationWindow {
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
-                          nonActiveUserDid = "", postByDid = "")
+                          postByDid = "")
     {
         const pu = getPostUtils(postByDid)
         pu.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,initialText, imageSource,
-                                 nonActiveUserDid, postByDid))
+                                 postByDid))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
-                          nonActiveUserDid = "", postByDid = "")
+                          postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 postByDid: postByDid,
-                nonActiveUserDid: nonActiveUserDid,
                 initialText: initialText,
                 initialImage: imageSource,
                 replyToPostUri: replyToUri,
@@ -1409,12 +1410,11 @@ ApplicationWindow {
     }
 
     function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor,
-                            initialText = "", nonActiveUserDid = "", quoteByDid = "")
+                            initialText = "", quoteByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 postByDid: quoteByDid,
-                nonActiveUserDid: nonActiveUserDid,
                 initialText: initialText,
                 openedAsQuotePost: true,
                 quoteUri: quoteUri,
@@ -1437,14 +1437,14 @@ ApplicationWindow {
         repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid)
     }
 
-    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, nonActiveUserDid = "", quoteByDid = "") {
+    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, quoteByDid = "") {
         if (embeddingDisabled) {
             skywalker.showStatusMessage(qsTr("Quoting not allowed"), QEnums.STATUS_LEVEL_INFO)
             return
         }
 
         const pu = getPostUtils(quoteByDid)
-        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", nonActiveUserDid, quoteByDid))
+        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", quoteByDid))
     }
 
     function like(likeUri, uri, cid, viaUri = "", viaCid = "", likeByDid = "") {
@@ -1772,7 +1772,7 @@ ApplicationWindow {
         console.debug("View post thread:", did)
         let component = guiSettings.createComponent("PostThreadView.qml")
         let view = component.createObject(root, {
-                viewerDid: did,
+                userDid: did,
                 modelId: modelId,
                 postEntryIndex: postEntryIndex })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property

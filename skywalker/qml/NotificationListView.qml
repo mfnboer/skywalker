@@ -25,14 +25,7 @@ SkyPage {
         skywalker: page.skywalker
         activePage: QEnums.UI_PAGE_NOTIFICATIONS
         onHomeClicked: root.viewTimeline()
-        onNotificationsClicked: {
-            if (sessionManager.activeUserUnreadNotificationCount > 0)
-                showOwnNotificationsTab()
-            else
-                showFirstTabWithUnreadNotifications()
-
-            positionViewAtBeginning()
-        }
+        onNotificationsClicked: handleNotificationsClicked()
         onSearchClicked: root.viewSearchView()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
@@ -327,6 +320,15 @@ SkyPage {
 
             ++index
         }
+    }
+
+    function handleNotificationsClicked() {
+        if (sessionManager.activeUserUnreadNotificationCount > 0)
+            showOwnNotificationsTab()
+        else
+            showFirstTabWithUnreadNotifications()
+
+        positionViewAtBeginning()
     }
 
     function reset() {

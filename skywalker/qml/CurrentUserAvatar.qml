@@ -2,10 +2,17 @@ import QtQuick
 import skywalker
 
 Avatar {
-                required property string userDid
-                author: root.getSkywalker(userDid).getUserSettings().getUser(userDid)
+                property Skywalker skywalker: root.getSkywalker(userDid)
+
+                author: skywalker.getUserSettings().getUser(skywalker.getUserDid())
                 showActivityStatus: false
-                onClicked: root.getSkywalker(userDid).showStatusMessage(
-                               qsTr(`You are using <font color="${guiSettings.linkColor}">@${author.handle}</font> to interact with this page.`),
-                               QEnums.STATUS_LEVEL_INFO, 5)
+                onClicked:  {
+                                if (root.isActiveUser(userDid)) {
+                                                skywalker.showStatusMessage(qsTr("Yes, you're gorgeous"), QEnums.STATUS_LEVEL_INFO)
+                                } else {
+                                                skywalker.showStatusMessage(
+                                                                qsTr(`You are using <font color="${guiSettings.linkColor}">@${author.handle}</font> to interact with this page.`),
+                                                                QEnums.STATUS_LEVEL_INFO, 5)
+                                }
+                }
 }

@@ -168,9 +168,9 @@ SkyPage {
                     anchors.topMargin: 10
                     anchors.right: parent.right
                     anchors.rightMargin: 10
-                    height: guiSettings.headerHeight - 10
+                    height: 40
                     width: height
-                    active: !root.isActiveUser(userDid)
+                    active: !root.isActiveUser(userDid) && !root.showSideBar
 
                     sourceComponent: CurrentUserAvatar {
                         userDid: page.userDid

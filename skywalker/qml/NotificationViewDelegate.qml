@@ -341,7 +341,7 @@ Rectangle {
                                               notificationPostTimestamp, notificationAuthor,
                                               notificationPostReplyRootUri, notificationPostReplyRootCid,
                                               lang, notificationPostMentionDids, "", "",
-                                              "", postByDid)
+                                              postByDid)
                         }
 
                         onReply: replyToNotification(notification.owner.did)
@@ -478,6 +478,7 @@ Rectangle {
                             required property int index
 
                             width: authorAvatar.width
+                            userDid: owner.did
                             author: notificationOtherAuthors[index]
 
                             onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)

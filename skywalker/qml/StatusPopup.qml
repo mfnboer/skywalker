@@ -27,7 +27,7 @@ Popup {
         id: currentUserAvatar
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
-        height: active ? guiSettings.headerHeight - 10 : 0
+        height: active ? 40 : 0
         width: height
         active: !root.isActiveUser(userDid)
 
@@ -80,5 +80,9 @@ Popup {
         open()
         closeTimer.interval = intervalSec * 1000
         closeTimer.restart()
+    }
+
+    function clear() {
+        statusPopup.close()
     }
 }

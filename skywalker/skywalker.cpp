@@ -194,9 +194,9 @@ Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::S
 {
     Skywalker::Ptr skywalker(new Skywalker(did, bsky, parent));
 
-    // TODO: pass DID
     connect(skywalker.get(), &Skywalker::deleted, this, [this, did]{ emit skywalkerDestroyed(did); });
     connect(skywalker.get(), &Skywalker::statusMessage, this, [this](auto did, auto msg, auto level, auto seconds){ emit statusMessage(did, msg, level, seconds); });
+    connect(skywalker.get(), &Skywalker::statusClear, this, [this]{ emit statusClear(); });
     connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
     connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile){ emit getDetailedProfileOK(did, profile); });
     connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
@@ -3922,6 +3922,11 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)
 {
     emit statusMessage(mUserDid, msg, level, seconds);
+}
+
+void Skywalker::clearStatusMessage()
+{
+    emit statusClear();
 }
 
 void Skywalker::handleAppStateChange(Qt::ApplicationState state)

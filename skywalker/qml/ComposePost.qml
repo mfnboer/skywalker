@@ -4,14 +4,8 @@ import QtQuick.Window 2.2
 import skywalker
 
 SkyPage {
-    property string postByDid: ""
+    property string postByDid
     property Skywalker skywalker: root.getSkywalker(postByDid)
-
-    // If this DID is set then the post is composed for this user instead of the active user
-    // When a non-active user is selected for a post interaction (long press), then
-    // postByDid refers to the active user, so all models from the active user get updated
-    // but the interaction, e.g. increasing/decreasing like count
-    property string nonActiveUserDid: ""
 
     property string initialText
     property string initialImage
@@ -126,8 +120,8 @@ SkyPage {
             y: guiSettings.headerMargin + 5
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.height - guiSettings.headerMargin - 10
-            userDid: getAuthorDid()
-            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
+            userDid: postByDid
+            onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("your avatar")
@@ -1518,7 +1512,6 @@ SkyPage {
 
         id: postUtils
         skywalker: page.skywalker
-        nonActiveUserDid: page.nonActiveUserDid
 
         // This can only happen just after the ComposePost pages has been created.
         // See WrappedSkywalker::setNonActiveUserDid
@@ -2115,6 +2108,7 @@ SkyPage {
 
     function postDone() {
         busyIndicator.running = false
+        skywalker.clearStatusMessage()
         page.closed()
     }
 
@@ -2188,7 +2182,7 @@ SkyPage {
             return
         }
 
-        if (page.nonActiveUserDid !== "") {
+        if (page.postByDid) {
             // Saving a post as draft not supported for non-active users
             guiSettings.askYesNoQuestion(
                     page,
@@ -2877,16 +2871,6 @@ SkyPage {
         limitsPage.open()
     }
 
-    function getAuthorDid() {
-        if (nonActiveUserDid)
-            return nonActiveUserDid
-
-        if (postByDid)
-            return postByDid
-
-        return userDid
-    }
-
     VirtualKeyboardHandler {
         id: keyboardHandler
     }
@@ -2928,14 +2912,13 @@ SkyPage {
         restrictReply = postInteractionSettings.allowNobody || allowReplyMentioned || allowReplyFollower || allowReplyFollowing || allowListUrisFromDraft.length > 0
         allowQuoting = !postInteractionSettings.disableEmbedding
 
-        const selfDid = getAuthorDid()
-
         for (const mentionDid of replyToMentionDids) {
-            if (mentionDid !== selfDid)
+            if (mentionDid !== userDid)
                 profileUtils.getBasicProfile(mentionDid)
         }
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
+        console.debug("POST, postByDid:", postByDid, "userDid:", userDid, "swDid:", skywalker.getUserDid())
     }
 }

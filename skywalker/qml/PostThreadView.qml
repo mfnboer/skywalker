@@ -2,11 +2,11 @@ import QtQuick
 import skywalker
 
 SkyListView {
-    property string viewerDid
+    property string userDid
     required property int modelId
     required property int postEntryIndex
     property int syncToIndex: postEntryIndex
-    property Skywalker skywalker: root.getSkywalker(viewerDid)
+    property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property bool isUnrolledThread: model?.unrollThread
     readonly property string sideBarTitle: isUnrolledThread ? qsTr("Unrolled thread") : qsTr("Post thread")
     readonly property SvgImage sideBarSvg: isUnrolledThread ? SvgOutline.thread : SvgOutline.chat
@@ -21,7 +21,7 @@ SkyListView {
     header: SimpleHeader {
         height: (headerVisible ? guiSettings.headerHeight : guiSettings.headerMargin) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
-        userDid: viewerDid
+        userDid: userDid
         headerVisible: !root.showSideBar
         onBack: view.closed()
 
@@ -73,7 +73,7 @@ SkyListView {
                             skywalker.getDetailedProfile(link)
                         }
                         else if (link.startsWith("at:")) {
-                            root.viewListByUri(link, false, viewerDid)
+                            root.viewListByUri(link, false, userDid)
                         }
                     }
 
@@ -194,7 +194,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                           author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                          initialText, imageSource, viewerDid)
+                          initialText, imageSource, userDid)
     }
 
     function videoReply(initialText, videoSource) {
@@ -211,7 +211,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeVideoReply(postUri, postCid, postText, postIndexedDateTime,
                                author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                               initialText, videoSource, viewerDid)
+                               initialText, videoSource, userDid)
     }
 
     function sync(index) {
