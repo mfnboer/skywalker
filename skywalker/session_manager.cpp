@@ -126,8 +126,8 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             {
                 startRefreshTimers(did, refreshDelayCount);
 
-                if (session->mNonActiveUser && session->mNonActiveUser->getSkywalker())
-                    session->mNonActiveUser->getSkywalker()->initNonActiveUser();
+                if (session->mNonActiveUser)
+                    session->mNonActiveUser->init();
             }
 
             if (successCb)

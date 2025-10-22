@@ -2182,7 +2182,7 @@ SkyPage {
             return
         }
 
-        if (page.postByDid) {
+        if (!root.isActiveUser(page.postByDid)) {
             // Saving a post as draft not supported for non-active users
             guiSettings.askYesNoQuestion(
                     page,

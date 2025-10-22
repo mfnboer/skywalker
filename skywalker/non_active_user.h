@@ -37,6 +37,8 @@ public:
                   QObject* parent = nullptr);
     ~NonActiveUser();
 
+    void init();
+
     const BasicProfile& getProfile() const { return mProfile; }
 
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }

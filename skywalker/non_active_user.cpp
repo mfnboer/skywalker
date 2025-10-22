@@ -48,6 +48,22 @@ void NonActiveUser::removeNotificationListModel()
     }
 }
 
+void NonActiveUser::init()
+{
+    if (mSkywalker)
+    {
+        connect(mSkywalker.get(), &Skywalker::getUserPreferencesFailed, this,
+                [this](QString error){
+                    qWarning() << "Failed to get user preferences:" << error << "did:" << mProfile.getDid();
+
+                    if (mSessionManager)
+                        mSessionManager->deleteSession(mProfile.getDid());
+                });
+
+        mSkywalker->initNonActiveUser();
+    }
+}
+
 void NonActiveUser::expireSession()
 {
     if (mSessionExpired)
