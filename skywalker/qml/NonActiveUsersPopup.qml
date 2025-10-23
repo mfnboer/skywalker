@@ -76,7 +76,7 @@ Popup {
                 height: parent.height
                 svg: SvgOutline.close
                 accessibleName: qsTr("close")
-                onClicked: popup.destroy()
+                onClicked: popup.close()
             }
         }
     }

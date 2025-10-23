@@ -1543,6 +1543,7 @@ ApplicationWindow {
                 popup.destroy()
                 secondActionCb(user)
             })
+        popup.onClosed.connect(() => { popup.destroy() })
         popup.open()
 
         return true

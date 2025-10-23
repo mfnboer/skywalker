@@ -219,7 +219,7 @@ Rectangle {
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10
-            Layout.preferredWidth: Layout.preferredHeight
+            Layout.preferredWidth: active ? Layout.preferredHeight : 0
             active: !root.isActiveUser(userDid)
 
             sourceComponent: CurrentUserAvatar {
