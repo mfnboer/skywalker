@@ -5,6 +5,7 @@
 #include "definitions.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
+#include <atproto/lib/client.h>
 
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
 // This will break OffLineMessageChecker. This runs in an Android background process.
@@ -271,6 +272,98 @@ void UserSettings::saveAvatar(const QString& did, const QString& avatar)
 QString UserSettings::getAvatar(const QString& did) const
 {
     return mSettings.value(key(did, "avatar")).toString();
+}
+
+void UserSettings::setServiceAppView(const QString& did, const QString& service)
+{
+    if (service != getServiceAppView(did))
+    {
+        if (service == ATProto::Client::SERVICE_APP_VIEW)
+            mSettings.remove(key(did, "serviceAppView"));
+        else
+            mSettings.setValue(key(did, "serviceAppView"), service);
+
+        emit serviceAppViewChanged(did);
+    }
+}
+
+QString UserSettings::getServiceAppView(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceAppView"), ATProto::Client::SERVICE_APP_VIEW).toString();
+}
+
+QString UserSettings::getDefaultServiceAppView() const
+{
+    return ATProto::Client::SERVICE_APP_VIEW;
+}
+
+void UserSettings::setServiceChat(const QString& did, const QString& service)
+{
+    if (service != getServiceChat(did))
+    {
+        if (service == ATProto::Client::SERVICE_CHAT)
+            mSettings.remove(key(did, "serviceChat"));
+        else
+            mSettings.setValue(key(did, "serviceChat"), service);
+
+        emit serviceChatChanged(did);
+    }
+}
+
+QString UserSettings::getServiceChat(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceChat"), ATProto::Client::SERVICE_CHAT).toString();
+}
+
+QString UserSettings::getDefaultServiceChat() const
+{
+    return ATProto::Client::SERVICE_CHAT;
+}
+
+void UserSettings::setServiceVideoHost(const QString& did, const QString& host)
+{
+    if (host != getServiceVideoHost(did))
+    {
+        if (host == ATProto::Client::SERVICE_VIDEO_HOST)
+            mSettings.remove(key(did, "serviceVideoHost"));
+        else
+            mSettings.setValue(key(did, "serviceVideoHost"), host);
+
+        emit serviceVideoHostChanged(did);
+    }
+}
+
+QString UserSettings::getServiceVideoHost(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceVideoHost"), ATProto::Client::SERVICE_VIDEO_HOST).toString();
+}
+
+QString UserSettings::getDefaultServiceVideoHost() const
+{
+    return ATProto::Client::SERVICE_VIDEO_HOST;
+}
+
+void UserSettings::setServiceVideoDid(const QString& did, const QString& serviceDid)
+{
+    if (serviceDid != getServiceVideoDid(did))
+    {
+        if (serviceDid == ATProto::Client::SERVICE_VIDEO_DID)
+            mSettings.remove(key(did, "serviceVideoDid"));
+        else
+            mSettings.setValue(key(did, "serviceVideoDid"), serviceDid);
+
+        emit serviceVideoHostChanged(did);
+    }
+}
+
+QString UserSettings::getServiceVideoDid(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceVideoDid"), ATProto::Client::SERVICE_VIDEO_DID).toString();
+}
+
+QString UserSettings::getDefaultServiceVideoDid() const
+{
+    return ATProto::Client::SERVICE_VIDEO_DID;
 }
 
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)

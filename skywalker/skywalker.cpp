@@ -89,6 +89,10 @@ Skywalker::Skywalker(QObject* parent) :
         const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
         DisplayUtils::setNavigationBarColorAndMode(mUserSettings.getBackgroundColor(), isLightMode);
     });
+    connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
+    connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
+    connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
+    connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
 
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
@@ -159,6 +163,11 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
+
+    connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
+    connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
+    connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
+    connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
 
     // The author and post caches are global. When multiple sessions are used
     // this will be mostly fine. The profiles and post content is good. Only
@@ -232,6 +241,10 @@ void Skywalker::login(const QString host, const QString user, QString password, 
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
             updateUser(session->mDid, host);
+            mBsky->setServiceAppView(mUserSettings.getServiceAppView(session->mDid));
+            mBsky->setServiceChat(mUserSettings.getServiceChat(session->mDid));
+            mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(session->mDid));
+            mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(session->mDid));
             mUserSettings.saveSession(*session);
             mUserSettings.setRememberPassword(session->mDid, rememberPassword); // this calls sync
 
@@ -296,6 +309,10 @@ bool Skywalker::resumeAndRefreshSession()
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
+    mBsky->setServiceAppView(mUserSettings.getServiceAppView(session->mDid));
+    mBsky->setServiceChat(mUserSettings.getServiceChat(session->mDid));
+    mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(session->mDid));
+    mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(session->mDid));
 
     // User DID must be set before inserting sessions in the session manager
     mUserDid = session->mDid;
@@ -4070,6 +4087,30 @@ void Skywalker::checkAnniversary()
 
     if (mAnniversary.checkAnniversary())
         emit anniversary();
+}
+
+void Skywalker::updateServiceAppView(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+}
+
+void Skywalker::updateServiceChat(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+}
+
+void Skywalker::updateServiceVideoHost(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+}
+
+void Skywalker::updateServiceVideoDid(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
 }
 
 void Skywalker::signOut()

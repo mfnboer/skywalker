@@ -354,6 +354,10 @@ private:
     void resumeApp();
     void setAnniversaryDate();
     void checkAnniversary();
+    void updateServiceAppView(const QString& did);
+    void updateServiceChat(const QString& did);
+    void updateServiceVideoHost(const QString& did);
+    void updateServiceVideoDid(const QString& did);
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);

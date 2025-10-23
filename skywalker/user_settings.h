@@ -99,6 +99,22 @@ public:
     void saveAvatar(const QString& did, const QString& avatar);
     QString getAvatar(const QString& did) const;
 
+    Q_INVOKABLE void setServiceAppView(const QString& did, const QString& service);
+    Q_INVOKABLE QString getServiceAppView(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceAppView() const;
+
+    Q_INVOKABLE void setServiceChat(const QString& did, const QString& service);
+    Q_INVOKABLE QString getServiceChat(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceChat() const;
+
+    Q_INVOKABLE void setServiceVideoHost(const QString& did, const QString& host);
+    Q_INVOKABLE QString getServiceVideoHost(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceVideoHost() const;
+
+    Q_INVOKABLE void setServiceVideoDid(const QString& did, const QString& serviceDid);
+    Q_INVOKABLE QString getServiceVideoDid(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceVideoDid() const;
+
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
 
@@ -371,6 +387,10 @@ public:
     void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }
 
 signals:
+    void serviceAppViewChanged(QString did);
+    void serviceChatChanged(QString did);
+    void serviceVideoHostChanged(QString did);
+    void serviceVideoDidChanged(QString did);
     void contentLanguageFilterChanged();
     void backgroundColorChanged();
     void accentColorChanged();

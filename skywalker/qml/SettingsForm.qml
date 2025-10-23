@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker()
     property var userPrefs: skywalker.getEditUserPreferences()
     property bool allVisible: true
     property bool onlyChatVisible: false

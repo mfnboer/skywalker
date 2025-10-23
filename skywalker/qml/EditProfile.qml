@@ -372,11 +372,6 @@ SkyPage {
                     singleLine: true
                     inputMethodHints: Qt.ImhNoPredictiveText
 
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            websiteField.ensur
-                    }
-
                     function getLink() {
                         const link = text.trim()
 

@@ -2061,6 +2061,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function editAdvancedSettings() {
+        let component = guiSettings.createComponent("AdvancedSettingsForm.qml")
+        let form = component.createObject(root)
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
     function editChatSettings() {
         let component = guiSettings.createComponent("SettingsForm.qml")
         let form = component.createObject(root, { allVisible: false, onlyChatVisible: true })

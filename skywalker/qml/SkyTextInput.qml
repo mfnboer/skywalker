@@ -3,6 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 Rectangle {
+    property var parentFlick
     property SvgImage svgIcon
     property string initialText
     property string placeholderText
@@ -15,15 +16,16 @@ Rectangle {
     property alias validator: textField.validator
     property alias text: textField.text
     property alias displayText: textField.displayText
+    property alias textInput: textField
 
     signal editingFinished
 
     id: skyTextInput
-    height: textField.height
+    implicitHeight: textField.implicitHeight
     radius: 5
-    border.width: 1
-    border.color: guiSettings.borderColor
-    color: guiSettings.backgroundColor
+    border.width: textField.activeFocus ? 1 : 0
+    border.color: guiSettings.buttonColor
+    color: guiSettings.textInputBackgroundColor
 
     Accessible.role: Accessible.Pane
 
@@ -62,6 +64,15 @@ Rectangle {
 
         onEditingFinished: skyTextInput.editingFinished()
 
+        onCursorRectangleChanged: {
+            ensureVisible(cursorRectangle)
+        }
+
+        onFocusChanged: {
+            if (focus)
+                ensureVisible(cursorRectangle)
+        }
+
         // Cover long text that may scroll underneath the icon
         Rectangle {
             radius: skyTextInput.radius
@@ -95,13 +106,24 @@ Rectangle {
             visible: parent.displayText.length === 0
             Accessible.ignored: true
         }
+
+        function ensureVisible(cursor) {
+            if (!parentFlick || parentFlick.dragging)
+                return
+
+            const editTextY = textField.mapToItem(parentFlick, 0, 0).y
+            let cursorY = cursor.y + editTextY
+
+            if (cursorY < 0)
+                parentFlick.contentY += cursorY;
+            else if (parentFlick.height < cursorY + cursor.height)
+                parentFlick.contentY += cursorY + cursor.height - parentFlick.height
+        }
     }
 
     function maxGraphemeLengthExceeded() {
         return maximumGraphemeLength > -1 && graphemeLength > maximumGraphemeLength
     }
-
-
 
     function setFocus() {
         textField.focus = true

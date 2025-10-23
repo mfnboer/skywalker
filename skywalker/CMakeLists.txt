@@ -581,6 +581,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/MainGraphUtils.qml
         QML_FILES qml/MainFeedUtils.qml
         QML_FILES qml/MainLinkUtils.qml
+        QML_FILES qml/AdvancedSettingsForm.qml
+        QML_FILES
 )
 
 if (NOT ANDROID)

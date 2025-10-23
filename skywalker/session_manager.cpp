@@ -90,6 +90,10 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     xrpc->setUserAgent(Skywalker::getUserAgentString());
 
     auto rawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
+    rawBsky->setServiceAppView(mUserSettings->getServiceAppView(did));
+    rawBsky->setServiceChat(mUserSettings->getServiceChat(did));
+    rawBsky->setServiceHostVideo(mUserSettings->getServiceVideoHost(did));
+    rawBsky->setServiceDidVideo(mUserSettings->getServiceVideoDid(did));
     auto* bsky = rawBsky.get();
     Session::Ptr managedSession = createSession(did, std::move(rawBsky), bsky);
     insertSession(did, std::move(managedSession));

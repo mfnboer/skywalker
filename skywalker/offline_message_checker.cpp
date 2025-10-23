@@ -359,6 +359,10 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
     auto xrpc = std::make_unique<Xrpc::Client>("", 30000);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
+    mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+    mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+    mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+    mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
 
     mBsky->resumeSession(*session,
         [this] {
