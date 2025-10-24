@@ -160,8 +160,8 @@ TextEdit {
 
         if (cursorY < 0)
             parentFlick.contentY += cursorY;
-        else if (parentFlick.height < cursorY + cursor.height)
-            parentFlick.contentY += cursorY + cursor.height - parentFlick.height
+        else if (parentFlick.height < cursorY + cursor.height + skyTextEdit.bottomPadding)
+            parentFlick.contentY += cursorY + cursor.height + skyTextEdit.bottomPadding - parentFlick.height
     }
 
     Component.onCompleted: {

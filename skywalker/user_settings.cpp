@@ -352,7 +352,7 @@ void UserSettings::setServiceVideoDid(const QString& did, const QString& service
         else
             mSettings.setValue(key(did, "serviceVideoDid"), serviceDid);
 
-        emit serviceVideoHostChanged(did);
+        emit serviceVideoDidChanged(did);
     }
 }
 

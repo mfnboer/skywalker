@@ -26,9 +26,10 @@ SkyPage {
     signal profileUpdated(string name, string description, string avatar, string banner, string pronouns, string website)
 
     id: editProfilePage
-    width: parent.width
-    height: parent.height
-    contentHeight: flick.height
+    // width: parent.width
+    // height: parent.height
+    // contentHeight: flick.height
+    padding: 10
 
     Accessible.role: Accessible.Pane
 
@@ -60,7 +61,7 @@ SkyPage {
         height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
-        visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus || websiteField.activeFocus
+        visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus || websiteField.textInput.activeFocus
 
         TextLengthBar {
             textField: nameField
@@ -115,10 +116,12 @@ SkyPage {
         id: flick
         anchors.fill: parent
         clip: true
-        contentWidth: pageColumn.width
-        contentHeight: pageColumn.y + websiteRect.y + websiteField.y + websiteField.height
+        contentWidth: parent.width
+        //contentHeight: pageColumn.y + websiteField.y + websiteField.height
+        contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
+
         onHeightChanged: {
             if (nameField.activeFocus)
                 nameField.ensureVisible(nameField.cursorRectangle)
@@ -126,15 +129,13 @@ SkyPage {
                 pronounsField.ensureVisible(pronounsField.cursorRectangle)
             else if (descriptionField.activeFocus)
                 descriptionField.ensureVisible(descriptionField.cursorRectangle)
-            else if (websiteField.activeFocus)
-                websiteField.ensureVisible(websiteField.cursorRectangle)
+            else if (websiteField.textInput.activeFocus)
+                websiteField.textInput.ensureVisible(websiteField.textInput.cursorRectangle)
         }
 
         ColumnLayout {
             id: pageColumn
-            x: 10
-            y: 10
-            width: editProfilePage.width - 2 * x
+            width: parent.width
 
             AccessibleText {
                 Layout.fillWidth: true
@@ -251,9 +252,9 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.preferredHeight: nameField.height
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: nameField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyTextEdit {
                     id: nameField
@@ -291,9 +292,9 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.preferredHeight: pronounsField.height
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: pronounsField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyTextEdit {
                     id: pronounsField
@@ -322,11 +323,10 @@ SkyPage {
                 id: descriptionRect
                 Layout.fillWidth: true
                 Layout.preferredHeight: descriptionField.height
-
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: descriptionField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyFormattedTextEdit {
                     id: descriptionField
@@ -351,44 +351,58 @@ SkyPage {
                 text: qsTr("Website")
             }
 
-            Rectangle {
-                id: websiteRect
+            SkyTextInput {
+                id: websiteField
                 Layout.fillWidth: true
-                Layout.preferredHeight: websiteField.height
-                radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: websiteField.isValid() ? "transparent" : guiSettings.textInputInvalidColor
+                parentFlick: flick
+                padding: 5
+                initialText: authorWebsite
+                placeholderText: qsTr("Your website")
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
+                valid: isValid()
 
-                SkyTextEdit {
-                    id: websiteField
-                    width: parent.width
-                    topPadding: 10
-                    bottomPadding: 10
-                    focus: true
-                    parentFlick: flick
-                    initialText: authorWebsite
-                    placeholderText: qsTr("Your website")
-                    singleLine: true
-                    inputMethodHints: Qt.ImhNoPredictiveText
+                function getLink() {
+                    return linkUtils.getLinkWithScheme(displayText)
+                }
 
-                    function getLink() {
-                        const link = text.trim()
-
-                        if (!Boolean(link))
-                            return ""
-                        else if (linkUtils.hasScheme(link))
-                            return link
-                        else
-                            return "https://" + link
-                    }
-
-                    function isValid() {
-                        const link = getLink()
-                        return !Boolean(link) || linkUtils.isWebLink(link)
-                    }
+                function isValid() {
+                    const link = getLink()
+                    return !Boolean(link) || linkUtils.isWebLink(link)
                 }
             }
+
+            // Rectangle {
+            //     id: websiteRect
+            //     Layout.fillWidth: true
+            //     Layout.preferredHeight: websiteField.height
+            //     radius: 5
+            //     border.width: 1
+            //     border.color: guiSettings.borderColor
+            //     color: websiteField.isValid() ? "transparent" : guiSettings.textInputInvalidColor
+
+            //     SkyTextEdit {
+            //         id: websiteField
+            //         width: parent.width
+            //         topPadding: 10
+            //         bottomPadding: 10
+            //         focus: true
+            //         parentFlick: flick
+            //         initialText: authorWebsite
+            //         placeholderText: qsTr("Your website")
+            //         singleLine: true
+            //         inputMethodHints: Qt.ImhNoPredictiveText
+
+            //         function getLink() {
+            //             return linkUtils.getLinkWithScheme(text)
+            //         }
+
+            //         function isValid() {
+            //             const link = getLink()
+            //             return !Boolean(link) || linkUtils.isWebLink(link)
+            //         }
+            //     }
+            // }
         }
     }
 
@@ -578,7 +592,7 @@ SkyPage {
 
         guiSettings.askYesNoQuestion(
                     editProfilePage,
-                    qsTr("Do you really want to discard your changes?"),
+                    qsTr("Do you want to discard your changes?"),
                     () => editProfilePage.closed())
     }
 

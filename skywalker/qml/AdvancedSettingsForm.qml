@@ -3,16 +3,18 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
+    property bool newUser: false
     property Skywalker skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
-    readonly property string sideBarTitle: qsTr("Advancedd settings")
+    readonly property string sideBarTitle: qsTr("Advanced settings")
     readonly property SvgImage sideBarSvg: SvgOutline.settings
 
     id: page
     padding: 10
 
     signal closed()
+    signal settings(string serviceAppView, string serviceChat, string serviceVideoHost, string serviceVideoHost)
 
     Accessible.role: Accessible.Pane
 
@@ -20,6 +22,22 @@ SkyPage {
         text: sideBarTitle
         visible: !root.showSideBar
         onBack: cancel()
+
+        SvgPlainButton {
+            id: saveButton
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
+            svg: SvgOutline.check
+            iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
+            accessibleName: qsTr("save settings")
+            enabled: changesMade() && allFieldsValid()
+
+            onClicked: {
+                saveSettings()
+                closed()
+            }
+        }
     }
 
     footer: DeadFooterMargin {
@@ -70,15 +88,18 @@ SkyPage {
                 Layout.fillWidth: true
                 parentFlick: flick
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                initialText: userSettings.getServiceAppView(userDid)
+                initialText: newUser ? userSettings.getDefaultServiceAppView() : userSettings.getServiceAppView(userDid)
                 placeholderText: qsTr("did:web:api.bsky.app#bsky_appview")
                 validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
+                valid: !displayText || linkUtils.isValidService(displayText)
             }
 
-            SvgButton {
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: height
-                Layout.preferredHeight: appViewField.height
-                svg: SvgOutline.close
+                Layout.preferredHeight: appViewField.height - 10
+                imageMargin: 0
+                svg: SvgOutline.undo
                 accessibleName: qsTr("reset to default")
                 onClicked: appViewField.text = userSettings.getDefaultServiceAppView()
             }
@@ -96,14 +117,17 @@ SkyPage {
                 Layout.fillWidth: true
                 parentFlick: flick
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                initialText: userSettings.getServiceChat(userDid)
+                initialText: newUser ? userSettings.getDefaultServiceChat() : userSettings.getServiceChat(userDid)
                 validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
+                valid: !displayText || linkUtils.isValidService(displayText)
             }
 
-            SvgButton {
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: height
-                Layout.preferredHeight: chatField.height
-                svg: SvgOutline.close
+                Layout.preferredHeight: chatField.height - 10
+                imageMargin: 0
+                svg: SvgOutline.undo
                 accessibleName: qsTr("reset to default")
                 onClicked: chatField.text = userSettings.getDefaultServiceChat()
             }
@@ -121,14 +145,26 @@ SkyPage {
                 Layout.fillWidth: true
                 parentFlick: flick
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                initialText: userSettings.getServiceVideoHost(userDid)
+                initialText: newUser ? userSettings.getDefaultServiceVideoHost() : userSettings.getServiceVideoHost(userDid)
                 validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
+                valid: isValid()
+
+                function getLink() {
+                    return linkUtils.getLinkWithScheme(displayText)
+                }
+
+                function isValid() {
+                    const link = getLink()
+                    return linkUtils.isWebLink(link)
+                }
             }
 
-            SvgButton {
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: height
-                Layout.preferredHeight: videoHostField.height
-                svg: SvgOutline.close
+                Layout.preferredHeight: videoHostField.height - 10
+                imageMargin: 0
+                svg: SvgOutline.undo
                 accessibleName: qsTr("reset to default")
                 onClicked: videoHostField.text = userSettings.getDefaultServiceVideoHost()
             }
@@ -146,26 +182,75 @@ SkyPage {
                 Layout.fillWidth: true
                 parentFlick: flick
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                initialText: userSettings.getServiceVideoDid(userDid)
+                initialText: newUser ? userSettings.getDefaultServiceVideoDid() : userSettings.getServiceVideoDid(userDid)
                 validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
+                valid: linkUtils.isValidDid(displayText)
             }
 
-            SvgButton {
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.preferredWidth: height
-                Layout.preferredHeight: videoDidField.height
-                svg: SvgOutline.close
+                Layout.preferredHeight: videoDidField.height - 10
+                imageMargin: 0
+                svg: SvgOutline.undo
                 accessibleName: qsTr("reset to default")
                 onClicked: videoDidField.text = userSettings.getDefaultServiceVideoDid()
             }
         }
     }
 
+    LinkUtils {
+        id: linkUtils
+        skywalker: page.skywalker
+    }
+
     VirtualKeyboardHandler {
         id: keyboardHandler
     }
 
+    function changesMade() {
+        if (newUser) {
+            return appViewField.displayText !== userSettings.getDefaultServiceAppView() ||
+                    chatField.displayText !== userSettings.getDefaultServiceChat() ||
+                    videoHostField.displayText !== userSettings.getDefaultServiceVideoHost() ||
+                    videoDidField.displayText !== userSettings.getDefaultServiceVideoDid()
+        }
+
+        return appViewField.displayText !== userSettings.getServiceAppView(userDid) ||
+                chatField.displayText !== userSettings.getServiceChat(userDid) ||
+                videoHostField.displayText !== userSettings.getServiceVideoHost(userDid) ||
+                videoDidField.displayText !== userSettings.getServiceVideoDid(userDid)
+    }
+
+    function allFieldsValid() {
+        return appViewField.valid &&
+                chatField.valid &&
+                videoHostField.valid &&
+                videoDidField.valid
+    }
+
+    function saveSettings() {
+        if (newUser) {
+            settings(appViewField.displayText, chatField.displayText, videoHostField.displayText, videoDidField.displayText)
+            return
+        }
+
+        userSettings.setServiceAppView(userDid, appViewField.displayText)
+        userSettings.setServiceChat(userDid, chatField.displayText)
+        userSettings.setServiceVideoHost(userDid, videoHostField.displayText)
+        userSettings.setServiceVideoDid(userDid, videoDidField.displayText)
+    }
+
     function cancel() {
-        closed()
+        if (!changesMade()) {
+            page.closed()
+            return
+        }
+
+        guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you want to discard your changes?"),
+                    () => page.closed())
     }
 
     Component.onCompleted: {

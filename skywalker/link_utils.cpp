@@ -49,6 +49,26 @@ bool LinkUtils::hasScheme(const QString& link)
     return !url.scheme().isEmpty();
 }
 
+bool LinkUtils::isValidDid(const QString& did)
+{
+    return ATProto::ATRegex::isValidDid(did);
+}
+
+bool LinkUtils::isValidService(const QString& service)
+{
+    return ATProto::ATRegex::isValidAtprotoProxy(service);
+}
+
+QString LinkUtils::getLinkWithScheme(const QString& link)
+{
+    const QString value = link.trimmed();
+
+    if (value.isEmpty() || hasScheme(value))
+        return value;
+
+    return "https://" + value;
+}
+
 QString LinkUtils::toHttpsLink(const QString& atUri)
 {
     ATProto::ATUri uri(atUri);

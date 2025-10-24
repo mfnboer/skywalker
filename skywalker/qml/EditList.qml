@@ -171,9 +171,9 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.preferredHeight: nameField.height
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: nameField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyTextEdit {
                     id: nameField
@@ -203,9 +203,9 @@ SkyPage {
                 Layout.preferredHeight: descriptionField.height
 
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: descriptionField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyFormattedTextEdit {
                     id: descriptionField

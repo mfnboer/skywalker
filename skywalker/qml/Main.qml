@@ -1223,10 +1223,12 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken,
+                                 setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
                 popStack()
                 const user = did ? did : handle
-                skywalkerLogin(host, user, password, rememberPassword, authFactorToken)
+                skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+                               setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
         pushStack(page)
     }
@@ -1238,9 +1240,11 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword, _authFactorToken,
+                                 setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
                 popStack()
-                skywalkerLogin(host, handle, password, rememberPassword)
+                skywalkerLogin(host, handle, password, rememberPassword, "",
+                               setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
 
         pushStack(page)
@@ -1304,9 +1308,11 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken) {
+    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+                            setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) {
         showStartupStatus()
-        skywalker.login(host, user, password, rememberPassword, authFactorToken)
+        skywalker.login(host, user, password, rememberPassword, authFactorToken,
+                        setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
     }
 
     function signOutCurrentUser() {

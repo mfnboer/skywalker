@@ -230,30 +230,49 @@ QString Skywalker::getUserAgentString()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken)
+void Skywalker::login(const QString host, const QString user, QString password,
+                      bool rememberPassword, const QString authFactorToken,
+                      bool setAdvancedSettings, const QString serviceAppView,
+                      const QString serviceChat, const QString serviceVideoHost,
+                      const QString serviceVideoDid)
 {
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
-        [this, host, user, password, rememberPassword]{
+        [this, host, user, password, rememberPassword, setAdvancedSettings,
+         serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
-            updateUser(session->mDid, host);
-            mBsky->setServiceAppView(mUserSettings.getServiceAppView(session->mDid));
-            mBsky->setServiceChat(mUserSettings.getServiceChat(session->mDid));
-            mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(session->mDid));
-            mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(session->mDid));
+            const QString& did = session->mDid;
+            updateUser(did, host);
+
+            if (setAdvancedSettings)
+            {
+                // These settings will trigger updates on mBsky
+                mUserSettings.setServiceAppView(did, serviceAppView);
+                mUserSettings.setServiceChat(did, serviceChat);
+                mUserSettings.setServiceVideoHost(did, serviceVideoHost);
+                mUserSettings.setServiceVideoDid(did, serviceVideoDid);
+            }
+            else
+            {
+                mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+                mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+                mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+                mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+            }
+
             mUserSettings.saveSession(*session);
-            mUserSettings.setRememberPassword(session->mDid, rememberPassword); // this calls sync
+            mUserSettings.setRememberPassword(did, rememberPassword); // this calls sync
 
             if (rememberPassword)
-                mUserSettings.savePassword(session->mDid, password);
+                mUserSettings.savePassword(did, password);
 
             emit loginOk();
 
-            mSessionManager.insertSession(session->mDid, mBsky.get());
+            mSessionManager.insertSession(did, mBsky.get());
             startRefreshTimers();
             mSessionManager.resumeAndRefreshNonActiveUsers();
         },

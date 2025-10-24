@@ -64,7 +64,7 @@ Item {
     readonly property string buttonTextColor: "white"
     readonly property string contentLabelColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string contentUserLabelColor: isLightMode ? "lightblue" : "steelblue"
-    readonly property string disabledColor: isLightMode ? "lightgrey" : "darkslategrey"
+    readonly property string disabledColor: isLightMode ? "grey" : "slategrey"
     readonly property string dragHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string errorColor: isLightMode ? "darkred" : "palevioletred"
     readonly property string favoriteColor: "gold"

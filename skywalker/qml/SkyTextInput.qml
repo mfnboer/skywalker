@@ -13,6 +13,8 @@ Rectangle {
     property int graphemeLength: 0
     property int maximumGraphemeLength: -1
     property bool strictGraphemeMax: false
+    property bool valid: true
+    property alias padding: textField.padding
     property alias validator: textField.validator
     property alias text: textField.text
     property alias displayText: textField.displayText
@@ -25,7 +27,7 @@ Rectangle {
     radius: 5
     border.width: textField.activeFocus ? 1 : 0
     border.color: guiSettings.buttonColor
-    color: guiSettings.textInputBackgroundColor
+    color: valid ? guiSettings.textInputBackgroundColor : guiSettings.textInputInvalidColor
 
     Accessible.role: Accessible.Pane
 
@@ -116,8 +118,8 @@ Rectangle {
 
             if (cursorY < 0)
                 parentFlick.contentY += cursorY;
-            else if (parentFlick.height < cursorY + cursor.height)
-                parentFlick.contentY += cursorY + cursor.height - parentFlick.height
+            else if (parentFlick.height < cursorY + cursor.height + textField.bottomPadding)
+                parentFlick.contentY += cursorY + cursor.height + textField.bottomPadding - parentFlick.height
         }
     }
 

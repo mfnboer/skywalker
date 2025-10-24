@@ -79,7 +79,11 @@ public:
     Ptr createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
     void initNonActiveUser();
 
-    Q_INVOKABLE void login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken);
+    Q_INVOKABLE void login(const QString host, const QString user, QString password,
+                           bool rememberPassword, const QString authFactorToken,
+                           bool setAdvancedSettings = false, const QString serviceAppView = "",
+                           const QString serviceChat = "", const QString serviceVideoHost = "",
+                           const QString serviceVideoDid = "");
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
