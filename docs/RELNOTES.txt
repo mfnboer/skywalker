@@ -6,6 +6,7 @@ next
 * Get notifications from all your accounts
 * Reply, repost, like, bookmark with any of your accounts
 * Sort lists by name
+* Configure AppView, Chat and Video services
 * Bug fixes
 
 4.16.2

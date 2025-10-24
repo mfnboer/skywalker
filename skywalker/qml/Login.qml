@@ -88,6 +88,14 @@ SkyPage {
                 Accessible.name: qsTr(`Sign into network ${editText}`)
                 Accessible.description: qsTr("Choose network to sign into")
                 Accessible.editable: enabled
+
+                Rectangle {
+                    z: parent.z - 1
+                    width: hostField.width
+                    height: hostField.height
+                    radius: 5
+                    color: guiSettings.textInputBackgroundColor
+                }
             }
 
             AccessibleText {

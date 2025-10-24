@@ -28,6 +28,9 @@ public:
     QStringList getMentionDids() const;
     bool isReply() const;
     bool hasEmbeddedContent() const;
+    ATProto::AppBskyEmbed::Images::SharedPtr getImages() const;
+    ATProto::AppBskyEmbed::Video::SharedPtr getVideo() const;
+    ATProto::AppBskyEmbed::External::SharedPtr getExternal() const;
 
 private:
     ATProto::AppBskyFeed::Record::Post* mRecord = nullptr;

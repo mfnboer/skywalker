@@ -730,9 +730,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     const PostCache& reasonPostCache = mNotificationListModel.getReasonPostCache();
     const PostRecord postRecord = notification.getPostRecord();
 
-    // TODO: get image/video alt or record text if postText is empty
-    // NOTE: postText can be empty if there is only an image.
-    QString msg = !postRecord.isNull() ? postRecord.getFormattedText() : "";
+    QString msg = !postRecord.isNull() ? getNotificationText(postRecord) : "";
     QString channelId = CHANNEL_POST;
     IconType iconType = IconType::POST;
 
@@ -919,6 +917,46 @@ QString OffLineMessageChecker::getNotificationText(const Post& post) const
     }
 
     return {};
+}
+
+QString OffLineMessageChecker::getNotificationText(const PostRecord& postRecord) const
+{
+    const QString text = postRecord.getFormattedText();
+
+    if (!text.isEmpty())
+        return text;
+
+    const auto& images = postRecord.getImages();
+
+    if (images)
+    {
+        for (const auto& image : images->mImages)
+        {
+            if (!image->mAlt.isEmpty())
+                return image->mAlt;
+        }
+    }
+
+    const auto& video = postRecord.getVideo();
+
+    if (video)
+    {
+        if (!video->mAlt.value_or("").isEmpty())
+            return *video->mAlt;
+    }
+
+    const auto& external = postRecord.getExternal();
+
+    if (external && external->mExternal)
+    {
+        if (!external->mExternal->mTitle.isEmpty())
+            return external->mExternal->mTitle;
+
+        if (!external->mExternal->mDescription.isEmpty())
+            return external->mExternal->mDescription;
+    }
+
+    return "";
 }
 
 void OffLineMessageChecker::checkNotificationPermission()

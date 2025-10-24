@@ -11,6 +11,7 @@ ComboBox {
     property int borderWidth: 1
     property string borderColor: guiSettings.buttonColor
     property string color: guiSettings.buttonColor
+    property string backgroundColor: "transparent"
     property bool addAnyLanguage: false
     property language anyLanguage
     property string initialLanguage
@@ -30,7 +31,7 @@ ComboBox {
         radius: languageComboBox.radius
         border.color: languageComboBox.borderColor
         border.width: languageComboBox.borderWidth
-        color: reversedColors ? languageComboBox.borderColor : "transparent"
+        color: reversedColors ? languageComboBox.borderColor : languageComboBox.backgroundColor
 
         states: State {
             name: "autoDetected"; when: autoDetectColor
