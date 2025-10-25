@@ -2348,7 +2348,7 @@ ApplicationWindow {
         if (isActiveUser(did))
             return linkUtils
 
-        const lu = didFeedUtilsMap.get(did)
+        const lu = didLinkUtilsMap.get(did)
 
         if (!lu)
             console.warn("No linkUtils for:", did)
