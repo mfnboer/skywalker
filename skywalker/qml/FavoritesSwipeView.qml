@@ -9,6 +9,7 @@ SwipeView {
     readonly property var currentView: getCurrentView()
 
     id: view
+    spacing: 1
     interactive: userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
     TimelinePage {

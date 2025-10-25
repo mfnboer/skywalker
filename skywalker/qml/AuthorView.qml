@@ -817,7 +817,10 @@ SkyPage {
                     footerPositioning: ListView.OverlayFooter
 
                     delegate: ContentGroupDelegate {
+                        required property int index
+
                         width: authorFeedView.width
+                        isLast: index === (labelList.count - 1)
                         userDid: page.userDid
                         isSubscribed: page.isSubscribed
                         adultContent: labelList.model.adultContent

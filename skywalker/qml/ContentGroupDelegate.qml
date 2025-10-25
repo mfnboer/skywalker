@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     property int margin: 10
     property string userDid
+    property bool isLast: false
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property var model
     required property bool isSubscribed
@@ -142,6 +143,13 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: contentGroupView.isNewLabel ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 80
+            color: "transparent"
+            visible: isLast
         }
     }
 
