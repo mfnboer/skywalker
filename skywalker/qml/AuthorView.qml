@@ -42,7 +42,8 @@ SkyPage {
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
     property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
-    property bool isSubscribed: contentGroupListModel ? contentGroupListModel.subscribed : false
+    readonly property bool isSubscribed: contentGroupListModel ? contentGroupListModel.subscribed : false
+    readonly property bool isFixedLabelerEnabled: contentGroupListModel ? contentGroupListModel.fixedLabelerEnabled : false
     property labelerviewdetailed labeler
     property string labelerLikeUri: ""
     property int labelerLikeCount: 0
@@ -408,6 +409,22 @@ SkyPage {
                     text: qsTr("Unsubscribe")
                     visible: isSubscribed && isLabeler && !author.isFixedLabeler()
                     onClicked: contentGroupListModel.subscribed = false
+                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
+                }
+
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    text: qsTr("Subscribe")
+                    visible: !isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
+                    onClicked: contentGroupListModel.fixedLabelerEnabled = true
+                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
+                }
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    flat: true
+                    text: qsTr("Unsubscribe")
+                    visible: isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
+                    onClicked: contentGroupListModel.fixedLabelerEnabled = false
                     Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
             }

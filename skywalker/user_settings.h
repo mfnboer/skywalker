@@ -380,6 +380,9 @@ public:
     void removeLabels(const QString& did, const QString& labelerDid);
     bool containsLabeler(const QString& did, const QString& labelerDid) const;
 
+    bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const;
+    void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled);
+
     SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
@@ -427,6 +430,7 @@ private:
     QString uriKey(const QString& did, const QString& subkey, QString uri) const;
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
+    QString fixedLabelerKey(const QString& did, const QString& labelerDid) const;
     void cleanup();
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;

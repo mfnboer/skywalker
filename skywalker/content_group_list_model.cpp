@@ -29,6 +29,9 @@ void ContentGroupListModel::init()
     if (mSubscribed && !mLabelerDid.isEmpty())
         mNewLabelIds = mContentFilter.getNewLabelIds(mLabelerDid);
 
+    if (mContentFilter.isFixedLabelerSubscription(mLabelerDid))
+        mFixedLabelerEnabled = mContentFilter.isFixedLabelerEnabled(mLabelerDid);
+
     connect(&mContentFilter, &ContentFilter::contentGroupsChanged, this, [this]{
         mAdultContent = mContentFilter.getAdultContent();
         mChangedVisibility.clear();
@@ -164,6 +167,32 @@ void ContentGroupListModel::setSubscribed(bool subscribed)
     }
 }
 
+bool ContentGroupListModel::isFixedLabelerEnabled() const
+{
+    if (!isFixedSubscription())
+        return false;
+
+    return mFixedLabelerEnabled;
+}
+
+void ContentGroupListModel::setFixedLabelerEnabled(bool enabled)
+{
+    if (!isFixedSubscription())
+        return;
+
+    if (enabled != mFixedLabelerEnabled)
+    {
+        if (!enabled && !mAdultContent)
+        {
+            emit error(tr("You can only unsubscribe from this labeler when adult content is enabled."));
+            return;
+        }
+
+        mFixedLabelerEnabled = enabled;
+        emit fixedLabelerEnabledChanged();
+    }
+}
+
 bool ContentGroupListModel::isFixedSubscription() const
 {
     if (mLabelerDid.isEmpty())
@@ -176,7 +205,8 @@ bool ContentGroupListModel::isModified(const ATProto::UserPreferences& userPrefe
 {
     return mAdultContent != userPreferences.getAdultContent() ||
            !mChangedVisibility.empty() ||
-           (!mLabelerDid.isEmpty() && mSubscribed != mContentFilter.isSubscribedToLabeler(mLabelerDid));
+           (!mLabelerDid.isEmpty() && mSubscribed != mContentFilter.isSubscribedToLabeler(mLabelerDid)) ||
+           (mContentFilter.isFixedLabelerSubscription(mLabelerDid) && mFixedLabelerEnabled != mContentFilter.isFixedLabelerEnabled(mLabelerDid));
 }
 
 void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) const
@@ -197,6 +227,9 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
         for (const auto& legacyId : contentGroup.getLegacyLabelIds())
             userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), legacyId, labelVisibility);
     }
+
+    if (mContentFilter.isFixedLabelerSubscription(mLabelerDid) && mFixedLabelerEnabled != mContentFilter.isFixedLabelerEnabled(mLabelerDid))
+        mContentFilter.enableFixedLabeler(mLabelerDid, mFixedLabelerEnabled);
 
     if (mLabelerDid.isEmpty() || mSubscribed == mContentFilter.isSubscribedToLabeler(mLabelerDid))
         return;

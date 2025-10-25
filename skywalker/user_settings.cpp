@@ -91,6 +91,11 @@ QString UserSettings::labelsKey(const QString& did, const QString& labelerDid) c
     return QString("%1/labels/%2").arg(did, labelerDid);
 }
 
+QString UserSettings::fixedLabelerKey(const QString& did, const QString& labelerDid) const
+{
+    return QString("%1/fixedLabeler/%2").arg(did, labelerDid);
+}
+
 void UserSettings::reset()
 {
     mSyncFeeds.reset();
@@ -1602,6 +1607,16 @@ void UserSettings::removeLabels(const QString& did, const QString& labelerDid)
 bool UserSettings::containsLabeler(const QString& did, const QString& labelerDid) const
 {
     return mSettings.contains(labelsKey(did, labelerDid));
+}
+
+bool UserSettings::getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const
+{
+    return mSettings.value(fixedLabelerKey(did, labelerDid), true).toBool();
+}
+
+void UserSettings::setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled)
+{
+    mSettings.setValue(fixedLabelerKey(did, labelerDid), enabled);
 }
 
 SearchFeed::List UserSettings::getPinnedSearchFeeds(const QString& did) const

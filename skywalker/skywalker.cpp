@@ -53,7 +53,7 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide(this),
     mUserSettings(this),
     mSessionManager(this, this),
-    mContentFilter(mUserPreferences, &mUserSettings, this),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
@@ -142,7 +142,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mTimelineHide(this),
     mUserSettings(this),
     mSessionManager(this, this),
-    mContentFilter(mUserPreferences, &mUserSettings, this),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
@@ -751,7 +751,10 @@ void Skywalker::loadLabelSettings()
 {
     Q_ASSERT(mBsky);
     qDebug() << "Load label settings";
-    std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids();
+
+    // The fixed labaler is always included as the Bluesky app has it always enabled and we
+    // don't want to erase the label preferences for a fixed labeler.
+    std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids(true);
     std::vector<QString> dids(labelerDids.begin(), labelerDids.end());
 
     if (dids.empty())

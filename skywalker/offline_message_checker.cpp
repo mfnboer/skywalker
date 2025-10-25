@@ -147,7 +147,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
     mBackgroundApp(backgroundApp),
     mUserSettings(settingsFileName),
     mImageReader(mNetwork),
-    mContentFilter(mUserPreferences, &mUserSettings),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings),
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mMutedWords, nullptr)
 {
@@ -160,7 +160,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
     mEventLoop(eventLoop),
     mUserSettings(settingsFileName),
     mImageReader(mNetwork),
-    mContentFilter(mUserPreferences, &mUserSettings),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings),
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mMutedWords, nullptr)
 {
