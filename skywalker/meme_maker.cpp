@@ -11,7 +11,7 @@ namespace Skywalker {
 
 constexpr int FONT_MAX_PX = 38;
 constexpr int FONT_MIN_PX = 24;
-constexpr int MARGIN = 10;
+constexpr int MARGIN = 20;
 constexpr int MAX_TEXT_PATHS = 4;
 
 // This is the width on a Galaxy S22. Scaling font size to this width
