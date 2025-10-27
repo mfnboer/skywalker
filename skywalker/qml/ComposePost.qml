@@ -263,16 +263,6 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
-        onHeightChanged: {
-            let postItem = currentPostItem()
-
-            if (!postItem)
-                return
-
-            let postText = postItem.getPostText()
-            postText.ensureVisible(postText.cursorRectangle)
-        }
-
         // Reply-to
         Rectangle {
             radius: guiSettings.radius

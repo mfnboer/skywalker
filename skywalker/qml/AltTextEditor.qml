@@ -39,7 +39,6 @@ SkyPage {
         contentHeight: altImage.y + altImage.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: altText.ensureVisible(altText.cursorRectangle)
 
         SkyFormattedTextEdit {
             id: altText

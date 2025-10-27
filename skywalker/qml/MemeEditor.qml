@@ -75,6 +75,7 @@ SkyPage {
             autoTransform: true
             source: memeMaker.memeImgSource
             asynchronous: true
+            retainWhileLoading: true
         }
     }
 

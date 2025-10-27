@@ -117,8 +117,6 @@ SkyPage {
         boundsBehavior: Flickable.StopAtBounds
         visible: convoAccepted
 
-        onHeightChanged: newMessageText.ensureVisible(newMessageText.cursorRectangle)
-
         onContentYChanged: {
             if (contentYUpdating)
                 return

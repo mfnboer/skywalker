@@ -54,17 +54,6 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
-        onHeightChanged: {
-            if (appViewField.textInput.activeFocus)
-                appViewField.textInput.ensureVisible(appViewField.textInput.cursorRectangle)
-            else if (chatField.textInput.activeFocus)
-                chatField.textInput.ensureVisible(chatField.textInput.cursorRectangle)
-            else if (videoHostField.textInput.activeFocus)
-                videoHostField.textInput.ensureVisible(videoHostField.textInput.cursorRectangle)
-            else if (videoDidField.textInput.activeFocus)
-                videoDidField.textInput.ensureVisible(videoDidField.textInput.cursorRectangle)
-        }
-
         GridLayout {
             columns: 2
             width: parent.width

@@ -122,17 +122,6 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
-        onHeightChanged: {
-            if (nameField.activeFocus)
-                nameField.ensureVisible(nameField.cursorRectangle)
-            else if (pronounsField.activeFocus)
-                pronounsField.ensureVisible(pronounsField.cursorRectangle)
-            else if (descriptionField.activeFocus)
-                descriptionField.ensureVisible(descriptionField.cursorRectangle)
-            else if (websiteField.textInput.activeFocus)
-                websiteField.textInput.ensureVisible(websiteField.textInput.cursorRectangle)
-        }
-
         ColumnLayout {
             id: pageColumn
             width: parent.width

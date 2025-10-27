@@ -482,9 +482,17 @@ TextEdit {
     Component.onCompleted: {
         createAuthorTypeaheadView()
         createHashtagTypeaheadView()
+
         facetUtils.setHighlightDocument(
                 editText.textDocument, guiSettings.linkColor, guiSettings.errorColor,
                 editText.maxLength, guiSettings.textLengthExceededColor)
+
+        if (parentFlick) {
+            parentFlick.onHeightChanged.connect(() => {
+                    if (editText.activeFocus)
+                        editText.ensureVisible(editText.cursorRectangle)
+            })
+        }
     }
 }
 

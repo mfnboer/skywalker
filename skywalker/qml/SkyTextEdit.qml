@@ -167,5 +167,12 @@ TextEdit {
     Component.onCompleted: {
         emojiFixer.setEmojiFixDocument(textDocument, maxLength, guiSettings.textLengthExceededColor)
         cursorPosition = text.length
+
+        if (parentFlick) {
+            parentFlick.onHeightChanged.connect(() => {
+                if (skyTextEdit.activeFocus)
+                    skyTextEdit.ensureVisible(skyTextEdit.cursorRectangle)
+            })
+        }
     }
 }

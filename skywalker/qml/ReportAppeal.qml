@@ -59,7 +59,6 @@ SkyPage {
         contentHeight: detailsText.y + detailsText.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: detailsText.ensureVisible(detailsText.cursorRectangle)
 
         SkyCleanedText {
             id: appealTitle

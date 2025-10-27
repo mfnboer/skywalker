@@ -134,4 +134,13 @@ Rectangle {
     function clear() {
         textField.clear()
     }
+
+    Component.onCompleted: {
+        if (parentFlick) {
+            parentFlick.onHeightChanged.connect(() => {
+                if (textField.activeFocus)
+                    textField.ensureVisible(textField.cursorRectangle)
+            })
+        }
+    }
 }

@@ -102,7 +102,6 @@ SkyPage {
         contentHeight: pageColumn.y + descriptionRect.y + descriptionField.y + descriptionField.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: descriptionField.ensureVisible(descriptionField.cursorRectangle)
 
         ColumnLayout {
             id: pageColumn
