@@ -194,7 +194,7 @@ SkyPage {
         skywalker: root.getSkywalker()
 
         onCategories: (categoryList) => categoriesView.model = categoryList
-        onSearchGifsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onSearchGifsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     BusyIndicator {

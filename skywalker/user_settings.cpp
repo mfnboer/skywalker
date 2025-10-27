@@ -5,6 +5,7 @@
 #include "definitions.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
+#include <atproto/lib/client.h>
 
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
 // This will break OffLineMessageChecker. This runs in an Android background process.
@@ -88,6 +89,11 @@ QString UserSettings::displayKey(const QString& key) const
 QString UserSettings::labelsKey(const QString& did, const QString& labelerDid) const
 {
     return QString("%1/labels/%2").arg(did, labelerDid);
+}
+
+QString UserSettings::fixedLabelerKey(const QString& did, const QString& labelerDid) const
+{
+    return QString("%1/fixedLabeler/%2").arg(did, labelerDid);
 }
 
 void UserSettings::reset()
@@ -273,14 +279,106 @@ QString UserSettings::getAvatar(const QString& did) const
     return mSettings.value(key(did, "avatar")).toString();
 }
 
+void UserSettings::setServiceAppView(const QString& did, const QString& service)
+{
+    if (service != getServiceAppView(did))
+    {
+        if (service == ATProto::Client::SERVICE_APP_VIEW)
+            mSettings.remove(key(did, "serviceAppView"));
+        else
+            mSettings.setValue(key(did, "serviceAppView"), service);
+
+        emit serviceAppViewChanged(did);
+    }
+}
+
+QString UserSettings::getServiceAppView(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceAppView"), ATProto::Client::SERVICE_APP_VIEW).toString();
+}
+
+QString UserSettings::getDefaultServiceAppView() const
+{
+    return ATProto::Client::SERVICE_APP_VIEW;
+}
+
+void UserSettings::setServiceChat(const QString& did, const QString& service)
+{
+    if (service != getServiceChat(did))
+    {
+        if (service == ATProto::Client::SERVICE_CHAT)
+            mSettings.remove(key(did, "serviceChat"));
+        else
+            mSettings.setValue(key(did, "serviceChat"), service);
+
+        emit serviceChatChanged(did);
+    }
+}
+
+QString UserSettings::getServiceChat(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceChat"), ATProto::Client::SERVICE_CHAT).toString();
+}
+
+QString UserSettings::getDefaultServiceChat() const
+{
+    return ATProto::Client::SERVICE_CHAT;
+}
+
+void UserSettings::setServiceVideoHost(const QString& did, const QString& host)
+{
+    if (host != getServiceVideoHost(did))
+    {
+        if (host == ATProto::Client::SERVICE_VIDEO_HOST)
+            mSettings.remove(key(did, "serviceVideoHost"));
+        else
+            mSettings.setValue(key(did, "serviceVideoHost"), host);
+
+        emit serviceVideoHostChanged(did);
+    }
+}
+
+QString UserSettings::getServiceVideoHost(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceVideoHost"), ATProto::Client::SERVICE_VIDEO_HOST).toString();
+}
+
+QString UserSettings::getDefaultServiceVideoHost() const
+{
+    return ATProto::Client::SERVICE_VIDEO_HOST;
+}
+
+void UserSettings::setServiceVideoDid(const QString& did, const QString& serviceDid)
+{
+    if (serviceDid != getServiceVideoDid(did))
+    {
+        if (serviceDid == ATProto::Client::SERVICE_VIDEO_DID)
+            mSettings.remove(key(did, "serviceVideoDid"));
+        else
+            mSettings.setValue(key(did, "serviceVideoDid"), serviceDid);
+
+        emit serviceVideoDidChanged(did);
+    }
+}
+
+QString UserSettings::getServiceVideoDid(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceVideoDid"), ATProto::Client::SERVICE_VIDEO_DID).toString();
+}
+
+QString UserSettings::getDefaultServiceVideoDid() const
+{
+    return ATProto::Client::SERVICE_VIDEO_DID;
+}
+
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
-    qDebug() << "Save session";
+    qDebug() << "Save session:" << session.mHandle;
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    qDebug() << "Session saved";
+    qDebug() << "Session saved:" << session.mHandle;
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -978,24 +1076,6 @@ bool UserSettings::getSonglinkEnabled() const
     return mSettings.value("songlinkEnabled", true).toBool();
 }
 
-void UserSettings::setFloatingNavigationButtons(bool floating)
-{
-    if (floating == getFloatingNavigationButtons())
-        return;
-
-    mSettings.setValue("floatingNavButtons", floating);
-    emit floatingNavigationButtonsChanged();
-}
-
-// TODO
-// Floating buttons do not play well with full screen margin settings.
-// Disabled for now.
-bool UserSettings::getFloatingNavigationButtons() const
-{
-    return false;
-    // return mSettings.value("floatingNavButtons", false).toBool();
-}
-
 void UserSettings::setShowFollowsActiveStatus(bool show)
 {
     if (show == getShowFollowsActiveStatus())
@@ -1168,6 +1248,20 @@ void UserSettings::setNotificationsWifiOnly(bool enable)
 bool UserSettings::getNotificationsWifiOnly() const
 {
     return mSettings.value("notificationsWifiOnly", false).toBool();
+}
+
+void UserSettings::setNotificationsForAllAccounts(const QString& did, bool enable)
+{
+    if (enable != getNotificationsForAllAccounts(did))
+    {
+        mSettings.setValue(key(did, "notificationsForAllAccounts"), enable);
+        emit notificationsForAllAccountsChanged();
+    }
+}
+
+bool UserSettings::getNotificationsForAllAccounts(const QString& did) const
+{
+    return mSettings.value(key(did, "notificationsForAllAccounts"), true).toBool();
 }
 
 bool UserSettings::getShowQuotesWithBlockedPost(const QString& did) const
@@ -1515,6 +1609,16 @@ bool UserSettings::containsLabeler(const QString& did, const QString& labelerDid
     return mSettings.contains(labelsKey(did, labelerDid));
 }
 
+bool UserSettings::getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const
+{
+    return mSettings.value(fixedLabelerKey(did, labelerDid), true).toBool();
+}
+
+void UserSettings::setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled)
+{
+    mSettings.setValue(fixedLabelerKey(did, labelerDid), enabled);
+}
+
 SearchFeed::List UserSettings::getPinnedSearchFeeds(const QString& did) const
 {
     SearchFeed::List searchFeeds;
@@ -1549,6 +1653,7 @@ void UserSettings::setPinnedSearchFeeds(const QString& did, const SearchFeed::Li
 void UserSettings::cleanup()
 {
     mSettings.remove("draftRepoToFileMigration");
+    mSettings.remove("floatingNavButtons");
 }
 
 }

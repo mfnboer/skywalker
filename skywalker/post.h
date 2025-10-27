@@ -20,6 +20,8 @@ struct PostReplyRef;
 class Post : public NormalizedWordIndex
 {
 public:
+    using Ptr = std::unique_ptr<Post>;
+
     // A gap place holder is created to represent a gap in the timeline, i.e.
     // missing posts that have not been retrieved. The gapCursor can be use
     // to fetch those posts.

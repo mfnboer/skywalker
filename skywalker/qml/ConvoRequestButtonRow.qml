@@ -22,7 +22,7 @@ RowLayout {
     SkyButton {
         Layout.fillWidth: true
         text: qsTr("Block")
-        visible: !author.viewer.blocking && !guiSettings.isUser(author)
+        visible: !author.viewer.blocking && !root.isActiveUser(author.did)
         onClicked: blockAndDeleteConvo()
     }
 }

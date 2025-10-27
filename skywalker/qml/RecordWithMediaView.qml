@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Item {
+    property string userDid
     required property record_with_media_view record
     property string backgroundColor: "transparent"
     required property int contentVisibility // QEnums::ContentVisibility
@@ -27,6 +28,7 @@ Item {
         }
 
         RecordView {
+            userDid: recordItem.userDid
             record: recordItem.record.record
             backgroundColor: recordItem.backgroundColor
             highlight: recordItem.highlight
@@ -103,6 +105,7 @@ Item {
             id: externalViewComponent
 
             ExternalView {
+                userDid: recordItem.userDid
                 postExternal: record.external
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentVisibility

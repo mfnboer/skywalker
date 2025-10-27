@@ -143,7 +143,8 @@ void ATProtoImageResponse::loadImage(const QString& did, const QString& cid)
     qDebug() << "Load image, did:" << did << "cid:" << cid;
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mClient = std::make_unique<ATProto::Client>(std::move(xrpc));
+    // No need to set service hosts for getting a blob from the PDS
+    mClient = std::make_unique<ATProto::Client>(std::move(xrpc), this);
 
     mClient->getBlob(did, cid,
         [this, did, cid](const QByteArray& bytes, const QString&){

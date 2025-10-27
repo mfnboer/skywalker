@@ -11,14 +11,30 @@ SkyPage {
     property string errorCode
     property string errorMsg
     property string password
+    property bool setAdvancedSettings: false
+    property string serviceAppView
+    property string serviceChat
+    property string serviceVideoHost
+    property string serviceVideoDid
     property var userSettings: root.getSkywalker().getUserSettings()
     readonly property string sideBarTitle: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
 
-    signal accepted(string host, string handle, string password, string did, bool rememberPassword, string authFactorTokenField)
+    signal accepted(string host,
+                    string handle,
+                    string password,
+                    string did,
+                    bool rememberPassword,
+                    string authFactorTokenField,
+                    bool setAdvancedSettings,
+                    string serviceAppView,
+                    string serviceChat,
+                    string serviceVideoHost,
+                    string serviceVideoDid)
     signal canceled
 
     id: loginPage
     width: parent.width
+    padding: 10
 
     Accessible.role: Accessible.Pane
 
@@ -28,12 +44,12 @@ SkyPage {
         onBack: loginPage.canceled()
     }
 
-    footer: Rectangle {
-        height: keyboardHandler.keyboardHeight
-        color: "transparent"
+    footer: DeadFooterMargin {
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
     }
 
     Flickable {
+        id: flick
         anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
@@ -72,6 +88,14 @@ SkyPage {
                 Accessible.name: qsTr(`Sign into network ${editText}`)
                 Accessible.description: qsTr("Choose network to sign into")
                 Accessible.editable: enabled
+
+                Rectangle {
+                    z: parent.z - 1
+                    width: hostField.width
+                    height: hostField.height
+                    radius: 5
+                    color: guiSettings.textInputBackgroundColor
+                }
             }
 
             AccessibleText {
@@ -88,6 +112,7 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
+                parentFlick: flick
                 enabled: isNewAccount()
                 svgIcon: SvgOutline.atSign
                 initialText: user
@@ -102,6 +127,7 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
+                parentFlick: flick
                 svgIcon: SvgFilled.lock
                 initialText: password
                 echoMode: TextInput.Password
@@ -135,6 +161,7 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
+                parentFlick: flick
                 svgIcon: SvgOutline.confirmationCode
                 placeholderText: qsTr("Confirmation code")
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
@@ -170,6 +197,12 @@ SkyPage {
         }
 
         SkyButton {
+            anchors.top: loginForm.bottom
+            text: qsTr("Advanced settings")
+            onClicked: editAdvancedSettings()
+        }
+
+        SkyButton {
             id: okButton
             anchors.top: loginForm.bottom
             anchors.right: parent.right
@@ -177,7 +210,16 @@ SkyPage {
             enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
             onClicked: {
                 const handle = autoCompleteHandle(userField.text, hostField.editText)
-                loginPage.accepted(hostField.editText, handle, passwordField.text, loginPage.did, rememberPasswordSwitch.checked, authFactorTokenField.text)
+                loginPage.accepted(hostField.editText,
+                                   handle, passwordField.text,
+                                   loginPage.did,
+                                   rememberPasswordSwitch.checked,
+                                   authFactorTokenField.text,
+                                   loginPage.setAdvancedSettings,
+                                   loginPage.serviceAppView,
+                                   loginPage.serviceChat,
+                                   loginPage.serviceVideoHost,
+                                   loginPage.serviceVideoDid)
             }
         }
     }
@@ -206,6 +248,20 @@ SkyPage {
         return errorCode === ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED || errorCode === ATProtoErrorMsg.INVALID_TOKEN
     }
 
+    function editAdvancedSettings() {
+        let component = guiSettings.createComponent("AdvancedSettingsForm.qml")
+        let form = component.createObject(loginPage, { newUser: isNewAccount(), userDid: did })
+        form.onSettings.connect((serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
+                loginPage.serviceAppView = serviceAppView
+                loginPage.serviceChat = serviceChat
+                loginPage.serviceVideoHost = serviceVideoHost
+                loginPage.serviceVideoDid = serviceVideoDid
+                loginPage.setAdvancedSettings = true
+        })
+        form.onClosed.connect(() => { popStack() })
+        pushStack(form)
+    }
+
     function closed() {
         canceled()
     }
@@ -219,6 +275,6 @@ SkyPage {
             passwordField.setFocus()
 
         if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
-            statusPopup.show(errorMsg, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(errorMsg, QEnums.STATUS_LEVEL_ERROR)
     }
 }

@@ -4,6 +4,7 @@ import QtQuick.Controls.Material
 import skywalker
 
 Popup {
+    property string userDid
     property int level // QEnums::StatusLevel
 
     id: statusPopup
@@ -22,10 +23,23 @@ Popup {
 
     onOpened: statusText.forceActiveFocus()
 
+    Loader {
+        id: currentUserAvatar
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        height: active ? 40 : 0
+        width: height
+        active: !root.isActiveUser(userDid)
+
+        sourceComponent: CurrentUserAvatar {
+            userDid: statusPopup.userDid
+        }
+    }
+
     Label {
         id: statusText
         padding: 10
-        anchors.left: parent.left
+        anchors.left: currentUserAvatar.active ? currentUserAvatar.right : parent.left
         anchors.right: closeButton.left
         anchors.verticalCenter: parent.verticalCenter
         wrapMode: Text.Wrap
@@ -58,12 +72,17 @@ Popup {
         onTriggered: statusPopup.close()
     }
 
-    function show(msg, level = QEnums.STATUS_LEVEL_INFO, intervalSec = 30) {
+    function show(userDid, msg, level = QEnums.STATUS_LEVEL_INFO, intervalSec = 30) {
         console.debug("Level:", level, "Msg:", msg);
+        statusPopup.userDid = userDid
         statusPopup.level = level
         statusText.text = msg;
         open()
         closeTimer.interval = intervalSec * 1000
         closeTimer.restart()
+    }
+
+    function clear() {
+        statusPopup.close()
     }
 }

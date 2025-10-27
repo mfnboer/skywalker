@@ -34,8 +34,6 @@ using namespace std::chrono_literals;
 // allows for better reply thread construction as we receive more posts per update.
 static constexpr auto TIMELINE_UPDATE_INTERVAL = 91s;
 
-static constexpr auto SESSION_REFRESH_INTERVAL = 299s;
-static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 29s;
 static constexpr int TIMELINE_ADD_PAGE_SIZE = 100;
 static constexpr int TIMELINE_GAP_FILL_SIZE = 100;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
@@ -54,7 +52,8 @@ Skywalker::Skywalker(QObject* parent) :
     mFollowsActivityStore(mUserFollows, this),
     mTimelineHide(this),
     mUserSettings(this),
-    mContentFilter(mUserPreferences, &mUserSettings, this),
+    mSessionManager(this, this),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
@@ -76,14 +75,24 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
-    connect(&mRefreshTimer, &QTimer::timeout, this, [this]{ refreshSession(); });
-    connect(&mRefreshNotificationTimer, &QTimer::timeout, this, [this]{ refreshNotificationCount(); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
+
+    connect(&mSessionManager, &SessionManager::activeSessionExpired, this,
+        [this](const QString& msg){
+            stopRefreshTimers();
+            emit sessionExpired(msg);
+        });
+    connect(&mSessionManager, &SessionManager::totalUnreadNotificationCountChanged, this,
+        [this](int unread){ setUnreadNotificationCount(unread); });
 
     connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{
         const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
         DisplayUtils::setNavigationBarColorAndMode(mUserSettings.getBackgroundColor(), isLightMode);
     });
+    connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
+    connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
+    connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
+    connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
 
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
@@ -123,14 +132,61 @@ Skywalker::Skywalker(QObject* parent) :
     qDebug() << getUserAgentString();
 }
 
+Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent) :
+    IFeedPager(parent),
+    mNetwork(new QNetworkAccessManager(this)),
+    mBsky(bsky),
+    mUserDid(did),
+    mIsActiveUser(false),
+    mFollowsActivityStore(mUserFollows, this),
+    mTimelineHide(this),
+    mUserSettings(this),
+    mSessionManager(this, this),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings, this),
+    mMutedWords(mUserFollows, this),
+    mFocusHashtags(new FocusHashtags(this)),
+    mGraphUtils(this),
+    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mChat(nullptr),
+    mUserHashtags(USER_HASHTAG_INDEX_SIZE),
+    mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
+    mFavoriteFeeds(this),
+    mAnniversary(mUserDid, mUserSettings, this),
+    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+                   mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
+                   mUserPreferences, mUserSettings, mFollowsActivityStore, this)
+{
+    Q_ASSERT(!mUserSettings.getUser(did).isNull());
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
+    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
+    mGraphUtils.setSkywalker(this);
+    mTimelineHide.setSkywalker(this);
+
+    connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
+    connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
+    connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
+    connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
+
+    // The author and post caches are global. When multiple sessions are used
+    // this will be mostly fine. The profiles and post content is good. Only
+    // labels may be different as different accounts may have different labeler
+    // subscriptions.
+    // If we want to change this, we need caches per skywalker instance.
+}
+
 Skywalker::~Skywalker()
 {
     qDebug() << "Destructor";
+    emit deleted();
     saveHashtags();
 
     const auto& emojiFontSource = FontDownloader::getEmojiFontSource();
     if (emojiFontSource.startsWith("file://"))
         TempFileHolder::instance().remove(emojiFontSource.sliced(7));
+
+    mSessionManager.clear();
 
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
@@ -140,6 +196,31 @@ Skywalker::~Skywalker()
     Q_ASSERT(mFeedListModels.empty());
     Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mContentGroupListModels.empty());
+    Q_ASSERT(mNotificationListModels.empty());
+}
+
+Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent)
+{
+    Skywalker::Ptr skywalker(new Skywalker(did, bsky, parent));
+
+    connect(skywalker.get(), &Skywalker::deleted, this, [this, did]{ emit skywalkerDestroyed(did); });
+    connect(skywalker.get(), &Skywalker::statusMessage, this, [this](auto did, auto msg, auto level, auto seconds){ emit statusMessage(did, msg, level, seconds); });
+    connect(skywalker.get(), &Skywalker::statusClear, this, [this]{ emit statusClear(); });
+    connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
+    connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile){ emit getDetailedProfileOK(did, profile); });
+    connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
+    connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack){ emit getStarterPackViewOk(did, starterPack); });
+
+    emit skywalkerCreated(did, skywalker.get());
+    return skywalker;
+}
+
+void Skywalker::initNonActiveUser()
+{
+    Q_ASSERT(!mIsActiveUser);
+    qDebug() << "Initialize:" << mUserDid;
+    initUserProfile();
+    getUserPreferences();
 }
 
 QString Skywalker::getUserAgentString()
@@ -149,25 +230,51 @@ QString Skywalker::getUserAgentString()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken)
+void Skywalker::login(const QString host, const QString user, QString password,
+                      bool rememberPassword, const QString authFactorToken,
+                      bool setAdvancedSettings, const QString serviceAppView,
+                      const QString serviceChat, const QString serviceVideoHost,
+                      const QString serviceVideoDid)
 {
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
-        [this, host, user, password, rememberPassword]{
+        [this, host, user, password, rememberPassword, setAdvancedSettings,
+         serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
-            updateUser(session->mDid, host);
+            const QString& did = session->mDid;
+            updateUser(did, host);
+
+            if (setAdvancedSettings)
+            {
+                // These settings will trigger updates on mBsky
+                mUserSettings.setServiceAppView(did, serviceAppView);
+                mUserSettings.setServiceChat(did, serviceChat);
+                mUserSettings.setServiceVideoHost(did, serviceVideoHost);
+                mUserSettings.setServiceVideoDid(did, serviceVideoDid);
+            }
+            else
+            {
+                mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+                mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+                mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+                mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+            }
+
             mUserSettings.saveSession(*session);
-            mUserSettings.setRememberPassword(session->mDid, rememberPassword); // this calls sync
+            mUserSettings.setRememberPassword(did, rememberPassword); // this calls sync
 
             if (rememberPassword)
-                mUserSettings.savePassword(session->mDid, password);
+                mUserSettings.savePassword(did, password);
 
             emit loginOk();
+
+            mSessionManager.insertSession(did, mBsky.get());
             startRefreshTimers();
+            mSessionManager.resumeAndRefreshNonActiveUsers();
         },
         [this, host, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
@@ -205,9 +312,9 @@ bool Skywalker::autoLogin()
     return true;
 }
 
-bool Skywalker::resumeSession(bool retry)
+bool Skywalker::resumeAndRefreshSession()
 {
-    qDebug() << "Resume session, retry:" << retry;
+    qDebug() << "Resume and refresh session";
     const auto session = getSavedSession();
 
     if (!session)
@@ -216,66 +323,31 @@ bool Skywalker::resumeSession(bool retry)
         return false;
     }
 
-    qInfo() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
+    qDebug() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
     auto xrpc = std::make_unique<Xrpc::Client>();
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
+    mBsky->setServiceAppView(mUserSettings.getServiceAppView(session->mDid));
+    mBsky->setServiceChat(mUserSettings.getServiceChat(session->mDid));
+    mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(session->mDid));
+    mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(session->mDid));
 
-    mBsky->resumeSession(*session,
-        [this, retry] {
-            qInfo() << "Session resumed";
-            mUserSettings.saveSession(*mBsky->getSession());
-            mUserSettings.sync();
-            mUserDid = mBsky->getSession()->mDid;
+    // User DID must be set before inserting sessions in the session manager
+    mUserDid = session->mDid;
+    mSessionManager.insertSession(session->mDid, mBsky.get());
 
-            if (!retry)
-            {
-                mBsky->refreshSession(
-                    [this]{
-                        qDebug() << "Session refreshed";
-                        mUserSettings.saveSession(*mBsky->getSession());
-                        mUserSettings.sync();
-                        startRefreshTimers();
-                        emit resumeSessionOk();
-                    },
-                    [this](const QString& error, const QString& msg){
-                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearTokens(mUserDid); // calls sync
-                        mBsky->clearSession();
-                        emit resumeSessionFailed(msg);
-                    });
-            }
-            else
-            {
-                startRefreshTimers();
-                emit resumeSessionOk();
-            }
+    mSessionManager.resumeAndRefreshSession(mBsky.get(), *session, 0,
+        [this]{
+            qDebug() << "Session resumed";
+            startRefreshTimers();
+            mSessionManager.resumeAndRefreshNonActiveUsers();
+            emit resumeSessionOk();
         },
-        [this, retry, session](const QString& error, const QString& msg){
-            qInfo() << "Session could not be resumed:" << error << " - " << msg;
-
-            if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
-            {
-                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
-                mBsky->refreshSession(
-                    [this]{
-                        qDebug() << "Session refreshed";
-                        mUserSettings.saveSession(*mBsky->getSession());
-                        mUserSettings.sync();
-                        resumeSession(true);
-                    },
-                    [this, did=session->mDid](const QString& error, const QString& msg){
-                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-                        mUserSettings.clearTokens(did); // calls sync
-                        mBsky->clearSession();
-                        emit resumeSessionFailed(msg);
-                    });
-            }
-            else
-            {
-                emit resumeSessionFailed(msg);
-            }
+        [this](const QString& error, const QString& msg){
+            qDebug() << "Session could not be resumed:" << error << " - " << msg;
+            mUserDid.clear();
+            emit resumeSessionFailed(msg);
         });
 
     return true;
@@ -331,97 +403,36 @@ void Skywalker::stopTimelineAutoUpdate()
 void Skywalker::startRefreshTimers()
 {
     qDebug() << "Refresh timers started";
-    mRefreshTimer.start(SESSION_REFRESH_INTERVAL);
-    refreshNotificationCount();
-    mRefreshNotificationTimer.start(NOTIFICATION_REFRESH_INTERVAL);
+
+    Q_ASSERT(mBsky);
+    mSessionManager.startRefreshTimers();
     mGraphUtils.startExpiryCheckTimer();
 }
 
 void Skywalker::stopRefreshTimers()
 {
-    qInfo() << "Refresh timers stopped";
-    mRefreshTimer.stop();
-    mRefreshNotificationTimer.stop();
+    qDebug() << "Refresh timers stopped";
+    mSessionManager.stopRefreshTimers();
     mGraphUtils.stopExpiryCheckTimer();
 }
 
-void Skywalker::refreshSession(const std::function<void()>& cbDone)
+void Skywalker::initUserProfile()
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Refresh session";
-
     const auto* session = mBsky->getSession();
-    if (!session)
-    {
-        qWarning() << "No session to refresh.";
+    Q_ASSERT(session);
+    qDebug() << "Init user profile, handle:" << session->mHandle << "did:" << session->mDid;
 
-        if (cbDone)
-            cbDone();
-
-        stopRefreshTimers();
-        emit sessionExpired("Session lost");
-        return;
-    }
-
-    // TODO: would be nicer to have session refreshment done by the atproto stack
-    mBsky->refreshSession(
-        [this, cbDone]{
-            qDebug() << "Session refreshed";
-            mUserSettings.saveSession(*mBsky->getSession());
-            mUserSettings.syncLater();
-
-            if (cbDone)
-                cbDone();
+    mBsky->getProfile(session->mDid,
+        [this](auto profile){
+            qDebug() << "Initialized user profile:" << mUserProfile.getHandle();
+            mUserProfile = Profile(profile);
         },
-        [this, cbDone](const QString& error, const QString& msg){
-            qDebug() << "Session could not be refreshed:" << error << " - " << msg;
-
-            if (error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
-            {
-                qWarning() << "Token expired, need to login again";
-
-                if (cbDone)
-                    cbDone();
-
-                stopRefreshTimers();
-                emit sessionExpired(msg);
-            }
-            else if (error == ATProto::ATProtoErrorMsg::XRPC_TIMEOUT)
-            {
-                // Maybe the token got refreshed, but the response never reached us.
-                // With the old token we can send one more request, so let's retry.
-                // NOTE: this is not fool proof; ideally no other requests should be sent
-                // during refresh.
-                qDebug() << "Request timed out, retry";
-                refreshSession(cbDone);
-            }
-            else
-            {
-                qDebug() << "Refresh failed, wait for the next interval to refresh.";
-
-                if (cbDone) {
-                    qWarning() << "Refresh failed:" << error << " - " << msg;
-
-                    // There is nothing we can do now. Signal that we are done.
-                    // Session will expire later if token is not valid anymore.
-                    cbDone();
-                }
-            }
-        });
-}
-
-void Skywalker::refreshNotificationCount()
-{
-    Q_ASSERT(mBsky);
-    qDebug() << "Refresh notification count";
-
-    mBsky->getUnreadNotificationCount({}, {},
-        [this](int unread){
-            qDebug() << "Unread notification count:" << unread;
-            setUnreadNotificationCount(unread);
-        },
-        [](const QString& error, const QString& msg){
-            qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
+        [this, did=session->mDid](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            auto profile = mUserSettings.getUser(did);
+            mUserProfile = Profile(profile.getDid(), profile.getHandle(), profile.getDisplayName(),
+                                   profile.getAvatarUrl());
         });
 }
 
@@ -506,7 +517,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::Share
 void Skywalker::getUserPreferences()
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get user preferences";
+    qDebug() << "Get user preferences:" << mUserDid;
 
     mBsky->getPreferences(
         [this](auto prefs){
@@ -515,7 +526,9 @@ void Skywalker::getUserPreferences()
             updateFavoriteFeeds();
             initLabelers();
             loadLabelSettings();
-            mChat->initSettings();
+
+            if (mChat)
+                mChat->initSettings();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
@@ -528,7 +541,8 @@ void Skywalker::updateFavoriteFeeds()
     qDebug() << "Update favorite feeds";
     const auto searchFeeds = mUserSettings.getPinnedSearchFeeds(mUserDid);
     const auto& savedFeedsPref = mUserPreferences.getSavedFeedsPref();
-    mFavoriteFeeds.init(searchFeeds, savedFeedsPref);
+    const auto& savedFeedsPrefV2 = mUserPreferences.getSavedFeedsPrefV2();
+    mFavoriteFeeds.init(searchFeeds, savedFeedsPref, savedFeedsPrefV2);
 }
 
 void Skywalker::saveFavoriteFeeds()
@@ -616,7 +630,7 @@ void Skywalker::saveUserPreferences(const ATProto::UserPreferences& prefs, std::
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "saveUserPreferences failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -667,6 +681,14 @@ void Skywalker::loadTimelineHide(QStringList uris)
 void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
+
+    if (!mIsActiveUser)
+    {
+        qDebug() << "Do not load muted repost for other users than the active user";
+        emit getUserPreferencesOK();
+        return;
+    }
+
     qDebug() << "Load muted reposts, maxPages:" << maxPages << "cursor:" << cursor;
 
     const QString uri = mUserSettings.getMutedRepostsListUri(mUserDid);
@@ -676,7 +698,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
     {
         qWarning() << "Max pages reached";
 
-        emit statusMessage(tr("Too many muted reposts!"), QEnums::STATUS_LEVEL_ERROR);
+        emit statusMessage(mUserDid, tr("Too many muted reposts!"), QEnums::STATUS_LEVEL_ERROR);
 
         // Either their are too many muted reposts, or the cursor got in a loop.
         // We signal OK as there is no way out of this situation without starting
@@ -729,7 +751,10 @@ void Skywalker::loadLabelSettings()
 {
     Q_ASSERT(mBsky);
     qDebug() << "Load label settings";
-    std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids();
+
+    // The fixed labaler is always included as the Bluesky app has it always enabled and we
+    // don't want to erase the label preferences for a fixed labeler.
+    std::unordered_set<QString> labelerDids = mContentFilter.getSubscribedLabelerDids(true);
     std::vector<QString> dids(labelerDids.begin(), labelerDids.end());
 
     if (dids.empty())
@@ -891,7 +916,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
         [this](const QString& error, const QString& msg){
             qWarning() << "syncTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
             finishTimelineSyncFailed();
         }
         );
@@ -951,7 +976,7 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         else
             finishFeedSync(model.getModelId(), model.rowCount() - 1);
 
-        emit statusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
+        emit statusMessage(mUserDid, tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
                                tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
 
         return {};
@@ -1143,7 +1168,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
        [this](const QString& error, const QString& msg){
             qInfo() << "getTimeline FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         }
     );
 }
@@ -1261,7 +1286,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
         [this](const QString& error, const QString& msg){
             qWarning() << "getTimelineForGap FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         }
         );
 }
@@ -1705,7 +1730,7 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread)
             if (postEntryIndex < 0)
             {
                 qDebug() << "No thread posts";
-                emit statusMessage("Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
+                emit statusMessage(mUserDid, "Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
                 return;
             }
 
@@ -1732,12 +1757,12 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread)
                 }
             }
 
-            emit postThreadOk(id, postEntryIndex);
+            emit postThreadOk(mUserDid, id, postEntryIndex);
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
             qDebug() << "getPostThread FAILED:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1796,7 +1821,7 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
             qDebug() << "addPostThread FAILED:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1841,7 +1866,7 @@ void Skywalker::addOlderPostThread(int modelId)
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
             qDebug() << "addOlderPostThread FAILED:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -1892,6 +1917,9 @@ void Skywalker::refreshAllModels()
 
     for (auto& [_, model] : mAuthorListModels.items())
         model->refreshAllData();
+
+    for (auto& [_, model] : mNotificationListModels.items())
+        model->refreshAllData();
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChanges*)>& update)
@@ -1930,6 +1958,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalProfileChange
 
     for (auto& [_, model] : mListListModels.items())
         update(model.get());
+
+    for (auto& [_, model] : mNotificationListModels.items())
+        update(model.get());
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChanges*)>& update)
@@ -1962,6 +1993,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalPostModelChan
 
     if (mBookmarksModel)
         update(mBookmarksModel.get());
+
+    for (auto& [_, model] : mNotificationListModels.items())
+        update(model.get());
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update)
@@ -1994,26 +2028,8 @@ void Skywalker::updateNotificationPreferences(bool priority)
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "updateNotificationPreferences FAILED:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
-}
-
-void Skywalker::updateNotificationsSeen()
-{
-    Q_ASSERT(mBsky);
-    auto timestamp = mNotificationListModel.getTimestampLatestNotifcation();
-    qDebug() << "Update notifications seen:" << timestamp;
-
-    if (!timestamp.isValid())
-    {
-        qDebug() << "No valid timestamp";
-        return;
-    }
-
-    mBsky->updateNotificationSeen(timestamp + 1ms, {}, {});
-    mNotificationListModel.setNotificationsSeen(true);
-    mMentionListModel.setNotificationsSeen(true);
-    setUnreadNotificationCount(0);
 }
 
 void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, bool emitLoadedSignal, const QString& cursor)
@@ -2042,7 +2058,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
             const bool clearFirst = cursor.isEmpty();
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
-            model.addNotifications(std::move(ouput), *mBsky, clearFirst,
+            model.addNotifications(std::move(ouput), mBsky, clearFirst,
                 [this, mentionsOnly, emitLoadedSignal]{
                     auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
                     model.setGetFeedInProgress(false);
@@ -2058,7 +2074,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
             model.setGetFeedInProgress(false);
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         },
         updateSeen);
 
@@ -2066,7 +2082,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
     {
         auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
         model.setNotificationsSeen(true);
-        setUnreadNotificationCount(0);
+        mSessionManager.setUnreadNotificationCount(mUserDid, 0);
     }
 }
 
@@ -2095,19 +2111,20 @@ void Skywalker::getDetailedProfile(const QString& author)
             decGetDetailedProfileInProgress();
             const DetailedProfile detailedProfile(profile);
             AuthorCache::instance().put(detailedProfile);
-            emit getDetailedProfileOK(detailedProfile);
+            emit getDetailedProfileOK(mUserDid, detailedProfile);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getDetailedProfile failed:" << error << " - " << msg;
             decGetDetailedProfileInProgress();
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
 void Skywalker::updateUserProfile(const QString& displayName, const QString& description,
-                                  const QString& avatar)
+                                const QString& avatar, const QString& pronouns)
 {
     mUserProfile.setDisplayName(displayName);
+    mUserProfile.setPronouns(pronouns);
     mUserProfile.setDescription(description);
     mUserProfile.setAvatarUrl(avatar);
     AuthorCache::instance().setUser(mUserProfile);
@@ -2125,11 +2142,11 @@ void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 
     mBsky->getFeedGenerator(feedUri,
         [this, viewPosts](auto output){
-            emit getFeedGeneratorOK(GeneratorView(output->mView), viewPosts);
+            emit getFeedGeneratorOK(mUserDid, GeneratorView(output->mView), viewPosts);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getFeedGenerator failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2140,11 +2157,11 @@ void Skywalker::getStarterPackView(const QString& starterPackUri)
 
     mBsky->getStarterPack(starterPackUri,
         [this](auto starterPackView){
-            emit getStarterPackViewOk(StarterPackView(starterPackView));
+            emit getStarterPackViewOk(mUserDid, StarterPackView(starterPackView));
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getStarterPackView failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2344,7 +2361,7 @@ void Skywalker::getAuthorLikes(int id, int limit, int maxPages, int minEntries, 
             }
 
             qDebug() << "getAuthorLikes failed:" << error << " - " << msg;
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2385,6 +2402,26 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
     }
 
     getAuthorLikes(id, AUTHOR_LIKES_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
+int Skywalker::createNotificationListModel()
+{
+    auto model = std::make_unique<NotificationListModel>(mContentFilter, mMutedWords, &mFollowsActivityStore, this);
+    const int id = addModelToStore<NotificationListModel>(std::move(model), mNotificationListModels);
+    return id;
+}
+
+NotificationListModel* Skywalker::getNotificationListModel(int id) const
+{
+    qDebug() << "Get notification list model:" << id;
+    auto* model = mNotificationListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+void Skywalker::removeNotificationListModel(int id)
+{
+    qDebug() << "Remove model:" << id;
+    mNotificationListModels.remove(id);
 }
 
 int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter)
@@ -2574,7 +2611,7 @@ void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QStri
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2722,7 +2759,7 @@ void Skywalker::getLabelersAuthorList(int modelId)
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2766,7 +2803,7 @@ void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2795,7 +2832,7 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2824,7 +2861,7 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2853,7 +2890,7 @@ void Skywalker::getKnownFollowersAuthorList(const QString& atId, int limit, cons
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2882,7 +2919,7 @@ void Skywalker::getBlocksAuthorList(int limit, const QString& cursor, int modelI
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2911,7 +2948,7 @@ void Skywalker::getMutesAuthorList(int limit, const QString& cursor, int modelId
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2940,7 +2977,7 @@ void Skywalker::getActivitySubscriptionsAuthorList(int limit, const QString& cur
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -2971,7 +3008,7 @@ void Skywalker::getSuggestionsAuthorList(int limit, const QString& cursor, int m
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3005,7 +3042,7 @@ void Skywalker::getLikesAuthorList(const QString& atId, int limit, const QString
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3034,7 +3071,7 @@ void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QStri
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3065,7 +3102,7 @@ void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const Q
 
             // The muted reposts list may not have been created. Consider it as empty.
             if (atId != mUserSettings.getMutedRepostsListUri(mUserDid))
-                emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+                emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3281,7 +3318,7 @@ void Skywalker::getListListAll(const QString& atId, QEnums::ListPurpose purpose,
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3332,7 +3369,7 @@ void Skywalker::getListListWithMembershipAll(const QString& atId, QEnums::ListPu
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3369,7 +3406,7 @@ void Skywalker::getListListBlocks(int limit, int maxPages, int minEntries, const
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3406,7 +3443,7 @@ void Skywalker::getListListMutes(int limit, int maxPages, int minEntries, const 
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            emit statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 
@@ -3460,7 +3497,8 @@ void Skywalker::removeListListModel(int id)
 
 BasicProfile Skywalker::getUser() const
 {
-    return AuthorCache::instance().getUser();
+    const BasicProfile profile = mUserProfile;
+    return profile;
 }
 
 void Skywalker::sharePost(const QString& postUri)
@@ -3486,7 +3524,7 @@ void Skywalker::sharePost(const QString& postUri)
 #else
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
-    emit statusMessage(tr("Post link copied to clipboard"));
+    emit statusMessage(mUserDid, tr("Post link copied to clipboard"));
 #endif
 }
 
@@ -3513,7 +3551,7 @@ void Skywalker::shareFeed(const GeneratorView& feed)
 #else
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
-    emit statusMessage(tr("Feed link copied to clipboard"));
+    emit statusMessage(mUserDid, tr("Feed link copied to clipboard"));
 #endif
 }
 
@@ -3541,7 +3579,7 @@ void Skywalker::shareList(const ListView& list)
 #else
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
-    emit statusMessage(tr("List link copied to clipboard"));
+    emit statusMessage(mUserDid, tr("List link copied to clipboard"));
 #endif
 }
 
@@ -3568,7 +3606,7 @@ void Skywalker::shareStarterPack(const StarterPackViewBasic& starterPack)
 #else
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
-    emit statusMessage(tr("Starter pack link copied to clipboard"));
+    emit statusMessage(mUserDid, tr("Starter pack link copied to clipboard"));
 #endif
 }
 
@@ -3589,7 +3627,7 @@ void Skywalker::shareAuthor(const BasicProfile& author)
 #else
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
-    emit statusMessage(tr("Author link copied to clipboard"));
+    emit statusMessage(mUserDid, tr("Author link copied to clipboard"));
 #endif
 }
 
@@ -3597,14 +3635,14 @@ void Skywalker::copyPostTextToClipboard(const QString& text)
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(text);
-    emit statusMessage(tr("Post text copied to clipboard"));
+    emit statusMessage(mUserDid, tr("Post text copied to clipboard"));
 }
 
 void Skywalker::copyToClipboard(const QString& text)
 {
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(text);
-    emit statusMessage(tr("Copied to clipboard"));
+    emit statusMessage(mUserDid, tr("Copied to clipboard"));
 }
 
 ContentGroup Skywalker::getContentGroup(const QString& did, const QString& labelId) const
@@ -3757,7 +3795,7 @@ void Skywalker::saveUserPreferences()
             },
             [this](const QString& error, const QString& msg){
                 qWarning() << error << " - " << msg;
-                emit statusMessage(tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+                emit statusMessage(mUserDid, tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
             });
     }
 
@@ -3922,7 +3960,12 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
 
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)
 {
-    emit statusMessage(msg, level, seconds);
+    emit statusMessage(mUserDid, msg, level, seconds);
+}
+
+void Skywalker::clearStatusMessage()
+{
+    emit statusClear();
 }
 
 void Skywalker::handleAppStateChange(Qt::ApplicationState state)
@@ -3954,8 +3997,9 @@ void Skywalker::pauseApp()
         mUserSettings.sync();
     }
 
+    mSessionManager.pause();
+
     saveHashtags();
-    mUserSettings.setOfflineUnread(mUserDid, mUnreadNotificationCount);
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
     mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
     mUserSettings.setCheckOfflineChat(mUserDid, mChat->convosLoaded());
@@ -3981,17 +4025,13 @@ void Skywalker::resumeApp()
 {
     qDebug() << "Resume app";
 
-    if (mBsky && mBsky->getSession())
+    if (mUserDid.isEmpty())
     {
-        auto savedSession = mUserSettings.getSession(mUserDid);
-
-        // The offline message checker may have refreshed tokens. Update these tokens
-        // so we do not use an old token for refreshing below.
-        if (!savedSession.mRefreshJwt.isEmpty())
-            mBsky->updateTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
-        else
-            qWarning() << "No tokens";
+        qDebug() << "No user active";
+        return;
     }
+
+    mSessionManager.resume();
 
     if (mTimelineUpdatePaused.isNull())
     {
@@ -4008,7 +4048,7 @@ void Skywalker::resumeApp()
     const auto postCount = mTimelineModel.rowCount();
     qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << lastSyncCid << "post count:" << postCount;
 
-    refreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
+    mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
         startRefreshTimers();
         startTimelineAutoUpdate();
 
@@ -4071,6 +4111,30 @@ void Skywalker::checkAnniversary()
         emit anniversary();
 }
 
+void Skywalker::updateServiceAppView(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+}
+
+void Skywalker::updateServiceChat(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+}
+
+void Skywalker::updateServiceVideoHost(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+}
+
+void Skywalker::updateServiceVideoDid(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+}
+
 void Skywalker::signOut()
 {
     qDebug() << "Sign out:" << mUserDid;
@@ -4092,9 +4156,11 @@ void Skywalker::signOut()
         mUserSettings.saveSession(*mBsky->getSession());
 
     mUserSettings.sync();
+    mSessionManager.saveTokens();
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();
+    mSessionManager.clear();
     mTimelineUpdatePaused = {};
     mPostThreadModels.clear();
     mAuthorFeedModels.clear();

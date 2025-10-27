@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Item {
+    property string userDid
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property externalview postExternal
@@ -28,6 +29,7 @@ Item {
 
         sourceComponent: LinkCardView {
             width: parent.width
+            userDid: view.userDid
             uri: postExternal.uri
             title: postExternal.title
             description: postExternal.description
@@ -71,7 +73,7 @@ Item {
     }
 
     function openExternalLink() {
-        root.openLink(postExternal.uri)
+        root.openLink(postExternal.uri, "", userDid)
     }
 
     function getSpeech() {

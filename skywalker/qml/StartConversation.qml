@@ -11,6 +11,7 @@ SkyPage {
     signal selected(string did)
 
     id: page
+    padding: 10
     clip: true
 
     header: SimpleHeader {

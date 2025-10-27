@@ -5,6 +5,8 @@ import QtQuick.Layouts
 import skywalker
 
 Dialog {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property string contentAuthorDid
     required property contentlabel label
     readonly property contentgroup contentGroup: skywalker.getContentGroup(label.did, label.labelId)
@@ -30,6 +32,7 @@ Dialog {
 
             Avatar {
                 Layout.preferredWidth: 20
+                userDid: contentLabelInfo.userDid
                 author: labeler
             }
 
@@ -71,7 +74,7 @@ Dialog {
             color: guiSettings.textColor
             text: `Set by ${labelerHandle}`
             onLinkActivated: (link) => {
-                root.getSkywalker().getDetailedProfile(link)
+                skywalker.getDetailedProfile(link)
                 accept()
             }
         }
@@ -98,7 +101,7 @@ Dialog {
 
     ProfileUtils {
         id: profileUtils
-        skywalker: root.getSkywalker() // qmllint disable missing-type
+        skywalker: contentLabelInfo.skywalker
 
         onBasicProfileOk: (profile) => { // qmllint disable signal-handler-parameters
             labeler = profile

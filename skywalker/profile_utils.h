@@ -27,7 +27,8 @@ public:
     // ImgSource must be a 'file://' or 'image://' reference.
     Q_INVOKABLE void updateProfile(const QString& did, const QString& name, const QString& description,
                                    const QString& avatarImgSource, bool updateAvatar,
-                                   const QString& bannerImgSource, bool updateBanner);
+                                   const QString& bannerImgSource, bool updateBanner,
+                                   const QString& pronouns, const QString& website);
 
     Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
     Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
@@ -58,10 +59,12 @@ signals:
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
-                               const QString& bannerImgSource, bool updateBanner);
+                               const QString& bannerImgSource, bool updateBanner,
+                               const QString& pronouns, const QString& website);
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
-                               ATProto::Blob::SharedPtr bannerBlob, bool updateBanner);
+                               ATProto::Blob::SharedPtr bannerBlob, bool updateBanner,
+                               const QString& pronouns, const QString& website);
     void continueSetPinnedPost(const QString& did, const QString& uri, const QString& cid);
 
     ATProto::ProfileMaster* profileMaster();

@@ -18,9 +18,9 @@ Dialog {
         width: parent.width
         height: textInput.height
         radius: 5
-        border.width: 1
-        border.color: guiSettings.borderColor
-        color: guiSettings.backgroundColor
+        border.width: textInput.activeFocus ? 1 : 0
+        border.color: guiSettings.buttonColor
+        color: guiSettings.textInputBackgroundColor
 
         SkyTextEdit {
             id: textInput

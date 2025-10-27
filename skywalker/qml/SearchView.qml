@@ -6,7 +6,7 @@ import skywalker
 import atproto.lib
 
 SkyPage {
-    required property var skywalker
+    property Skywalker skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
     property var timeline
@@ -966,6 +966,8 @@ SkyPage {
             if (query.length > 0) {
                 if (searchStack.currentItem)
                     searchStack.currentItem.refreshSearch()
+
+                searchUtils.addLastSearch(query)
             }
             else {
                 currentText = "*"
@@ -1052,8 +1054,8 @@ SkyPage {
         id: graphUtils
         skywalker: page.skywalker // qmllint disable missing-type
 
-        onFollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
-        onUnfollowFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
     function clearSearchPostScope() {

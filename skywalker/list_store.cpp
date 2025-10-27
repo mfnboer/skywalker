@@ -46,8 +46,9 @@ void ListStore::loadList(const QString& uri, const SuccessCb& successCb, const E
     if (maxPages <= 0)
     {
         qWarning() << "Max pages reached";
-        mSkywalker->statusMessage(tr("Hide list %1 has more than %2 users").arg(uri).arg(pagesLoaded * LIST_PAGE_SIZE),
-                                  QEnums::STATUS_LEVEL_ERROR, 30);
+        mSkywalker->showStatusMessage(
+            tr("Hide list %1 has more than %2 users").arg(uri).arg(pagesLoaded * LIST_PAGE_SIZE),
+            QEnums::STATUS_LEVEL_ERROR, 30);
         successCb();
         return;
     }

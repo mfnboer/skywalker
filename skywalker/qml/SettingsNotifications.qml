@@ -6,6 +6,7 @@ ColumnLayout {
     required property  var notificationPrefs
     property var skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
+    property string userDid: userSettings.getActiveUserDid()
 
     HeaderText {
         Layout.topMargin: 10
@@ -269,6 +270,13 @@ ColumnLayout {
                 root.viewAuthorList(modelId, qsTr("Subscribed accounts"), "", false, true)
             }
         }
+    }
+
+    AccessibleCheckBox {
+        Layout.topMargin: 10
+        text: qsTr("Notifications for your other accounts")
+        checked: userSettings.getNotificationsForAllAccounts(userDid)
+        onCheckedChanged: userSettings.setNotificationsForAllAccounts(userDid, checked)
     }
 
     AccessibleText {

@@ -4,7 +4,6 @@ import QtQuick.Controls.Material
 import skywalker
 
 Rectangle {
-    property bool floating: false
     property SvgImage svg
     property int counter: 0
     property string counterBackgroundColor: guiSettings.badgeColor
@@ -18,18 +17,6 @@ Rectangle {
 
     Accessible.role: Accessible.PageTab
     Accessible.onPressAction: clicked()
-
-    RoundButton {
-        width: height
-        height: button.height
-        radius: width / 2
-        anchors.horizontalCenter: button.horizontalCenter
-        Material.background: guiSettings.buttonNeutralColor
-        display: AbstractButton.TextOnly
-        icon.name: ""
-        icon.source: ""
-        visible: floating
-    }
 
     SkySvg {
         id: icon

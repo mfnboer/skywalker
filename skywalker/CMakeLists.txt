@@ -564,6 +564,25 @@ qt_add_qml_module(libskywalker
         SOURCES thread_unroller.h
         SOURCES thread_unroller.cpp
         QML_FILES qml/DebugDump.qml
+        SOURCES session_manager.h
+        SOURCES session_manager.cpp
+        SOURCES non_active_user.h
+        SOURCES non_active_user.cpp
+        QML_FILES qml/SkyTabProfileButton.qml
+        QML_FILES qml/SkyTabCounterButton.qml
+        QML_FILES qml/NonActiveUsersPopup.qml
+        SOURCES post_view.h
+        SOURCES post_view.cpp
+        QML_FILES qml/NonActiveUserListView.qml
+        QML_FILES qml/NonActiveUserActionIcon.qml
+        QML_FILES qml/MainPostUtils.qml
+        QML_FILES qml/CurrentUserAvatar.qml
+        QML_FILES qml/MainProfileUtils.qml
+        QML_FILES qml/MainGraphUtils.qml
+        QML_FILES qml/MainFeedUtils.qml
+        QML_FILES qml/MainLinkUtils.qml
+        QML_FILES qml/AdvancedSettingsForm.qml
+        QML_FILES
 )
 
 if (NOT ANDROID)

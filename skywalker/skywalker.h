@@ -25,6 +25,7 @@
 #include "post_thread_model.h"
 #include "profile_store.h"
 #include "search_post_feed_model.h"
+#include "session_manager.h"
 #include "starter_pack_list_model.h"
 #include "user_settings.h"
 #include <atproto/lib/client.h>
@@ -63,6 +64,8 @@ class Skywalker : public IFeedPager
     QML_ELEMENT
 
 public:
+    using Ptr = std::unique_ptr<Skywalker>;
+
     static constexpr const char* APP_NAME = "Skywalker";
     static constexpr const char* VERSION = APP_VERSION;
     static QString getUserAgentString();
@@ -73,11 +76,19 @@ public:
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
 
-    Q_INVOKABLE void login(const QString host, const QString user, QString password, bool rememberPassword, const QString authFactorToken);
+    Ptr createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
+    void initNonActiveUser();
+
+    Q_INVOKABLE void login(const QString host, const QString user, QString password,
+                           bool rememberPassword, const QString authFactorToken,
+                           bool setAdvancedSettings = false, const QString serviceAppView = "",
+                           const QString serviceChat = "", const QString serviceVideoHost = "",
+                           const QString serviceVideoDid = "");
     Q_INVOKABLE bool autoLogin();
-    Q_INVOKABLE bool resumeSession(bool retry = false);
+    Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
     Q_INVOKABLE void switchUser(const QString& did);
+    void initUserProfile();
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void dataMigration();
@@ -108,14 +119,13 @@ public:
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
-    Q_INVOKABLE void updateNotificationsSeen();
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getDetailedProfile(const QString& author);
 
     // If avatar is a "image://", then the profile takes ownership of the image
     Q_INVOKABLE void updateUserProfile(const QString& displayName, const QString& description,
-                                       const QString& avatar);
+                                       const QString& avatar, const QString& pronouns);
 
     Q_INVOKABLE void clearAuthorFeed(int id);
 
@@ -125,6 +135,9 @@ public:
 
     Q_INVOKABLE void getAuthorLikes(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getAuthorLikesNextPage(int id, int maxPages = 20, int minEntries = 10);
+    int createNotificationListModel();
+    NotificationListModel* getNotificationListModel(int id) const;
+    void removeNotificationListModel(int id);
     Q_INVOKABLE int createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter = QEnums::AUTHOR_FEED_FILTER_POSTS);
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
@@ -153,8 +166,8 @@ public:
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
     Q_INVOKABLE AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
-    Q_INVOKABLE void getListList(int id, int limit = 50, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getListListNextPage(int id, int limit = 50, int maxPages = 20, int minEntries = 10);
+    Q_INVOKABLE void getListList(int id, int limit = 100, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getListListNextPage(int id, int limit = 100, int maxPages = 20, int minEntries = 10);
     Q_INVOKABLE int createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId);
     Q_INVOKABLE ListListModel* getListListModel(int id) const;
     Q_INVOKABLE void removeListListModel(int id);
@@ -194,7 +207,9 @@ public:
 
     const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
+    Q_INVOKABLE SessionManager* getSessionManager() { return &mSessionManager; }
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
+    Q_INVOKABLE void clearStatusMessage();
 
     Q_INVOKABLE bool isSignedIn() const { return !mUserDid.isEmpty(); }
     Q_INVOKABLE void signOut();
@@ -240,6 +255,9 @@ public:
     bool getHideVerificationBadges() const { return mUserPreferences.getVerificationPrefs().mHideBadges; };
 
 signals:
+    void deleted();
+    void skywalkerCreated(const QString& did, Skywalker* skywalker);
+    void skywalkerDestroyed(const QString& did);
     void loginOk();
     void loginFailed(QString error, QString msg, const QString host, QString handle, QString password);
     void resumeSessionOk();
@@ -267,14 +285,15 @@ signals:
     void sessionExpired(QString error);
     void getAuthorFeedOk(int modelId);
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
-    void statusMessage(QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO, int seconds = 0);
-    void postThreadOk(int id, int postEntryIndex);
+    void statusMessage(QString userDid, QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO, int seconds = 0);
+    void statusClear();
+    void postThreadOk(QString did, int id, int postEntryIndex);
     void userChanged();
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
-    void getDetailedProfileOK(DetailedProfile);
-    void getFeedGeneratorOK(GeneratorView generatorView, bool viewPosts);
-    void getStarterPackViewOk(StarterPackView starterPack);
+    void getDetailedProfileOK(QString userDid, DetailedProfile);
+    void getFeedGeneratorOK(QString userDid, GeneratorView generatorView, bool viewPosts);
+    void getStarterPackViewOk(QString userDid, StarterPackView starterPack);
     void getPostThreadInProgressChanged();
     void hideVerificationBadgesChanged();
     void sharedTextReceived(QString text); // Shared from another app
@@ -290,6 +309,8 @@ signals:
     void appResumed();
 
 private:
+    Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
+
     void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getLabelersAuthorList(int modelId);
     void getActiveFollowsAuthorList(int modelId, const QString& cursor);
@@ -318,8 +339,6 @@ private:
     void updatePostIndexedSecondsAgo();
     void startRefreshTimers();
     void stopRefreshTimers();
-    void refreshSession(const std::function<void()>& cbDone = {});
-    void refreshNotificationCount();
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
@@ -339,17 +358,21 @@ private:
     void resumeApp();
     void setAnniversaryDate();
     void checkAnniversary();
+    void updateServiceAppView(const QString& did);
+    void updateServiceChat(const QString& did);
+    void updateServiceVideoHost(const QString& did);
+    void updateServiceVideoDid(const QString& did);
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
 
     QNetworkAccessManager* mNetwork;
-    ATProto::Client::Ptr mBsky;
+    ATProto::Client::SharedPtr mBsky;
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
 
-    QString mAvatarUrl;
     QString mUserDid;
     Profile mUserProfile;
+    bool mIsActiveUser = true;
 
     bool mLoggedOutVisibility = true;
     IndexedProfileStore mUserFollows;
@@ -360,6 +383,7 @@ private:
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     UserSettings mUserSettings;
+    SessionManager mSessionManager;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;
@@ -375,8 +399,6 @@ private:
     bool mGetPostThreadInProgress = false;
     bool mSignOutInProgress = false;
 
-    QTimer mRefreshTimer;
-    QTimer mRefreshNotificationTimer;
     QTimer mTimelineUpdateTimer;
     QDateTime mTimelineUpdatePaused;
 
@@ -390,6 +412,7 @@ private:
     ItemStore<StarterPackListModel::Ptr> mStarterPackListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
+    ItemStore<NotificationListModel::Ptr> mNotificationListModels;
     NotificationListModel mNotificationListModel; // All notifications
     NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;

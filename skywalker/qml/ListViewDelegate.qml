@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property listview list
     required property profile listCreator
     required property string listBlockedUri
@@ -68,6 +70,7 @@ Rectangle {
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.preferredHeight: guiSettings.threadColumnWidth
             Layout.alignment: Qt.AlignTop
+            userDid: view.userDid
             avatarUrl: showList ? list.avatarThumb : ""
 
             onClicked: listClicked(list)
@@ -107,6 +110,7 @@ Rectangle {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: view.userDid
                 author: listCreator
 
                 Accessible.role: Accessible.Link
@@ -159,7 +163,7 @@ Rectangle {
                 height: width
                 svg: SvgOutline.group
                 accessibleName: qsTr(`show members of list ${list.name}`)
-                onClicked: root.viewListByUri(list.uri, false)
+                onClicked: root.viewListByUri(list.uri, false, userDid)
             }
 
             SvgButton {
@@ -348,7 +352,7 @@ Rectangle {
 
         AccessibleMenuItem {
             text: qsTr("Report list")
-            onTriggered: root.reportList(list)
+            onTriggered: root.reportList(list, userDid)
 
             MenuItemSvg { svg: SvgOutline.report }
         }
@@ -409,10 +413,10 @@ Rectangle {
     }
 
     function listClicked(list) {
-        root.viewListByUri(list.uri, true)
+        root.viewListByUri(list.uri, true, userDid)
     }
 
     function listVisible() {
-        return guiSettings.feedContentVisible(list)
+        return guiSettings.feedContentVisible(list, userDid)
     }
 }

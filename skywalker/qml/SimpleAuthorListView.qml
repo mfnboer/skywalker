@@ -5,6 +5,7 @@ import skywalker
 
 ListView {
     required model
+    property string userDid
     property int rowPadding: 3
     property bool allowDelete: false
 
@@ -57,6 +58,7 @@ ListView {
                     x: 8
                     y: rowPadding + 2
                     width: parent.width - 12
+                    userDid: searchList.userDid
                     author: authorEntry.author
                     onClicked: authorClicked(author)
                 }
@@ -65,6 +67,7 @@ ListView {
             AuthorNameAndStatus {
                 Layout.topMargin: rowPadding
                 Layout.fillWidth: true
+                userDid: searchList.userDid
                 author: authorEntry.author
             }
 
@@ -105,6 +108,7 @@ ListView {
                     id: contentLabels
                     anchors.left: parent.left
                     anchors.right: undefined
+                    userDid: searchList.userDid
                     contentLabels: author.labels
                     contentAuthorDid: author.did
                 }

@@ -6,6 +6,8 @@ import skywalker
 
 Rectangle {
     property int margin: 10
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property generatorview feed
     required property int feedLikeCount
     required property string feedLikeUri
@@ -50,6 +52,7 @@ Rectangle {
             Layout.alignment: Qt.AlignTop
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.preferredHeight: guiSettings.threadColumnWidth
+            userDid: generatorView.userDid
             avatarUrl: showFeed ? feed.avatarThumb : ""
             contentMode: feed.contentMode
             unknownSvg: guiSettings.feedDefaultAvatar(feed)
@@ -78,6 +81,7 @@ Rectangle {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: generatorView.userDid
                 author: feedCreator
 
                 Accessible.role: Accessible.Link
@@ -205,7 +209,7 @@ Rectangle {
                 iconColor: feedLikeUri ? guiSettings.likeColor : guiSettings.statsColor
                 svg: feedLikeUri ? SvgFilled.like : SvgOutline.like
                 statistic: feedLikeCount
-                onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid)
+                onClicked: root.likeFeed(feedLikeUri, feed.uri, feed.cid, userDid)
 
                 BlinkingOpacity {
                     target: likeIcon
@@ -245,7 +249,7 @@ Rectangle {
                     }
                     AccessibleMenuItem {
                         text: qsTr("Report feed")
-                        onTriggered: root.reportFeed(feed)
+                        onTriggered: root.reportFeed(feed, userDid)
 
                         MenuItemSvg { svg: SvgOutline.report }
                     }
@@ -313,9 +317,8 @@ Rectangle {
         id: accessibilityUtils
     }
 
-
     function feedClicked(feed) {
-        root.viewPostFeed(feed)
+        root.viewPostFeed(feed, userDid)
     }
 
     function addClicked(feed, add) {
@@ -333,6 +336,6 @@ Rectangle {
     }
 
     function feedVisible() {
-        return guiSettings.feedContentVisible(feed)
+        return guiSettings.feedContentVisible(feed, userDid)
     }
 }

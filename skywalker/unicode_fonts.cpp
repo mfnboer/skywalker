@@ -266,6 +266,28 @@ bool UnicodeFonts::hasEmoji(const QString& text)
     return false;
 }
 
+QString UnicodeFonts::removeEmojis(const QString& text)
+{
+    QString result;
+
+    QTextBoundaryFinder boundaryFinder(QTextBoundaryFinder::Grapheme, text);
+    int prev = 0;
+    int next;
+
+    while ((next = boundaryFinder.toNextBoundary()) != -1)
+    {
+        const int len = next - prev;
+        const QString grapheme = text.sliced(prev, len);
+
+        if (!EmojiNames::isEmoji(grapheme))
+            result.append(grapheme);
+
+        prev = next;
+    }
+
+    return result;
+}
+
 bool UnicodeFonts::isEmojiCodePoint(uint c)
 {
     // These code ranges are a heuristic. Emoji are missing and some are not emoji.
@@ -460,6 +482,10 @@ bool UnicodeFonts::hasPhraseStarting(const QString& text)
         return false;
 
     const auto firstChar = text.front();
+
+    if (firstChar.isSpace())
+        return false;
+
     return firstChar.isUpper() || !firstChar.isLetter();
 }
 

@@ -10,7 +10,6 @@ Pane {
     property bool notificationsActive: false
     property bool searchActive: false
     property bool messagesActive: false
-    property bool floatingButtons: false
     property var rootItem: root.currentStackItem()
     property bool isBasePage: root.currentStack().depth === 1
 
@@ -50,7 +49,6 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                skywalker: sideBar.skywalker
                 feedName: skywalker.timelineModel.feedName
                 showAsHome: true
                 isHomeFeed: true
@@ -76,7 +74,7 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                skywalker: sideBar.skywalker
+                userDid: postFeedView ? postFeedView.userDid : ""
                 feedName: postFeedView ? postFeedView.headerItem.feedName : ""
                 feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
                 defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
@@ -106,7 +104,6 @@ Pane {
                 Layout.preferredWidth: 80
                 Layout.preferredHeight: Layout.preferredWidth
                 Layout.leftMargin: 50
-                //Layout.alignment: Qt.AlignHCenter
                 avatarUrl: postFeedView ? postFeedView.headerItem.feedAvatar : ""
                 contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
                 badgeOutlineColor: guiSettings.headerColor
@@ -130,7 +127,6 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                skywalker: sideBar.skywalker
                 feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
                 defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
                 feedAvatar: ""
@@ -167,6 +163,7 @@ Pane {
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 text: visible ? rootItem.sideBarTitle : ""
+                userDid: typeof rootItem?.userDid == 'string' ? rootItem.userDid : ""
                 subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
                 isSideBar: true
                 visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
@@ -187,6 +184,7 @@ Pane {
                 color: guiSettings.sideBarColor
                 title: visible ? rootItem.sideBarTitle : ""
                 description: visible ? rootItem.sideBarDescription : ""
+                userDid: typeof rootItem?.userDid == 'string' ? rootItem.userDid : ""
                 isSideBar: true
                 visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
 

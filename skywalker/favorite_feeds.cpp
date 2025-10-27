@@ -51,6 +51,7 @@ void FavoriteFeeds::clear()
 {
     qDebug() << "Clear favorite feeds";
     mSavedFeedsPref = {};
+    mSavedFeedsPrefV2 = {};
     mSavedUris.clear();
     mPinnedUris.clear();
     mPinnedSearches.clear();
@@ -63,7 +64,9 @@ void FavoriteFeeds::clear()
     emit userOrderedPinnedFeedsChanged();
 }
 
-void FavoriteFeeds::init(const SearchFeed::List& searchFeeds, const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
+void FavoriteFeeds::init(const SearchFeed::List& searchFeeds,
+                         const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref,
+                         const ATProto::UserPreferences::SavedFeedsPrefV2& savedFeedsPrefV2)
 {
     qDebug() << "Initialize favorite feeds";
     mInitializing = true;
@@ -73,15 +76,41 @@ void FavoriteFeeds::init(const SearchFeed::List& searchFeeds, const ATProto::Use
     // initialize user ordered pinned feeds. For that the search feeds must have been set.
     set(searchFeeds);
     set(savedFeedsPref);
+    set(savedFeedsPrefV2);
+    updatePinnedViews();
 }
 
 void FavoriteFeeds::set(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
 {
-    qDebug() << "Set favorite feeds";
+    qDebug() << "Set favorite feeds from SavedFeedsPref";
     mSavedFeedsPref = savedFeedsPref;
     mSavedUris.insert(mSavedFeedsPref.mSaved.begin(), mSavedFeedsPref.mSaved.end());
     mPinnedUris.insert(mSavedFeedsPref.mPinned.begin(), mSavedFeedsPref.mPinned.end());
-    updatePinnedViews();
+}
+
+void FavoriteFeeds::set(const ATProto::UserPreferences::SavedFeedsPrefV2& savedFeedsPrefV2)
+{
+    qDebug() << "Set favorite feeds from SavedFeedsPrefV2";
+    mSavedFeedsPrefV2 = savedFeedsPrefV2;
+
+    for (const auto& feed : savedFeedsPrefV2.mItems)
+    {
+        qDebug() << "Saved feed:" << feed->mValue << "pinned:" << feed->mPinned << "type:" << (int)feed->mType;
+        switch (feed->mType)
+        {
+        case ATProto::AppBskyActor::SavedFeedType::FEED:
+        case ATProto::AppBskyActor::SavedFeedType::LIST:
+            mSavedUris.insert(feed->mValue);
+
+            if (feed->mPinned)
+                mPinnedUris.insert(feed->mValue);
+
+            break;
+        case ATProto::AppBskyActor::SavedFeedType::TIMELINE:
+        case ATProto::AppBskyActor::SavedFeedType::UNKNOWN:
+            break;
+        }
+    }
 }
 
 void FavoriteFeeds::set(const SearchFeed::List& searchFeeds)
@@ -124,7 +153,7 @@ void FavoriteFeeds::initUserOrderedPinnedFeeds()
         else
         {
             // May have been unpinned by another client
-            qInfo() << "Favorite not pinned:" << key;
+            qDebug() << "Favorite not pinned:" << key;
         }
     }
 
@@ -201,6 +230,7 @@ void FavoriteFeeds::addFeed(const GeneratorView& feed)
     }
 
     mSavedFeedsPref.mSaved.push_back(feed.getUri());
+    addToSavedFeedsPrefsV2(feed.getUri(), ATProto::AppBskyActor::SavedFeedType::FEED);
     mSavedUris.insert(feed.getUri());
 
     auto it = std::lower_bound(mSavedFeeds.cbegin(), mSavedFeeds.cend(), feed, feedNameCompare);
@@ -208,6 +238,42 @@ void FavoriteFeeds::addFeed(const GeneratorView& feed)
     updateSavedFeedsModel();
 
     emit feedSaved();
+}
+
+void FavoriteFeeds::addToSavedFeedsPrefsV2(const QString& uri, ATProto::AppBskyActor::SavedFeedType type)
+{
+    if (std::count_if(mSavedFeedsPrefV2.mItems.begin(), mSavedFeedsPrefV2.mItems.end(),
+                      [uri](const auto& feed){ return feed->mValue == uri; }))
+    {
+        qWarning() << "Feed already saved:" << uri;
+        return;
+    }
+
+    auto savedFeed = std::make_shared<ATProto::AppBskyActor::SavedFeed>();
+    savedFeed->mId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    savedFeed->mType = type;
+    savedFeed->mValue = uri;
+    savedFeed->mPinned = false;
+    mSavedFeedsPrefV2.mItems.push_back(savedFeed);
+}
+
+void FavoriteFeeds::pinToSavedFeedsPrefsV2(const QString& uri, bool pinned)
+{
+    auto it = std::find_if(mSavedFeedsPrefV2.mItems.begin(), mSavedFeedsPrefV2.mItems.end(),
+                           [uri](const auto& feed){ return feed->mValue == uri; });
+
+    if (it == mSavedFeedsPrefV2.mItems.end())
+    {
+        qWarning() << "Cannot find saved feed:" << uri;
+        return;
+    }
+
+    (*it)->mPinned = pinned;
+}
+
+void FavoriteFeeds::removeFromSavedFeedsPrefsV2(const QString& uri)
+{
+    std::erase_if(mSavedFeedsPrefV2.mItems, [uri](const auto& feed){ return feed->mValue == uri; });
 }
 
 void FavoriteFeeds::removeFeed(const GeneratorView& feed)
@@ -223,6 +289,7 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
 
     auto it = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), feed.getUri());
     mSavedFeedsPref.mSaved.erase(it);
+    removeFromSavedFeedsPrefsV2(feed.getUri());
     mSavedUris.erase(feed.getUri());
 
     auto it2 = std::find_if(mSavedFeeds.cbegin(), mSavedFeeds.cend(),
@@ -278,6 +345,7 @@ void FavoriteFeeds::pinFeed(const GeneratorView& feed)
         addFeed(feed);
 
     mSavedFeedsPref.mPinned.push_back(feed.getUri());
+    pinToSavedFeedsPrefsV2(feed.getUri(), true);
     mPinnedUris.insert(feed.getUri());
 
     FavoriteFeedView view(feed);
@@ -300,6 +368,7 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
 
     auto it = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), feed.getUri());
     mSavedFeedsPref.mPinned.erase(it);
+    pinToSavedFeedsPrefsV2(feed.getUri(), false);
     mPinnedUris.erase(feed.getUri());
 
     FavoriteFeedView view(feed);
@@ -328,6 +397,7 @@ void FavoriteFeeds::addList(const ListView& list)
     }
 
     mSavedFeedsPref.mSaved.push_back(list.getUri());
+    addToSavedFeedsPrefsV2(list.getUri(), ATProto::AppBskyActor::SavedFeedType::LIST);
     mSavedUris.insert(list.getUri());
 
     auto it = std::lower_bound(mSavedLists.cbegin(), mSavedLists.cend(), list, listNameCompare);
@@ -352,6 +422,7 @@ void FavoriteFeeds::removeList(const ListView& list)
 
     auto it = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), list.getUri());
     mSavedFeedsPref.mSaved.erase(it);
+    removeFromSavedFeedsPrefsV2(list.getUri());
     mSavedUris.erase(list.getUri());
 
     auto it2 = std::find_if(mSavedLists.cbegin(), mSavedLists.cend(),
@@ -385,6 +456,7 @@ void FavoriteFeeds::pinList(const ListView& list)
         addList(list);
 
     mSavedFeedsPref.mPinned.push_back(list.getUri());
+    pinToSavedFeedsPrefsV2(list.getUri(), true);
     mPinnedUris.insert(list.getUri());
 
     FavoriteFeedView view(list);
@@ -407,6 +479,7 @@ void FavoriteFeeds::unpinList(const ListView& list)
 
     auto it = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), list.getUri());
     mSavedFeedsPref.mPinned.erase(it);
+    pinToSavedFeedsPrefsV2(list.getUri(), false);
     mPinnedUris.erase(list.getUri());
 
     FavoriteFeedView view(list);
@@ -537,19 +610,36 @@ FavoriteFeedView FavoriteFeeds::getPinnedSearch(const QString& name) const
     return {};
 }
 
-std::vector<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const
+std::unordered_set<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const
 {
-    std::vector<QString> filtered;
+    std::unordered_set<QString> filtered;
 
     for (const auto& uri : uris)
     {
         ATProto::ATUri atUri(uri);
 
         if (atUri.isValid() && atUri.getCollection() == collection)
-            filtered.push_back(uri);
+            filtered.insert(uri);
     }
 
     return filtered;
+}
+
+void FavoriteFeeds::addFilterUrisV2(std::unordered_set<QString>& filteredUris, ATProto::AppBskyActor::SavedFeedType type, std::optional<bool> pinned) const
+{
+    for (const auto& feed : mSavedFeedsPrefV2.mItems)
+    {
+        if (feed->mType != type)
+            continue;
+
+        if (pinned && feed->mPinned != *pinned)
+            continue;
+
+        ATProto::ATUri atUri(feed->mValue);
+
+        if (atUri.isValid())
+            filteredUris.insert(feed->mValue);
+    }
 }
 
 void FavoriteFeeds::updateSavedViews()
@@ -570,13 +660,15 @@ void FavoriteFeeds::updateSavedViews()
 void FavoriteFeeds::updateSavedGeneratorViews()
 {
     auto feedGeneratorUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_FEED_GENERATOR);
+    addFilterUrisV2(feedGeneratorUris, ATProto::AppBskyActor::SavedFeedType::FEED);
 
     if (feedGeneratorUris.empty())
         return;
 
     setUpdateSavedFeedsModelInProgress(true);
+    std::vector<QString> uris(feedGeneratorUris.begin(), feedGeneratorUris.end());
 
-    mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
+    mSkywalker->getBskyClient()->getFeedGenerators(uris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::SharedPtr output){
             setUpdateSavedFeedsModelInProgress(false);
             addSavedFeeds(std::move(output->mFeeds));
@@ -591,8 +683,11 @@ void FavoriteFeeds::updateSavedGeneratorViews()
 void FavoriteFeeds::updateSavedListViews()
 {
     auto listUris = filterUris(mSavedFeedsPref.mSaved, ATProto::ATUri::COLLECTION_GRAPH_LIST);
+    addFilterUrisV2(listUris, ATProto::AppBskyActor::SavedFeedType::LIST);
+    std::vector<QString> uris(listUris.begin(), listUris.end());
+
     setUpdateSavedListsModelInProgress(true);
-    updateSavedListViews(std::move(listUris));
+    updateSavedListViews(std::move(uris));
 }
 
 void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
@@ -634,7 +729,7 @@ void FavoriteFeeds::updateSavedListViews(std::vector<QString> listUris)
 
 void FavoriteFeeds::updatePinnedViews()
 {
-    if (!mSavedFeedsPref.mPinned.empty())
+    if (!mPinnedUris.empty())
         updatePinnedGeneratorViews(); // NOTE: this will update pinned list views after it finished
     else
         initUserOrderedPinnedFeeds();
@@ -645,14 +740,17 @@ void FavoriteFeeds::updatePinnedViews()
 void FavoriteFeeds::updatePinnedGeneratorViews()
 {
     auto feedGeneratorUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_FEED_GENERATOR);
-    qDebug() << "Update pinned generators:" << feedGeneratorUris.size();
+    addFilterUrisV2(feedGeneratorUris, ATProto::AppBskyActor::SavedFeedType::FEED, true);
+    std::vector<QString> uris(feedGeneratorUris.begin(), feedGeneratorUris.end());
 
-    if (feedGeneratorUris.empty()) {
+    qDebug() << "Update pinned generators:" << uris.size();
+
+    if (uris.empty()) {
         updatePinnedListViews();
         return;
     }
 
-    mSkywalker->getBskyClient()->getFeedGenerators(feedGeneratorUris,
+    mSkywalker->getBskyClient()->getFeedGenerators(uris,
         [this](ATProto::AppBskyFeed::GetFeedGeneratorsOutput::SharedPtr output){
             addPinnedFeeds(std::move(output->mFeeds));
             updatePinnedListViews();
@@ -667,8 +765,10 @@ void FavoriteFeeds::updatePinnedGeneratorViews()
 void FavoriteFeeds::updatePinnedListViews()
 {
     auto listUris = filterUris(mSavedFeedsPref.mPinned, ATProto::ATUri::COLLECTION_GRAPH_LIST);
-    qDebug() << "Update pinned list views:" << listUris.size();
-    updatePinnedListViews(listUris);
+    addFilterUrisV2(listUris, ATProto::AppBskyActor::SavedFeedType::LIST, true);
+    std::vector<QString> uris(listUris.begin(), listUris.end());
+    qDebug() << "Update pinned list views:" << uris.size();
+    updatePinnedListViews(uris);
 }
 
 void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
@@ -705,6 +805,8 @@ void FavoriteFeeds::updatePinnedListViews(std::vector<QString> listUris)
                 auto itSaved = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), uri);
                 if (itSaved != mSavedFeedsPref.mSaved.cend())
                     mSavedFeedsPref.mSaved.erase(itSaved);
+
+                removeFromSavedFeedsPrefsV2(uri);
             }
             else
             {
@@ -806,6 +908,7 @@ void FavoriteFeeds::setUpdateSavedListsModelInProgress(bool inProgress)
 void FavoriteFeeds::saveTo(ATProto::UserPreferences& userPreferences, UserSettings& settings) const
 {
     userPreferences.setSavedFeedsPref(mSavedFeedsPref);
+    userPreferences.setSavedFeedsPrefV2(mSavedFeedsPrefV2);
     saveSearchFeedsTo(settings);
 }
 

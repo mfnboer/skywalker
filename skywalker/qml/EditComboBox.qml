@@ -67,12 +67,13 @@ ComboBox {
 
     // This draws a rectangle around the combobox
     Rectangle {
+        z: parent.z - 1
         width: comboBox.width
         height: textInput.height
         radius: 5
-        border.color: guiSettings.borderColor
-        border.width: 1
-        color: "transparent"
+        border.color: guiSettings.buttonColor
+        border.width: comboBox.activeFocus ? 1 : 0
+        color: guiSettings.textInputBackgroundColor
     }
 
     Timer {

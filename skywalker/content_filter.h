@@ -42,7 +42,7 @@ public:
     static ContentLabelList getContentLabels(const LabelList& labels);
     static void addContentLabels(ContentLabelList& contentLabels, const LabelList& labels);
 
-    explicit ContentFilter(const ATProto::UserPreferences& userPreferences, UserSettings* userSettings, QObject* parent = nullptr);
+    explicit ContentFilter(const QString& userDid, const ATProto::UserPreferences& userPreferences, UserSettings* userSettings, QObject* parent = nullptr);
 
     void clear();
 
@@ -64,7 +64,10 @@ public:
                                                                            std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
 
     bool isSubscribedToLabeler(const QString& did) const;
-    std::unordered_set<QString> getSubscribedLabelerDids() const;
+    bool isFixedLabelerEnabled(const QString& did) const;
+    void enableFixedLabeler(const QString& did, bool enabled);
+
+    std::unordered_set<QString> getSubscribedLabelerDids(bool includeDisabledFixedLabelers = false) const;
     std::vector<QString> getSubscribedLabelerDidsOrdered() const;
     size_t numLabelers() const;
     QStringList getLabelIds(const QString& labelerDid) const;
@@ -89,6 +92,7 @@ private:
     static GlobalContentGroupMap CONTENT_GROUPS;
     static void initContentGroups();
 
+    const QString& mUserDid;
     const ATProto::UserPreferences& mUserPreferences;
     UserSettings* mUserSettings;
     std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map

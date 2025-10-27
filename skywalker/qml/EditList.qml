@@ -171,9 +171,9 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.preferredHeight: nameField.height
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: nameField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyTextEdit {
                     id: nameField
@@ -203,9 +203,9 @@ SkyPage {
                 Layout.preferredHeight: descriptionField.height
 
                 radius: 5
-                border.width: 1
-                border.color: guiSettings.borderColor
-                color: "transparent"
+                border.width: descriptionField.activeFocus ? 1 : 0
+                border.color: guiSettings.buttonColor
+                color: guiSettings.textInputBackgroundColor
 
                 SkyFormattedTextEdit {
                     id: descriptionField
@@ -267,7 +267,7 @@ SkyPage {
 
         onPhotoPickFailed: (error) => {
             pickingImage = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onPhotoPickCanceled: {
@@ -302,12 +302,12 @@ SkyPage {
 
     function createListProgress(msg) {
         busyIndicator.running = true
-        statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO)
+        skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
     function createListFailed(error) {
         busyIndicator.running = false
-        statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         createListButton.enabled = true
     }
 
@@ -325,7 +325,7 @@ SkyPage {
         // Erase the created avatar source such that the image will not be dropped
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
-        statusPopup.close()
+        skywalker.clearStatusMessage()
         editListPage.listUpdated(cid, nameField.text, descriptionField.text, descriptionField.embeddedLinks, avatar.avatarUrl)
     }
 
@@ -446,6 +446,12 @@ SkyPage {
     }
 
     Component.onCompleted: {
+        if (purpose === QEnums.LIST_PURPOSE_UNKNOWN) {
+            skywalker.showStatusMessage("No purpose set for list", QEnums.STATUS_LEVEL_ERROR)
+            Qt.callLater(closed)
+            return
+        }
+
         if (!list.isNull())
             descriptionField.setEmbeddedLinks(list.embeddedLinksDescription)
 

@@ -26,7 +26,6 @@ SkyListView {
     Accessible.name: searchFeed.name
 
     header: PostFeedHeader {
-        skywalker: feedView.skywalker
         feedName: searchFeed.name
         defaultSvg: searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
         feedAvatar: ""

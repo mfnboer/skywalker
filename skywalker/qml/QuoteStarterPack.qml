@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string userDid
     property starterpackviewbasic starterPack
     readonly property int margin: 10
 
@@ -56,6 +57,7 @@ Column {
         anchors.left: parent.left
         anchors.leftMargin: margin
         anchors.right: undefined
+        userDid: quoteColumn.userDid
         contentLabels: starterPack.labels
         contentAuthorDid: starterPack.creator.did
     }

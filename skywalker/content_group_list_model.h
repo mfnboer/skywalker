@@ -11,7 +11,7 @@ class ContentGroupListModel : public QAbstractListModel
     Q_OBJECT
     Q_PROPERTY(bool adultContent READ getAdultContent WRITE setAdultContent NOTIFY adultContentChanged FINAL)
     Q_PROPERTY(bool subscribed READ isSubscribed WRITE setSubscribed NOTIFY subscribedChanged FINAL)
-    Q_PROPERTY(bool fixedSubscription READ isFixedSubscription CONSTANT FINAL)
+    Q_PROPERTY(bool fixedLabelerEnabled READ isFixedLabelerEnabled WRITE setFixedLabelerEnabled NOTIFY fixedLabelerEnabledChanged FINAL)
 
 public:
     enum class Role {
@@ -40,6 +40,9 @@ public:
     bool isSubscribed() const { return mSubscribed; }
     void setSubscribed(bool subscribed);
 
+    bool isFixedLabelerEnabled() const;
+    void setFixedLabelerEnabled(bool enabled);
+
     bool isFixedSubscription() const;
 
     bool isModified(const ATProto::UserPreferences& userPreferences) const;
@@ -48,6 +51,7 @@ public:
 signals:
     void adultContentChanged();
     void subscribedChanged();
+    void fixedLabelerEnabledChanged();
     void error(QString msg);
 
 protected:
@@ -60,6 +64,7 @@ private:
     ContentFilter& mContentFilter;
     QString mLabelerDid;
     bool mSubscribed = false;
+    bool mFixedLabelerEnabled = true;
     std::vector<ContentGroup> mContentGroupList;
     std::unordered_map<int, QEnums::ContentPrefVisibility> mChangedVisibility;
     std::unordered_set<QString> mNewLabelIds;

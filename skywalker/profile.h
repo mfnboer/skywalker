@@ -347,6 +347,8 @@ public:
     Profile() = default;
     explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
+    Profile(const QString& did, const QString& handle, const QString& displayName,
+            const QString& avatarUrl);
 
     QString getDescription() const;
     void setDescription(const QString& description) { mDescription = description; }

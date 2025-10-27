@@ -90,7 +90,7 @@ signals:
     void deleteListFailed(QString error);
     void createdListFromStarterPackOk(StarterPackView starterPack, QString listUri, QString listCid);
     void createdListFromStarterPackFailed(QString error);
-    void getListOk(ListView list, bool viewPosts);
+    void getListOk(QString userDid, ListView list, bool viewPosts);
     void getListFailed(QString error);
     void addListUserOk(QString did, QString itemUri, QString itemCid);
     void addListUserFailed(QString error);

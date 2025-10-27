@@ -500,7 +500,7 @@ private:
     ProfileStore mHideLists;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
-    ContentFilter mContentFilter{mUserPreferences, &mUserSettings};
+    ContentFilter mContentFilter{mUserDid, mUserPreferences, &mUserSettings};
     MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};

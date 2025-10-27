@@ -4,7 +4,9 @@ import QtQuick.Window 2.2
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property string postByDid
+    property Skywalker skywalker: root.getSkywalker(postByDid)
+
     property string initialText
     property string initialImage
     property string initialVideo: ""
@@ -114,12 +116,11 @@ SkyPage {
             onClicked: page.cancel()
         }
 
-        Avatar {
+        CurrentUserAvatar {
             y: guiSettings.headerMargin + 5
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.height - guiSettings.headerMargin - 10
-            author: skywalker.user
-            onClicked: skywalker.showStatusMessage(qsTr("Yes, you're gorgeous!"), QEnums.STATUS_LEVEL_INFO)
+            userDid: postByDid
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 
             Accessible.role: Accessible.Button
@@ -221,7 +222,7 @@ SkyPage {
                 AccessibleMenuItem {
                     text: qsTr("Auto split")
                     checkable: true
-                    checked: threadAutoSplit //skywalker.getUserSettings().getThreadAutoSplit()
+                    checked: threadAutoSplit
 
                     onToggled: {
                         threadAutoSplit = checked
@@ -239,11 +240,6 @@ SkyPage {
                         busyIndicator.running = true
                         postUtils.getVideoUploadLimits()
                     }
-                }
-                // TODO: remove
-                AccessibleMenuItem {
-                    text: "Debug drafts"
-                    onTriggered: showDebugDrafts(draftPosts.dumpDraftFeed())
                 }
             }
         }
@@ -279,7 +275,7 @@ SkyPage {
 
         // Reply-to
         Rectangle {
-            radius: 10
+            radius: guiSettings.radius
             anchors.fill: replyToColumn
             border.width: 1
             border.color: guiSettings.borderHighLightColor
@@ -292,6 +288,7 @@ SkyPage {
             width: parent.width - 2 * page.margin
             anchors.horizontalCenter: parent.horizontalCenter
             author: replyToAuthor
+            userDid: postByDid
             postText: replyToPostText
             postDateTime: replyToPostDateTime
             ellipsisBackgroundColor: guiSettings.postHighLightColor
@@ -780,6 +777,7 @@ SkyPage {
                         height: card ? columnHeight : 0
                         anchors.top: gifAttachment.bottom
                         anchors.topMargin: card ? 10 : 0
+                        userDid: postByDid
                         uri: card ? card.link : ""
                         title: card ? card.title : ""
                         description: card ? card.description : ""
@@ -823,7 +821,7 @@ SkyPage {
 
                     // Quote post
                     Rectangle {
-                        radius: 10
+                        radius: guiSettings.radius
                         anchors.fill: quoteColumn
                         border.width: 1
                         border.color: guiSettings.borderHighLightColor
@@ -836,6 +834,7 @@ SkyPage {
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
+                        userDid: postByDid
                         author: postItem.quoteAuthor
                         postText: postItem.quoteText
                         postDateTime: postItem.quoteDateTime
@@ -851,7 +850,7 @@ SkyPage {
 
                     // Quote feed
                     Rectangle {
-                        radius: 10
+                        radius: guiSettings.radius
                         anchors.fill: quoteFeedColumn
                         border.width: 1
                         border.color: guiSettings.borderHighLightColor
@@ -864,6 +863,7 @@ SkyPage {
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
+                        userDid: postByDid
                         feed: postItem.quoteFeed
                         showCloseButton: postItem.quoteFixed
                         visible: !postItem.quoteFeed.isNull()
@@ -876,7 +876,7 @@ SkyPage {
 
                     // Quote list
                     Rectangle {
-                        radius: 10
+                        radius: guiSettings.radius
                         anchors.fill: quoteListColumn
                         border.width: 1
                         border.color: guiSettings.borderHighLightColor
@@ -889,6 +889,7 @@ SkyPage {
                         anchors.top: linkCard.bottom
                         anchors.topMargin: visible ? 5 : 0
                         anchors.horizontalCenter: parent.horizontalCenter
+                        userDid: postByDid
                         list: postItem.quoteList
                         showCloseButton: postItem.quoteFixed
                         visible: !postItem.quoteList.isNull()
@@ -1124,7 +1125,7 @@ SkyPage {
         font.italic: true
         wrapMode: Text.Wrap
         text: qsTr("In the document editor you can write a long text. When you are done, you switch back to the normal post editor. Your long text will be converted to a thread of posts. From the post editor you can send the full thread.")
-        visible: largeEditor && !hasFullContent()
+        visible: largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost
     }
 
     footer: Rectangle {
@@ -1405,10 +1406,6 @@ SkyPage {
         }
     }
 
-    StatusPopup {
-        id: statusPopup
-    }
-
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
@@ -1514,7 +1511,14 @@ SkyPage {
         property var callbackCanQuotePostFailed: (error) => {}
 
         id: postUtils
-        skywalker: page.skywalker // qmllint disable missing-type
+        skywalker: page.skywalker
+
+        // This can only happen just after the ComposePost pages has been created.
+        // See WrappedSkywalker::setNonActiveUserDid
+        onNonActiveUserSessionExpired: {
+            skywalker.showStatusMessage(qsTr("Session expired"), QEnums.STATUS_LEVEL_ERROR)
+            page.closed()
+        }
 
         onPostOk: (uri, cid) => {
             postedUris.push(uri)
@@ -1548,7 +1552,7 @@ SkyPage {
 
         onThreadgateFailed: (error) => page.postFailed(error)
 
-        onPostgateFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onPostgateFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onPostProgress: (msg) => page.postProgress(msg)
 
@@ -1565,13 +1569,13 @@ SkyPage {
 
         onVideoPickedFailed: (error) => {
             pickingImage = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
         onPhotoPickFailed: (error) => {
             pickingImage = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
@@ -1762,7 +1766,6 @@ SkyPage {
         property var callbackFailed: (error) => {}
 
         id: videoUtils
-        skywalker: page.skywalker // qmllint disable missing-property
 
         onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
             const source = "file://" + outputFileName
@@ -1800,7 +1803,7 @@ SkyPage {
 
         onConversionFailed: (error) => {
             progressDialog.destroy()
-            statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
 
         onConversionProgress: (progress) => {
@@ -1828,13 +1831,13 @@ SkyPage {
         storageType: DraftPosts.STORAGE_FILE
 
         onSaveDraftPostOk: {
-            statusPopup.show(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
+            skywalker.showStatusMessage(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
             page.closed()
         }
 
-        onSaveDraftPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUploadingImage: (seq) => statusPopup.show(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
-        onLoadDraftPostsFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onUploadingImage: (seq) => skywalker.showStatusMessage(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
+        onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
 
@@ -1951,7 +1954,7 @@ SkyPage {
 
     function postFailed(error) {
         busyIndicator.running = false
-        statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         // Delete posts already posted (in a thread, or on failed thread gate creation)
         postUtils.batchDeletePosts(postedUris)
@@ -1972,9 +1975,9 @@ SkyPage {
         busyIndicator.running = true
 
         if (sendingThreadPost < 0)
-            statusPopup.show(msg, QEnums.STATUS_LEVEL_INFO, 300)
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 300)
         else
-            statusPopup.show(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO, 300)
+            skywalker.showStatusMessage(qsTr(`Post ${(sendingThreadPost + 1)}: ${msg}`), QEnums.STATUS_LEVEL_INFO, 300)
     }
 
     function checkAltText() {
@@ -2068,7 +2071,7 @@ SkyPage {
             return
 
         if (!canAddImage()) {
-            statusPopup.show(qsTr("Cannot add an image to this post."), QEnums.STATUS_LEVEL_INFO, 30)
+            skywalker.showStatusMessage(qsTr("Cannot add an image to this post."), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropPhoto(source)
             return
         }
@@ -2084,7 +2087,7 @@ SkyPage {
             return
 
         if (!canAddVideo()) {
-            statusPopup.show(qsTr("Cannot add video to this post."), QEnums.STATUS_LEVEL_INFO, 30)
+            skywalker.showStatusMessage(qsTr("Cannot add video to this post."), QEnums.STATUS_LEVEL_INFO, 30)
             postUtils.dropVideo(source)
             return
         }
@@ -2105,6 +2108,7 @@ SkyPage {
 
     function postDone() {
         busyIndicator.running = false
+        skywalker.clearStatusMessage()
         page.closed()
     }
 
@@ -2178,7 +2182,14 @@ SkyPage {
             return
         }
 
-        if (draftPosts.canSaveDraft()) {
+        if (!root.isActiveUser(page.postByDid)) {
+            // Saving a post as draft not supported for non-active users
+            guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you want to to discard your post?"),
+                    () => page.closed())
+        }
+        else if (draftPosts.canSaveDraft()) {
             guiSettings.askDiscardSaveQuestion(
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
@@ -2239,7 +2250,8 @@ SkyPage {
     function sendSinglePost(postItem, parentUri, parentCid, rootUri, rootCid, postIndex, postCount) {
         const qUri = postItem.getQuoteUri()
 
-        if (Boolean(qUri)) {
+        // NOTE: quote uri can be a post, feed, list or starter pack uri
+        if (Boolean(qUri) && postUtils.isPostUri(qUri)) {
             postUtils.checkCanQuotePost(qUri,
                 (canQuote) => {
                     if (canQuote)
@@ -2539,6 +2551,7 @@ SkyPage {
 
         let component = guiSettings.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(page, {
+                userDid: postByDid,
                 rootUri: "",
                 postUri: "",
                 restrictReply: page.restrictReply,
@@ -2571,7 +2584,7 @@ SkyPage {
         if (allowListUrisFromDraft.length > 0)
             return allowListUrisFromDraft
 
-        return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes)
+        return root.getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes, postByDid)
     }
 
     function getListNamesFromDraft() {
@@ -2856,13 +2869,6 @@ SkyPage {
         let limitsPage = component.createObject(page, { limits: limits })
         limitsPage.onAccepted.connect(() => limitsPage.destroy())
         limitsPage.open()
-    }
-
-    function showDebugDrafts(draftsDump) {
-        let component = guiSettings.createComponent("DebugDump.qml")
-        let debugPage = component.createObject(page, { title: "Debug drafts", dumpData: draftsDump })
-        debugPage.onClosed.connect(() => root.popStack())
-        root.pushStack(debugPage)
     }
 
     VirtualKeyboardHandler {

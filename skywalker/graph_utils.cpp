@@ -138,7 +138,10 @@ void GraphUtils::block(const QString& did, QDateTime expiresAt)
                     model->setLocallyBlocked(did, true);
                 });
 
-            mSkywalker->getChat()->updateBlockingUri(did, blockingUri);
+            auto* chat = mSkywalker->getChat();
+
+            if (chat)
+                chat->updateBlockingUri(did, blockingUri);
 
             if (expiresAt.isValid())
             {
@@ -225,7 +228,10 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
                     model->setLocallyBlocked(did, false);
                 });
 
-            mSkywalker->getChat()->updateBlockingUri(did, "");
+            auto* chat = mSkywalker->getChat();
+
+            if (chat)
+                chat->updateBlockingUri(did, "");
 
             auto* settings = mSkywalker->getUserSettings();
 
@@ -592,7 +598,7 @@ void GraphUtils::getListView(const QString& listUri, bool viewPosts)
             if (!presence)
                 return;
 
-            emit getListOk(ListView(output->mList), viewPosts);
+            emit getListOk(mSkywalker->getUserDid(), ListView(output->mList), viewPosts);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

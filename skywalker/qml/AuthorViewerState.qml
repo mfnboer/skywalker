@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Row {
+    property string userDid
     required property string did
     property bool followedBy: false
     property string blockingUri
@@ -58,7 +59,7 @@ Row {
     }
 
     function getBlockingText() {
-        const blocksWithExpiry = root.getSkywalker().getUserSettings().blocksWithExpiry
+        const blocksWithExpiry = root.getSkywalker(userDid).getUserSettings().blocksWithExpiry
         const expiresAt = blocksWithExpiry.getExpiry(blockingUri)
 
         if (!isNaN(expiresAt.getTime()))
@@ -68,7 +69,7 @@ Row {
     }
 
     function getMutingText() {
-        const mutesWithExpiry = root.getSkywalker().getUserSettings().mutesWithExpiry
+        const mutesWithExpiry = root.getSkywalker(userDid).getUserSettings().mutesWithExpiry
         const expiresAt = mutesWithExpiry.getExpiry(did)
 
         if (!isNaN(expiresAt.getTime()))

@@ -147,7 +147,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
     mBackgroundApp(backgroundApp),
     mUserSettings(settingsFileName),
     mImageReader(mNetwork),
-    mContentFilter(mUserPreferences, &mUserSettings),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings),
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mMutedWords, nullptr)
 {
@@ -160,7 +160,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
     mEventLoop(eventLoop),
     mUserSettings(settingsFileName),
     mImageReader(mNetwork),
-    mContentFilter(mUserPreferences, &mUserSettings),
+    mContentFilter(mUserDid, mUserPreferences, &mUserSettings),
     mMutedWords(mUserFollows),
     mNotificationListModel(mContentFilter, mMutedWords, nullptr)
 {
@@ -174,6 +174,11 @@ void OffLineMessageChecker::initNetwork()
     Q_ASSERT(mNetwork);
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(30000);
+}
+
+void OffLineMessageChecker::reset()
+{
+    mNotificationListModel.clear();
 }
 
 int OffLineMessageChecker::startEventLoop()
@@ -203,21 +208,47 @@ int OffLineMessageChecker::check()
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
 
+    const QString activeDid = mUserSettings.getActiveUserDid();
+    int exitStatus = check(activeDid);
+
+    // The active user should succeed. If not, then most likely there is
+    // a network issue. Do not try other accounts. Wait for task retry.
+    if (exitStatus != EXIT_OK)
+        return exitStatus;
+
+    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+
+    if (!mUserSettings.getNotificationsForAllAccounts(activeDid))
+        return EXIT_OK;
+
+    const auto dids = mUserSettings.getUserDidList();
+
+    for (const auto& did : dids)
+    {
+        if (did != activeDid)
+            check(did);
+    }
+
+    // We don't care if the check for the other users failed.
+    // If the active user check succeeded, we consider the task complete.
+    return EXIT_OK;
+}
+
+int OffLineMessageChecker::check(const QString& did)
+{
+    reset();
     int exitStatus = EXIT_OK;
 
     // The network is not always available in a background task for some reason ???
     // Retry few times.
     for (int i = 0; i < 8; ++i)
     {
-        qDebug() << "Attempt:" << i + 1;
-        QTimer::singleShot(0, &mPresence, [this]{ resumeSession(); });
+        qDebug() << "Attempt:" << i + 1 << did;
+        QTimer::singleShot(0, &mPresence, [this, did]{ resumeSession(did); });
         exitStatus = startEventLoop();
 
         if (exitStatus == EXIT_OK)
-        {
-            mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
             break;
-        }
 
         if (exitStatus == EXIT_RETRY)
             break;
@@ -225,7 +256,12 @@ int OffLineMessageChecker::check()
         if (exitStatus == EXIT_NETWORK_FAILURE)
         {
             exitStatus = EXIT_RETRY;
-            std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(500ms);
+        }
+        else
+        {
+            qWarning() << "Unknown exit status:" << exitStatus;
+            break;
         }
     }
 
@@ -287,10 +323,8 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 #endif
 }
 
-std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSession() const
+std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSession(const QString& did) const
 {
-    const QString did = mUserSettings.getActiveUserDid();
-
     if (did.isEmpty())
         return {};
 
@@ -307,10 +341,10 @@ void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session
     mUserSettings.saveSession(session);
 }
 
-void OffLineMessageChecker::resumeSession(bool retry)
+void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
 {
-    qDebug() << "Resume session, retry:" << retry;
-    const auto session = getSession();
+    qDebug() << "Resume session, retry:" << retry << "did:" << did;
+    const auto session = getSession(did);
 
     if (!session)
     {
@@ -324,7 +358,11 @@ void OffLineMessageChecker::resumeSession(bool retry)
     // Need a longer network transfer timeout for an Android background process.
     auto xrpc = std::make_unique<Xrpc::Client>("", 30000);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
-    mBsky = std::make_unique<ATProto::Client>(std::move(xrpc));
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
+    mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+    mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+    mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+    mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
 
     mBsky->resumeSession(*session,
         [this] {
@@ -332,17 +370,17 @@ void OffLineMessageChecker::resumeSession(bool retry)
             saveSession(*mBsky->getSession());
             refreshSession();
         },
-        [this, retry, session](const QString& error, const QString& msg){
+        [this, did, retry, session](const QString& error, const QString& msg){
             qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
             if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
             {
                 mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
                 mBsky->refreshSession(
-                    [this]{
+                    [this, did]{
                         qDebug() << "Session refreshed";
                         saveSession(*mBsky->getSession());
-                        resumeSession(true);
+                        resumeSession(did, true);
                     },
                     [this](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
@@ -458,7 +496,7 @@ void OffLineMessageChecker::getNotifications(int toRead)
     mBsky->listNotifications(limit, {}, {}, false, {},
         [this, toRead](auto notifications){
             filterNotifications(notifications);
-            const bool added = mNotificationListModel.addNotifications(std::move(notifications), *mBsky, false,
+            const bool added = mNotificationListModel.addNotifications(std::move(notifications), mBsky, false,
                 [this]{ getChatNotifications(); });
 
             const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
@@ -692,8 +730,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
     const PostCache& reasonPostCache = mNotificationListModel.getReasonPostCache();
     const PostRecord postRecord = notification.getPostRecord();
 
-    // NOTE: postText can be empty if there is only an image.
-    QString msg = !postRecord.isNull() ? postRecord.getFormattedText() : "";
+    QString msg = !postRecord.isNull() ? getNotificationText(postRecord) : "";
     QString channelId = CHANNEL_POST;
     IconType iconType = IconType::POST;
 
@@ -708,7 +745,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
                 QObject::tr("<b>Liked your post</b>") :
                 QObject::tr("<b>Liked your repost</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
-        const auto reasonPostText = post.getFormattedText();
+        const auto reasonPostText = getNotificationText(post);
 
         if (!reasonPostText.isEmpty())
             msg.append("<br>" + reasonPostText);
@@ -724,7 +761,7 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
                 QObject::tr("<b>Reposted your post</b>") :
                 QObject::tr("<b>Reposted your repost</b>");
         const Post post = notification.getReasonPost(reasonPostCache);
-        const auto reasonPostText = post.getFormattedText();
+        const auto reasonPostText = getNotificationText(post);
 
         if (!reasonPostText.isEmpty())
             msg.append("<br>" + reasonPostText);
@@ -788,6 +825,138 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         when = QDateTime::currentDateTimeUtc();
 
     createNotification(channelId, notification.getAuthor(), msg, when, iconType);
+}
+
+template<class Entity>
+QString getEntityAttachmentNotificationText(const Entity& entity)
+{
+    const auto images = entity.getImages();
+
+    for (const auto& image : images)
+    {
+        const auto altText = image.getAlt();
+
+        if (!altText.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(altText);
+    }
+
+    const auto video = entity.getVideoView();
+
+    if (video)
+    {
+        const auto altText = video->getAlt();
+
+        if (!altText.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(altText);
+    }
+
+    const auto external = entity.getExternalView();
+
+    if (external)
+    {
+        const auto title = external->getTitle();
+
+        if (!title.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(title);
+
+        const auto description = external->getDescription();
+
+        if (!description.isEmpty())
+            return ATProto::RichTextMaster::plainToHtml(description);
+    }
+
+    return {};
+}
+
+template<class Entity>
+QString getEntityNotificationText(const Entity& entity)
+{
+    const auto text = entity.getFormattedText();
+
+    if (!text.isEmpty())
+        return text;
+
+    return getEntityAttachmentNotificationText(entity);
+}
+
+QString OffLineMessageChecker::getNotificationText(const Post& post) const
+{
+    const auto postText = getEntityNotificationText(post);
+
+    if (!postText.isEmpty())
+        return postText;
+
+    const auto record = post.getRecordView();
+
+    if (record)
+    {
+        const auto recordText = getEntityNotificationText(*record);
+
+        if (!recordText.isEmpty())
+            return recordText;
+    }
+
+    const auto recordWithMedia = post.getRecordWithMediaView();
+
+    if (recordWithMedia)
+    {
+        const auto recordText = getEntityAttachmentNotificationText(*recordWithMedia);
+
+        if (!recordText.isEmpty())
+            return recordText;
+
+        const auto record = recordWithMedia->getRecord();
+
+        if (!record.isNull())
+        {
+            const auto recordText = getEntityNotificationText(record);
+
+            if (!recordText.isEmpty())
+                return recordText;
+        }
+    }
+
+    return {};
+}
+
+QString OffLineMessageChecker::getNotificationText(const PostRecord& postRecord) const
+{
+    const QString text = postRecord.getFormattedText();
+
+    if (!text.isEmpty())
+        return text;
+
+    const auto& images = postRecord.getImages();
+
+    if (images)
+    {
+        for (const auto& image : images->mImages)
+        {
+            if (!image->mAlt.isEmpty())
+                return image->mAlt;
+        }
+    }
+
+    const auto& video = postRecord.getVideo();
+
+    if (video)
+    {
+        if (!video->mAlt.value_or("").isEmpty())
+            return *video->mAlt;
+    }
+
+    const auto& external = postRecord.getExternal();
+
+    if (external && external->mExternal)
+    {
+        if (!external->mExternal->mTitle.isEmpty())
+            return external->mExternal->mTitle;
+
+        if (!external->mExternal->mDescription.isEmpty())
+            return external->mExternal->mDescription;
+    }
+
+    return "";
 }
 
 void OffLineMessageChecker::checkNotificationPermission()

@@ -58,10 +58,12 @@ private:
     };
 
     void initNetwork();
+    void reset();
     int startEventLoop();
     void exit(int exitCode);
-    void resumeSession(bool retry = false);
-    std::optional<ATProto::ComATProtoServer::Session> getSession() const;
+    int check(const QString& did);
+    void resumeSession(const QString& did, bool retry = false);
+    std::optional<ATProto::ComATProtoServer::Session> getSession(const QString& did) const;
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();
     void getUserPreferences();
@@ -75,6 +77,8 @@ private:
     void createNotifications();
     void createNotification(const Notification& notification);
     void createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType);
+    QString getNotificationText(const Post& post) const;
+    QString getNotificationText(const PostRecord& postRecord) const;
 
     static bool sNotificationPermissionGranted;
 
@@ -82,7 +86,7 @@ private:
     QCoreApplication* mBackgroundApp = nullptr;
     QEventLoop* mEventLoop = nullptr;
     UserSettings mUserSettings;
-    std::unique_ptr<ATProto::Client> mBsky;
+    ATProto::Client::SharedPtr mBsky;
     QString mUserDid;
     ImageReader mImageReader;
     ATProto::UserPreferences mUserPreferences;

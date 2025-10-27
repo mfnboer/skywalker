@@ -30,7 +30,9 @@ public:
     QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const;
     QVariant getVideo() const;
+    VideoView::Ptr getVideoView() const;
     QVariant getExternal() const;
+    ExternalView::Ptr getExternalView() const;
 
 private:
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr mView;

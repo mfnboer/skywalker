@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Image {
+    property string userDid
     required property basicprofile author
 
     id: badge

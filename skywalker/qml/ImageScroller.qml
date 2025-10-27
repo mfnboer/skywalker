@@ -39,7 +39,7 @@ ScrollView {
 
                 onStatusChanged: {
                     if (status === Image.Error){
-                        statusPopup.show(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
+                        skywalker.showStatusMessage(qsTr("Cannot load image"), QEnums.STATUS_LEVEL_ERROR);
                         imageScroller.removeImage(index)
                     }
                 }

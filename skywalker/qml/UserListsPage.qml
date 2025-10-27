@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property Skywalker skywalker: root.getSkywalker()
     required property int modelId
     readonly property string sideBarTitle: qsTr("User Lists & Feeds")
     readonly property SvgImage sideBarSvg: SvgOutline.list
@@ -49,7 +49,6 @@ SkyPage {
 
         ListListView {
             id: yourLists
-            skywalker: page.skywalker
             modelId: page.modelId
             ownLists: true
             description: qsTr("Public, shareable lists of users which can be used as feeds or reply restrictions.")

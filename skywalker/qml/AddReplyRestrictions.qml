@@ -4,6 +4,8 @@ import QtQuick.Controls.Material
 import skywalker
 
 Dialog {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property string rootUri
     required property string postUri
     required property bool restrictReply
@@ -122,7 +124,7 @@ Dialog {
             Rectangle {
                 width: parent.width
                 height: allowQuoteCheckBox.height
-                radius: 10
+                radius: guiSettings.radius
                 color: guiSettings.settingsHighLightColor
 
                 AccessibleCheckBox {
@@ -145,7 +147,7 @@ Dialog {
             Rectangle {
                 width: parent.width
                 height: replyRestrictionsColumn.height
-                radius: 10
+                radius: guiSettings.radius
                 color: guiSettings.settingsHighLightColor
 
                 Column {
@@ -300,7 +302,7 @@ Dialog {
             Rectangle {
                 width: parent.width
                 height: saveAsDefaultCheckBox.height
-                radius: 10
+                radius: guiSettings.radius
                 color: guiSettings.settingsHighLightColor
                 visible: allowSaveAsDefault
 
@@ -316,7 +318,7 @@ Dialog {
 
     PostUtils {
         id: postUtils
-        skywalker: root.getSkywalker() // qmllint disable missing-type
+        skywalker: restrictionDialog.skywalker
 
         onGetPostgateOk: (postgate) => { // qmllint disable signal-handler-parameters
             restrictionDialog.postgate = postgate
@@ -335,7 +337,7 @@ Dialog {
 
     function saveRestrictionsAsDefault() {
         const allowNobody = restrictReply && !allowMentioned && !allowFollower && !allowFollowing && !hasAllowLists()
-        const allowUris = root.getReplyRestrictionListUris(listModelId, allowLists, allowListIndexes)
+        const allowUris = root.getReplyRestrictionListUris(listModelId, allowLists, allowListIndexes, userDid)
 
         postUtils.savePostInteractionSettings(allowMentioned, allowFollower, allowFollowing,
                 allowUris, allowNobody, !allowQuoting)
@@ -347,7 +349,7 @@ Dialog {
 
         if (rootUri) {
             const did = postUtils.extractDidFromUri(rootUri)
-            isThreadFromUser = Boolean(did === root.getSkywalker().getUserDid())
+            isThreadFromUser = Boolean(did === skywalker.getUserDid())
         }
 
         // For a post being composed there are no URIs

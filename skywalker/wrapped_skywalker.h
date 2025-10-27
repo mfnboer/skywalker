@@ -14,6 +14,7 @@ class WrappedSkywalker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Skywalker* skywalker READ getSkywalker WRITE setSkywalker NOTIFY skywalkerChanged FINAL REQUIRED)
+    Q_PROPERTY(QString nonActiveUserDid READ getNonActiveUserDid WRITE setNonActiveUserDid NOTIFY nonActiveUserDidChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -22,13 +23,23 @@ public:
     Skywalker* getSkywalker() const { return mSkywalker; }
     void setSkywalker(Skywalker* skywalker);
 
+    const QString& getNonActiveUserDid() const { return mNonActiveUserDid; }
+    void setNonActiveUserDid(const QString& did);
+
 signals:
     void skywalkerChanged();
+    void nonActiveUserDidChanged();
+    void nonActiveUserSessionExpired();
 
 protected:
     ATProto::Client* bskyClient();
     ATProto::PlcDirectoryClient& plcDirectory();
     Skywalker* mSkywalker = nullptr;
+
+    // If this DID is set, then the bsky session (client) for this user
+    // will be used, otherwise the active user session is used.
+    QString mNonActiveUserDid;
+    ATProto::Client::SharedPtr mNonActiveUserBsky;
 };
 
 }

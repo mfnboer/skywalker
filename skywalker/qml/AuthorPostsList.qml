@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
+    property string userDid
     required property detailedprofile author
     required property var enclosingView
     required property var getFeed
@@ -12,7 +13,7 @@ SkyListView {
     required property var getEmptyListIndicationText
     required property var visibilityShowProfileLink
     required property var disableWarning
-    property var skywalker: root.getSkywalker()
+    property var skywalker: root.getSkywalker(userDid)
     property int modelId: -1
     property int feedFilter: QEnums.AUTHOR_FEED_FILTER_POSTS
     property bool galleryMode: false
@@ -49,7 +50,7 @@ SkyListView {
 
         onActivateSwipe: {
             if (swipeMode)
-                root.viewMediaFeed(model, index, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) })
+                root.viewMediaFeed(model, index, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
             else
                 console.warn("This is not a media feed")
         }
@@ -149,7 +150,7 @@ SkyListView {
             clip: true
             width: authorPostsList.width
             height: authorPostsList.height
-            skywalker: authorPostsList.skywalker
+            userDid: authorPostsList.userDid
             model: authorPostsList.model
             enclosingView: authorPostsList.enclosingView
         }

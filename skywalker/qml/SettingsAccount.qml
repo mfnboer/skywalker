@@ -93,6 +93,21 @@ GridLayout {
         }
     }
 
+    Rectangle {
+        Layout.columnSpan: 2
+        Layout.fillWidth: true
+        Layout.preferredHeight: advancedButton.height
+        color: "transparent"
+
+        SkyButton {
+            id: advancedButton
+            height: 40
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: qsTr("Advanced settings")
+            onClicked: root.editAdvancedSettings()
+        }
+    }
+
     HeaderText {
         Layout.columnSpan: 2
         Layout.topMargin: 10

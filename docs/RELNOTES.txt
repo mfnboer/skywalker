@@ -1,3 +1,14 @@
+4.17
+====
+* Improve sharing of saved/pinned feeds with the Bluesky app
+* Edit pronouns and website on your profile
+* Change video playback rate
+* Get notifications from all your accounts
+* Reply, repost, like, bookmark with any of your accounts
+* Sort lists by name
+* Configure AppView, Chat and Video services
+* Bug fixes
+
 4.16.2
 ======
 * Bug fix for crash in draft posts

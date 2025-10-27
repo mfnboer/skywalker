@@ -33,6 +33,7 @@ Item {
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
     readonly property int maxImageHeight: root.height - headerHeight
+    readonly property int radius: 8
     readonly property int sideBarHeaderHeight: 44
     readonly property int sideBarMinWidth: 175
     readonly property int sideBarMaxWidth: 325
@@ -63,7 +64,7 @@ Item {
     readonly property string buttonTextColor: "white"
     readonly property string contentLabelColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string contentUserLabelColor: isLightMode ? "lightblue" : "steelblue"
-    readonly property string disabledColor: isLightMode ? "lightgrey" : "darkslategrey"
+    readonly property string disabledColor: isLightMode ? "grey" : "slategrey"
     readonly property string dragHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string errorColor: isLightMode ? "darkred" : "palevioletred"
     readonly property string favoriteColor: "gold"
@@ -101,6 +102,7 @@ Item {
     readonly property string statsColor: Material.color(Material.Grey)
     property string textColor: Material.foreground
     readonly property string textInputBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string textInputInvalidColor: "palevioletred"
     readonly property string textLengthExceededColor: "palevioletred"
 
     // Opacity
@@ -332,23 +334,26 @@ Item {
         return SvgOutline.feed
     }
 
-    function contentVisible(author)
+    function contentVisible(author, userDid = "")
     {
         if (author.viewer.blockedBy)
             return false
 
-        let visibility = skywalker.getContentVisibility(author.labels)
+        const sw = getSkywalker(userDid)
+        let visibility = sw.getContentVisibility(author.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function feedContentVisible(feed)
+    function feedContentVisible(feed, userDid = "")
     {
-        let visibility = skywalker.getContentVisibility(feed.labels)
+        const sw = getSkywalker(userDid)
+        let visibility = sw.getContentVisibility(feed.labels)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function filterContentLabelsToShow(contentLabels) {
-        let contentFilter = skywalker.getContentFilter()
+    function filterContentLabelsToShow(contentLabels, userDid = "") {
+        const sw = getSkywalker(userDid)
+        let contentFilter = sw.getContentFilter()
         let labels = []
 
         for (let i = 0; i < contentLabels.length; ++i) {
@@ -389,14 +394,6 @@ Item {
         default:
             return SvgOutline.chat
         }
-    }
-
-    function isUserDid(did) {
-        return skywalker.getUserDid() === did
-    }
-
-    function isUser(author) {
-        return isUserDid(author.did)
     }
 
     function threadStartColor(color) {

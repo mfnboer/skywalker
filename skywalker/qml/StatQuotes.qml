@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Text {
+    property string userDid
     required property string atUri
     required property int count
 
@@ -20,7 +21,7 @@ Text {
     }
 
     function showQuotes() {
-        root.viewQuotePostFeed(atUri)
+        root.viewQuotePostFeed(atUri, userDid)
     }
 
 

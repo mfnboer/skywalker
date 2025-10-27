@@ -70,7 +70,7 @@ public:
     StorageType getStorageType() const { return mStorageType; }
     void setStorageType(StorageType storageType);
 
-    Q_INVOKABLE QString dumpDraftFeed();
+    QString dumpDraftFeed();
 
 signals:
     void saveDraftPostOk();

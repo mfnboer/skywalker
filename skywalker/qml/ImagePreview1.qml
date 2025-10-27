@@ -22,7 +22,7 @@ Item {
 
     RoundCornerMask {
         id: frame
-        cornerRadius: swipeMode ? 0 : 10
+        cornerRadius: swipeMode ? 0 : guiSettings.radius
         x: (parent.width - width) / 2
         width: filter.imageVisible() ? (img.item ? img.item.width : 0) : parent.width
         height: filter.imageVisible() ? (img.item ? img.item.height : 0) : filter.height

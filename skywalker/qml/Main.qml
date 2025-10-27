@@ -8,6 +8,12 @@ ApplicationWindow {
     property double postButtonRelativeX: 1.0
     readonly property bool isPortrait: width < height
     readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
+    property var didSkywalkerMap: new Map()
+    property var didPostUtilsMap: new Map()
+    property var didProfileUtilsMap: new Map()
+    property var didGraphUtilsMap: new Map()
+    property var didFeedUtilsMap: new Map()
+    property var didLinkUtilsMap: new Map()
 
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // property double frameIntervalStart: Date.now()
@@ -262,10 +268,42 @@ ApplicationWindow {
     }
 
     Skywalker {
-        signal authorFeedOk(int modelId)
-        signal authorFeedError(int modelId, string error, string msg)
-
         id: skywalker
+
+        onSkywalkerCreated: (did, sw) => {
+            console.debug("Skywalker created:", did)
+            didSkywalkerMap.set(did, sw)
+
+            const puComp = guiSettings.createComponent("MainPostUtils.qml")
+            const pu = puComp.createObject(root, { skywalker: sw })
+            didPostUtilsMap.set(did, pu)
+
+            const profComp = guiSettings.createComponent("MainProfileUtils.qml")
+            const profUtils = profComp.createObject(root, { skywalker: sw })
+            didProfileUtilsMap.set(did, profUtils)
+
+            const guComp = guiSettings.createComponent("MainGraphUtils.qml")
+            const gu = guComp.createObject(root, { skywalker: sw })
+            didGraphUtilsMap.set(did, gu)
+
+            const fuComp = guiSettings.createComponent("MainFeedUtils.qml")
+            const fu = fuComp.createObject(root, { skywalker: sw })
+            didFeedUtilsMap.set(did, fu)
+
+            const luComp = guiSettings.createComponent("MainLinkUtils.qml")
+            const lu = luComp.createObject(root, { skywalker: sw })
+            didLinkUtilsMap.set(did, lu)
+        }
+
+        onSkywalkerDestroyed: (did) => {
+            console.debug("Skywalker destroyed:", did)
+            didSkywalkerMap.delete(did)
+            didPostUtilsMap.delete(did)
+            didProfileUtilsMap.delete(did)
+            didGraphUtilsMap.delete(did)
+            didFeedUtilsMap.delete(did)
+            didLinkUtilsMap.delete(did)
+        }
 
         onLoginOk: start()
 
@@ -293,7 +331,7 @@ ApplicationWindow {
             }
 
             if (error)
-                statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+                statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
 
             signOutCurrentUser()
             signIn()
@@ -301,7 +339,7 @@ ApplicationWindow {
 
         onSessionExpired: (error) => {
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -311,18 +349,20 @@ ApplicationWindow {
             signIn()
         }
 
-        onStatusMessage: (msg, level, seconds) => { // qmllint disable signal-handler-parameters
+        onStatusMessage: (did, msg, level, seconds) => { // qmllint disable signal-handler-parameters
                 const period = seconds > 0 ? seconds : (level === QEnums.STATUS_LEVEL_INFO ? 2 : 30)
-                statusPopup.show(msg, level, period)
+                statusPopup.show(did, msg, level, period)
         }
 
-        onPostThreadOk: (modelId, postEntryIndex) => viewPostThread(modelId, postEntryIndex)
+        onStatusClear: statusPopup.clear()
+
+        onPostThreadOk: (did, modelId, postEntryIndex) => viewPostThread(did, modelId, postEntryIndex)
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 
         onGetUserProfileFailed: (error) => {
             console.warn("FAILED TO LOAD USER PROFILE:", error)
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -348,7 +388,7 @@ ApplicationWindow {
         onGetUserPreferencesFailed: (error) => {
             console.warn("FAILED TO LOAD USER PREFERENCES")
             closeStartupStatus()
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
         }
@@ -380,25 +420,22 @@ ApplicationWindow {
             getTimelineView().resumeTimeline(postIndex, offsetY)
         }
 
-        onGetDetailedProfileOK: (profile) => { // qmllint disable signal-handler-parameters
+        onGetDetailedProfileOK: (did, profile) => { // qmllint disable signal-handler-parameters
             Qt.callLater((p) => {
-                    let modelId = skywalker.createAuthorFeedModel(profile)
-                    viewAuthor(profile, modelId)
+                    let modelId = getSkywalker(did).createAuthorFeedModel(profile)
+                    viewAuthor(profile, modelId, did)
                 },
                 profile)
         }
 
-        onGetAuthorFeedOk: (modelId) => authorFeedOk(modelId)
-        onGetAuthorFeedFailed: (modelId, error, msg) => authorFeedError(modelId, error, msg)
-
-        onGetFeedGeneratorOK: (generatorView, viewPosts) => { // qmllint disable signal-handler-parameters
+        onGetFeedGeneratorOK: (did, generatorView, viewPosts) => { // qmllint disable signal-handler-parameters
             if (viewPosts)
-                viewPostFeed(generatorView)
+                viewPostFeed(generatorView, did)
             else
-                viewFeedDescription(generatorView)
+                viewFeedDescription(generatorView, did)
         }
 
-        onGetStarterPackViewOk: (starterPack) => viewStarterPack(starterPack) // qmllint disable signal-handler-parameters
+        onGetStarterPackViewOk: (did, starterPack) => viewStarterPack(starterPack, did) // qmllint disable signal-handler-parameters
 
         onSharedTextReceived: (text) => {
             closeStartupStatus() // close startup status if sharing started the app                      
@@ -547,7 +584,7 @@ ApplicationWindow {
         onConversionFailed: (error) => {
             progressDialog.destroy()
             postUtils.dropVideo("file://" + gifFileName)
-            statusPopup.show(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+            statusPopup.show(skywalker.getUserDid(), qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
 
         onConversionProgress: (progress) => progressDialog.setProgress(progress)
@@ -589,7 +626,7 @@ ApplicationWindow {
             if (!notificationsActive)
                 viewNotifications()
             else if (currentStackItem() instanceof NotificationListView)
-                currentStackItem().positionViewAtBeginning()
+                currentStackItem().handleNotificationsClicked()
         }
         onSearchClicked: {
             if (!searchActive)
@@ -636,6 +673,8 @@ ApplicationWindow {
             if (prevIndex === notificationIndex) {
                 skywalker.notificationListModel.updateRead()
                 skywalker.mentionListModel.updateRead()
+                getNotificationView().reset()
+                unwindStack(notificationStack)
             }
 
             prevIndex = currentIndex
@@ -863,7 +902,7 @@ ApplicationWindow {
                 signOutCurrentUser()
                 skywalker.switchUser(profile.did)
 
-                if (skywalker.resumeSession()) {
+                if (skywalker.resumeAndRefreshSession()) {
                     showStartupStatus()
                 }
                 else if (skywalker.autoLogin()) {
@@ -872,7 +911,7 @@ ApplicationWindow {
                 else {
                     const userSettings = skywalker.getUserSettings()
                     const host = userSettings.getHost(profile.did)
-                    loginUser(profile.handle, profile.did)
+                    loginUser(host, profile.handle, profile.did)
                 }
             }
 
@@ -887,6 +926,7 @@ ApplicationWindow {
     }
 
     Drawer {
+        property string repostByDid
         property string repostedAlreadyUri
         property string repostUri
         property string repostCid
@@ -930,9 +970,9 @@ ApplicationWindow {
                     text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
                     onClicked: {
                         if (repostDrawer.repostedAlreadyUri)
-                            postUtils.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
+                            getPostUtils(repostDrawer.repostByDid).undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
                         else
-                            postUtils.repost(repostDrawer.repostUri, repostDrawer.repostCid, repostDrawer.repostViaUri, repostDrawer.repostViaCid)
+                            getPostUtils(repostDrawer.repostByDid).repost(repostDrawer.repostUri, repostDrawer.repostCid, repostDrawer.repostViaUri, repostDrawer.repostViaCid)
 
                         repostDrawer.close()
                     }
@@ -948,7 +988,7 @@ ApplicationWindow {
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor)
+                                      repostDrawer.repostAuthor, "", repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -963,7 +1003,8 @@ ApplicationWindow {
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
                                       repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor, repostDrawer.repostPlainText)
+                                      repostDrawer.repostAuthor, repostDrawer.repostPlainText,
+                                      repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -973,6 +1014,7 @@ ApplicationWindow {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: qsTr("Quote in direct message")
                 enabled: !repostDrawer.repostEmbeddingDisabled
+                visible: isActiveUser(repostDrawer.repostByDid)
                 onClicked: {
                     const link = linkUtils.toHttpsLink(repostDrawer.repostUri)
                     startConvo(link)
@@ -981,7 +1023,8 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText) {
+        function show(hasRepostedUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, byDid = "") {
+            repostByDid = byDid
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
@@ -996,147 +1039,29 @@ ApplicationWindow {
         }
     }
 
-    PostUtils {
-        property list<int> allowListIndexes: [0, 1, 2]
-        property list<bool> allowLists: [false, false, false]
-        property list<string> allowListUris: []
-        property list<listviewbasic> allowListViews: []
-        property string checkPostUri
-        property string checkPostCid
-        property var checkPostCallback
-
+    MainPostUtils {
         id: postUtils
         skywalker: skywalker
-
-        onRepostOk: statusPopup.show(qsTr("Reposted"), QEnums.STATUS_LEVEL_INFO, 2)
-        onRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onRepostProgress: (msg) => statusPopup.show(qsTr("Reposting"), QEnums.STATUS_LEVEL_INFO)
-        onUndoRepostOk: statusPopup.show(qsTr("Repost undone"), QEnums.STATUS_LEVEL_INFO, 2)
-        onUndoRepostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onMuteThreadOk: statusPopup.show(qsTr("You will no longer receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 5);
-        onMuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUnmuteThreadOk: statusPopup.show(qsTr("You will receive notifications for this thread"), QEnums.STATUS_LEVEL_INFO, 5);
-        onUnmuteThreadFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onThreadgateOk: statusPopup.show(qsTr("Reply settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
-        onThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUndoThreadgateOk: statusPopup.show(qsTr("Reply settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
-        onUndoThreadgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onPostgateOk: statusPopup.show(qsTr("Quote settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
-        onPostgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUndoPostgateOk: statusPopup.show(qsTr("Quote settings changed"), QEnums.STATUS_LEVEL_INFO, 2)
-        onUndoPostgateFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-
-        onDetachQuoteOk: (detached) => {
-            if (detached)
-                statusPopup.show(qsTr("Quote detached"), QEnums.STATUS_LEVEL_INFO, 2)
-            else
-                statusPopup.show(qsTr("Quote re-attached"), QEnums.STATUS_LEVEL_INFO, 2)
-        }
-
-        onDetachQuoteFailed: (error) =>  statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-
-        function setAllowListUris(replyRestrictionLists) {
-            allowLists = [false, false, false]
-            allowListUris = []
-
-            for (let i = 0; i < Math.min(replyRestrictionLists.length, 3); ++i) {
-                allowLists[i] = true
-                allowListUris.push(replyRestrictionLists[i].uri)
-            }
-        }
-
-        onCheckPostExistsOk: (uri, cid) => {
-            if (uri !== checkPostUri || cid !== checkPostCid)
-                return
-
-            checkPostUri = ""
-            checkPostCid = ""
-            checkPostCallback()
-            checkPostCallback = null
-        }
-
-        onCheckPostExistsFailed: (uri, cid, error) => {
-            if (uri !== checkPostUri || cid !== checkPostCid)
-                return
-
-            checkPostUri = ""
-            checkPostCid = ""
-            checkPostCallback = null
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        }
-
-        function checkPost(uri, cid, callback) {
-            checkPostUri = uri
-            checkPostCid = cid
-            checkPostCallback = callback
-            postUtils.checkPostExists(uri, cid)
-        }
     }
 
-    ProfileUtils {
+    MainProfileUtils {
         id: profileUtils
-        skywalker: skywalker // qmllint disable missing-type
-
-        onSetPinnedPostOk: statusPopup.show(qsTr("Post pinned"), QEnums.STATUS_LEVEL_INFO, 2)
-        onSetPinnedPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onClearPinnedPostOk: statusPopup.show(qsTr("Post unpinned"), QEnums.STATUS_LEVEL_INFO, 2)
-        onClearPinnedPostFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        skywalker: skywalker
     }
 
-    FeedUtils {
+    MainFeedUtils {
         id: feedUtils
-        skywalker: skywalker // qmllint disable missing-type
-
-        onLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onUndoLikeFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onInteractionsSent: statusPopup.show(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO)
-        onFailure: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        skywalker: skywalker
     }
 
-    LinkUtils {
+    MainLinkUtils {
         id: linkUtils
         skywalker: skywalker // qmllint disable missing-type
-
-        onWebLink: (link, containingText, hostPresent) => {
-            if (!containingText || hostPresent) {
-                Qt.openUrlExternally(link)
-                return
-            }
-
-            const linkText = `<font color="${guiSettings.linkColor}">${link}</font>`
-            guiSettings.noticeOkCancel(rootContent,
-                qsTr("This link will open the following website:") + "<br><br>" + linkText,
-                () => Qt.openUrlExternally(link))
-        }
-        onPostLink: (atUri) => skywalker.getPostThread(atUri)
-        onFeedLink: (atUri) => skywalker.getFeedGenerator(atUri, true)
-        onListLink: (atUri) => viewListByUri(atUri, true)
-        onStarterPackLink: (atUri) => skywalker.getStarterPackView(atUri)
-        onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
     }
 
-    GraphUtils {
+    MainGraphUtils {
         id: graphUtils
-        skywalker: skywalker // qmllint disable missing-type
-
-        onGetListOk: (list, viewPosts) => { // qmllint disable signal-handler-parameters
-            if (viewPosts)
-                viewList(list)
-            else
-                viewListFeedDescription(list)
-        }
-        onGetListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-
-        onBlockOk: (uri, expiresAt) => {
-            if (isNaN(expiresAt.getTime()))
-                statusPopup.show(qsTr("Blocked"), QEnums.STATUS_LEVEL_INFO, 2)
-            else
-                statusPopup.show(qsTr(`Blocked till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
-        }
-
-        onBlockFailed: (error) => { statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR) }
+        skywalker: skywalker
     }
 
     M3U8Reader {
@@ -1169,7 +1094,6 @@ ApplicationWindow {
 
     VideoUtils {
         id: videoUtils
-        skywalker: skywalker
 
         onCopyVideoOk: skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
@@ -1208,18 +1132,18 @@ ApplicationWindow {
         switchUserDrawer.show()
     }
 
-    function openLink(link, containingText) {
+    function openLink(link, containingText, openByDid = "") {
         if (link.startsWith("@")) {
             console.debug("@-MENTION:", link)
-            skywalker.getDetailedProfile(link.slice(1))
+            getSkywalker(openByDid).getDetailedProfile(link.slice(1))
         } else if (link.startsWith("did:")) {
             console.debug("DID-MENTION:", link)
-            skywalker.getDetailedProfile(link)
+            getSkywalker(openByDid).getDetailedProfile(link)
         } else if (UnicodeFonts.isHashtag(link)) {
             console.debug("#-TAG:", link)
             viewSearchView(link)
         } else {
-            linkUtils.openLink(link, containingText)
+            getLinkUtils(openByDid).openLink(link, containingText)
         }
     }
 
@@ -1285,6 +1209,7 @@ ApplicationWindow {
     }
 
     function loginUser(host, handle, did, error="", msg="", password="") {
+        console.debug("login, host:", host, "handle:", handle, "did:", did)
         let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
                 host: host,
@@ -1298,10 +1223,12 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken,
+                                 setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
                 popStack()
                 const user = did ? did : handle
-                skywalkerLogin(host, user, password, rememberPassword, authFactorToken)
+                skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+                               setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
         pushStack(page)
     }
@@ -1313,9 +1240,11 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword) => {
+        page.onAccepted.connect((host, handle, password, did, rememberPassword, _authFactorToken,
+                                 setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
                 popStack()
-                skywalkerLogin(host, handle, password, rememberPassword)
+                skywalkerLogin(host, handle, password, rememberPassword, "",
+                               setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
 
         pushStack(page)
@@ -1348,7 +1277,7 @@ ApplicationWindow {
 
                 skywalker.switchUser(profile.did)
 
-                if (skywalker.resumeSession()) {
+                if (skywalker.resumeAndRefreshSession()) {
                     showStartupStatus()
                 }
                 else {
@@ -1379,9 +1308,11 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken) {
+    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+                            setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) {
         showStartupStatus()
-        skywalker.login(host, user, password, rememberPassword, authFactorToken)
+        skywalker.login(host, user, password, rememberPassword, authFactorToken,
+                        setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
     }
 
     function signOutCurrentUser() {
@@ -1394,10 +1325,10 @@ ApplicationWindow {
         skywalker.signOut()
     }
 
-    function composePost(initialText = "", imageSource = "") {
+    function composePost(initialText = "", imageSource = "", postByDid = "") {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
-                skywalker: skywalker,
+                postByDid: postByDid,
                 initialText: initialText,
                 initialImage: imageSource
         })
@@ -1405,10 +1336,10 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function composeVideoPost(initialText = "", videoSource = "") {
+    function composeVideoPost(initialText = "", videoSource = "", postByDid = "") {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
-                skywalker: skywalker,
+                postByDid: postByDid,
                 initialText: initialText,
                 initialVideo: videoSource
         })
@@ -1417,19 +1348,23 @@ ApplicationWindow {
     }
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
+                          postByDid = "")
     {
-        postUtils.checkPost(replyToUri, replyToCid,
+        const pu = getPostUtils(postByDid)
+        pu.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, imageSource))
+                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,initialText, imageSource,
+                                 postByDid))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "")
+                          replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
+                          postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
-                skywalker: skywalker,
+                postByDid: postByDid,
                 initialText: initialText,
                 initialImage: imageSource,
                 replyToPostUri: replyToUri,
@@ -1447,19 +1382,23 @@ ApplicationWindow {
     }
 
     function composeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                               replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, videoSource)
+                               replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
+                               initialText, videoSource, postByDid = "")
     {
-        postUtils.checkPost(replyToUri, replyToCid,
+        const pu = getPostUtils(postByDid)
+        pu.checkPost(replyToUri, replyToCid,
             () => doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                                      replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, videoSource))
+                                      replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
+                                      initialText, videoSource, postByDid))
     }
 
     function doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
-                               replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText, videoSource)
+                                 replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
+                                 initialText, videoSource, postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
-                skywalker: skywalker,
+                postByDid: postByDid,
                 initialText: initialText,
                 initialVideo: videoSource,
                 replyToPostUri: replyToUri,
@@ -1476,10 +1415,12 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor, initialText = "") {
+    function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor,
+                            initialText = "", quoteByDid = "")
+    {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
-                skywalker: skywalker,
+                postByDid: quoteByDid,
                 initialText: initialText,
                 openedAsQuotePost: true,
                 quoteUri: quoteUri,
@@ -1492,63 +1433,162 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText) {
-        postUtils.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText))
+    function repost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
+        const pu = getPostUtils(repostByDid)
+        pu.checkPost(uri, cid,
+            () => doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid))
     }
 
-    function doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText) {
-        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText)
+    function doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
+        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid)
     }
 
-    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled) {
+    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, quoteByDid = "") {
         if (embeddingDisabled) {
             skywalker.showStatusMessage(qsTr("Quoting not allowed"), QEnums.STATUS_LEVEL_INFO)
             return
         }
 
-        postUtils.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author))
+        const pu = getPostUtils(quoteByDid)
+        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", quoteByDid))
     }
 
-    function like(likeUri, uri, cid, viaUri = "", viaCid = "") {
+    function like(likeUri, uri, cid, viaUri = "", viaCid = "", likeByDid = "") {
+        const pu = getPostUtils(likeByDid)
+
+        if (!pu)
+            return
+
         if (likeUri)
-            postUtils.undoLike(likeUri, cid)
+            pu.undoLike(likeUri, cid)
         else
-            postUtils.like(uri, cid, viaUri, viaCid)
+            pu.like(uri, cid, viaUri, viaCid)
     }
 
-    function likeFeed(likeUri, uri, cid) {
+    function likeFeed(likeUri, uri, cid, likeByDid = "") {
+        const fu = getFeedUtils(likeByDid)
+
         if (likeUri)
-            feedUtils.undoLike(likeUri, cid)
+            fu.undoLike(likeUri, cid)
         else
-            feedUtils.like(uri, cid)
+            fu.like(uri, cid)
     }
 
-    function showMoreLikeThis(feedDid, postUri, feedContext) {
-        feedUtils.showMoreLikeThis(postUri, feedDid, feedContext)
+    function likeByNonActiveUser(mouseEvent, mouseView, parentView, postUri, viaUri, viaCid) {
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+                              QEnums.NON_ACTIVE_USER_LIKE,
+                              (user) => { user.like(viaUri, viaCid) })
     }
 
-    function showLessLikeThis(feedDid, postUri, feedContext) {
-        feedUtils.showLessLikeThis(postUri, feedDid, feedContext)
+    function bookmarkByNonActiveUser(mouseEvent, mouseView, parentView, postUri) {
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+                              QEnums.NON_ACTIVE_USER_BOOKMARK,
+                              (user) => { user.bookmark() })
     }
 
-    function muteThread(uri, threadMuted) {
+    function replyByNonActiveUser(mouseEvent, mouseView, parentView,
+                                  replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids) {
+        return actionByNonActiveUser(
+                    mouseEvent, mouseView, parentView, replyToUri,
+                    QEnums.NON_ACTIVE_USER_REPLY,
+                    (user) => {
+                        if (user.postView.replyDisabled) {
+                            console.warn("Reply disabled:", replyToUri)
+                            return
+                        }
+
+                        composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
+                                     replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
+                                     "", "", user.profile.did)
+                    })
+    }
+
+    function repostByNonActiveUser(mouseEvent, mouseView, parentView, postUri, postCid,
+                                   text, dateTime, author, embeddingDisabled, viaUri = "", viaCid = "") {
+        return actionByNonActiveUser(
+                    mouseEvent, mouseView, parentView, postUri,
+                    QEnums.NON_ACTIVE_USER_REPOST,
+                    (user) => { // fist action: repost
+                        user.repost(viaUri, viaCid)
+                    },
+                    (user) => { // second action: quote post
+                        if (embeddingDisabled) {
+                            console.warn("Embedding disabled:", postUri)
+                            return
+                        }
+
+                        quotePost(postUri, postCid, text, dateTime, author, embeddingDisabled,
+                                  user.profile.did)
+                    })
+    }
+
+    function actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, actionType, actionCb, secondActionCb) {
+        if (!skywalker.getSessionManager().hasNonActiveUsers()) {
+            console.debug("No non-active users")
+            return false
+        }
+
+        const mousePoint = mouseView.mapToItem(parentView, 0, mouseEvent.y)
+        let component = guiSettings.createComponent("NonActiveUsersPopup.qml")
+        let popup = component.createObject(parentView, {
+                mouseY: mousePoint.y,
+                postUri: postUri,
+                action: actionType
+            })
+        popup.onUserClicked.connect((user) => {
+                if (actionType === QEnums.NON_ACTIVE_USER_REPLY)
+                    popup.destroy()
+
+                actionCb(user)
+            })
+        popup.onRepostClicked.connect((user) => {
+                actionCb(user)
+            })
+        popup.onQuoteClicked.connect((user) => {
+                popup.destroy()
+                secondActionCb(user)
+            })
+        popup.onClosed.connect(() => { popup.destroy() })
+        popup.open()
+
+        return true
+    }
+
+    function isActiveUser(did) {
+        return !did || skywalker.getUserDid() === did
+    }
+
+    function showMoreLikeThis(feedDid, postUri, feedContext, interactByDid = "") {
+        const fu = getFeedUtils(interactByDid)
+        fu.showMoreLikeThis(postUri, feedDid, feedContext)
+    }
+
+    function showLessLikeThis(feedDid, postUri, feedContext, interactByDid = "") {
+        const fu = getFeedUtils(interactByDid)
+        fu.showLessLikeThis(postUri, feedDid, feedContext)
+    }
+
+    function muteThread(uri, threadMuted, muteByDid = "") {
         if (!uri) {
             console.warn("Cannot mute thread, empty uri")
             return
         }
 
+        const pu = getPostUtils(muteByDid)
+
         if (threadMuted)
-            postUtils.unmuteThread(uri)
+            pu.unmuteThread(uri)
         else
-            postUtils.muteThread(uri)
+            pu.muteThread(uri)
     }
 
-    function detachQuote(uri, embeddingUri, embeddingCid, detach) {
-        postUtils.detachQuote(uri, embeddingUri, embeddingCid, detach)
+    function detachQuote(uri, embeddingUri, embeddingCid, detach, detachByDid = "") {
+        const pu = getPostUtils(detachByDid)
+        pu.detachQuote(uri, embeddingUri, embeddingCid, detach)
     }
 
-    function hidePostReply(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
+    function hidePostReply(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies, hideByDid = "") {
         let hidden = postHiddenReplies
         const index = hidden.indexOf(uri)
 
@@ -1557,46 +1597,51 @@ ApplicationWindow {
                 qsTr("Do you want to move this reply to the hidden section at the bottom of your thread (in next post thread views), and mute notifications both for yourself and others?"),
                 () => {
                     hidden.push(uri)
-                    hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden)
+                    hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden, hideByDid)
                 })
         }
         else {
             hidden.splice(index, 1)
-            hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden)
+            hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, hidden, hideByDid)
         }
     }
 
-    function hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
+    function hidePostReplyContinue(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies, hideByDid = "") {
         const allowMentioned = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED)
         const allowFollower = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER)
         const allowFollowing = Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING)
         const allowNobody = Boolean(replyRestriction === QEnums.REPLY_RESTRICTION_NOBODY)
+        const pu = getPostUtils(hideByDid)
 
         if (postHiddenReplies.length === 0 && threadgateUri && replyRestriction === QEnums.REPLY_RESTRICTION_NONE) {
-            postUtils.undoThreadgate(threadgateUri, rootCid)
+            pu.undoThreadgate(threadgateUri, rootCid)
         }
         else {
-            postUtils.addThreadgate(rootUri, rootCid, allowMentioned, allowFollower, allowFollowing,
+            pu.addThreadgate(rootUri, rootCid, allowMentioned, allowFollower, allowFollowing,
                                     replyRestrictionLists, allowNobody, postHiddenReplies)
         }
     }
 
-    function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies) {
-        const restrictionsListModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
-        skywalker.getListList(restrictionsListModelId)
-        postUtils.setAllowListUris(replyRestrictionLists)
+    function gateRestrictions(threadgateUri, rootUri, rootCid, uri, replyRestriction, replyRestrictionLists, postHiddenReplies, restrictByDid = "") {
+        const sw = getSkywalker(restrictByDid)
+        const pu = getPostUtils(restrictByDid)
+
+        const restrictionsListModelId = sw.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, sw.getUserDid())
+        sw.getListList(restrictionsListModelId)
+        pu.setAllowListUris(replyRestrictionLists)
 
         let component = guiSettings.createComponent("AddReplyRestrictions.qml")
         let restrictionsPage = component.createObject(currentStackItem(), {
+                userDid: restrictByDid,
                 rootUri: rootUri,
                 postUri: uri,
                 restrictReply: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE,
                 allowMentioned: replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED,
                 allowFollower: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER,
                 allowFollowing: replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING,
-                allowLists: postUtils.allowLists,
-                allowListIndexes: postUtils.allowListIndexes,
-                allowListUrisFromDraft: postUtils.allowListUris,
+                allowLists: pu.allowLists,
+                allowListIndexes: pu.allowListIndexes,
+                allowListUrisFromDraft: pu.allowListUris,
                 listModelId: restrictionsListModelId
         })
         restrictionsPage.onAccepted.connect(() => {
@@ -1604,18 +1649,18 @@ ApplicationWindow {
                     restrictionsPage.allowMentioned === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_MENTIONED) &&
                     restrictionsPage.allowFollower === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWER) &&
                     restrictionsPage.allowFollowing === Boolean(replyRestriction & QEnums.REPLY_RESTRICTION_FOLLOWING) &&
-                    !checkRestrictionListsChanged(getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)))
+                    !checkRestrictionListsChanged(getReplyRestrictionListUris(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes, restrictByDid), pu))
                 {
                     console.debug("No reply restriction change!")
                 }
                 else if (threadgateUri && !restrictionsPage.restrictReply && postHiddenReplies.length === 0) {
-                    postUtils.undoThreadgate(threadgateUri, rootCid)
+                    pu.undoThreadgate(threadgateUri, rootCid)
                 }
                 else {
-                    const allowLists = getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes)
+                    const allowLists = getReplyRestrictionLists(restrictionsListModelId, restrictionsPage.allowLists, restrictionsPage.allowListIndexes, restrictByDid)
                     const allowNobody = Boolean(restrictionsPage.restrictReply && !restrictionsPage.allowMentioned && !restrictionsPage.allowFollower && !restrictionsPage.allowFollowing && (allowLists.length === 0))
 
-                    postUtils.addThreadgate(rootUri, rootCid,
+                    pu.addThreadgate(rootUri, rootCid,
                                             restrictionsPage.allowMentioned,
                                             restrictionsPage.allowFollower,
                                             restrictionsPage.allowFollowing,
@@ -1626,56 +1671,59 @@ ApplicationWindow {
                     const detachedUris = restrictionsPage.postgate.detachedEmbeddingUris
 
                     if (!restrictionsPage.postgate.isNull() && detachedUris.length === 0 && restrictionsPage.allowQuoting)
-                        postUtils.undoPostgate(uri)
+                        pu.undoPostgate(uri)
                     else
-                        postUtils.addPostgate(uri, !restrictionsPage.allowQuoting, detachedUris)
+                        pu.addPostgate(uri, !restrictionsPage.allowQuoting, detachedUris)
                 }
                 else {
                     console.debug("No postgate change")
                 }
 
                 restrictionsPage.destroy()
-                skywalker.removeListListModel(restrictionsListModelId)
+                sw.removeListListModel(restrictionsListModelId)
         })
         restrictionsPage.onRejected.connect(() => {
                 restrictionsPage.destroy()
-                skywalker.removeListListModel(restrictionsListModelId)
+                sw.removeListListModel(restrictionsListModelId)
         })
         restrictionsPage.open()
     }
 
-    function checkRestrictionListsChanged(uris) {
-        if (uris.length !== postUtils.allowListUris.length)
+    function checkRestrictionListsChanged(uris, pu) {
+        if (uris.length !== pu.allowListUris.length)
             return true
 
         for (let i = 0; i < uris.length; ++i) {
-            if (uris[i] !== postUtils.allowListUris[i])
+            if (uris[i] !== pu.allowListUris[i])
                 return true
         }
 
         return false
     }
 
-    function getReplyRestrictionLists(restrictionsListModelId, allowLists, allowListIndexes) {
-        postUtils.allowListViews = []
+    function getReplyRestrictionLists(restrictionsListModelId, allowLists, allowListIndexes, restrictByDid = "") {
+        const sw = getSkywalker(restrictByDid)
+        const pu = getPostUtils(restrictByDid)
+        pu.allowListViews = []
 
         for (let i = 0; i < allowLists.length; ++i) {
             if (allowLists[i]) {
-                let model = skywalker.getListListModel(restrictionsListModelId)
+                let model = sw.getListListModel(restrictionsListModelId)
                 const listView = model.getEntry(allowListIndexes[i])
-                postUtils.allowListViews.push(listView)
+                pu.allowListViews.push(listView)
             }
         }
 
-        return postUtils.allowListViews
+        return pu.allowListViews
     }
 
-    function getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes) {
+    function getReplyRestrictionListUris(restrictionsListModelId, allowLists, allowListIndexes, restrictByDid = "") {
+        const sw = getSkywalker(restrictByDid)
         let uris = []
 
         for (let i = 0; i < allowLists.length; ++i) {
             if (allowLists[i]) {
-                let model = skywalker.getListListModel(restrictionsListModelId)
+                let model = sw.getListListModel(restrictionsListModelId)
                 const listView = model.getEntry(allowListIndexes[i])
                 uris.push(listView.uri)
             }
@@ -1685,28 +1733,33 @@ ApplicationWindow {
         return uris
     }
 
-    function deletePost(uri, cid) {
-        postUtils.deletePost(uri, cid)
+    function deletePost(uri, cid, deleteByDid = "") {
+        const pu = getPostUtils(deleteByDid)
+        pu.deletePost(uri, cid)
     }
 
-    function pinPost(uri, cid) {
-        const did = skywalker.getUserDid()
-        profileUtils.setPinnedPost(did, uri, cid)
+    function pinPost(uri, cid, pinByDid = "") {
+        const sw = getSkywalker(pinByDid)
+        const profUtils = getProfileUtils(pinByDid)
+        const did = sw.getUserDid()
+        profUtils.setPinnedPost(did, uri, cid)
     }
 
-    function unpinPost(cid) {
-        const did = skywalker.getUserDid()
-        profileUtils.clearPinnedPost(did, cid)
+    function unpinPost(cid, pinByDid = "") {
+        const sw = getSkywalker(pinByDid)
+        const profUtils = getProfileUtils(pinByDid)
+        const did = sw.getUserDid()
+        profUtils.clearPinnedPost(did, cid)
     }
 
-    function showBlockMuteDialog(blockUser, author, okCb) {
+    function showBlockMuteDialog(blockUser, author, okCb, blockByDid = "") {
         let component = guiSettings.createComponent("BlockMuteUser.qml")
         let dialog = component.createObject(root, { blockUser: blockUser, author: author })
         dialog.onAccepted.connect(() => {
             const today = new Date()
 
             if (dialog.expiresAt <= today)
-                skywalker.showStatusMessage(qsTr("Already expired"), QEnums.STATUS_LEVEL_ERROR)
+                root.getSkywalker(blockByDid).showStatusMessage(qsTr("Already expired"), QEnums.STATUS_LEVEL_ERROR)
             else
                 okCb(dialog.expiresAt)
 
@@ -1716,15 +1769,19 @@ ApplicationWindow {
         dialog.open()
     }
 
-    function blockAuthor(author) {
-        let gu = graphUtils
+    function blockAuthor(author, blockByDid = "") {
+        let gu = getGraphUtils(blockByDid)
         let did = author.did
-        showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt))
+        showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt), blockByDid)
     }
 
-    function viewPostThread(modelId, postEntryIndex) {
+    function viewPostThread(did, modelId, postEntryIndex) {
+        console.debug("View post thread:", did)
         let component = guiSettings.createComponent("PostThreadView.qml")
-        let view = component.createObject(root, { modelId: modelId, postEntryIndex: postEntryIndex })
+        let view = component.createObject(root, {
+                userDid: did,
+                modelId: modelId,
+                postEntryIndex: postEntryIndex })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
@@ -1784,11 +1841,15 @@ ApplicationWindow {
 
     function viewNotifications() {
         rootContent.currentIndex = rootContent.notificationIndex
+        const unread = skywalker.getSessionManager().activeUserUnreadNotificationCount
 
-        if (skywalker.unreadNotificationCount > 0) {
-            const loadCount = Math.min(100, Math.max(10, skywalker.unreadNotificationCount))
+        if (unread > 0) {
+            const loadCount = Math.min(100, Math.max(10, unread))
             skywalker.getNotifications(loadCount, true, false, true)
             skywalker.getNotifications(loadCount, false, true, true)
+
+            let view = getNotificationView()
+            view.showOwnNotificationsTab()
         }
         else {
             if (skywalker.notificationListModel.rowCount() === 0)
@@ -1796,6 +1857,9 @@ ApplicationWindow {
 
             if (skywalker.mentionListModel.rowCount() === 0)
                 skywalker.getNotifications(10, false, true)
+
+            let view = getNotificationView()
+            view.showFirstTabWithUnreadNotifications()
         }
     }
 
@@ -1856,19 +1920,20 @@ ApplicationWindow {
         favoritesTabBar.setCurrentIndex(0)
     }
 
-    function viewPostFeed(feed) {
-        const modelId = skywalker.createPostFeedModel(feed)
-        skywalker.getFeed(modelId)
+    function viewPostFeed(feed, viewByDid = "") {
+        const sw = getSkywalker(viewByDid)
+        const modelId = sw.createPostFeedModel(feed)
+        sw.getFeed(modelId)
         let component = guiSettings.createComponent("PostFeedView.qml")
-        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        let view = component.createObject(root, { userDid: viewByDid, modelId: modelId })
         view.onClosed.connect(() => { popStack() })
         root.pushStack(view)
     }
 
-    function viewMediaFeed(model, index, closeCb = (newIndex) => {}) {
+    function viewMediaFeed(model, index, closeCb = (newIndex) => {}, viewByDid = "") {
         console.debug("View media feed:", model.feedName, "index:", index)
         let component = guiSettings.createComponent("MediaFeedView.qml")
-        let view = component.createObject(root, { skywalker: skywalker, model: model, currentIndex: index })
+        let view = component.createObject(root, { userDid: viewByDid, model: model, currentIndex: index })
         view.onClosed.connect(() => {
             console.debug("Close media feed:", model.feedName, "index:", view.currentIndex)
             closeCb(view.currentIndex)
@@ -1877,72 +1942,84 @@ ApplicationWindow {
         root.pushStack(view, StackView.Immediate)
     }
 
-    function viewQuotePostFeed(quoteUri) {
-        const modelId = skywalker.createQuotePostFeedModel(quoteUri)
-        skywalker.getQuotesFeed(modelId)
+    function viewQuotePostFeed(quoteUri, viewByDid = "") {
+        const sw = getSkywalker(viewByDid)
+        const modelId = sw.createQuotePostFeedModel(quoteUri)
+        sw.getQuotesFeed(modelId)
         let component = guiSettings.createComponent("QuotePostFeedView.qml")
-        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        let view = component.createObject(root, { userDid: viewByDid, modelId: modelId })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }
 
-    function viewListByUri(listUri, viewPosts) {
-        graphUtils.getListView(listUri, viewPosts)
+    function viewListByUri(listUri, viewPosts, viewByDid = "") {
+        const gu = getGraphUtils(viewByDid)
+        gu.getListView(listUri, viewPosts)
     }
 
-    function viewList(list) {
+    function viewList(list, viewByDid = "") {
         switch (list.purpose) {
         case QEnums.LIST_PURPOSE_CURATE:
-            viewPostListFeed(list)
+            viewPostListFeed(list, viewByDid)
             break
         case QEnums.LIST_PURPOSE_MOD:
-            viewListFeedDescription(list)
+            viewListFeedDescription(list, viewByDid)
             break
         }
     }
 
-    function viewPostListFeed(list) {
-        const modelId = skywalker.createPostFeedModel(list)
-        skywalker.getListFeed(modelId)
+    function viewPostListFeed(list, viewByDid = "") {
+        const sw = getSkywalker(viewByDid)
+        const modelId = sw.createPostFeedModel(list)
+        sw.getListFeed(modelId)
         let component = guiSettings.createComponent("PostFeedView.qml")
-        let view = component.createObject(root, { skywalker: skywalker, modelId: modelId })
+        let view = component.createObject(root, { userDid: viewByDid, modelId: modelId })
         view.onClosed.connect(() => { popStack() })
         root.pushStack(view)
     }
 
-    function viewStarterPack(starterPack) {
+    function viewStarterPack(starterPack, viewByDid = "") {
         let component = guiSettings.createComponent("StarterPackView.qml")
-        let view = component.createObject(root, { starterPack: starterPack })
+        let view = component.createObject(root, { userDid: viewByDid, starterPack: starterPack })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }
 
-    function viewAuthor(profile, modelId) {
+    function viewAuthor(profile, modelId, viewByDid) {
         let component = guiSettings.createComponent("AuthorView.qml")
-        let view = component.createObject(root, { author: profile, modelId: modelId, skywalker: skywalker, rootProfileUtils: profileUtils })
+        let view = component.createObject(root, {
+                userDid: viewByDid,
+                author: profile,
+                modelId: modelId,
+        })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }
 
-    function viewAuthorList(modelId, title, description = "", showFollow = true, showActivitySubscription = false) {
+    function viewAuthorList(modelId, title, description = "", showFollow = true, showActivitySubscription = false, viewByDid = "") {
         let component = guiSettings.createComponent("AuthorListView.qml")
         let view = component.createObject(root, {
                 title: title,
                 modelId: modelId,
-                skywalker: skywalker,
+                userDid: viewByDid,
                 description: description,
                 showFollow: showFollow,
                 showActivitySubscription: showActivitySubscription
         })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
-        skywalker.getAuthorList(modelId)
+        getSkywalker(viewByDid).getAuthorList(modelId)
     }
 
-    function viewSimpleAuthorList(title, profiles) {
+    function viewAuthorListByUser(viewByDid, modelId, title) {
+        viewAuthorList(modelId, title, "", true, false, viewByDid)
+    }
+
+    function viewSimpleAuthorList(title, profiles, viewedByDid = "") {
         let component = guiSettings.createComponent("SimpleAuthorListPage.qml")
         let view = component.createObject(root, {
                 title: title,
+                userDid: viewedByDid,
                 model: profiles
         })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
@@ -1952,8 +2029,7 @@ ApplicationWindow {
     function viewUserLists(modelId) {
         let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {
-                modelId: modelId,
-                skywalker: skywalker
+                modelId: modelId
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
@@ -1963,22 +2039,21 @@ ApplicationWindow {
     function viewModerationLists(modelId) {
         let component = guiSettings.createComponent("ModerationListsPage.qml")
         let page = component.createObject(root, {
-                modelId: modelId,
-                skywalker: skywalker
+                modelId: modelId
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
         skywalker.getListList(modelId)
     }
 
-    function viewFeedDescription(feed) {
+    function viewFeedDescription(feed, viewByDid = "") {
         let component = guiSettings.createComponent("FeedDescriptionView.qml")
-        let view = component.createObject(root, { feed: feed, skywalker: skywalker })
+        let view = component.createObject(root, { feed: feed, userDid: viewByDid })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
     }
 
-    function viewListFeedDescription(list) {
+    function viewListFeedDescription(list, viewByDid = "") {
         let component = guiSettings.createComponent("ListFeedDescriptionView.qml")
         let view = component.createObject(root, { list: list, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
@@ -1989,6 +2064,13 @@ ApplicationWindow {
         let component = guiSettings.createComponent("SettingsForm.qml")
         let form = component.createObject(root)
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(form)
+    }
+
+    function editAdvancedSettings() {
+        let component = guiSettings.createComponent("AdvancedSettingsForm.qml")
+        let form = component.createObject(root)
+        form.onClosed.connect(() => { popStack() })
         pushStack(form)
     }
 
@@ -2018,17 +2100,17 @@ ApplicationWindow {
         skywalker.getAuthorList(labelerModelId)
     }
 
-    function reportAuthor(author) {
+    function reportAuthor(author, reportByDid = "") {
         let component = guiSettings.createComponent("Report.qml")
-        let form = component.createObject(root, { skywalker: skywalker, author: author })
+        let form = component.createObject(root, { userDid: reportByDid, author: author })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
-    function reportPost(postUri, postCid, postText, postDateTime, author) {
+    function reportPost(postUri, postCid, postText, postDateTime, author, reportByDid = "") {
         let component = guiSettings.createComponent("Report.qml")
         let form = component.createObject(root, {
-                skywalker: skywalker,
+                userDid: reportByDid,
                 postUri: postUri,
                 postCid: postCid,
                 postText: postText,
@@ -2038,25 +2120,48 @@ ApplicationWindow {
         pushStack(form)
     }
 
-    function reportFeed(feed) {
+    function reportFeed(feed, reportByDid = "") {
         let component = guiSettings.createComponent("Report.qml")
-        let form = component.createObject(root, { skywalker: skywalker, feed: feed })
+        let form = component.createObject(root, { userDid: reportByDid, feed: feed })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
-    function reportList(list) {
+    function reportList(list, reportByDid = "") {
         let component = guiSettings.createComponent("Report.qml")
-        let form = component.createObject(root, { skywalker: skywalker, list: list })
+        let form = component.createObject(root, { userDid: reportByDid, list: list })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
     }
 
-    function reportStarterPack(starterPack) {
+    function reportStarterPack(starterPack, reportByDid = "") {
         let component = guiSettings.createComponent("Report.qml")
-        let form = component.createObject(root, { skywalker: skywalker, starterPack: starterPack })
+        let form = component.createObject(root, { userDid: reportByDid, starterPack: starterPack })
         form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(form)
+    }
+
+    function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "") {
+        const sw = getSkywalker(userDid)
+        let component = guiSettings.createComponent("EditList.qml")
+        let page = component.createObject(root, {
+                skywalker: sw,
+                purpose: purpose !== QEnums.LIST_PURPOSE_UNKNOWN ? purpose : listModel.getPurpose()
+            })
+        page.onListCreated.connect((list) => {
+            if (list.isNull()) {
+                // This should rarely happen. Let the user refresh.
+                sw.showStatusMessage(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
+            }
+            else {
+                sw.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
+                listModel.prependList(list)
+            }
+
+            root.popStack()
+        })
+        page.onClosed.connect(() => { root.popStack() })
+        root.pushStack(page)
     }
 
     function translateText(text) {
@@ -2179,8 +2284,76 @@ ApplicationWindow {
             skywalker.refreshAllModels()
     }
 
-    function getSkywalker() {
-        return skywalker
+    function getSkywalker(did = "") {
+        if (isActiveUser(did))
+            return skywalker
+
+        const sw = didSkywalkerMap.get(did)
+
+        if (!sw)
+            console.warn("No skywalker for:", did)
+
+        return sw
+    }
+
+    function getPostUtils(did = "") {
+        if (isActiveUser(did))
+            return postUtils
+
+        const pu = didPostUtilsMap.get(did)
+
+        if (!pu)
+            console.warn("No postUtils for:", did)
+
+        return pu
+    }
+
+    function getProfileUtils(did = "") {
+        if (isActiveUser(did))
+            return profileUtils
+
+        const profUtils = didProfileUtilsMap.get(did)
+
+        if (!profUtils)
+            console.warn("No profileUtils for:", did)
+
+        return profUtils
+    }
+
+    function getGraphUtils(did = "") {
+        if (isActiveUser(did))
+            return graphUtils
+
+        const gu = didGraphUtilsMap.get(did)
+
+        if (!gu)
+            console.warn("No graphUtils for:", did)
+
+        return gu
+    }
+
+    function getFeedUtils(did = "") {
+        if (isActiveUser(did))
+            return feedUtils
+
+        const fu = didFeedUtilsMap.get(did)
+
+        if (!fu)
+            console.warn("No feedUtils for:", did)
+
+        return fu
+    }
+
+    function getLinkUtils(did = "") {
+        if (isActiveUser(did))
+            return linkUtils
+
+        const lu = didLinkUtilsMap.get(did)
+
+        if (!lu)
+            console.warn("No linkUtils for:", did)
+
+        return lu
     }
 
     function chatOnStartConvoForMembersOk(convo, msg) {
@@ -2237,7 +2410,7 @@ ApplicationWindow {
         initHandlers()
 
         // Try to resume the previous session. If that fails, then ask the user to login.
-        if (skywalker.resumeSession())
+        if (skywalker.resumeAndRefreshSession())
             showStartupStatus()
         else if (skywalker.autoLogin())
             showStartupStatus()

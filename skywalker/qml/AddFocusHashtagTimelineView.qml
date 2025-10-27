@@ -10,6 +10,7 @@ SkyPage {
     signal selected(var focusHashtag)
 
     id: page
+    padding: 10
     clip: true
 
     header: SimpleHeader {

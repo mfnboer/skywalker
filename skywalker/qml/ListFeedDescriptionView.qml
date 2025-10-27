@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property listview list
     property string listBlockedUri: list.viewer.blocked
     property bool listMuted: list.viewer.muted
@@ -40,6 +41,7 @@ SkyPage {
     }
 
     header: SimpleHeader {
+        userDid: page.userDid
         text: guiSettings.listTypeName(list.purpose)
         visible: !root.showSideBar
         onBack: closed()
@@ -54,7 +56,7 @@ SkyPage {
         anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
         title: ""
-        skywalker: page.skywalker
+        userDid: page.userDid
         modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
         allowDeleteItem: isOwnList()
         listUri: list.uri
@@ -94,6 +96,7 @@ SkyPage {
                 id: listAvatar
                 width: parent.width
                 height: parent.height
+                userDid: page.userDid
                 avatarUrl: !contentVisible() ? "" : list.avatar
                 onClicked: {
                     if (list.avatar) {
@@ -141,6 +144,7 @@ SkyPage {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: page.userDid
                 author: list.creator
 
                 Accessible.role: Accessible.Link
@@ -185,6 +189,7 @@ SkyPage {
                 id: contentLabels
                 anchors.left: parent.left
                 anchors.right: undefined
+                userDid: page.userDid
                 contentLabels: list.labels
                 contentAuthorDid: list.creator.did
             }
@@ -339,7 +344,7 @@ SkyPage {
         }
         AccessibleMenuItem {
             text: qsTr("Report list")
-            onTriggered: root.reportList(list)
+            onTriggered: root.reportList(list, userDid)
 
             MenuItemSvg { svg: SvgOutline.report }
         }
@@ -412,32 +417,32 @@ SkyPage {
         skywalker: page.skywalker
 
         onAddListUserOk: (did, itemUri, itemCid) => profileUtils.getProfileView(did, itemUri)
-        onAddListUserFailed: (error) => statusPopup.show(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        onAddListUserFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to add user: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         onBlockListOk: (uri) => {
             listBlockedUri = uri
             authorListView.refresh()
         }
-        onBlockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onBlockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onUnblockListOk: {
             listBlockedUri = ""
             authorListView.refresh()
         }
-        onUnblockListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnblockListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onMuteListOk: {
             listMuted = true
             authorListView.refresh()
         }
-        onMuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteListOk: {
             listMuted = false
             authorListView.refresh()
         }
-        onUnmuteListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onUnmuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onHideListOk: {
             listHideFromTimeline = true
-            statusPopup.show(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(qsTr("List hidden from timeline."), QEnums.STATUS_LEVEL_INFO, 2)
         }
-        onHideListFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onHideListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
     }
 
@@ -446,7 +451,7 @@ SkyPage {
         skywalker: page.skywalker
 
         onProfileViewOk: (profile, listItemUri) => authorListView.model.prependAuthor(profile, listItemUri)
-        onProfileViewFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onProfileViewFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
 

@@ -10,6 +10,7 @@ SkyPage {
     signal selected(string hashtag)
 
     id: page
+    padding: 10
     clip: true
 
     header: SimpleHeader {
@@ -62,7 +63,6 @@ SkyPage {
     }
 
     AccessibleText {
-        x: 10
         anchors.top: searchInput.bottom
         topPadding: 10
         width: parent.width - 20

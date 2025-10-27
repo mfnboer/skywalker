@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property generatorview feed
     property int feedLikeCount: feed.likeCount
     property string feedLikeUri: feed.viewer.like
@@ -33,6 +34,7 @@ SkyPage {
     }
 
     header: SimpleHeader {
+        userDid: page.userDid
         text: sideBarTitle
         visible: !root.showSideBar
         onBack: closed()
@@ -64,6 +66,7 @@ SkyPage {
                 id: feedAvatar
                 width: parent.width
                 height: parent.height
+                userDid: page.userDid
                 avatarUrl: !contentVisible() ? "" : feed.avatar
                 unknownSvg: guiSettings.feedDefaultAvatar(feed)
                 contentMode: feed.contentMode
@@ -105,6 +108,7 @@ SkyPage {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: page.userDid
                 author: feed.creator
 
                 Accessible.role: Accessible.Link
@@ -199,7 +203,7 @@ SkyPage {
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report feed")
-                    onTriggered: root.reportFeed(feed)
+                    onTriggered: root.reportFeed(feed, userDid)
 
                     MenuItemSvg {
                         svg: SvgOutline.report
@@ -292,6 +296,7 @@ SkyPage {
                 anchors.left: likeIcon.right
                 anchors.top: parent.top
                 anchors.leftMargin: 10
+                userDid: page.userDid
                 atUri: feed.uri
                 count: feedLikeCount
                 nameSingular: qsTr("like")
@@ -320,7 +325,7 @@ SkyPage {
         }
         onLikeFailed: (error) => {
             feedLikeTransient = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onUndoLikeOk: {
@@ -330,7 +335,7 @@ SkyPage {
         }
         onUndoLikeFailed: (error) => {
             feedLikeTransient = false
-            statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
     }
 

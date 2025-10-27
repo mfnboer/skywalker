@@ -40,7 +40,6 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool videoLoopPlay READ getVideoLoopPlay WRITE setVideoLoopPlay NOTIFY videoLoopPlayChanged FINAL)
     Q_PROPERTY(bool videoStreamingEnabled READ getVideoStreamingEnabled WRITE setVideoStreamingEnabled NOTIFY videoStreamingEnabledChanged FINAL)
     Q_PROPERTY(QEnums::VideoQuality videoQuality READ getVideoQuality WRITE setVideoQuality NOTIFY videoQualityChanged FINAL)
-    Q_PROPERTY(bool floatingNavigationButtons READ getFloatingNavigationButtons WRITE setFloatingNavigationButtons NOTIFY floatingNavigationButtonsChanged FINAL)
     Q_PROPERTY(QEnums::Script scriptRecognition READ getScriptRecognition WRITE setScriptRecognition NOTIFY scriptRecognitionChanged FINAL)
     Q_PROPERTY(bool showTrendingTopics READ getShowTrendingTopics WRITE setShowTrendingTopics NOTIFY showTrendingTopicsChanged FINAL)
     Q_PROPERTY(bool showSuggestedFeeds READ getShowSuggestedFeeds WRITE setShowSuggestedFeeds NOTIFY showSuggestedFeedsChanged FINAL)
@@ -99,6 +98,22 @@ public:
 
     void saveAvatar(const QString& did, const QString& avatar);
     QString getAvatar(const QString& did) const;
+
+    Q_INVOKABLE void setServiceAppView(const QString& did, const QString& service);
+    Q_INVOKABLE QString getServiceAppView(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceAppView() const;
+
+    Q_INVOKABLE void setServiceChat(const QString& did, const QString& service);
+    Q_INVOKABLE QString getServiceChat(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceChat() const;
+
+    Q_INVOKABLE void setServiceVideoHost(const QString& did, const QString& host);
+    Q_INVOKABLE QString getServiceVideoHost(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceVideoHost() const;
+
+    Q_INVOKABLE void setServiceVideoDid(const QString& did, const QString& serviceDid);
+    Q_INVOKABLE QString getServiceVideoDid(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceVideoDid() const;
 
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
@@ -239,9 +254,6 @@ public:
     void setSonglinkEnabled(bool enabled);
     bool getSonglinkEnabled() const;
 
-    void setFloatingNavigationButtons(bool floating);
-    bool getFloatingNavigationButtons() const;
-
     void setShowFollowsActiveStatus(bool show);
     bool getShowFollowsActiveStatus() const;
 
@@ -288,6 +300,9 @@ public:
 
     Q_INVOKABLE void setNotificationsWifiOnly(bool enable);
     Q_INVOKABLE bool getNotificationsWifiOnly() const;
+
+    Q_INVOKABLE void setNotificationsForAllAccounts(const QString& did, bool enable);
+    Q_INVOKABLE bool getNotificationsForAllAccounts(const QString& did) const;
 
     Q_INVOKABLE bool getShowQuotesWithBlockedPost(const QString& did) const;
     Q_INVOKABLE void setShowQuotesWithBlockedPost(const QString& did, bool show);
@@ -365,13 +380,20 @@ public:
     void removeLabels(const QString& did, const QString& labelerDid);
     bool containsLabeler(const QString& did, const QString& labelerDid) const;
 
+    bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const;
+    void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled);
+
     SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
     void sync() { mSettings.sync(); }
-    void syncLater() { QTimer::singleShot(0, [this]{ sync(); }); }
+    void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }
 
 signals:
+    void serviceAppViewChanged(QString did);
+    void serviceChatChanged(QString did);
+    void serviceVideoHostChanged(QString did);
+    void serviceVideoDidChanged(QString did);
     void contentLanguageFilterChanged();
     void backgroundColorChanged();
     void accentColorChanged();
@@ -390,7 +412,6 @@ signals:
     void videoLoopPlayChanged();
     void videoQualityChanged();
     void videoStreamingEnabledChanged();
-    void floatingNavigationButtonsChanged();
     void scriptRecognitionChanged();
     void showTrendingTopicsChanged();
     void showSuggestedFeedsChanged();
@@ -400,6 +421,7 @@ signals:
     void mutesWithExpiryChanged();
     void feedHideRepliesChanged(QString did, QString feedUri);
     void feedHideFollowingChanged(QString did, QString feedUri);
+    void notificationsForAllAccountsChanged();
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;
@@ -408,6 +430,7 @@ private:
     QString uriKey(const QString& did, const QString& subkey, QString uri) const;
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
+    QString fixedLabelerKey(const QString& did, const QString& labelerDid) const;
     void cleanup();
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;

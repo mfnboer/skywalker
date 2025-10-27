@@ -104,7 +104,8 @@ void ProfileUtils::getProfileView(const QString& atId, const QString& token)
 
 void ProfileUtils::updateProfile(const QString& did, const QString& name, const QString& description,
                                  const QString& avatarImgSource, bool updateAvatar,
-                                 const QString& bannerImgSource, bool updateBanner)
+                                 const QString& bannerImgSource, bool updateBanner,
+                                 const QString& pronouns, const QString& website)
 {
     if (!bskyClient())
         return;
@@ -123,11 +124,11 @@ void ProfileUtils::updateProfile(const QString& did, const QString& name, const 
         }
 
         bskyClient()->uploadBlob(blob, mimeType,
-            [this, presence=getPresence(), did, name, description, bannerImgSource, updateBanner](auto blob){
+            [this, presence=getPresence(), did, name, description, bannerImgSource, updateBanner, pronouns, website](auto blob){
                 if (!presence)
                     return;
 
-                continueUpdateProfile(did, name, description, std::move(blob), true, bannerImgSource, updateBanner);
+                continueUpdateProfile(did, name, description, std::move(blob), true, bannerImgSource, updateBanner, pronouns, website);
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
                 if (!presence)
@@ -141,13 +142,14 @@ void ProfileUtils::updateProfile(const QString& did, const QString& name, const 
     {
         continueUpdateProfile(did, name, description,
                               ATProto::Blob::SharedPtr(nullptr), updateAvatar,
-                              bannerImgSource, updateBanner);
+                              bannerImgSource, updateBanner, pronouns, website);
     }
 }
 
 void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                          ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
-                                         const QString& bannerImgSource, bool updateBanner)
+                                         const QString& bannerImgSource, bool updateBanner,
+                                         const QString& pronouns, const QString& website)
 {
     if (updateBanner && !bannerImgSource.isEmpty())
     {
@@ -165,13 +167,13 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         mDidAvatarBlobMap[did] = std::move(avatarBlob);
 
         bskyClient()->uploadBlob(blob, mimeType,
-            [this, presence=getPresence(), did, name, description, updateAvatar](auto blob){
+            [this, presence=getPresence(), did, name, description, updateAvatar, pronouns, website](auto blob){
                 if (!presence)
                     return;
 
                 auto avaBlob = std::move(mDidAvatarBlobMap[did]);
                 mDidAvatarBlobMap.erase(did);
-                continueUpdateProfile(did, name, description, std::move(avaBlob), updateAvatar, std::move(blob), true);
+                continueUpdateProfile(did, name, description, std::move(avaBlob), updateAvatar, std::move(blob), true, pronouns, website);
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
                 if (!presence)
@@ -185,18 +187,20 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
     {
         continueUpdateProfile(did, name, description,
                               std::move(avatarBlob), updateAvatar,
-                              ATProto::Blob::SharedPtr(nullptr), updateBanner);
+                              ATProto::Blob::SharedPtr(nullptr), updateBanner,
+                              pronouns, website);
     }
 }
 
 void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                          ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
-                                         ATProto::Blob::SharedPtr bannerBlob, bool updateBanner)
+                                         ATProto::Blob::SharedPtr bannerBlob, bool updateBanner,
+                                         const QString& pronouns, const QString& website)
 {
     emit updateProfileProgress(tr("Updating profile"));
 
     profileMaster()->updateProfile(did, name, description, std::move(avatarBlob), updateAvatar,
-        std::move(bannerBlob), updateBanner,
+        std::move(bannerBlob), updateBanner, pronouns, website,
         [this, presence=getPresence()](){
             if (!presence)
                 return;

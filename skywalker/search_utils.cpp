@@ -49,7 +49,10 @@ QString SearchUtils::normalizeText(const QString& text)
 
 int SearchUtils::normalizedCompare(const QString& lhs, const QString& rhs)
 {
-    const int result = QCollator::defaultCompare(normalizeText(lhs), normalizeText(rhs));
+    const QString cleanedLhs = UnicodeFonts::removeEmojis(lhs).trimmed();
+    const QString cleanedRhs = UnicodeFonts::removeEmojis(rhs).trimmed();
+
+    const int result = QCollator::defaultCompare(normalizeText(cleanedLhs), normalizeText(cleanedRhs));
 
     if (result != 0)
         return result;

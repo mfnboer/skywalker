@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     property labelerview labeler
 
     id: quoteColumn
@@ -18,6 +20,7 @@ Column {
             id: avatar
             Layout.preferredWidth: 34
             Layout.alignment: Qt.AlignTop
+            userDid: quoteColumn.userDid
             author: labeler.creator
 
             onClicked: skywalker.getDetailedProfile(labeler.creator.did)
@@ -28,6 +31,7 @@ Column {
 
             AuthorNameAndStatus {
                 width: parent.width
+                userDid: quoteColumn.userDid
                 author: labeler.creator
             }
 

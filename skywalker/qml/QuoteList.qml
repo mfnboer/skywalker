@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import skywalker
 
 Column {
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     property listview list
     property bool showCloseButton: false
 
@@ -22,6 +24,7 @@ Column {
             Layout.preferredWidth: 34
             Layout.preferredHeight: 34
             Layout.alignment: Qt.AlignTop
+            userDid: quoteColumn.userDid
             avatarUrl: list.avatarThumb
 
             onClicked: root.viewListByUri(list.uri, false)

@@ -9,7 +9,7 @@
 namespace Skywalker {
 
 VideoUtils::VideoUtils(QObject* parent) :
-    WrappedSkywalker(parent)
+    QObject(parent)
 {
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 

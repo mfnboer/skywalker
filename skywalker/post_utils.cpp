@@ -73,6 +73,19 @@ ImageReader* PostUtils::imageReader()
     return mImageReader.get();
 }
 
+bool PostUtils::isPostUri(const QString& uri)
+{
+    const ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid at-uri:" << uri;
+        return false;
+    }
+
+    return atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST;
+}
+
 QString PostUtils::extractDidFromUri(const QString& uri)
 {
     const ATProto::ATUri atUri(uri);
@@ -183,6 +196,9 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
             const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
+            if (!postMaster())
+                return;
+
             postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
                 [this, presence, imageFileNames, altTexts, quoteUri, quoteCid, labels](auto post){
                     if (presence)
@@ -232,6 +248,9 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
             const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+
+            if (!postMaster())
+                return;
 
             postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
                 [this, presence, card, quoteUri, quoteCid, labels](auto post){
@@ -284,6 +303,9 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName,
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
             const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
 
+            if (!postMaster())
+                return;
+
             postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
                 [this, presence, videoFileName, videoAltText, videoWidth, videoHeight, quoteUri, quoteCid, labels](auto post){
                     if (presence)
@@ -321,7 +343,7 @@ void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allow
     for (const auto& list : allowList)
         allowListUris.push_back(list.getUri());
 
-    mPostMaster->addThreadgate(uri, allowMention, allowFollower, allowFollowing, allowListUris, allowNobody, hiddenReplies,
+    postMaster()->addThreadgate(uri, allowMention, allowFollower, allowFollowing, allowListUris, allowNobody, hiddenReplies,
         [this, presence=getPresence(), cid, allowMention, allowFollower, allowFollowing, allowList, allowNobody, hiddenReplies](const QString& threadgateUri, const QString&){
             if (!presence)
                 return;
@@ -352,7 +374,7 @@ void PostUtils::addPostgate(const QString& uri, bool disableEmbedding, const QSt
     if (!postMaster())
         return;
 
-    mPostMaster->addPostgate(uri, disableEmbedding, detachedEmbeddingUris,
+    postMaster()->addPostgate(uri, disableEmbedding, detachedEmbeddingUris,
         [this, presence=getPresence()](const QString&, const QString&){
             if (!presence)
                 return;
@@ -404,7 +426,7 @@ void PostUtils::undoPostgate(const QString& postUri)
     if (!postMaster())
         return;
 
-    const QString postgateUri = mPostMaster->createPostgateUri(postUri);
+    const QString postgateUri = postMaster()->createPostgateUri(postUri);
     Q_ASSERT(!postgateUri.isEmpty());
 
     postMaster()->undo(postgateUri,
@@ -573,6 +595,9 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
             if (!presence)
                 return;
 
+            if (!postMaster())
+                return;
+
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePost(imageFileNames, altTexts, post);
         },
@@ -605,9 +630,15 @@ void PostUtils::continuePost(const QStringList& imageFileNames, const QStringLis
         return;
     }
 
+    if (!bskyClient())
+        return;
+
     bskyClient()->uploadBlob(blob, mimeType,
         [this, presence=getPresence(), imgSize, imageFileNames, altTexts, post, imgIndex](auto blob){
             if (!presence)
+                return;
+
+            if (!postMaster())
                 return;
 
             postMaster()->addImageToPost(*post, std::move(blob), imgSize.width(), imgSize.height(), altTexts[imgIndex]);
@@ -639,6 +670,9 @@ void PostUtils::continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record:
     postMaster()->checkRecordExists(quoteUri, quoteCid,
         [this, presence=getPresence(), card, post, quoteUri, quoteCid]{
             if (!presence)
+                return;
+
+            if (!postMaster())
                 return;
 
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
@@ -694,6 +728,9 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
     if (blob.isEmpty())
     {
+        if (!postMaster())
+            return;
+
         postMaster()->addExternalToPost(*post, card->getLink(), card->getTitle(), card->getDescription());
         continuePost(post);
         return;
@@ -701,9 +738,15 @@ void PostUtils::continuePost(const LinkCard* card, QImage thumb, ATProto::AppBsk
 
     emit postProgress(tr("Uploading card image"));
 
+    if (!bskyClient())
+        return;
+
     bskyClient()->uploadBlob(blob, mimeType,
         [this, presence=getPresence(), card, post](auto blob){
             if (!presence)
+                return;
+
+            if (!postMaster())
                 return;
 
             postMaster()->addExternalToPost(*post, card->getLink(), card->getTitle(),
@@ -739,6 +782,9 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
             if (!presence)
                 return;
 
+            if (!postMaster())
+                return;
+
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
             continuePostVideo(videoFileName, videoAltText, videoWidth, videoHeight, post);
         },
@@ -765,9 +811,15 @@ void PostUtils::continuePostVideo(const QString& videoFileName, const QString& v
         return;
     }
 
+    if (!bskyClient())
+        return;
+
     bskyClient()->uploadVideo(file.get(),
         [this, presence=getPresence(), videoAltText, videoWidth, videoHeight, post, file](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
             if (!presence)
+                return;
+
+            if (!postMaster())
                 return;
 
             postMaster()->addVideoToPost(post, *output, videoWidth, videoHeight, videoAltText,

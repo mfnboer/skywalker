@@ -5,8 +5,10 @@ import skywalker
 
 Rectangle {
     readonly property int margin: 10
-    readonly property int threadStyle: root.getSkywalker().getUserSettings().threadStyle
-    readonly property string threadColor: root.getSkywalker().getUserSettings().threadColor
+    required property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
+    readonly property int threadStyle: skywalker.getUserSettings().threadStyle
+    readonly property string threadColor: skywalker.getUserSettings().threadColor
 
     required property int index
     required property basicprofile author
@@ -381,6 +383,7 @@ Rectangle {
                 x: 8
                 y: 5
                 width: parent.width - 13
+                userDid: postEntry.userDid
                 author: postEntry.author
                 visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
@@ -427,6 +430,7 @@ Rectangle {
 
                 sourceComponent: PostHeader {
                     width: parent.width
+                    userDid: postEntry.userDid
                     author: postEntry.author
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
                 }
@@ -438,6 +442,7 @@ Rectangle {
 
                 sourceComponent: PostHeaderWithAvatar {
                     width: parent.width
+                    userDid: postEntry.userDid
                     author: postEntry.author
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
                 }
@@ -457,7 +462,7 @@ Rectangle {
             // Reply hidden by user
             Loader {
                 width: parent.width
-                active: postIsHiddenReply && guiSettings.isUserDid(postReplyRootAuthorDid)
+                active: postIsHiddenReply && postReplyRootAuthorDid === skywalker.getUserDid()
                 visible: status == Loader.Ready
                 sourceComponent: ReplyToRow {
                     width: parent.width
@@ -469,6 +474,7 @@ Rectangle {
             PostBody {
                 id: postBody
                 width: parent.width
+                userDid: postEntry.userDid
                 postAuthor: author
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText
@@ -513,6 +519,7 @@ Rectangle {
                     spacing: 10
 
                     StatAuthors {
+                        userDid: postEntry.userDid
                         atUri: postUri
                         count: postRepostCount
                         nameSingular: qsTr("repost")
@@ -521,10 +528,12 @@ Rectangle {
                         authorListHeader: qsTr("Reposted by")
                     }
                     StatQuotes {
+                        userDid: postEntry.userDid
                         atUri: postUri
                         count: postQuoteCount
                     }
                     StatAuthors {
+                        userDid: postEntry.userDid
                         atUri: postUri
                         count: postLikeCount
                         nameSingular: qsTr("like")
@@ -544,8 +553,10 @@ Rectangle {
                 visible: active
 
                 sourceComponent: PostStats {
+                    id: postStats
                     width: parent.width
                     topPadding: 10
+                    skywalker: postEntry.skywalker
                     replyCount: postReplyCount
                     repostCount: postRepostCount + postQuoteCount
                     likeCount: postLikeCount
@@ -560,7 +571,7 @@ Rectangle {
                     isReply: postIsReply
                     replyRootAuthorDid: postReplyRootAuthorDid
                     replyRootUri: postReplyRootUri
-                    authorIsUser: guiSettings.isUser(author)
+                    authorIsUser: author.did === userDid
                     isBookmarked: postBookmarked
                     bookmarkTransient: postBookmarkTransient
                     isThread: postIsThread || postIsThreadReply
@@ -576,29 +587,70 @@ Rectangle {
                                           postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                           postIndexedDateTime,
                                           author, postReplyRootUri, postReplyRootCid, lang,
-                                          postMentionDids)
+                                          postMentionDids, "", "", userDid)
+                    }
+
+                    onReplyLongPress: (mouseEvent) => {
+                        if (!root.isActiveUser(userDid))
+                            return
+
+                        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                        root.replyByNonActiveUser(
+                                mouseEvent, postStats, postEntry.ListView.view,
+                                postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime,
+                                author, postReplyRootUri, postReplyRootCid, lang,
+                                postMentionDids)
                     }
 
                     onRepost: {
                         root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                     postIndexedDateTime, author, postEmbeddingDisabled,
-                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText)
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText,
+                                    userDid)
                     }
 
-                    onQuotePost: {
+                    function quote(quoteByDid = "") {
                         root.quotePost(postUri, postCid,
-                                       postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                       postIndexedDateTime, author, postEmbeddingDisabled)
+                            postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                            postIndexedDateTime, author, postEmbeddingDisabled, quoteByDid)
                     }
 
-                    onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid)
+                    onRepostLongPress: (mouseEvent) => {
+                        if (!root.isActiveUser(userDid)) {
+                            quote(userDid)
+                            return
+                        }
+
+                        const actionDone = root.repostByNonActiveUser(
+                                mouseEvent, postStats, postEntry.ListView.view, postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                postReasonRepostUri, postReasonRepostCid)
+
+                        if (!actionDone)
+                            quote()
+                    }
+
+                    onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, userDid)
+
+                    onLikeLongPress: (mouseEvent) => {
+                        if (root.isActiveUser(userDid))
+                            root.likeByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
+                    }
 
                     onBookmark: {
                         if (isBookmarked)
                             skywalker.getBookmarks().removeBookmark(postUri, postCid)
                         else
                             skywalker.getBookmarks().addBookmark(postUri, postCid)
+                    }
+
+                    onBookmarkLongPress: (mouseEvent) => {
+                        if (root.isActiveUser(userDid))
+                            root.bookmarkByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri)
                     }
 
                     onViewThread: {
@@ -612,20 +664,20 @@ Rectangle {
                     }
 
                     onShare: skywalker.sharePost(postUri)
-                    onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted)
-                    onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
-                    onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies)
+                    onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
+                    onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                    onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                     onDeletePost: confirmDelete()
                     onCopyPostText: skywalker.copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author)
+                    onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author, userDid)
                     onTranslatePost: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach)
-                    onPin: root.pinPost(postUri, postCid)
-                    onUnpin: root.unpinPost(postCid)
-                    onBlockAuthor: root.blockAuthor(author)
+                    onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
+                    onPin: root.pinPost(postUri, postCid, userDid)
+                    onUnpin: root.unpinPost(postCid, userDid)
+                    onBlockAuthor: root.blockAuthor(author, userDid)
                     onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext)
-                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext)
+                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
+                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
                 }
             }
 
@@ -881,7 +933,7 @@ Rectangle {
         guiSettings.askYesNoQuestion(
                     postEntry,
                     qsTr("Do you really want to delete your post?"),
-                    () => root.deletePost(postUri, postCid))
+                    () => root.deletePost(postUri, postCid, userDid))
     }
 
     function openPostThread() {

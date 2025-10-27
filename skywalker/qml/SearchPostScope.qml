@@ -187,8 +187,9 @@ Dialog {
             background.implicitHeight: untilText.height
             radius: 5
             color: guiSettings.textColor
-            borderColor: guiSettings.borderColor
-            borderWidth: 1
+            backgroundColor: guiSettings.textInputBackgroundColor
+            borderColor: guiSettings.buttonColor
+            borderWidth: languageComboBox.activeFocus ? 1 : 0
             allLanguages: languageUtils.languages
             usedLanguages: languageUtils.usedLanguages
             addAnyLanguage: true

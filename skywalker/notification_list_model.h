@@ -25,6 +25,7 @@ class NotificationListModel : public QAbstractListModel,
     Q_PROPERTY(bool priority READ getPriority NOTIFY priorityChanged FINAL)
 
 public:
+    using Ptr = std::unique_ptr<NotificationListModel>;
     using NotificationList = std::deque<Notification>;
 
     enum class Role {
@@ -109,12 +110,15 @@ public:
                                    const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
                                    QObject* parent = nullptr);
 
+    void setModelId(int modelId) { mModelId = modelId; }
+    int getModelId() const { return mModelId; }
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    void clear();
+    Q_INVOKABLE void clear();
     bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
-                          ATProto::Client& bsky, bool clearFirst = false,
+                          ATProto::Client::SharedPtr bsky, bool clearFirst = false,
                           const std::function<void()>& doneCb = nullptr);
     QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput,
                           const QString& lastRev, const QString& userDid);
@@ -139,6 +143,7 @@ public:
     int getIndexOldestUnread() const;
     const NotificationList& getNotifications() const { return mList; }
     QDateTime getTimestampLatestNotifcation() const;
+    const PostCache& getPostCache() const { return mPostCache; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
 
@@ -217,6 +222,7 @@ private:
     NotificationList mNewLabelsNotifications;
     bool mNotificationsSeen = false;
     bool mGetFeedInProgress = false;
+    int mModelId = -1;
 };
 
 }

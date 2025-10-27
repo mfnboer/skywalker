@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
-    required property var skywalker
+    required property Skywalker skywalker
     readonly property string sideBarTitle: qsTr("Muted words")
     readonly property string sideBarSubTitle: `${view.count} / ${skywalker.mutedWords.maxSize}`
     readonly property SvgImage sideBarSvg: SvgOutline.mutedWords

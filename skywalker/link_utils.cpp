@@ -34,6 +34,41 @@ LinkUtils::LinkUtils(QObject* parent) :
 {
 }
 
+bool LinkUtils::isWebLink(const QString& link)
+{
+    if (link.contains(' '))
+        return false;
+
+    const QUrl url(link);
+    return url.isValid() && (url.scheme() == "https" || url.scheme() == "http");
+}
+
+bool LinkUtils::hasScheme(const QString& link)
+{
+    const QUrl url(link);
+    return !url.scheme().isEmpty();
+}
+
+bool LinkUtils::isValidDid(const QString& did)
+{
+    return ATProto::ATRegex::isValidDid(did);
+}
+
+bool LinkUtils::isValidService(const QString& service)
+{
+    return ATProto::ATRegex::isValidAtprotoProxy(service);
+}
+
+QString LinkUtils::getLinkWithScheme(const QString& link)
+{
+    const QString value = link.trimmed();
+
+    if (value.isEmpty() || hasScheme(value))
+        return value;
+
+    return "https://" + value;
+}
+
 QString LinkUtils::toHttpsLink(const QString& atUri)
 {
     ATProto::ATUri uri(atUri);
@@ -119,7 +154,7 @@ void LinkUtils::openLink(const ATProto::ATUri& atUri, const std::function<void(c
                 return;
 
             qWarning() << error << " - " << msg;
-            mSkywalker->statusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

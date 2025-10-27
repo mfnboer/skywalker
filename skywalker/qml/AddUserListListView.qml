@@ -4,7 +4,8 @@ import QtQuick.Layouts
 import skywalker
 
 ListView {
-    required property var skywalker
+    property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     required property detailedprofile author
     readonly property string sideBarTitle: qsTr("Update lists")
@@ -28,10 +29,42 @@ ListView {
 
         SimpleDescriptionHeader {
             id: portraitHeader
+            userDid: view.userDid
             title: sideBarTitle
             description: sideBarDescription
             visible: !root.showSideBar
             onClosed: view.closed()
+
+            SvgPlainButton {
+                anchors.top: parent.top
+                anchors.topMargin: guiSettings.headerMargin
+                anchors.right: parent.right
+                anchors.rightMargin: parent.usedRightMargin + 10
+                svg: SvgOutline.add
+                onClicked: newListMenu.open()
+                accessibleName: qsTr(`add new list`)
+
+                SkyMenu {
+                    id: newListMenu
+                    onAboutToShow: root.enablePopupShield(true)
+                    onAboutToHide: root.enablePopupShield(false)
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Create list</b>")
+                        Accessible.name: qsTr("close create list menu")
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("User list")
+                        onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
+                        MenuItemSvg { svg: SvgOutline.user }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Moderation list")
+                        onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
+                        MenuItemSvg { svg: SvgOutline.moderation }
+                    }
+                }
+            }
         }
         DeadHeaderMargin {
             id: landscapeHeader
@@ -49,7 +82,9 @@ ListView {
 
     FlickableRefresher {
         inProgress: view.model?.getFeedInProgress
+        topOvershootFun: () => skywalker.getListList(modelId)
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
+        topText: qsTr("Refresh lists")
     }
 
     EmptyListIndication {
@@ -68,11 +103,10 @@ ListView {
         id: graphUtils
         skywalker: view.skywalker
 
-        onAddListUserFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
-        onRemoveListUserFailed: (error) => statusPopup.show(error, QEnums.STATUS_LEVEL_ERROR)
+        onAddListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onRemoveListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
     }
-
 
     function refresh() {
         skywalker.getListList(modelId)

@@ -11,7 +11,7 @@ static constexpr auto MESSAGES_UPDATE_INTERVAL = 9s;
 static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
 static constexpr char const* DM_ACCESS_ERROR = "Your APP password does not allow access to your direct messages. Create a new APP password that allows access.";
 
-Chat::Chat(ATProto::Client::Ptr& bsky, const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
+Chat::Chat(ATProto::Client::SharedPtr& bsky, const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
     QObject(parent),
     mPresence(std::make_unique<Presence>()),
     mBsky(bsky),

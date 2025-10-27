@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Material
+import skywalker
 
 SkyLabel {
     required property real durationSeconds
