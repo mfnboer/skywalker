@@ -249,7 +249,7 @@ SkyPage {
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
-            ellipsisBackgroundColor: guiSettings.postHighLightColor
+            postBackgroundColor: guiSettings.postHighLightColor
             showCloseButton: newMessageText.quoteFixed
             visible: newMessageText.quoteUri
 

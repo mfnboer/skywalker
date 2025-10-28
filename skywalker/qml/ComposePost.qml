@@ -281,7 +281,7 @@ SkyPage {
             userDid: postByDid
             postText: replyToPostText
             postDateTime: replyToPostDateTime
-            ellipsisBackgroundColor: guiSettings.postHighLightColor
+            postBackgroundColor: guiSettings.postHighLightColor
             visible: replyToPostUri
         }
 
@@ -828,7 +828,7 @@ SkyPage {
                         author: postItem.quoteAuthor
                         postText: postItem.quoteText
                         postDateTime: postItem.quoteDateTime
-                        ellipsisBackgroundColor: guiSettings.postHighLightColor
+                        postBackgroundColor: guiSettings.postHighLightColor
                         showCloseButton: postItem.quoteFixed
                         visible: postItem.quoteUri
 

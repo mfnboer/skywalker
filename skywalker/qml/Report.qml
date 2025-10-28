@@ -184,7 +184,7 @@ SkyPage {
                 author: page.author
                 postText: page.postText
                 postDateTime: page.postDateTime
-                ellipsisBackgroundColor: parent.color.toString()
+                postBackgroundColor: parent.color.toString()
                 visible: page.postUri
             }
 
@@ -195,7 +195,7 @@ SkyPage {
                 author: page.author
                 postText: page.message.formattedText
                 postDateTime: message.sentAt
-                ellipsisBackgroundColor: parent.color.toString()
+                postBackgroundColor: parent.color.toString()
                 visible: !page.message.isNull()
             }
 

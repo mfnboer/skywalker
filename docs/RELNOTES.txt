@@ -1,3 +1,8 @@
+next
+====
+* Full text (scrollable) of reply-to or quote post in post composer
+* Bug fixes
+
 4.17
 ====
 * Improve sharing of saved/pinned feeds with the Bluesky app

@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -7,7 +8,7 @@ Column {
     property basicprofile author
     property string postText
     property date postDateTime
-    property string ellipsisBackgroundColor: guiSettings.backgroundColor
+    property string postBackgroundColor: guiSettings.backgroundColor
     property bool showCloseButton: false
 
     signal closeClicked
@@ -45,25 +46,39 @@ Column {
         }
     }
 
-    PostBody {
+    Flickable {
+        id: flick
         width: parent.width - 20
-        userDid: quoteColumn.userDid
-        postAuthor: author
-        postText: quoteColumn.postText
-        postPlainText: quoteColumn.postText
-        postHasUnknownEmbed: false
-        postUnknownEmbedType: ""
-        postImages: []
-        postLanguageLabels: []
-        postContentLabels: []
-        postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
-        postContentWarning: ""
-        postMuted: QEnums.MUTED_POST_NONE
-        postIsThread: false
-        postIsThreadReply: false
-        postDateTime: postDateTime
-        maxTextLines: 5
-        bodyBackgroundColor: quoteColumn.ellipsisBackgroundColor
+        height: Math.min(contentHeight, guiSettings.appFontHeight * 5)
+        clip: true
+        contentHeight: contentItem.childrenRect.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: ScrollBar {
+            width: 6
+            policy: flick.contentHeight > flick.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
+        }
+
+        PostBody {
+            width: parent.width - (height > guiSettings.appFontHeight * 5 ? 10 : 0)
+            userDid: quoteColumn.userDid
+            postAuthor: author
+            postText: quoteColumn.postText
+            postPlainText: quoteColumn.postText
+            postHasUnknownEmbed: false
+            postUnknownEmbedType: ""
+            postImages: []
+            postLanguageLabels: []
+            postContentLabels: []
+            postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
+            postContentWarning: ""
+            postMuted: QEnums.MUTED_POST_NONE
+            postIsThread: false
+            postIsThreadReply: false
+            postDateTime: postDateTime
+            initialShowMaxTextLines: maxTextLines
+            bodyBackgroundColor: quoteColumn.postBackgroundColor
+        }
     }
 
     AccessibilityUtils {
