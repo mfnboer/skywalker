@@ -482,18 +482,15 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
     if (!session)
         return;
 
-    if (session->mUnreadNotificationCount != unread)
-    {
-        session->mUnreadNotificationCount = unread;
+    session->mUnreadNotificationCount = unread;
 
-        if (session->mNonActiveUser)
-            session->mNonActiveUser->setUnreadNotificationCount(unread);
-        else if (did == mSkywalker->getUserDid())
-            emit activeUserUnreadNotificationCountChanged();
+    if (session->mNonActiveUser)
+        session->mNonActiveUser->setUnreadNotificationCount(unread);
+    else if (did == mSkywalker->getUserDid())
+        emit activeUserUnreadNotificationCountChanged();
 
-        const int totalUnread = getTotalUnreadNotificationCount();
-        emit totalUnreadNotificationCountChanged(totalUnread);
-    }
+    const int totalUnread = getTotalUnreadNotificationCount();
+    emit totalUnreadNotificationCountChanged(totalUnread);
 }
 
 int SessionManager::getUnreadNotificationCount(const QString& did) const
