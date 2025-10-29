@@ -3,6 +3,7 @@
 #include "abstract_post_feed_model.h"
 #include "author_cache.h"
 #include "content_filter.h"
+#include "draft_posts.h"
 #include "focus_hashtags.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
@@ -194,6 +195,19 @@ void AbstractPostFeedModel::identifyThreadPost(const Post& post)
         auto& postThreadCache = PostThreadCache::instance();
         postThreadCache.put(replyRootUri, true);
     }
+}
+
+const Post& AbstractPostFeedModel::getPost(int index) const
+{
+    static const Post NULL_POST;
+
+    if (index < 0 || index >= (int)mFeed.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mFeed.size() << "modelId:" << mModelId;
+        return NULL_POST;
+    }
+
+    return mFeed.at(index);
 }
 
 void AbstractPostFeedModel::unfoldPosts(int startIndex)

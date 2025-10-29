@@ -31,6 +31,8 @@ public:
 
     static constexpr int MAX_DRAFTS = 50;
 
+    static void setDraftPost(DraftPostData* data, const Post& post);
+
     explicit DraftPosts(QObject* parent = nullptr);
     ~DraftPosts();
 

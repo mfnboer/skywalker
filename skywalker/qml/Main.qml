@@ -1042,6 +1042,13 @@ ApplicationWindow {
     MainPostUtils {
         id: postUtils
         skywalker: skywalker
+
+        onEditPostDataProgress: (msg) => skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 120)
+
+        onEditPostData: (draft) => {
+            skywalker.clearStatusMessage()
+            doComposePostEdit(draft)
+        }
     }
 
     MainProfileUtils {
@@ -1331,6 +1338,24 @@ ApplicationWindow {
                 postByDid: postByDid,
                 initialText: initialText,
                 initialImage: imageSource
+        })
+        page.onClosed.connect(() => { popStack() })
+        pushStack(page)
+    }
+
+    function composePostEdit(postFeedModel, postIndex) {
+        const draftPostData = postUtils.getEditPostData(postFeedModel, postIndex)
+    }
+
+    function doComposePostEdit(draftPostData) {
+        if (!Boolean(draftPostData)) {
+            skywalker.showStatusMessage(qsTr("Failed to load post for editing."), QEnums.STATUS_LEVEL_ERROR)
+            return
+        }
+
+        let component = guiSettings.createComponent("ComposePost.qml")
+        let page = component.createObject(root, {
+                editPostData: draftPostData
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)

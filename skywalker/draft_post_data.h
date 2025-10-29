@@ -16,6 +16,8 @@ namespace Skywalker {
 class DraftPostData : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString uri READ uri WRITE setUri NOTIFY uriChanged FINAL)
+    Q_PROPERTY(QString cid READ cid WRITE setCid NOTIFY cidChanged FINAL)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged FINAL)
     Q_PROPERTY(WebLink::List embeddedLinks READ embeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
     Q_PROPERTY(QList<ImageView> images READ images WRITE setImages NOTIFY imagesChanged FINAL)
@@ -53,6 +55,10 @@ class DraftPostData : public QObject
 public:
     explicit DraftPostData(QObject* parent = nullptr) : QObject(parent) {}
 
+    QString uri() const;
+    void setUri(const QString& uri);
+    QString cid() const;
+    void setCid(const QString& cid);
     QString text() const;
     void setText(const QString &newText);
     WebLink::List embeddedLinks() const;
@@ -119,6 +125,8 @@ public:
     void setEmbeddingDisabled(bool embeddingDisabled);
 
 signals:
+    void uriChanged();
+    void cidChanged();
     void textChanged();
     void embeddedLinksChanged();
     void imagesChanged();
@@ -153,6 +161,8 @@ signals:
     void embeddingDisabledChanged();
 
 private:
+    QString mUri; // only for editing posts
+    QString mCid; // only for editing posts
     QString mText;
     WebLink::List mEmbeddedLinks;
     QList<ImageView> mImages;
@@ -186,6 +196,32 @@ private:
     QString mRecordUri;
     bool mEmbeddingDisabled = false;
 };
+
+inline QString DraftPostData::uri() const
+{
+    return mUri;
+}
+
+inline void DraftPostData::setUri(const QString& uri)
+{
+    if (mUri == uri)
+        return;
+    mUri = uri;
+    emit uriChanged();
+}
+
+inline QString DraftPostData::cid() const
+{
+    return mCid;
+}
+
+inline void DraftPostData::setCid(const QString& cid)
+{
+    if (mCid == cid)
+        return;
+    mCid = cid;
+    emit cidChanged();
+}
 
 inline QString DraftPostData::text() const
 {

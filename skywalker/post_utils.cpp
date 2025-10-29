@@ -1,6 +1,9 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_utils.h"
+#include "abstract_post_feed_model.h"
+#include "draft_post_data.h"
+#include "draft_posts.h"
 #include "file_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
@@ -71,6 +74,14 @@ ImageReader* PostUtils::imageReader()
         mImageReader = std::make_unique<ImageReader>(mNetwork);
 
     return mImageReader.get();
+}
+
+M3U8Reader* PostUtils::m3u8Reader()
+{
+    if (!mM3U8Reader)
+        mM3U8Reader = std::make_unique<M3U8Reader>();
+
+    return mM3U8Reader.get();
 }
 
 bool PostUtils::isPostUri(const QString& uri)
@@ -1485,6 +1496,129 @@ void PostUtils::identifyLanguage(QString text, int index)
 #else
     qDebug() << "Language identification not supported:" << index << text;
 #endif
+}
+
+void PostUtils::getEditPostData(AbstractPostFeedModel* model, int postIndex)
+{
+    if (!model)
+    {
+        emit editPostData({});
+        return;
+    }
+
+    const Post& post = model->getPost(postIndex);
+
+    if (post.isPlaceHolder())
+    {
+        emit editPostData({});
+        return;
+    }
+
+    auto* data = new DraftPostData(this);
+    data->setUri(post.getUri());
+    data->setCid(post.getCid());
+    DraftPosts::setDraftPost(data, post);
+    loadEditPostImages(data, post);
+}
+
+void PostUtils::dropEditPostData(QList<DraftPostData*> draftPostData)
+{
+    for (auto* data : draftPostData)
+        delete data;
+}
+
+void PostUtils::loadEditPostImages(DraftPostData* data, const Post& post, int imageIndex)
+{
+    const QList<ImageView> images = post.getImages();
+
+    if (imageIndex < 0 || imageIndex >= images.size())
+    {
+        loadEditPostVideo(data, post);
+        return;
+    }
+
+    emit editPostDataProgress(tr("Loading post image #%1").arg(imageIndex + 1));
+
+    imageReader()->getImage(images[imageIndex].getFullSizeUrl(),
+        [this, presence=getPresence(), data, post, imageIndex](QImage img){
+            if (!presence)
+                return;
+
+            if (!img.isNull())
+            {
+                auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
+                const QString imgSource = imgProvider->addImage(img);
+                auto draftImages = data->images();
+                const QList<ImageView> postImages = post.getImages();
+                const ImageView draftImaage(imgSource, postImages[imageIndex].getAlt());
+                draftImages.push_back(draftImaage);
+                data->setImages(draftImages);
+            }
+
+            loadEditPostImages(data, post, imageIndex + 1);
+        },
+        [this, presence=getPresence(), data, post, imageIndex](const QString& error){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed get get image:" << error;
+            loadEditPostImages(data, post, imageIndex + 1);
+        });
+}
+
+void PostUtils::loadEditPostVideo(DraftPostData* data, const Post& post)
+{
+    VideoView::Ptr videoView = post.getVideoView();
+
+    if (!videoView)
+    {
+        finishedLoadingEditPost(data);
+        return;
+    }
+
+    const QString url = videoView->getPlaylistUrl();
+    qDebug() << "Load video:" << url << "width:" << videoView->getWidth() << "height:" << videoView->getHeight();
+
+    if (!url.endsWith(".m3u8"))
+    {
+        qWarning() << "Cannot load video:" << url;
+        finishedLoadingEditPost(data);
+        return;
+    }
+
+    emit editPostDataProgress(tr("Loading post video"));
+
+    auto* videoReader = m3u8Reader();
+
+    connect(videoReader, &M3U8Reader::getVideoStreamOk, this, [this](int){ m3u8Reader()->loadStream(); });
+    connect(videoReader, &M3U8Reader::getVideoStreamError, this, [this, data]{ finishedLoadingEditPost(data); });
+    connect(videoReader, &M3U8Reader::loadStreamOk, this, [this, data, post](QString videoStream){ loadEditPostVideo(data, post, videoStream); });
+    connect(videoReader, &M3U8Reader::loadStreamError, this, [this, data]{ finishedLoadingEditPost(data); });
+
+    videoReader->getVideoStream(url);
+}
+
+void PostUtils::loadEditPostVideo(DraftPostData* data, const Post& post, const QString& videoStream)
+{
+    qDebug() << "Load post video:" << videoStream;
+    VideoView::Ptr videoView = post.getVideoView();
+    Q_ASSERT(videoView);
+
+    auto tmpFile = FileUtils::createTempFile(videoStream, "ts");
+    const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
+    VideoView draftVideo(url.toString(), videoView->getAlt(), 0, 0, false, videoView->getHeight());
+    data->setVideo(draftVideo);
+    TempFileHolder::instance().put(std::move(tmpFile));
+
+    finishedLoadingEditPost(data);
+}
+
+void PostUtils::finishedLoadingEditPost(DraftPostData* data)
+{
+    mM3U8Reader = nullptr;
+    QList<DraftPostData*> draftPostData;
+    draftPostData.push_back(data);
+    emit editPostData(draftPostData);
 }
 
 void PostUtils::shareMedia(int fd, const QString& mimeType)

@@ -45,6 +45,7 @@ Item {
     signal share()
     signal threadgate()
     signal hideReply()
+    signal editPost()
     signal deletePost()
     signal copyPostText()
     signal reportPost()
@@ -259,6 +260,13 @@ Item {
                     MenuItemSvg { svg: viewerStatePinned ? SvgFilled.unpin : SvgFilled.pin }
                 }
 
+                AccessibleMenuItem {
+                    text: qsTr("Edit")
+                    visible: authorIsUser && !isUnrolledThread
+                    onTriggered: editPost()
+
+                    MenuItemSvg { svg: SvgOutline.edit }
+                }
                 AccessibleMenuItem {
                     text: qsTr("Delete")
                     visible: authorIsUser && !isUnrolledThread

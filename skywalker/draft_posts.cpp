@@ -466,6 +466,63 @@ static void setReplyRestrictions(DraftPostData* data, const Post& post)
     }
 }
 
+void DraftPosts::setDraftPost(DraftPostData* data, const Post& post)
+{
+    data->setText(post.getText());
+    data->setEmbeddedLinks(post.getDraftEmbeddedLinks());
+    setImages(data, post.getDraftImages());
+
+    const auto videoView = post.getDraftVideoView();
+    if (videoView)
+        setVideo(data, *videoView);
+
+    data->setIndexedAt(post.getIndexedAt());
+    data->setReplyToUri(post.getReplyToUri());
+    data->setReplyToCid(post.getReplyToCid());
+    data->setReplyRootUri(post.getReplyRootUri());
+    data->setReplyRootCid(post.getReplyRootCid());
+
+    const auto replyToAuthor = post.getReplyToAuthor();
+    if (replyToAuthor)
+        data->setReplyToAuthor(*replyToAuthor);
+
+    const auto replyView = post.getViewPostReplyRef();
+    if (replyView)
+    {
+        data->setReplyToText(replyView->mParent.getText());
+        data->setReplyToDateTime(replyView->mParent.getIndexedAt());
+    }
+
+    const auto recordView = post.getRecordView();
+    if (recordView)
+        setRecordViewData(data, recordView.get());
+
+    const auto recordMediaView = post.getRecordWithMediaView();
+    if (recordMediaView)
+    {
+        setImages(data, recordMediaView->getImages());
+
+        const auto video = recordMediaView->getVideo();
+        if (!video.isNull())
+            setVideo(data, video.value<VideoView>());
+
+        setRecordViewData(data, &recordMediaView->getRecord());
+    }
+
+    const auto externalView = post.getExternalView();
+    if (externalView)
+        setExternal(data, externalView.get());
+
+    if (post.hasLanguage())
+        data->setLanguage(post.getLanguages().front().getShortCode());
+
+    setLabels(data, post);
+    setReplyRestrictions(data, post);
+
+    data->setEmbeddingDisabled(post.isEmbeddingDisabled());
+    data->setRecordUri(post.getUri());
+}
+
 QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
 {
     if (index < 0 || index >= mDraftPostsModel->rowCount())
@@ -480,59 +537,7 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
     for (const auto& post : thread)
     {
         auto* data = new DraftPostData(this);
-        data->setText(post.getText());
-        data->setEmbeddedLinks(post.getDraftEmbeddedLinks());
-        setImages(data, post.getDraftImages());
-
-        const auto videoView = post.getDraftVideoView();
-        if (videoView)
-            setVideo(data, *videoView);
-
-        data->setIndexedAt(post.getIndexedAt());
-        data->setReplyToUri(post.getReplyToUri());
-        data->setReplyToCid(post.getReplyToCid());
-        data->setReplyRootUri(post.getReplyRootUri());
-        data->setReplyRootCid(post.getReplyRootCid());
-
-        const auto replyToAuthor = post.getReplyToAuthor();
-        if (replyToAuthor)
-            data->setReplyToAuthor(*replyToAuthor);
-
-        const auto replyView = post.getViewPostReplyRef();
-        if (replyView)
-        {
-            data->setReplyToText(replyView->mParent.getText());
-            data->setReplyToDateTime(replyView->mParent.getIndexedAt());
-        }
-
-        const auto recordView = post.getRecordView();
-        if (recordView)
-            setRecordViewData(data, recordView.get());
-
-        const auto recordMediaView = post.getRecordWithMediaView();
-        if (recordMediaView)
-        {
-            setImages(data, recordMediaView->getImages());
-
-            const auto video = recordMediaView->getVideo();
-            if (!video.isNull())
-                setVideo(data, video.value<VideoView>());
-
-            setRecordViewData(data, &recordMediaView->getRecord());
-        }
-
-        const auto externalView = post.getExternalView();
-        if (externalView)
-            setExternal(data, externalView.get());
-
-        if (post.hasLanguage())
-            data->setLanguage(post.getLanguages().front().getShortCode());
-
-        setLabels(data, post);
-        setReplyRestrictions(data, post);
-
-        data->setEmbeddingDisabled(post.isEmbeddingDisabled());
-        data->setRecordUri(post.getUri());
+        setDraftPost(data, post);
         draftPostData.push_back(data);
     }
 

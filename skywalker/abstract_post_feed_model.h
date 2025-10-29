@@ -3,6 +3,7 @@
 #pragma once
 #include "base_list_model.h"
 #include "content_filter.h"
+#include "draft_post_data.h"
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
@@ -129,9 +130,7 @@ public:
     virtual bool isEndOfFeed() const { return mEndOfFeed; }
     virtual void setEndOfFeed(bool endOfFeed);
 
-    const Post& getPost(int index) const { return mFeed.at(index); }
-    void preprocess(const Post& post);
-
+    const Post& getPost(int index) const;
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
     // Get the timestamp of the last post in the feed
@@ -168,6 +167,7 @@ protected:
     void removeStoredCid(const QString& cid);
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
+    void preprocess(const Post& post);
 
     virtual bool mustHideContent(const Post& post) const;
 

@@ -10,6 +10,7 @@ SkyPage {
     property string initialText
     property string initialImage
     property string initialVideo: ""
+    property list<DraftPostData> editPostData: []
     property int margin: 15
 
     property bool largeEditor: false
@@ -1499,6 +1500,7 @@ SkyPage {
         property var callbackCannotUploadVideo: (error) => {}
         property var callbackCanQuotePost: (canQuote) => {}
         property var callbackCanQuotePostFailed: (error) => {}
+        property int deletePostIndex: 0
 
         id: postUtils
         skywalker: page.skywalker
@@ -1685,6 +1687,30 @@ SkyPage {
 
                 postItem.languageSource = QEnums.LANGUAGE_SOURCE_AUTO
             }
+        }
+
+        function deleteEditedPosts() {
+            if (deletePostIndex >= page.editPostData.length) {
+                console.debug("No edited posts")
+                finish()
+                return
+            }
+
+            console.debug("Delete edited post:", deletePostIndex)
+            skywalker.showStatusMessage(qsTr(`Deleting post #${deletePostIndex + 1}`), QEnums.STATUS_LEVEL_INFO, 60)
+            const postData = page.editPostData[deletePostIndex]
+            deletePost(postData.uri, postData.cid)
+        }
+
+        onPostDeletedOk: {
+            skywalker.clearStatusMessage()
+            ++deletePostIndex
+            deleteEditedPosts()
+        }
+
+        onPostDeletedFailed: (msg) => {
+            skywalker.showStatusMessage(qsTr("Failed to delete post: ") + msg, QEnums.STATUS_LEVEL_ERROR)
+            finish()
         }
     }
 
@@ -2097,8 +2123,12 @@ SkyPage {
     }
 
     function postDone() {
-        busyIndicator.running = false
         skywalker.clearStatusMessage()
+        postUtils.deleteEditedPosts()
+    }
+
+    function finish() {
+        busyIndicator.running = false
         page.closed()
     }
 
@@ -2882,11 +2912,12 @@ SkyPage {
         page.tmpVideos.forEach((value, index, array) => { postUtils.dropVideo(value); })
 
         if (initialImage)
-            getPostUtils().dropPhoto(initialImage)
+            initialVideo.dropPhoto(initialImage)
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
 
         draftPosts.removeDraftPostsModel()
+        postUtils.dropEditPostData(editPostData)
     }
 
     Component.onCompleted: {
@@ -2909,5 +2940,8 @@ SkyPage {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
+
+        if (editPostData.length > 0)
+            setDraftPost(editPostData)
     }
 }

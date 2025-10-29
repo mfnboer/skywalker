@@ -5,6 +5,8 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "list_view.h"
+#include "m3u8_reader.h"
+#include "post.h"
 #include "post_interaction_settings.h"
 #include "postgate.h"
 #include "presence.h"
@@ -17,6 +19,9 @@
 #include <unordered_map>
 
 namespace Skywalker {
+
+class AbstractPostFeedModel;
+class DraftPostData;
 
 class PostUtils : public WrappedSkywalker, public Presence
 {
@@ -85,6 +90,9 @@ public:
 
     Q_INVOKABLE void identifyLanguage(QString text, int index);
 
+    Q_INVOKABLE void getEditPostData(AbstractPostFeedModel* model, int postIndex);
+    Q_INVOKABLE void dropEditPostData(QList<DraftPostData*> draftPostData);
+
 signals:
     void checkPostExistsOk(QString uri, QString cid);
     void checkPostExistsFailed(QString uri, QString cid, QString error);
@@ -132,6 +140,8 @@ signals:
     void checkVideoLimitsOk(VideoUploadLimits limits);
     void checkVideoLimitsFailed(QString error);
     void languageIdentified(QString languageCode, int index);
+    void editPostData(QList<DraftPostData*> draft);
+    void editPostDataProgress(QString msg);
 
 private:
     void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
@@ -157,11 +167,18 @@ private:
     void addIndexLanguageIdentificationRequestId(int index, int requestId);
     void removeIndexLanguageIdentificationRequestId(int index, int requestId);
 
+    void loadEditPostImages(DraftPostData* data, const Post& post, int imageIndex = 0);
+    void loadEditPostVideo(DraftPostData* data, const Post& post);
+    void loadEditPostVideo(DraftPostData* data, const Post& post, const QString& videoStream);
+    void finishedLoadingEditPost(DraftPostData* data);
+
     QNetworkAccessManager* mNetwork;
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
+    M3U8Reader* m3u8Reader();
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     std::unique_ptr<ImageReader> mImageReader;
+    std::unique_ptr<M3U8Reader> mM3U8Reader;
     bool mPickingPhoto = false;
     std::unordered_map<int, int> mIndexLanguageIdentificationRequestIdMap;
     std::unordered_map<int, int> mLanguageIdentificationRequestIdIndexMap;

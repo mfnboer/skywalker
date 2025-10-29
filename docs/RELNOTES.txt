@@ -1,5 +1,6 @@
 next
 ====
+* Edit post
 * Full text (scrollable) of reply-to or quote post in post composer
 * Bug fixes
 
