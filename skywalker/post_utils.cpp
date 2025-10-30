@@ -5,6 +5,7 @@
 #include "draft_post_data.h"
 #include "draft_posts.h"
 #include "file_utils.h"
+#include "gif_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
@@ -1498,6 +1499,46 @@ void PostUtils::identifyLanguage(QString text, int index)
 #endif
 }
 
+// For draft post more GIF properties are saved, that we do no have
+// amymore for a real post. Overwrite the draft post GIF with one created
+// from a real post.
+static void setGif(DraftPostData* data, const Post& post)
+{
+    data->setGif({});
+    const auto externalView = post.getExternalView();
+
+    if (!externalView)
+        return;
+
+    GifUtils gifUtils;
+
+    if (!gifUtils.isTenorLink(externalView->getUri()))
+        return;
+
+    const QUrl uri(externalView->getUri());
+    const QUrlQuery query(uri.query());
+
+    // The ww and hh parameters are added to the link when posting.
+    if (!query.hasQueryItem("ww") || !query.hasQueryItem("hh"))
+    {
+        qWarning() << "Missing size for editing GIF:" << uri;
+        return;
+    }
+
+    const QString gifUrl = uri.toString(QUrl::RemoveQuery);
+    const int gifWidth = query.queryItemValue("ww").toInt();
+    const int gifHeight = query.queryItemValue("hh").toInt();
+    const QSize gifSize(gifWidth, gifHeight);
+
+    // NOTE: The id is set to empty. This will skip registration in Tenor::registerShare
+    TenorGif gif("", externalView->getTitle(), "",
+                 gifUrl, gifSize,
+                 gifUrl, gifSize,
+                 externalView->getThumbUrl(), QSize(1, 1));
+
+    data->setGif(gif);
+}
+
 void PostUtils::getEditPostData(AbstractPostFeedModel* model, int postIndex)
 {
     if (!model)
@@ -1518,6 +1559,7 @@ void PostUtils::getEditPostData(AbstractPostFeedModel* model, int postIndex)
     data->setUri(post.getUri());
     data->setCid(post.getCid());
     DraftPosts::setDraftPost(data, post);
+    setGif(data, post);
     loadEditPostImages(data, post);
 }
 

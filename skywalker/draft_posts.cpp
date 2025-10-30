@@ -420,6 +420,7 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
                      uri.toString(QUrl::RemoveQuery), QSize(gifWidth, gifHeight),
                      smallUrl, QSize(smallWidth, smallHeight),
                      externalView->getThumbUrl(), QSize(1, 1));
+        qDebug() << "GIF uri:" << uri << "url:" << gif.getUrl() << "size:" << gif.getSize() << "small:" << gif.getSmallUrl() << "size:" << gif.getSmallSize() << "image:" << gif.getImageUrl();
         data->setGif(gif);
     }
     else {
