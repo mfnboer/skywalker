@@ -6,6 +6,7 @@
 #include "post.h"
 #include "presence.h"
 #include "wrapped_skywalker.h"
+#include <atproto/lib/post_master.h>
 
 namespace Skywalker {
 
@@ -38,6 +39,7 @@ private:
     void getEditPostData(int postThreadModelId, const Post& entryPost);
     void getEditPostData(int postThreadModelId, const QList<DraftPostData*>& postData);
     void getEditPostDataContinue(int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
+    void loadEditPostGate(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
     void loadEditPostImages(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData, int imageIndex = 0);
     void loadEditPostVideo(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
     void loadEditPostVideo(DraftPostData* data, int postThreadModelId, const Post& post, const QString& videoStream, const QList<DraftPostData*>& postData);
@@ -54,9 +56,11 @@ private:
 
     void setInProgress(bool inProgress);
 
+    ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
     M3U8Reader* m3u8Reader();
 
+    std::unique_ptr<ATProto::PostMaster> mPostMaster;
     std::unique_ptr<ImageReader> mImageReader;
     std::unique_ptr<M3U8Reader> mM3U8Reader;
     bool mInProgress = false;

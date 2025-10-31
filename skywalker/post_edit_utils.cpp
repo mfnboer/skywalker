@@ -17,6 +17,16 @@ namespace Skywalker {
 PostEditUtils::PostEditUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {
+    connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
+        if (!mSkywalker)
+            return;
+
+        connect(mSkywalker, &Skywalker::bskyClientDeleted, this,
+                [this]{
+                    qDebug() << "Reset post master";
+                    mPostMaster = nullptr;
+                });
+    });
 }
 
 static void removePostThreadCounter(DraftPostData* data)
@@ -143,6 +153,7 @@ void PostEditUtils::clearState()
 {
     mPostThreadModelId = -1;
     mEntryPost = Post{};
+    mPostMaster = nullptr;
     mImageReader = nullptr;
     mM3U8Reader = nullptr;
 }
@@ -211,7 +222,7 @@ void PostEditUtils::getEditPostData(int postThreadModelId, const Post& entryPost
 
 void PostEditUtils::getEditPostData(int postThreadModelId, const QList<DraftPostData*>& postData)
 {
-    qDebug() << "Get post edit data, post already retrieved:" << postData.size();
+    qDebug() << "Get post edit data, posts already retrieved:" << postData.size();
     auto* model = mSkywalker->getPostThreadModel(postThreadModelId);
 
     if (!model)
@@ -250,7 +261,6 @@ void PostEditUtils::getEditPostDataContinue(int postThreadModelId, const Post& p
     setGif(data, post);
     removePostThreadCounter(data);
 
-    // TODO: get postgate for embedding setting
     if (postData.empty())
     {
         auto* model = mSkywalker->getPostThreadModel(postThreadModelId);
@@ -262,9 +272,42 @@ void PostEditUtils::getEditPostDataContinue(int postThreadModelId, const Post& p
             const Post& firstPost = model->getPost(postData.size());
             DraftPosts::setReplyRestrictions(data, firstPost);
         }
+
+        loadEditPostGate(data, postThreadModelId, post, postData);
+    }
+    else
+    {
+        loadEditPostImages(data, postThreadModelId, post, postData);
+    }
+}
+
+void PostEditUtils::loadEditPostGate(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData)
+{
+    if (!postMaster())
+    {
+        mSkywalker->removePostThreadModel(postThreadModelId);
+        emit editPostDataFailed(tr("Internal failure"));
+        return;
     }
 
-    loadEditPostImages(data, postThreadModelId, post, postData);
+    emit editPostDataProgress(tr("Loading post restrictions"));
+
+    postMaster()->getPostgate(post.getUri(),
+        [this, presence=getPresence(), data, postThreadModelId, post, postData](auto postgate){
+            if (!presence)
+                return;
+
+            data->setEmbeddingDisabled(postgate->mDisableEmbedding);
+            loadEditPostImages(data, postThreadModelId, post, postData);
+        },
+        [this, presence=getPresence(), data, postThreadModelId, post, postData](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get postgate:" << error << "-" << msg;
+            data->setEmbeddingDisabled(false);
+            loadEditPostImages(data, postThreadModelId, post, postData);
+        });
 }
 
 void PostEditUtils::loadEditPostImages(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData, int imageIndex)
@@ -518,6 +561,22 @@ void PostEditUtils::setInProgress(bool inProgress)
         mInProgress = inProgress;
         emit inProgressChanged();
     }
+}
+
+ATProto::PostMaster* PostEditUtils::postMaster()
+{
+    if (!mPostMaster)
+    {
+        auto* client = bskyClient();
+        Q_ASSERT(client);
+
+        if (client)
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*client);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mPostMaster.get();
 }
 
 ImageReader* PostEditUtils::imageReader()

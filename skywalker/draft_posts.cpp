@@ -467,6 +467,8 @@ void DraftPosts::setReplyRestrictions(DraftPostData* data, const Post& post)
     }
 }
 
+// NOTE: this is also called for editing post (class PostEditUtils)
+// Setting images, gif and video will fail in that case.
 void DraftPosts::setDraftPost(DraftPostData* data, const Post& post)
 {
     data->setText(post.getText());
