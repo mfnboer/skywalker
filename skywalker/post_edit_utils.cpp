@@ -312,7 +312,8 @@ void PostEditUtils::loadEditPostGate(DraftPostData* data, int postThreadModelId,
 
 void PostEditUtils::loadEditPostImages(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData, int imageIndex)
 {
-    const QList<ImageView> images = post.getImages();
+    auto recordWithMediaVew = post.getRecordWithMediaView();
+    const QList<ImageView> images = recordWithMediaVew ? recordWithMediaVew->getImages() : post.getImages();
 
     if (imageIndex < 0 || imageIndex >= images.size())
     {
@@ -323,7 +324,7 @@ void PostEditUtils::loadEditPostImages(DraftPostData* data, int postThreadModelI
     emit editPostDataProgress(tr("Loading post #%1 image #%2").arg(postData.size() + 1).arg(imageIndex + 1));
 
     imageReader()->getImage(images[imageIndex].getFullSizeUrl(),
-        [this, presence=getPresence(), data, postThreadModelId, post, postData, imageIndex](QImage img){
+        [this, presence=getPresence(), images, data, postThreadModelId, post, postData, imageIndex](QImage img){
             if (!presence)
                 return;
 
@@ -332,8 +333,7 @@ void PostEditUtils::loadEditPostImages(DraftPostData* data, int postThreadModelI
                 auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
                 const QString imgSource = imgProvider->addImage(img);
                 auto draftImages = data->images();
-                const QList<ImageView> postImages = post.getImages();
-                const ImageView draftImaage(imgSource, postImages[imageIndex].getAlt());
+                const ImageView draftImaage(imgSource, images[imageIndex].getAlt());
                 draftImages.push_back(draftImaage);
                 data->setImages(draftImages);
             }
@@ -351,7 +351,8 @@ void PostEditUtils::loadEditPostImages(DraftPostData* data, int postThreadModelI
 
 void PostEditUtils::loadEditPostVideo(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData)
 {
-    VideoView::Ptr videoView = post.getVideoView();
+    auto recordWithMediaVew = post.getRecordWithMediaView();
+    VideoView::Ptr videoView = recordWithMediaVew ? recordWithMediaVew->getVideoView() : post.getVideoView();
 
     if (!videoView)
     {
@@ -396,7 +397,8 @@ void PostEditUtils::loadEditPostVideo(DraftPostData* data, int postThreadModelId
 void PostEditUtils::loadEditPostVideo(DraftPostData* data, int postThreadModelId, const Post& post, const QString& videoStream, const QList<DraftPostData*>& postData)
 {
     qDebug() << "Load post video:" << videoStream;
-    VideoView::Ptr videoView = post.getVideoView();
+    auto recordWithMediaVew = post.getRecordWithMediaView();
+    VideoView::Ptr videoView = recordWithMediaVew ? recordWithMediaVew->getVideoView() : post.getVideoView();
     Q_ASSERT(videoView);
 
     auto tmpFile = FileUtils::createTempFile(videoStream, "ts");
