@@ -17,7 +17,7 @@ class PostThreadModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<PostThreadModel>;
 
-    explicit PostThreadModel(const QString& threadEntryUri, bool unrollThread,
+    explicit PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
@@ -38,6 +38,7 @@ public:
     // The natural thread is a chain of posts from the original author.
     QString getPostToAttachMore() const;
 
+    QEnums::PostThreadType getPostThreadType() const { return mPostThreadType; }
     QString getRootUri() const;
     bool isUnrollThread() const { return mUnrollThread; }
     Q_INVOKABLE QString getThreadEntryUri() const { return mThreadEntryUri; }
@@ -95,6 +96,8 @@ private:
     std::deque<Post> mHiddenRepliesFeed;
     QString mThreadEntryUri;
     bool mUnrollThread = false;
+    bool mOnlyEntryAuthorPosts = false;
+    QEnums::PostThreadType mPostThreadType;
     std::optional<Post> mFirstPostFromUnrolledThread;
 };
 

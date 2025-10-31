@@ -10,15 +10,15 @@ class ThreadUnroller
 {
 public:
     static std::deque<Post> unrollThread(const std::deque<Post>& thread);
+    static QString getCounter(const QString& text);
+    static void removeCounterFromPlainText(QString& text, const QString& counter);
+    static void removeCounterFromFormattedText(QString& text, const QString& counter);
 
 private:
     static std::pair<int, Post> createThreadPart(const std::deque<Post>& thread, int startIndex);
     static void setThreadStats(const std::deque<Post>& rawThread, std::deque<Post>& unrolledThread);
     static void setThreadTypes(std::deque<Post>& unrolledThread);
     static bool morePostsCanBeAdded(const Post& post);
-    static QString getCounter(const QString& text);
-    static void removeCounterFromPlainText(QString& text, const QString& counter);
-    static void removeCounterFromFormattedText(QString& text, const QString& counter);
 };
 
 }

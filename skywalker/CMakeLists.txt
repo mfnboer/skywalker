@@ -583,6 +583,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/MainLinkUtils.qml
         QML_FILES qml/AdvancedSettingsForm.qml
         QML_FILES
+        SOURCES post_edit_utils.h
+        SOURCES post_edit_utils.cpp
 )
 
 if (NOT ANDROID)

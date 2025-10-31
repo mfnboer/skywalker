@@ -431,6 +431,14 @@ public:
         NON_ACTIVE_USER_REPOST
     };
     Q_ENUM(NonActiveUserAction)
+
+    enum PostThreadType
+    {
+        POST_THREAD_NORMAL,
+        POST_THREAD_UNROLLED,
+        POST_THREAD_ENTRY_AUTHOR_POSTS
+    };
+    Q_ENUM(PostThreadType)
 };
 
 }

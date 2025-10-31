@@ -113,9 +113,10 @@ public:
 
     Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
-    Q_INVOKABLE void getPostThread(const QString& uri, bool unrollThread = false);
+    Q_INVOKABLE void getPostThread(const QString& uri, QEnums::PostThreadType postThreadType = QEnums::POST_THREAD_NORMAL);
     Q_INVOKABLE void addPostThread(const QString& uri, int modelId, int maxPages = 20);
     Q_INVOKABLE void addOlderPostThread(int modelId);
+    int createPostThreadModel(const QString& uri, QEnums::PostThreadType type);
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);

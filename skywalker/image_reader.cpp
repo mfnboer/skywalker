@@ -6,8 +6,16 @@
 
 namespace Skywalker {
 
-ImageReader::ImageReader(QNetworkAccessManager* network) :
-    QObject(),
+ImageReader::ImageReader(QObject* parent) :
+    QObject(parent)
+{
+    mNetwork = new QNetworkAccessManager(this);
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
+}
+
+ImageReader::ImageReader(QNetworkAccessManager* network, QObject* parent) :
+    QObject(parent),
     mNetwork(network)
 {
     Q_ASSERT(mNetwork);

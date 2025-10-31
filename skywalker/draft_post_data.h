@@ -16,6 +16,7 @@ namespace Skywalker {
 class DraftPostData : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int postThreadCount READ postThreadCount WRITE setPostThreadCount NOTIFY postThreadCountChanged FINAL)
     Q_PROPERTY(QString uri READ uri WRITE setUri NOTIFY uriChanged FINAL)
     Q_PROPERTY(QString cid READ cid WRITE setCid NOTIFY cidChanged FINAL)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged FINAL)
@@ -55,6 +56,10 @@ class DraftPostData : public QObject
 public:
     explicit DraftPostData(QObject* parent = nullptr) : QObject(parent) {}
 
+    Q_INVOKABLE void release() { delete this; }
+
+    int postThreadCount() const;
+    void setPostThreadCount(int count);
     QString uri() const;
     void setUri(const QString& uri);
     QString cid() const;
@@ -125,6 +130,7 @@ public:
     void setEmbeddingDisabled(bool embeddingDisabled);
 
 signals:
+    void postThreadCountChanged();
     void uriChanged();
     void cidChanged();
     void textChanged();
@@ -161,6 +167,7 @@ signals:
     void embeddingDisabledChanged();
 
 private:
+    int mPostThreadCount = 0; // only for editing posts
     QString mUri; // only for editing posts
     QString mCid; // only for editing posts
     QString mText;
@@ -196,6 +203,19 @@ private:
     QString mRecordUri;
     bool mEmbeddingDisabled = false;
 };
+
+inline int DraftPostData::postThreadCount() const
+{
+    return mPostThreadCount;
+}
+
+inline void DraftPostData::setPostThreadCount(int count)
+{
+    if (mPostThreadCount == count)
+        return;
+    mPostThreadCount = count;
+    emit postThreadCountChanged();
+}
 
 inline QString DraftPostData::uri() const
 {

@@ -1,11 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_utils.h"
-#include "abstract_post_feed_model.h"
-#include "draft_post_data.h"
-#include "draft_posts.h"
 #include "file_utils.h"
-#include "gif_utils.h"
 #include "jni_callback.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
@@ -72,17 +68,9 @@ ATProto::PostMaster* PostUtils::postMaster()
 ImageReader* PostUtils::imageReader()
 {
     if (!mImageReader)
-        mImageReader = std::make_unique<ImageReader>(mNetwork);
+        mImageReader = std::make_unique<ImageReader>(mNetwork, this);
 
     return mImageReader.get();
-}
-
-M3U8Reader* PostUtils::m3u8Reader()
-{
-    if (!mM3U8Reader)
-        mM3U8Reader = std::make_unique<M3U8Reader>();
-
-    return mM3U8Reader.get();
 }
 
 bool PostUtils::isPostUri(const QString& uri)
@@ -1497,170 +1485,6 @@ void PostUtils::identifyLanguage(QString text, int index)
 #else
     qDebug() << "Language identification not supported:" << index << text;
 #endif
-}
-
-// For draft post more GIF properties are saved, that we do no have
-// amymore for a real post. Overwrite the draft post GIF with one created
-// from a real post.
-static void setGif(DraftPostData* data, const Post& post)
-{
-    data->setGif({});
-    const auto externalView = post.getExternalView();
-
-    if (!externalView)
-        return;
-
-    GifUtils gifUtils;
-
-    if (!gifUtils.isTenorLink(externalView->getUri()))
-        return;
-
-    const QUrl uri(externalView->getUri());
-    const QUrlQuery query(uri.query());
-
-    // The ww and hh parameters are added to the link when posting.
-    if (!query.hasQueryItem("ww") || !query.hasQueryItem("hh"))
-    {
-        qWarning() << "Missing size for editing GIF:" << uri;
-        return;
-    }
-
-    const QString gifUrl = uri.toString(QUrl::RemoveQuery);
-    const int gifWidth = query.queryItemValue("ww").toInt();
-    const int gifHeight = query.queryItemValue("hh").toInt();
-    const QSize gifSize(gifWidth, gifHeight);
-
-    // NOTE: The id is set to empty. This will skip registration in Tenor::registerShare
-    TenorGif gif("", externalView->getTitle(), "",
-                 gifUrl, gifSize,
-                 gifUrl, gifSize,
-                 externalView->getThumbUrl(), QSize(1, 1));
-
-    data->setGif(gif);
-}
-
-void PostUtils::getEditPostData(AbstractPostFeedModel* model, int postIndex)
-{
-    if (!model)
-    {
-        emit editPostData({});
-        return;
-    }
-
-    const Post& post = model->getPost(postIndex);
-
-    if (post.isPlaceHolder())
-    {
-        emit editPostData({});
-        return;
-    }
-
-    auto* data = new DraftPostData(this);
-    data->setUri(post.getUri());
-    data->setCid(post.getCid());
-    DraftPosts::setDraftPost(data, post);
-    setGif(data, post);
-    loadEditPostImages(data, post);
-}
-
-void PostUtils::dropEditPostData(QList<DraftPostData*> draftPostData)
-{
-    for (auto* data : draftPostData)
-        delete data;
-}
-
-void PostUtils::loadEditPostImages(DraftPostData* data, const Post& post, int imageIndex)
-{
-    const QList<ImageView> images = post.getImages();
-
-    if (imageIndex < 0 || imageIndex >= images.size())
-    {
-        loadEditPostVideo(data, post);
-        return;
-    }
-
-    emit editPostDataProgress(tr("Loading post image #%1").arg(imageIndex + 1));
-
-    imageReader()->getImage(images[imageIndex].getFullSizeUrl(),
-        [this, presence=getPresence(), data, post, imageIndex](QImage img){
-            if (!presence)
-                return;
-
-            if (!img.isNull())
-            {
-                auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
-                const QString imgSource = imgProvider->addImage(img);
-                auto draftImages = data->images();
-                const QList<ImageView> postImages = post.getImages();
-                const ImageView draftImaage(imgSource, postImages[imageIndex].getAlt());
-                draftImages.push_back(draftImaage);
-                data->setImages(draftImages);
-            }
-
-            loadEditPostImages(data, post, imageIndex + 1);
-        },
-        [this, presence=getPresence(), data, post, imageIndex](const QString& error){
-            if (!presence)
-                return;
-
-            qWarning() << "Failed get get image:" << error;
-            loadEditPostImages(data, post, imageIndex + 1);
-        });
-}
-
-void PostUtils::loadEditPostVideo(DraftPostData* data, const Post& post)
-{
-    VideoView::Ptr videoView = post.getVideoView();
-
-    if (!videoView)
-    {
-        finishedLoadingEditPost(data);
-        return;
-    }
-
-    const QString url = videoView->getPlaylistUrl();
-    qDebug() << "Load video:" << url << "width:" << videoView->getWidth() << "height:" << videoView->getHeight();
-
-    if (!url.endsWith(".m3u8"))
-    {
-        qWarning() << "Cannot load video:" << url;
-        finishedLoadingEditPost(data);
-        return;
-    }
-
-    emit editPostDataProgress(tr("Loading post video"));
-
-    auto* videoReader = m3u8Reader();
-
-    connect(videoReader, &M3U8Reader::getVideoStreamOk, this, [this](int){ m3u8Reader()->loadStream(); });
-    connect(videoReader, &M3U8Reader::getVideoStreamError, this, [this, data]{ finishedLoadingEditPost(data); });
-    connect(videoReader, &M3U8Reader::loadStreamOk, this, [this, data, post](QString videoStream){ loadEditPostVideo(data, post, videoStream); });
-    connect(videoReader, &M3U8Reader::loadStreamError, this, [this, data]{ finishedLoadingEditPost(data); });
-
-    videoReader->getVideoStream(url);
-}
-
-void PostUtils::loadEditPostVideo(DraftPostData* data, const Post& post, const QString& videoStream)
-{
-    qDebug() << "Load post video:" << videoStream;
-    VideoView::Ptr videoView = post.getVideoView();
-    Q_ASSERT(videoView);
-
-    auto tmpFile = FileUtils::createTempFile(videoStream, "ts");
-    const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
-    VideoView draftVideo(url.toString(), videoView->getAlt(), 0, 0, false, videoView->getHeight());
-    data->setVideo(draftVideo);
-    TempFileHolder::instance().put(std::move(tmpFile));
-
-    finishedLoadingEditPost(data);
-}
-
-void PostUtils::finishedLoadingEditPost(DraftPostData* data)
-{
-    mM3U8Reader = nullptr;
-    QList<DraftPostData*> draftPostData;
-    draftPostData.push_back(data);
-    emit editPostData(draftPostData);
 }
 
 void PostUtils::shareMedia(int fd, const QString& mimeType)

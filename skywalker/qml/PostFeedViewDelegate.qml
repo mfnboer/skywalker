@@ -503,7 +503,7 @@ Rectangle {
                 onActivateSwipe: postEntry.activateSwipe()
                 onUnrollThread: {
                     if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
-                        skywalker.getPostThread(postUri, true)
+                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                 }
             }
 
@@ -660,7 +660,7 @@ Rectangle {
 
                     onUnrollThread: {
                         if (!postIsPlaceHolder && postUri)
-                            skywalker.getPostThread(postUri, true)
+                            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                     }
 
                     onShare: skywalker.sharePost(postUri)

@@ -439,7 +439,7 @@ static void setLabels(DraftPostData* data, const Post& post)
     data->setLabels(labelNames);
 }
 
-static void setReplyRestrictions(DraftPostData* data, const Post& post)
+void DraftPosts::setReplyRestrictions(DraftPostData* data, const Post& post)
 {
     const auto restriction = post.getReplyRestriction();
 

@@ -489,7 +489,7 @@ TextEdit {
 
         if (parentFlick) {
             parentFlick.onHeightChanged.connect(() => {
-                    if (editText.activeFocus)
+                    if (editText?.activeFocus)
                         editText.ensureVisible(editText.cursorRectangle)
             })
         }

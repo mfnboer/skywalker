@@ -76,7 +76,7 @@ Item {
 
                 onUnrollThread: {
                     if (record.postUri)
-                        skywalker.getPostThread(record.postUri, true)
+                        skywalker.getPostThread(record.postUri, QEnums.POST_THREAD_UNROLLED)
                 }
             }
         }

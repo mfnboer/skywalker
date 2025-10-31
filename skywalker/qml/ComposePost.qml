@@ -16,7 +16,8 @@ SkyPage {
     property bool largeEditor: false
     readonly property int maxLanguageIdentificationLength: 200
     readonly property int maxPostLength: largeEditor ? 15000 : 300
-    readonly property int maxThreadPosts: 99
+    property int threadCountOffset: 0
+    readonly property int maxThreadPosts: 50
     readonly property int minPostSplitLineLength: 30
     readonly property int maxImages: 4 // per post
     property bool pickingImage: false
@@ -665,7 +666,7 @@ SkyPage {
                         anchors.top: postText.bottom
                         textFormat: Text.RichText
                         text: getPostCountText(index, threadPosts.count)
-                        visible: threadPosts.count > 1 && threadAutoNumber
+                        visible: (threadPosts.count > 1 || threadCountOffset > 0) && threadAutoNumber
 
                         function size() {
                             // +1 for newline
@@ -1692,6 +1693,7 @@ SkyPage {
         function deleteEditedPosts() {
             if (deletePostIndex >= page.editPostData.length) {
                 console.debug("No edited posts")
+                skywalker.clearStatusMessage()
                 finish()
                 return
             }
@@ -1703,7 +1705,6 @@ SkyPage {
         }
 
         onPostDeletedOk: {
-            skywalker.clearStatusMessage()
             ++deletePostIndex
             deleteEditedPosts()
         }
@@ -2225,7 +2226,7 @@ SkyPage {
     }
 
     function getPostCountText(postIndex, postCount) {
-        return `${UnicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + 1)}/${postCount}`
+        return `${UnicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + threadCountOffset + 1)}/${postCount + threadCountOffset}`
     }
 
     function editThreadPrefix() {
@@ -2296,7 +2297,7 @@ SkyPage {
 
         let postText = postItem.text
 
-        if (threadAutoNumber && postCount > 1)
+        if (threadAutoNumber && (postCount > 1 || threadCountOffset > 0))
             postText += `\n${getPostCountText(postIndex, postCount)}`
 
         if (postItem.card) {
@@ -2917,7 +2918,11 @@ SkyPage {
             skywalker.removeListListModel(restrictionsListModelId)
 
         draftPosts.removeDraftPostsModel()
-        postUtils.dropEditPostData(editPostData)
+
+        for (const postData of editPostData)
+            postData.release()
+
+        editPostData = []
     }
 
     Component.onCompleted: {
@@ -2941,7 +2946,11 @@ SkyPage {
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
 
-        if (editPostData.length > 0)
+        if (editPostData.length > 0) {
             setDraftPost(editPostData)
+
+            if (editPostData[0].postThreadCount > 1)
+                threadCountOffset = editPostData[0].postThreadCount - 1
+        }
     }
 }

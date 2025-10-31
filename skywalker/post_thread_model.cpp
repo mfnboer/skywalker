@@ -6,7 +6,7 @@
 
 namespace Skywalker {
 
-PostThreadModel::PostThreadModel(const QString& threadEntryUri, bool unrollThread,
+PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                                  const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
@@ -17,7 +17,9 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri, bool unrollThrea
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mThreadEntryUri(threadEntryUri),
-    mUnrollThread(unrollThread)
+    mUnrollThread(postThreadType == QEnums::POST_THREAD_UNROLLED),
+    mOnlyEntryAuthorPosts(postThreadType == QEnums::POST_THREAD_UNROLLED || postThreadType == QEnums::POST_THREAD_ENTRY_AUTHOR_POSTS),
+    mPostThreadType(postThreadType)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -393,7 +395,7 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
             // By clicking on this post the hidden replies can be accessed.
             if (!mPostFeedModel.isHiddenReply(*nextReply))
             {
-                if (mPostFeedModel.mUnrollThread)
+                if (mPostFeedModel.mOnlyEntryAuthorPosts)
                 {
                     auto nextReplyPost = Post::createPost(*nextReply, mPostFeedModel.mThreadgateView);
 
@@ -535,7 +537,7 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             // If the author made multiple replies on a post, then we want the oldest,
             // assuming that the thread was posted in one go, the oldest is most likely
             // the thread continuation.
-            if (mUnrollThread)
+            if (mOnlyEntryAuthorPosts)
                 return lhsPost->mIndexedAt < rhsPost->mIndexedAt;
 
             // New before old
@@ -584,7 +586,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         {
             Post parentPost = Post::createPost(*parent, mThreadgateView);
 
-            if (mUnrollThread && parentPost.getAuthorDid() != postEntryDid)
+            if (mOnlyEntryAuthorPosts && parentPost.getAuthorDid() != postEntryDid)
                 break;
 
             parentPost.addThreadType(QEnums::THREAD_PARENT);
@@ -621,7 +623,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         {
             Q_ASSERT(reply);
 
-            if (mUnrollThread)
+            if (mOnlyEntryAuthorPosts)
             {
                 Post replyPost = Post::createPost(*reply, mThreadgateView);
 
@@ -641,7 +643,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
             // We only need the first reply in a thread if there are multiple by
             // the same author. The other replies are most likely comments on the
             // thread that have been added later.
-            if (mUnrollThread)
+            if (mOnlyEntryAuthorPosts)
                 break;
         }
     }

@@ -134,7 +134,7 @@ ApplicationWindow {
         id: busyIndicator
         z: 200
         anchors.centerIn: parent
-        running: skywalker.getPostThreadInProgress || skywalker.getDetailedProfileInProgress
+        running: skywalker.getPostThreadInProgress || skywalker.getDetailedProfileInProgress || postEditUtils.busy
     }
 
     StatusPopup {
@@ -357,6 +357,7 @@ ApplicationWindow {
         onStatusClear: statusPopup.clear()
 
         onPostThreadOk: (did, modelId, postEntryIndex) => viewPostThread(did, modelId, postEntryIndex)
+
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 
         onGetUserProfileFailed: (error) => {
@@ -1042,12 +1043,55 @@ ApplicationWindow {
     MainPostUtils {
         id: postUtils
         skywalker: skywalker
+    }
 
-        onEditPostDataProgress: (msg) => skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 120)
+    PostEditUtils {
+        property bool busy: false
 
-        onEditPostData: (draft) => {
+        id: postEditUtils
+        skywalker: skywalker
+
+        onEditPostDataProgress: (msg) => {
+            busy = true
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 120)
+        }
+
+        onEditPostDataFailed: (error) => {
+            busy = false
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onEditPostDataOk: (draft) => {
+            busy = false
             skywalker.clearStatusMessage()
             doComposePostEdit(draft)
+        }
+
+        onEditPostPaused: (replyCount, repostCount, quoteCount, likeCount) => {
+            busy = false
+            skywalker.clearStatusMessage()
+            askEditPermission(replyCount, repostCount, quoteCount, likeCount)
+        }
+
+        function askEditPermission(replyCount, repostCount, quoteCount, likeCount) {
+            let msg = qsTr("By editing this post you will lose:<br><br>")
+
+            if (replyCount > 0)
+                msg += statText(replyCount, qsTr("reply"), qsTr("replies"))
+            if (repostCount > 0)
+                msg += statText(repostCount, qsTr("repost"), qsTr("reposts"))
+            if (quoteCount > 0)
+                msg += statText(quoteCount, qsTr("quote"), qsTr("quotes"))
+            if (likeCount > 0)
+                msg += statText(likeCount, qsTr("like"), qsTr("likes"))
+
+            guiSettings.noticeOkCancel(root, msg,
+                () => { postEditUtils.resume() },
+                () => { postEditUtils.cancel() })
+        }
+
+        function statText(count, single, plural) {
+            return (count === 1 ? `1 ${single}` : `${count} ${plural}`) + "<br>"
         }
     }
 
@@ -1344,7 +1388,7 @@ ApplicationWindow {
     }
 
     function composePostEdit(postFeedModel, postIndex) {
-        const draftPostData = postUtils.getEditPostData(postFeedModel, postIndex)
+        postEditUtils.getEditPostData(postFeedModel, postIndex)
     }
 
     function doComposePostEdit(draftPostData) {

@@ -285,12 +285,13 @@ Rectangle {
 
                 onUnrollThread: {
                     if (!postIsPlaceHolder && postUri)
-                        skywalker.getPostThread(postUri, true)
+                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                 }
 
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
                 onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                 onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                onEditPost: root.composePostEdit(page.GridView.view.model, page.index)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)

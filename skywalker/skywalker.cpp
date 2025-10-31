@@ -1705,10 +1705,10 @@ void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVis
         saveFeedSyncTimestamp(*model, lastVisibleIndex, lastVisibleOffsetY);
 }
 
-void Skywalker::getPostThread(const QString& uri, bool unrollThread)
+void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThreadType)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get post thread:" << uri << "unroll:" << unrollThread;
+    qDebug() << "Get post thread:" << uri << "type:" << (int)postThreadType;
 
     if (mGetPostThreadInProgress)
     {
@@ -1716,12 +1716,17 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread)
         return;
     }
 
+    std::optional<int> parentHeight;
+
+    if (postThreadType == QEnums::POST_THREAD_ENTRY_AUTHOR_POSTS)
+        parentHeight = 0;
+
     setGetPostThreadInProgress(true);
-    mBsky->getPostThread(uri, {}, {},
-        [this, uri, unrollThread](auto thread){
+    mBsky->getPostThread(uri, {}, parentHeight,
+        [this, uri, postThreadType](auto thread){
             setGetPostThreadInProgress(false);
 
-            auto model = std::make_unique<PostThreadModel>(uri, unrollThread,
+            auto model = std::make_unique<PostThreadModel>(uri, postThreadType,
                 mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                 mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
@@ -1745,7 +1750,7 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread)
             {
                 qDebug() << "No more posts to add";
 
-                if (unrollThread)
+                if (postThreadType == QEnums::POST_THREAD_UNROLLED)
                 {
                     auto* m = getPostThreadModel(id);
                     Q_ASSERT(m);
@@ -1761,7 +1766,7 @@ void Skywalker::getPostThread(const QString& uri, bool unrollThread)
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
-            qDebug() << "getPostThread FAILED:" << error << " - " << msg;
+            qDebug() << "getPostThread FAILED:" << error << " - " << msg;           
             emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -1771,12 +1776,19 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
     Q_ASSERT(modelId >= 0);
     qDebug() << "Add post thread:" << uri << "model:" << modelId << "maxPages:" << maxPages;
 
+    auto model = getPostThreadModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "No model:" << modelId;
+        return;
+    }
+
     if (maxPages <= 0)
     {
         qDebug() << "Max pages reached";
-        auto model = getPostThreadModel(modelId);
 
-        if (model && model->isUnrollThread())
+        if (model->isUnrollThread())
             model->unrollThread();
 
         return;
@@ -1794,29 +1806,27 @@ void Skywalker::addPostThread(const QString& uri, int modelId, int maxPages)
             setGetPostThreadInProgress(false);
             auto model = getPostThreadModel(modelId);
 
-            if (model)
-            {
-                if (model->addMorePosts(thread))
-                {
-                    const QString leafUri = model->getPostToAttachMore();
-
-                    if (!leafUri.isEmpty())
-                        addPostThread(leafUri, modelId, maxPages - 1);
-                    else if (model->isUnrollThread())
-                        model->unrollThread();
-                }
-                else
-                {
-                    qDebug() << "No more posts to add";
-
-                    if (model->isUnrollThread())
-                        model->unrollThread();
-                }
-            }
-            else
+            if (!model)
             {
                 qWarning() << "Model does not exist:" << modelId;
+                return;
             }
+
+            if (model->addMorePosts(thread))
+            {
+                const QString leafUri = model->getPostToAttachMore();
+
+                if (!leafUri.isEmpty())
+                {
+                    addPostThread(leafUri, modelId, maxPages - 1);
+                    return;
+                }
+            }
+
+            qDebug() << "No more posts to add";
+
+            if (model->isUnrollThread())
+                model->unrollThread();
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
@@ -1868,6 +1878,17 @@ void Skywalker::addOlderPostThread(int modelId)
             qDebug() << "addOlderPostThread FAILED:" << error << " - " << msg;
             emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
+}
+
+int Skywalker::createPostThreadModel(const QString& uri, QEnums::PostThreadType type)
+{
+    qDebug() << "Create post thread model:" << uri << "type:" << (int)type;
+    auto model = std::make_unique<PostThreadModel>(
+        uri, type,
+        mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+        mMutedWords, *mFocusHashtags, mSeenHashtags, this);
+    const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
+    return id;
 }
 
 PostThreadModel* Skywalker::getPostThreadModel(int id) const
