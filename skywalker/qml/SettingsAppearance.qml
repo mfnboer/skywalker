@@ -287,7 +287,13 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
-        text: qsTr("Show online indication for users you follow")
+        text: qsTr("Indication on ava for users you follow")
+        checked: userSettings.showFollowsStatus
+        onCheckedChanged: userSettings.showFollowsStatus = checked
+    }
+
+    AccessibleCheckBox {
+        text: qsTr("Online indication on ava for users you follow")
         checked: userSettings.showFollowsActiveStatus
         onCheckedChanged: userSettings.showFollowsActiveStatus = checked
     }

@@ -1076,6 +1076,20 @@ bool UserSettings::getSonglinkEnabled() const
     return mSettings.value("songlinkEnabled", true).toBool();
 }
 
+void UserSettings::setShowFollowsStatus(bool show)
+{
+    if (show == getShowFollowsStatus())
+        return;
+
+    mSettings.setValue("showFollowsStatus", show);
+    emit showFollowsActiveStatusChanged();
+}
+
+bool UserSettings::getShowFollowsStatus() const
+{
+    return mSettings.value("showFollowsStatus", true).toBool();
+}
+
 void UserSettings::setShowFollowsActiveStatus(bool show)
 {
     if (show == getShowFollowsActiveStatus())

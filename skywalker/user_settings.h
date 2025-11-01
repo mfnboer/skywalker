@@ -31,6 +31,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
+    Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
     Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
@@ -254,6 +255,9 @@ public:
     void setSonglinkEnabled(bool enabled);
     bool getSonglinkEnabled() const;
 
+    void setShowFollowsStatus(bool show);
+    bool getShowFollowsStatus() const;
+
     void setShowFollowsActiveStatus(bool show);
     bool getShowFollowsActiveStatus() const;
 
@@ -403,6 +407,7 @@ signals:
     void favoritesBarPositionChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();
+    void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();
     void landscapeSideBarChanged();
     void gifAutoPlayChanged();
