@@ -260,9 +260,10 @@ Item {
                     MenuItemSvg { svg: viewerStatePinned ? SvgFilled.unpin : SvgFilled.pin }
                 }
 
+                // Only allow the active user to edit posts to avoid too much complexity
                 AccessibleMenuItem {
                     text: qsTr("Edit")
-                    visible: authorIsUser && !isUnrolledThread
+                    visible: authorIsUser && !isUnrolledThread && root.isActiveUser(skywalker.getUserDid())
                     onTriggered: editPost()
 
                     MenuItemSvg { svg: SvgOutline.edit }

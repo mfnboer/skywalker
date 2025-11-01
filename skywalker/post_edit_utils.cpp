@@ -258,6 +258,7 @@ void PostEditUtils::getEditPostDataContinue(int postThreadModelId, const Post& p
     data->setUri(post.getUri());
     data->setCid(post.getCid());
     DraftPosts::setDraftPost(data, post);
+    data->setEmbeddedLinks(post.getEmbeddedLinks());
     setGif(data, post);
     removePostThreadCounter(data);
 

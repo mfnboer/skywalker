@@ -21,7 +21,7 @@ SkyListView {
     header: SimpleHeader {
         height: (headerVisible ? guiSettings.headerHeight : guiSettings.headerMargin) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
-        userDid: userDid
+        userDid: view.userDid
         headerVisible: !root.showSideBar
         onBack: view.closed()
 

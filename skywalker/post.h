@@ -66,6 +66,8 @@ public:
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
 
     WebLink::List getDraftEmbeddedLinks() const;
+    WebLink::List getEmbeddedLinks() const;
+
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;

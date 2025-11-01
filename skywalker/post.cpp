@@ -236,6 +236,19 @@ WebLink::List Post::getDraftEmbeddedLinks() const
     return embeddedLinks;
 }
 
+WebLink::List Post::getEmbeddedLinks() const
+{
+    if (!mPost)
+        return {};
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
+    const auto facets = ATProto::RichTextMaster::getEmbeddedLinks(record->mText, record->mFacets);
+    return WebLink::fromFacetList(facets);
+}
+
 BasicProfile Post::getAuthor() const
 {
     return mPost ? BasicProfile(mPost->mAuthor) : BasicProfile();

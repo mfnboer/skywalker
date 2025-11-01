@@ -69,7 +69,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: Layout.preferredHeight
-            active: !root.isActiveUser(userDid)
+            active: !root.isActiveUser(headerRect.userDid)
 
             sourceComponent: CurrentUserAvatar {
                 userDid: headerRect.userDid
