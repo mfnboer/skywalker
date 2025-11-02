@@ -1522,16 +1522,16 @@ ApplicationWindow {
         pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", quoteByDid))
     }
 
-    function like(likeUri, uri, cid, viaUri = "", viaCid = "", likeByDid = "") {
+    function like(likeUri, uri, cid, viaUri = "", viaCid = "", feedDid = "", feedContext = "", likeByDid = "") {
         const pu = getPostUtils(likeByDid)
 
         if (!pu)
             return
 
         if (likeUri)
-            pu.undoLike(likeUri, cid)
+            pu.undoLike(likeUri, uri, cid, feedDid)
         else
-            pu.like(uri, cid, viaUri, viaCid)
+            pu.like(uri, cid, viaUri, viaCid, feedDid, feedContext)
     }
 
     function likeFeed(likeUri, uri, cid, likeByDid = "") {

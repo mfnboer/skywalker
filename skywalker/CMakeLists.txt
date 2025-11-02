@@ -585,6 +585,8 @@ qt_add_qml_module(libskywalker
         QML_FILES
         SOURCES post_edit_utils.h
         SOURCES post_edit_utils.cpp
+        SOURCES interaction_sender.h
+        SOURCES interaction_sender.cpp
 )
 
 if (NOT ANDROID)

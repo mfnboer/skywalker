@@ -5,7 +5,6 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "list_view.h"
-#include "post.h"
 #include "post_interaction_settings.h"
 #include "postgate.h"
 #include "presence.h"
@@ -58,8 +57,10 @@ public:
     Q_INVOKABLE void detachQuote(const QString& uri, const QString& embeddingUri, const QString& embeddingCid, bool detach);
     Q_INVOKABLE void repost(const QString& uri, const QString& cid, const QString& viaUri = {}, const QString& viaCid = {});
     Q_INVOKABLE void undoRepost(const QString& repostUri, const QString& origPostCid);
-    Q_INVOKABLE void like(const QString& uri, const QString& cid, const QString& viaUri = {}, const QString& viaCid = {});
-    Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
+    Q_INVOKABLE void like(const QString& uri, const QString& cid,
+                          const QString& viaUri = {}, const QString& viaCid = {},
+                          const QString& feedDid = {}, const QString& feedContext = {});
+    Q_INVOKABLE void undoLike(const QString& likeUri, const QString& uri, const QString& cid, const QString& feedDid = {});
     Q_INVOKABLE void muteThread(const QString& uri);
     Q_INVOKABLE void unmuteThread(const QString& uri);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);

@@ -2701,9 +2701,18 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
             mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mMutedWords,
-            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore, this);
+            *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
+            this);
     model->setGeneratorView(generatorView);
     model->enableLanguageFilter(true);
+
+    if (generatorView.acceptsInteractions() && !generatorView.getDid().isEmpty())
+    {
+        qDebug() << "Create feed interaction sender:" << generatorView.getDid();
+        auto interactionSender = std::make_unique<InteractionSender>(generatorView.getDid(), mBsky, this);
+        model->setFeedInteractionSender(std::move(interactionSender));
+    }
+
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }

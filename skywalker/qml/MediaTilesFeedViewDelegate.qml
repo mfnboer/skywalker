@@ -257,7 +257,9 @@ Rectangle {
                         quote()
                 }
 
-                onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, userDid)
+                onLike: root.like(postLikeUri, postUri, postCid,
+                                  postReasonRepostUri, postReasonRepostCid,
+                                  feedDid, postFeedContext, userDid)
 
                 onLikeLongPress: (mouseEvent) => {
                     if (root.isActiveUser(userDid))

@@ -6,6 +6,7 @@
 #include "filtered_post_feed_model.h"
 #include "follows_activity_store.h"
 #include "generator_view.h"
+#include "interaction_sender.h"
 #include "post_filter.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
@@ -55,6 +56,7 @@ public:
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
     bool isHomeFeed() const { return mIsHomeFeed; }
     QString getPreferencesFeedKey() const;
+    void setFeedInteractionSender(InteractionSender::Ptr interactionSender);
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
     void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
@@ -122,6 +124,13 @@ public:
     void refreshAllFilteredModels();
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
+
+    void feedInteractionAdded(const QString& feedDid,
+                              ATProto::AppBskyFeed::Interaction::EventType event,
+                              const QString& postUri, const QString& feedContext) override;
+    void feedInteractionRemoved(const QString& feedDid,
+                                ATProto::AppBskyFeed::Interaction::EventType event,
+                                const QString& postUri) override;
 
 signals:
     void languageFilterConfiguredChanged();
@@ -218,6 +227,7 @@ private:
     QString mQuoteUri; // posts quoting this post
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
+    InteractionSender::Ptr mInteractionSender;
 };
 
 }

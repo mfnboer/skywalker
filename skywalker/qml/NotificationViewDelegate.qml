@@ -394,7 +394,8 @@ Rectangle {
                         }
 
                         onLike: {
-                            root.like(notificationPostLikeUri, notificationPostUri, notificationCid, "", "", notification.owner.did)
+                            root.like(notificationPostLikeUri, notificationPostUri, notificationCid,
+                            "", "", "", "", notification.owner.did)
                         }
 
                         onLikeLongPress: (mouseEvent) => {

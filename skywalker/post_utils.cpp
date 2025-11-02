@@ -995,7 +995,9 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
         });
 }
 
-void PostUtils::like(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid)
+void PostUtils::like(const QString& uri, const QString& cid,
+                     const QString& viaUri, const QString& viaCid,
+                     const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
@@ -1007,15 +1009,19 @@ void PostUtils::like(const QString& uri, const QString& cid, const QString& viaU
 
 
     postMaster()->like(uri, cid, viaUri, viaCid,
-        [this, presence=getPresence(), cid](const auto& likeUri, const auto&){
+        [this, presence=getPresence(), uri, cid, feedDid, feedContext](const auto& likeUri, const auto&){
             if (!presence)
                 return;
 
             mSkywalker->makeLocalModelChange(
-                [cid, likeUri](LocalPostModelChanges* model){
+                [uri, cid, feedDid, feedContext, likeUri](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, 1);
                     model->updateLikeUri(cid, likeUri);
                     model->updateLikeTransient(cid, false);
+                    model->addFeedInteraction(
+                        feedDid,
+                        ATProto::AppBskyFeed::Interaction::EventType::InteractionLike,
+                        uri, feedContext);
                 });
 
             emit likeOk();
@@ -1035,7 +1041,7 @@ void PostUtils::like(const QString& uri, const QString& cid, const QString& viaU
         });
 }
 
-void PostUtils::undoLike(const QString& likeUri, const QString& cid)
+void PostUtils::undoLike(const QString& likeUri, const QString& uri, const QString& cid, const QString& feedDid)
 {
     if (!postMaster())
         return;
@@ -1046,15 +1052,19 @@ void PostUtils::undoLike(const QString& likeUri, const QString& cid)
         });
 
     postMaster()->undo(likeUri,
-        [this, presence=getPresence(), cid]{
+        [this, presence=getPresence(), uri, cid, feedDid]{
             if (!presence)
                 return;
 
             mSkywalker->makeLocalModelChange(
-                [cid](LocalPostModelChanges* model){
+                [uri, cid, feedDid](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, -1);
                     model->updateLikeUri(cid, "");
                     model->updateLikeTransient(cid, false);
+                    model->removeFeedInteraction(
+                        feedDid,
+                        ATProto::AppBskyFeed::Interaction::EventType::InteractionLike,
+                        uri);
                 });
 
             emit undoLikeOk();

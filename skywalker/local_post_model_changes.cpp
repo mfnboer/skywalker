@@ -112,6 +112,22 @@ void LocalPostModelChanges::updateBookmarkTransient(const QString& cid, bool tra
     bookmarkTransientChanged();
 }
 
+void LocalPostModelChanges::addFeedInteraction(const QString& feedDid,
+                                               ATProto::AppBskyFeed::Interaction::EventType event,
+                                               const QString& postUri, const QString& feedContext)
+{
+    if (!feedDid.isEmpty())
+        feedInteractionAdded(feedDid, event, postUri, feedContext);
+}
+
+void LocalPostModelChanges::removeFeedInteraction(const QString& feedDid,
+                                                  ATProto::AppBskyFeed::Interaction::EventType event,
+                                                  const QString& postUri)
+{
+    if (!feedDid.isEmpty())
+        feedInteractionRemoved(feedDid, event, postUri);
+}
+
 bool LocalPostModelChanges::updateDetachedRecord(const QString& cid, const QString& postUri)
 {
     if (postUri.isEmpty())
