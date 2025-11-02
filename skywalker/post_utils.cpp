@@ -863,6 +863,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
 
     emit postProgress(tr("Posting"));
 
+    // TODO: add feed interactions: reply, quote
     postMaster()->post(*post,
         [this, presence=getPresence(), post](const QString& uri, const QString& cid){
             if (!presence)
@@ -920,7 +921,9 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
         });
 }
 
-void PostUtils::repost(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid)
+void PostUtils::repost(const QString& uri, const QString& cid,
+                       const QString& viaUri, const QString& viaCid,
+                       const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
@@ -928,9 +931,9 @@ void PostUtils::repost(const QString& uri, const QString& cid, const QString& vi
     emit repostProgress(tr("Reposting"));
 
     postMaster()->checkRecordExists(uri, cid,
-        [this, presence=getPresence(), uri, cid, viaUri, viaCid]{
+        [this, presence=getPresence(), uri, cid, viaUri, viaCid, feedDid, feedContext]{
             if (presence)
-                continueRepost(uri, cid, viaUri, viaCid);
+                continueRepost(uri, cid, viaUri, viaCid, feedDid, feedContext);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -941,13 +944,15 @@ void PostUtils::repost(const QString& uri, const QString& cid, const QString& vi
         });
 }
 
-void PostUtils::continueRepost(const QString& uri, const QString& cid, const QString& viaUri, const QString& viaCid)
+void PostUtils::continueRepost(const QString& uri, const QString& cid,
+                               const QString& viaUri, const QString& viaCid,
+                               const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
 
     postMaster()->repost(uri, cid, viaUri, viaCid,
-        [this, presence=getPresence(), cid](const auto& repostUri, const auto&){
+        [this, presence=getPresence(), uri, cid, feedDid, feedContext](const auto& repostUri, const auto&){
             if (!presence)
                 return;
 
@@ -956,6 +961,10 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid, const QSt
                     model->updateRepostCountDelta(cid, 1);
                     model->updateRepostUri(cid, repostUri);
                 });
+
+            mSkywalker->addFeedInteraction(
+                feedDid, ATProto::AppBskyFeed::Interaction::EventType::InteractionRepost,
+                uri, feedContext);
 
             emit repostOk();
         },
@@ -968,13 +977,14 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid, const QSt
         });
 }
 
-void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
+void PostUtils::undoRepost(const QString& repostUri, const QString& origPostUri,
+                           const QString& origPostCid, const QString& feedDid)
 {
     if (!postMaster())
         return;
 
     postMaster()->undo(repostUri,
-        [this, presence=getPresence(), origPostCid]{
+        [this, presence=getPresence(), origPostUri, origPostCid, feedDid]{
             if (!presence)
                 return;
 
@@ -983,6 +993,10 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostCid)
                     model->updateRepostCountDelta(origPostCid, -1);
                     model->updateRepostUri(origPostCid, "");
                 });
+
+            mSkywalker->removeFeedInteraction(
+                feedDid, ATProto::AppBskyFeed::Interaction::EventType::InteractionRepost,
+                origPostUri);
 
             emit undoRepostOk();
         },
@@ -1018,11 +1032,12 @@ void PostUtils::like(const QString& uri, const QString& cid,
                     model->updateLikeCountDelta(cid, 1);
                     model->updateLikeUri(cid, likeUri);
                     model->updateLikeTransient(cid, false);
-                    model->addFeedInteraction(
-                        feedDid,
-                        ATProto::AppBskyFeed::Interaction::EventType::InteractionLike,
-                        uri, feedContext);
                 });
+
+            mSkywalker->addFeedInteraction(
+                feedDid,
+                ATProto::AppBskyFeed::Interaction::EventType::InteractionLike,
+                uri, feedContext);
 
             emit likeOk();
         },
@@ -1061,11 +1076,12 @@ void PostUtils::undoLike(const QString& likeUri, const QString& uri, const QStri
                     model->updateLikeCountDelta(cid, -1);
                     model->updateLikeUri(cid, "");
                     model->updateLikeTransient(cid, false);
-                    model->removeFeedInteraction(
-                        feedDid,
-                        ATProto::AppBskyFeed::Interaction::EventType::InteractionLike,
-                        uri);
                 });
+
+            mSkywalker->removeFeedInteraction(
+                feedDid,
+                ATProto::AppBskyFeed::Interaction::EventType::InteractionLike,
+                uri);
 
             emit undoLikeOk();
         },

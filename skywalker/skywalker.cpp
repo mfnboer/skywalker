@@ -2037,6 +2037,33 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalListModelChan
         update(model.get());
 }
 
+void Skywalker::addFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
+                        const QString& postUri, const QString& feedContext)
+{
+    if (feedDid.isEmpty())
+        return;
+
+    for (auto& [_, model] : mPostFeedModels.items())
+    {
+        // In the rare case we have multiple models for a feed, the interaction
+        // only needs to be sent once.
+        if (model->addFeedInteraction(feedDid, event, postUri, feedContext))
+            break;
+    }
+}
+
+void Skywalker::removeFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
+                           const QString& postUri)
+{
+    if (feedDid.isEmpty())
+        return;
+
+    // If there are multiple models for a a feed, make sure that the interaction
+    // is removed from all models.
+    for (auto& [_, model] : mPostFeedModels.items())
+        model->removeFeedInteraction(feedDid, event, postUri);
+}
+
 void Skywalker::updateNotificationPreferences(bool priority)
 {
     Q_ASSERT(mBsky);

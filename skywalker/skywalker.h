@@ -222,6 +222,11 @@ public:
     void makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalListModelChanges*)>& update);
 
+    void addFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
+                            const QString& postUri, const QString& feedContext);
+    void removeFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
+                               const QString& postUri);
+
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     NotificationListModel* getMentionListModel() { return &mMentionListModel; }

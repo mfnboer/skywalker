@@ -18,6 +18,14 @@ InteractionSender::InteractionSender(const QString& feedDid, ATProto::Client::Sh
     connect(&mSendTimer, &QTimer::timeout, this, [this]{ sendInteractions(); });
 }
 
+InteractionSender::~InteractionSender()
+{
+    qDebug() << "Delete interaction sender:" << mFeedDid;
+
+    if (!mInteractions.empty())
+        sendInteractions();
+}
+
 void InteractionSender::addInteraction(EventType event, const QString& postUri, const QString& feedContext)
 {
     addInteraction(Interaction{event, postUri, feedContext});

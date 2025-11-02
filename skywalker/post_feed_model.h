@@ -125,12 +125,12 @@ public:
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
-    void feedInteractionAdded(const QString& feedDid,
-                              ATProto::AppBskyFeed::Interaction::EventType event,
-                              const QString& postUri, const QString& feedContext) override;
-    void feedInteractionRemoved(const QString& feedDid,
-                                ATProto::AppBskyFeed::Interaction::EventType event,
-                                const QString& postUri) override;
+    bool addFeedInteraction(const QString& feedDid,
+                            ATProto::AppBskyFeed::Interaction::EventType event,
+                            const QString& postUri, const QString& feedContext);
+    void removeFeedInteraction(const QString& feedDid,
+                               ATProto::AppBskyFeed::Interaction::EventType event,
+                               const QString& postUri);
 
 signals:
     void languageFilterConfiguredChanged();

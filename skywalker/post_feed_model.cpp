@@ -836,19 +836,20 @@ void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalP
         update(model.get());
 }
 
-void PostFeedModel::feedInteractionAdded(const QString& feedDid,
-                                         ATProto::AppBskyFeed::Interaction::EventType event,
-                                         const QString& postUri, const QString& feedContext)
+bool PostFeedModel::addFeedInteraction(const QString& feedDid,
+                                       ATProto::AppBskyFeed::Interaction::EventType event,
+                                       const QString& postUri, const QString& feedContext)
 {
     if (!mInteractionSender || feedDid != getFeedDid())
-        return;
+        return false;
 
     mInteractionSender->addInteraction(event, postUri, feedContext);
+    return true;
 }
 
-void PostFeedModel::feedInteractionRemoved(const QString& feedDid,
-                                           ATProto::AppBskyFeed::Interaction::EventType event,
-                                           const QString& postUri)
+void PostFeedModel::removeFeedInteraction(const QString& feedDid,
+                                          ATProto::AppBskyFeed::Interaction::EventType event,
+                                          const QString& postUri)
 {
     if (!mInteractionSender || feedDid != getFeedDid())
         return;

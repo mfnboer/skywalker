@@ -933,6 +933,8 @@ ApplicationWindow {
         property string repostCid
         property string repostViaUri
         property string repostViaCid
+        property string repostFeedDid
+        property string repostFeedContext
         property string repostText
         property date repostDateTime
         property basicprofile repostAuthor
@@ -970,10 +972,16 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
                     onClicked: {
-                        if (repostDrawer.repostedAlreadyUri)
-                            getPostUtils(repostDrawer.repostByDid).undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
-                        else
-                            getPostUtils(repostDrawer.repostByDid).repost(repostDrawer.repostUri, repostDrawer.repostCid, repostDrawer.repostViaUri, repostDrawer.repostViaCid)
+                        const pu = getPostUtils(repostDrawer.repostByDid)
+
+                        if (repostDrawer.repostedAlreadyUri) {
+                            pu.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostUri,
+                                          repostDrawer.repostCid, repostDrawer.repostFeedDid)
+                        } else {
+                            pu.repost(repostDrawer.repostUri, repostDrawer.repostCid,
+                                      repostDrawer.repostViaUri, repostDrawer.repostViaCid,
+                                      repostDrawer.repostFeedDid, repostDrawer.repostFeedContext)
+                        }
 
                         repostDrawer.close()
                     }
@@ -1024,13 +1032,16 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, byDid = "") {
+        function show(hasRepostedUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                      dateTime, author, embeddingDisabled, plainText, byDid = "") {
             repostByDid = byDid
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
             repostViaUri = viaUri
             repostViaCid = viaCid
+            repostFeedDid = feedDid
+            repostFeedContext = feedContext
             repostText = text
             repostDateTime = dateTime
             repostAuthor = author
@@ -1502,14 +1513,18 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
+    function repost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                    dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
         const pu = getPostUtils(repostByDid)
         pu.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid))
+            () => doRepost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                           dateTime, author, embeddingDisabled, plainText, repostByDid))
     }
 
-    function doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
-        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid)
+    function doRepost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                      dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
+        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                          dateTime, author, embeddingDisabled, plainText, repostByDid)
     }
 
     function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, quoteByDid = "") {

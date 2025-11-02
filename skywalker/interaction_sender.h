@@ -19,6 +19,7 @@ public:
     using EventType = ATProto::AppBskyFeed::Interaction::EventType;
 
     InteractionSender(const QString& feedDid, ATProto::Client::SharedPtr& bsky, QObject* parent = nullptr);
+    ~InteractionSender();
 
     void addInteraction(EventType event, const QString& postUri, const QString& feedContext);
     void removeInteraction(EventType event, const QString& postUri);

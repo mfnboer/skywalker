@@ -363,7 +363,7 @@ Rectangle {
 
                         function repostNotification(nonActiveUserDid = "") {
                             root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
-                                        "", "", notificationPostText, notificationPostTimestamp,
+                                        "", "", "", "", notificationPostText, notificationPostTimestamp,
                                         notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText,
                                         nonActiveUserDid)
                         }

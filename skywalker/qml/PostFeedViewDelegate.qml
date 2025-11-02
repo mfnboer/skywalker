@@ -605,7 +605,9 @@ Rectangle {
                     }
 
                     onRepost: {
-                        root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
+                        root.repost(postRepostUri, postUri, postCid,
+                                    postReasonRepostUri, postReasonRepostCid,
+                                    feedDid, postFeedContext,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                     postIndexedDateTime, author, postEmbeddingDisabled,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText,

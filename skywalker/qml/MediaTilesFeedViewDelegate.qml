@@ -232,9 +232,11 @@ Rectangle {
                 }
 
                 onRepost: {
-                    root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled, postPlainText,
-                                userDid)
+                    root.repost(postRepostUri, postUri, postCid,
+                                postReasonRepostUri, postReasonRepostCid,
+                                feedDid, postFeedContext, postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                postPlainText, userDid)
                 }
 
                 function quote(quoteByDid = "") {

@@ -65,13 +65,6 @@ public:
     void updateBookmarked(const QString& cid, bool bookmarked);
     void updateBookmarkTransient(const QString& cid, bool transient);
 
-    void addFeedInteraction(const QString& feedDid,
-                            ATProto::AppBskyFeed::Interaction::EventType event,
-                            const QString& postUri, const QString& feedContext);
-    void removeFeedInteraction(const QString& feedDid,
-                               ATProto::AppBskyFeed::Interaction::EventType event,
-                               const QString& postUri);
-
     /**
      * @brief updateDetachedRecord
      * @param cid cid of the embedding post
@@ -104,14 +97,6 @@ protected:
     virtual void reAttachedRecordChanged() = 0;
     virtual void viewerStatePinnedChanged() = 0;
     virtual void postDeletedChanged() = 0;
-
-    virtual void feedInteractionAdded(const QString& /* feedDid */,
-                                      ATProto::AppBskyFeed::Interaction::EventType,
-                                      const QString& /* postUri */,
-                                      const QString& /* feedContext */) {};
-    virtual void feedInteractionRemoved(const QString& /* feedDid */,
-                                        ATProto::AppBskyFeed::Interaction::EventType,
-                                        const QString& /* postUri */) {};
 
 private:
     // Mapping from post CID to change
