@@ -64,9 +64,9 @@ Skywalker::Skywalker(QObject* parent) :
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+    mTimelineModel(tr("Following"), nullptr, mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
-                   mUserPreferences, mUserSettings, mFollowsActivityStore, this)
+                   mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
@@ -153,9 +153,9 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+    mTimelineModel(tr("Following"), nullptr, mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
-                   mUserPreferences, mUserSettings, mFollowsActivityStore, this)
+                   mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
     Q_ASSERT(!mUserSettings.getUser(did).isNull());
     mNetwork->setAutoDeleteReplies(true);
@@ -2726,32 +2726,24 @@ int Skywalker::addModelToStore(ModelType::Ptr model, ItemStore<typename ModelTyp
 
 int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
-    auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(),
+    const PostFeedModel::FeedVariant feedVariant{generatorView};
+    auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(), &feedVariant,
             mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mMutedWords,
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
-            this);
-    model->setGeneratorView(generatorView);
+            mBsky, this);
     model->enableLanguageFilter(true);
-
-    if (generatorView.acceptsInteractions() && !generatorView.getDid().isEmpty())
-    {
-        qDebug() << "Create feed interaction sender:" << generatorView.getDid();
-        auto interactionSender = std::make_unique<InteractionSender>(generatorView.getDid(), mBsky, this);
-        model->setFeedInteractionSender(std::move(interactionSender));
-    }
-
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
 
 int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
-    auto model = std::make_unique<PostFeedModel>(listView.getName(),
+    const PostFeedModel::FeedVariant feedVariant{listView};
+    auto model = std::make_unique<PostFeedModel>(listView.getName(), &feedVariant,
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
-                                                 mFollowsActivityStore, this);
-    model->setListView(listView);
+                                                 mFollowsActivityStore, mBsky, this);
     model->enableLanguageFilter(true);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
@@ -2759,12 +2751,12 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 
 int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
-    auto model = std::make_unique<PostFeedModel>(tr("Quote posts"),
+    const PostFeedModel::FeedVariant feedVariant{quoteUri};
+    auto model = std::make_unique<PostFeedModel>(tr("Quote posts"), &feedVariant,
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
-                                                 mFollowsActivityStore, this);
-    model->setQuoteUri(quoteUri);
+                                                 mFollowsActivityStore, mBsky, this);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }

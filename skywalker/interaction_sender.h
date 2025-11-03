@@ -18,11 +18,14 @@ public:
     using Ptr = std::unique_ptr<InteractionSender>;
     using EventType = ATProto::AppBskyFeed::Interaction::EventType;
 
-    InteractionSender(const QString& feedDid, ATProto::Client::SharedPtr& bsky, QObject* parent = nullptr);
+    InteractionSender(const QString& feedDid, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
     ~InteractionSender();
 
     void addInteraction(EventType event, const QString& postUri, const QString& feedContext);
     void removeInteraction(EventType event, const QString& postUri);
+
+    void reportOnScreen(const QString& postUri);
+    void reportOffScreen(const QString& postUri, const QString& feedContext);
 
 private:
     struct Interaction
@@ -51,8 +54,9 @@ private:
     ATProto::AppBskyFeed::Interaction::List makeAtInteractionList() const;
 
     QString mFeedDid;
-    ATProto::Client::SharedPtr& mBsky;
+    ATProto::Client::SharedPtr mBsky;
     std::unordered_set<Interaction, Interaction::Hash> mInteractions;
+    std::unordered_map<QString, std::chrono::time_point<std::chrono::high_resolution_clock>> mPostUriOnScreen;
     QTimer mSendTimer;
 };
 

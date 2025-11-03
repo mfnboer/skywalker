@@ -96,6 +96,11 @@ SkyListView {
 
     onContentMoved: updateOnMovement()
 
+    onCovered: {
+        if (mediaTilesLoader.item)
+            mediaTilesLoader.item.cover()
+    }
+
     function updateOnMovement() {
         if (!inSync)
             return

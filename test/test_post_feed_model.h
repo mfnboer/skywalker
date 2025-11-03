@@ -19,9 +19,9 @@ private slots:
     void init()
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
-            HOME_FEED, mUserDid, mFollowing, mMutedReposts, mHideLists, mContentFilter,
+            HOME_FEED, nullptr, mUserDid, mFollowing, mMutedReposts, mHideLists, mContentFilter,
             mMutedWords, mFocusHashtags, mHashtags, mUserPreferences, mUserSettings,
-            mFollowsActivityStore);
+            mFollowsActivityStore, nullptr);
     }
 
     void cleanup()

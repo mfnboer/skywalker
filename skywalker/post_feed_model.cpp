@@ -12,7 +12,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-PostFeedModel::PostFeedModel(const QString& feedName,
+PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
                              const IProfileStore& feedHide,
@@ -23,6 +23,7 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const ATProto::UserPreferences& userPrefs,
                              UserSettings& userSettings,
                              FollowsActivityStore& followsActivityStore,
+                             ATProto::Client::SharedPtr bsky,
                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
@@ -30,6 +31,11 @@ PostFeedModel::PostFeedModel(const QString& feedName,
     mFollowsActivityStore(followsActivityStore),
     mFeedName(feedName)
 {
+    if (feedVariant)
+        std::visit([this](auto&& variant){ setFeedVariant(variant); }, *feedVariant);
+
+    createInteractionSender(bsky);
+
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
             [this]{ emit languageFilterConfiguredChanged(); });
 
@@ -46,6 +52,24 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                 if (did == mUserDid && feedUri == getFeedUri())
                     mFeedHideFollowing = mUserSettings.getFeedHideFollowing(did, feedUri);
             });
+}
+
+void PostFeedModel::createInteractionSender(ATProto::Client::SharedPtr bsky)
+{
+    if (feedAcceptsInteractions() && !getFeedDid().isEmpty())
+    {
+        Q_ASSERT(bsky);
+
+        if (bsky)
+        {
+            qDebug() << "Create feed interaction sender:" << getFeedDid();
+            mInteractionSender = std::make_unique<InteractionSender>(getFeedDid(), bsky, this);
+        }
+        else
+        {
+            qWarning() << "No ATProto client, feedDid:" << getFeedDid();
+        }
+    }
 }
 
 const QString PostFeedModel::getFeedDid() const
@@ -84,12 +108,6 @@ QString PostFeedModel::getPreferencesFeedKey() const
 {
     static const QString HOME_KEY = HOME_FEED;
     return mIsHomeFeed ? HOME_KEY : getFeedUri();
-}
-
-void PostFeedModel::setFeedInteractionSender(InteractionSender::Ptr interactionSender)
-{
-    mInteractionSender = std::move(interactionSender);
-    mInteractionSender->setParent(this);
 }
 
 bool PostFeedModel::isLanguageFilterConfigured() const
@@ -855,6 +873,18 @@ void PostFeedModel::removeFeedInteraction(const QString& feedDid,
         return;
 
     mInteractionSender->removeInteraction(event, postUri);
+}
+
+void PostFeedModel::reportOnScreen(const QString& postUri)
+{
+    if (mInteractionSender)
+        mInteractionSender->reportOnScreen(postUri);
+}
+
+void PostFeedModel::reportOffScreen(const QString& postUri, const QString& feedContext)
+{
+    if (mInteractionSender)
+        mInteractionSender->reportOffScreen(postUri, feedContext);
 }
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)

@@ -80,11 +80,24 @@ Rectangle {
     property var videoItem: postVideo ? videoLoader.item : null
     property var imageItem: postImages.length > 0 ? imageLoader.item : null
     property var mediaItem: videoItem ? videoItem : imageItem
+    property bool onScreen: false
 
     signal activateSwipe
 
     id: page
     color: guiSettings.backgroundColor
+
+    onYChanged: checkOnScreen()
+
+    onOnScreenChanged: {
+        if (feedAcceptsInteractions)
+        {
+            if (onScreen)
+                GridView.view.model.reportOnScreen(postUri)
+            else
+                GridView.view.model.reportOffScreen(postUri, postFeedContext)
+        }
+    }
 
     Rectangle {
         id: mediaRect
@@ -323,10 +336,33 @@ Rectangle {
         onClicked: activateSwipe()
     }
 
+    function checkOnScreen() {
+        const headerHeight = GridView.view.headerItem ? GridView.view.headerItem.height : 0
+        const topY = GridView.view.contentY + headerHeight
+        onScreen = (y + height > topY) && (y < GridView.view.contentY + GridView.view.height)
+    }
+
+    function cover() {
+        if (feedAcceptsInteractions && onScreen)
+            GridView.view.model.reportOffScreen(postUri, postFeedContext)
+    }
+
     function confirmDelete() {
         guiSettings.askYesNoQuestion(
                     page,
                     qsTr("Do you really want to delete your post?"),
                     () => root.deletePost(postUri, postCid, userDid))
+    }
+
+    Component.onDestruction: {
+        if (feedAcceptsInteractions && onScreen)
+            GridView.view.model.reportOffScreen(postUri, postFeedContext)
+
+        GridView.view.onContentMoved.disconnect(checkOnScreen)
+    }
+
+    Component.onCompleted: {
+        checkOnScreen()
+        GridView.view.onContentMoved.connect(checkOnScreen)
     }
 }

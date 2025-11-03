@@ -32,8 +32,9 @@ class PostFeedModel : public AbstractPostFeedModel
 
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
+    using FeedVariant = std::variant<GeneratorView, ListViewBasic, QString /* quote uri */>;
 
-    explicit PostFeedModel(const QString& feedName,
+    explicit PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                            const QString& userDid, const IProfileStore& following,
                            const IProfileStore& mutedReposts,
                            const IProfileStore& feedHide,
@@ -44,6 +45,7 @@ public:
                            const ATProto::UserPreferences& userPrefs,
                            UserSettings& userSettings,
                            FollowsActivityStore& followsActivityStore,
+                           ATProto::Client::SharedPtr bsky,
                            QObject* parent = nullptr);
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
@@ -56,18 +58,17 @@ public:
     void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
     bool isHomeFeed() const { return mIsHomeFeed; }
     QString getPreferencesFeedKey() const;
-    void setFeedInteractionSender(InteractionSender::Ptr interactionSender);
 
     Q_INVOKABLE const GeneratorView getGeneratorView() const { return mGeneratorView; }
-    void setGeneratorView(const GeneratorView& view) { mGeneratorView = view; }
+    void setFeedVariant(const GeneratorView& view) { mGeneratorView = view; }
 
     QEnums::ContentMode getContentMode() const { return mGeneratorView.getContentMode(); }
 
     Q_INVOKABLE const ListViewBasic getListView() const { return mListView; }
-    void setListView(const ListViewBasic& view) { mListView = view; }
+    void setFeedVariant(const ListViewBasic& view) { mListView = view; }
 
     const QString& getQuoteUri() const { return mQuoteUri; }
-    void setQuoteUri(const QString& quoteUri) { mQuoteUri = quoteUri; }
+    void setFeedVariant(const QString& quoteUri) { mQuoteUri = quoteUri; }
 
     bool isLanguageFilterConfigured() const; // atproto language filtering
     void enableLanguageFilter(bool enabled); // local language filtering
@@ -132,6 +133,9 @@ public:
                                ATProto::AppBskyFeed::Interaction::EventType event,
                                const QString& postUri);
 
+    Q_INVOKABLE void reportOnScreen(const QString& postUri);
+    Q_INVOKABLE void reportOffScreen(const QString& postUri, const QString& feedContext);
+
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();
@@ -162,6 +166,7 @@ private:
         void foldPosts(int startIndex, int endIndex);
     };
 
+    void createInteractionSender(ATProto::Client::SharedPtr bsky);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId = 0);
     void addPage(Page::Ptr page);
 

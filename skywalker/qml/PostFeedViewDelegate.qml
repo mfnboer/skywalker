@@ -140,11 +140,18 @@ Rectangle {
     }
 
     onOnScreenChanged: {
-        if (!onScreen)
+        if (onScreen) {
+            if (feedAcceptsInteractions)
+                postEntry.ListView.view.model.reportOnScreen(postUri)
+        } else {
             cover()
+        }
     }
 
     function cover() {
+        if (feedAcceptsInteractions)
+            postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+
         postBody.movedOffScreen()
     }
 
@@ -1014,8 +1021,17 @@ Rectangle {
         onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
     }
 
+    Component.onDestruction: {
+        if (feedAcceptsInteractions && onScreen)
+            postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+
+        ListView.view.onContentMoved.disconnect(checkOnScreen)
+    }
+
     Component.onCompleted: {
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()
+
+        ListView.view.onContentMoved.connect(checkOnScreen)
     }
 }

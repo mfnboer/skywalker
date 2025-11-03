@@ -90,13 +90,23 @@ Rectangle {
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
-        if (!onScreen) {
-            cover()
-        }
-        else {
+        if (onScreen) {
+            if (feedAcceptsInteractions)
+                videoPage.ListView.view.model.reportOnScreen(postUri)
+
             if (postVideo)
                 videoItem.play()
+        } else {
+            cover()
         }
+    }
+
+    function cover() {
+        if (feedAcceptsInteractions)
+            videoPage.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+
+        if (postVideo)
+            videoItem.pause()
     }
 
     Rectangle {
@@ -552,12 +562,12 @@ Rectangle {
                     () => root.deletePost(postUri, postCid, userDid))
     }
 
-    function cover() {
-        if (postVideo)
-            videoItem.pause()
-    }
-
     function checkOnScreen() {}
+
+    Component.onDestruction: {
+        if (feedAcceptsInteractions && onScreen)
+            videoPage.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+    }
 
     Component.onCompleted: {
         ListView.view.enableOnScreenCheck = true

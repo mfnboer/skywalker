@@ -28,6 +28,8 @@ GridView {
 
     property int prevContentY: 0
 
+    signal contentMoved
+
     onOriginYChanged: {
         virtualFooterStartY += (originY - prevOriginY)
         prevOriginY = originY
@@ -111,6 +113,7 @@ GridView {
     onContentYChanged: {
         if (Math.abs(contentY - prevContentY) > mediaTilesView.cellHeight) {
             prevContentY = contentY
+            contentMoved()
             updateOnMovement()
         }
     }
@@ -243,6 +246,16 @@ GridView {
 
     function getBottomRightVisibleIndex() {
         return indexAt(width - 1, contentY + height - 1)
+    }
+
+    function cover() {
+        // TODO: seems excessive to loop through all items
+        for (var i = 0; i < count; ++i) {
+            const item = itemAtIndex(i)
+
+            if (item)
+                item.cover()
+        }
     }
 
     Component.onCompleted: {
