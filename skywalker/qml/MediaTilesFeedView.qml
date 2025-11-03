@@ -248,13 +248,23 @@ GridView {
         return indexAt(width - 1, contentY + height - 1)
     }
 
+    function getFirstNonNullIndex() {
+        for (let index = getTopLeftVisibleIndex(); index >= 0; --index) {
+            if (!itemAtIndex(index))
+                return index + 1
+        }
+
+        return 0
+    }
+
     function cover() {
-        // TODO: seems excessive to loop through all items
-        for (var i = 0; i < count; ++i) {
+        for (let i = getFirstNonNullIndex(); i < count; ++i) {
             const item = itemAtIndex(i)
 
-            if (item)
-                item.cover()
+            if (!item)
+                break
+
+            item.cover()
         }
     }
 

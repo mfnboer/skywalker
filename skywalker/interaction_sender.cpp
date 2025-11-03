@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 static constexpr auto SEND_INTERVAL = 31s;
 static constexpr int MAX_INTERACTIONS = 150;
 static constexpr int MAX_POSTS_ON_SCREEN = 200;
-static constexpr auto MIN_POST_SEEN_DURATION = 900ms;
+static constexpr auto MIN_POST_SEEN_DURATION = 800ms;
 
 InteractionSender::InteractionSender(const QString& feedDid, ATProto::Client::SharedPtr bsky, QObject* parent) :
     QObject(parent),

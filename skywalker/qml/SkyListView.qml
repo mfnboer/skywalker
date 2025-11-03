@@ -51,12 +51,15 @@ ListView {
         if (!enableOnScreenCheck)
             return
 
-        // TODO: seems excessive to loop through all items
-        for (var i = 0; i < count; ++i) {
-            const item = itemAtIndex(i)
 
-            if (item)
-                item.checkOnScreen() // qmllint disable missing-property
+
+        for (let index = getFirstNonNullIndex(); index < count; ++index) {
+            const item = itemAtIndex(index)
+
+            if (!item)
+                break
+
+            item.checkOnScreen() // qmllint disable missing-property
         }
     }
 
@@ -120,11 +123,13 @@ ListView {
         if (!enableOnScreenCheck)
             return
 
-        for (var i = 0; i < count; ++i) {
+        for (let i = getFirstNonNullIndex(); i < count; ++i) {
             const item = itemAtIndex(i)
 
-            if (item)
-                item.cover() // qmllint disable missing-property
+            if (!item)
+                break
+
+            item.cover() // qmllint disable missing-property
         }
     }
 
@@ -138,6 +143,15 @@ ListView {
 
     function getLastVisibleIndex() {
         return indexAt(0, contentY + height - 1)
+    }
+
+    function getFirstNonNullIndex() {
+        for (let index = getFirstVisibleIndex(); index >= 0; --index) {
+            if (!itemAtIndex(index))
+                return index + 1
+        }
+
+        return 0
     }
 
     // Calculate offset from bottom of visible section.
