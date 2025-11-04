@@ -65,6 +65,8 @@ Rectangle {
     required property bool postIsHiddenReply
     required property bool postBookmarked
     required property bool postBookmarkTransient
+    required property int postFeedback // QEnums::FeedbackType
+    required property int postFeedbackTransient // QEnums::FeedbackType
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -554,14 +556,12 @@ Rectangle {
             // Stats
             Loader {
                 active: !unrollThread || endOfFeed
-                width: parent.width
-                height: guiSettings.statsHeight + 10
                 asynchronous: true
                 visible: active
 
                 sourceComponent: PostStats {
                     id: postStats
-                    width: parent.width
+                    width: postColumn.width
                     topPadding: 10
                     skywalker: postEntry.skywalker
                     replyCount: postReplyCount
@@ -581,6 +581,8 @@ Rectangle {
                     authorIsUser: author.did === userDid
                     isBookmarked: postBookmarked
                     bookmarkTransient: postBookmarkTransient
+                    feedback: postFeedback
+                    feedbackTransient: postFeedbackTransient
                     isThread: postIsThread || postIsThreadReply
                     isUnrolledThread: postEntry.unrollThread
                     showViewThread: swipeMode
@@ -689,8 +691,8 @@ Rectangle {
                     onUnpin: root.unpinPost(postCid, userDid)
                     onBlockAuthor: root.blockAuthor(author, userDid)
                     onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
-                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
+                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
                 }
             }
 

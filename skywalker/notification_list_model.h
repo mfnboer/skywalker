@@ -171,6 +171,8 @@ protected:
     virtual void threadMutedChanged() override;
     virtual void bookmarkedChanged() override;
     virtual void bookmarkTransientChanged() override;
+    virtual void feedbackChanged() override {};
+    virtual void feedbackTransientChanged() override {};
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;

@@ -22,6 +22,8 @@ Item {
     required property bool isBookmarked
     required property bool bookmarkTransient
     required property bool isThread
+    property int feedback: QEnums.FEEDBACK_NONE
+    property int feedbackTransient: QEnums.FEEDBACK_NONE
     property bool isUnrolledThread: false
     property bool showViewThread: false
     property var record: null // recordview
@@ -59,7 +61,7 @@ Item {
     signal showLessLikeThis()
 
     id: postStats
-    height: replyIcon.height + topPadding
+    height: replyIcon.height + topPadding + (showMoreIcon.visible ? showMoreIcon.height + topPadding : 0)
 
     StatIcon {
         id: replyIcon
@@ -161,6 +163,7 @@ Item {
 
             sourceComponent: SkyMenu {
                 id: moreMenu
+                width: 210
                 onAboutToShow: root.enablePopupShield(true)
                 onAboutToHide: { root.enablePopupShield(false); parent.active = false }
 
@@ -188,18 +191,26 @@ Item {
                     MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
+                    textColor: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
                     text: qsTr("Show more like this")
                     visible: feedAcceptsInteractions
-                    onTriggered: showMoreLikeThis()
+                    onTriggered: emitShowMoreLikeThis()
 
-                    MenuItemSvg { svg: SvgOutline.sentimentSatisfied }
+                    MenuItemSvg {
+                        color: parent.textColor
+                        svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
+                    }
                 }
                 AccessibleMenuItem {
+                    textColor: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
                     text: qsTr("Show less like this")
                     visible: feedAcceptsInteractions
-                    onTriggered: showLessLikeThis()
+                    onTriggered: emitShowLessLikeThis()
 
-                    MenuItemSvg { svg: SvgOutline.sentimentDissatisfied }
+                    MenuItemSvg {
+                        color: parent.textColor
+                        svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
+                    }
                 }
                 AccessibleMenuItem {
                     text: qsTr("View thread")
@@ -301,10 +312,63 @@ Item {
         }
     }
 
+    StatIcon {
+        id: showMoreIcon
+        anchors.topMargin: topPadding
+        anchors.top: likeIcon.bottom
+        anchors.left: likeIcon.left
+        width: parent.width / 4
+        iconColor: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? guiSettings.likeColor : postStats.color
+        svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
+        visible: feedAcceptsInteractions && !limitedStats
+        Accessible.name: qsTr("Show more like this")
+        onClicked: emitShowMoreLikeThis()
+
+        Loader {
+            active: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS || active
+
+            sourceComponent: BlinkingOpacity {
+                target: showMoreIcon
+                running: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS
+            }
+        }
+    }
+
+    StatIcon {
+        id: showLessIcon
+        anchors.topMargin: topPadding
+        anchors.top: moreIcon.bottom
+        anchors.left: moreIcon.left
+        width: parent.width / 8
+        iconColor: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? guiSettings.likeColor : postStats.color
+        svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
+        visible: feedAcceptsInteractions &&  !limitedStats
+        Accessible.name: qsTr("Show more less this")
+        onClicked: emitShowLessLikeThis()
+
+        Loader {
+            active: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS || active
+
+            sourceComponent: BlinkingOpacity {
+                target: showLessIcon
+                running: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS
+            }
+        }
+    }
+
     AccessibilityUtils {
         id: accessibilityUtils
     }
 
+    function emitShowMoreLikeThis() {
+        if (feedback === QEnums.FEEDBACK_NONE)
+            showMoreLikeThis()
+    }
+
+    function emitShowLessLikeThis() {
+        if (feedback === QEnums.FEEDBACK_NONE)
+            showLessLikeThis()
+    }
 
     function getRecordPostUri() {
         if (record)

@@ -58,6 +58,8 @@ Rectangle {
     required property bool postIsHiddenReply
     required property bool postBookmarked
     required property bool postBookmarkTransient
+    required property int postFeedback // QEnums::FeedbackType
+    required property int postFeedbackTransient // QEnums::FeedbackType
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
@@ -378,13 +380,11 @@ Rectangle {
 
         Loader {
             active: true
-            width: parent.width
-            height: guiSettings.statsHeight + 10
             asynchronous: true
 
             sourceComponent: PostStats {
                 id: postStats
-                width: parent.width
+                width: postColumn.width
                 topPadding: 10
                 skywalker: videoPage.skywalker
                 replyCount: postReplyCount
@@ -404,6 +404,8 @@ Rectangle {
                 authorIsUser: author.did === userDid
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
+                feedback: postFeedback
+                feedbackTransient: postFeedbackTransient
                 isThread: postIsThread || postIsThreadReply
                 showViewThread: true
                 record: postRecord
@@ -504,8 +506,8 @@ Rectangle {
                 onUnpin: root.unpinPost(postCid, userDid)
                 onBlockAuthor: root.blockAuthor(author, userDid)
                 onShowEmojiNames: root.showEmojiNamesList(postPlainText)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
-                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
             }
         }
 

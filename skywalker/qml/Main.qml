@@ -1650,14 +1650,14 @@ ApplicationWindow {
         return !did || skywalker.getUserDid() === did
     }
 
-    function showMoreLikeThis(feedDid, postUri, feedContext, interactByDid = "") {
+    function showMoreLikeThis(feedDid, postUri, postCid, feedContext, interactByDid = "") {
         const fu = getFeedUtils(interactByDid)
-        fu.showMoreLikeThis(postUri, feedDid, feedContext)
+        fu.showMoreLikeThis(postUri, postCid, feedDid, feedContext)
     }
 
-    function showLessLikeThis(feedDid, postUri, feedContext, interactByDid = "") {
+    function showLessLikeThis(feedDid, postUri, postCid, feedContext, interactByDid = "") {
         const fu = getFeedUtils(interactByDid)
-        fu.showLessLikeThis(postUri, feedDid, feedContext)
+        fu.showLessLikeThis(postUri, postCid, feedDid, feedContext)
     }
 
     function muteThread(uri, threadMuted, muteByDid = "") {

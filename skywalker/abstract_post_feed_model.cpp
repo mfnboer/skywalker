@@ -585,6 +585,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mBookmarked ? *change->mBookmarked : post.isBookmarked();
     case Role::PostBookmarkTransient:
         return change ? change->mBookmarkTransient : false;
+    case Role::PostFeedback:
+        return change ? change->mFeedback : QEnums::FEEDBACK_NONE;
+    case Role::PostFeedbackTransient:
+        return change ? change->mFeedbackTransient : QEnums::FEEDBACK_NONE;
     case Role::PostLabels:
         return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
@@ -736,6 +740,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIsHiddenReply), "postIsHiddenReply" },
         { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostBookmarkTransient), "postBookmarkTransient" },
+        { int(Role::PostFeedback), "postFeedback" },
+        { int(Role::PostFeedbackTransient), "postFeedbackTransient" },
         { int(Role::PostLabels), "postLabels" },
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
@@ -859,6 +865,16 @@ void AbstractPostFeedModel::bookmarkedChanged()
 void AbstractPostFeedModel::bookmarkTransientChanged()
 {
     changeData({ int(Role::PostBookmarkTransient) });
+}
+
+void AbstractPostFeedModel::feedbackChanged()
+{
+    changeData({ int(Role::PostFeedback) });
+}
+
+void AbstractPostFeedModel::feedbackTransientChanged()
+{
+    changeData({ int(Role::PostFeedbackTransient) });
 }
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)

@@ -439,6 +439,14 @@ public:
         POST_THREAD_ENTRY_AUTHOR_POSTS
     };
     Q_ENUM(PostThreadType)
+
+    enum FeedbackType
+    {
+        FEEDBACK_NONE,
+        FEEDBACK_MORE_LIKE_THIS,
+        FEEDBACK_LESS_LIKE_THIS
+    };
+    Q_ENUM(FeedbackType)
 };
 
 }

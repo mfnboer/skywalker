@@ -302,13 +302,11 @@ Rectangle {
 
                 Loader {
                     active: true
-                    width: parent.width
-                    height: guiSettings.statsHeight + 10
                     asynchronous: true
 
                     sourceComponent: PostStats {
                         id: postStats
-                        width: parent.width
+                        width: postColumn.width
                         topPadding: 10
                         skywalker: notification.skywalker
                         replyCount: notificationPostReplyCount
