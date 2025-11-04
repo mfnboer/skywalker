@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property PostUtils postUtils: root.getPostUtils(userDid)
     required property profile author
     required property string followingUri
     required property string blockingUri
@@ -46,7 +47,7 @@ Rectangle {
         // Avatar
         Rectangle {
             id: avatar
-            Layout.rowSpan: 2
+            Layout.rowSpan: 3
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
@@ -138,12 +139,28 @@ Rectangle {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
+            width: parent.width
+            font.italic: true
+            font.pointSize: guiSettings.scaledFont(7/8)
+            plainText: author.pronouns
+            visible: Boolean(author.pronouns)
+        }
+
+        SkyCleanedText {
+            rightPadding: 10
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             maximumLineCount: authorRect.maximumDescriptionLineCount
             color: guiSettings.textColor
-            plainText: author.description
+            plainText: postUtils.linkiFy(author.description, guiSettings.linkColor)
             visible: showAuthor && author.description
+
+            LinkCatcher {
+                userDid: authorRect.userDid
+            }
         }
 
         Rectangle {

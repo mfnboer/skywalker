@@ -434,9 +434,19 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 userDid: page.userDid
                 author: page.author
+                authorName: page.authorName // pass name, so name changes will be shown immediately
                 pointSize: guiSettings.scaledFont(12/8)
                 maximumLineCount: 3
                 wrapMode: Text.Wrap
+            }
+
+            SkyCleanedText {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 5
+                bottomPadding: 5
+                font.italic: true
+                plainText: `${authorPronouns}`
+                visible: Boolean(authorPronouns)
             }
 
             RowLayout {
@@ -461,14 +471,6 @@ SkyPage {
                     text: qsTr("hide from timeline")
                     visible: authorHideFromTimeline
                 }
-            }
-
-            SkyCleanedText {
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                topPadding: 5
-                bottomPadding: 5
-                plainText: `${authorPronouns}`
-                visible: Boolean(authorPronouns)
             }
 
             Rectangle {

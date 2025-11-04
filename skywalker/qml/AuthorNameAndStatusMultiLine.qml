@@ -4,6 +4,7 @@ import skywalker
 Rectangle {
     property string userDid
     required property basicprofile author
+    property string authorName: author.name
     property int topPadding: 0
     property double pointSize: guiSettings.scaledFont(1)
     property alias maximumLineCount: nameText.maximumLineCount
@@ -25,7 +26,7 @@ Rectangle {
         font.bold: true
         font.pointSize: nameRect.pointSize
         color: guiSettings.textColor
-        plainText: author.name
+        plainText: authorName
     }
 
     Loader {
