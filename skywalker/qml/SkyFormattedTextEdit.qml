@@ -6,6 +6,7 @@ import skywalker
 TextEdit {
     required property var parentPage
     required property var parentFlick
+    property int bottomOffset: 0
     property string initialText: ""
     property string placeholderText
     property int graphemeLength: 0
@@ -255,8 +256,8 @@ TextEdit {
 
         if (cursorY < 0)
             parentFlick.contentY += cursorY;
-        else if (parentFlick.height < cursorY + cursor.height + editText.bottomPadding)
-            parentFlick.contentY += cursorY + cursor.height + editText.bottomPadding - parentFlick.height
+        else if (parentFlick.height < cursorY + cursor.height + editText.bottomPadding + editText.bottomOffset)
+            parentFlick.contentY += cursorY + cursor.height + editText.bottomPadding + editText.bottomOffset - parentFlick.height
     }
 
     function isCursorVisible() {

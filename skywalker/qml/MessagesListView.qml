@@ -146,6 +146,7 @@ SkyPage {
             width: parent.width - sendButton.width - 3 * page.margin
             padding: page.margin
             bottomPadding: 2 * page.margin + textInputToolbarHeight + quotedContentHeight
+            bottomOffset: -bottomPadding // NOTE: the fick only covers the text content
             parentPage: page
             parentFlick: flick
             color: guiSettings.messageNewTextColor
