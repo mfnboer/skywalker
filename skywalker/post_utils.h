@@ -6,6 +6,7 @@
 #include "link_card.h"
 #include "list_view.h"
 #include "post_attachment.h"
+#include "post_feed_context.h"
 #include "post_interaction_settings.h"
 #include "postgate.h"
 #include "presence.h"
@@ -27,37 +28,37 @@ class PostUtils : public WrappedSkywalker, public Presence
 public:
     explicit PostUtils(QObject* parent = nullptr);
 
+    Q_INVOKABLE static PostFeedContext makePostFeedContext(
+        const QString& replyFeedDid = {}, const QString& replyFeedContext = {},
+        const QString& quoteFeedDid = {}, const QString& quoteFeedContext = {});
+
     Q_INVOKABLE static bool isPostUri(const QString& uri);
     Q_INVOKABLE static QString extractDidFromUri(const QString& uri);
     Q_INVOKABLE void checkPostExists(const QString& uri, const QString& cid);
     Q_INVOKABLE void canQuotePost(const QString& uri);
-
-    void post(const QString& text, const PostAttachment& attachment,
-              const QString& replyToUri, const QString& replyToCid,
-              const QString& replyRootUri, const QString& replyRootCid,
-              const QString& quoteUri, const QString& quoteCid,
-              const WebLink::List& embeddedLinks,
-              const QStringList& labels, const QString& language);
 
     Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
                           const WebLink::List& embeddedLinks,
-                          const QStringList& labels, const QString& language);
+                          const QStringList& labels, const QString& language,
+                          const PostFeedContext& postFeedContext);
     Q_INVOKABLE void post(const QString& text, const LinkCard* card,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
                           const WebLink::List& embeddedLinks,
-                          const QStringList& labels, const QString& language);
+                          const QStringList& labels, const QString& language,
+                          const PostFeedContext& postFeedContext);
     Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName,
                           const QString& videoAltText, int videoWidth, int videoHeight,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
                           const WebLink::List& embeddedLinks,
-                          const QStringList& labels, const QString& language);
+                          const QStringList& labels, const QString& language,
+                          const PostFeedContext& postFeedContext);
 
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const ListViewBasicList& allowList, bool allowNobody, const QStringList& hiddenReplies);
@@ -149,14 +150,29 @@ signals:
     void languageIdentified(QString languageCode, int index);
 
 private:
+    void post(const QString& text, const PostAttachment& attachment,
+              const QString& replyToUri, const QString& replyToCid,
+              const QString& replyRootUri, const QString& replyRootCid,
+              const QString& quoteUri, const QString& quoteCid,
+              const WebLink::List& embeddedLinks,
+              const QStringList& labels, const QString& language,
+              const PostFeedContext& postFeedContext);
+
     void continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                      const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
-    void continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePost(const PostAttachmentImages& images, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
-    void continuePost(const PostAttachmentLinkCard& card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePost(const PostAttachmentLinkCard& card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+                      const QString& quoteUri, const QString& quoteCid, const QStringList& labels,
+                      const PostFeedContext& postFeeedContext);
+    void continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const PostFeedContext& postFeedContext);
+    void continuePost(const PostAttachmentImages& images, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const PostFeedContext& postFeedContext, int imgIndex = 0);
+    void continuePost(const PostAttachmentLinkCard& card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const PostFeedContext& postFeedContext);
+    void continuePost(const PostAttachmentLinkCard& card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const PostFeedContext& postFeedContext);
+    void continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const PostFeedContext& postFeedContext);
+    void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post, const PostFeedContext& postFeedContext);
+
     void continueRepost(const QString& uri, const QString& cid,
                         const QString& viaUri = {}, const QString& viaCid = {},
                         const QString& feedDid = {}, const QString& feedContext = {});

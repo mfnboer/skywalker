@@ -229,7 +229,7 @@ Rectangle {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                                       author, postReplyRootUri, postReplyRootCid, lang,
-                                      postMentionDids, "", "", userDid)
+                                      postMentionDids, "", "", feedDid, postFeedContext, userDid)
                 }
 
                 onReplyLongPress: (mouseEvent) => {
@@ -254,7 +254,8 @@ Rectangle {
 
                 function quote(quoteByDid = "") {
                     root.quotePost(postUri, postCid,
-                            postText, postIndexedDateTime, author, postEmbeddingDisabled, quoteByDid)
+                            postText, postIndexedDateTime, author, postEmbeddingDisabled,
+                            feedDid, postFeedContext, quoteByDid)
                 }
 
                 onRepostLongPress: (mouseEvent) => {

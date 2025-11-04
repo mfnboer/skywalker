@@ -996,8 +996,10 @@ ApplicationWindow {
                     // No need to check if post still exist. Already checked before
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
-                                      repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor, "", repostDrawer.repostByDid)
+                                        repostDrawer.repostText, repostDrawer.repostDateTime,
+                                        repostDrawer.repostAuthor, "",
+                                        repostDrawer.repostFeedDid, repostDrawer.repostFeedContext,
+                                        repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -1011,9 +1013,10 @@ ApplicationWindow {
                     // No need to check if post still exist. Already checked before
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
-                                      repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor, repostDrawer.repostPlainText,
-                                      repostDrawer.repostByDid)
+                                        repostDrawer.repostText, repostDrawer.repostDateTime,
+                                        repostDrawer.repostAuthor, repostDrawer.repostPlainText,
+                                        repostDrawer.repostFeedDid, repostDrawer.repostFeedContext,
+                                        repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -1429,18 +1432,18 @@ ApplicationWindow {
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
-                          postByDid = "")
+                          feedDid = "", feedContext = "", postByDid = "")
     {
         const pu = getPostUtils(postByDid)
         pu.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,initialText, imageSource,
-                                 postByDid))
+                                 feedDid, feedContext, postByDid))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
-                          postByDid = "")
+                          feedDid = "", feedContext = "", postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1455,6 +1458,8 @@ ApplicationWindow {
                 replyToPostDateTime: replyToDateTime,
                 replyToAuthor: replyToAuthor,
                 replyToLanguage: replyToLanguage,
+                replyFeedDid: feedDid,
+                replyFeedContext: feedContext,
                 replyToMentionDids: replyToMentionDids
         })
         page.onClosed.connect(() => { popStack() })
@@ -1496,7 +1501,7 @@ ApplicationWindow {
     }
 
     function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor,
-                            initialText = "", quoteByDid = "")
+                            initialText = "", feedDid = "", feedContext = "", quoteByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1507,7 +1512,9 @@ ApplicationWindow {
                 quoteCid: quoteCid,
                 quoteText: quoteText,
                 quoteDateTime: quoteDateTime,
-                quoteAuthor: quoteAuthor
+                quoteAuthor: quoteAuthor,
+                quoteFeedDid: feedDid,
+                quoteFeedContext: feedContext
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)
@@ -1527,14 +1534,14 @@ ApplicationWindow {
                           dateTime, author, embeddingDisabled, plainText, repostByDid)
     }
 
-    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, quoteByDid = "") {
+    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, feedDid = "", feedContext = "", quoteByDid = "") {
         if (embeddingDisabled) {
             skywalker.showStatusMessage(qsTr("Quoting not allowed"), QEnums.STATUS_LEVEL_INFO)
             return
         }
 
         const pu = getPostUtils(quoteByDid)
-        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", quoteByDid))
+        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", feedDid, feedContext, quoteByDid))
     }
 
     function like(likeUri, uri, cid, viaUri = "", viaCid = "", feedDid = "", feedContext = "", likeByDid = "") {
@@ -1584,7 +1591,7 @@ ApplicationWindow {
 
                         composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                      replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                                     "", "", user.profile.did)
+                                     "", "", "", "", user.profile.did)
                     })
     }
 
@@ -1603,7 +1610,7 @@ ApplicationWindow {
                         }
 
                         quotePost(postUri, postCid, text, dateTime, author, embeddingDisabled,
-                                  user.profile.did)
+                                  "", "", user.profile.did)
                     })
     }
 

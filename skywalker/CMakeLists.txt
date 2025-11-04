@@ -588,6 +588,8 @@ qt_add_qml_module(libskywalker
         SOURCES interaction_sender.h
         SOURCES interaction_sender.cpp
         SOURCES post_attachment.h
+        SOURCES post_feed_context.h
+        SOURCES post_feed_context.cpp
 )
 
 if (NOT ANDROID)

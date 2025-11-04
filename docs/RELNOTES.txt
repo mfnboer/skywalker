@@ -3,6 +3,7 @@ next
 * Edit post
 * Full text (scrollable) of reply-to or quote post in post composer
 * Show blue dot on ava when you follow that user (optional)
+* Send feed interactions: seem, like, reply, repost quote
 * Bug fixes
 
 4.17

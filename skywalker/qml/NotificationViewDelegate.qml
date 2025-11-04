@@ -340,7 +340,7 @@ Rectangle {
                             root.composeReply(notificationPostUri, notificationCid, notificationPostText,
                                               notificationPostTimestamp, notificationAuthor,
                                               notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                              lang, notificationPostMentionDids, "", "",
+                                              lang, notificationPostMentionDids, "", "", "", "",
                                               postByDid)
                         }
 
@@ -374,7 +374,7 @@ Rectangle {
                             root.quotePost(notificationPostUri, notificationCid,
                                     notificationPostText, notificationPostTimestamp,
                                     notificationAuthor, notificationPostEmbeddingDisabled,
-                                    nonActiveUserDid)
+                                    "", "", nonActiveUserDid)
                         }
 
                         onRepostLongPress: (mouseEvent) => {

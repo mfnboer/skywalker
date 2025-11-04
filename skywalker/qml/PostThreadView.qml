@@ -194,7 +194,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                           author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                          initialText, imageSource, userDid)
+                          initialText, imageSource, "", "", userDid)
     }
 
     function videoReply(initialText, videoSource) {

@@ -49,6 +49,13 @@ PostUtils::PostUtils(QObject* parent) :
     });
 }
 
+PostFeedContext PostUtils::makePostFeedContext(
+    const QString& replyFeedDid, const QString& replyFeedContext,
+    const QString& quoteFeedDid, const QString& quoteFeedContext)
+{
+    return PostFeedContext(replyFeedDid, replyFeedContext, quoteFeedDid, quoteFeedContext);
+}
+
 ATProto::PostMaster* PostUtils::postMaster()
 {
     if (!mPostMaster)
@@ -167,7 +174,8 @@ void PostUtils::post(const QString& text, const PostAttachment& attachment,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
                      const WebLink::List& embeddedLinks,
-                     const QStringList& labels, const QString& language)
+                     const QStringList& labels, const QString& language,
+                     const PostFeedContext& postFeedContext)
 {
     qDebug() << "Posting:" << text;
 
@@ -180,15 +188,15 @@ void PostUtils::post(const QString& text, const PostAttachment& attachment,
     {
         const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
         postMaster()->createPost(text, language, nullptr, embeddedFacets,
-            [this, presence=getPresence(), attachment, quoteUri, quoteCid, labels](auto post){
+            [this, presence=getPresence(), attachment, quoteUri, quoteCid, labels, postFeedContext](auto post){
                 if (presence)
-                    continuePost(attachment, post, quoteUri, quoteCid, labels);
+                    continuePost(attachment, post, quoteUri, quoteCid, labels, postFeedContext);
             });
         return;
     }
 
     postMaster()->checkRecordExists(replyToUri, replyToCid,
-        [this, presence=getPresence(), text, attachment , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, embeddedLinks, labels, language]
+        [this, presence=getPresence(), text, attachment , replyToUri, replyToCid, replyRootUri, replyRootCid, quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext]
         {
             if (!presence)
                 return;
@@ -200,9 +208,9 @@ void PostUtils::post(const QString& text, const PostAttachment& attachment,
                 return;
 
             postMaster()->createPost(text, language, std::move(replyRef), embeddedFacets,
-                [this, presence, attachment, quoteUri, quoteCid, labels](auto post){
+                [this, presence, attachment, quoteUri, quoteCid, labels, postFeedContext](auto post){
                     if (presence)
-                        continuePost(attachment , post, quoteUri, quoteCid, labels);
+                        continuePost(attachment, post, quoteUri, quoteCid, labels, postFeedContext);
                 });
         },
         [this, presence=getPresence()] (const QString& error, const QString& msg){
@@ -219,11 +227,12 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
                      const WebLink::List& embeddedLinks,
-                     const QStringList& labels, const QString& language)
+                     const QStringList& labels, const QString& language,
+                     const PostFeedContext& postFeedContext)
 {
     const PostAttachmentImages attachment{ imageFileNames, altTexts };
     post(text, attachment, replyToUri, replyToCid, replyRootUri, replyRootCid,
-         quoteUri, quoteCid, embeddedLinks, labels, language);
+         quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
 
 void PostUtils::post(const QString& text, const LinkCard* card,
@@ -231,12 +240,13 @@ void PostUtils::post(const QString& text, const LinkCard* card,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
                      const WebLink::List& embeddedLinks,
-                     const QStringList& labels, const QString& language)
+                     const QStringList& labels, const QString& language,
+                     const PostFeedContext& postFeedContext)
 {
     Q_ASSERT(card);
     const PostAttachmentLinkCard attachment{ card };
     post(text, attachment, replyToUri, replyToCid, replyRootUri, replyRootCid,
-         quoteUri, quoteCid, embeddedLinks, labels, language);
+         quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
 
 void PostUtils::postVideo(const QString& text, const QString& videoFileName,
@@ -245,11 +255,12 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
                      const WebLink::List& embeddedLinks,
-                     const QStringList& labels, const QString& language)
+                     const QStringList& labels, const QString& language,
+                     const PostFeedContext& postFeedContext)
 {
     const PostAttachmentVideo attachment{ videoFileName, videoAltText, videoWidth, videoHeight };
     post(text, attachment, replyToUri, replyToCid, replyRootUri, replyRootCid,
-         quoteUri, quoteCid, embeddedLinks, labels, language);
+         quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
 
 void PostUtils::addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies)
@@ -510,13 +521,14 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
 void PostUtils::continuePost(const PostAttachment& attachment,
                              ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                              const QString& quoteUri, const QString& quoteCid,
-                             const QStringList& labels)
+                             const QStringList& labels,
+                             const PostFeedContext& postFeedContext)
 {
     ATProto::PostMaster::addLabelsToPost(*post, labels);
 
     if (quoteUri.isEmpty())
     {
-        continuePost(attachment, post);
+        continuePost(attachment, post, postFeedContext);
         return;
     }
 
@@ -524,7 +536,7 @@ void PostUtils::continuePost(const PostAttachment& attachment,
         return;
 
     postMaster()->checkRecordExists(quoteUri, quoteCid,
-        [this, presence=getPresence(), attachment, post, quoteUri, quoteCid]{
+        [this, presence=getPresence(), attachment, post, quoteUri, quoteCid, postFeedContext]{
             if (!presence)
                 return;
 
@@ -532,7 +544,7 @@ void PostUtils::continuePost(const PostAttachment& attachment,
                 return;
 
             postMaster()->addQuoteToPost(*post, quoteUri, quoteCid);
-            continuePost(attachment, post);
+            continuePost(attachment, post, postFeedContext);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -543,16 +555,19 @@ void PostUtils::continuePost(const PostAttachment& attachment,
         });
 }
 
-void PostUtils::continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+void PostUtils::continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext)
 {
-    std::visit([this, post](auto&& attached){ continuePost(attached, post); }, attachment);
+    std::visit([this, post, postFeedContext](auto&& attached){
+        continuePost(attached, post, postFeedContext); }, attachment);
 }
 
-void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex)
+void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext, int imgIndex)
 {
     if (imgIndex >= images.mFileNames.size())
     {
-        continuePost(post);
+        continuePost(post, postFeedContext);
         return;
     }
 
@@ -572,7 +587,7 @@ void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBsk
         return;
 
     bskyClient()->uploadBlob(blob, mimeType,
-        [this, presence=getPresence(), imgSize, images, post, imgIndex](auto blob){
+        [this, presence=getPresence(), imgSize, images, post, postFeedContext, imgIndex](auto blob){
             if (!presence)
                 return;
 
@@ -580,7 +595,7 @@ void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBsk
                 return;
 
             postMaster()->addImageToPost(*post, std::move(blob), imgSize.width(), imgSize.height(), images.mAltTexts[imgIndex]);
-            continuePost(images, post, imgIndex + 1);
+            continuePost(images, post, postFeedContext, imgIndex + 1);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -591,7 +606,8 @@ void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBsk
         });
 }
 
-void PostUtils::continuePost(const PostAttachmentLinkCard& card, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+void PostUtils::continuePost(const PostAttachmentLinkCard& card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext)
 {
     Q_ASSERT(card.mLinkCard);
     if (!card.mLinkCard)
@@ -603,29 +619,31 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, ATProto::AppBsk
 
     if (card.mLinkCard->getThumb().isEmpty())
     {
-        continuePost(card, QImage(), post);
+        continuePost(card, QImage(), post, postFeedContext);
         return;
     }
 
     emit postProgress(tr("Retrieving card image"));
 
     imageReader()->getImage(card.mLinkCard->getThumb(),
-        [this, presence=getPresence(), card, post](auto image){
+        [this, presence=getPresence(), card, post, postFeedContext](auto image){
             if (presence)
-                continuePost(card, image, post);
+                continuePost(card, image, post, postFeedContext);
         },
-        [this, presence=getPresence(), card, post](const QString& error){
+        [this, presence=getPresence(), card, post, postFeedContext](const QString& error){
             if (!presence)
                 return;
 
             qDebug() << "Failed to load image:" << error;
             // Post the card without image anyway. Sometimes card information at sites
             // have broken image links.
-            continuePost(card, QImage(), post);
+            continuePost(card, QImage(), post, postFeedContext);
         });
 }
 
-void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb,
+                             ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext)
 {
     Q_ASSERT(card.mLinkCard);
     QByteArray blob;
@@ -645,7 +663,7 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb, A
         postMaster()->addExternalToPost(*post, card.mLinkCard->getLink(),
                                         card.mLinkCard->getTitle(),
                                         card.mLinkCard->getDescription());
-        continuePost(post);
+        continuePost(post, postFeedContext);
         return;
     }
 
@@ -655,7 +673,7 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb, A
         return;
 
     bskyClient()->uploadBlob(blob, mimeType,
-        [this, presence=getPresence(), card, post](auto blob){
+        [this, presence=getPresence(), card, post, postFeedContext](auto blob){
             if (!presence)
                 return;
 
@@ -666,7 +684,7 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb, A
                                             card.mLinkCard->getTitle(),
                                             card.mLinkCard->getDescription(),
                                             std::move(blob));
-            continuePost(post);
+            continuePost(post, postFeedContext);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -677,7 +695,8 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb, A
         });
 }
 
-void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext)
 {
     emit postProgress(tr("Uploading video"));
 
@@ -694,7 +713,7 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
         return;
 
     bskyClient()->uploadVideo(file.get(),
-        [this, presence=getPresence(), video, post, file](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
+        [this, presence=getPresence(), video, post, postFeedContext, file](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
             if (!presence)
                 return;
 
@@ -702,9 +721,9 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
                 return;
 
             postMaster()->addVideoToPost(post, *output, video.mWidth, video.mHeight, video.mAltText,
-                [this, presence, post]{
+                [this, presence, post, postFeedContext]{
                     if (presence)
-                       continuePost(post);
+                       continuePost(post, postFeedContext);
                 },
                 [this, presence](const QString& error, const QString& msg){
                     if (!presence)
@@ -735,16 +754,16 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
         });
 }
 
-void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
+void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext)
 {
     if (!postMaster())
         return;
 
     emit postProgress(tr("Posting"));
 
-    // TODO: add feed interactions: reply, quote
     postMaster()->post(*post,
-        [this, presence=getPresence(), post](const QString& uri, const QString& cid){
+        [this, presence=getPresence(), post, postFeedContext](const QString& uri, const QString& cid){
             if (!presence)
                 return;
 
@@ -754,6 +773,11 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
                     [post](LocalPostModelChanges* model){
                         model->updateReplyCountDelta(post->mReply->mParent->mCid, 1);
                     });
+
+                mSkywalker->addFeedInteraction(
+                    postFeedContext.getReplyFeedDid(),
+                    ATProto::AppBskyFeed::Interaction::EventType::InteractionReply,
+                    post->mReply->mParent->mUri, postFeedContext.getReplyFeedContext());
             }
 
             if (post->mEmbed)
@@ -770,6 +794,11 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
                             [record](LocalPostModelChanges* model){
                                 model->updateQuoteCountDelta(record->mRecord->mCid, 1);
                             });
+
+                        mSkywalker->addFeedInteraction(
+                            postFeedContext.getQuoteFeedDid(),
+                            ATProto::AppBskyFeed::Interaction::EventType::InteractionQuote,
+                            record->mRecord->mUri, postFeedContext.getQuoteFeedContext());
                     }
                 }
                 else if (post->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA)
@@ -785,6 +814,12 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post)
                             [recordWithMedia](LocalPostModelChanges* model){
                                 model->updateQuoteCountDelta(recordWithMedia->mRecord->mRecord->mCid, 1);
                             });
+
+                        mSkywalker->addFeedInteraction(
+                            postFeedContext.getQuoteFeedDid(),
+                            ATProto::AppBskyFeed::Interaction::EventType::InteractionQuote,
+                            recordWithMedia->mRecord->mRecord->mUri,
+                            postFeedContext.getQuoteFeedContext());
                     }
                 }
             }

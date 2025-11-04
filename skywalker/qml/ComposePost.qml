@@ -46,6 +46,8 @@ SkyPage {
     property string replyToPostText
     property date replyToPostDateTime
     property string replyToLanguage
+    property string replyFeedDid // for feed interaction
+    property string replyFeedContext // for feed interaction
     property list<string> replyToMentionDids: []
 
     // Quote post (for first post only)
@@ -55,6 +57,8 @@ SkyPage {
     property string quoteCid: ""
     property string quoteText
     property date quoteDateTime
+    property string quoteFeedDid // for feed interaction
+    property string quoteFeedContext // for feed interaction
 
     property basicprofile nullAuthor
     property generatorview nullFeed
@@ -2295,6 +2299,10 @@ SkyPage {
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
+        const postFeedContext = postIndex === 0 ?
+                postUtils.makePostFeedContext(replyFeedDid, replyFeedContext, quoteFeedDid, quoteFeedContext) :
+                postUtils.makePostFeedContext()
+
         let postText = postItem.text
 
         if (threadAutoNumber && (postCount > 1 || threadCountOffset > 0))
@@ -2307,7 +2315,8 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid,
                            postItem.embeddedLinks,
-                           labels, postItem.language)
+                           labels, postItem.language,
+                           postFeedContext)
         } else if (!postItem.gif.isNull()) {
             tenor.registerShare(postItem.gif)
 
@@ -2324,7 +2333,8 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid,
                            postItem.embeddedLinks,
-                           labels, postItem.language)
+                           labels, postItem.language,
+                           postFeedContext)
         } else if (Boolean(postItem.video)) {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
@@ -2336,7 +2346,8 @@ SkyPage {
                                 rootUri, rootCid,
                                 qUri, qCid,
                                 postItem.embeddedLinks,
-                                labels, postItem.language) },
+                                labels, postItem.language,
+                                postFeedContext) },
                         (error) => postFailed(error)),
                 (error) => postFailed(error))
         } else {
@@ -2346,7 +2357,8 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid,
                            postItem.embeddedLinks,
-                           labels, postItem.language);
+                           labels, postItem.language,
+                           postFeedContext);
         }
 
         postUtils.cacheTags(postItem.text)
