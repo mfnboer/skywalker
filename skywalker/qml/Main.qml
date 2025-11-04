@@ -1085,7 +1085,7 @@ ApplicationWindow {
         }
 
         function askEditPermission(replyCount, repostCount, quoteCount, likeCount) {
-            let msg = qsTr("By editing this post you will lose:<br><br>")
+            let msg = qsTr("By editing this post you will lose:<br>")
 
             if (replyCount > 0)
                 msg += statText(replyCount, qsTr("reply"), qsTr("replies"))
@@ -1102,7 +1102,7 @@ ApplicationWindow {
         }
 
         function statText(count, single, plural) {
-            return (count === 1 ? `1 ${single}` : `${count} ${plural}`) + "<br>"
+            return "<br>" + (count === 1 ? `1 ${single}` : `${count} ${plural}`)
         }
     }
 

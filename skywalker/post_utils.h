@@ -5,6 +5,7 @@
 #include "image_reader.h"
 #include "link_card.h"
 #include "list_view.h"
+#include "post_attachment.h"
 #include "post_interaction_settings.h"
 #include "postgate.h"
 #include "presence.h"
@@ -30,6 +31,14 @@ public:
     Q_INVOKABLE static QString extractDidFromUri(const QString& uri);
     Q_INVOKABLE void checkPostExists(const QString& uri, const QString& cid);
     Q_INVOKABLE void canQuotePost(const QString& uri);
+
+    void post(const QString& text, const PostAttachment& attachment,
+              const QString& replyToUri, const QString& replyToCid,
+              const QString& replyRootUri, const QString& replyRootCid,
+              const QString& quoteUri, const QString& quoteCid,
+              const WebLink::List& embeddedLinks,
+              const QStringList& labels, const QString& language);
+
     Q_INVOKABLE void post(const QString& text, const QStringList& imageFileNames, const QStringList& altTexts,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
@@ -49,6 +58,7 @@ public:
                           const QString& quoteUri, const QString& quoteCid,
                           const WebLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language);
+
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const QStringList& allowList, bool allowNobody, const QStringList& hiddenReplies);
     Q_INVOKABLE void addThreadgate(const QString& uri, const QString& cid, bool allowMention, bool allowFollower, bool allowFollowing, const ListViewBasicList& allowList, bool allowNobody, const QStringList& hiddenReplies);
     Q_INVOKABLE void addPostgate(const QString& uri, bool disableEmbedding, const QStringList& detachedEmbeddingUris);
@@ -139,16 +149,13 @@ signals:
     void languageIdentified(QString languageCode, int index);
 
 private:
-    void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+    void continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                       const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
-    void continuePost(const QStringList& imageFileNames, const QStringList& altTexts, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
-    void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                      const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
-    void continuePost(const LinkCard* card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePost(const LinkCard* card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
-    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, int videoWidth, int videoHeight, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                      const QString& quoteUri, const QString& quoteCid, const QStringList& labels);
-    void continuePostVideo(const QString& videoFileName, const QString& videoAltText, int videoWidth, int videoHeight, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(const PostAttachment& attachment, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(const PostAttachmentImages& images, ATProto::AppBskyFeed::Record::Post::SharedPtr post, int imgIndex = 0);
+    void continuePost(const PostAttachmentLinkCard& card, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(const PostAttachmentLinkCard& card, QImage thumb, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
+    void continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post);
     void continueRepost(const QString& uri, const QString& cid,
                         const QString& viaUri = {}, const QString& viaCid = {},
