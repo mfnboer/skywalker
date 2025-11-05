@@ -321,7 +321,6 @@ SkyPage {
                 else {
                     graphUtils.hideList(list.uri)
                 }
-
             }
 
             MenuItemSvg {

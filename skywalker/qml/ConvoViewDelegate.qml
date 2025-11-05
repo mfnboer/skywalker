@@ -119,6 +119,7 @@ Rectangle {
 
                                 width: 25
                                 author: modelData.basicProfile
+                                showFollowingStatus: false
                                 onClicked: viewConvo(convo)
                             }
                         }

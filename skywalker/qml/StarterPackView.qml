@@ -300,7 +300,7 @@ SkyPage {
 
         onCreatedListFromStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
-        onGetListOk: (list) => root.viewListFeedDescription(list, page.userDid)
+        onGetListOk: (did, list) => root.viewListFeedDescription(list, did)
         onGetListFailed: (error) => {
             // The network may take a while before you can retrieve a new list.
             console.warn(error)

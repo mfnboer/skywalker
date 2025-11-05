@@ -25,6 +25,7 @@ Rectangle {
 
     signal closed
     signal feedAvatarClicked
+    signal feedAvatarPressAndHold
     signal addUserView
     signal addHashtagView
     signal addFocusHashtagView
@@ -120,6 +121,7 @@ Rectangle {
             visible: showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
+            onPressAndHold: header.feedAvatarPressAndHold()
 
             Accessible.role: Accessible.Button
             Accessible.name: header.feedName

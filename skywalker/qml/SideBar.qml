@@ -90,6 +90,7 @@ Pane {
 
                 onClosed: postFeedView.closed()
                 onFeedAvatarClicked: postFeedView.showFeed()
+                onFeedAvatarPressAndHold: postFeedView.showFeedOptions()
 
                 onViewChanged: (newContentMode) => {
                     postFeedView.headerItem.contentMode = newContentMode
@@ -138,6 +139,7 @@ Pane {
                 visible: Boolean(searchFeedView)
 
                 onFeedAvatarClicked: root.viewSearchViewFeed(searchFeedView.searchFeed)
+                onFeedAvatarPressAndHold: searchFeedView.showOptionsMenu()
             }
 
             MessagesListHeader {

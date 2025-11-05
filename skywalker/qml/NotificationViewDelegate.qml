@@ -479,6 +479,7 @@ Rectangle {
                             width: authorAvatar.width
                             userDid: owner.did
                             author: notificationOtherAuthors[index]
+                            showFollowingStatus: false
 
                             onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
 

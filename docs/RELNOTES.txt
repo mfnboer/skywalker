@@ -5,6 +5,7 @@ next
 * Show blue dot on ava when you follow that user
 * Feed feedback buttons (thumb up/down) in feeds that support feedback
 * Send feed interactions: seem, like, reply, repost quote
+* Long press on feed avatar in favorite feed
 * Bug fixes
 
 4.17

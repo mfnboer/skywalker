@@ -47,6 +47,7 @@ SkyListView {
 
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeed()
+        onFeedAvatarPressAndHold: showFeedOptions()
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -231,6 +232,151 @@ SkyListView {
         }
     }
 
+    SkyMenu {
+        property var feed: underlyingModel?.getGeneratorView()
+        property bool feedHideFollowing: false
+
+        id: feedOptionsMenu
+
+        CloseMenuItem {
+            text: qsTr("<b>Feed</b>")
+            Accessible.name: qsTr("close more options menu")
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Remove favorite")
+            onTriggered: {
+                skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: SvgFilled.star
+                color: guiSettings.favoriteColor
+            }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Show following")
+            checkable: true
+            checked: !feedOptionsMenu.feedHideFollowing
+            onToggled: {
+                const fu = root.getFeedUtils(userDid)
+                fu.hideFollowing(feedOptionsMenu.feed.uri, !checked)
+                feedOptionsMenu.feedHideFollowing = !checked
+            }
+        }
+
+        function show() {
+            feedHideFollowing = skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
+            open()
+        }
+    }
+
+    SkyMenu {
+        property var list: underlyingModel?.getListView()
+        property bool listHideFromTimeline: false
+        property bool listHideReplies: false
+        property bool listHideFollowing: false
+        property bool listSync: false
+
+        id: listFeedOptionsMenu
+        width: hideListMenuItem.width
+
+        AccessibleMenuItem {
+            text: qsTr("Remove favorite")
+            onTriggered: {
+                const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
+
+                if (favorite.isNull()) {
+                    console.warn("List is not a favorite:" << listFeedOptionsMenu.list.uri)
+                    return
+                }
+
+                if (listFeedOptionsMenu.isOwnList())
+                    skywalker.favoriteFeeds.removeList(favorite.listView) // We never show own lists as saved
+                else
+                    skywalker.favoriteFeeds.pinList(favorite.listView, false)
+
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: SvgFilled.star
+                color: guiSettings.favoriteColor
+            }
+        }
+
+        AccessibleMenuItem {
+            id: hideListMenuItem
+            width: 250
+            visible: listFeedOptionsMenu.list?.purpose === QEnums.LIST_PURPOSE_CURATE && listFeedOptionsMenu.isOwnList()
+            text: listFeedOptionsMenu.listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
+            onTriggered: {
+                const gu = root.getGraphUtils(userDid)
+
+                if (listFeedOptionsMenu.listHideFromTimeline) {
+                    gu.unhideList(listFeedOptionsMenu.list.uri)
+                    listFeedOptionsMenu.listHideFromTimeline = false
+                }
+                else {
+                    gu.hideList(listFeedOptionsMenu.list.uri)
+                }
+            }
+
+            MenuItemSvg {
+                svg: listFeedOptionsMenu.listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
+            }
+        }
+        AccessibleMenuItem {
+            text: qsTr("Show replies")
+            checkable: true
+            checked: !listFeedOptionsMenu.listHideReplies
+            onToggled: {
+                const gu = root.getGraphUtils(userDid)
+                gu.hideReplies(listFeedOptionsMenu.list.uri, !checked)
+                listFeedOptionsMenu.listHideReplies = !checked
+            }
+        }
+        AccessibleMenuItem {
+            text: qsTr("Show following")
+            checkable: true
+            checked: !listFeedOptionsMenu.listHideFollowing
+            onToggled: {
+                const gu = root.getGraphUtils(userDid)
+                gu.hideFollowing(listFeedOptionsMenu.list.uri, !checked)
+                listFeedOptionsMenu.listHideFollowing = !checked
+            }
+        }
+        AccessibleMenuItem {
+            text: qsTr("Rewind on startup")
+            checkable: true
+            checked: listFeedOptionsMenu.listSync
+            onToggled: {
+                const gu = root.getGraphUtils(userDid)
+                gu.syncList(listFeedOptionsMenu.list.uri, checked)
+                listFeedOptionsMenu.listSync = checked
+            }
+        }
+
+        function isOwnList() {
+            if (!list)
+                return false
+
+            const pu = root.getPostUtils(userDid)
+            const listCreatorDid = pu.extractDidFromUri(list.uri)
+            return skywalker.getUserDid() === listCreatorDid
+        }
+
+        function show() {
+            listHideFromTimeline = skywalker.getTimelineHide().hasList(list.uri)
+            listHideReplies = userSettings.getFeedHideReplies(skywalker.getUserDid(), list.uri)
+            listHideFollowing = userSettings.getFeedHideFollowing(skywalker.getUserDid(), list.uri)
+            listSync = userSettings.mustSyncFeed(skywalker.getUserDid(), list.uri)
+            open()
+        }
+    }
+
     function getFavoritesY() {
         if (mediaTilesLoader.item)
             return mediaTilesLoader.item.favoritesY
@@ -287,6 +433,23 @@ SkyListView {
             break
         case QEnums.FEED_LIST:
             root.viewListByUri(underlyingModel.getListView().uri, false)
+            break
+        default:
+            console.warn("Unexpected feed type:", underlyingModel.feedType)
+            break
+        }
+    }
+
+    function showFeedOptions() {
+        if (!underlyingModel)
+            return
+
+        switch (underlyingModel.feedType) {
+        case QEnums.FEED_GENERATOR:
+            feedOptionsMenu.show()
+            break
+        case QEnums.FEED_LIST:
+            listFeedOptionsMenu.show()
             break
         default:
             console.warn("Unexpected feed type:", underlyingModel.feedType)
