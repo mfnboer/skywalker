@@ -22,6 +22,7 @@ Item {
     required property bool isBookmarked
     required property bool bookmarkTransient
     required property bool isThread
+    property UserSettings userSettings: skywalker.getUserSettings()
     property int feedback: QEnums.FEEDBACK_NONE
     property int feedbackTransient: QEnums.FEEDBACK_NONE
     property bool isUnrolledThread: false
@@ -99,19 +100,11 @@ Item {
         iconColor: likeUri ? guiSettings.likeColor : postStats.color
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
+        blinking: likeTransient
         onClicked: like()
         onPressAndHold: (mouseEvent) => likeLongPress(mouseEvent)
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
-
-        Loader {
-            active: likeTransient || active
-
-            BlinkingOpacity {
-                target: likeIcon
-                running: likeTransient
-            }
-        }
     }
     StatIcon {
         id: bookmarkIcon
@@ -120,20 +113,12 @@ Item {
         width: parent.width / 8
         iconColor: isBookmarked ? guiSettings.buttonColor : postStats.color
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
+        blinking: bookmarkTransient
         visible: !limitedStats
         onClicked: bookmark()
         onPressAndHold: (mouseEvent) => bookmarkLongPress(mouseEvent)
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
-
-        Loader {
-            active: bookmarkTransient || active
-
-            sourceComponent: BlinkingOpacity {
-                target: bookmarkIcon
-                running: bookmarkTransient
-            }
-        }
     }
     StatIcon {
         id: moreIcon
@@ -318,20 +303,13 @@ Item {
         anchors.top: likeIcon.bottom
         anchors.left: likeIcon.left
         width: parent.width / 4
-        iconColor: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? guiSettings.likeColor : postStats.color
+        iconColor: postStats.color
         svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
-        visible: feedAcceptsInteractions && !limitedStats
+        blinking: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS
+        visible: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
         Accessible.name: qsTr("Show more like this")
         onClicked: emitShowMoreLikeThis()
-
-        Loader {
-            active: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS || active
-
-            sourceComponent: BlinkingOpacity {
-                target: showMoreIcon
-                running: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS
-            }
-        }
+        onPressAndHold: showFeedbackNotice(true)
     }
 
     StatIcon {
@@ -340,20 +318,13 @@ Item {
         anchors.top: moreIcon.bottom
         anchors.left: moreIcon.left
         width: parent.width / 8
-        iconColor: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? guiSettings.likeColor : postStats.color
+        iconColor: postStats.color
         svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
-        visible: feedAcceptsInteractions &&  !limitedStats
+        blinking: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS
+        visible: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
         Accessible.name: qsTr("Show more less this")
         onClicked: emitShowLessLikeThis()
-
-        Loader {
-            active: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS || active
-
-            sourceComponent: BlinkingOpacity {
-                target: showLessIcon
-                running: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS
-            }
-        }
+        onPressAndHold: showFeedbackNotice(true)
     }
 
     AccessibilityUtils {
@@ -361,13 +332,23 @@ Item {
     }
 
     function emitShowMoreLikeThis() {
+        if (showFeedbackNotice())
+            return
+
         if (feedback === QEnums.FEEDBACK_NONE)
             showMoreLikeThis()
+        else
+            skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO, 1)
     }
 
     function emitShowLessLikeThis() {
+        if (showFeedbackNotice())
+            return
+
         if (feedback === QEnums.FEEDBACK_NONE)
             showLessLikeThis()
+        else
+            skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO, 1)
     }
 
     function getRecordPostUri() {
@@ -411,5 +392,27 @@ Item {
 
     function statSpeech(stat, textSingular, textPlural) {
         return accessibilityUtils.statSpeech(stat, textSingular, textPlural)
+    }
+
+    function showFeedbackNotice(unconditional = false) {
+        if (!unconditional) {
+            if (!userSettings.getShowFeedbackNotice())
+                return false
+
+            userSettings.setShowFeedbackNotice(false)
+        }
+
+        let msg = qsTr("With the feedback buttons (thumb up/down) you give feedback to the creator of the feed.<br><br>" +
+                       "👍 = you like more posts like this<br><br>" +
+                       "👎 = you prefer less posts like this<br><br>" +
+                       "Not all feeds support feedback. These buttons are only shown for feeds that support it.<br><br>" +
+                       "You can also give feedback via the menu button (⋮). If you don't want the feedback buttons, you can disable them in the appearance " +
+                       `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Settings</a>.`)
+
+        if (!unconditional)
+            msg += qsTr("<br><br>This message will not be shown again.")
+
+        guiSettings.notice(root, msg, "", () => {}, (link) => { root.editSettings() })
+        return true
     }
 }

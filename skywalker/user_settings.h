@@ -33,6 +33,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
     Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
+    Q_PROPERTY(bool showFeedbackButtons READ getShowFeedbackButtons WRITE setShowFeedbackButtons NOTIFY showFeedbackButtonsChanged FINAL)
     Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
@@ -48,6 +49,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool showSuggestedStarterPacks READ getShowSuggestedStarterPacks WRITE setShowSuggestedStarterPacks NOTIFY showSuggestedStarterPacksChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
+    QML_ELEMENT
 
 public:
     void reset();
@@ -261,6 +263,12 @@ public:
     void setShowFollowsActiveStatus(bool show);
     bool getShowFollowsActiveStatus() const;
 
+    void setShowFeedbackButtons(bool show);
+    bool getShowFeedbackButtons() const;
+
+    Q_INVOKABLE void setShowFeedbackNotice(bool show);
+    Q_INVOKABLE bool getShowFeedbackNotice() const;
+
     Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
 
@@ -409,6 +417,7 @@ signals:
     void songlinkEnabledChanged();
     void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();
+    void showFeedbackButtonsChanged();
     void landscapeSideBarChanged();
     void gifAutoPlayChanged();
     void videoSoundChanged();

@@ -299,6 +299,12 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Feed feedback buttons (thumb up/down)")
+        checked: userSettings.showFeedbackButtons
+        onCheckedChanged: userSettings.showFeedbackButtons = checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Sidebar in landscape mode")
         checked: userSettings.landscapeSideBar
         onCheckedChanged: userSettings.landscapeSideBar = checked

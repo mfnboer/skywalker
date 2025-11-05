@@ -6,6 +6,8 @@ import skywalker
 Dialog {
     property string emoji: ""
 
+    signal linkActivated(string link)
+
     id: msgDialog
     contentHeight: msgRow.height
     width: parent.width - 40
@@ -37,12 +39,14 @@ Dialog {
 
             verticalAlignment: Text.AlignVCenter
             padding: 10
-            textFormat: Text.StyledText
+            textFormat: Text.RichText
             wrapMode: Text.Wrap
 
             Accessible.role: Accessible.StaticText
             Accessible.name: text
             Accessible.description: Accessible.name
+
+            onLinkActivated: (link) => msgDialog.linkActivated(link)
         }
     }
 

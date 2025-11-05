@@ -244,11 +244,12 @@ Item {
         message.show(question)
     }
 
-    function notice(parent, msg, emoji = "", onOkCb = () => {}) {
+    function notice(parent, msg, emoji = "", onOkCb = () => {}, onLinkCb = (link) => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { emoji: emoji, standardButtons: Dialog.Ok })
         message.onAccepted.connect(() => { message.destroy(); onOkCb() })
         message.onRejected.connect(() => message.destroy())
+        message.onLinkActivated.connect((link) => { onLinkCb(link) })
         message.show(msg)
     }
 

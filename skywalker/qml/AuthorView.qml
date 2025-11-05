@@ -256,8 +256,8 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Translate")
-                                visible: authorDescription
-                                onTriggered: root.translateText(authorDescription)
+                                visible: authorDescription || authorPronouns
+                                onTriggered: root.translateText(authorPronouns ? authorPronouns + "\n" + authorDescription : authorDescription)
 
                                 MenuItemSvg { svg: SvgOutline.googleTranslate }
                             }

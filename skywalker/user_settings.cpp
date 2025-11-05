@@ -1104,6 +1104,30 @@ bool UserSettings::getShowFollowsActiveStatus() const
     return mSettings.value("showFollowsActiveStatus", true).toBool();
 }
 
+void UserSettings::setShowFeedbackButtons(bool show)
+{
+    if (show == getShowFeedbackButtons())
+        return;
+
+    mSettings.setValue("showFeedbackButtons", show);
+    emit showFeedbackButtonsChanged();
+}
+
+bool UserSettings::getShowFeedbackButtons() const
+{
+    return mSettings.value("showFeedbackButtons", true).toBool();
+}
+
+void UserSettings::setShowFeedbackNotice(bool show)
+{
+    mSettings.setValue("showFeedbackNotice", show);
+}
+
+bool UserSettings::getShowFeedbackNotice() const
+{
+    return mSettings.value("showFeedbackNotice", true).toBool();
+}
+
 void UserSettings::setRequireAltText(const QString& did, bool require)
 {
     mSettings.setValue(key(did, "requireAltText"), require);

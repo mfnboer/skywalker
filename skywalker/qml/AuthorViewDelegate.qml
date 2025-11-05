@@ -153,6 +153,7 @@ Rectangle {
             Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
             elide: Text.ElideRight
+            textFormat: Text.RichText
             maximumLineCount: authorRect.maximumDescriptionLineCount
             color: guiSettings.textColor
             plainText: postUtils.linkiFy(author.description, guiSettings.linkColor)

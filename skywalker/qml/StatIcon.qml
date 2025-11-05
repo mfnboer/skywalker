@@ -6,6 +6,7 @@ Rectangle {
     property int statistic: -1
     property SvgImage svg
     property string iconColor: guiSettings.statsColor
+    property bool blinking: false
 
     signal clicked
     signal pressAndHold(MouseEvent event)
@@ -16,7 +17,7 @@ Rectangle {
     color: "transparent"
 
     Accessible.role: Accessible.Button
-    Accessible.onPressAction: if (enabled) clicked()
+    Accessible.onPressAction: if (enabled) emitClicked()
 
     SkySvg {
         id: statIcon
@@ -39,9 +40,27 @@ Rectangle {
             text: statistic
         }
     }
+    Loader {
+        active: blinking || active
+
+        sourceComponent: BlinkingOpacity {
+            target: control
+            running: blinking
+        }
+    }
     MouseArea {
         anchors.fill: parent
-        onClicked: control.clicked()
-        onPressAndHold: (mouseEvent) => control.pressAndHold(mouseEvent)
+        onClicked: control.emitClicked()
+        onPressAndHold: (mouseEvent) => control.emitPressAndHold(mouseEvent)
+    }
+
+    function emitClicked() {
+        if (!blinking)
+            control.clicked()
+    }
+
+    function emitPressAndHold(event) {
+        if (!blinking)
+            control.pressAndHold(event)
     }
 }
