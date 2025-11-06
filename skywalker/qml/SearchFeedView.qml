@@ -175,7 +175,7 @@ SkyListView {
         id: optionsMenu
 
         CloseMenuItem {
-            text: qsTr("<b>Hashtags</b>")
+            text: qsTr("<b>Hashtag</b>")
             Accessible.name: qsTr("close hashtag options menu")
         }
 

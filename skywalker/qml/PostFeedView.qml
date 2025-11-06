@@ -283,6 +283,11 @@ SkyListView {
         id: listFeedOptionsMenu
         width: hideListMenuItem.width
 
+        CloseMenuItem {
+            text: qsTr("<b>List</b>")
+            Accessible.name: qsTr("close more options menu")
+        }
+
         AccessibleMenuItem {
             text: qsTr("Remove favorite")
             onTriggered: {

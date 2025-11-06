@@ -979,6 +979,14 @@ bool PostFeedModel::getFeedHideFollowing() const
 
 bool PostFeedModel::mustHideContent(const Post& post) const
 {
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
+
+    if (feedViewPref.mHideReposts && post.isRepost())
+        return true;
+
+    if (post.isQuotePost() && !mustShowQuotePost(post))
+        return true;
+
     if (AbstractPostFeedModel::mustHideContent(post))
         return true;
 
@@ -1225,7 +1233,6 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
     const bool assembleThreads = mUserSettings.getAssembleThreads(mUserDid);
     auto page = std::make_unique<Page>();
 
@@ -1254,12 +1261,6 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 continue;
             }
-
-            if (feedViewPref.mHideReposts && post.isRepost())
-                continue;
-
-            if (post.isQuotePost() && !mustShowQuotePost(post))
-                continue;
 
             if (mustHideContent(post))
                 continue;
