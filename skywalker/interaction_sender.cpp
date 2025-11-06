@@ -148,7 +148,6 @@ ATProto::AppBskyFeed::Interaction::List InteractionSender::makeAtInteractionList
         atInteraction->mItem = interaction.mPostUri;
         atInteraction->mEvent = interaction.mEvent;
         atInteraction->mFeedContext = interaction.mFeedContext;
-        qDebug() << "Interaction:" << atInteraction->toJson();
         atInteractionList.push_back(atInteraction);
     }
 
