@@ -379,12 +379,13 @@ Rectangle {
         }
 
         Loader {
+            width: parent.width
+            height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10)
             active: true
             asynchronous: true
 
             sourceComponent: PostStats {
                 id: postStats
-                width: postColumn.width
                 topPadding: 10
                 skywalker: videoPage.skywalker
                 replyCount: postReplyCount

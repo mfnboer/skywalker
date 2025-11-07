@@ -555,13 +555,14 @@ Rectangle {
 
             // Stats
             Loader {
+                width: parent.width
+                height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10)
                 active: !unrollThread || endOfFeed
                 asynchronous: true
                 visible: active
 
                 sourceComponent: PostStats {
                     id: postStats
-                    width: postColumn.width
                     topPadding: 10
                     skywalker: postEntry.skywalker
                     replyCount: postReplyCount

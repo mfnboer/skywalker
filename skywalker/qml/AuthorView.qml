@@ -1660,7 +1660,7 @@ SkyPage {
         if (!isNaN(expiresAt.getTime()))
             return qsTr(`You muted this account till ${guiSettings.expiresIndication(expiresAt)}`)
 
-        return qsTr("You mutes this account")
+        return qsTr("You muted this account")
     }
 
     function setLabeler(view) {

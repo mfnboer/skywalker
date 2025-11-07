@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.18
 ====
 * Edit post

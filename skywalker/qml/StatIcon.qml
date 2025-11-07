@@ -22,7 +22,7 @@ Rectangle {
     SkySvg {
         id: statIcon
         anchors.left: parent.left
-        width: guiSettings.statsHeight
+        width: guiSettings.statsIconHeight
         height: width
         color: iconColor
         svg: parent.svg

@@ -192,12 +192,13 @@ Rectangle {
         visible: mediaItem ? mediaItem.contentFilter.imageVisible() : true
 
         Loader {
+            width: parent.width
+            height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10, true)
             active: true
             asynchronous: true
 
             sourceComponent: PostStats {
                 id: postStats
-                width: postColumn.width
                 topPadding: 10
                 skywalker: page.skywalker
                 replyCount: postReplyCount

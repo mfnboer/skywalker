@@ -37,7 +37,7 @@ Item {
     readonly property int sideBarHeaderHeight: 44
     readonly property int sideBarMinWidth: 175
     readonly property int sideBarMaxWidth: 325
-    readonly property int statsHeight: appFontHeight + 4
+    readonly property int statsIconHeight: appFontHeight + 4
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
@@ -441,6 +441,13 @@ Item {
                 messageUserBackgroundColor,
                 messageOtherBackgroundColor,
                 postHighLightColor]
+    }
+
+    function postStatsHeight(feedAcceptsInteractions, padding, limitedStats = false) {
+        if (feedAcceptsInteractions && userSettings.showFeedbackButtons && !limitedStats)
+            return (guiSettings.statsIconHeight + padding) * 2
+        else
+            return guiSettings.statsIconHeight + padding
     }
 
     function getNavigationBarSize(side) {
