@@ -102,8 +102,11 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
             if (!mustShow(post))
                 continue;
 
-            if (mustHideContent(post))
+            if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+            {
+                mContentFilterStats.report(reason.first, reason.second);
                 continue;
+            }
 
             if (mPinnedPostUri == post.getUri())
                 post.setPinned(true);

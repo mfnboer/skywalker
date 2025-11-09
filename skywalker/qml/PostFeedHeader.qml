@@ -31,6 +31,7 @@ Rectangle {
     signal addFocusHashtagView
     signal addVideoView
     signal addMediaView
+    signal filterStatistics
     signal viewChanged(int contentMode)
 
     id: header
@@ -105,6 +106,11 @@ Rectangle {
                     text: qsTr("Add video view")
                     onTriggered: addVideoView()
                     MenuItemSvg { svg: SvgOutline.film }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Filter statistics")
+                    onTriggered: filterStatistics()
                 }
             }
         }

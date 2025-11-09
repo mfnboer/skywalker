@@ -3,7 +3,6 @@
 #include "abstract_post_feed_model.h"
 #include "author_cache.h"
 #include "content_filter.h"
-#include "draft_posts.h"
 #include "focus_hashtags.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
@@ -72,6 +71,7 @@ void AbstractPostFeedModel::clearFeed()
     mFeed.clear();
     mStoredCids.clear();
     mStoredCidQueue = {};
+    mContentFilterStats.clear();
     setEndOfFeed(false);
     clearLocalChanges();
     clearLocalProfileChanges();
@@ -114,27 +114,27 @@ void AbstractPostFeedModel::cleanupStoredCids()
     qDebug() << "Stored cid set:" << mStoredCids.size() << "cid queue:" << mStoredCidQueue.size();
 }
 
-bool AbstractPostFeedModel::mustHideContent(const Post& post) const
+std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedModel::mustHideContent(const Post& post) const
 {
     const auto& author = post.getAuthor();
 
     if (author.getViewer().isMuted())
     {
         qDebug() << "Hide post of muted author:" << author.getHandleOrDid() << post.getCid();
-        return true;
+        return { QEnums::HIDE_REASON_MUTED_AUTHOR, nullptr };
     }
 
     if (mFeedHide.contains(author.getDid()))
     {
         qDebug () << "Hide post from author:" << author.getHandleOrDid();
-        return true;
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, nullptr };
     }
 
     const auto repostedBy = post.getRepostedBy();
     if (repostedBy && mFeedHide.contains(repostedBy->getDid()))
     {
         qDebug () << "Hide repost from author:" << author.getHandleOrDid();
-        return true;
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, nullptr };
     }
 
     const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
@@ -142,19 +142,19 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
     {
         qDebug() << "Hide post:" << post.getCid() << warning;
-        return true;
+        return { QEnums::HIDE_REASON_LABEL, nullptr };
     }
 
     if (post.isRepost() && mMutedReposts.contains(post.getRepostedBy()->getDid()))
     {
         qDebug() << "Mute repost, did:" << post.getRepostedBy()->getDid();
-        return true;
+        return { QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, *post.getRepostedBy() };
     }
 
     if (mMutedWords.match(post))
     {
         qDebug() << "Hide post due to muted words" << post.getCid();
-        return true;
+        return { QEnums::HIDE_REASON_MUTED_WORD, nullptr };
     }
 
     const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
@@ -162,10 +162,10 @@ bool AbstractPostFeedModel::mustHideContent(const Post& post) const
     if (record && mMutedWords.match(*record))
     {
         qDebug() << "Hide post due to muted words in record" << post.getCid();
-        return true;
+        return { QEnums::HIDE_REASON_MUTED_WORD, nullptr };
     }
 
-    return false;
+    return { QEnums::HIDE_REASON_NONE, nullptr };
 }
 
 void AbstractPostFeedModel::preprocess(const Post& post)
@@ -944,6 +944,12 @@ void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
                 emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
         }
     }
+}
+
+ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
+{
+    auto* model = new ContentFilterStatsModel(mContentFilterStats, this);
+    return model;
 }
 
 }

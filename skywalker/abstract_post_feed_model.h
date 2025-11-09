@@ -3,7 +3,8 @@
 #pragma once
 #include "base_list_model.h"
 #include "content_filter.h"
-#include "draft_post_data.h"
+#include "content_filter_stats.h"
+#include "content_filter_stats_model.h"
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
@@ -156,6 +157,8 @@ public:
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
 
+    Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
+
 signals:
     void endOfFeedChanged();
     void getFeedInProgressChanged();
@@ -171,7 +174,7 @@ protected:
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
     void preprocess(const Post& post);
 
-    virtual bool mustHideContent(const Post& post) const;
+    virtual std::pair<QEnums::HideReasonType, ContentFilterStats::Details> mustHideContent(const Post& post) const;
 
     // LocalPostModelChanges
     virtual void postIndexedSecondsAgoChanged() override;
@@ -213,6 +216,7 @@ protected:
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
+    ContentFilterStats mContentFilterStats;
     int mModelId = -1;
 
 private:

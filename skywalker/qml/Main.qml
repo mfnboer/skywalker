@@ -2151,6 +2151,14 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function viewContentFilterStats(postFeedModel) {
+        const statsModel = postFeedModel.createContentFilterStatsModel()
+        let component = guiSettings.createComponent("ContentFilterStatsView.qml")
+        let view = component.createObject(root, { model: statsModel })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+    }
+
     function editSettings() {
         let component = guiSettings.createComponent("SettingsForm.qml")
         let form = component.createObject(root)

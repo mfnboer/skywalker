@@ -311,6 +311,19 @@ public:
 
     ATProto::AppBskyActor::ProfileViewBasic::SharedPtr getProfileBasicView() const;
 
+    bool operator==(const BasicProfile& other) const
+    {
+        return getDid() == other.getDid();
+    }
+
+    struct Hash
+    {
+        size_t operator()(const BasicProfile& profile) const
+        {
+            return qHash(profile.getDid());
+        }
+    };
+
 protected:
     ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mProfileDetailedView;
     ATProto::AppBskyActor::ProfileView::SharedPtr mProfileView;

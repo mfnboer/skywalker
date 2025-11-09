@@ -189,10 +189,10 @@ private:
 
     bool getFeedHideReplies() const;
     bool getFeedHideFollowing() const;
-    virtual bool mustHideContent(const Post& post) const override;
+    virtual std::pair<QEnums::HideReasonType, ContentFilterStats::Details> mustHideContent(const Post& post) const override;
     bool passLanguageFilter(const Post& post) const;
-    bool mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
-    bool mustShowQuotePost(const Post& post) const;
+    QEnums::HideReasonType mustHideReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const;
+    QEnums::HideReasonType mustHideQuotePost(const Post& post) const;
     void reportActivity(const Post& post);
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);

@@ -207,8 +207,11 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
         {
             Post post(feedEntry);
 
-            if (mustHideContent(post))
+            if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+            {
+                mContentFilterStats.report(reason.first, reason.second);
                 continue;
+            }
 
             preprocess(post);
             page->addPost(post);

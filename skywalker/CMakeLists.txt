@@ -590,6 +590,13 @@ qt_add_qml_module(libskywalker
         SOURCES post_attachment.h
         SOURCES post_feed_context.h
         SOURCES post_feed_context.cpp
+        SOURCES content_filter_stats.h
+        SOURCES content_filter_stats.cpp
+        SOURCES content_filter_stat_item.h
+        SOURCES content_filter_stat_item.cpp
+        SOURCES content_filter_stats_model.h
+        SOURCES content_filter_stats_model.cpp
+        QML_FILES qml/ContentFilterStatsView.qml
 )
 
 if (NOT ANDROID)

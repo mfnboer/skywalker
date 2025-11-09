@@ -977,25 +977,28 @@ bool PostFeedModel::getFeedHideFollowing() const
     return *mFeedHideFollowing;
 }
 
-bool PostFeedModel::mustHideContent(const Post& post) const
+std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mustHideContent(const Post& post) const
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideReposts && post.isRepost())
-        return true;
+        return { QEnums::HIDE_REASON_REPOST, nullptr };
 
-    if (post.isQuotePost() && !mustShowQuotePost(post))
-        return true;
+    if (post.isQuotePost())
+    {
+        if (auto reason = mustHideQuotePost(post); reason != QEnums::HIDE_REASON_NONE)
+            return { reason, nullptr };
+    }
 
-    if (AbstractPostFeedModel::mustHideContent(post))
-        return true;
+    if (auto reason = AbstractPostFeedModel::mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+        return reason;
 
     if (getFeedHideFollowing())
     {
         if (mFollowing.contains(post.getAuthorDid()))
         {
             qDebug() << "Hide post from followed user:" << post.getAuthorDid();
-            return true;
+            return { QEnums::HIDE_REASON_HIDE_FOLLOWING_FROM_FEED, nullptr };
         }
     }
 
@@ -1006,17 +1009,17 @@ bool PostFeedModel::mustHideContent(const Post& post) const
         if (repostedBy->getDid() == post.getAuthorDid())
         {
             if (!mUserSettings.getShowSelfReposts(mUserDid))
-                return true;
+                return { QEnums::HIDE_REASON_SELF_REPOST, nullptr };
         }
         else if (!mUserSettings.getShowFollowedReposts(mUserDid))
         {
             if (mFollowing.contains(post.getAuthorDid()))
-                return true;
+                return { QEnums::HIDE_REASON_FOLLOWING_REPOST, nullptr };
 
             // Technically you do not follow yourself, but your own posts
             // show up in your timeline, so we hide such resposts.
             if (post.getAuthorDid() == mUserDid)
-                return true;
+                return { QEnums::HIDE_REASON_FOLLOWING_REPOST, nullptr };
         }
     }
 
@@ -1024,10 +1027,13 @@ bool PostFeedModel::mustHideContent(const Post& post) const
     if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.getVideoView())
     {
         qWarning() << "Non-video post in video feed!";
-        return true;
+        return { QEnums::HIDE_REASON_CONTENT_MODE, nullptr };
     }
 
-    return !passLanguageFilter(post);
+    if (!passLanguageFilter(post))
+        return { QEnums::HIDE_REASON_LANGUAGE, nullptr };
+
+    return { QEnums::HIDE_REASON_NONE, nullptr };
 }
 
 bool PostFeedModel::passLanguageFilter(const Post& post) const
@@ -1061,26 +1067,26 @@ bool PostFeedModel::passLanguageFilter(const Post& post) const
     return false;
 }
 
-bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
+QEnums::HideReasonType PostFeedModel::mustHideReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideReplies)
-        return false;
+        return QEnums::HIDE_REASON_REPLY;
 
     if (getFeedHideReplies())
-        return false;
+        return QEnums::HIDE_REASON_REPLY;
 
     // Always show the replies of the user.
     if (post.getAuthor().getDid() == mUserDid)
-        return true;
+        return QEnums::HIDE_REASON_NONE;
 
     if (mUserSettings.getHideRepliesInThreadFromUnfollowed(mUserDid))
     {
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
-            return false;
+            return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
 
         const auto parentAuthor = replyRef->mParent.getAuthor();
         const auto& parentDid = parentAuthor.getDid();
@@ -1088,14 +1094,14 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         // Do not show replies in threads starting with blocked and not-found root posts.
         // Unless the reply is directly to the user.
         if (replyRef->mRoot.isPlaceHolder() && parentDid != mUserDid)
-            return false;
+            return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
 
         const auto rootAuthor = replyRef->mRoot.getAuthor();
         const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies to the user
         if (parentDid != mUserDid && !mFollowing.contains(rootDid))
-            return false;
+            return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
     }
 
     if (feedViewPref.mHideRepliesByUnfollowed)
@@ -1103,50 +1109,50 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
-            return false;
+            return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
 
         // Do not show replies to blocked and not-found posts
         if (replyRef->mParent.isPlaceHolder())
-            return false;
+            return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
 
         const auto parentAuthor = replyRef->mParent.getAuthor();
         const auto& parentDid = parentAuthor.getDid();
 
         // Always show replies to the user
         if (parentDid == mUserDid)
-            return true;
+            return QEnums::HIDE_REASON_NONE;
 
         const auto rootAuthor = replyRef->mRoot.getAuthor();
         const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies in a thread from the user
         if (rootDid == mUserDid)
-            return true;
+            return QEnums::HIDE_REASON_NONE;
 
         if (!mFollowing.contains(parentDid))
-            return false;
+            return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
     }
 
-    return true;
+    return QEnums::HIDE_REASON_NONE;
 }
 
-bool PostFeedModel::mustShowQuotePost(const Post& post) const
+QEnums::HideReasonType PostFeedModel::mustHideQuotePost(const Post& post) const
 {
     Q_ASSERT(post.isQuotePost());
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideQuotePosts)
-        return false;
+        return QEnums::HIDE_REASON_QUOTE;
 
     if (!mUserSettings.getShowQuotesWithBlockedPost(mUserDid))
     {
         const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
 
         if (record && record->getBlocked())
-            return false;
+            return QEnums::HIDE_REASON_QUOTE_BLOCKED_POST;
     }
 
-    return true;
+    return QEnums::HIDE_REASON_NONE;
 }
 
 void PostFeedModel::reportActivity(const Post& post)
@@ -1262,8 +1268,11 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 continue;
             }
 
-            if (mustHideContent(post))
+            if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+            {
+                mContentFilterStats.report(reason.first, reason.second);
                 continue;
+            }
 
             const auto& replyRef = post.getViewPostReplyRef();
 
@@ -1287,8 +1296,10 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                     continue;
                 }
 
-                if (!mustShowReply(post, replyRef))
+                if (auto reason = mustHideReply(post, replyRef); reason != QEnums::HIDE_REASON_NONE)
                 {
+                    mContentFilterStats.report(reason, nullptr);
+
                     // Preprocess replies when they are not shown. Those can help
                     // identify threads.
                     preprocess(post);
@@ -1301,7 +1312,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 if (assembleThreads && !rootCid.isEmpty() && rootCid != parentCid &&
                     !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
-                    !mustHideContent(replyRef->mRoot))
+                    mustHideContent(replyRef->mRoot).first == QEnums::HIDE_REASON_NONE)
                 {
                     preprocess(replyRef->mRoot);
                     page->addPost(replyRef->mRoot);
@@ -1313,7 +1324,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // again for consistency of the thread.
                 if (assembleThreads &&
                     ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
-                    !mustHideContent(replyRef->mParent))
+                    mustHideContent(replyRef->mParent).first == QEnums::HIDE_REASON_NONE)
                 {
                     preprocess(replyRef->mParent);
                     page->addPost(replyRef->mParent, true);
@@ -1335,8 +1346,11 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             {
                 // A post can still be a reply even if there is no reply reference.
                 // The reference may be missing due to blocked posts.
-                if (!mustShowReply(post, {}))
+                if (auto reason = mustHideReply(post, {}); reason != QEnums::HIDE_REASON_NONE)
+                {
+                    mContentFilterStats.report(reason, nullptr);
                     continue;
+                }
             }
             else
             {

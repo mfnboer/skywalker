@@ -37,6 +37,7 @@ SkyListView {
         onAddFocusHashtagView: page.addFocusHashtagView()
         onAddMediaView: page.showMediaView()
         onAddVideoView: page.showVideoView()
+        onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
     }
     headerPositioning: ListView.PullBackHeader
 
