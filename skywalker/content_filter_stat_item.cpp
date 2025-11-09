@@ -5,7 +5,14 @@
 namespace Skywalker {
 
 ContentFilterStatItem::ContentFilterStatItem(const QString& name, int stat, ContentFilterStatItem* parent) :
-    mName(name),
+    mKey(name),
+    mStat(stat),
+    mParentItem(parent)
+{
+}
+
+ContentFilterStatItem::ContentFilterStatItem(const BasicProfile& profile, int stat, ContentFilterStatItem* parent) :
+    mKey(profile),
     mStat(stat),
     mParentItem(parent)
 {
@@ -34,11 +41,31 @@ QVariant ContentFilterStatItem::data(int column) const
     switch (column)
     {
     case 0:
-        return mName;
+        return std::visit([](auto&& key){ return QVariant::fromValue(key); }, mKey);
     case 1:
         return mStat;
     default:
         return {};
+    }
+}
+
+QEnums::ValueType ContentFilterStatItem::valueType(int column) const
+{
+    switch (column)
+    {
+    case 0:
+        if (std::holds_alternative<QString>(mKey))
+            return QEnums::VALUE_TYPE_STRING;
+        if (std::holds_alternative<BasicProfile>(mKey))
+            return QEnums::VALUE_TYPE_BASIC_PROFILE;
+
+        qWarning() << "Unknown key type";
+        return QEnums::VALUE_TYPE_STRING;
+    case 1:
+        return QEnums::VALUE_TYPE_INT;
+    default:
+        qWarning() << "Unknown column:" << column;
+        return QEnums::VALUE_TYPE_STRING;
     }
 }
 

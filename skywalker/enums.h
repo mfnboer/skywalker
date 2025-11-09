@@ -469,6 +469,14 @@ public:
         HIDE_REASON_CONTENT_MODE
     };
     Q_ENUM(HideReasonType)
+
+    enum ValueType
+    {
+        VALUE_TYPE_INT = 0,
+        VALUE_TYPE_STRING = 1,
+        VALUE_TYPE_BASIC_PROFILE
+    };
+    Q_ENUM(ValueType)
 };
 
 }

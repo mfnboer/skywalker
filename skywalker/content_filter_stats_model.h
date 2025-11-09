@@ -14,6 +14,13 @@ class ContentFilterStatsModel : public QAbstractItemModel
     QML_ELEMENT
 
 public:
+    enum class Role {
+        ValueType = Qt::UserRole + 1,
+        Value
+    };
+    Q_ENUM(Role)
+
+    explicit ContentFilterStatsModel(QObject* parent = nullptr);
     explicit ContentFilterStatsModel(const ContentFilterStats& stats, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = {}) const override;
@@ -23,6 +30,9 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const override;
     QModelIndex parent(const QModelIndex& index) const override;
+
+protected:
+    QHash<int, QByteArray> roleNames() const override;
 
 private:
     void setStats(const ContentFilterStats& stats);

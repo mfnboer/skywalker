@@ -4,6 +4,12 @@
 
 namespace Skywalker {
 
+ContentFilterStatsModel::ContentFilterStatsModel(QObject* parent) :
+    QAbstractItemModel(parent),
+    mRootItem(std::make_unique<ContentFilterStatItem>(tr("Total"), 0))
+{
+}
+
 ContentFilterStatsModel::ContentFilterStatsModel(const ContentFilterStats& stats, QObject* parent) :
     QAbstractItemModel(parent),
     mRootItem(std::make_unique<ContentFilterStatItem>(tr("Total"), 0))
@@ -11,19 +17,15 @@ ContentFilterStatsModel::ContentFilterStatsModel(const ContentFilterStats& stats
     setStats(stats);
 }
 
-static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const QString& name, int stat)
+template<class Key>
+static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const Key& key, int stat)
 {
-    qDebug() << "name:" << name << "stat:" << stat;
-
     if (!parentItem)
-    {
-        qWarning() << "No parent item for:" << name;
         return nullptr;
-    }
 
     if (stat > 0)
     {
-        auto item = std::make_unique<ContentFilterStatItem>(name, stat, parentItem);
+        auto item = std::make_unique<ContentFilterStatItem>(key, stat, parentItem);
         auto* addedItem = item.get();
         parentItem->addChild(std::move(item));
         return addedItem;
@@ -41,7 +43,7 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats)
     auto* item = addStat(mRootItem.get(), tr("Muted reposts"), stats.repostsFromAuthor());
 
     for (const auto& [author, count] : stats.authorsRepostsFromAuthor())
-        addStat(item, author.getHandle(), count);
+        addStat(item, author, count);
 
     addStat(mRootItem.get(), tr("Replies in thread from not-followed user"), stats.repliesFromUnfollowed());
     addStat(mRootItem.get(), tr("Replies to not-followed user"), stats.repliesThreadUnfollowed());
@@ -70,11 +72,20 @@ int ContentFilterStatsModel::columnCount(const QModelIndex& parent) const
 
 QVariant ContentFilterStatsModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
 
     const auto* item = static_cast<const ContentFilterStatItem*>(index.internalPointer());
-    return item->data(index.column());
+
+    switch (Role(role))
+    {
+    case Role::ValueType:
+        return item->valueType(index.column());
+    case Role::Value:
+        return item->data(index.column());
+    }
+
+    return {};
 }
 
 Qt::ItemFlags ContentFilterStatsModel::flags(const QModelIndex& index) const
@@ -115,6 +126,16 @@ QModelIndex ContentFilterStatsModel::parent(const QModelIndex& index) const
         return {};
 
     return createIndex(parentItem->row(), 0, parentItem);
+}
+
+QHash<int, QByteArray> ContentFilterStatsModel::roleNames() const
+{
+    static const QHash<int, QByteArray> roles{
+        { int(Role::ValueType), "valueType" },
+        { int(Role::Value), "value" }
+    };
+
+    return roles;
 }
 
 }

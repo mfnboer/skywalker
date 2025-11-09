@@ -25,7 +25,47 @@ SkyPage {
         model: page.model
 
         delegate: TreeViewDelegate {
-            width: parent.width
+            required property int column
+            required property int valueType // QEnums::ValueType
+            required property var value
+
+            id: control
+            implicitWidth: column == 1 ? 70 : treeView.width - 70
+
+            contentItem: Loader {
+                active: true
+                sourceComponent: control.valueType === QEnums.VALUE_TYPE_BASIC_PROFILE ? authorComp : labelComp
+            }
+
+            // contentItem: Label {
+            //     rightPadding: 10
+            //     clip: false
+            //     text: control.valueType === QEnums.VALUE_TYPE_BASIC_PROFILE ? control.value.handle : control.value
+            //     color: guiSettings.textColor
+            //     elide: Text.ElideRight
+            //     horizontalAlignment: control.valueType === QEnums.VALUE_TYPE_INTL ? Text.AlignRight : Text.AlignLeft
+            // }
+
+            Component {
+                id: labelComp
+
+                Label {
+                    rightPadding: 10
+                    clip: false
+                    text: control.value
+                    color: guiSettings.textColor
+                    elide: Text.ElideRight
+                    horizontalAlignment: control.valueType === QEnums.VALUE_TYPE_INT ? Text.AlignRight : Text.AlignLeft
+                }
+            }
+
+            Component {
+                id: authorComp
+
+                AuthorNameAndStatus {
+                    author: control.value
+                }
+            }
         }
     }
 
