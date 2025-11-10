@@ -8,6 +8,7 @@ void ContentFilterStats::clear()
 {
     mMutedAuthor = 0;
     mRepostsFromAuthor = 0;
+    mAuthorsRepostsFromAuthor.clear();
 
     mHideFromFollowingFeed = 0;
     mLabel = 0;
@@ -25,6 +26,8 @@ void ContentFilterStats::clear()
     mQuotes = 0;
 
     mContentMode = 0;
+
+    mProfileMap.clear();
 }
 
 void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details& details)
@@ -34,13 +37,15 @@ void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details
     switch (hideReason)
     {
     case QEnums::HIDE_REASON_MUTED_AUTHOR:
+        add(std::get<BasicProfile>(details), mAuthorsMutedAuthor);
         ++mMutedAuthor;
         break;
     case QEnums::HIDE_REASON_REPOST_FROM_AUTHOR:
-        ++mAuthorsRepostsFromAuthor[std::get<BasicProfile>(details)];
+        add(std::get<BasicProfile>(details), mAuthorsRepostsFromAuthor);
         ++mRepostsFromAuthor;
         break;
     case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
+        add(std::get<BasicProfile>(details), mAuthorsHideFromFollowingFeed);
         ++mHideFromFollowingFeed;
         break;
     case QEnums::HIDE_REASON_LABEL:
@@ -86,6 +91,57 @@ void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details
         qWarning() << "Content not hidden";
         break;
     }
+}
+
+static auto profileHandleCompare = [](const ContentFilterStats::ProfileStat& lhs, const QString& rhs)
+{
+    return lhs.first.getHandle() < rhs;
+};
+
+std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::getProfileStats(const DidStatMap& didStatMap) const
+{
+    std::vector<ContentFilterStats::ProfileStat> result;
+    result.reserve(didStatMap.size());
+
+    for (const auto& [did, stat] : didStatMap)
+    {
+        auto it = mProfileMap.find(did);
+
+        if (it == mProfileMap.end())
+        {
+            qWarning() << "Profile not found:" << did;
+            continue;
+        }
+
+        const auto& profile = it->second;
+        auto resultIt = std::lower_bound(result.cbegin(), result.cend(), profile.getHandle(), profileHandleCompare);
+        result.insert(resultIt, { profile, stat });
+    }
+
+    return result;
+}
+
+std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsMutedAuthor() const
+{
+    return getProfileStats(mAuthorsMutedAuthor);
+}
+
+std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsRepostsFromAuthor() const
+{
+    return getProfileStats(mAuthorsRepostsFromAuthor);
+}
+
+std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsHideFromFollowingFeed() const
+{
+    return getProfileStats(mAuthorsHideFromFollowingFeed);
+}
+
+void ContentFilterStats::add(const BasicProfile& profile, DidStatMap& didStatMap)
+{
+    if (!mProfileMap.contains(profile.getDid()))
+        mProfileMap[profile.getDid()] = profile;
+
+    ++didStatMap[profile.getDid()];
 }
 
 }

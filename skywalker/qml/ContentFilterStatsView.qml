@@ -3,6 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 SkyPage {
+    property string userDid
     required property ContentFilterStatsModel model
 
     id: page
@@ -37,15 +38,6 @@ SkyPage {
                 sourceComponent: control.valueType === QEnums.VALUE_TYPE_BASIC_PROFILE ? authorComp : labelComp
             }
 
-            // contentItem: Label {
-            //     rightPadding: 10
-            //     clip: false
-            //     text: control.valueType === QEnums.VALUE_TYPE_BASIC_PROFILE ? control.value.handle : control.value
-            //     color: guiSettings.textColor
-            //     elide: Text.ElideRight
-            //     horizontalAlignment: control.valueType === QEnums.VALUE_TYPE_INTL ? Text.AlignRight : Text.AlignLeft
-            // }
-
             Component {
                 id: labelComp
 
@@ -60,10 +52,10 @@ SkyPage {
             }
 
             Component {
-                id: authorComp
-
-                AuthorNameAndStatus {
+                PostHeaderWithAvatar {
                     author: control.value
+                    postIndexedSecondsAgo: -1
+                    labelsToShow: []
                 }
             }
         }

@@ -34,19 +34,42 @@ static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const K
     return nullptr;
 }
 
+template<class Key, class StatsList>
+static void addStat(ContentFilterStatItem* parentItem, const Key& key, int stat, const StatsList& statsList)
+{
+    auto* item = addStat(parentItem, key, stat);
+
+    if (!item)
+        return;
+
+    for (const auto& [k, s] : statsList)
+        addStat(item, k, s);
+}
+
 void ContentFilterStatsModel::setStats(const ContentFilterStats& stats)
 {
     Q_ASSERT(mRootItem);
     mRootItem->clearChildItems();
+    auto* root = mRootItem.get();
 
-    addStat(mRootItem.get(), tr("Muted user"), stats.mutedAuthor());
-    auto* item = addStat(mRootItem.get(), tr("Muted reposts"), stats.repostsFromAuthor());
+    addStat(root, tr("Muted users"), stats.mutedAuthor());
+    addStat(root, tr("Muted reposts"), stats.repostsFromAuthor(), stats.authorsRepostsFromAuthor());
 
-    for (const auto& [author, count] : stats.authorsRepostsFromAuthor())
-        addStat(item, author, count);
+    addStat(root, tr("Hide from following feed (via list)"), stats.hideFromFollowingFeed(), stats.authorsHideFromFollowingFeed());
+    addStat(root, tr("Label"), stats.label());
+    addStat(root, tr("Hide users you follow"), stats.hideFollowingFromFeed());
+    addStat(root, tr("Language"), stats.language());
+    addStat(root, tr("Quotes with blocked post"), stats.quotesBlockedPost());
+    addStat(root, tr("Replies in thread from not-followed users"), stats.repliesFromUnfollowed());
+    addStat(root, tr("Replies to not-followed users"), stats.repliesThreadUnfollowed());
+    addStat(root, tr("Self-reposts"), stats.selfReposts());
+    addStat(root, tr("Reposted posts from followed users"), stats.followingReposts());
 
-    addStat(mRootItem.get(), tr("Replies in thread from not-followed user"), stats.repliesFromUnfollowed());
-    addStat(mRootItem.get(), tr("Replies to not-followed user"), stats.repliesThreadUnfollowed());
+    addStat(root, tr("Replies"), stats.replies());
+    addStat(root, tr("Reposts"), stats.reposts());
+    addStat(root, tr("Quotes"), stats.quotes());
+
+    addStat(root, tr("Content imcompatible with feed"), stats.contentMode());
 }
 
 int ContentFilterStatsModel::rowCount(const QModelIndex& parent) const
@@ -76,6 +99,9 @@ QVariant ContentFilterStatsModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto* item = static_cast<const ContentFilterStatItem*>(index.internalPointer());
+
+    if (!item)
+        return {};
 
     switch (Role(role))
     {

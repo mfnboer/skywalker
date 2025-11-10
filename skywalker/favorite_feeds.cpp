@@ -196,7 +196,7 @@ void FavoriteFeeds::addPinnedFeed(const ATProto::AppBskyGraph::ListView::SharedP
     FavoriteFeedView view(listView);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
-    qInfo() << "Pinned:" << view.getName() << "size:" << mPinnedFeeds.size();
+    qDebug() << "Pinned:" << view.getName() << "size:" << mPinnedFeeds.size();
     emit pinnedFeedsChanged();
 }
 

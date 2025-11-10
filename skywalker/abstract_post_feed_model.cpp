@@ -121,20 +121,20 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
     if (author.getViewer().isMuted())
     {
         qDebug() << "Hide post of muted author:" << author.getHandleOrDid() << post.getCid();
-        return { QEnums::HIDE_REASON_MUTED_AUTHOR, nullptr };
+        return { QEnums::HIDE_REASON_MUTED_AUTHOR, author };
     }
 
     if (mFeedHide.contains(author.getDid()))
     {
         qDebug () << "Hide post from author:" << author.getHandleOrDid();
-        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, nullptr };
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, author };
     }
 
     const auto repostedBy = post.getRepostedBy();
     if (repostedBy && mFeedHide.contains(repostedBy->getDid()))
     {
         qDebug () << "Hide repost from author:" << author.getHandleOrDid();
-        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, nullptr };
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, author };
     }
 
     const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
