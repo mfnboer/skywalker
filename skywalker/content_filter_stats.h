@@ -1,7 +1,9 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_label.h"
 #include "enums.h"
+#include "muted_words.h"
 #include "profile.h"
 
 namespace Skywalker {
@@ -9,8 +11,10 @@ namespace Skywalker {
 class ContentFilterStats
 {
 public:
-    using Details = std::variant<std::nullptr_t, BasicProfile>;
+    using Details = std::variant<std::nullptr_t, BasicProfile, MutedWordEntry, QString, ContentLabel>;
     using ProfileStat = std::pair<BasicProfile, int>;
+    using LabelIdStatMap = std::unordered_map<QString, int>;
+    using LabelerDidLabelStatsMap = std::unordered_map<QString, LabelIdStatMap>;
 
     int mutedAuthor() const { return mMutedAuthor; }
     std::vector<ProfileStat> authorsMutedAuthor() const;
@@ -22,9 +26,16 @@ public:
     std::vector<ProfileStat> authorsHideFromFollowingFeed() const;
 
     int label() const { return mLabel; }
+    const LabelerDidLabelStatsMap& labelMap() const { return mLabelMap; }
+
     int mutedWord() const { return mMutedWord; }
+    const std::map<MutedWordEntry, int>& entriesMutedWord() const { return mEntriesMutedWord; }
+
     int hideFollowingFromFeed() const { return mHideFollowingFromFeed; }
+
     int language() const { return mLanguage; }
+    const std::map<QString, int>& entriesLanguage() const { return mEntriesLanguage; }
+
     int quotesBlockedPost() const { return mQuotesBlockedPost; }
     int repliesFromUnfollowed() const { return mRepliesFromUnfollowed; }
     int repliesThreadUnfollowed() const { return mRepliesThreadUnfollowed; }
@@ -56,9 +67,16 @@ private:
     DidStatMap mAuthorsHideFromFollowingFeed;
 
     int mLabel = 0;
+    LabelerDidLabelStatsMap mLabelMap;
+
     int mMutedWord = 0;
+    std::map<MutedWordEntry, int> mEntriesMutedWord;
+
     int mHideFollowingFromFeed = 0;
+
     int mLanguage = 0;
+    std::map<QString, int> mEntriesLanguage;
+
     int mQuotesBlockedPost = 0;
     int mRepliesFromUnfollowed = 0;
     int mRepliesThreadUnfollowed = 0;

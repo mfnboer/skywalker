@@ -105,7 +105,7 @@ void FocusHashtags::setEntries(const QJsonDocument& json)
     if (json.isEmpty())
         return;
 
-    QJsonArray entryArray = json.array();
+    const QJsonArray entryArray = json.array();
 
     for (const auto entryJson : entryArray)
     {
@@ -224,7 +224,7 @@ void FocusHashtags::removeHashtagFromEntry(FocusHashtagEntry* entry, const QStri
     }
 }
 
-bool FocusHashtags::match(const NormalizedWordIndex& post) const
+std::pair<bool, const IMatchEntry*> FocusHashtags::match(const NormalizedWordIndex& post) const
 {
     const std::vector<QString> hashtags = post.getHashtags();
 
@@ -233,10 +233,10 @@ bool FocusHashtags::match(const NormalizedWordIndex& post) const
         const QString normalizedTag = SearchUtils::normalizeText(tag);
 
         if (mAllHashtags.contains(normalizedTag))
-            return true;
+            return { true, nullptr };
     }
 
-    return false;
+    return { false, nullptr };
 }
 
 QColor FocusHashtags::highlightColor(const NormalizedWordIndex& post) const

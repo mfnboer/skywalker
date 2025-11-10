@@ -52,7 +52,7 @@ bool HashtagPostFilter::match(const Post& post) const
     if (post.isPlaceHolder())
         return false;
 
-    return mFocusHashtags.match(post);
+    return mFocusHashtags.match(post).first;
 }
 
 QJsonObject HashtagPostFilter::toJson() const
@@ -159,7 +159,7 @@ bool FocusHashtagsPostFilter::match(const Post& post) const
     if (post.isPlaceHolder())
         return false;
 
-    return mFocusHashtags.match(post);
+    return mFocusHashtags.match(post).first;
 }
 
 AuthorPostFilter::AuthorPostFilter(const BasicProfile& profile) :

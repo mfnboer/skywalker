@@ -273,7 +273,7 @@ void NotificationListModel::filterNotificationList(NotificationList& list) const
     for (auto it = list.begin(); it != list.end();)
     {
         const auto& post = it->getNotificationPost(mPostCache);
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
+        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
 
         if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
         {
@@ -798,7 +798,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                 AuthorCache::instance().putProfile(did);
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
+        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
         record->setMutedReason(mMutedWords);
@@ -830,7 +830,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                 AuthorCache::instance().putProfile(did);
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels());
+        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels());
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
         record.setMutedReason(mMutedWords);
@@ -941,13 +941,13 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostContentVisibility:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
+        const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
         return visibility;
     }
     case Role::NotificationPostContentWarning:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
+        const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
         return warning;
     }
     case Role::NotificationPostMutedReason:
@@ -957,7 +957,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         const auto& post = notification.getNotificationPost(mPostCache);
 
-        if (mMutedWords.match(post))
+        if (mMutedWords.match(post).first)
             return QEnums::MUTED_POST_WORDS;
 
         return QEnums::MUTED_POST_NONE;

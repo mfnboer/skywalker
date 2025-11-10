@@ -18,6 +18,20 @@ ContentFilterStatItem::ContentFilterStatItem(const BasicProfile& profile, int st
 {
 }
 
+ContentFilterStatItem::ContentFilterStatItem(const MutedWordEntry& mutedWordEntry, int stat, ContentFilterStatItem* parent) :
+    mKey(mutedWordEntry),
+    mStat(stat),
+    mParentItem(parent)
+{
+}
+
+ContentFilterStatItem::ContentFilterStatItem(const LabelerDid& labeler, int stat, ContentFilterStatItem* parent) :
+    mKey(labeler),
+    mStat(stat),
+    mParentItem(parent)
+{
+}
+
 void ContentFilterStatItem::addChild(ContentFilterStatItem::Ptr child)
 {
     mChildItems.push_back(std::move(child));
@@ -41,6 +55,9 @@ QVariant ContentFilterStatItem::data(int column) const
     switch (column)
     {
     case 0:
+        if (std::holds_alternative<LabelerDid>(mKey))
+            return std::get<LabelerDid>(mKey).mDid;
+
         return std::visit([](auto&& key){ return QVariant::fromValue(key); }, mKey);
     case 1:
         return mStat;
@@ -58,6 +75,10 @@ QEnums::ValueType ContentFilterStatItem::valueType(int column) const
             return QEnums::VALUE_TYPE_STRING;
         if (std::holds_alternative<BasicProfile>(mKey))
             return QEnums::VALUE_TYPE_BASIC_PROFILE;
+        if (std::holds_alternative<MutedWordEntry>(mKey))
+            return QEnums::VALUE_TYPE_MUTED_WORD_ENTRY;
+        if (std::holds_alternative<LabelerDid>(mKey))
+            return QEnums::VALUE_TYPE_LABELER_DID;
 
         qWarning() << "Unknown key type";
         return QEnums::VALUE_TYPE_STRING;

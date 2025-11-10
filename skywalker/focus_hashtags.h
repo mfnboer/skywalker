@@ -13,7 +13,7 @@ namespace Skywalker {
 
 class UserSettings;
 
-class FocusHashtagEntry : public QObject
+class FocusHashtagEntry : public QObject, public IMatchEntry
 {
     Q_OBJECT
     Q_PROPERTY(int maxSize MEMBER MAX_HASHTAGS CONSTANT FINAL)
@@ -77,7 +77,7 @@ public:
     Q_INVOKABLE void addHashtagToEntry(FocusHashtagEntry* entry, const QString hashtag);
     Q_INVOKABLE void removeHashtagFromEntry(FocusHashtagEntry* entry, const QString hashtag);
 
-    bool match(const NormalizedWordIndex& post) const override;
+    std::pair<bool, const IMatchEntry*> match(const NormalizedWordIndex& post) const override;
 
     // Returns invalid color when no match is found
     QColor highlightColor(const NormalizedWordIndex& post) const;

@@ -10,11 +10,11 @@ ContentFilterStatsModel::ContentFilterStatsModel(QObject* parent) :
 {
 }
 
-ContentFilterStatsModel::ContentFilterStatsModel(const ContentFilterStats& stats, QObject* parent) :
+ContentFilterStatsModel::ContentFilterStatsModel(const ContentFilterStats& stats, const IContentFilter& contentFilter, QObject* parent) :
     QAbstractItemModel(parent),
     mRootItem(std::make_unique<ContentFilterStatItem>(tr("Total"), 0))
 {
-    setStats(stats);
+    setStats(stats, contentFilter);
 }
 
 template<class Key>
@@ -46,7 +46,7 @@ static void addStat(ContentFilterStatItem* parentItem, const Key& key, int stat,
         addStat(item, k, s);
 }
 
-void ContentFilterStatsModel::setStats(const ContentFilterStats& stats)
+void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IContentFilter& contentFilter)
 {
     Q_ASSERT(mRootItem);
     mRootItem->clearChildItems();
@@ -56,9 +56,35 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats)
     addStat(root, tr("Muted reposts"), stats.repostsFromAuthor(), stats.authorsRepostsFromAuthor());
 
     addStat(root, tr("Hide from following feed (via list)"), stats.hideFromFollowingFeed(), stats.authorsHideFromFollowingFeed());
-    addStat(root, tr("Label"), stats.label());
+
+    auto* labelItem = addStat(root, tr("Label"), stats.label());
+
+    if (labelItem)
+    {
+        for (const auto& [labelerDid, labelStats] : stats.labelMap())
+        {
+            int labelCount = 0;
+
+            for (const auto& [_, count] : labelStats)
+                labelCount += count;
+
+            auto* labelerItem = addStat(labelItem, ContentFilterStatItem::LabelerDid{labelerDid}, labelCount);
+
+            if (labelerItem)
+            {
+                for (const auto& [labelId, count] : labelStats)
+                {
+                    auto* contentGroup = contentFilter.getContentGroup(labelerDid, labelId);
+                    const QString label = contentGroup ? contentGroup->getTitleWithSeverity() : labelId;
+                    addStat(labelerItem, label, count);
+                }
+            }
+        }
+    }
+
+    addStat(root, tr("Muted words"), stats.mutedWord(), stats.entriesMutedWord());
     addStat(root, tr("Hide users you follow"), stats.hideFollowingFromFeed());
-    addStat(root, tr("Language"), stats.language());
+    addStat(root, tr("Language"), stats.language(), stats.entriesLanguage());
     addStat(root, tr("Quotes with blocked post"), stats.quotesBlockedPost());
     addStat(root, tr("Replies in thread from not-followed users"), stats.repliesFromUnfollowed());
     addStat(root, tr("Replies to not-followed users"), stats.repliesThreadUnfollowed());

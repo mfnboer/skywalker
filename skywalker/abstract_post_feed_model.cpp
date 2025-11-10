@@ -137,12 +137,17 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
         return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, author };
     }
 
-    const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+    const auto& postLabels = post.getLabelsIncludingAuthorLabels();
+    const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(postLabels, mOverrideAdultVisibility);
 
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
     {
         qDebug() << "Hide post:" << post.getCid() << warning;
-        return { QEnums::HIDE_REASON_LABEL, nullptr };
+
+        if (labelIndex >= 0 && labelIndex < postLabels.size())
+            return { QEnums::HIDE_REASON_LABEL, postLabels[labelIndex] };
+        else
+            return { QEnums::HIDE_REASON_LABEL, nullptr };
     }
 
     if (post.isRepost() && mMutedReposts.contains(post.getRepostedBy()->getDid()))
@@ -151,18 +156,21 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
         return { QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, *post.getRepostedBy() };
     }
 
-    if (mMutedWords.match(post))
+    if (auto match = mMutedWords.match(post); match.first)
     {
         qDebug() << "Hide post due to muted words" << post.getCid();
-        return { QEnums::HIDE_REASON_MUTED_WORD, nullptr };
+        return { QEnums::HIDE_REASON_MUTED_WORD, MutedWordEntry(match.second) };
     }
 
     const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
 
-    if (record && mMutedWords.match(*record))
+    if (record)
     {
-        qDebug() << "Hide post due to muted words in record" << post.getCid();
-        return { QEnums::HIDE_REASON_MUTED_WORD, nullptr };
+        if (auto match = mMutedWords.match(*record); match.first)
+        {
+            qDebug() << "Hide post due to muted words in record" << post.getCid();
+            return { QEnums::HIDE_REASON_MUTED_WORD, MutedWordEntry(match.second) };
+        }
     }
 
     return { QEnums::HIDE_REASON_NONE, nullptr };
@@ -413,7 +421,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record->getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
         record->setMutedReason(mMutedWords);
@@ -449,7 +457,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record.getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
         record.setMutedReason(mMutedWords);
@@ -593,12 +601,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
     {
-        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return visibility;
     }
     case Role::PostContentWarning:
     {
-        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return warning;
     }
     case Role::PostMutedReason:
@@ -606,7 +614,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         if (post.getAuthor().getViewer().isMuted())
             return QEnums::MUTED_POST_AUTHOR;
 
-        if (mMutedWords.match(post))
+        if (mMutedWords.match(post).first)
             return QEnums::MUTED_POST_WORDS;
 
         return QEnums::MUTED_POST_NONE;
@@ -948,7 +956,7 @@ void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
 
 ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
 {
-    auto* model = new ContentFilterStatsModel(mContentFilterStats, this);
+    auto* model = new ContentFilterStatsModel(mContentFilterStats, mContentFilter, this);
     return model;
 }
 

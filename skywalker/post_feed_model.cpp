@@ -1031,7 +1031,11 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mu
     }
 
     if (!passLanguageFilter(post))
-        return { QEnums::HIDE_REASON_LANGUAGE, nullptr };
+    {
+        auto& languages = post.getLanguages();
+        const QString lang = languages.empty() ? tr("no language") : languages.first().getShortCode();
+        return { QEnums::HIDE_REASON_LANGUAGE, lang };
+    }
 
     return { QEnums::HIDE_REASON_NONE, nullptr };
 }

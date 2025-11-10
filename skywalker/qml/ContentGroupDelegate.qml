@@ -51,7 +51,6 @@ Rectangle {
                 accessibleName: qsTr("target of the label")
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
-                visible: !contentGroup.isBadge
 
                 onClicked: {
                     if (contentGroup.target === QEnums.LABEL_TARGET_CONTENT)

@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_filter.h"
 #include "content_filter_stat_item.h"
 #include "content_filter_stats.h"
 #include <QAbstractItemModel>
@@ -21,7 +22,7 @@ public:
     Q_ENUM(Role)
 
     explicit ContentFilterStatsModel(QObject* parent = nullptr);
-    explicit ContentFilterStatsModel(const ContentFilterStats& stats, QObject* parent = nullptr);
+    explicit ContentFilterStatsModel(const ContentFilterStats& stats, const IContentFilter& contentFilter, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = {}) const override;
     int columnCount(const QModelIndex& parent = {}) const override;
@@ -35,7 +36,7 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    void setStats(const ContentFilterStats& stats);
+    void setStats(const ContentFilterStats& stats, const IContentFilter& contentFilter);
 
     ContentFilterStatItem::Ptr mRootItem;
 };

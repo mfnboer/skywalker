@@ -506,7 +506,7 @@ void RecordView::setMutedReason(const IMatchWords& mutedWords)
 {
     if (getAuthor().getViewer().isMuted())
         setMutedReason(QEnums::MUTED_POST_AUTHOR);
-    else if (mutedWords.match(*this))
+    else if (mutedWords.match(*this).first)
         setMutedReason(QEnums::MUTED_POST_WORDS);
     else
         setMutedReason(QEnums::MUTED_POST_NONE);

@@ -107,7 +107,7 @@ private slots:
         }
 
         const auto post = setPost(text);
-        QCOMPARE(focusHashtags.match(post), match);
+        QCOMPARE(focusHashtags.match(post).first, match);
 
         if (color.isValid())
             QCOMPARE(focusHashtags.highlightColor(post), color);
@@ -123,10 +123,10 @@ private slots:
 
         FocusHashtags focusHashtags;
         focusHashtags.addEntry("hello");
-        QVERIFY(!focusHashtags.match(post));
+        QVERIFY(!focusHashtags.match(post).first);
 
         focusHashtags.addEntry("world");
-        QVERIFY(focusHashtags.match(post));
+        QVERIFY(focusHashtags.match(post).first);
     }
 
     void removeEntry()
@@ -136,13 +136,13 @@ private slots:
         FocusHashtags focusHashtags;
         focusHashtags.addEntry("hello");
         focusHashtags.addEntry("world");
-        QVERIFY(focusHashtags.match(post));
+        QVERIFY(focusHashtags.match(post).first);
 
         const auto entries = focusHashtags.getMatchEntries(post);
         QCOMPARE(entries.size(), 1);
 
         focusHashtags.removeEntry(entries.first()->getId());
-        QVERIFY(!focusHashtags.match(post));
+        QVERIFY(!focusHashtags.match(post).first);
     }
 
     void addToEntry()
@@ -151,11 +151,11 @@ private slots:
 
         FocusHashtags focusHashtags;
         focusHashtags.addEntry("hello");
-        QVERIFY(!focusHashtags.match(post));
+        QVERIFY(!focusHashtags.match(post).first);
 
         const auto& entries = focusHashtags.getEntries();
         focusHashtags.addHashtagToEntry(entries.front(), "world");
-        QVERIFY(focusHashtags.match(post));
+        QVERIFY(focusHashtags.match(post).first);
     }
 
     void removeFromEntry()
@@ -166,10 +166,10 @@ private slots:
         focusHashtags.addEntry("hello");
         const auto& entries = focusHashtags.getEntries();
         focusHashtags.addHashtagToEntry(entries.front(), "world");
-        QVERIFY(focusHashtags.match(post));
+        QVERIFY(focusHashtags.match(post).first);
 
         focusHashtags.removeHashtagFromEntry(entries.front(), "world");
-        QVERIFY(!focusHashtags.match(post));
+        QVERIFY(!focusHashtags.match(post).first);
     }
 
     void removeEmptyEntry()

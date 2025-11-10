@@ -49,15 +49,23 @@ void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details
         ++mHideFromFollowingFeed;
         break;
     case QEnums::HIDE_REASON_LABEL:
+        if (std::holds_alternative<ContentLabel>(details))
+        {
+            const auto contentLabel = std::get<ContentLabel>(details);
+            ++mLabelMap[contentLabel.getDid()][contentLabel.getLabelId()];
+        }
+
         ++mLabel;
         break;
     case QEnums::HIDE_REASON_MUTED_WORD:
+        ++mEntriesMutedWord[std::get<MutedWordEntry>(details)];
         ++mMutedWord;
         break;
     case QEnums::HIDE_REASON_HIDE_FOLLOWING_FROM_FEED:
         ++mHideFollowingFromFeed;
         break;
     case QEnums::HIDE_REASON_LANGUAGE:
+        ++mEntriesLanguage[std::get<QString>(details)];
         ++mLanguage;
         break;
     case QEnums::HIDE_REASON_QUOTE_BLOCKED_POST:

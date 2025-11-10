@@ -3707,13 +3707,13 @@ ContentGroup Skywalker::getContentGroup(const QString& did, const QString& label
 
 QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels) const
 {
-    const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(contentLabels);
+    const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(contentLabels);
     return visibility;
 }
 
 QString Skywalker::getContentWarning(const ContentLabelList& contentLabels) const
 {
-    const auto [_, warning] = mContentFilter.getVisibilityAndWarning(contentLabels);
+    const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(contentLabels);
     return warning;
 }
 

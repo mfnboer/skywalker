@@ -173,7 +173,7 @@ private slots:
             mutedWords.addEntry(entry);
 
         const auto post = setPost(text);
-        QCOMPARE(mutedWords.match(post), match);
+        QCOMPARE(mutedWords.match(post).first, match);
     }
 
     void excludeFollows()
@@ -183,10 +183,10 @@ private slots:
         MutedWords mutedWords{userFollows};
         mutedWords.addEntry("hello", QEnums::ACTOR_TARGET_EXCLUDE_FOLLOWING);
         const auto post = setPost("hello world");
-        QVERIFY(mutedWords.match(post));
+        QVERIFY(mutedWords.match(post).first);
 
         userFollows.add(BasicProfile{"did:plc:test", "@test.thereforeiam.eu", "Test", ""});
-        QVERIFY(!mutedWords.match(post));
+        QVERIFY(!mutedWords.match(post).first);
     }
 
     void expires()
@@ -198,10 +198,10 @@ private slots:
         mutedWords.addEntry("world", QEnums::ACTOR_TARGET_ALL, now - 10s);
 
         const auto post1 = setPost("hello");
-        QVERIFY(mutedWords.match(post1));
+        QVERIFY(mutedWords.match(post1).first);
 
         const auto post2 = setPost("world");
-        QVERIFY(!mutedWords.match(post2));
+        QVERIFY(!mutedWords.match(post2).first);
     }
 
     void remove()
@@ -218,16 +218,16 @@ private slots:
         mutedWords.removeEntry("the quick brown fox");
 
         auto post = setPost("hello darkness");
-        QVERIFY(mutedWords.match(post));
+        QVERIFY(mutedWords.match(post).first);
 
         post = setPost("dark world");
-        QVERIFY(mutedWords.match(post));
+        QVERIFY(mutedWords.match(post).first);
 
         post = setPost("the quick yellow fox jumps");
-        QVERIFY(mutedWords.match(post));
+        QVERIFY(mutedWords.match(post).first);
 
         post = setPost("the quick brown fox jumps");
-        QVERIFY(!mutedWords.match(post));
+        QVERIFY(!mutedWords.match(post).first);
     }
 
     void entriesChanged()

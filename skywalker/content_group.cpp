@@ -124,8 +124,7 @@ QString ContentGroup::getFormattedDescription() const
 
 QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const
 {
-    // For a badge label, warn means show labels and content, hide means show label and warn
-    // before showing content.
+    // For a badge label, warn means show labels and content
     switch (visibility)
     {
     case ATProto::UserPreferences::LabelVisibility::SHOW:
@@ -136,10 +135,7 @@ QEnums::ContentVisibility ContentGroup::getContentVisibility(ATProto::UserPrefer
         else
             return isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
     case ATProto::UserPreferences::LabelVisibility::HIDE:
-        if (mIsBadge)
-            return isPostLevel() ? QEnums::CONTENT_VISIBILITY_WARN_POST : QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
-        else
-            return isPostLevel() ? QEnums::CONTENT_VISIBILITY_HIDE_POST : QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
+        return isPostLevel() ? QEnums::CONTENT_VISIBILITY_HIDE_POST : QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
     case ATProto::UserPreferences::LabelVisibility::UNKNOWN:
         Q_ASSERT(false);
         return QEnums::CONTENT_VISIBILITY_SHOW;
@@ -154,8 +150,8 @@ QEnums::ContentVisibility ContentGroup::getDefaultVisibility() const
     if (!mIsBadge)
         return mDefaultVisibility;
 
-    // For a badge label, warn means show labels and content, hide means show label and warn
-    // before showing content.
+    // TODO: can the visibility be warn for a badge?
+    // For a badge label, warn means show labels and content
     switch (mDefaultVisibility)
     {
     case QEnums::CONTENT_VISIBILITY_SHOW:
@@ -163,9 +159,9 @@ QEnums::ContentVisibility ContentGroup::getDefaultVisibility() const
     case QEnums::CONTENT_VISIBILITY_WARN_POST:
         return QEnums::CONTENT_VISIBILITY_SHOW;
     case QEnums::CONTENT_VISIBILITY_HIDE_MEDIA:
-        return QEnums::CONTENT_VISIBILITY_WARN_MEDIA;
+        return QEnums::CONTENT_VISIBILITY_HIDE_MEDIA;
     case QEnums::CONTENT_VISIBILITY_HIDE_POST:
-        return QEnums::CONTENT_VISIBILITY_WARN_POST;
+        return QEnums::CONTENT_VISIBILITY_HIDE_POST;
     }
 
     Q_ASSERT(false);

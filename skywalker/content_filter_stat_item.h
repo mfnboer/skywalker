@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include "muted_words.h"
 #include "profile.h"
 #include <QVariant>
 
@@ -12,8 +13,15 @@ class ContentFilterStatItem
 public:
     using Ptr = std::unique_ptr<ContentFilterStatItem>;
 
+    struct LabelerDid
+    {
+        QString mDid;
+    };
+
     ContentFilterStatItem(const QString& name, int stat, ContentFilterStatItem* parent = nullptr);
     ContentFilterStatItem(const BasicProfile& profile, int stat, ContentFilterStatItem* parent = nullptr);
+    ContentFilterStatItem(const MutedWordEntry& mutedWordEntry, int stat, ContentFilterStatItem* parent = nullptr);
+    ContentFilterStatItem(const LabelerDid& labeler, int stat, ContentFilterStatItem* parent = nullptr);
 
     void clearChildItems() { mChildItems.clear(); };
     void addChild(ContentFilterStatItem::Ptr child);
@@ -26,7 +34,7 @@ public:
     int row() const;
 
 private:
-    using Key = std::variant<QString, BasicProfile>;
+    using Key = std::variant<QString, BasicProfile, MutedWordEntry, LabelerDid>;
     Key mKey;
     int mStat;
     ContentFilterStatItem* mParentItem = nullptr;

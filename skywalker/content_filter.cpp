@@ -284,18 +284,21 @@ std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWa
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     const auto contentLabels = getContentLabels(labels);
-    return getVisibilityAndWarning(contentLabels, adultOverrideVisibility);
+    const auto [visibility, warning, _] = getVisibilityAndWarning(contentLabels, adultOverrideVisibility);
+    return { visibility, warning };
 }
 
-std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(
+std::tuple<QEnums::ContentVisibility, QString, int> ContentFilter::getVisibilityAndWarning(
     const ContentLabelList& contentLabels,
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     QEnums::ContentVisibility visibility = QEnums::CONTENT_VISIBILITY_SHOW;
     QString warning;
+    int labelIndex = -1;
 
-    for (const auto& label : contentLabels)
+    for (int i = 0; i < contentLabels.size(); ++i)
     {
+        const auto& label = contentLabels[i];
         const auto v = getVisibility(label, adultOverrideVisibility);
 
         if (v <= visibility)
@@ -303,12 +306,13 @@ std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWa
 
         visibility = v;
         warning = getWarning(label);
+        labelIndex = i;
 
         if (visibility == QEnums::CONTENT_VISIBILITY_LAST)
             break;
     }
 
-    return {visibility, warning};
+    return {visibility, warning, labelIndex};
 }
 
 bool ContentFilter::isSubscribedToLabeler(const QString& did) const

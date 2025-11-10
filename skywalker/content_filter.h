@@ -13,10 +13,13 @@ class IContentFilter
 {
 public:
     virtual ~IContentFilter() = default;
-    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::Label::List& labels,
-                                                                                   std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
-    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels,
-                                                                                   std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
+    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(
+        const ATProto::ComATProtoLabel::Label::List& labels,
+        std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
+    virtual std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(
+        const ContentLabelList& contentLabels,
+        std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
+    virtual const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const = 0;
 };
 
 class ContentFilter : public QObject, public IContentFilter
@@ -47,7 +50,7 @@ public:
     void clear();
 
     // Returns a global content group if the labelId is a global label
-    const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const;
+    const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const override;
 
     Q_INVOKABLE bool getAdultContent() const { return mUserPreferences.getAdultContent(); }
 
@@ -60,7 +63,7 @@ public:
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ATProto::ComATProtoLabel::Label::List& labels,
                                                                            std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
-    std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList& contentLabels,
+    std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(const ContentLabelList& contentLabels,
                                                                            std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
 
     bool isSubscribedToLabeler(const QString& did) const;
@@ -106,9 +109,14 @@ public:
         return {QEnums::CONTENT_VISIBILITY_SHOW, ""};
     }
 
-    virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(const ContentLabelList&, std::optional<QEnums::ContentVisibility> = {}) const override
+    virtual std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(const ContentLabelList&, std::optional<QEnums::ContentVisibility> = {}) const override
     {
-        return {QEnums::CONTENT_VISIBILITY_SHOW, ""};
+        return {QEnums::CONTENT_VISIBILITY_SHOW, "", -1};
+    }
+
+    const ContentGroup* getContentGroup(const QString&, const QString&) const override
+    {
+        return nullptr;
     }
 };
 

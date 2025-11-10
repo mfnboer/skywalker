@@ -472,9 +472,11 @@ public:
 
     enum ValueType
     {
-        VALUE_TYPE_INT = 0,
-        VALUE_TYPE_STRING = 1,
-        VALUE_TYPE_BASIC_PROFILE
+        VALUE_TYPE_INT,
+        VALUE_TYPE_STRING,
+        VALUE_TYPE_BASIC_PROFILE,
+        VALUE_TYPE_MUTED_WORD_ENTRY,
+        VALUE_TYPE_LABELER_DID
     };
     Q_ENUM(ValueType)
 };

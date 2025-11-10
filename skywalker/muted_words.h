@@ -17,6 +17,7 @@ namespace Skywalker {
 class MutedWordEntry
 {
     Q_GADGET
+    Q_PROPERTY(QString typeName READ typeName CONSTANT FINAL)
     Q_PROPERTY(QString value READ getValue FINAL)
     Q_PROPERTY(QEnums::ActorTarget actorTarget READ getActorTarget FINAL)
     Q_PROPERTY(QDateTime expiresAt READ getExpiresAt FINAL)
@@ -26,13 +27,18 @@ class MutedWordEntry
 public:
     using List = QList<MutedWordEntry>;
 
+    static QString typeName() { return "MutedWordEntry"; }
+
     MutedWordEntry() = default;
     MutedWordEntry(const QString& value, QEnums::ActorTarget actorTarget, QDateTime expiresAt);
+    explicit MutedWordEntry(const IMatchEntry* entry);
 
     const QString& getValue() const { return mValue; }
     QEnums::ActorTarget getActorTarget() const { return mActorTarget; }
     QDateTime getExpiresAt() const { return mExpiresAt; }
     bool isDomain() const { return mIsDomain; }
+
+    bool operator<(const MutedWordEntry& rhs) const { return mValue.localeAwareCompare(rhs.mValue) < 0; }
 
 private:
 
@@ -66,13 +72,13 @@ public:
     void save(ATProto::UserPreferences& userPrefs);
     bool isDirty() const { return mDirty; }
 
-    bool match(const NormalizedWordIndex& post) const override;
+    std::pair<bool, const IMatchEntry*> match(const NormalizedWordIndex& post) const override;
 
 signals:
     void entriesChanged();
 
 private:
-    struct Entry
+    struct Entry : public IMatchEntry
     {
         QString mRaw;
         std::vector<QString> mNormalizedWords;
@@ -104,9 +110,9 @@ private:
     void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
     bool preAdd(const Entry& entry);
     bool mustSkip(const Entry& entry, const QString& authorDid, QDateTime now) const;
-    bool matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
-    bool matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
-    bool matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
+    std::pair<bool, const IMatchEntry*> matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
+    std::pair<bool, const IMatchEntry*> matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
+    std::pair<bool, const IMatchEntry*> matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
 
     std::set<Entry> mEntries;
 
@@ -122,12 +128,14 @@ private:
     bool mDirty = false;
 
     const ProfileStore& mUserFollows;
+
+    friend class MutedWordEntry;
 };
 
 class MutedWordsNoMutes : public IMatchWords
 {
 public:
-    bool match(const NormalizedWordIndex&) const override { return false; }
+    std::pair<bool, const IMatchEntry*> match(const NormalizedWordIndex&) const override { return { false, nullptr }; }
 };
 
 }
