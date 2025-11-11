@@ -101,7 +101,7 @@ SkyPage {
                     MouseArea {
                         anchors.fill: parent
                         enabled: control.column == 1
-                        onClicked: console.debug("CLICKED:", control.hideReason)
+                        onClicked: page.viewFilteredPosts(control.hideReason)
                     }
                 }
             }
@@ -186,6 +186,16 @@ SkyPage {
     LinkUtils {
         id: linkUtils
         skywalker: page.skywalker
+    }
+
+    function viewFilteredPosts(hideReason) {
+        const modelId = skywalker.createFilteredPostFeedModel()
+        const postFeedModel = skywalker.getPostFeedModel(modelId)
+        page.model.setFilteredPostFeed(postFeedModel, hideReason)
+        let component = guiSettings.createComponent("FilteredPostFeedView.qml")
+        let view = component.createObject(root, { userDid: page.userDid, modelId: modelId })
+        view.onClosed.connect(() => { root.popStack() })
+        root.pushStack(view)
     }
 
     function getTypeName(value) {

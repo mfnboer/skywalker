@@ -6,8 +6,11 @@
 #include "muted_words.h"
 #include "post.h"
 #include "profile.h"
+#include <deque>
 
 namespace Skywalker {
+
+class PostFeedModel;
 
 class ContentFilterStats
 {
@@ -64,11 +67,14 @@ public:
     void report(const Post& post, QEnums::HideReasonType hideReason, const Details& details);
     void reportChecked(const Post& post);
 
+    void setFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const;
+
 private:
     using DidStatMap = std::unordered_map<QString, int>;
 
     void add(const BasicProfile& profile, DidStatMap& didStatMap);
     std::vector<ProfileStat> getProfileStats(const DidStatMap& didStatMap) const;
+    void addPost(const Post& post);
 
     int mMutedAuthor = 0;
     DidStatMap mAuthorsMutedAuthor;
@@ -103,7 +109,7 @@ private:
     int mContentMode = 0;
 
     std::unordered_map<QString, BasicProfile> mProfileMap;
-    std::vector<Post> mPosts;
+    std::deque<Post> mPosts;
     PostHideInfoMap mPostHideInfoMap;
     std::unordered_set<QString> mCheckedPostCids;
 };

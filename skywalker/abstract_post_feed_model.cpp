@@ -3,6 +3,7 @@
 #include "abstract_post_feed_model.h"
 #include "author_cache.h"
 #include "content_filter.h"
+#include "content_filter_stats_model.h"
 #include "focus_hashtags.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>

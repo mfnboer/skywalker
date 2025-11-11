@@ -136,8 +136,8 @@ bool PostFeedModel::showPostWithMissingLanguage() const
     return mUserSettings.getShowUnknownContentLanguage(mUserDid);
 }
 
-void PostFeedModel::setFeed(const std::vector<Post>& filteredPosts,
-                            const ContentFilterStats::PostHideInfoMap& postHideInfoMap,
+void PostFeedModel::setFeed(const std::deque<Post>& filteredPosts,
+                            const ContentFilterStats::PostHideInfoMap* postHideInfoMap,
                             QEnums::HideReasonType hideReason)
 {
     clear();
@@ -1457,18 +1457,35 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     return page;
 }
 
-PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(const std::vector<Post>& posts, QEnums::HideReasonType hideReason)
+PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(const std::deque<Post>& posts, QEnums::HideReasonType hideReason)
 {
     qDebug() << "Create page, posts:" << posts.size() << "reason:" << hideReason;
     auto page = std::make_unique<Page>();
 
     for (const auto& post : posts)
     {
-        if (hideReason == QEnums::HIDE_REASON_NONE || mPostHideInfoMap[post.getCid()].mHideReason == hideReason)
+        if (hideReason != QEnums::HIDE_REASON_NONE)
         {
-            preprocess(post);
-            page->addPost(post);
+            if (!mPostHideInfoMap)
+            {
+                qWarning() << "Post hide info missing";
+                continue;
+            }
+
+            const auto it = mPostHideInfoMap->find(post.getCid());
+
+            if (it == mPostHideInfoMap->end())
+            {
+                qWarning() << "No hide info for post:" << post.getCid();
+                continue;
+            }
+
+            if (hideReason != it->second.mHideReason)
+                continue;
         }
+
+        preprocess(post);
+        page->addPost(post);
     }
 
     if (!page->mFeed.empty())

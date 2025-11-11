@@ -4,7 +4,6 @@
 #include "base_list_model.h"
 #include "content_filter.h"
 #include "content_filter_stats.h"
-#include "content_filter_stats_model.h"
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
@@ -18,6 +17,7 @@
 
 namespace Skywalker {
 
+class ContentFilterStatsModel;
 class FocusHashtags;
 
 class AbstractPostFeedModel : public QAbstractListModel,
@@ -25,6 +25,8 @@ class AbstractPostFeedModel : public QAbstractListModel,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
 {
+    Q_MOC_INCLUDE("content_filter_stats_model.h")
+
     Q_OBJECT
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)

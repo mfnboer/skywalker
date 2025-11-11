@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "content_filter_stats.h"
+#include "post_feed_model.h"
 
 namespace Skywalker {
 
@@ -54,7 +55,7 @@ void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideRea
         return;
     }
 
-    mPosts.push_back(post);
+    addPost(post);
     mPostHideInfoMap[post.getCid()] = { hideReason, details };
 
     switch (hideReason)
@@ -139,6 +140,15 @@ void ContentFilterStats::reportChecked(const Post& post)
     mCheckedPostCids.insert(post.getCid());
 }
 
+void ContentFilterStats::setFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const
+{
+    Q_ASSERT(model);
+    if (!model)
+        return;
+
+    model->setFeed(mPosts, &mPostHideInfoMap, hideReason);
+}
+
 static auto profileHandleCompare = [](const ContentFilterStats::ProfileStat& lhs, const QString& rhs)
 {
     return lhs.first.getHandle() < rhs;
@@ -165,6 +175,17 @@ std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::getProfileStats
     }
 
     return result;
+}
+
+static auto postTimelineCompare = [](const Post& lhs, const Post& rhs)
+{
+    return lhs.getTimelineTimestamp() > rhs.getTimelineTimestamp();
+};
+
+void ContentFilterStats::addPost(const Post& post)
+{
+    const auto it = std::lower_bound(mPosts.cbegin(), mPosts.cend(), post, postTimelineCompare);
+    mPosts.insert(it, post);
 }
 
 std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsMutedAuthor() const

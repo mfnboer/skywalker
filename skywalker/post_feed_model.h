@@ -78,8 +78,8 @@ public:
     LanguageList getFilterdLanguages() const;
     bool showPostWithMissingLanguage() const;
 
-    void setFeed(const std::vector<Post>& filteredPosts,
-                 const ContentFilterStats::PostHideInfoMap& postHideInfoMap,
+    void setFeed(const std::deque<Post>& filteredPosts,
+                 const ContentFilterStats::PostHideInfoMap* postHideInfoMap,
                  QEnums::HideReasonType hideReason);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
@@ -202,7 +202,7 @@ private:
     void reportActivity(const Post& post);
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
-    Page::Ptr createPageFilteredPosts(const std::vector<Post>& posts, QEnums::HideReasonType hideReason);
+    Page::Ptr createPageFilteredPosts(const std::deque<Post>& posts, QEnums::HideReasonType hideReason);
 
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
@@ -237,7 +237,7 @@ private:
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
-    ContentFilterStats::PostHideInfoMap mPostHideInfoMap;
+    const ContentFilterStats::PostHideInfoMap* mPostHideInfoMap;
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
     InteractionSender::Ptr mInteractionSender;

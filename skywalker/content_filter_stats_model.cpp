@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "content_filter_stats_model.h"
+#include "post_feed_model.h"
 
 namespace Skywalker {
 
@@ -49,6 +50,8 @@ static void addStat(ContentFilterStatItem* parentItem, const Key& key, int stat,
 
 void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IContentFilter& contentFilter)
 {
+    mContentFilterStats = stats;
+
     Q_ASSERT(mRootItem);
     mRootItem->clearChildItems();
     auto* root = mRootItem.get();
@@ -187,6 +190,11 @@ QModelIndex ContentFilterStatsModel::parent(const QModelIndex& index) const
         return {};
 
     return createIndex(parentItem->row(), 0, parentItem);
+}
+
+void ContentFilterStatsModel::setFilteredPostFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const
+{
+    mContentFilterStats.setFeed(model, hideReason);
 }
 
 QHash<int, QByteArray> ContentFilterStatsModel::roleNames() const

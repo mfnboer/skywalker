@@ -9,8 +9,12 @@
 
 namespace Skywalker {
 
+class PostFeedModel;
+
 class ContentFilterStatsModel : public QAbstractItemModel
 {
+    Q_MOC_INCLUDE("post_feed_model.h")
+
     Q_OBJECT
     QML_ELEMENT
 
@@ -33,12 +37,15 @@ public:
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const override;
     QModelIndex parent(const QModelIndex& index) const override;
 
+    Q_INVOKABLE void setFilteredPostFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const;
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
     void setStats(const ContentFilterStats& stats, const IContentFilter& contentFilter);
 
+    ContentFilterStats mContentFilterStats;
     ContentFilterStatItem::Ptr mRootItem;
 };
 

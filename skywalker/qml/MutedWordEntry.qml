@@ -6,6 +6,7 @@ import skywalker
 ColumnLayout {
     property int horizontalPadding: 10
     required property mutedwordentry entry
+    readonly property string text: entryText.text
 
     id: column
 

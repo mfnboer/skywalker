@@ -54,17 +54,18 @@ ListView {
             Layout.fillWidth: true
 
             MutedWordEntry {
+                id: mutedWordEntry
                 Layout.fillWidth: true
                 entry: modelData
             }
             SvgPlainButton {
                 svg: SvgOutline.edit
-                accessibleName: qsTr(`edit ${entryText.text}`)
+                accessibleName: qsTr(`edit ${mutedWordEntry.text}`)
                 onClicked: editWord(modelData)
             }
             SvgPlainButton {
                 svg: SvgOutline.delete
-                accessibleName: qsTr(`delete ${entryText.text}`)
+                accessibleName: qsTr(`delete ${mutedWordEntry.text}`)
                 onClicked: skywalker.mutedWords.removeEntry(modelData.value)
             }
         }
