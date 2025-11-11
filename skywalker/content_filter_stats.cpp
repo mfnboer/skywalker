@@ -7,14 +7,25 @@ namespace Skywalker {
 void ContentFilterStats::clear()
 {
     mMutedAuthor = 0;
+    mAuthorsMutedAuthor.clear();
+
     mRepostsFromAuthor = 0;
     mAuthorsRepostsFromAuthor.clear();
 
     mHideFromFollowingFeed = 0;
+    mAuthorsHideFromFollowingFeed.clear();
+
     mLabel = 0;
+    mLabelMap.clear();
+
     mMutedWord = 0;
+    mEntriesMutedWord.clear();
+
     mHideFollowingFromFeed = 0;
+
     mLanguage = 0;
+    mEntriesLanguage.clear();
+
     mQuotesBlockedPost = 0;
     mRepliesFromUnfollowed = 0;
     mRepliesThreadUnfollowed = 0;
@@ -28,24 +39,42 @@ void ContentFilterStats::clear()
     mContentMode = 0;
 
     mProfileMap.clear();
+    mPosts.clear();
+    mPostHideInfoMap.clear();
+    mCheckedPostCids.clear();
 }
 
-void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details& details)
+void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideReason, const Details& details)
 {
-    qDebug() << "Report hide reason:" << hideReason;
+    qDebug() << "Report hide reason:" << hideReason << post.getUri();
+
+    if (mPostHideInfoMap.contains(post.getCid()))
+    {
+        qDebug() << "Post already reported:" << post.getUri() << post.getCid();
+        return;
+    }
+
+    mPosts.push_back(post);
+    mPostHideInfoMap[post.getCid()] = { hideReason, details };
 
     switch (hideReason)
     {
     case QEnums::HIDE_REASON_MUTED_AUTHOR:
-        add(std::get<BasicProfile>(details), mAuthorsMutedAuthor);
+        if (std::holds_alternative<BasicProfile>(details)) // safety check (should always pass)
+            add(std::get<BasicProfile>(details), mAuthorsMutedAuthor);
+
         ++mMutedAuthor;
         break;
     case QEnums::HIDE_REASON_REPOST_FROM_AUTHOR:
-        add(std::get<BasicProfile>(details), mAuthorsRepostsFromAuthor);
+        if (std::holds_alternative<BasicProfile>(details))
+            add(std::get<BasicProfile>(details), mAuthorsRepostsFromAuthor);
+
         ++mRepostsFromAuthor;
         break;
     case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
-        add(std::get<BasicProfile>(details), mAuthorsHideFromFollowingFeed);
+        if (std::holds_alternative<BasicProfile>(details))
+            add(std::get<BasicProfile>(details), mAuthorsHideFromFollowingFeed);
+
         ++mHideFromFollowingFeed;
         break;
     case QEnums::HIDE_REASON_LABEL:
@@ -58,14 +87,18 @@ void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details
         ++mLabel;
         break;
     case QEnums::HIDE_REASON_MUTED_WORD:
-        ++mEntriesMutedWord[std::get<MutedWordEntry>(details)];
+        if (std::holds_alternative<MutedWordEntry>(details))
+            ++mEntriesMutedWord[std::get<MutedWordEntry>(details)];
+
         ++mMutedWord;
         break;
     case QEnums::HIDE_REASON_HIDE_FOLLOWING_FROM_FEED:
         ++mHideFollowingFromFeed;
         break;
     case QEnums::HIDE_REASON_LANGUAGE:
-        ++mEntriesLanguage[std::get<QString>(details)];
+        if (std::holds_alternative<QString>(details))
+            ++mEntriesLanguage[std::get<QString>(details)];
+
         ++mLanguage;
         break;
     case QEnums::HIDE_REASON_QUOTE_BLOCKED_POST:
@@ -99,6 +132,11 @@ void ContentFilterStats::report(QEnums::HideReasonType hideReason, const Details
         qWarning() << "Content not hidden";
         break;
     }
+}
+
+void ContentFilterStats::reportChecked(const Post& post)
+{
+    mCheckedPostCids.insert(post.getCid());
 }
 
 static auto profileHandleCompare = [](const ContentFilterStats::ProfileStat& lhs, const QString& rhs)

@@ -4,6 +4,7 @@
 #include "content_label.h"
 #include "enums.h"
 #include "muted_words.h"
+#include "post.h"
 #include "profile.h"
 
 namespace Skywalker {
@@ -15,6 +16,17 @@ public:
     using ProfileStat = std::pair<BasicProfile, int>;
     using LabelIdStatMap = std::unordered_map<QString, int>;
     using LabelerDidLabelStatsMap = std::unordered_map<QString, LabelIdStatMap>;
+
+    struct PostHideInfo
+    {
+        QEnums::HideReasonType mHideReason = QEnums::HIDE_REASON_NONE;
+        Details mDetails = nullptr;
+    };
+
+    using PostHideInfoMap = std::unordered_map<QString, PostHideInfo>; // cid -> info
+
+    int total() const { return mPosts.size(); }
+    int checkedPosts() const { return mCheckedPostCids.size(); }
 
     int mutedAuthor() const { return mMutedAuthor; }
     std::vector<ProfileStat> authorsMutedAuthor() const;
@@ -49,7 +61,8 @@ public:
     int contentMode() const { return mContentMode; }
 
     void clear();
-    void report(QEnums::HideReasonType hideReason, const Details& details);
+    void report(const Post& post, QEnums::HideReasonType hideReason, const Details& details);
+    void reportChecked(const Post& post);
 
 private:
     using DidStatMap = std::unordered_map<QString, int>;
@@ -90,6 +103,9 @@ private:
     int mContentMode = 0;
 
     std::unordered_map<QString, BasicProfile> mProfileMap;
+    std::vector<Post> mPosts;
+    PostHideInfoMap mPostHideInfoMap;
+    std::unordered_set<QString> mCheckedPostCids;
 };
 
 }

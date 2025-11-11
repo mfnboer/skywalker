@@ -32,7 +32,9 @@ class PostFeedModel : public AbstractPostFeedModel
 
 public:
     using Ptr = std::unique_ptr<PostFeedModel>;
-    using FeedVariant = std::variant<GeneratorView, ListViewBasic, QString /* quote uri */>;
+    using FeedVariant = std::variant<GeneratorView,
+                                     ListViewBasic,
+                                     QString /* quote uri */>;
 
     explicit PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                            const QString& userDid, const IProfileStore& following,
@@ -75,6 +77,10 @@ public:
     bool isLanguageFilterEnabled() const { return mLanguageFilterEnabled; }
     LanguageList getFilterdLanguages() const;
     bool showPostWithMissingLanguage() const;
+
+    void setFeed(const std::vector<Post>& filteredPosts,
+                 const ContentFilterStats::PostHideInfoMap& postHideInfoMap,
+                 QEnums::HideReasonType hideReason);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
@@ -159,7 +165,7 @@ private:
 
         void addPost(const Post& post, bool isParent = false);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
-        bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef);
+        bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef, ContentFilterStats& contentFilterStats);
         void collectThreadgate(const Post& post);
         void setThreadgates();
         void foldThreads();
@@ -196,6 +202,7 @@ private:
     void reportActivity(const Post& post);
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
+    Page::Ptr createPageFilteredPosts(const std::vector<Post>& posts, QEnums::HideReasonType hideReason);
 
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
@@ -230,6 +237,7 @@ private:
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
+    ContentFilterStats::PostHideInfoMap mPostHideInfoMap;
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
     InteractionSender::Ptr mInteractionSender;

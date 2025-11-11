@@ -136,6 +136,16 @@ bool PostFeedModel::showPostWithMissingLanguage() const
     return mUserSettings.getShowUnknownContentLanguage(mUserDid);
 }
 
+void PostFeedModel::setFeed(const std::vector<Post>& filteredPosts,
+                            const ContentFilterStats::PostHideInfoMap& postHideInfoMap,
+                            QEnums::HideReasonType hideReason)
+{
+    clear();
+    mPostHideInfoMap = postHideInfoMap;
+    auto page = createPageFilteredPosts(filteredPosts, hideReason);
+    addPage(std::move(page));
+}
+
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     clear();
@@ -270,7 +280,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
     if (page->mFeed.empty())
     {
-        qDebug() << "Page has no posts";
+        qDebug() << "Page has no posts" << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
 
         if (fillGapId > 0)
             gapFillFilteredPostModels(*page, 0, fillGapId);
@@ -311,14 +321,14 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         endInsertRows();
 
         mLastInsertedRowIndex = (int)lastInsertIndex;
-        qDebug() << "Full feed inserted, new size:" << mFeed.size();
+        qDebug() << "Full feed inserted, new size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
         logIndices();
         return gapId;
     }
 
     if (*overlapStart == 0)
     {
-        qDebug() << "Full overlap, no new posts";
+        qDebug() << "Full overlap, no new posts" << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
 
         if (fillGapId > 0)
         {
@@ -341,7 +351,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     endInsertRows();
 
     mLastInsertedRowIndex = insertIndex + *overlapStart - 1;
-    qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size();
+    qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size()<< "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     logIndices();
     return 0;
 }
@@ -401,7 +411,7 @@ void PostFeedModel::addPage(Page::Ptr page)
         endInsertRows();
 
         mLastInsertedRowIndex = newRowCount - 1;
-        qDebug() << "New feed size:" << mFeed.size();
+        qDebug() << "New feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     }
     else
     {
@@ -910,7 +920,7 @@ void PostFeedModel::Page::collectThreadgate(const Post& post)
     }
 }
 
-bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef)
+bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef, ContentFilterStats& contentFilterStats)
 {
     auto parentIt = mParentIndexMap.find(post.getCid());
     if (parentIt == mParentIndexMap.end())
@@ -941,6 +951,8 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     mFeed[parentIndex].setParentInThread(true);
 
     // Add parent of this parent
+    qDebug() << "Add parent:" << replyRef.mParent.getCid();
+    contentFilterStats.reportChecked(replyRef.mParent);
     mFeed.insert(mFeed.begin() + parentIndex, replyRef.mParent);
     mFeed[parentIndex].setReplyRefTimestamp(oldPost.getTimelineTimestamp());
     mFeed[parentIndex].setPostType(oldPost.getPostType());
@@ -1272,9 +1284,11 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 continue;
             }
 
+            mContentFilterStats.reportChecked(post);
+
             if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
             {
-                mContentFilterStats.report(reason.first, reason.second);
+                mContentFilterStats.report(post, reason.first, reason.second);
                 continue;
             }
 
@@ -1294,7 +1308,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // If a reply fits in an existing thread then always show it as it provides
                 // context to the user. The leaf of this thread is a reply that passed
                 // through the filter settings.
-                if (assembleThreads && page->tryAddToExistingThread(post, *replyRef))
+                if (assembleThreads && page->tryAddToExistingThread(post, *replyRef, mContentFilterStats))
                 {
                     preprocess(post);
                     continue;
@@ -1302,7 +1316,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
 
                 if (auto reason = mustHideReply(post, replyRef); reason != QEnums::HIDE_REASON_NONE)
                 {
-                    mContentFilterStats.report(reason, nullptr);
+                    mContentFilterStats.report(post, reason, nullptr);
 
                     // Preprocess replies when they are not shown. Those can help
                     // identify threads.
@@ -1315,35 +1329,51 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const auto& parentCid = replyRef->mParent.getCid();
 
                 if (assembleThreads && !rootCid.isEmpty() && rootCid != parentCid &&
-                    !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
-                    mustHideContent(replyRef->mRoot).first == QEnums::HIDE_REASON_NONE)
+                    !cidIsStored(rootCid) && !page->cidAdded(rootCid))
                 {
-                    preprocess(replyRef->mRoot);
-                    page->addPost(replyRef->mRoot);
-                    page->mFeed.back().setPostType(QEnums::POST_ROOT);
-                    rootAdded = true;
+                    mContentFilterStats.reportChecked(replyRef->mRoot);
+
+                    if (auto reason = mustHideContent(replyRef->mRoot); reason.first == QEnums::HIDE_REASON_NONE)
+                    {
+                        preprocess(replyRef->mRoot);
+                        page->addPost(replyRef->mRoot);
+                        page->mFeed.back().setPostType(QEnums::POST_ROOT);
+                        rootAdded = true;
+                    }
+                    else
+                    {
+                        mContentFilterStats.report(replyRef->mRoot, reason.first, reason.second);
+                    }
                 }
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
                 if (assembleThreads &&
-                    ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
-                    mustHideContent(replyRef->mParent).first == QEnums::HIDE_REASON_NONE)
+                    ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded))
                 {
-                    preprocess(replyRef->mParent);
-                    page->addPost(replyRef->mParent, true);
-                    auto& parentPost = page->mFeed.back();
-                    parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
+                    mContentFilterStats.reportChecked(replyRef->mParent);
 
-                    // Determine author of the parent's parent
-                    if (parentPost.getReplyToCid() == rootCid)
+                    if (auto reason = mustHideContent(replyRef->mParent); reason.first == QEnums::HIDE_REASON_NONE)
                     {
-                        parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
-                        parentPost.setParentInThread(rootAdded);
-                    }
+                        preprocess(replyRef->mParent);
+                        page->addPost(replyRef->mParent, true);
+                        auto& parentPost = page->mFeed.back();
+                        parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
 
-                    post.setPostType(QEnums::POST_LAST_REPLY);
-                    post.setParentInThread(true);
+                        // Determine author of the parent's parent
+                        if (parentPost.getReplyToCid() == rootCid)
+                        {
+                            parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
+                            parentPost.setParentInThread(rootAdded);
+                        }
+
+                        post.setPostType(QEnums::POST_LAST_REPLY);
+                        post.setParentInThread(true);
+                    }
+                    else
+                    {
+                        mContentFilterStats.report(replyRef->mParent, reason.first, reason.second);
+                    }
                 }
             }
             else if (post.isReply() && !post.isRepost())
@@ -1352,7 +1382,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // The reference may be missing due to blocked posts.
                 if (auto reason = mustHideReply(post, {}); reason != QEnums::HIDE_REASON_NONE)
                 {
-                    mContentFilterStats.report(reason, nullptr);
+                    mContentFilterStats.report(post, reason, nullptr);
                     continue;
                 }
             }
@@ -1360,7 +1390,10 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             {
                 // A post may have been added already as a parent/root of a reply
                 if (page->cidAdded(post.getCid()))
+                {
+                    qDebug() << "Post already added:" << post.getCid();
                     continue;
+                }
             }
 
             preprocess(post);
@@ -1386,6 +1419,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     page->setThreadgates();
     page->foldThreads();
 
+    qDebug() << "Created page, size:" << page->mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     return page;
 }
 
@@ -1420,6 +1454,27 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
             page->mFeed.back().setEndOfFeed(true);
     }
 
+    return page;
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(const std::vector<Post>& posts, QEnums::HideReasonType hideReason)
+{
+    qDebug() << "Create page, posts:" << posts.size() << "reason:" << hideReason;
+    auto page = std::make_unique<Page>();
+
+    for (const auto& post : posts)
+    {
+        if (hideReason == QEnums::HIDE_REASON_NONE || mPostHideInfoMap[post.getCid()].mHideReason == hideReason)
+        {
+            preprocess(post);
+            page->addPost(post);
+        }
+    }
+
+    if (!page->mFeed.empty())
+        page->mFeed.back().setEndOfFeed(true);
+
+    qDebug() << "Created page, size:" << page->mFeed.size();
     return page;
 }
 

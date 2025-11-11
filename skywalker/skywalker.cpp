@@ -2761,6 +2761,17 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
     return id;
 }
 
+int Skywalker::createFilteredPostFeedModel()
+{
+    auto model = std::make_unique<PostFeedModel>(tr("Filtered posts"), nullptr,
+                                                 mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
+                                                 mContentFilter, mMutedWords, *mFocusHashtags,
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, mBsky, this);
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
+    return id;
+}
+
 PostFeedModel* Skywalker::getPostFeedModel(int id) const
 {
     qDebug() << "Get post feed model:" << id;

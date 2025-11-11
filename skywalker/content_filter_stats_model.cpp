@@ -6,7 +6,7 @@ namespace Skywalker {
 
 ContentFilterStatsModel::ContentFilterStatsModel(QObject* parent) :
     QAbstractItemModel(parent),
-    mRootItem(std::make_unique<ContentFilterStatItem>(tr("Total"), 0))
+    mRootItem(std::make_unique<ContentFilterStatItem>("root", 0))
 {
 }
 
@@ -18,7 +18,7 @@ ContentFilterStatsModel::ContentFilterStatsModel(const ContentFilterStats& stats
 }
 
 template<class Key>
-static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const Key& key, int stat)
+static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const Key& key, int stat, QEnums::HideReasonType hideReason)
 {
     if (!parentItem)
         return nullptr;
@@ -26,6 +26,7 @@ static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const K
     if (stat > 0)
     {
         auto item = std::make_unique<ContentFilterStatItem>(key, stat, parentItem);
+        item->setHideReason(hideReason);
         auto* addedItem = item.get();
         parentItem->addChild(std::move(item));
         return addedItem;
@@ -35,15 +36,15 @@ static ContentFilterStatItem* addStat(ContentFilterStatItem* parentItem, const K
 }
 
 template<class Key, class StatsList>
-static void addStat(ContentFilterStatItem* parentItem, const Key& key, int stat, const StatsList& statsList)
+static void addStat(ContentFilterStatItem* parentItem, const Key& key, int stat, QEnums::HideReasonType hideReason, const StatsList& statsList)
 {
-    auto* item = addStat(parentItem, key, stat);
+    auto* item = addStat(parentItem, key, stat, hideReason);
 
     if (!item)
         return;
 
     for (const auto& [k, s] : statsList)
-        addStat(item, k, s);
+        addStat(item, k, s, hideReason);
 }
 
 void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IContentFilter& contentFilter)
@@ -52,12 +53,13 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IC
     mRootItem->clearChildItems();
     auto* root = mRootItem.get();
 
-    addStat(root, tr("Muted users"), stats.mutedAuthor());
-    addStat(root, tr("Muted reposts"), stats.repostsFromAuthor(), stats.authorsRepostsFromAuthor());
+    addStat(root, tr("Total filtered posts (out of %1)").arg(stats.checkedPosts()), stats.total(), QEnums::HIDE_REASON_NONE);
+    addStat(root, tr("Muted users"), stats.mutedAuthor(), QEnums::HIDE_REASON_MUTED_AUTHOR, stats.authorsMutedAuthor());
+    addStat(root, tr("Muted reposts"), stats.repostsFromAuthor(), QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, stats.authorsRepostsFromAuthor());
 
-    addStat(root, tr("Hide from following feed (via list)"), stats.hideFromFollowingFeed(), stats.authorsHideFromFollowingFeed());
+    addStat(root, tr("Hide from following feed (via list)"), stats.hideFromFollowingFeed(), QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, stats.authorsHideFromFollowingFeed());
 
-    auto* labelItem = addStat(root, tr("Label"), stats.label());
+    auto* labelItem = addStat(root, tr("Label"), stats.label(), QEnums::HIDE_REASON_LABEL);
 
     if (labelItem)
     {
@@ -68,7 +70,7 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IC
             for (const auto& [_, count] : labelStats)
                 labelCount += count;
 
-            auto* labelerItem = addStat(labelItem, ContentFilterStatItem::LabelerDid{labelerDid}, labelCount);
+            auto* labelerItem = addStat(labelItem, ContentFilterStatItem::LabelerDid{labelerDid}, labelCount, QEnums::HIDE_REASON_LABEL);
 
             if (labelerItem)
             {
@@ -76,26 +78,26 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IC
                 {
                     auto* contentGroup = contentFilter.getContentGroup(labelerDid, labelId);
                     const QString label = contentGroup ? contentGroup->getTitleWithSeverity() : labelId;
-                    addStat(labelerItem, label, count);
+                    addStat(labelerItem, label, count, QEnums::HIDE_REASON_LABEL);
                 }
             }
         }
     }
 
-    addStat(root, tr("Muted words"), stats.mutedWord(), stats.entriesMutedWord());
-    addStat(root, tr("Hide users you follow"), stats.hideFollowingFromFeed());
-    addStat(root, tr("Language"), stats.language(), stats.entriesLanguage());
-    addStat(root, tr("Quotes with blocked post"), stats.quotesBlockedPost());
-    addStat(root, tr("Replies in thread from not-followed users"), stats.repliesFromUnfollowed());
-    addStat(root, tr("Replies to not-followed users"), stats.repliesThreadUnfollowed());
-    addStat(root, tr("Self-reposts"), stats.selfReposts());
-    addStat(root, tr("Reposted posts from followed users"), stats.followingReposts());
+    addStat(root, tr("Muted words"), stats.mutedWord(), QEnums::HIDE_REASON_MUTED_WORD, stats.entriesMutedWord());
+    addStat(root, tr("Hide users you follow"), stats.hideFollowingFromFeed(), QEnums::HIDE_REASON_HIDE_FOLLOWING_FROM_FEED);
+    addStat(root, tr("Language"), stats.language(), QEnums::HIDE_REASON_LANGUAGE, stats.entriesLanguage());
+    addStat(root, tr("Quotes with blocked post"), stats.quotesBlockedPost(), QEnums::HIDE_REASON_QUOTE_BLOCKED_POST);
+    addStat(root, tr("Replies in thread from not-followed users"), stats.repliesThreadUnfollowed(), QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED);
+    addStat(root, tr("Replies to not-followed users"), stats.repliesFromUnfollowed(), QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED);
+    addStat(root, tr("Self-reposts"), stats.selfReposts(), QEnums::HIDE_REASON_SELF_REPOST);
+    addStat(root, tr("Reposted posts from followed users"), stats.followingReposts(), QEnums::HIDE_REASON_FOLLOWING_REPOST);
 
-    addStat(root, tr("Replies"), stats.replies());
-    addStat(root, tr("Reposts"), stats.reposts());
-    addStat(root, tr("Quotes"), stats.quotes());
+    addStat(root, tr("Replies"), stats.replies(), QEnums::HIDE_REASON_REPLY);
+    addStat(root, tr("Reposts"), stats.reposts(), QEnums::HIDE_REASON_REPOST);
+    addStat(root, tr("Quotes"), stats.quotes(), QEnums::HIDE_REASON_QUOTE);
 
-    addStat(root, tr("Content imcompatible with feed"), stats.contentMode());
+    addStat(root, tr("Content imcompatible with feed"), stats.contentMode(), QEnums::HIDE_REASON_CONTENT_MODE);
 }
 
 int ContentFilterStatsModel::rowCount(const QModelIndex& parent) const
@@ -135,6 +137,8 @@ QVariant ContentFilterStatsModel::data(const QModelIndex& index, int role) const
         return item->valueType(index.column());
     case Role::Value:
         return item->data(index.column());
+    case Role::HideReason:
+        return item->hideReason();
     }
 
     return {};
@@ -147,8 +151,13 @@ Qt::ItemFlags ContentFilterStatsModel::flags(const QModelIndex& index) const
 
 QVariant ContentFilterStatsModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    return orientation == Qt::Horizontal && role == Qt::DisplayRole ?
-            mRootItem->data(section) : QVariant{};
+    if (orientation != Qt::Horizontal || role != (int)Role::Value)
+        return {};
+
+    if (section == 0)
+        return tr("Filter reason");
+
+    return tr("Posts");
 }
 
 QModelIndex ContentFilterStatsModel::index(int row, int column, const QModelIndex& parent) const
@@ -184,7 +193,8 @@ QHash<int, QByteArray> ContentFilterStatsModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::ValueType), "valueType" },
-        { int(Role::Value), "value" }
+        { int(Role::Value), "value" },
+        { int(Role::HideReason), "hideReason" }
     };
 
     return roles;

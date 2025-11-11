@@ -19,21 +19,52 @@ SkyPage {
     footer: DeadFooterMargin {
     }
 
+    HorizontalHeaderView {
+        id: treeHeader
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
+        syncView: treeView
+        textRole: "value"
+        clip: true
+
+        delegate: Label {
+            required property int column
+
+            leftPadding: 10
+            rightPadding: 10
+            text: model[treeHeader.textRole]
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: column == 1 ? Text.AlignRight : Text.AlignLeft
+            font.bold: true
+            color: guiSettings.textColor
+        }
+    }
+
     TreeView {
         id: treeView
-        anchors.fill: parent
+        anchors.top: treeHeader.bottom
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.margins: 10
         clip: true
         model: page.model
 
         delegate: TreeViewDelegate {
+            required property int index
             required property int column
             required property int valueType // QEnums::ValueType
             required property var value
+            required property int hideReason // QEnums::HideReason
 
             id: control
             implicitWidth: column == 1 ? 60 : treeView.width - 60
-            //implicitHeight: Math.max(indicator ? indicator.height : 0, contentItem.height) * 1.25
+            implicitHeight: 50
+            leftMargin: index == 0 ? -20 : 4
 
             contentItem: Loader {
                 id: valueLoader
@@ -60,11 +91,18 @@ SkyPage {
 
                 Label {
                     rightPadding: 10
-                    clip: false
                     text: typeof control.value != 'object' ? control.value : ""
-                    color: guiSettings.textColor
+                    color: control.column == 0 ? guiSettings.textColor : guiSettings.linkColor
                     elide: Text.ElideRight
+                    wrapMode: Text.Wrap
+                    maximumLineCount: 2
                     horizontalAlignment: control.valueType === QEnums.VALUE_TYPE_INT ? Text.AlignRight : Text.AlignLeft
+
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: control.column == 1
+                        onClicked: console.debug("CLICKED:", control.hideReason)
+                    }
                 }
             }
 
@@ -96,11 +134,10 @@ SkyPage {
                     property mutedwordentry nullMutedWordEntry
 
                     color: "transparent"
-                    implicitHeight: mutedWord.implicitHeight + 20
+                    implicitHeight: mutedWord.implicitHeight
 
                     MutedWordEntry {
                         id: mutedWord
-                        y: 10
                         anchors.left: parent.left
                         anchors.right: parent.right
                         horizontalPadding: 0

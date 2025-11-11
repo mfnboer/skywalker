@@ -90,6 +90,11 @@ QEnums::ValueType ContentFilterStatItem::valueType(int column) const
     }
 }
 
+QEnums::HideReasonType ContentFilterStatItem::hideReason() const
+{
+    return mHideReason;
+}
+
 int ContentFilterStatItem::row() const
 {
     if (!mParentItem)

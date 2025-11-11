@@ -17,7 +17,8 @@ class ContentFilterStatsModel : public QAbstractItemModel
 public:
     enum class Role {
         ValueType = Qt::UserRole + 1,
-        Value
+        Value,
+        HideReason
     };
     Q_ENUM(Role)
 

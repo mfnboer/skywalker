@@ -956,6 +956,7 @@ void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
 
 ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
 {
+    qDebug() << "Feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     auto* model = new ContentFilterStatsModel(mContentFilterStats, mContentFilter, this);
     return model;
 }
