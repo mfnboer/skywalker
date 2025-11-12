@@ -67,7 +67,7 @@ public:
     void report(const Post& post, QEnums::HideReasonType hideReason, const Details& details);
     void reportChecked(const Post& post);
 
-    void setFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const;
+    void setFeed(PostFeedModel* model, QVariantList detailList) const;
 
 private:
     using DidStatMap = std::unordered_map<QString, int>;

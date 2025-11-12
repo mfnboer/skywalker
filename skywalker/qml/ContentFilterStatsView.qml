@@ -55,16 +55,16 @@ SkyPage {
         model: page.model
 
         delegate: TreeViewDelegate {
-            required property int index
             required property int column
             required property int valueType // QEnums::ValueType
             required property var value
+            required property var keyList // list of QString, BasicProfile, MutedWordEntry
             required property int hideReason // QEnums::HideReason
 
             id: control
             implicitWidth: column == 1 ? 60 : treeView.width - 60
             implicitHeight: 50
-            leftMargin: index == 0 ? -20 : 4
+            leftMargin: row == 0 ? -20 : 4
 
             contentItem: Loader {
                 id: valueLoader
@@ -101,7 +101,7 @@ SkyPage {
                     MouseArea {
                         anchors.fill: parent
                         enabled: control.column == 1
-                        onClicked: page.viewFilteredPosts(control.hideReason)
+                        onClicked: page.viewFilteredPosts(control.hideReason, control.keyList)
                     }
                 }
             }
@@ -188,10 +188,11 @@ SkyPage {
         skywalker: page.skywalker
     }
 
-    function viewFilteredPosts(hideReason) {
-        const modelId = skywalker.createFilteredPostFeedModel()
+    function viewFilteredPosts(hideReason, keyList) {
+        console.debug("View filtered posts:", hideReason, keyList)
+        const modelId = skywalker.createFilteredPostFeedModel(hideReason)
         const postFeedModel = skywalker.getPostFeedModel(modelId)
-        page.model.setFilteredPostFeed(postFeedModel, hideReason)
+        page.model.setFilteredPostFeed(postFeedModel, keyList)
         let component = guiSettings.createComponent("FilteredPostFeedView.qml")
         let view = component.createObject(root, { userDid: page.userDid, modelId: modelId })
         view.onClosed.connect(() => { root.popStack() })

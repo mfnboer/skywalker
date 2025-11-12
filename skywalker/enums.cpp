@@ -14,13 +14,7 @@ QString QEnums::postTypeToString(PostType postType)
         { POST_THREAD, "thread" }
     };
 
-    const auto it = mapping.find(postType);
-    Q_ASSERT(it != mapping.end());
-
-    if (it != mapping.end())
-        return it->second;
-
-    return "unknown";
+    return ATProto::enumToString(postType, mapping, "unknown");
 }
 
 QEnums::PostType QEnums::stringToPostType(const QString& str)
@@ -33,11 +27,7 @@ QEnums::PostType QEnums::stringToPostType(const QString& str)
         { "thread", POST_THREAD }
     };
 
-    const auto it = mapping.find(str);
-    if (it != mapping.end())
-        return it->second;
-
-    return POST_STANDALONE;
+    return ATProto::stringToEnum(str, mapping, POST_STANDALONE);
 }
 
 QString QEnums::foldedPostTypeToString(FoldedPostType foldedPostType)
@@ -48,13 +38,7 @@ QString QEnums::foldedPostTypeToString(FoldedPostType foldedPostType)
         { FOLDED_POST_SUBSEQUENT, "subsequent" }
     };
 
-    const auto it = mapping.find(foldedPostType);
-    Q_ASSERT(it != mapping.end());
-
-    if (it != mapping.end())
-        return it->second;
-
-    return "none";
+    return ATProto::enumToString(foldedPostType, mapping, "none");
 }
 
 QEnums::FoldedPostType QEnums::stringToFoldedPostType(const QString& str)
@@ -65,11 +49,7 @@ QEnums::FoldedPostType QEnums::stringToFoldedPostType(const QString& str)
         { "subsequent", FOLDED_POST_SUBSEQUENT }
     };
 
-    const auto it = mapping.find(str);
-    if (it != mapping.end())
-        return it->second;
-
-    return FOLDED_POST_NONE;
+    return ATProto::stringToEnum(str, mapping, FOLDED_POST_NONE);
 }
 
 QEnums::ContentPrefVisibility QEnums::toContentPrefVisibility(ContentVisibility visibilty)
@@ -100,13 +80,33 @@ QString QEnums::scriptToString(Script script)
         { SCRIPT_KOREAN, tr("Korean") }
     };
 
-    const auto it = mapping.find(script);
-    Q_ASSERT(it != mapping.end());
+    return ATProto::enumToString(script, mapping, "Latin");
+}
 
-    if (it != mapping.end())
-        return it->second;
+QString QEnums::hideReasonToString(HideReasonType reason)
+{
+    static const std::unordered_map<HideReasonType, QString> mapping = {
+        { HIDE_REASON_NONE, tr("None") },
+        { HIDE_REASON_MUTED_AUTHOR, tr("Muted users") },
+        { HIDE_REASON_REPOST_FROM_AUTHOR, tr("Muted reposts") },
+        { HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, tr("Hide from following feed (via list)") },
+        { HIDE_REASON_LABEL, tr("Label") },
+        { HIDE_REASON_MUTED_WORD, tr("Muted words") },
+        { HIDE_REASON_HIDE_FOLLOWING_FROM_FEED, tr("Hide users you follow") },
+        { HIDE_REASON_LANGUAGE, tr("Language") },
+        { HIDE_REASON_QUOTE_BLOCKED_POST, tr("Quotes with blocked post") },
+        { HIDE_REASON_REPLY_THREAD_UNFOLLOWED, tr("Replies in thread from not-followed users") },
+        { HIDE_REASON_REPLY_TO_UNFOLLOWED, tr("Replies to not-followed users") },
+        { HIDE_REASON_SELF_REPOST, tr("Self-reposts") },
+        { HIDE_REASON_FOLLOWING_REPOST, tr("Reposted posts from followed users") },
+        { HIDE_REASON_REPLY, tr("Replies") },
+        { HIDE_REASON_REPOST, tr("Reposts") },
+        { HIDE_REASON_QUOTE, tr("Quotes") },
+        { HIDE_REASON_CONTENT_MODE, tr("Content imcompatible with feed") },
+        { HIDE_REASON_ANY, tr("All filtered posts") }
+    };
 
-    return "Latin";
+    return ATProto::enumToString(reason, mapping);
 }
 
 }

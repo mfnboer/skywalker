@@ -58,6 +58,7 @@ Rectangle {
                 width: parent.width
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
+                elide: Text.ElideRight
                 text: subTitle
                 visible: Boolean(subTitle)
             }

@@ -132,6 +132,9 @@ void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideRea
     case QEnums::HIDE_REASON_NONE:
         qWarning() << "Content not hidden";
         break;
+    case QEnums::HIDE_REASON_ANY:
+        qWarning() << "ANY is not a valid reason on a post";
+        break;
     }
 }
 
@@ -140,13 +143,52 @@ void ContentFilterStats::reportChecked(const Post& post)
     mCheckedPostCids.insert(post.getCid());
 }
 
-void ContentFilterStats::setFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const
+static ContentFilterStats::Details convertLabelDetails(const QVariantList& detailList)
+{
+    Q_ASSERT(!detailList.empty());
+
+    for (const auto& detail : detailList)
+    {
+        if (!detail.canConvert<QString>())
+        {
+            qWarning() << "Invalid hide details for label:" << detailList;
+            return nullptr;
+        }
+    }
+
+    const QString& did = detailList.front().value<QString>();
+    const QString labelId = detailList.size() > 1 ? detailList[1].value<QString>() : "";
+    return ContentLabel(did, "", "", labelId, {});
+}
+
+void ContentFilterStats::setFeed(PostFeedModel* model, QVariantList detailList) const
 {
     Q_ASSERT(model);
     if (!model)
         return;
 
-    model->setFeed(mPosts, &mPostHideInfoMap, hideReason);
+    Details hideDetails = nullptr;
+
+    if (!detailList.empty())
+    {
+        const auto& detail = detailList.front();
+
+        if (detail.canConvert<BasicProfile>())
+            hideDetails = detail.value<BasicProfile>();
+        else if (detail.canConvert<MutedWordEntry>())
+            hideDetails = detail.value<MutedWordEntry>();
+        else if (detail.canConvert<QString>())
+        {
+            if (model->getHideReason() == QEnums::HIDE_REASON_LABEL)
+                hideDetails = convertLabelDetails(detailList);
+            else
+                hideDetails = detail.value<QString>();
+        }
+        else
+            qWarning() << "Unknown hide detail:" << detail;
+    }
+
+    model->setFeed(mPosts, &mPostHideInfoMap, hideDetails);
 }
 
 static auto profileHandleCompare = [](const ContentFilterStats::ProfileStat& lhs, const QString& rhs)

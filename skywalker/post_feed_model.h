@@ -34,7 +34,8 @@ public:
     using Ptr = std::unique_ptr<PostFeedModel>;
     using FeedVariant = std::variant<GeneratorView,
                                      ListViewBasic,
-                                     QString /* quote uri */>;
+                                     QString /* quote uri */,
+                                     QEnums::HideReasonType>;
 
     explicit PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                            const QString& userDid, const IProfileStore& following,
@@ -72,6 +73,9 @@ public:
     const QString& getQuoteUri() const { return mQuoteUri; }
     void setFeedVariant(const QString& quoteUri) { mQuoteUri = quoteUri; }
 
+    Q_INVOKABLE QEnums::HideReasonType getHideReason() const { return mHideReason.value_or(QEnums::HIDE_REASON_NONE); }
+    void setFeedVariant(QEnums::HideReasonType reason) { mHideReason = reason; }
+
     bool isLanguageFilterConfigured() const; // atproto language filtering
     void enableLanguageFilter(bool enabled); // local language filtering
     bool isLanguageFilterEnabled() const { return mLanguageFilterEnabled; }
@@ -80,7 +84,7 @@ public:
 
     void setFeed(const std::deque<Post>& filteredPosts,
                  const ContentFilterStats::PostHideInfoMap* postHideInfoMap,
-                 QEnums::HideReasonType hideReason);
+                 ContentFilterStats::Details& hideDetails);
 
     void setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     void addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
@@ -202,7 +206,8 @@ private:
     void reportActivity(const Post& post);
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
-    Page::Ptr createPageFilteredPosts(const std::deque<Post>& posts, QEnums::HideReasonType hideReason);
+    Page::Ptr createPageFilteredPosts(const std::deque<Post>& posts, const ContentFilterStats::Details& hideDetails);
+    bool mustHideFilteredPost(const Post& post, const ContentFilterStats::Details& hideDetails) const;
 
     // Returns gap id if insertion created a gap in the feed.
     int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
@@ -238,6 +243,7 @@ private:
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
     const ContentFilterStats::PostHideInfoMap* mPostHideInfoMap;
+    std::optional<QEnums::HideReasonType> mHideReason;
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
     InteractionSender::Ptr mInteractionSender;

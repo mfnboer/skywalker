@@ -466,9 +466,11 @@ public:
         HIDE_REASON_REPLY,
         HIDE_REASON_REPOST,
         HIDE_REASON_QUOTE,
-        HIDE_REASON_CONTENT_MODE
+        HIDE_REASON_CONTENT_MODE,
+        HIDE_REASON_ANY
     };
     Q_ENUM(HideReasonType)
+    Q_INVOKABLE static QString hideReasonToString(HideReasonType reason);
 
     enum ValueType
     {

@@ -32,6 +32,13 @@ ContentFilterStatItem::ContentFilterStatItem(const LabelerDid& labeler, int stat
 {
 }
 
+ContentFilterStatItem::ContentFilterStatItem(const Label& label, int stat, ContentFilterStatItem* parent) :
+    mKey(label),
+    mStat(stat),
+    mParentItem(parent)
+{
+}
+
 void ContentFilterStatItem::addChild(ContentFilterStatItem::Ptr child)
 {
     mChildItems.push_back(std::move(child));
@@ -50,15 +57,33 @@ int ContentFilterStatItem::childCount() const
     return (int)mChildItems.size();
 }
 
+QVariant ContentFilterStatItem::key() const
+{
+    if (std::holds_alternative<LabelerDid>(mKey))
+        return std::get<LabelerDid>(mKey).mDid;
+
+    if (std::holds_alternative<Label>(mKey))
+        return std::get<Label>(mKey).mId;
+
+    return std::visit([](auto&& key){ return QVariant::fromValue(key); }, mKey);
+}
+
+QVariantList ContentFilterStatItem::keyList() const
+{
+    QVariantList list = mParentItem ? mParentItem->keyList() : QVariantList{};
+    list.push_back(key());
+    return list;
+}
+
 QVariant ContentFilterStatItem::data(int column) const
 {
     switch (column)
     {
     case 0:
-        if (std::holds_alternative<LabelerDid>(mKey))
-            return std::get<LabelerDid>(mKey).mDid;
+        if (std::holds_alternative<Label>(mKey))
+            return std::get<Label>(mKey).mTitle;
 
-        return std::visit([](auto&& key){ return QVariant::fromValue(key); }, mKey);
+        return key();
     case 1:
         return mStat;
     default:

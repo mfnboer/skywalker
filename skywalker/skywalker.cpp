@@ -2761,9 +2761,10 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
     return id;
 }
 
-int Skywalker::createFilteredPostFeedModel()
+int Skywalker::createFilteredPostFeedModel(QEnums::HideReasonType hideReason)
 {
-    auto model = std::make_unique<PostFeedModel>(tr("Filtered posts"), nullptr,
+    const PostFeedModel::FeedVariant feedVariant{hideReason};
+    auto model = std::make_unique<PostFeedModel>(tr("Filtered posts"), &feedVariant,
                                                  mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,

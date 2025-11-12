@@ -138,11 +138,11 @@ bool PostFeedModel::showPostWithMissingLanguage() const
 
 void PostFeedModel::setFeed(const std::deque<Post>& filteredPosts,
                             const ContentFilterStats::PostHideInfoMap* postHideInfoMap,
-                            QEnums::HideReasonType hideReason)
+                            ContentFilterStats::Details& hideDetails)
 {
     clear();
     mPostHideInfoMap = postHideInfoMap;
-    auto page = createPageFilteredPosts(filteredPosts, hideReason);
+    auto page = createPageFilteredPosts(filteredPosts, hideDetails);
     addPage(std::move(page));
 }
 
@@ -1457,35 +1457,28 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     return page;
 }
 
-PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(const std::deque<Post>& posts, QEnums::HideReasonType hideReason)
+PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(
+    const std::deque<Post>& posts, const ContentFilterStats::Details& hideDetails)
 {
-    qDebug() << "Create page, posts:" << posts.size() << "reason:" << hideReason;
     auto page = std::make_unique<Page>();
+
+    Q_ASSERT(mHideReason);
+
+    if (!mHideReason)
+    {
+        qWarning() << "No hide reason set";
+        return page;
+    }
+
+    qDebug() << "Create page, posts:" << posts.size() << "reason:" << *mHideReason;
 
     for (const auto& post : posts)
     {
-        if (hideReason != QEnums::HIDE_REASON_NONE)
+        if (!mustHideFilteredPost(post, hideDetails))
         {
-            if (!mPostHideInfoMap)
-            {
-                qWarning() << "Post hide info missing";
-                continue;
-            }
-
-            const auto it = mPostHideInfoMap->find(post.getCid());
-
-            if (it == mPostHideInfoMap->end())
-            {
-                qWarning() << "No hide info for post:" << post.getCid();
-                continue;
-            }
-
-            if (hideReason != it->second.mHideReason)
-                continue;
+            preprocess(post);
+            page->addPost(post);
         }
-
-        preprocess(post);
-        page->addPost(post);
     }
 
     if (!page->mFeed.empty())
@@ -1493,6 +1486,60 @@ PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(const std::deque
 
     qDebug() << "Created page, size:" << page->mFeed.size();
     return page;
+}
+
+bool PostFeedModel::mustHideFilteredPost(
+    const Post& post, const ContentFilterStats::Details& hideDetails) const
+{
+    if (*mHideReason == QEnums::HIDE_REASON_ANY)
+        return false;
+
+    if (!mPostHideInfoMap)
+    {
+        qWarning() << "Post hide info missing";
+        return true;
+    }
+
+    const auto it = mPostHideInfoMap->find(post.getCid());
+
+    if (it == mPostHideInfoMap->end())
+    {
+        qWarning() << "No hide info for post:" << post.getCid();
+        return true;
+    }
+
+    const ContentFilterStats::PostHideInfo& postHideInfo = it->second;
+
+    if (*mHideReason != postHideInfo.mHideReason)
+        return true;
+
+    if (std::holds_alternative<std::nullptr_t>(hideDetails))
+        return false;
+
+    if (std::holds_alternative<BasicProfile>(hideDetails) && std::holds_alternative<BasicProfile>(postHideInfo.mDetails))
+        return std::get<BasicProfile>(hideDetails).getDid() != std::get<BasicProfile>(postHideInfo.mDetails).getDid();
+
+    if (std::holds_alternative<MutedWordEntry>(hideDetails) && std::holds_alternative<MutedWordEntry>(postHideInfo.mDetails))
+        return std::get<MutedWordEntry>(hideDetails).getValue() != std::get<MutedWordEntry>(postHideInfo.mDetails).getValue();
+
+    if (std::holds_alternative<ContentLabel>(hideDetails) && std::holds_alternative<ContentLabel>(postHideInfo.mDetails))
+    {
+        const auto& label1 = std::get<ContentLabel>(hideDetails);
+        const auto& label2 = std::get<ContentLabel>(postHideInfo.mDetails);
+
+        if (label1.getDid() != label2.getDid())
+            return true;
+
+        if (label1.getLabelId().isEmpty())
+            return false;
+
+        return label1.getLabelId() != label2.getLabelId();
+    }
+
+    if (std::holds_alternative<QString>(hideDetails) && std::holds_alternative<QString>(postHideInfo.mDetails))
+        return std::get<QString>(hideDetails) != std::get<QString>(postHideInfo.mDetails);
+
+    return true;
 }
 
 std::tuple<std::optional<size_t>, bool> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const

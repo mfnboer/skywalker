@@ -6,7 +6,9 @@ SkyListView {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
+    readonly property int hideReason: model.getHideReason()
     readonly property string sideBarTitle: model.feedName
+    readonly property string sideBarSubTitle: qEnums.hideReasonToString(hideReason)
     readonly property SvgImage sideBarSvg: SvgOutline.hideVisibility
 
     signal closed
@@ -17,13 +19,11 @@ SkyListView {
 
     Accessible.name: sideBarTitle
 
-    header: PostFeedHeader {
-        userDid: postFeedView.userDid
-        feedName: sideBarTitle
-        defaultSvg: SvgOutline.hideVisibility
-        visible: !root.showSideBar
-
-        onClosed: postFeedView.closed()
+    header: SimpleHeader {
+        text: sideBarTitle
+        subTitle: sideBarSubTitle
+        headerVisible: !root.showSideBar
+        onBack: postFeedView.closed()
     }
     headerPositioning: ListView.OverlayHeader
 
@@ -41,8 +41,12 @@ SkyListView {
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.hideVisibility
-        text: qsTr("Feed is empty")
+        text: qsTr("No filtered posts")
         list: postFeedView
+    }
+
+    QEnums {
+        id: qEnums
     }
 
     function forceDestroy() {

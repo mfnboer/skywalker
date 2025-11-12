@@ -22,6 +22,7 @@ public:
     enum class Role {
         ValueType = Qt::UserRole + 1,
         Value,
+        KeyList,
         HideReason
     };
     Q_ENUM(Role)
@@ -37,7 +38,7 @@ public:
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const override;
     QModelIndex parent(const QModelIndex& index) const override;
 
-    Q_INVOKABLE void setFilteredPostFeed(PostFeedModel* model, QEnums::HideReasonType hideReason) const;
+    Q_INVOKABLE void setFilteredPostFeed(PostFeedModel* model, QVariantList keyList) const;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
