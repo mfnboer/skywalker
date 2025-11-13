@@ -242,7 +242,6 @@ private:
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
     QString mQuoteUri; // posts quoting this post
-    const ContentFilterStats::PostHideInfoMap* mPostHideInfoMap;
     std::optional<QEnums::HideReasonType> mHideReason;
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;

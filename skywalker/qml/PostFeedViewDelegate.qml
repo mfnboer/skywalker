@@ -77,6 +77,8 @@ Rectangle {
     required property bool postIsThread
     required property bool postIsThreadReply
     required property bool postLocallyDeleted
+    required property int filteredPostHideReason // QEnums::HideReasonType
+    required property contentlabel filteredPostContentLabel
     required property bool endOfFeed
     property bool unrollThread: false
     property var postThreadModel // provided when thread is unrolled
@@ -395,6 +397,7 @@ Rectangle {
                 width: parent.width - 13
                 userDid: postEntry.userDid
                 author: postEntry.author
+                showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
                 visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
                 onClicked: skywalker.getDetailedProfile(author.did)
@@ -443,6 +446,7 @@ Rectangle {
                     userDid: postEntry.userDid
                     author: postEntry.author
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                    filteredContentLabel: postEntry.filteredPostContentLabel
                 }
             }
             Loader {
@@ -455,6 +459,7 @@ Rectangle {
                     userDid: postEntry.userDid
                     author: postEntry.author
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                    filteredContentLabel: postEntry.filteredPostContentLabel
                 }
             }
 
@@ -478,6 +483,40 @@ Rectangle {
                     width: parent.width
                     text: qsTr("Reply hidden by you")
                     svg: SvgOutline.hideVisibility
+                }
+            }
+
+            // Hide reason (only when filtered posts are shown
+            Loader {
+                width: parent.width
+                active: filteredPostHideReason !== QEnums.HIDE_REASON_NONE
+                visible: status == Loader.Ready
+
+                sourceComponent: Rectangle {
+                    width: hideReasonRow.width
+                    height: hideReasonRow.height
+                    radius: 3
+                    color: guiSettings.hideReasonLabelColor
+
+                    Row {
+                        id: hideReasonRow
+                        width: parent.width
+                        spacing: 10
+
+                        SkySvg {
+                            id: hideIcon
+                            width: 20
+                            height: 20
+                            color: guiSettings.textColor
+                            svg: SvgOutline.hideVisibility
+                        }
+
+                        AccessibleText {
+                            width: parent.width - hideIcon.width
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: qEnums.hideReasonToString(filteredPostHideReason)
+                        }
+                    }
                 }
             }
 
@@ -946,6 +985,9 @@ Rectangle {
         id: accessibilityUtils
     }
 
+    QEnums {
+        id: qEnums
+    }
 
     function confirmDelete() {
         guiSettings.askYesNoQuestion(

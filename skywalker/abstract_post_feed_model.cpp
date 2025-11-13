@@ -616,6 +616,9 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
     {
+        if (isFilteredPostFeed())
+            return QEnums::CONTENT_VISIBILITY_SHOW;
+
         const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return visibility;
     }
@@ -693,6 +696,32 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return false;
 
         return post.getRepostUri() != *change->mRepostUri;
+    }
+    case Role::FilteredPostHideReason:
+    {
+        if (!mPostHideInfoMap)
+            return QEnums::HIDE_REASON_NONE;
+
+        const auto it = mPostHideInfoMap->find(post.getCid());
+
+        return it != mPostHideInfoMap->end() ? it->second.mHideReason : QEnums::HIDE_REASON_NONE;
+    }
+    case Role::FilteredPostContentLabel:
+    {
+        if (!mPostHideInfoMap)
+            return QVariant::fromValue(ContentLabel{});
+
+        const auto it = mPostHideInfoMap->find(post.getCid());
+
+        if (it == mPostHideInfoMap->end())
+            return QVariant::fromValue(ContentLabel{});
+
+        const auto& hideDetails = it->second.mDetails;
+
+        if (std::holds_alternative<ContentLabel>(hideDetails))
+            return QVariant::fromValue(std::get<ContentLabel>(hideDetails));
+
+        return QVariant::fromValue(ContentLabel{});
     }
     case Role::EndOfFeed:
         return post.isEndOfFeed();
@@ -782,6 +811,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIsThread), "postIsThread" },
         { int(Role::PostIsThreadReply), "postIsThreadReply" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
+        { int(Role::FilteredPostHideReason), "filteredPostHideReason" },
+        { int(Role::FilteredPostContentLabel), "filteredPostContentLabel" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 

@@ -105,6 +105,8 @@ public:
         PostIsThread,
         PostIsThreadReply,
         PostLocallyDeleted,
+        FilteredPostHideReason,
+        FilteredPostContentLabel,
         EndOfFeed
     };
     Q_ENUM(Role)
@@ -160,6 +162,7 @@ public:
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
 
+    bool isFilteredPostFeed() const { return mPostHideInfoMap; }
     Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
 
 signals:
@@ -220,6 +223,7 @@ protected:
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
     ContentFilterStats mContentFilterStats;
+    const ContentFilterStats::PostHideInfoMap* mPostHideInfoMap = nullptr;
     int mModelId = -1;
 
 private:

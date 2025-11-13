@@ -14,6 +14,7 @@ Column {
     required property date postDateTime
     required property list<language> postLanguageLabels
     required property list<contentlabel> postContentLabels
+    property contentlabel filteredContentLabel
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property basicprofile postContentLabeler
@@ -319,6 +320,7 @@ Column {
         if (postContentLabels.length > 0) {
             contentLabelsLoader.setSource("ContentLabels.qml", {
                                         contentLabels: postContentLabels,
+                                        filteredContentLabel: postBody.filteredContentLabel,
                                         contentAuthorDid: postAuthor.did,
                                         parentWidth: width})
         }
