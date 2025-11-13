@@ -367,7 +367,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         if (!isFilteredPostFeed())
             return text;
 
-        return highlightMutedWords(post, text);
+        return highlightMutedWords(post, text, true);
     }
     case Role::PostPlainText:
         return post.getText();
@@ -399,8 +399,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         if (!isFilteredPostFeed() || !external)
             return external ? QVariant::fromValue(*external) : QVariant{};
 
-        external->setTitle(highlightMutedWords(post, external->getTitle()));
-        external->setDescription(highlightMutedWords(post, external->getDescription()));
+        external->setTitle(highlightMutedWords(post, external->getTitle(), false));
+        external->setDescription(highlightMutedWords(post, external->getDescription(), false));
         qDebug() << "Muted words external:" << external->getTitle() << "description:" << external->getDescription();
         return QVariant::fromValue(*external);
     }
@@ -1058,7 +1058,7 @@ BasicProfile AbstractPostFeedModel::getContentLabeler(QEnums::ContentVisibility 
     return {};
 }
 
-QString AbstractPostFeedModel::highlightMutedWords(const Post& post, const QString& text) const
+QString AbstractPostFeedModel::highlightMutedWords(const Post& post, const QString& text, bool html) const
 {
     if (!mPostHideInfoMap)
         return text;
@@ -1075,7 +1075,7 @@ QString AbstractPostFeedModel::highlightMutedWords(const Post& post, const QStri
 
     const MutedWordEntry& mutedWordEntry = std::get<MutedWordEntry>(details);
     const WordsHighlighter wordsHighlighter;
-    return wordsHighlighter.highlight(text, mutedWordEntry.getValue(), "palevioletred");
+    return wordsHighlighter.highlight(text, mutedWordEntry.getValue(), "palevioletred", html);
 }
 
 ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()

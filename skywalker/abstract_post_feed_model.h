@@ -245,7 +245,7 @@ private:
                                    const ContentLabelList& labels,
                                    int labelIndex) const;
 
-    QString highlightMutedWords(const Post& post, const QString& text) const;
+    QString highlightMutedWords(const Post& post, const QString& text, bool html) const;
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;

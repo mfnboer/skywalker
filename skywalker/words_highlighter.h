@@ -14,7 +14,7 @@ class WordsHighlighter : public QObject
 public:
     explicit WordsHighlighter(QObject* parent = nullptr);
 
-    QString highlight(const QString& text, const QString& words, const QString& color) const;
+    QString highlight(const QString& text, const QString& words, const QString& color, bool html) const;
 
 private:
 };
