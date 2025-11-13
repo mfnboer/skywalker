@@ -16,11 +16,17 @@ QString ExternalView::getUri() const
 
 QString ExternalView::getTitle() const
 {
+    if (!mTitle.isEmpty())
+        return mTitle;
+
     return mExternal ? mExternal->mTitle : "";
 }
 
 QString ExternalView::getDescription() const
 {
+    if (!mDescription.isEmpty())
+        return mDescription;
+
     return mExternal ? mExternal->mDescription : "";
 }
 

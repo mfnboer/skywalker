@@ -599,6 +599,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ContentFilterStatsView.qml
         QML_FILES qml/MutedWordEntry.qml
         QML_FILES qml/FilteredPostFeedView.qml
+        SOURCES words_highlighter.h
+        SOURCES words_highlighter.cpp
 )
 
 if (NOT ANDROID)

@@ -28,8 +28,13 @@ public:
     QString getDescription() const;
     QString getThumbUrl() const;
 
+    void setTitle(const QString& title) { mTitle = title; }
+    void setDescription(const QString& description) { mDescription = description; }
+
 private:
     ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr mExternal;
+    QString mTitle;
+    QString mDescription;
 };
 
 }

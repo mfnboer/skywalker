@@ -67,7 +67,7 @@ std::vector<QString> SearchUtils::getNormalizedWords(const QString& text)
 
     const QString normalized = SearchUtils::normalizeText(text);
     std::vector<QString> words = getWords(normalized);
-    const std::vector<QString>& combinedWords = combineSingleCharsToWords(words);
+    const std::vector<QString> combinedWords = combineSingleCharsToWords(words);
     words.insert(words.end(), combinedWords.begin(), combinedWords.end());
 
     return words;

@@ -6,6 +6,7 @@
 #include "content_filter_stats_model.h"
 #include "focus_hashtags.h"
 #include "post_thread_cache.h"
+#include "words_highlighter.h"
 #include <atproto/lib/post_master.h>
 
 namespace Skywalker {
@@ -360,7 +361,14 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(profileChange ? *profileChange : author);
     }
     case Role::PostText:
-        return post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post), mOverrideLinkColor);
+    {
+        const QString text = post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post), mOverrideLinkColor);
+
+        if (!isFilteredPostFeed())
+            return text;
+
+        return highlightMutedWords(post, text);
+    }
     case Role::PostPlainText:
         return post.getText();
     case Role::PostLanguages:
@@ -387,7 +395,14 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostExternal:
     {
         auto external = post.getExternalView();
-        return external ? QVariant::fromValue(*external) : QVariant{};
+
+        if (!isFilteredPostFeed() || !external)
+            return external ? QVariant::fromValue(*external) : QVariant{};
+
+        external->setTitle(highlightMutedWords(post, external->getTitle()));
+        external->setDescription(highlightMutedWords(post, external->getDescription()));
+        qDebug() << "Muted words external:" << external->getTitle() << "description:" << external->getDescription();
+        return QVariant::fromValue(*external);
     }
     case Role::PostRepostedByAuthor:
     {
@@ -636,6 +651,9 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostMutedReason:
     {
+        if (isFilteredPostFeed())
+            return QEnums::MUTED_POST_NONE;
+
         if (post.getAuthor().getViewer().isMuted())
             return QEnums::MUTED_POST_AUTHOR;
 
@@ -699,7 +717,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::FilteredPostHideReason:
     {
-        if (!mPostHideInfoMap)
+        if (!isFilteredPostFeed())
             return QEnums::HIDE_REASON_NONE;
 
         const auto it = mPostHideInfoMap->find(post.getCid());
@@ -708,7 +726,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::FilteredPostContentLabel:
     {
-        if (!mPostHideInfoMap)
+        if (!isFilteredPostFeed())
             return QVariant::fromValue(ContentLabel{});
 
         const auto it = mPostHideInfoMap->find(post.getCid());
@@ -1038,6 +1056,26 @@ BasicProfile AbstractPostFeedModel::getContentLabeler(QEnums::ContentVisibility 
 
     QTimer::singleShot(0, this, [labelerDid]{ AuthorCache::instance().putProfile(labelerDid); });
     return {};
+}
+
+QString AbstractPostFeedModel::highlightMutedWords(const Post& post, const QString& text) const
+{
+    if (!mPostHideInfoMap)
+        return text;
+
+    const auto it = mPostHideInfoMap->find(post.getCid());
+
+    if (it == mPostHideInfoMap->end() || it->second.mHideReason != QEnums::HIDE_REASON_MUTED_WORD)
+        return text;
+
+    const auto& details = it->second.mDetails;
+
+    if (!std::holds_alternative<MutedWordEntry>(details))
+        return text;
+
+    const MutedWordEntry& mutedWordEntry = std::get<MutedWordEntry>(details);
+    const WordsHighlighter wordsHighlighter;
+    return wordsHighlighter.highlight(text, mutedWordEntry.getValue(), "palevioletred");
 }
 
 ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()

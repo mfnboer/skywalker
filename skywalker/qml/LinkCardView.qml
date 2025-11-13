@@ -64,29 +64,29 @@ RoundCornerMask {
             elide: Text.ElideRight
             color: guiSettings.linkColor
         }
-        Text {
+        SkyCleanedText {
             id: titleText
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
             color: Material.foreground
-            text: card.title
+            plainText: card.title
             wrapMode: Text.Wrap
             maximumLineCount: 2
-            elide: Text.ElideRight
+            textFormat: Text.RichText
             font.bold: true
         }
-        Text {
+        SkyCleanedText {
             id: descriptionText
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
             bottomPadding: 5
             color: Material.foreground
-            text: card.description ? card.description : card.uri
+            plainText: card.description ? card.description : card.uri
             wrapMode: Text.Wrap
             maximumLineCount: 5
-            elide: Text.ElideRight
+            textFormat: Text.RichText
         }
 
         SonglinkWidget {
