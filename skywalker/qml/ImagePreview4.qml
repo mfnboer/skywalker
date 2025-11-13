@@ -5,6 +5,7 @@ import skywalker
 RoundCornerMask {
     required property int contentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property list<imageview> images
     property bool swipeMode: false
     readonly property list<var> imgList: [img1, img2, img3, img4]
@@ -125,6 +126,7 @@ RoundCornerMask {
         width: parent.width - x * 2
         contentVisibility: frame.contentVisibility
         contentWarning: frame.contentWarning
+        contentLabeler: frame.contentLabeler
         images: frame.images
     }
 

@@ -98,6 +98,7 @@ public:
         NotificationPostLabels,
         NotificationPostContentVisibility,
         NotificationPostContentWarning,
+        NotificationPostContentLabeler,
         NotificationPostMutedReason,
         NotificationPostIsReply,
         ReplyToAuthor,
@@ -203,6 +204,10 @@ private:
     void addNewLabelsNotificationRows();
     void updateNewLabelsNotifications();
     void updateInviteCodeUser(const BasicProfile& profile);
+
+    BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,
+                                   const ContentLabelList& labels,
+                                   int labelIndex) const;
 
     const ContentFilter& mContentFilter;
     const MutedWords& mMutedWords;

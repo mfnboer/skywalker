@@ -70,6 +70,7 @@ Rectangle {
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsPinned
@@ -494,6 +495,7 @@ Rectangle {
                 postContentLabels: postLabels
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
+                postContentLabeler: postEntry.postContentLabeler
                 postMuted: postEntry.postMutedReason
                 postIsThread: postEntry.postIsThread && !postEntry.unrollThread
                 postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread

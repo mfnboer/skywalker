@@ -98,6 +98,7 @@ public:
         PostLabels,
         PostContentVisibility,
         PostContentWarning,
+        PostContentLabeler,
         PostMutedReason,
         PostHighlightColor,
         PostIsPinned,
@@ -234,6 +235,10 @@ private:
 
     void postIsThreadChanged(const QString& postUri);
     void replyToAuthorAdded(const QString& did);
+    void labelerAdded(const QString& did);
+    BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,
+                                   const ContentLabelList& labels,
+                                   int labelIndex) const;
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;

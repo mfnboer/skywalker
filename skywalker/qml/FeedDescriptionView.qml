@@ -14,7 +14,6 @@ SkyPage {
     property bool isPinnedFeed: skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
     property bool feedHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
-    property string contentWarning: ""
     property bool showWarnedMedia: false
     property bool isVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
     readonly property string sideBarTitle: isVideoFeed ? qsTr("Video feed") : qsTr("Feed")
@@ -367,6 +366,5 @@ SkyPage {
 
     Component.onCompleted: {
         contentVisibility = skywalker.getContentVisibility(feed.labels)
-        contentWarning = skywalker.getContentWarning(feed.labels)
     }
 }

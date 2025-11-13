@@ -63,6 +63,7 @@ Rectangle {
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsThread
@@ -120,6 +121,7 @@ Rectangle {
                 videoView: postVideo
                 contentVisibility: postContentVisibility
                 contentWarning: postContentWarning
+                contentLabeler: postContentLabeler
                 autoLoad: false // avoid loading tens of videos
                 autoPlay: false
                 swipeMode: true
@@ -166,6 +168,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     contentVisibility: postContentVisibility
                     contentWarning: postContentWarning
+                    contentLabeler: postContentLabeler
                     images: postImages
                 }
             }

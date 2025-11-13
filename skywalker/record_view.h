@@ -35,6 +35,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(ContentLabelList contentLabels READ getContentLabels FINAL)
     Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
     Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
+    Q_PROPERTY(BasicProfile contentLabeler READ getContentLabeler FINAL)
     Q_PROPERTY(QEnums::MutedPostReason mutedReason READ getMutedReason FINAL)
     Q_PROPERTY(QVariant video READ getVideo FINAL)
     Q_PROPERTY(QVariant external READ getExternal FINAL)
@@ -93,6 +94,7 @@ public:
     std::vector<QString> getWebLinks() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mPrivate->mContentVisibility; }
     const QString& getContentWarning() const { return mPrivate->mContentWarning; }
+    const BasicProfile& getContentLabeler() const { return mPrivate->mContentLabeler; }
     QEnums::MutedPostReason getMutedReason() const { return mPrivate->mMutedReason; }
     QEnums::TripleBool isThread() const;
     bool isThreadReply() const;
@@ -116,6 +118,7 @@ public:
 
     void setContentVisibility(QEnums::ContentVisibility visibility) { mPrivate->mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mPrivate->mContentWarning = warning; }
+    void setContentLabeler(const BasicProfile& labeler) { mPrivate->mContentLabeler = labeler; }
     void setMutedReason(const QEnums::MutedPostReason mutedReason) { mPrivate->mMutedReason = mutedReason; }
     void setMutedReason(const IMatchWords& mutedWords);
 
@@ -140,6 +143,7 @@ private:
         QString mUnsupportedType;
         QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
         QString mContentWarning = "NOT INITIALIZED";
+        BasicProfile mContentLabeler;
         QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
         LanguageList mLanguages;
         std::optional<ContentLabelList> mContentLabels;

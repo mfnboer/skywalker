@@ -186,6 +186,7 @@ public:
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels) const;
     Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels) const;
+    Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels) const;
     Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
     Q_INVOKABLE int createContentGroupListModel(const QString& did, const LabelerPolicies& policies);
     Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;

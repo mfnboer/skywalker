@@ -7,6 +7,7 @@ Item {
     property string backgroundColor: "transparent"
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property bool highlight: false
     property bool isDraft: false
     property bool swipeMode: false
@@ -42,6 +43,7 @@ Item {
                 maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
+                contentLabeler: recordItem.contentLabeler
             }
         }
 
@@ -53,6 +55,7 @@ Item {
                 maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
+                contentLabeler: recordItem.contentLabeler
             }
         }
 
@@ -64,6 +67,7 @@ Item {
                 maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
+                contentLabeler: recordItem.contentLabeler
             }
         }
 
@@ -75,6 +79,7 @@ Item {
                 maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
+                contentLabeler: recordItem.contentLabeler
             }
         }
 
@@ -95,6 +100,7 @@ Item {
                 videoView: record.video
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
+                contentLabeler: recordItem.contentLabeler
                 backgroundColor: recordItem.backgroundColor
                 highlight: recordItem.highlight
                 swipeMode: recordItem.swipeMode
@@ -108,7 +114,8 @@ Item {
                 userDid: recordItem.userDid
                 postExternal: record.external
                 contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentVisibility
+                contentWarning: recordItem.contentWarning
+                contentLabeler: recordItem.contentLabeler
                 highlight: recordItem.highlight
             }
         }

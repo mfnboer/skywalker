@@ -10,7 +10,6 @@ Item {
     property SvgImage unknownSvg: SvgFilled.unknownAvatar
     property Skywalker skywalker: root.getSkywalker(userDid)
     property var userSettings: skywalker.getUserSettings()
-    readonly property int contentVisibility: skywalker.getContentVisibility(author.labels)
     property bool showWarnedMedia: false
     readonly property bool showThumb: width < 90 // from bsky client code
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)

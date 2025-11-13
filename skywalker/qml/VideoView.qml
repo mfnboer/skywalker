@@ -7,6 +7,7 @@ Column {
     required property var videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property string controlColor: guiSettings.textColor
     property string disabledColor: guiSettings.disabledColor
     property string backgroundColor: "transparent"
@@ -75,6 +76,7 @@ Column {
             width: parent.width - 20
             contentVisibility: videoStack.contentVisibility
             contentWarning: videoStack.contentWarning
+            contentLabeler: videoStack.contentLabeler
             imageUrl: videoView.thumbUrl
             isVideo: true
         }

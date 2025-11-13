@@ -77,6 +77,7 @@ Rectangle {
     required property list<contentlabel> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
+    required property basicprofile notificationPostContentLabeler
     required property int notificationPostMutedReason // QEnums::MutedPostReason
     required property bool notificationPostIsReply
     required property basicprofile replyToAuthor
@@ -288,6 +289,7 @@ Rectangle {
                     postContentLabels: notificationPostLabels
                     postContentVisibility: notificationPostContentVisibility
                     postContentWarning: notificationPostContentWarning
+                    postContentLabeler: notificationPostContentLabeler
                     postMuted: notificationPostMutedReason
                     postIsThread: false
                     postIsThreadReply: false
@@ -557,6 +559,7 @@ Rectangle {
                     postContentLabels: notificationReasonPostLabels
                     postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                     postContentWarning: ""
+                    postContentLabeler: accessibilityUtils.nullAuthor
                     postMuted: QEnums.MUTED_POST_NONE
                     postIsThread: false
                     postIsThreadReply: false

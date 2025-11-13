@@ -3729,6 +3729,19 @@ QString Skywalker::getContentWarning(const ContentLabelList& contentLabels) cons
     return warning;
 }
 
+QString Skywalker::getContentLabelerDid(const ContentLabelList& contentLabels) const
+{
+    const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(contentLabels);
+
+    if (visibility == QEnums::CONTENT_VISIBILITY_SHOW)
+        return {};
+
+    if (labelIndex < 0 || labelIndex >= contentLabels.size())
+        return {};
+
+    return contentLabels[labelIndex].getDid();
+}
+
 const ContentGroupListModel* Skywalker::getGlobalContentGroupListModel()
 {
     mGlobalContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);

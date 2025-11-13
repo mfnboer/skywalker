@@ -109,7 +109,8 @@ Rectangle {
                 }
 
                 AccessibleMenuItem {
-                    text: qsTr("Filter statistics")
+                    text: qsTr("Filtered posts")
+                    MenuItemSvg { svg: SvgOutline.hideVisibility }
                     onTriggered: filterStatistics()
                 }
             }

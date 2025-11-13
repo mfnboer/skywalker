@@ -66,6 +66,7 @@ Item {
                 postContentLabels: record.contentLabels
                 postContentVisibility: record.contentVisibility
                 postContentWarning: record.contentWarning
+                postContentLabeler: record.contentLabeler
                 postMuted: record.mutedReason
                 postIsThread: record.postIsThread === QEnums.TRIPLE_BOOL_YES
                 postIsThreadReply: record.postIsThreadReply

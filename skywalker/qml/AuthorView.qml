@@ -32,6 +32,7 @@ SkyPage {
     property bool authorHideFromTimeline: false
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
+    property basicprofile contentLabeler
     property bool showWarnedMedia: false
     readonly property bool hasFeeds: author.associated.feeds > 0
     readonly property int feedListModelId: skywalker.createFeedListModel()
@@ -505,6 +506,7 @@ SkyPage {
                     thumbUrl: author.actorStatus.externalView.thumbUrl
                     contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
                     contentWarning: ""
+                    contentLabeler: accessibilityUtils.nullAuthor
                     isLiveExternal: true
 
                     LiveLabel {
@@ -845,6 +847,7 @@ SkyPage {
                 getFeedNextPage: (id) => page.getFeedNextPage(id)
                 getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                 getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                 visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                 disableWarning: () => page.disableWarning()
                 modelId: page.modelId
@@ -871,6 +874,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_REPLIES
@@ -898,6 +902,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
@@ -925,6 +930,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
@@ -953,6 +959,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_VIDEO
@@ -980,6 +987,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_VIDEO
@@ -1009,6 +1017,7 @@ SkyPage {
                     getFeedNextPage: (id) => skywalker.getAuthorLikesNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
@@ -1400,6 +1409,8 @@ SkyPage {
         }
 
         onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
+
+        onBasicProfileOk: (profile) => contentLabeler = profile
     }
 
     NotificationUtils {
@@ -1643,6 +1654,10 @@ SkyPage {
         return qsTr("No posts")
     }
 
+    function getEmptyListIndicationLabeler() {
+        return !contentVisible() ? contentLabeler : accessibilityUtils.nullAuthor
+    }
+
     function getBlockingText() {
         const blocksWithExpiry = skywalker.getUserSettings().blocksWithExpiry
         const expiresAt = blocksWithExpiry.getExpiry(blocking)
@@ -1729,6 +1744,10 @@ SkyPage {
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels)
         contentWarning = skywalker.getContentWarning(author.labels)
+        const labelerDid = skywalker.getContentLabelerDid(author.labels)
+
+        if (labelerDid)
+            profileUtils.getBasicProfile(labelerDid)
 
         getFeed(modelId)
 

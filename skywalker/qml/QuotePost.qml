@@ -72,6 +72,7 @@ Column {
             postContentLabels: []
             postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
             postContentWarning: ""
+            postContentLabeler: accessibilityUtils.nullAuthor
             postMuted: QEnums.MUTED_POST_NONE
             postIsThread: false
             postIsThreadReply: false

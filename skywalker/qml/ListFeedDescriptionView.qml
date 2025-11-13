@@ -16,7 +16,6 @@ SkyPage {
     property bool listHideReplies: skywalker.getUserSettings().getFeedHideReplies(skywalker.getUserDid(), list.uri)
     property bool listHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
-    property string contentWarning: ""
     readonly property string sideBarTitle: guiSettings.listTypeName(list.purpose)
     readonly property string sideBarListAvatarUrl: !contentVisible() ? "" : list.avatar
 
@@ -511,6 +510,5 @@ SkyPage {
 
     Component.onCompleted: {
         contentVisibility = skywalker.getContentVisibility(list.labels)
-        contentWarning = skywalker.getContentWarning(list.labels)
     }
 }

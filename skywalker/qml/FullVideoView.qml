@@ -25,6 +25,8 @@ SkyPage {
     }
 
     VideoView {
+        property basicprofile nullProfile
+
         id: view
         y: (parent.height - height) / 2
         width: parent.width
@@ -33,6 +35,7 @@ SkyPage {
         videoView: page.videoView
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
+        contentLabeler: nullProfile
         controlColor: "white"
         disabledColor: "darkslategrey"
         backgroundColor: guiSettings.fullScreenColor

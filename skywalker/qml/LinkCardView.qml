@@ -10,6 +10,7 @@ RoundCornerMask {
     property string thumbUrl
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property string borderColor: guiSettings.borderColor
     property int columnHeight: externalColumn.height
     property bool showSonglinkWidget: false
@@ -29,6 +30,7 @@ RoundCornerMask {
             width: parent.width
             contentVisibility: card.contentVisibility
             contentWarning: card.contentWarning
+            contentLabeler: card.contentLabeler
             imageUrl: card.thumbUrl
         }
         Loader {

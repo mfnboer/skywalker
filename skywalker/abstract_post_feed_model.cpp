@@ -50,7 +50,11 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mHashtags(hashtags)
 {
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this](const QString& did){ replyToAuthorAdded(did); }, Qt::QueuedConnection);
+            [this](const QString& did) {
+                replyToAuthorAdded(did);
+                labelerAdded(did);
+            },
+            Qt::QueuedConnection);
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
             [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
 }
@@ -118,11 +122,18 @@ void AbstractPostFeedModel::cleanupStoredCids()
 std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedModel::mustHideContent(const Post& post) const
 {
     const auto& author = post.getAuthor();
+    const auto repostedBy = post.getRepostedBy();
 
     if (author.getViewer().isMuted())
     {
         qDebug() << "Hide post of muted author:" << author.getHandleOrDid() << post.getCid();
         return { QEnums::HIDE_REASON_MUTED_AUTHOR, author };
+    }
+
+    if (repostedBy && repostedBy->getViewer().isMuted())
+    {
+        qDebug() << "Hide repost of muted author:" << repostedBy->getHandleOrDid() << post.getCid();
+        return { QEnums::HIDE_REASON_MUTED_AUTHOR, *repostedBy };
     }
 
     if (mFeedHide.contains(author.getDid()))
@@ -131,11 +142,10 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
         return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, author };
     }
 
-    const auto repostedBy = post.getRepostedBy();
     if (repostedBy && mFeedHide.contains(repostedBy->getDid()))
     {
-        qDebug () << "Hide repost from author:" << author.getHandleOrDid();
-        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, author };
+        qDebug () << "Hide repost from author:" << repostedBy->getHandleOrDid();
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, *repostedBy };
     }
 
     const auto& postLabels = post.getLabelsIncludingAuthorLabels();
@@ -422,9 +432,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record->getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
-        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto& recordLabels = record->getLabelsIncludingAuthorLabels();
+        const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(recordLabels, mOverrideAdultVisibility);
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
+        record->setContentLabeler(getContentLabeler(visibility, recordLabels, labelIndex));
         record->setMutedReason(mMutedWords);
         return QVariant::fromValue(*record);
     }
@@ -458,9 +470,11 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record.getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
-        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto& recordLabels = record.getLabelsIncludingAuthorLabels();
+        const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(recordLabels, mOverrideAdultVisibility);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setContentLabeler(getContentLabeler(visibility, recordLabels, labelIndex));
         record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
@@ -610,6 +624,13 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return warning;
     }
+    case Role::PostContentLabeler:
+    {
+        const auto& labels = post.getLabelsIncludingAuthorLabels();
+        const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(labels, mOverrideAdultVisibility);
+        const auto labeler = getContentLabeler(visibility, labels, labelIndex);
+        return QVariant::fromValue(labeler);
+    }
     case Role::PostMutedReason:
     {
         if (post.getAuthor().getViewer().isMuted())
@@ -754,6 +775,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostLabels), "postLabels" },
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
+        { int(Role::PostContentLabeler), "postContentLabeler" },
         { int(Role::PostMutedReason), "postMutedReason" },
         { int(Role::PostHighlightColor), "postHighlightColor" },
         { int(Role::PostIsPinned), "postIsPinned" },
@@ -953,6 +975,38 @@ void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
                 emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
         }
     }
+}
+
+void AbstractPostFeedModel::labelerAdded(const QString& did)
+{
+    const auto* profile = AuthorCache::instance().get(did);
+
+    if (profile && profile->getAssociated().isLabeler())
+        changeData({ int(Role::PostContentLabeler), int(Role::PostRecord), int(Role::PostRecordWithMedia) });
+}
+
+BasicProfile AbstractPostFeedModel::getContentLabeler(QEnums::ContentVisibility visibility,
+                                                      const ContentLabelList& labels,
+                                                      int labelIndex) const
+{
+    if (visibility == QEnums::CONTENT_VISIBILITY_SHOW)
+        return {};
+
+    if (labelIndex < 0 || labelIndex >= labels.size())
+        return {};
+
+    const QString& labelerDid = labels[labelIndex].getDid();
+
+    if (labelerDid.isEmpty())
+        return {};
+
+    const BasicProfile* profile = AuthorCache::instance().get(labelerDid);
+
+    if (profile)
+        return *profile;
+
+    QTimer::singleShot(0, this, [labelerDid]{ AuthorCache::instance().putProfile(labelerDid); });
+    return {};
 }
 
 ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()

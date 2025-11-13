@@ -1,5 +1,6 @@
 next
 ====
+* Show handle of labeler with content warnings
 * Bug fixes
 
 4.18
