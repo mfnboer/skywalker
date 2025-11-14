@@ -122,6 +122,11 @@ public:
     void setMutedReason(const QEnums::MutedPostReason mutedReason) { mPrivate->mMutedReason = mutedReason; }
     void setMutedReason(const IMatchWords& mutedWords);
 
+    void setFormattedText(const QString& text) { mPrivate->mFormattedText = text; }
+    void setImages(const QList<ImageView>& images) { mPrivate->mImages = images; };
+    void setVideo(const VideoView& video) { mPrivate->mVideo = video; }
+    void setExternal(const ExternalView& external) { mPrivate->mExternal = external; }
+
 private:
     ATProto::AppBskyEmbed::EmbedView::SharedPtr getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const;
 
@@ -148,6 +153,11 @@ private:
         LanguageList mLanguages;
         std::optional<ContentLabelList> mContentLabels;
         std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
+
+        QString mFormattedText;
+        QList<ImageView> mImages;
+        VideoView mVideo;
+        ExternalView mExternal;
     };
     std::shared_ptr<PrivateData> mPrivate = std::make_shared<PrivateData>();
 };

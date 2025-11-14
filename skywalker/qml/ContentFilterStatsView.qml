@@ -193,7 +193,7 @@ SkyPage {
 
     function viewFilteredPosts(hideReason, keyList) {
         console.debug("View filtered posts:", hideReason, keyList)
-        const modelId = skywalker.createFilteredPostFeedModel(hideReason)
+        const modelId = skywalker.createFilteredPostFeedModel(hideReason, guiSettings.hideReasonLabelColor)
         const postFeedModel = skywalker.getPostFeedModel(modelId)
         page.model.setFilteredPostFeed(postFeedModel, keyList)
         let component = guiSettings.createComponent("FilteredPostFeedView.qml")

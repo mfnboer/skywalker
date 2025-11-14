@@ -37,6 +37,7 @@ public:
     QEnums::ActorTarget getActorTarget() const { return mActorTarget; }
     QDateTime getExpiresAt() const { return mExpiresAt; }
     bool isDomain() const { return mIsDomain; }
+    bool isHashtag() const { return UnicodeFonts::isHashtag(mValue); }
 
     bool operator<(const MutedWordEntry& rhs) const { return mValue.localeAwareCompare(rhs.mValue) < 0; }
 

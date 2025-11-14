@@ -160,7 +160,7 @@ public:
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri);
-    Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason);
+    Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});

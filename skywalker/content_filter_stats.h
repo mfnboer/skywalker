@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "content_filter.h"
 #include "content_label.h"
 #include "enums.h"
 #include "muted_words.h"
@@ -19,6 +20,8 @@ public:
     using ProfileStat = std::pair<BasicProfile, int>;
     using LabelIdStatMap = std::unordered_map<QString, int>;
     using LabelerDidLabelStatsMap = std::unordered_map<QString, LabelIdStatMap>;
+
+    static QString detailsToString(const Details& details, const IContentFilter& contentFilter);
 
     struct PostHideInfo
     {

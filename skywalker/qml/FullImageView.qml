@@ -92,6 +92,7 @@ SkyPage {
                     ImageAltText {
                         id: altText
                         alt: images[index].alt
+                        isHtml: images[index].hasHtmlAlt()
                         visible: alt
                     }
                 }

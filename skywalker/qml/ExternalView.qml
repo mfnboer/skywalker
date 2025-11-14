@@ -33,7 +33,9 @@ Item {
             userDid: view.userDid
             uri: postExternal.uri
             title: postExternal.title
+            titleIsHtml: postExternal.hasHtmlTitle()
             description: postExternal.description
+            descriptionIsHtml: postExternal.hasHtmlDescription()
             thumbUrl: postExternal.thumbUrl
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning

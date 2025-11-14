@@ -5,18 +5,9 @@
 
 namespace Skywalker {
 
-static QString plainReplace(const QString& plain, const QString& oldWord, const QString& newWord)
-{
-    QString result = plain;
-    QString pattern = QString("\\b%1\\b").arg(QRegularExpression::escape(oldWord));
-    QRegularExpression wordRe(pattern);
-    result.replace(wordRe, newWord);
-
-    return result;
-}
-
 static QString htmlReplace(const QString& html, const QString& oldWord, const QString& newWord)
 {
+    qDebug() << "Replace:" << oldWord << "by:" << newWord;
     QString result = html;
 
     // Pattern explanation:
@@ -36,8 +27,18 @@ static QString htmlReplace(const QString& html, const QString& oldWord, const QS
         matches.push_back({ match.capturedStart(), match.capturedLength() });
     }
 
-    QString pattern = QString("\\b%1\\b").arg(QRegularExpression::escape(oldWord));
+    QString pattern = oldWord.startsWith('#') ?
+        QString("%1\\b").arg(QRegularExpression::escape(oldWord)) :
+        QString("\\b%1\\b").arg(QRegularExpression::escape(oldWord));
+
     QRegularExpression wordRe(pattern);
+
+    if (matches.empty())
+    {
+        // Text has not html tags
+        result.replace(wordRe, newWord);
+        return result;
+    }
 
     // Replace from end to beginning to maintain offsets
     for (int i = matches.size() - 1; i >= 0; --i)
@@ -75,8 +76,51 @@ static std::unordered_map<QString, std::unordered_set<QString>> getNormalizedWor
     for (int i = 0; i < (int)words.size(); ++i)
         normalizedWordsMap[normalizedWords[i]].insert(words[i]);
 
-    // TODO combined words from single letters
+    const auto combinedLetterWords = SearchUtils::combineSingleCharsToWords(normalizedWords);
+
+    for (const auto& w : combinedLetterWords)
+    {
+        qDebug() << "Combined:" << w;
+        QString pattern;
+
+        for (auto ch : w)
+        {
+            if (pattern.isEmpty())
+                pattern += "\\b";
+            else
+                pattern += "\\W+";
+
+            pattern += ch;
+        }
+
+        pattern += "\\b";
+
+        QRegularExpression combinedRe(pattern);
+        QRegularExpressionMatchIterator it = combinedRe.globalMatch(text);
+
+        if (it.hasNext())
+        {
+            QRegularExpressionMatch match = it.next();
+            QString combinedWord = text.mid(match.capturedStart(), match.capturedLength());
+            normalizedWordsMap[w].insert(combinedWord);
+            qDebug() << "Combined entry:" << w << "->" << combinedWord;
+        }
+    }
+
     return normalizedWordsMap;
+}
+
+static std::unordered_map<QString, std::unordered_set<QString>> getNormalizedHashtagsMap(const QString& text)
+{
+    std::unordered_map<QString, std::unordered_set<QString>> normalizedHashtagsMap;
+    const auto hashtags = UnicodeFonts::extractHashtags(text);
+    const auto normalizedHashtags = normalizeWords(hashtags);
+    Q_ASSERT(hashtags.size() == normalizedHashtags.size());
+
+    for (int i = 0; i < (int)hashtags.size(); ++i)
+        normalizedHashtagsMap[normalizedHashtags[i]].insert(hashtags[i]);
+
+    return normalizedHashtagsMap;
 }
 
 WordsHighlighter::WordsHighlighter(QObject* parent) :
@@ -84,13 +128,13 @@ WordsHighlighter::WordsHighlighter(QObject* parent) :
 {
 }
 
-QString WordsHighlighter::highlight(const QString& text, const QString& words, const QString& color, bool html) const
+QString WordsHighlighter::highlight(const QString& text, const QString& words, const QString& color, bool isHashtag) const
 {
     qDebug() << "text:" << text << "words:" << words;
 
     QString hightlightedText = text;
-    const auto normalizedWords = normalizeWords(SearchUtils::getWords(words));
-    const auto textNormalizedWordsMap = getNormalizedWordsMap(text);
+    const auto normalizedWords = isHashtag ? std::vector<QString>{words} : normalizeWords(SearchUtils::getWords(words));
+    const auto textNormalizedWordsMap = isHashtag ? getNormalizedHashtagsMap(text) : getNormalizedWordsMap(text);
 
     for (const auto& word : normalizedWords)
     {
@@ -99,7 +143,7 @@ QString WordsHighlighter::highlight(const QString& text, const QString& words, c
         if (it == textNormalizedWordsMap.end())
         {
             qDebug() << "Word not found:" << word;
-            continue;
+            return text;
         }
 
         const std::unordered_set<QString>& textWords = it->second;
@@ -107,12 +151,11 @@ QString WordsHighlighter::highlight(const QString& text, const QString& words, c
         for (const QString& textWord : textWords)
         {
             const QString highlightedWord = QString("<span style=\"background-color:%1\">%2</span>").arg(color, textWord);
-            hightlightedText = html ?
-                    htmlReplace(hightlightedText, textWord, highlightedWord) :
-                    plainReplace(hightlightedText, textWord, highlightedWord);
+            hightlightedText = htmlReplace(hightlightedText, textWord, highlightedWord);
         }
     }
 
+    qDebug() << "highlighted:" << hightlightedText;
     return hightlightedText;
 }
 

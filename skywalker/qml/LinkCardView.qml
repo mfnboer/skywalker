@@ -6,11 +6,13 @@ RoundCornerMask {
     property string userDid
     property string uri
     property string title
+    property bool titleIsHtml: false
     property string description
+    property bool descriptionIsHtml: false
     property string thumbUrl
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
-    required property basicprofile contentLabeler
+    property basicprofile contentLabeler
     property string borderColor: guiSettings.borderColor
     property int columnHeight: externalColumn.height
     property bool showSonglinkWidget: false
@@ -73,7 +75,8 @@ RoundCornerMask {
             plainText: card.title
             wrapMode: Text.Wrap
             maximumLineCount: 2
-            textFormat: Text.RichText
+            textFormat: titleIsHtml ? Text.RichText : Text.PlainText
+            elide: titleIsHtml ? Text.ElideNone : Text.ElideRight
             font.bold: true
         }
         SkyCleanedText {
@@ -86,7 +89,8 @@ RoundCornerMask {
             plainText: card.description ? card.description : card.uri
             wrapMode: Text.Wrap
             maximumLineCount: 5
-            textFormat: Text.RichText
+            textFormat: descriptionIsHtml ? Text.RichText : Text.PlainText
+            elide: descriptionIsHtml ? Text.ElideNone : Text.ElideRight
         }
 
         SonglinkWidget {

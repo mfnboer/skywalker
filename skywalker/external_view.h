@@ -22,19 +22,22 @@ public:
     ExternalView() = default;
     explicit ExternalView(const ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr& external);
 
-    Q_INVOKABLE bool isNull() { return mExternal == nullptr; }
+    Q_INVOKABLE bool isNull() const { return mExternal == nullptr; }
     QString getUri() const;
     QString getTitle() const;
     QString getDescription() const;
     QString getThumbUrl() const;
 
-    void setTitle(const QString& title) { mTitle = title; }
-    void setDescription(const QString& description) { mDescription = description; }
+    Q_INVOKABLE bool hasHtmlTitle() const { return !mHtmlTitle.isEmpty(); }
+    void setHtmlTitle(const QString& htmlTitle) { mHtmlTitle = htmlTitle; }
+
+    Q_INVOKABLE bool hasHtmlDescription() const { return !mHtmlDescription.isEmpty(); }
+    void setHtmlDescription(const QString& htmlDescription) { mHtmlDescription = htmlDescription; }
 
 private:
     ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr mExternal;
-    QString mTitle;
-    QString mDescription;
+    QString mHtmlTitle;
+    QString mHtmlDescription;
 };
 
 }

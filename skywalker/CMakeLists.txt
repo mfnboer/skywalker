@@ -601,6 +601,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/FilteredPostFeedView.qml
         SOURCES words_highlighter.h
         SOURCES words_highlighter.cpp
+        SOURCES filtered_content_post_feed_model.h
+        SOURCES filtered_content_post_feed_model.cpp
 )
 
 if (NOT ANDROID)

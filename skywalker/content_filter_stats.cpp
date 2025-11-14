@@ -5,6 +5,27 @@
 
 namespace Skywalker {
 
+QString ContentFilterStats::detailsToString(const Details& details, const IContentFilter& contentFilter)
+{
+    if (std::holds_alternative<BasicProfile>(details))
+        return "@" + std::get<BasicProfile>(details).getHandle();
+
+    if (std::holds_alternative<MutedWordEntry>(details))
+        return std::get<MutedWordEntry>(details).getValue();
+
+    if (std::holds_alternative<ContentLabel>(details))
+    {
+        const auto& label = std::get<ContentLabel>(details);
+        auto* contentGroup = contentFilter.getContentGroup(label.getLabelId(), label.getLabelId());
+        return contentGroup ? contentGroup->getTitle() : "";
+    }
+
+    if (std::holds_alternative<QString>(details))
+        return std::get<QString>(details);
+
+    return {};
+}
+
 void ContentFilterStats::clear()
 {
     mMutedAuthor = 0;

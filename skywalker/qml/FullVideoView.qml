@@ -80,6 +80,7 @@ SkyPage {
             wrapMode: Text.Wrap
             color: "white"
             plainText: videoView.alt
+            textFormat: videoView.hasHtmlAlt() ? Text.RichText : Text.PlainText
             visible: Boolean(videoView.alt)
         }
     }

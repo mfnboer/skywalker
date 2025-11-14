@@ -30,6 +30,7 @@ public:
     static int normalizedCompare(const QString& lhs, const QString& rhs);
     static std::vector<QString> getNormalizedWords(const QString& text);
     static std::vector<QString> getWords(const QString& text);
+    static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words);
 
     explicit SearchUtils(QObject* parent = nullptr);
     ~SearchUtils();

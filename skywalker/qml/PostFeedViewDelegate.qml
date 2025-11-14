@@ -78,6 +78,7 @@ Rectangle {
     required property bool postIsThreadReply
     required property bool postLocallyDeleted
     required property int filteredPostHideReason // QEnums::HideReasonType
+    required property string filteredPostHideDetail
     required property contentlabel filteredPostContentLabel
     required property bool endOfFeed
     property bool unrollThread: false
@@ -514,7 +515,7 @@ Rectangle {
                         AccessibleText {
                             width: parent.width - hideIcon.width
                             anchors.verticalCenter: parent.verticalCenter
-                            text: qEnums.hideReasonToString(filteredPostHideReason)
+                            text: qEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
                         }
                     }
                 }

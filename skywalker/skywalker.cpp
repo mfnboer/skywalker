@@ -5,6 +5,7 @@
 #include "chat.h"
 #include "display_utils.h"
 #include "file_utils.h"
+#include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"
 #include "font_downloader.h"
 #include "jni_callback.h"
@@ -2761,14 +2762,16 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
     return id;
 }
 
-int Skywalker::createFilteredPostFeedModel(QEnums::HideReasonType hideReason)
+int Skywalker::createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor)
 {
     const PostFeedModel::FeedVariant feedVariant{hideReason};
-    auto model = std::make_unique<PostFeedModel>(tr("Filtered posts"), &feedVariant,
-                                                 mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
-                                                 mContentFilter, mMutedWords, *mFocusHashtags,
-                                                 mSeenHashtags, mUserPreferences, mUserSettings,
-                                                 mFollowsActivityStore, mBsky, this);
+    auto model = std::make_unique<FilteredContentPostFeedModel>(
+        tr("Filtered posts"), &feedVariant,
+        mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
+        mContentFilter, mMutedWords, *mFocusHashtags,
+        mSeenHashtags, mUserPreferences, mUserSettings,
+        mFollowsActivityStore, mBsky, this);
+    model->setHighlightColor(highlightColor);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }

@@ -106,6 +106,7 @@ public:
         PostIsThreadReply,
         PostLocallyDeleted,
         FilteredPostHideReason,
+        FilteredPostHideDetail,
         FilteredPostContentLabel,
         EndOfFeed
     };
@@ -244,8 +245,6 @@ private:
     BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,
                                    const ContentLabelList& labels,
                                    int labelIndex) const;
-
-    QString highlightMutedWords(const Post& post, const QString& text, bool html) const;
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
