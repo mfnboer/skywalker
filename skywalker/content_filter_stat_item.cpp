@@ -104,8 +104,8 @@ QEnums::ValueType ContentFilterStatItem::valueType(int column) const
             return QEnums::VALUE_TYPE_MUTED_WORD_ENTRY;
         if (std::holds_alternative<LabelerDid>(mKey))
             return QEnums::VALUE_TYPE_LABELER_DID;
-
-        // TODO: Label
+        if (std::holds_alternative<Label>(mKey))
+            return QEnums::VALUE_TYPE_STRING;
 
         qWarning() << "Unknown key type";
         return QEnums::VALUE_TYPE_STRING;

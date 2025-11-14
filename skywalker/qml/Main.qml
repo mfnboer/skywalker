@@ -2154,7 +2154,7 @@ ApplicationWindow {
     function viewContentFilterStats(postFeedModel) {
         const statsModel = postFeedModel.createContentFilterStatsModel()
         let component = guiSettings.createComponent("ContentFilterStatsView.qml")
-        let view = component.createObject(root, { model: statsModel })
+        let view = component.createObject(root, { model: statsModel, sideBarSubTitle: postFeedModel.feedName })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }

@@ -11,7 +11,7 @@ namespace Skywalker {
 const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     {
         "!hide",
-        QObject::tr("Content Blocked"),
+        QObject::tr("Moderator Blocked"),
         QObject::tr("This content has been hidden by the moderators."),
         {},
         false,
@@ -22,7 +22,7 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     },
     {
         "!warn",
-        QObject::tr("Content Warning"),
+        QObject::tr("Moderator Warning"),
         QObject::tr("This content has received a general warning from the moderators."),
         {},
         false,

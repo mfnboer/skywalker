@@ -76,8 +76,11 @@ private:
     using DidStatMap = std::unordered_map<QString, int>;
 
     void add(const BasicProfile& profile, DidStatMap& didStatMap);
+    void remove(const BasicProfile& profile, DidStatMap& didStatMap);
     std::vector<ProfileStat> getProfileStats(const DidStatMap& didStatMap) const;
     void addPost(const Post& post);
+    void removeLastPost();
+    void removeReport(const Post& post, QEnums::HideReasonType hideReason, const Details& details);
 
     int mMutedAuthor = 0;
     DidStatMap mAuthorsMutedAuthor;
@@ -111,7 +114,13 @@ private:
 
     int mContentMode = 0;
 
-    std::unordered_map<QString, BasicProfile> mProfileMap;
+    struct ProfileLink
+    {
+        BasicProfile mProfile;
+        int mCount = 0;
+    };
+
+    std::unordered_map<QString, ProfileLink> mProfileMap;
     std::deque<Post> mPosts;
     PostHideInfoMap mPostHideInfoMap;
     std::unordered_set<QString> mCheckedPostCids;

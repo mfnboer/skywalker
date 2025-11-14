@@ -150,8 +150,6 @@ QEnums::ContentVisibility ContentGroup::getDefaultVisibility() const
     if (!mIsBadge)
         return mDefaultVisibility;
 
-    // TODO: can the visibility be warn for a badge?
-    // For a badge label, warn means show labels and content
     switch (mDefaultVisibility)
     {
     case QEnums::CONTENT_VISIBILITY_SHOW:

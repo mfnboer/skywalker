@@ -1,5 +1,6 @@
 next
 ====
+* Filtered post statistics
 * Show handle of labeler with content warnings
 * Bug fixes
 

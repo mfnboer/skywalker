@@ -7,6 +7,7 @@ SkyPage {
     required property ContentFilterStatsModel model
     property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property string sideBarTitle: qsTr("Filtered posts")
+    property string sideBarSubTitle
     readonly property SvgImage sideBarSvg: SvgOutline.hideVisibility
 
     id: page
@@ -15,6 +16,7 @@ SkyPage {
 
     header: SimpleHeader {
         text: sideBarTitle
+        subTitle: sideBarSubTitle
         headerVisible: !root.showSideBar
         onBack: page.closed()
     }
