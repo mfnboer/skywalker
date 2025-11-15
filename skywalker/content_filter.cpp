@@ -12,7 +12,7 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     {
         "!hide",
         QObject::tr("Moderator Blocked"),
-        QObject::tr("This content has been hidden by the moderators."),
+        QObject::tr("This content has been blocked by the moderator."),
         {},
         false,
         QEnums::CONTENT_VISIBILITY_HIDE_POST,
@@ -23,12 +23,23 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     {
         "!warn",
         QObject::tr("Moderator Warning"),
-        QObject::tr("This content has received a general warning from the moderators."),
+        QObject::tr("This content has received a general warning from the moderator."),
         {},
         false,
         QEnums::CONTENT_VISIBILITY_WARN_POST,
         QEnums::LABEL_TARGET_CONTENT,
         QEnums::LABEL_SEVERITY_ALERT,
+        ""
+    },
+    {
+        "!no-unauthenticated",
+        QObject::tr("Logged out visibility"),
+        QObject::tr("Only show content to logged in users."),
+        {},
+        false,
+        QEnums::CONTENT_VISIBILITY_SHOW,
+        QEnums::LABEL_TARGET_CONTENT,
+        QEnums::LABEL_SEVERITY_NONE,
         ""
     }
 };
@@ -136,21 +147,21 @@ void ContentFilter::clear()
 
 const ContentGroup* ContentFilter::getContentGroup(const QString& did, const QString& labelId) const
 {
-    auto* group = getGlobalContentGroup(labelId);
+    const auto* globalGroup = getGlobalContentGroup(labelId);
 
-    if (group)
-        return group;
+    if (globalGroup && !ContentLabel::isOverridableSytemLabelId(labelId))
+        return globalGroup;
 
     auto itDid = mLabelerGroupMap.find(did);
 
     if (itDid == mLabelerGroupMap.end())
-        return nullptr;
+        return globalGroup;
 
     const ContentGroupMap& groupMap = itDid->second;
     auto itLabel = groupMap.find(labelId);
 
     if (itLabel == groupMap.end())
-        return nullptr;
+        return globalGroup;
 
     return &itLabel->second;
 }
@@ -245,7 +256,7 @@ QEnums::ContentVisibility ContentFilter::getVisibility(const ContentLabel& label
     if (group)
         return getGroupVisibility(*group, adultOverrideVisibility);
 
-    // qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
+    qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
@@ -386,8 +397,11 @@ QStringList ContentFilter::getLabelIds(const QString& labelerDid) const
     QStringList labelIds;
     const ContentGroupMap& contentGroups = mLabelerGroupMap.at(labelerDid);
 
-    for (const auto& [labelId, _] : contentGroups)
-        labelIds.push_back(labelId);
+    for (const auto& [labelId, group] : contentGroups)
+    {
+        if (!group.isSystem())
+            labelIds.push_back(labelId);
+    }
 
     return labelIds;
 }
@@ -480,8 +494,11 @@ std::unordered_set<QString> ContentFilter::getNewLabelIds(const QString& labeler
     const std::unordered_set<QString> savedLabelSet(savedLabels.begin(), savedLabels.end());
     const ContentGroupMap& labelMap = mLabelerGroupMap.at(labelerDid);
 
-    for (const auto& [label, _] : labelMap)
+    for (const auto& [label, group] : labelMap)
     {
+        if (group.isSystem())
+            continue;
+
         if (!savedLabelSet.contains(label))
             newLabels.insert(label);
     }

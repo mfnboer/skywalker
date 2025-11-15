@@ -221,7 +221,7 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
 
         qDebug() << "Changed label:" << label << "visibitlity:" << (int)labelVisibility;
 
-        Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label));
+        Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label) || ContentLabel::isOverridableSytemLabelId(label));
         userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), label, labelVisibility);
 
         for (const auto& legacyId : contentGroup.getLegacyLabelIds())

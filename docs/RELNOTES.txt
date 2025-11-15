@@ -2,6 +2,7 @@ next
 ====
 * Filtered post statistics
 * Show handle of labeler with content warnings
+* Change content visibility level for !hide and !warn labels per labeler
 * Bug fixes
 
 4.18

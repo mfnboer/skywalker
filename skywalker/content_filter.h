@@ -73,7 +73,6 @@ public:
     std::unordered_set<QString> getSubscribedLabelerDids(bool includeDisabledFixedLabelers = false) const;
     std::vector<QString> getSubscribedLabelerDidsOrdered() const;
     size_t numLabelers() const;
-    QStringList getLabelIds(const QString& labelerDid) const;
 
     void addContentGroupMap(const QString& did, const ContentGroupMap& contentGroupMap);
     void addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups);
@@ -94,6 +93,7 @@ signals:
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;
     static void initContentGroups();
+    QStringList getLabelIds(const QString& labelerDid) const;
 
     const QString& mUserDid;
     const ATProto::UserPreferences& mUserPreferences;

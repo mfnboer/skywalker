@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "content_group.h"
+#include "content_label.h"
 #include "definitions.h"
 #include "language_utils.h"
 #include <atproto/lib/rich_text_master.h>
@@ -150,6 +151,7 @@ QEnums::ContentVisibility ContentGroup::getDefaultVisibility() const
     if (!mIsBadge)
         return mDefaultVisibility;
 
+    // For a badge label, warn means show labels and content
     switch (mDefaultVisibility)
     {
     case QEnums::CONTENT_VISIBILITY_SHOW:
@@ -179,6 +181,11 @@ bool ContentGroup::mustShowBadge(ATProto::UserPreferences::LabelVisibility visib
         return false;
 
     return true;
+}
+
+bool ContentGroup::isSystem() const
+{
+    return ContentLabel::isSystemLabelId(mLabelId);
 }
 
 }

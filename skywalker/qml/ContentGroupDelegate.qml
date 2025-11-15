@@ -18,6 +18,7 @@ Rectangle {
     id: contentGroupView
     height: contentGroupColumn.height
     color: isNewLabel ? guiSettings.postHighLightColor : "transparent"
+    visible: isSubscribed || !contentGroup.isSystem
 
     ColumnLayout {
         id: contentGroupColumn
@@ -39,7 +40,6 @@ Rectangle {
                 Layout.fillWidth: true
                 font.bold: true
                 elide: Text.ElideRight
-                color: guiSettings.textColor
                 plainText: contentGroup.title
             }
             SvgButton {
@@ -69,8 +69,26 @@ Rectangle {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
             text: contentGroup.formattedDescription
+        }
+
+        AccessibleText {
+            Layout.leftMargin: contentGroupView.margin
+            Layout.rightMargin: contentGroupView.margin
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            text: getSystemLabelWarning()
+            visible: contentGroup.isSystem
+
+            function getSystemLabelWarning() {
+                if (contentGroup.labelId === "!hide")
+                    return qsTr("⚠️ This is a general system label (!hide) that any labeler may set to hide seriously bad content. Be careful when you change this setting.")
+
+                if (contentGroup.labelId === "!warn")
+                    return qsTr("⚠️ This is a general system label (!warn) that any labeler may set to warn for seriously bad content. Be careful when you change this setting.")
+
+                return qsTr(`⚠️ This is a general system label (${contentGroup.labelId}) that any labeler may set. Be careful when you change this setting.`)
+            }
         }
 
         RowLayout {

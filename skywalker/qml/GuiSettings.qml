@@ -361,9 +361,7 @@ Item {
         for (let i = 0; i < contentLabels.length; ++i) {
             const label = contentLabels[i]
 
-            // As 3rd party labelers can also set !hide and !warn, I want to
-            // see those labels.
-            if ((!label.isSystemLabel() || label.labelId === "!hide" || label.labelId === "!warn") &&
+            if ((!label.isSystemLabel() || label.isOverridableSytemLabel()) &&
                     contentFilter.mustShowBadge(label))
                 labels.push(label)
         }

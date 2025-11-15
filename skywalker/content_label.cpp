@@ -4,6 +4,19 @@
 
 namespace Skywalker {
 
+const std::unordered_set<QString>& ContentLabel::getOverridableSystemLabelIds()
+{
+    // These labels can be set by any labeler. As not all 3rd party labelers can
+    // be trusted, a user may want to override their visibility.
+    static const std::unordered_set<QString> LABELS{ "!hide", "!warn" };
+    return LABELS;
+}
+
+bool ContentLabel::isOverridableSytemLabelId(const QString& labelId)
+{
+    return getOverridableSystemLabelIds().contains(labelId);
+}
+
 bool ContentLabel::appliesToActor() const
 {
     return mPrivate->mUri.startsWith("did:");

@@ -33,7 +33,19 @@ SkyPage {
     }
 
     function sideBarButtonClicked() {
-        console.debug("TODO")
+        guiSettings.notice(page, qsTr(
+            "This pages shows you how many posts have been filtered from your feed due to " +
+            "various settings:<br><br>" +
+            "⚙️ feed preferences<br>" +
+            "⚙️ muted users<br>" +
+            "⚙️ muted words<br>" +
+            "⚙️ label settings<br><br>" +
+            "Blocked posts are not part of this. Those are blocked by the network.<br><br>" +
+            "The statistics are for the feed as currently loaded, i.e. restarting/reloading will " +
+            "reset the statistics. " +
+            "You can tap on a number to see the actuals posts. Note that this shows the " +
+            "the content that was hidden from you."
+        ))
     }
 
     footer: DeadFooterMargin {
