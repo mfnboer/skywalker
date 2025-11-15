@@ -71,6 +71,8 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
+    property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
 
@@ -80,8 +82,8 @@ Rectangle {
     readonly property int rightMargin: isRightCell ? 0 : (isLeftCell ? GridView.view.spacing : GridView.view.spacing / GridView.view.columns)
     readonly property int bottomMargin: GridView.view.spacing
 
-    property var videoItem: postVideo ? videoLoader.item : null
-    property var imageItem: postImages.length > 0 ? imageLoader.item : null
+    property var videoItem: postOrRecordVideo ? videoLoader.item : null
+    property var imageItem: postOrRecordImages.length > 0 ? imageLoader.item : null
     property var mediaItem: videoItem ? videoItem : imageItem
     property bool onScreen: false
 
@@ -111,14 +113,14 @@ Rectangle {
 
         Loader {
             id: videoLoader
-            active: Boolean(postVideo)
+            active: Boolean(postOrRecordVideo)
 
             sourceComponent: VideoView {
                 id: video
                 width: mediaRect.width
                 height: mediaRect.height
                 maxHeight: mediaRect.height
-                videoView: postVideo
+                videoView: postOrRecordVideo
                 contentVisibility: postContentVisibility
                 contentWarning: postContentWarning
                 contentLabeler: postContentLabeler
@@ -133,7 +135,7 @@ Rectangle {
 
         Loader {
             id: imageLoader
-            active: postImages.length > 0
+            active: postOrRecordImages.length > 0
 
             sourceComponent: ImageAutoRetry {
                 property alias contentFilter: filter
@@ -151,7 +153,7 @@ Rectangle {
                     anchors.rightMargin: 5
                     anchors.top: parent.top
                     anchors.topMargin: 5
-                    active: postImages.length > 1
+                    active: postOrRecordImages.length > 1
 
                     sourceComponent: SkySvg {
                         width: 20
@@ -169,7 +171,7 @@ Rectangle {
                     contentVisibility: postContentVisibility
                     contentWarning: postContentWarning
                     contentLabeler: postContentLabeler
-                    images: postImages
+                    images: postOrRecordImages
                 }
             }
         }

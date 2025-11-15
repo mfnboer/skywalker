@@ -29,8 +29,10 @@ public:
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const;
+    bool hasImages() const;
     QVariant getVideo() const;
     VideoView::Ptr getVideoView() const;
+    bool hasVideo() const;
     QVariant getExternal() const;
     ExternalView::Ptr getExternalView() const;
 

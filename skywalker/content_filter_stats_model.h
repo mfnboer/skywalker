@@ -30,6 +30,8 @@ public:
     explicit ContentFilterStatsModel(QObject* parent = nullptr);
     explicit ContentFilterStatsModel(const ContentFilterStats& stats, const IContentFilter& contentFilter, QObject* parent = nullptr);
 
+    Q_INVOKABLE int getCheckedPostsCount() const { return mContentFilterStats.checkedPosts(); }
+
     int rowCount(const QModelIndex& parent = {}) const override;
     int columnCount(const QModelIndex& parent = {}) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

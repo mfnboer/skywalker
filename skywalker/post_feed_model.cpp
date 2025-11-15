@@ -1036,7 +1036,7 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mu
     }
 
     // All posts should be video posts in a video feed.
-    if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.getVideoView())
+    if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.hasVideo(true))
     {
         qWarning() << "Non-video post in video feed!";
         return { QEnums::HIDE_REASON_CONTENT_MODE, nullptr };

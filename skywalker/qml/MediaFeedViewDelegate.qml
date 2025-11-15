@@ -71,6 +71,8 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
+    property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property int headerHeight: 0
@@ -81,8 +83,8 @@ Rectangle {
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
-    property var videoItem: postVideo ? videoLoader.item : null
-    property var imageItem: postImages.length > 0 ? imageLoader.item : null
+    property var videoItem: postOrRecordVideo ? videoLoader.item : null
+    property var imageItem: postOrRecordImages.length > 0 ? imageLoader.item : null
     property bool zooming: imageItem ? imageItem.zooming : false
 
     signal closed
@@ -97,7 +99,7 @@ Rectangle {
             if (feedAcceptsInteractions)
                 videoPage.ListView.view.model.reportOnScreen(postUri)
 
-            if (postVideo)
+            if (postOrRecordVideo)
                 videoItem.play()
         } else {
             cover()
@@ -108,7 +110,7 @@ Rectangle {
         if (feedAcceptsInteractions)
             videoPage.ListView.view.model.reportOffScreen(postUri, postFeedContext)
 
-        if (postVideo)
+        if (postOrRecordVideo)
             videoItem.pause()
     }
 
@@ -125,14 +127,14 @@ Rectangle {
 
         Loader {
             id: videoLoader
-            active: Boolean(postVideo)
+            active: Boolean(postOrRecordVideo)
 
             sourceComponent: VideoView {
                 id: video
                 width: mediaRect.width
                 height: root.height - videoPage.footerHeight
                 maxHeight: root.height
-                videoView: postVideo
+                videoView: postOrRecordVideo
                 contentVisibility: postContentVisibility
                 contentWarning: postContentWarning
                 contentLabeler: postContentLabeler
@@ -155,7 +157,7 @@ Rectangle {
             property bool showDetails: true
 
             id: imageLoader
-            active: postImages.length > 0
+            active: postOrRecordImages.length > 0
 
             sourceComponent: SwipeView {
                 property int imageWidth: currentItem ? currentItem.imageWidth : 0
@@ -166,7 +168,7 @@ Rectangle {
                 interactive: !zooming
 
                 Repeater {
-                    model: postImages.length
+                    model: postOrRecordImages.length
 
                     Rectangle {
                         required property int index
@@ -201,8 +203,8 @@ Rectangle {
                                 backgroundColor: "black"
                                 backgroundOpacity: 0.6
                                 color: "white"
-                                text: `${index + 1}/${postImages.length}`
-                                visible: postImages.length > 1 && filter.imageVisible() && showDetails
+                                text: `${index + 1}/${postOrRecordImages.length}`
+                                visible: postOrRecordImages.length > 1 && filter.imageVisible() && showDetails
                             }
                         }
 
@@ -225,7 +227,7 @@ Rectangle {
                             contentVisibility: postContentVisibility
                             contentWarning: postContentWarning
                             contentLabeler: postContentLabeler
-                            images: postImages
+                            images: postOrRecordImages
                         }
                     }
                 }
@@ -262,7 +264,7 @@ Rectangle {
             AccessibleMenuItem {
                 text: qsTr("Save picture")
                 textColor: "black"
-                onTriggered: root.savePhoto(postImages[imageItem.currentIndex].fullSizeUrl)
+                onTriggered: root.savePhoto(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
 
                 MenuItemSvg { svg: SvgOutline.save; color: "black" }
@@ -271,7 +273,7 @@ Rectangle {
             AccessibleMenuItem {
                 text: qsTr("Share picture")
                 textColor: "black"
-                onTriggered: root.sharePhotoToApp(postImages[imageItem.currentIndex].fullSizeUrl)
+                onTriggered: root.sharePhotoToApp(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
 
                 MenuItemSvg { svg: SvgOutline.share; color: "black" }
@@ -280,7 +282,7 @@ Rectangle {
             AccessibleMenuItem {
                 text: qsTr("Save video")
                 textColor: "black"
-                onTriggered: root.saveVideo(videoItem.videoSource, postVideo.playlistUrl)
+                onTriggered: root.saveVideo(videoItem.videoSource, postOrRecordVideo.playlistUrl)
                 visible: Boolean(videoItem)
 
                 MenuItemSvg { svg: SvgOutline.save; color: "black" }
@@ -307,7 +309,7 @@ Rectangle {
         width: parent.width
         anchors.top: postColumn.top
         //anchors.bottom: postColumn.bottom
-        height: postColumn.height + (Boolean(postVideo) ? 0 : (root.height - postColumn.y - postColumn.height))
+        height: postColumn.height + (Boolean(postOrRecordVideo) ? 0 : (root.height - postColumn.y - postColumn.height))
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#00000000" }
             GradientStop { position: 1.0; color: "#EF000000" }

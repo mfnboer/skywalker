@@ -241,7 +241,7 @@ bool VideoPostFilter::match(const Post& post) const
     if (post.isPlaceHolder())
         return false;
 
-    return post.getVideoView() != nullptr;
+    return post.hasVideo(true);
 }
 
 QJsonObject VideoPostFilter::toJson() const
@@ -268,7 +268,7 @@ bool MediaPostFilter::match(const Post& post) const
         return false;
 
 
-    return !post.getImages().empty() || post.getVideoView() != nullptr;
+    return post.hasImages(true) || post.hasVideo(true);
 }
 
 QJsonObject MediaPostFilter::toJson() const

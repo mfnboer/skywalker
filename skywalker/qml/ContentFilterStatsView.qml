@@ -34,6 +34,7 @@ SkyPage {
         syncView: treeView
         textRole: "value"
         clip: true
+        visible: treeView.count > 0
 
         delegate: Label {
             required property int column
@@ -49,7 +50,7 @@ SkyPage {
         }
     }
 
-    TreeView {
+    SkyTreeView {
         id: treeView
         anchors.top: treeHeader.bottom
         anchors.bottom: parent.bottom
@@ -186,6 +187,13 @@ SkyPage {
                 }
             }
         }
+    }
+
+    EmptyListIndication {
+        y: 50
+        svg: SvgOutline.hideVisibility
+        text: qsTr(`No posts filtered (out of ${treeView.model.getCheckedPostsCount()})`)
+        list: treeView
     }
 
     LinkUtils {

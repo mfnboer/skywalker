@@ -46,8 +46,7 @@ SkyListView {
         visible: !root.showSideBar
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: showFeed()
-        onFeedAvatarPressAndHold: showFeedOptions()
+        onFeedAvatarClicked: showFeedOptions()
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -244,6 +243,12 @@ SkyListView {
         }
 
         AccessibleMenuItem {
+            text: qsTr("Feed profile")
+            onTriggered: showFeed()
+            MenuItemSvg { svg: SvgOutline.feed }
+        }
+
+        AccessibleMenuItem {
             text: qsTr("Remove favorite")
             onTriggered: {
                 skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
@@ -254,6 +259,12 @@ SkyListView {
                 svg: SvgFilled.star
                 color: guiSettings.favoriteColor
             }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Filtered posts")
+            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            onTriggered: root.viewContentFilterStats(underlyingModel)
         }
 
         AccessibleMenuItem {
@@ -286,6 +297,12 @@ SkyListView {
         CloseMenuItem {
             text: qsTr("<b>List</b>")
             Accessible.name: qsTr("close more options menu")
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("List profile")
+            onTriggered: showFeed()
+            MenuItemSvg { svg: SvgOutline.list }
         }
 
         AccessibleMenuItem {
@@ -333,6 +350,13 @@ SkyListView {
                 svg: listFeedOptionsMenu.listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
             }
         }
+
+        AccessibleMenuItem {
+            text: qsTr("Filtered posts")
+            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            onTriggered: root.viewContentFilterStats(underlyingModel)
+        }
+
         AccessibleMenuItem {
             text: qsTr("Show replies")
             checkable: true

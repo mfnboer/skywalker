@@ -39,8 +39,7 @@ SkyListView {
         visible: !root.showSideBar
 
         onClosed: feedView.closed()
-        onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
-        onFeedAvatarPressAndHold: showOptionsMenu()
+        onFeedAvatarClicked: showOptionsMenu()
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -177,6 +176,12 @@ SkyListView {
         CloseMenuItem {
             text: qsTr("<b>Hashtag</b>")
             Accessible.name: qsTr("close hashtag options menu")
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Search")
+            onTriggered: root.viewSearchViewFeed(searchFeed)
+            MenuItemSvg { svg: SvgOutline.search }
         }
 
         AccessibleMenuItem {

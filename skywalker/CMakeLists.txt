@@ -603,6 +603,7 @@ qt_add_qml_module(libskywalker
         SOURCES words_highlighter.cpp
         SOURCES filtered_content_post_feed_model.h
         SOURCES filtered_content_post_feed_model.cpp
+        QML_FILES qml/SkyTreeView.qml
 )
 
 if (NOT ANDROID)

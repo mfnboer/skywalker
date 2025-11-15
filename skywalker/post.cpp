@@ -564,9 +564,19 @@ QList<ImageView> Post::getImages() const
     return images;
 }
 
-bool Post::hasImages() const
+bool Post::hasImages(bool includingRecordWithMedia) const
 {
-    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+    if (!mPost && !mPost->mEmbed)
+        return false;
+
+    if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
+        return true;
+
+    if (!includingRecordWithMedia)
+        return false;
+
+    const auto record = getRecordWithMediaView();
+    return record ? record->hasImages() : false;
 }
 
 QList<ImageView> Post::getDraftImages() const
@@ -606,9 +616,19 @@ VideoView::Ptr Post::getVideoView() const
     return std::make_unique<VideoView>(video);
 }
 
-bool Post::hasVideo() const
+bool Post::hasVideo(bool includingRecordWithMedia) const
 {
-    return mPost && mPost->mEmbed && mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+    if (!mPost && !mPost->mEmbed)
+        return false;
+
+    if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
+        return true;
+
+    if (!includingRecordWithMedia)
+        return false;
+
+    const auto record = getRecordWithMediaView();
+    return record ? record->hasVideo() : false;
 }
 
 VideoView::Ptr Post::getDraftVideoView() const
