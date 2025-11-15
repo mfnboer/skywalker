@@ -514,7 +514,9 @@ Rectangle {
 
                         AccessibleText {
                             width: parent.width - hideIcon.width
+                            rightPadding: 10
                             anchors.verticalCenter: parent.verticalCenter
+                            elide: Text.ElideRight
                             text: qEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
                         }
                     }

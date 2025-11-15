@@ -22,7 +22,7 @@ SkyListView {
     header: SimpleHeader {
         text: sideBarTitle
         subTitle: sideBarSubTitle
-        headerVisible: !root.showSideBar
+        visible: !root.showSideBar
         onBack: postFeedView.closed()
     }
     headerPositioning: ListView.OverlayHeader

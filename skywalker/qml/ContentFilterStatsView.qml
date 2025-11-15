@@ -9,6 +9,8 @@ SkyPage {
     readonly property string sideBarTitle: qsTr("Filtered posts")
     property string sideBarSubTitle
     readonly property SvgImage sideBarSvg: SvgOutline.hideVisibility
+    readonly property SvgImage sideBarButtonSvg: SvgOutline.info
+    readonly property string sideBarButtonName: qsTr("info")
 
     id: page
 
@@ -17,8 +19,21 @@ SkyPage {
     header: SimpleHeader {
         text: sideBarTitle
         subTitle: sideBarSubTitle
-        headerVisible: !root.showSideBar
+        visible: !root.showSideBar
         onBack: page.closed()
+
+        SvgPlainButton {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.topMargin: guiSettings.headerMargin
+            svg: sideBarButtonSvg
+            accessibleName: sideBarButtonName
+            onClicked: sideBarButtonClicked()
+        }
+    }
+
+    function sideBarButtonClicked() {
+        console.debug("TODO")
     }
 
     footer: DeadFooterMargin {
@@ -29,6 +44,7 @@ SkyPage {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.topMargin: 10
         anchors.leftMargin: 10
         anchors.rightMargin: 10
         syncView: treeView

@@ -566,7 +566,7 @@ QList<ImageView> Post::getImages() const
 
 bool Post::hasImages(bool includingRecordWithMedia) const
 {
-    if (!mPost && !mPost->mEmbed)
+    if (!mPost || !mPost->mEmbed)
         return false;
 
     if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
@@ -618,7 +618,7 @@ VideoView::Ptr Post::getVideoView() const
 
 bool Post::hasVideo(bool includingRecordWithMedia) const
 {
-    if (!mPost && !mPost->mEmbed)
+    if (!mPost || !mPost->mEmbed)
         return false;
 
     if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
