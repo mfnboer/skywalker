@@ -278,6 +278,53 @@ ColumnLayout {
                 }
             }
         }
+
+        AccessibleText {
+            Layout.preferredWidth: 120
+            text: qsTr("Side bar")
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: -1
+
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.sideBarType === QEnums.SIDE_BAR_OFF
+                text: qsTr("Off");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.sideBarType = QEnums.SIDE_BAR_OFF
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.sideBarType === QEnums.SIDE_BAR_LANDSCAPE
+                text: qsTr("Landscape");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.sideBarType = QEnums.SIDE_BAR_LANDSCAPE
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.sideBarType === QEnums.SIDE_BAR_PORTRAIT
+                text: qsTr("Portrait");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.sideBarType = QEnums.SIDE_BAR_PORTRAIT
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                checked: userSettings.sideBarType === QEnums.SIDE_BAR_BOTH
+                text: qsTr("Both");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.sideBarType = QEnums.SIDE_BAR_BOTH
+                }
+            }
+        }
     }
 
     AccessibleCheckBox {
@@ -302,12 +349,6 @@ ColumnLayout {
         text: qsTr("Feed feedback buttons (thumb up/down)")
         checked: userSettings.showFeedbackButtons
         onCheckedChanged: userSettings.showFeedbackButtons = checked
-    }
-
-    AccessibleCheckBox {
-        text: qsTr("Sidebar in landscape mode")
-        checked: userSettings.landscapeSideBar
-        onCheckedChanged: userSettings.landscapeSideBar = checked
     }
 
     AccessibleCheckBox {

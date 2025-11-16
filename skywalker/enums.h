@@ -27,6 +27,17 @@ public:
     };
     Q_ENUM(DisplayMode)
 
+    enum SideBarType
+    {
+        SIDE_BAR_OFF = 0,
+        SIDE_BAR_LANDSCAPE,
+        SIDE_BAR_PORTRAIT,
+        SIDE_BAR_BOTH,
+
+        SIDE_BAR_LAST = SIDE_BAR_BOTH
+    };
+    Q_ENUM(SideBarType)
+
     enum UiPage
     {
         UI_PAGE_NONE = 0,

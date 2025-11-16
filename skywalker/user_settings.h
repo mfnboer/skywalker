@@ -34,7 +34,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
     Q_PROPERTY(bool showFeedbackButtons READ getShowFeedbackButtons WRITE setShowFeedbackButtons NOTIFY showFeedbackButtonsChanged FINAL)
-    Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
+    Q_PROPERTY(QEnums::SideBarType sideBarType READ getSideBarType WRITE setSideBarType NOTIFY sideBarTypeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
@@ -227,8 +227,14 @@ public:
     Q_INVOKABLE void setPostButtonRelativeX(double x);
     Q_INVOKABLE double getPostButtonRelativeX() const;
 
-    void setLandscapeSideBar(bool enabled);
-    bool getLandscapeSideBar() const;
+    Q_INVOKABLE void setPortraitSideBarWidth(int width);
+    Q_INVOKABLE int getPortraitSideBarWidth() const;
+
+    Q_INVOKABLE void setLandscapeSideBarWidth(int width);
+    Q_INVOKABLE int getLandscapeSideBarWidth() const;
+
+    void setSideBarType(QEnums::SideBarType sideBarType);
+    QEnums::SideBarType getSideBarType() const;
 
     void setGifAutoPlay(bool autoPlay);
     bool getGifAutoPlay() const;
@@ -418,7 +424,7 @@ signals:
     void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();
     void showFeedbackButtonsChanged();
-    void landscapeSideBarChanged();
+    void sideBarTypeChanged();
     void gifAutoPlayChanged();
     void videoSoundChanged();
     void videoAutoPlayChanged();

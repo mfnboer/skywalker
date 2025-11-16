@@ -35,8 +35,7 @@ Item {
     readonly property int maxImageHeight: root.height - headerHeight
     readonly property int radius: 8
     readonly property int sideBarHeaderHeight: 44
-    readonly property int sideBarMinWidth: 175
-    readonly property int sideBarMaxWidth: 325
+    readonly property int sideBarMinWidth: 180
     readonly property int statsIconHeight: appFontHeight + 4
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60

@@ -3,6 +3,8 @@ next
 * Filtered post statistics
 * Show handle of labeler with content warnings
 * Change content visibility level for !hide and !warn labels per labeler
+* Side bar can be enabled in portait mode
+* Width of side bar can be changed
 * Bug fixes
 
 4.18

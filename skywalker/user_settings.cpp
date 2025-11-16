@@ -930,18 +930,43 @@ double UserSettings::getPostButtonRelativeX() const
     return mSettings.value("postButtonRelativeX", 1.0).toDouble();
 }
 
-void UserSettings::setLandscapeSideBar(bool enabled)
+void UserSettings::setPortraitSideBarWidth(int width)
 {
-    if (enabled == getLandscapeSideBar())
-        return;
-
-    mSettings.setValue("landscapeSideBar", enabled);
-    emit landscapeSideBarChanged();
+    mSettings.setValue("portraitSideBarWidth", width);
 }
 
-bool UserSettings::getLandscapeSideBar() const
+int UserSettings::getPortraitSideBarWidth() const
 {
-    return mSettings.value("landscapeSideBar", true).toBool();
+    return mSettings.value("portraitSideBarWidth", 200).toInt();
+}
+
+void UserSettings::setLandscapeSideBarWidth(int width)
+{
+    mSettings.setValue("landscapeSideBarWidth", width);
+}
+
+int UserSettings::getLandscapeSideBarWidth() const
+{
+    return mSettings.value("landscapeSideBarWidth", 200).toInt();
+}
+
+void UserSettings::setSideBarType(QEnums::SideBarType sideBarType)
+{
+    if (sideBarType == getSideBarType())
+        return;
+
+    mSettings.setValue("sideBarType", int(sideBarType));
+    emit sideBarTypeChanged();
+}
+
+QEnums::SideBarType UserSettings::getSideBarType() const
+{
+    const int sideBarType = mSettings.value("sideBarType", int(QEnums::SIDE_BAR_LANDSCAPE)).toInt();
+
+    if (sideBarType < 0 || sideBarType > QEnums::SIDE_BAR_LAST)
+        return QEnums::SIDE_BAR_LANDSCAPE;
+
+    return QEnums::SideBarType(sideBarType);
 }
 
 void UserSettings::setGifAutoPlay(bool autoPlay)
@@ -1692,6 +1717,7 @@ void UserSettings::cleanup()
 {
     mSettings.remove("draftRepoToFileMigration");
     mSettings.remove("floatingNavButtons");
+    mSettings.remove("landscapeSideBar");
 }
 
 }

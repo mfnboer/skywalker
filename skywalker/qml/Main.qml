@@ -7,7 +7,7 @@ import skywalker
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
     readonly property bool isPortrait: width < height
-    readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
+    readonly property bool showSideBar: mustShowSideBar()
     property var didSkywalkerMap: new Map()
     property var didPostUtilsMap: new Map()
     property var didProfileUtilsMap: new Map()
@@ -67,6 +67,8 @@ ApplicationWindow {
 
         // HACK: the light/dark mode of the status bar gets lost when orientation changes
         displayUtils.resetStatusBarLightMode()
+
+        rootSplitView.init()
     }
 
     onClosing: (event) => {
@@ -603,101 +605,132 @@ ApplicationWindow {
         }
     }
 
-    SideBar {
-        property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+    SplitView {
+        id: rootSplitView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
 
-        id: sideBar
-        x: guiSettings.leftMargin
-        y: guiSettings.headerMargin
-        width: Math.min(parent.width * 0.25, guiSettings.sideBarMaxWidth)
-        height: parent.height - guiSettings.headerMargin - guiSettings.footerMargin
-        timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
-        skywalker: root.getSkywalker()
-        homeActive: rootContent.currentIndex === rootContent.timelineIndex
-        notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
-        searchActive: rootContent.currentIndex === rootContent.searchIndex
-        messagesActive: rootContent.currentIndex === rootContent.chatIndex
-        onHomeClicked: {
-            if (homeActive)
-                favoritesSwipeView.currentView.moveToHome()
+        onResizingChanged: {
+            if (resizing)
+                return
+
+            console.debug("Save side bar width:", sideBar.SplitView.preferredWidth, "portrait:", isPortrait)
+            let userSettings = skywalker.getUserSettings()
+
+            if (isPortrait)
+                userSettings.setPortraitSideBarWidth(sideBar.SplitView.preferredWidth)
             else
-                root.viewTimeline()
-        }
-        onNotificationsClicked: {
-            if (!notificationsActive)
-                viewNotifications()
-            else if (currentStackItem() instanceof NotificationListView)
-                currentStackItem().handleNotificationsClicked()
-        }
-        onSearchClicked: {
-            if (!searchActive)
-                viewSearchView()
-        }
-        onMessagesClicked: {
-            if (!messagesActive)
-                viewChat()
-            else if (currentStackItem() instanceof ConvoListView)
-                currentStackItem().positionViewAtBeginning()
-        }
-        onAddConvoClicked: {
-            if (currentStackItem() instanceof ConvoListView)
-                currentStackItem().addConvo()
+                userSettings.setLandscapeSideBarWidth(sideBar.SplitView.preferredWidth)
         }
 
-        visible: showSideBar && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
-    }
+        function init() {
+            let userSettings = skywalker.getUserSettings()
 
-    StackLayout {
-        readonly property int timelineIndex: 0
-        readonly property int notificationIndex: 1
-        readonly property int searchIndex: 2
-        readonly property int chatIndex: 3
-        property int prevIndex: timelineIndex
+            const w = isPortrait ? userSettings.getPortraitSideBarWidth() : userSettings.getLandscapeSideBarWidth()
+            console.debug("Init side bar width:", w, "portrait:", isPortrait)
+            sideBar.SplitView.preferredWidth = w
+        }
 
-        id: rootContent
-        x: sideBar.visible ? sideBar.x + sideBar.width : 0
-        width: parent.width - x - guiSettings.rightMargin
-        height: parent.height
-        currentIndex: timelineIndex
-        clip: true
+        SideBar {
+            property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
 
-        onCurrentIndexChanged: {
-            let prevStack = rootContent.children[prevIndex]
-
-            if (prevStack.depth > 0) {
-                let prevItem = prevStack.get(prevStack.depth - 1)
-
-                if (typeof prevItem.cover === 'function')
-                    prevItem.cover()
+            id: sideBar
+            x: guiSettings.leftMargin
+            y: guiSettings.headerMargin
+            SplitView.minimumWidth: guiSettings.sideBarMinWidth
+            SplitView.preferredWidth: 200
+            SplitView.maximumWidth: Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth)
+            height: parent.height - guiSettings.headerMargin - guiSettings.footerMargin
+            timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+            skywalker: root.getSkywalker()
+            homeActive: rootContent.currentIndex === rootContent.timelineIndex
+            notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
+            searchActive: rootContent.currentIndex === rootContent.searchIndex
+            messagesActive: rootContent.currentIndex === rootContent.chatIndex
+            onHomeClicked: {
+                if (homeActive)
+                    favoritesSwipeView.currentView.moveToHome()
+                else
+                    root.viewTimeline()
+            }
+            onNotificationsClicked: {
+                if (!notificationsActive)
+                    viewNotifications()
+                else if (currentStackItem() instanceof NotificationListView)
+                    currentStackItem().handleNotificationsClicked()
+            }
+            onSearchClicked: {
+                if (!searchActive)
+                    viewSearchView()
+            }
+            onMessagesClicked: {
+                if (!messagesActive)
+                    viewChat()
+                else if (currentStackItem() instanceof ConvoListView)
+                    currentStackItem().positionViewAtBeginning()
+            }
+            onAddConvoClicked: {
+                if (currentStackItem() instanceof ConvoListView)
+                    currentStackItem().addConvo()
             }
 
-            if (prevIndex === notificationIndex) {
-                skywalker.notificationListModel.updateRead()
-                skywalker.mentionListModel.updateRead()
-                getNotificationView().reset()
-                unwindStack(notificationStack)
+            visible: showSideBar && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
+        }
+
+        StackLayout {
+            readonly property int timelineIndex: 0
+            readonly property int notificationIndex: 1
+            readonly property int searchIndex: 2
+            readonly property int chatIndex: 3
+            property int prevIndex: timelineIndex
+
+            id: rootContent
+            SplitView.fillWidth: true
+            height: parent.height
+            currentIndex: timelineIndex
+            clip: true
+
+            onCurrentIndexChanged: {
+                let prevStack = rootContent.children[prevIndex]
+
+                if (prevStack.depth > 0) {
+                    let prevItem = prevStack.get(prevStack.depth - 1)
+
+                    if (typeof prevItem.cover === 'function')
+                        prevItem.cover()
+                }
+
+                if (prevIndex === notificationIndex) {
+                    skywalker.notificationListModel.updateRead()
+                    skywalker.mentionListModel.updateRead()
+                    getNotificationView().reset()
+                    unwindStack(notificationStack)
+                }
+
+                prevIndex = currentIndex
+                let currentItem = currentStackItem()
+
+                if (currentItem && typeof currentItem.uncover === 'function')
+                    currentItem.uncover()
+
+                favoritesTabBar.update()
             }
 
-            prevIndex = currentIndex
-            let currentItem = currentStackItem()
-
-            if (currentItem && typeof currentItem.uncover === 'function')
-                currentItem.uncover()
-
-            favoritesTabBar.update()
-        }
-
-        StackView {
-            id: timelineStack
-        }
-        StackView {
-            id: notificationStack
-        }
-        StackView {
-            id: searchStack
-        }
-        StackView {
-            id: chatStack
+            StackView {
+                id: timelineStack
+            }
+            StackView {
+                id: notificationStack
+            }
+            StackView {
+                id: searchStack
+            }
+            StackView {
+                id: chatStack
+            }
         }
     }
 
@@ -705,7 +738,7 @@ ApplicationWindow {
     Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.left: rootContent.right
+        anchors.left: rootSplitView.right
         anchors.right: parent.right
         color: getBackgroundColor()
 
@@ -2347,6 +2380,29 @@ ApplicationWindow {
             popStack(stack)
     }
 
+    function mustShowSideBar() {
+        let settings = skywalker.getUserSettings()
+
+        switch (settings.sideBarType) {
+        case QEnums.SIDE_BAR_OFF:
+            return false
+        case QEnums.SIDE_BAR_LANDSCAPE:
+            if (isPortrait)
+                return false
+
+            break
+        case QEnums.SIDE_BAR_PORTRAIT:
+            if (!isPortrait)
+                return false
+
+            break
+        case QEnums.SIDE_BAR_BOTH:
+            break
+        }
+
+        return root.width * 0.33 >= guiSettings.sideBarMinWidth
+    }
+
     function setDisplayMode(displayMode) {
         switch (displayMode) {
         case QEnums.DISPLAY_MODE_SYSTEM:
@@ -2519,5 +2575,11 @@ ApplicationWindow {
         // NOTE: the user is not yet logged in, but global app settings are available.
         let settings = root.getSkywalker().getUserSettings()
         postButtonRelativeX = settings.getPostButtonRelativeX()
+        rootSplitView.init()
+
+        settings.onBackgroundColorChanged.connect(() => {
+            displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+            displayUtils.setStatusBarColor(guiSettings.headerColor)
+        })
     }
 }

@@ -86,10 +86,6 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mSessionManager, &SessionManager::totalUnreadNotificationCountChanged, this,
         [this](int unread){ setUnreadNotificationCount(unread); });
 
-    connect(&mUserSettings, &UserSettings::backgroundColorChanged, this, [this]{
-        const bool isLightMode = mUserSettings.getActiveDisplayMode() == QEnums::DISPLAY_MODE_LIGHT;
-        DisplayUtils::setNavigationBarColorAndMode(mUserSettings.getBackgroundColor(), isLightMode);
-    });
     connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
