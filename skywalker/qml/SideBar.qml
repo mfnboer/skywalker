@@ -27,8 +27,10 @@ Pane {
     }
 
     Flickable {
-        width: parent.width
+        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: parent.top
+        anchors.topMargin: guiSettings.headerMargin
         anchors.bottom: postButton.top
         anchors.bottomMargin: 10
         clip: true

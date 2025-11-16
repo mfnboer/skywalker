@@ -152,7 +152,7 @@ ApplicationWindow {
         property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
-        x: sideBar.visible ? sideBar.x + sideBar.width : 0
+        x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
         y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
         z: guiSettings.headerZLevel - 1
         width: parent.width - x - guiSettings.rightMargin
@@ -605,9 +605,11 @@ ApplicationWindow {
         }
     }
 
-    SplitView {
+    // TODO: set the header margins here and remove it from all the individual pages
+    SkySplitView {
         id: rootSplitView
         anchors.left: parent.left
+        anchors.leftMargin: guiSettings.leftMargin
         anchors.right: parent.right
         anchors.rightMargin: guiSettings.rightMargin
         anchors.top: parent.top
@@ -638,8 +640,6 @@ ApplicationWindow {
             property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
 
             id: sideBar
-            x: guiSettings.leftMargin
-            y: guiSettings.headerMargin
             SplitView.minimumWidth: guiSettings.sideBarMinWidth
             SplitView.preferredWidth: 200
             SplitView.maximumWidth: Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth)
@@ -734,6 +734,15 @@ ApplicationWindow {
         }
     }
 
+    // Left margin (navbar on Android)
+    Rectangle {
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: rootSplitView.left
+        color: getBackgroundColor()
+    }
+
     // Right margin (navbar on Android)
     Rectangle {
         anchors.top: parent.top
@@ -741,18 +750,24 @@ ApplicationWindow {
         anchors.left: rootSplitView.right
         anchors.right: parent.right
         color: getBackgroundColor()
+    }
 
-        function getBackgroundColor() {
-            const item = currentStackItem()
+    function getBackgroundColor() {
+        const item = currentStackItem()
 
-            if (item && typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
-                return item.background.color
+        console.debug("GET BACKGROUND 1:", item)
 
-            if (item && typeof item.color !== 'undefined')
-                return item.color
+        if (item && typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
+            return item.background.color
 
-            return guiSettings.backgroundColor
-        }
+        console.debug("GET BACKGROUND 2")
+
+        if (item && typeof item.color !== 'undefined')
+            return item.color
+
+        console.debug("GET BACKGROUND 3")
+
+        return guiSettings.backgroundColor
     }
 
     // Hack for Talkback

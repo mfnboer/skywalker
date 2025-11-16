@@ -3,7 +3,6 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
-#include "display_utils.h"
 #include "file_utils.h"
 #include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"

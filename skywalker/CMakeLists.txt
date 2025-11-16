@@ -604,6 +604,7 @@ qt_add_qml_module(libskywalker
         SOURCES filtered_content_post_feed_model.h
         SOURCES filtered_content_post_feed_model.cpp
         QML_FILES qml/SkyTreeView.qml
+        QML_FILES qml/SkySplitView.qml
 )
 
 if (NOT ANDROID)
