@@ -216,16 +216,30 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
     for (const auto& [index, visibility] : mChangedVisibility)
     {
         const auto& contentGroup = mContentGroupList.at(index);
+        const auto& labelerDid = contentGroup.getLabelerDid();
         const auto& label = contentGroup.getLabelId();
         const auto labelVisibility = ATProto::UserPreferences::LabelVisibility(visibility);
 
-        qDebug() << "Changed label:" << label << "visibitlity:" << (int)labelVisibility;
+        qDebug() << "Changed label:" << label << "did:" << labelerDid << "visibitlity:" << (int)labelVisibility;
 
         Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label) || ContentLabel::isOverridableSytemLabelId(label));
-        userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), label, labelVisibility);
+        const auto defaultVisibility = QEnums::toContentPrefVisibility(contentGroup.getUnconditionalDefaultVisibility());
 
-        for (const auto& legacyId : contentGroup.getLegacyLabelIds())
-            userPreferences.setLabelVisibility(contentGroup.getLabelerDid(), legacyId, labelVisibility);
+        if (visibility == defaultVisibility)
+        {
+            qDebug() << "Label:" << label << "did:" << labelerDid << "visibility is default:" << visibility;
+            userPreferences.removeLabelVisibility(labelerDid, label);
+
+            for (const auto& legacyId : contentGroup.getLegacyLabelIds())
+                userPreferences.removeLabelVisibility(labelerDid, legacyId);
+        }
+        else
+        {
+            userPreferences.setLabelVisibility(labelerDid, label, labelVisibility);
+
+            for (const auto& legacyId : contentGroup.getLegacyLabelIds())
+                userPreferences.setLabelVisibility(labelerDid, legacyId, labelVisibility);
+        }
     }
 
     if (mContentFilter.isFixedLabelerSubscription(mLabelerDid) && mFixedLabelerEnabled != mContentFilter.isFixedLabelerEnabled(mLabelerDid))
