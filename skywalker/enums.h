@@ -492,6 +492,16 @@ public:
         VALUE_TYPE_LABELER_DID
     };
     Q_ENUM(ValueType)
+
+    enum ReplyOrder
+    {
+        REPLY_ORDER_SMART,
+        REPLY_ORDER_OLDEST_FIRST,
+        REPLY_ORDER_NEWEST_FIRST,
+
+        REPLY_ORDER_LAST = REPLY_ORDER_NEWEST_FIRST
+    };
+    Q_ENUM(ReplyOrder)
 };
 
 }

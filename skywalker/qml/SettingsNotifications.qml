@@ -16,7 +16,6 @@ ColumnLayout {
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        color: guiSettings.textColor
         text: qsTr("Allow others to be notified of your posts:")
     }
 
@@ -55,7 +54,6 @@ ColumnLayout {
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        color: guiSettings.textColor
         text: qsTr("Receive notifications:")
     }
 

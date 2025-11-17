@@ -1397,6 +1397,21 @@ void UserSettings::setAssembleThreads(const QString& did, bool assemble)
     mAssembleThreads = assemble;
 }
 
+QEnums::ReplyOrder UserSettings::getThreadReplyOrder(const QString& did) const
+{
+    const int replyOrder = mSettings.value(key(did, "threadReplyOrder"), int(QEnums::REPLY_ORDER_SMART)).toInt();
+
+    if (replyOrder < 0 || replyOrder > QEnums::REPLY_ORDER_LAST)
+        return QEnums::REPLY_ORDER_SMART;
+
+    return QEnums::ReplyOrder(replyOrder);
+}
+
+void UserSettings::setThreadReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder)
+{
+    mSettings.setValue(key(did, "threadReplyOrder"), int(replyOrder));
+}
+
 bool UserSettings::getRewindToLastSeenPost(const QString& did) const
 {
     return mSettings.value(key(did, "rewindToLastSeenPost"), true).toBool();

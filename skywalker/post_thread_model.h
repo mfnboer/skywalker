@@ -18,6 +18,7 @@ public:
     using Ptr = std::unique_ptr<PostThreadModel>;
 
     explicit PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
+                             QEnums::ReplyOrder replyOrder,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
@@ -85,6 +86,15 @@ private:
 
     void clear();
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
+    bool smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+    bool newerLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+    bool olderLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
@@ -99,6 +109,7 @@ private:
     bool mOnlyEntryAuthorPosts = false;
     QEnums::PostThreadType mPostThreadType;
     std::optional<Post> mFirstPostFromUnrolledThread;
+    QEnums::ReplyOrder mReplyOrder = QEnums::REPLY_ORDER_SMART;
 };
 
 }

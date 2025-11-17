@@ -158,6 +158,7 @@ Item {
             sourceComponent: Text {
                 width: parent.width
                 color: guiSettings.textColor
+                textFormat: Text.RichText
                 text: record.detachedByDid === skywalker.getUserDid() ?
                           qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
                           qsTr("🗑 Detached by author")

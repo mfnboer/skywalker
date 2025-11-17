@@ -5,6 +5,7 @@ next
 * Change content visibility level for !hide and !warn labels per labeler
 * Side bar can be enabled in portait mode
 * Width of side bar can be changed
+* Sorting orders for replies in a post thread
 * Bug fixes
 
 4.18

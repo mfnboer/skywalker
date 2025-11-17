@@ -7,6 +7,7 @@
 namespace Skywalker {
 
 PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
+                                 QEnums::ReplyOrder replyOrder,
                                  const QString& userDid, const IProfileStore& following,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
@@ -19,7 +20,8 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThre
     mThreadEntryUri(threadEntryUri),
     mUnrollThread(postThreadType == QEnums::POST_THREAD_UNROLLED),
     mOnlyEntryAuthorPosts(postThreadType == QEnums::POST_THREAD_UNROLLED || postThreadType == QEnums::POST_THREAD_ENTRY_AUTHOR_POSTS),
-    mPostThreadType(postThreadType)
+    mPostThreadType(postThreadType),
+    mReplyOrder(replyOrder)
 {}
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -457,13 +459,6 @@ bool PostThreadModel::isPinPost(const ATProto::AppBskyFeed::PostView& post) cons
     return postRecord->mText == "📌";
 }
 
-// Sort replies in this order:
-// 1. Reply from author
-// 2. Your replies
-// 3. Replies from following
-// 4. Replies from other
-// 5. Hidden replies (previous steps only for non-hidden replies)
-// In each group, new before old.
 void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const
 {
     std::sort(viewPost->mReplies.begin(), viewPost->mReplies.end(),
@@ -496,53 +491,100 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             if (lhsHidden != rhsHidden)
                 return lhsHidden < rhsHidden;
 
-            // Non-pin before pin
-            const bool lhsPin = isPinPost(*lhsPost);
-            const bool rhsPin = isPinPost(*rhsPost);
-
-            if (lhsPin != rhsPin)
-                return lhsPin < rhsPin;
-
-            const auto& lhsDid = lhsPost->mAuthor->mDid;
-            const auto& rhsDid = rhsPost->mAuthor->mDid;
-
-            if (lhsDid != rhsDid)
+            switch (mReplyOrder)
             {
-                // Author before others
-                if (lhsDid == viewPost->mPost->mAuthor->mDid)
-                    return true;
-
-                if (rhsDid == viewPost->mPost->mAuthor->mDid)
-                    return false;
-
-                // User before others
-                if (lhsDid == mUserDid)
-                    return true;
-
-                if (rhsDid == mUserDid)
-                    return false;
-
-                const bool lhsFollowing = mFollowing.contains(lhsDid);
-                const bool rhsFollowing = mFollowing.contains(rhsDid);
-
-                // Following before non-following
-                if (lhsFollowing != rhsFollowing)
-                    return lhsFollowing;
-
-                // New before old
-                return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
+            case QEnums::REPLY_ORDER_SMART:
+                return smartLessThan(viewPost, lhsPost, rhsPost);
+            case QEnums::REPLY_ORDER_OLDEST_FIRST:
+                return olderLessThan(viewPost, lhsPost, rhsPost);
+            case QEnums::REPLY_ORDER_NEWEST_FIRST:
+                return newerLessThan(viewPost, lhsPost, rhsPost);
             }
 
-            // When we unroll a thread we filter out all posts from the same author.
-            // If the author made multiple replies on a post, then we want the oldest,
-            // assuming that the thread was posted in one go, the oldest is most likely
-            // the thread continuation.
-            if (mOnlyEntryAuthorPosts)
-                return lhsPost->mIndexedAt < rhsPost->mIndexedAt;
-
-            // New before old
-            return lhsPost->mIndexedAt > rhsPost->mIndexedAt;
+            qWarning() << "Unknown reply order:" << mReplyOrder;
+            return smartLessThan(viewPost, lhsPost, rhsPost);
         });
+}
+
+// Sort replies in this order:
+// 1. Reply from author
+// 2. Your replies
+// 3. Replies from following
+// 4. Replies from other
+// 5. Hidden replies (previous steps only for non-hidden replies)
+// In each group, new before old.
+bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+{
+    // Non-pin before pin
+    const bool lhsPin = isPinPost(*lhsReply);
+    const bool rhsPin = isPinPost(*rhsReply);
+
+    if (lhsPin != rhsPin)
+        return lhsPin < rhsPin;
+
+    const auto& lhsDid = lhsReply->mAuthor->mDid;
+    const auto& rhsDid = rhsReply->mAuthor->mDid;
+
+    if (lhsDid != rhsDid)
+    {
+        // Author before others
+        if (lhsDid == viewPost->mPost->mAuthor->mDid)
+            return true;
+
+        if (rhsDid == viewPost->mPost->mAuthor->mDid)
+            return false;
+
+        // User before others
+        if (lhsDid == mUserDid)
+            return true;
+
+        if (rhsDid == mUserDid)
+            return false;
+
+        const bool lhsFollowing = mFollowing.contains(lhsDid);
+        const bool rhsFollowing = mFollowing.contains(rhsDid);
+
+        // Following before non-following
+        if (lhsFollowing != rhsFollowing)
+            return lhsFollowing;
+
+        // New before old
+        return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    }
+
+    // When we unroll a thread we filter out all posts from the same author.
+    // If the author made multiple replies on a post, then we want the oldest,
+    // assuming that the thread was posted in one go, the oldest is most likely
+    // the thread continuation.
+    if (mOnlyEntryAuthorPosts)
+        return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+
+    // New before old
+    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+}
+
+bool PostThreadModel::newerLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+{
+    // When we unroll a thread we filter out all posts from the same author.
+    // If the author made multiple replies on a post, then we want the oldest,
+    // assuming that the thread was posted in one go, the oldest is most likely
+    // the thread continuation.
+    if (mOnlyEntryAuthorPosts)
+        return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+
+    // New before old
+    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+}
+
+bool PostThreadModel::olderLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+{
+    return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
 }
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore)

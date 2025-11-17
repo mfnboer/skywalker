@@ -90,6 +90,14 @@ SkyPage {
             anchors.top: settingsAppearance.bottom
             width: parent.width
         }
+
+        SettingsPostThread {
+            id: settingsPostThread
+            anchors.top: notificationsLoader.bottom
+            width: parent.width
+            height: visible ? undefined : 0
+            visible: allVisible
+        }
     }
 
     Component {

@@ -1723,6 +1723,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
             setGetPostThreadInProgress(false);
 
             auto model = std::make_unique<PostThreadModel>(uri, postThreadType,
+                mUserSettings.getThreadReplyOrder(mUserDid),
                 mUserDid, mUserFollows, mMutedReposts, mContentFilter,
                 mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
@@ -1880,7 +1881,7 @@ int Skywalker::createPostThreadModel(const QString& uri, QEnums::PostThreadType 
 {
     qDebug() << "Create post thread model:" << uri << "type:" << (int)type;
     auto model = std::make_unique<PostThreadModel>(
-        uri, type,
+        uri, type, mUserSettings.getThreadReplyOrder(mUserDid),
         mUserDid, mUserFollows, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
