@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Drawer {
+SkyDrawer {
     property basicprofile user
     property int inviteCodeCount: 0
     readonly property int iconSize: 30

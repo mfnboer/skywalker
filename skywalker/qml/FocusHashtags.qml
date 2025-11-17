@@ -93,8 +93,6 @@ ListView {
                         property string selectedTag
 
                         id: hashtagMenu
-                        onAboutToShow: root.enablePopupShield(true)
-                        onAboutToHide: root.enablePopupShield(false)
 
                         CloseMenuItem {
                             text: qsTr("<b>Hashtag</b>")

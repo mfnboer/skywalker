@@ -33,6 +33,9 @@ public:
     // System labels have a hard coded setting.
     static const std::vector<ContentGroup> SYSTEM_CONTENT_GROUP_LIST;
 
+    // We allow overriding the settins for some system labels
+    static const std::unordered_set<QString> OVERRIDABLE_SYSTEM_LABELS_IDS;
+
     // User labels have a default setting that can be changed by the user.
     static const std::vector<ContentGroup> USER_CONTENT_GROUP_LIST;
 
@@ -40,6 +43,8 @@ public:
     static const GlobalContentGroupMap& getGlobalContentGroups();
     static const ContentGroup* getGlobalContentGroup(const QString& labelId);
     static bool isGlobalLabel(const QString& labelId);
+    static bool isSystemLabelId(const QString& labelId);
+    static bool isOverridableSytemLabelId(const QString& labelId);
 
     // This function removes neg-labels, i.e. if X and not-X are labels, then X is not in the result.
     static ContentLabelList getContentLabels(const LabelList& labels);

@@ -797,11 +797,6 @@ ApplicationWindow {
         id: settingsDrawer
         height: parent.height
         edge: !showSideBar ? Qt.RightEdge : Qt.LeftEdge
-        dragMargin: 0
-        modal: true
-
-        onAboutToShow: enablePopupShield(true)
-        onAboutToHide: enablePopupShield(false)
 
         onProfile: {
             let did = skywalker.getUserDid()
@@ -974,7 +969,7 @@ ApplicationWindow {
         }
     }
 
-    Drawer {
+    SkyDrawer {
         property string repostByDid
         property string repostedAlreadyUri
         property string repostUri
@@ -992,12 +987,7 @@ ApplicationWindow {
         id: repostDrawer
         width: parent.width
         edge: Qt.BottomEdge
-        dragMargin: 0
         bottomPadding: guiSettings.footerMargin
-        modal: true
-
-        onAboutToShow: enablePopupShield(true)
-        onAboutToHide: enablePopupShield(false)
 
         Column {
             id: menuColumn
@@ -1215,6 +1205,11 @@ ApplicationWindow {
     DisplayUtils {
         id: displayUtils
         skywalker: skywalker
+
+        function updateBackground() {
+            displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+            displayUtils.setStatusBarColor(guiSettings.headerColor)
+        }
     }
 
     Utils {
@@ -2446,8 +2441,7 @@ ApplicationWindow {
         userSettings.setActiveDisplayMode(newDisplayMode)
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
-        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
-        displayUtils.setStatusBarColor(guiSettings.headerColor)
+        displayUtils.updateBackground()
 
         // Refreshing the models makes them format text with the new colors (e.g. link color)
         if (oldDisplayMode !== newDisplayMode)
@@ -2592,9 +2586,6 @@ ApplicationWindow {
         postButtonRelativeX = settings.getPostButtonRelativeX()
         rootSplitView.init()
 
-        settings.onBackgroundColorChanged.connect(() => {
-            displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
-            displayUtils.setStatusBarColor(guiSettings.headerColor)
-        })
+        settings.onBackgroundColorChanged.connect(() => displayUtils.updateBackground() )
     }
 }

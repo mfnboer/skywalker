@@ -28,17 +28,13 @@ public:
             createdAt)}
     {}
 
-    static const std::unordered_set<QString>& getOverridableSystemLabelIds();
-    static bool isSystemLabelId(const QString& labelId) { return labelId.startsWith('!'); }
-    static bool isOverridableSytemLabelId(const QString& labelId);
-
     const QString& getDid() const { return mPrivate->mDid; }
     const QString& getUri() const { return mPrivate->mUri; }
     const QString& getCid() const { return mPrivate->mCid; }
     const QString& getLabelId() const { return mPrivate->mLabelId; }
     const QDateTime& getCreatedAt() const { return mPrivate->mCreatedAt; }
-    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mPrivate->mLabelId); }
-    Q_INVOKABLE bool isOverridableSytemLabel() const { return isOverridableSytemLabelId(mPrivate->mLabelId); }
+    Q_INVOKABLE bool isSystemLabel() const;
+    Q_INVOKABLE bool isOverridableSytemLabel() const;
 
     Q_INVOKABLE bool appliesToActor() const;
     Q_INVOKABLE const QString& getActorDid() const;

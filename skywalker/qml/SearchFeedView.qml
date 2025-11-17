@@ -196,6 +196,12 @@ SkyListView {
                 color: guiSettings.favoriteColor
             }
         }
+
+        AccessibleMenuItem {
+            text: qsTr("Filtered posts")
+            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            onTriggered: root.viewContentFilterStats(underlyingModel)
+        }
     }
 
     function showOptionsMenu() {

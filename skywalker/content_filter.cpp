@@ -44,6 +44,11 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     }
 };
 
+const std::unordered_set<QString> ContentFilter::OVERRIDABLE_SYSTEM_LABELS_IDS = {
+    "!hide",
+    "!warn"
+};
+
 const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
     {
         "porn",
@@ -132,6 +137,16 @@ bool ContentFilter::isGlobalLabel(const QString& labelId)
     return getGlobalContentGroup(labelId) != nullptr;
 }
 
+bool ContentFilter::isSystemLabelId(const QString& labelId)
+{
+    return labelId.startsWith('!');
+}
+
+bool ContentFilter::isOverridableSytemLabelId(const QString& labelId)
+{
+    return OVERRIDABLE_SYSTEM_LABELS_IDS.contains(labelId);
+}
+
 ContentFilter::ContentFilter(const QString& userDid, const ATProto::UserPreferences& userPreferences, UserSettings* userSettings, QObject* parent) :
     QObject(parent),
     mUserDid(userDid),
@@ -149,7 +164,7 @@ const ContentGroup* ContentFilter::getContentGroup(const QString& did, const QSt
 {
     const auto* globalGroup = getGlobalContentGroup(labelId);
 
-    if (globalGroup && !ContentLabel::isOverridableSytemLabelId(labelId))
+    if (globalGroup && !isOverridableSytemLabelId(labelId))
         return globalGroup;
 
     auto itDid = mLabelerGroupMap.find(did);

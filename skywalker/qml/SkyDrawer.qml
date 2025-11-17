@@ -1,10 +1,9 @@
 import QtQuick
 import QtQuick.Controls
 
-Menu {
+Drawer {
+    dragMargin: 0
     modal: true
-    topMargin:  guiSettings.headerMargin
-    bottomMargin: guiSettings.footerMargin
 
     onAboutToShow: root.enablePopupShield(true)
     onAboutToHide: root.enablePopupShield(false)

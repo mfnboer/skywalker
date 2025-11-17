@@ -213,8 +213,6 @@ Rectangle {
 
                     SkyMenu {
                         id: moreMenu
-                        onAboutToShow: root.enablePopupShield(true)
-                        onAboutToHide: root.enablePopupShield(false)
 
                         CloseMenuItem {
                             text: qsTr("<b>Conversation</b>")

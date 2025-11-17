@@ -1,7 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "content_group.h"
-#include "content_label.h"
+#include "content_filter.h"
 #include "definitions.h"
 #include "language_utils.h"
 #include <atproto/lib/rich_text_master.h>
@@ -185,7 +185,7 @@ bool ContentGroup::mustShowBadge(ATProto::UserPreferences::LabelVisibility visib
 
 bool ContentGroup::isSystem() const
 {
-    return ContentLabel::isSystemLabelId(mLabelId);
+    return ContentFilter::isSystemLabelId(mLabelId);
 }
 
 }

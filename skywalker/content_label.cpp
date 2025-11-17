@@ -1,20 +1,18 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "content_label.h"
+#include "content_filter.h"
 
 namespace Skywalker {
 
-const std::unordered_set<QString>& ContentLabel::getOverridableSystemLabelIds()
+bool ContentLabel::isSystemLabel() const
 {
-    // These labels can be set by any labeler. As not all 3rd party labelers can
-    // be trusted, a user may want to override their visibility.
-    static const std::unordered_set<QString> LABELS{ "!hide", "!warn" };
-    return LABELS;
+    return ContentFilter::isSystemLabelId(mPrivate->mLabelId);
 }
 
-bool ContentLabel::isOverridableSytemLabelId(const QString& labelId)
+bool ContentLabel::isOverridableSytemLabel() const
 {
-    return getOverridableSystemLabelIds().contains(labelId);
+    return ContentFilter::isOverridableSytemLabelId(mPrivate->mLabelId);
 }
 
 bool ContentLabel::appliesToActor() const

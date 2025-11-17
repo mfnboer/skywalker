@@ -149,8 +149,7 @@ Item {
             sourceComponent: SkyMenu {
                 id: moreMenu
                 width: 210
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: { root.enablePopupShield(false); parent.active = false }
+                onAboutToHide: parent.active = false
 
                 CloseMenuItem {
                     text: qsTr("<b>Post</b>")
@@ -291,8 +290,6 @@ Item {
 
                     MenuItemSvg { svg: SvgOutline.emojiLanguage }
                 }
-
-                Component.onCompleted: background.color = guiSettings.menuColor
             }
         }
     }

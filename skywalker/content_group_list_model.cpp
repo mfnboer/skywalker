@@ -222,7 +222,7 @@ void ContentGroupListModel::saveTo(ATProto::UserPreferences& userPreferences) co
 
         qDebug() << "Changed label:" << label << "did:" << labelerDid << "visibitlity:" << (int)labelVisibility;
 
-        Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label) || ContentLabel::isOverridableSytemLabelId(label));
+        Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label) || ContentFilter::isOverridableSytemLabelId(label));
         const auto defaultVisibility = QEnums::toContentPrefVisibility(contentGroup.getUnconditionalDefaultVisibility());
 
         if (visibility == defaultVisibility)

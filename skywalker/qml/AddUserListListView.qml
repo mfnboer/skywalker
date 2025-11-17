@@ -46,8 +46,6 @@ ListView {
 
                 SkyMenu {
                     id: newListMenu
-                    onAboutToShow: root.enablePopupShield(true)
-                    onAboutToHide: root.enablePopupShield(false)
 
                     CloseMenuItem {
                         text: qsTr("<b>Create list</b>")

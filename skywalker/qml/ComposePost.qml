@@ -177,8 +177,6 @@ SkyPage {
             SkyMenu {
                 id: moreMenu
                 width: Math.max(altItem.width, numberPrefixItem.width)
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")

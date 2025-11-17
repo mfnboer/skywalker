@@ -23,7 +23,7 @@ LabelerPolicies::LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies&
     for (const auto& label : policies.mLabelValues)
     {
         // Overridable system labels will be added to the end (below)
-        if (!ContentLabel::isOverridableSytemLabelId(label))
+        if (!ContentFilter::isOverridableSytemLabelId(label))
             mLabelValues.push_back(label);
     }
 
@@ -34,7 +34,7 @@ LabelerPolicies::LabelerPolicies(const ATProto::AppBskyLabeler::LabelerPolicies&
     // may want to change their visibility.
     for (const auto& group : ContentFilter::SYSTEM_CONTENT_GROUP_LIST)
     {
-        if (ContentLabel::isOverridableSytemLabelId(group.getLabelId()))
+        if (ContentFilter::isOverridableSytemLabelId(group.getLabelId()))
         {
             mLabelValues.push_back(group.getLabelId());
             mLabelContentGroupMap[group.getLabelId()] = group;
@@ -56,7 +56,7 @@ std::vector<ContentGroup> LabelerPolicies::getContentGroupList() const
 
     for (const QString& label : mLabelValues)
     {
-        if (ContentLabel::isSystemLabelId(label) && !ContentLabel::isOverridableSytemLabelId(label))
+        if (ContentFilter::isSystemLabelId(label) && !ContentFilter::isOverridableSytemLabelId(label))
         {
             qDebug() << "System label:" << label;
             continue;

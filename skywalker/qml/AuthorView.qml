@@ -248,8 +248,7 @@ SkyPage {
 
                         sourceComponent: SkyMenu {
                             id: moreMenu
-                            onAboutToShow: root.enablePopupShield(true)
-                            onAboutToHide: { root.enablePopupShield(false); parent.active = false }
+                            onAboutToHide: parent.active = false
 
                             CloseMenuItem {
                                 text: qsTr("<b>Account</b>")
