@@ -6,8 +6,10 @@ Menu {
     topMargin:  guiSettings.headerMargin
     bottomMargin: guiSettings.footerMargin
 
-    onAboutToShow: root.enablePopupShield(true)
-    onAboutToHide: root.enablePopupShield(false)
+    onAboutToShow: {
+        background.color = guiSettings.menuColor
+        root.enablePopupShield(true)
+    }
 
-    Component.onCompleted: background.color = guiSettings.menuColor
+    onAboutToHide: root.enablePopupShield(false)
 }
