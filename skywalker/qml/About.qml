@@ -12,10 +12,6 @@ SkyPage {
 
     Accessible.role: Accessible.Pane
 
-    footer: DeadFooterMargin {
-        color: guiSettings.skywalkerLogoColor
-    }
-
     Column {
         width: parent.width
         height: parent.height

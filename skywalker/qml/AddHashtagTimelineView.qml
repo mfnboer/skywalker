@@ -23,7 +23,6 @@ SkyPage {
             id: okButton
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             svg: SvgOutline.check
             accessibleName: qsTr("ok")
@@ -34,7 +33,6 @@ SkyPage {
 
     SkyTextInput {
         id: searchInput
-        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
         svgIcon: SvgOutline.hashtag
         placeholderText: qsTr("Search hashtag")

@@ -24,8 +24,6 @@ SkyPage {
         onBack: page.closed()
     }
 
-    footer: DeadFooterMargin {}
-
     SwipeListView {
         id: feedStack
         width: parent.width
@@ -121,7 +119,7 @@ SkyPage {
     Column {
         id: starterPackHeader
         x: margin
-        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height) + (!root.showSideBar ? 0 : guiSettings.headerMargin)
+        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height)
         width: parent.width - 2 * margin
 
         GridLayout {
@@ -220,7 +218,6 @@ SkyPage {
     SvgPlainButton {
         id: moreButton
         parent: page.header.visible ? page.header : page
-        y: guiSettings.headerMargin
         anchors.right: parent.right
         anchors.rightMargin: page.margin
         svg: SvgOutline.moreVert

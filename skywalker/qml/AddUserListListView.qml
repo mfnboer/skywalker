@@ -37,7 +37,6 @@ ListView {
 
             SvgPlainButton {
                 anchors.top: parent.top
-                anchors.topMargin: guiSettings.headerMargin
                 anchors.right: parent.right
                 anchors.rightMargin: parent.usedRightMargin + 10
                 svg: SvgOutline.add
@@ -63,10 +62,6 @@ ListView {
                     }
                 }
             }
-        }
-        DeadHeaderMargin {
-            id: landscapeHeader
-            visible: root.showSideBar
         }
     }
     headerPositioning: ListView.OverlayHeader

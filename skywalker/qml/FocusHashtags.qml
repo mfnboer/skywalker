@@ -38,7 +38,6 @@ ListView {
 
             SvgPlainButton {
                 anchors.top: parent.top
-                anchors.topMargin: guiSettings.headerMargin
                 anchors.right: parent.right
                 svg: SvgOutline.add
                 onClicked: addHashtagEntry()
@@ -46,15 +45,8 @@ ListView {
                 visible: view.count < skywalker.focusHashtags.maxSize
             }
         }
-        DeadHeaderMargin {
-            id: landscapeHeader
-            visible: root.showSideBar
-        }
     }
     headerPositioning: ListView.OverlayHeader
-
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: Column {
         required property var modelData // FocusHashtagEntry

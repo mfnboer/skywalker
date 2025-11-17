@@ -8,7 +8,7 @@ Item {
     // Qt.inputMethod is not reliable
     VirtualKeyboardUtils {
         onKeyboardHeightChanged: (height) => {
-            keyboardHeight = Math.ceil(height / Screen.devicePixelRatio)
+            keyboardHeight = Math.ceil(height / Screen.devicePixelRatio) - guiSettings.footerMargin
         }
     }
 }

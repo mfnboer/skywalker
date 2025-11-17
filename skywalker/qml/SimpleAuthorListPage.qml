@@ -17,8 +17,5 @@ SimpleAuthorListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
-
     onAuthorClicked: (profile) => root.getSkywalker(userDid).getDetailedProfile(profile.did)
 }

@@ -30,7 +30,6 @@ Pane {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.topMargin: guiSettings.headerMargin
         anchors.bottom: postButton.top
         anchors.bottomMargin: 10
         clip: true
@@ -174,7 +173,6 @@ Pane {
                 SvgPlainButton {
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    anchors.topMargin: guiSettings.headerMargin
                     svg: SvgOutline.info
                     accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
                     visible: typeof rootItem?.sideBarButtonSvg != 'undefined'

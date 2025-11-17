@@ -25,7 +25,6 @@ SkyPage {
         SvgPlainButton {
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             svg: sideBarButtonSvg
             accessibleName: sideBarButtonName
             onClicked: sideBarButtonClicked()
@@ -46,9 +45,6 @@ SkyPage {
             "You can tap on a number to see the actuals posts. Note that this shows the " +
             "the content that was hidden from you."
         ))
-    }
-
-    footer: DeadFooterMargin {
     }
 
     HorizontalHeaderView {

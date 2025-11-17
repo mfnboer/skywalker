@@ -23,7 +23,6 @@ SkyPage {
     SkyListView {
         id: focusHashtagView
         anchors.fill: parent
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         boundsBehavior: Flickable.StopAtBounds
         model: skywalker.focusHashtags.entries
 

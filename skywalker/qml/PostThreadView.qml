@@ -19,7 +19,7 @@ SkyListView {
     boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {
-        height: (headerVisible ? guiSettings.headerHeight : guiSettings.headerMargin) + (restrictionRow.visible ? restrictionRow.height : 0)
+        height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
         userDid: view.userDid
         headerVisible: !root.showSideBar
@@ -134,7 +134,10 @@ SkyListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-    footer: DeadFooterMargin {
+    footer: Rectangle {
+        width: parent.width
+        height: 0
+
         PostButton {
             y: -height - 10
             svg: SvgOutline.reply

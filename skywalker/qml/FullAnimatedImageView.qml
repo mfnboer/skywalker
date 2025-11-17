@@ -18,7 +18,10 @@ SkyPage {
 
     Text {
         id: altText
-        width: parent.width
+        anchors.left: parent.left
+        anchors.leftMargin: guiSettings.leftMargin
+        anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin
         anchors.bottom: parent.bottom
         anchors.bottomMargin: guiSettings.footerMargin
         wrapMode: Text.Wrap

@@ -32,7 +32,6 @@ ListView {
 
         SvgPlainButton {
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             anchors.right: parent.right
             svg: SvgOutline.add
             onClicked: addWord()
@@ -41,9 +40,6 @@ ListView {
         }
     }
     headerPositioning: ListView.OverlayHeader
-
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: ColumnLayout {
         required property mutedwordentry modelData

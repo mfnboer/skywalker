@@ -27,15 +27,8 @@ SkyListView {
             visible: !root.showSideBar
             onBack: bookmarksView.closed()
         }
-        DeadHeaderMargin {
-            id: landscapeHeader
-            visible: !portraitHeader.visible
-        }
     }
     headerPositioning: ListView.OverlayHeader
-
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         width: bookmarksView.width

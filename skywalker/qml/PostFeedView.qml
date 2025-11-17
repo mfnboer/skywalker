@@ -50,8 +50,6 @@ SkyListView {
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         width: postFeedView.width

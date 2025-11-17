@@ -42,11 +42,11 @@ Item {
         property int origImplicitHeight: root.height
         property real zoom: 0.0
         readonly property int marginHeight: altText.alt ? Math.min(altText.contentHeight, altText.maxHeight) + altText.bottomMargin : 0
-        readonly property int maxHeight: root.height - marginHeight - guiSettings.headerMargin
+        readonly property int maxHeight: root.height - marginHeight
         readonly property real scale: Math.min(root.width / origImplicitWidth, maxHeight / origImplicitHeight)
         readonly property real left: (root.width - origImplicitWidth * scale) / 2
         readonly property real right: left + origImplicitWidth * scale
-        readonly property real top: (maxHeight - origImplicitHeight * scale) / 2 + guiSettings.headerMargin
+        readonly property real top: (maxHeight - origImplicitHeight * scale) / 2
         readonly property real bottom: top + origImplicitHeight * scale
 
         id: zoomAnimation

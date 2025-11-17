@@ -136,7 +136,6 @@ GridView {
         bottomOvershootFun: () => model.getFeedNextPage(skywalker)
         topText: qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
-        scrollToTopButtonMargin: guiSettings.footerMargin
         ignoreFooter: true
     }
 

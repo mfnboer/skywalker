@@ -59,9 +59,10 @@ SkyPage {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
-    header: DeadHeaderMargin {}
+    footer: Rectangle {
+        width: parent.width
+        height: 0
 
-    footer: DeadFooterMargin {
         PostButton {
             y: -height - 10
             svg: authorCanBeMentioned() ? SvgOutline.atSign : SvgOutline.chat
@@ -743,7 +744,7 @@ SkyPage {
             width: parent.width
 
             // -1 to make the interactive enable/disable work
-            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0) - guiSettings.headerMargin
+            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0)
 
             currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
 
@@ -815,9 +816,6 @@ SkyPage {
                             list: labelList
                         }
                     }
-
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
 
                     delegate: ContentGroupDelegate {
                         required property int index
@@ -1047,9 +1045,6 @@ SkyPage {
                             authorFeedView.interactive = true
                     }
 
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
-
                     delegate: GeneratorViewDelegate {
                         width: authorFeedView.width
                         userDid: page.userDid
@@ -1107,9 +1102,6 @@ SkyPage {
                             authorFeedView.interactive = true
                     }
 
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
-
                     delegate: StarterPackViewDelegate {
                         width: authorFeedView.width
                         userDid: page.userDid
@@ -1164,9 +1156,6 @@ SkyPage {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
                     }
-
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
 
                     delegate: ListViewDelegate {
                         width: authorFeedView.width
@@ -1475,7 +1464,7 @@ SkyPage {
                 authorBanner: authorBanner,
                 authorVerified: authorVerified
             })
-        editPage.profileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
+        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
             skywalker.showStatusMessage(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
             authorName = name
             authorPronouns = pronouns

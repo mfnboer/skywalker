@@ -38,15 +38,8 @@ SkyListView {
             visible: authorListView.title && !root.showSideBar
             onClosed: authorListView.closed()
         }
-        DeadHeaderMargin {
-            id: landscapeHeader
-            visible: !portraitHeader.visible
-        }
     }
     headerPositioning: ListView.OverlayHeader
-
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: AuthorViewDelegate {
         required property int index

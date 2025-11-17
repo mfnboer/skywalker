@@ -533,8 +533,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/AuthorViewerState.qml
         QML_FILES qml/LiveLabel.qml
         QML_FILES qml/ThumbImageFixedSizeView.qml
-        QML_FILES qml/DeadFooterMargin.qml
-        QML_FILES qml/DeadHeaderMargin.qml
+        QML_FILES
+        QML_FILES
         QML_FILES qml/NotificationTypeSetting.qml
         QML_FILES qml/NotificationIncludeSetting.qml
         SOURCES edit_notification_preferences.h

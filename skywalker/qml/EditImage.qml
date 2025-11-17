@@ -28,14 +28,11 @@ SkyPage {
         SvgPlainButton {
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             accessibleName: qsTr("editing finished")
             onClicked: transformImage()
         }
     }
-
-    footer: DeadFooterMargin {}
 
     Item {
         id: editItem

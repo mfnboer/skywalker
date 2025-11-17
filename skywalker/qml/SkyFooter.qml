@@ -9,6 +9,7 @@ Rectangle {
     property var searchView
     property int activePage: QEnums.UI_PAGE_NONE
     property int extraFooterMargin: 0
+    property int footerMargin: 0
     property bool footerVisible: true
 
     signal homeClicked()
@@ -19,13 +20,13 @@ Rectangle {
 
     id: footer
     width: parent.width
-    height: (visible && footerVisible) ? guiSettings.footerHeight : 0
+    height: (visible && footerVisible) ? guiSettings.footerHeight + footerMargin : 0
     z: guiSettings.footerZLevel
     color: guiSettings.backgroundColor
 
     RowLayout {
         width: parent.width
-        height: parent.height - guiSettings.footerMargin
+        height: parent.height - footerMargin
         spacing: 0
         visible: footerVisible
 

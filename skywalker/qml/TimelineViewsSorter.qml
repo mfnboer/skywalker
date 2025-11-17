@@ -22,7 +22,6 @@ SkyPage {
 
     SkyListView {
         id: listView
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10

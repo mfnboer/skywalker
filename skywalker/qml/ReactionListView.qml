@@ -23,15 +23,8 @@ SkyListView {
             visible: !root.showSideBar
             onBack: view.closed()
         }
-        DeadHeaderMargin {
-            id: landscapeHeader
-            visible: root.showSideBar
-        }
     }
     headerPositioning: ListView.OverlayHeader
-
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: ReactionViewDelegate {
         required property reactionview modelData

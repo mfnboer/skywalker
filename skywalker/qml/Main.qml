@@ -63,8 +63,6 @@ ApplicationWindow {
     }
 
     onIsPortraitChanged: {
-        guiSettings.updateScreenMargins()
-
         // HACK: the light/dark mode of the status bar gets lost when orientation changes
         displayUtils.resetStatusBarLightMode()
 
@@ -153,7 +151,7 @@ ApplicationWindow {
 
         id: favoritesTabBar
         x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
-        y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
+        y: guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
         z: guiSettings.headerZLevel - 1
         width: parent.width - x - guiSettings.rightMargin
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
@@ -191,6 +189,7 @@ ApplicationWindow {
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
         activePage: QEnums.UI_PAGE_HOME
+        footerMargin: guiSettings.footerMargin
         extraFooterMargin: getExtraFooterMargin()
         onHomeClicked: favoritesSwipeView.currentView.moveToHome()
         onNotificationsClicked: viewNotifications()
@@ -203,7 +202,7 @@ ApplicationWindow {
             if (favoritesTabBar.position == TabBar.Footer)
                 return favoritesTabBar.visible ? y - favoritesTabBar.y : 0
             else
-                return favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0
+                return (favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0)
         }
     }
 
@@ -605,15 +604,21 @@ ApplicationWindow {
         }
     }
 
-    // TODO: set the header margins here and remove it from all the individual pages
     SkySplitView {
+        readonly property bool noSideBar: (currentStackItem() && typeof currentStackItem().noSideBar !== 'undefined' ? currentStackItem().noSideBar : false)
+        readonly property bool fullScreen: noSideBar
+
         id: rootSplitView
         anchors.left: parent.left
-        anchors.leftMargin: guiSettings.leftMargin
+        anchors.leftMargin: fullScreen ? 0 : guiSettings.leftMargin
         anchors.right: parent.right
-        anchors.rightMargin: guiSettings.rightMargin
+        anchors.rightMargin: fullScreen ? 0 : guiSettings.rightMargin
         anchors.top: parent.top
+        anchors.topMargin: fullScreen ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? 0 : guiSettings.footerMargin)
+
+        onFullScreenChanged: console.debug("FULLSCREEN:", fullScreen)
 
         onResizingChanged: {
             if (resizing)
@@ -643,7 +648,7 @@ ApplicationWindow {
             SplitView.minimumWidth: guiSettings.sideBarMinWidth
             SplitView.preferredWidth: 200
             SplitView.maximumWidth: Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth)
-            height: parent.height - guiSettings.headerMargin - guiSettings.footerMargin
+            height: parent.height
             timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
             skywalker: root.getSkywalker()
             homeActive: rootContent.currentIndex === rootContent.timelineIndex
@@ -677,7 +682,7 @@ ApplicationWindow {
                     currentStackItem().addConvo()
             }
 
-            visible: showSideBar && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
+            visible: showSideBar && !rootSplitView.noSideBar
         }
 
         StackLayout {
@@ -755,17 +760,11 @@ ApplicationWindow {
     function getBackgroundColor() {
         const item = currentStackItem()
 
-        console.debug("GET BACKGROUND 1:", item)
-
         if (item && typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
             return item.background.color
 
-        console.debug("GET BACKGROUND 2")
-
         if (item && typeof item.color !== 'undefined')
             return item.color
-
-        console.debug("GET BACKGROUND 3")
 
         return guiSettings.backgroundColor
     }

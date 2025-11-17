@@ -36,7 +36,7 @@ SkyPage {
 
         SvgPlainButton {
             id: cancelButton
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.left: parent.left
             svg: SvgOutline.cancel
             accessibleName: qsTr("cancel")
@@ -44,7 +44,7 @@ SkyPage {
         }
 
         Text {
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.left: cancelButton.right
             anchors.right: reportButton.left
             font.bold: true
@@ -55,7 +55,7 @@ SkyPage {
 
         SkyButton {
             id: reportButton
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: avatar.left
             text: qsTr("Send")
             enabled: reasonType !== QEnums.REPORT_REASON_TYPE_NULL
@@ -64,7 +64,7 @@ SkyPage {
 
         Loader {
             id: avatar
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.rightMargin: 10
             anchors.right: parent.right
             height: parent.height - 10

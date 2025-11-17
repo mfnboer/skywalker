@@ -88,7 +88,7 @@ SkyPage {
     property bool isAnniversary: skywalker.getAnniversary().isAnniversary()
     readonly property string sideBarTitle: qsTr("Compose post")
     readonly property SvgImage sideBarSvg: SvgOutline.chat
-    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
+    readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
     // Cache
     property list<string> tmpImages: []
@@ -114,7 +114,7 @@ SkyPage {
         color: guiSettings.headerColor
 
         SvgPlainButton {
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             id: cancelButton
             anchors.left: parent.left
             svg: SvgOutline.cancel
@@ -123,9 +123,9 @@ SkyPage {
         }
 
         CurrentUserAvatar {
-            y: guiSettings.headerMargin + 5
+            y: 5
             anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.height - guiSettings.headerMargin - 10
+            width: parent.height - 10
             userDid: postByDid
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 
@@ -138,7 +138,7 @@ SkyPage {
             property bool isPosting: false
 
             id: postButton
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: moreOptions.left
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
             enabled: !isPosting && postsAreValid() && hasFullContent() && checkAltText()
@@ -167,7 +167,7 @@ SkyPage {
 
         SvgPlainButton {
             id: moreOptions
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: parent.right
             svg: SvgOutline.moreVert
             accessibleName: qsTr("post options")
@@ -249,7 +249,7 @@ SkyPage {
         }
 
         AccessibleText {
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: parent.right
             anchors.rightMargin: page.margin
             font.italic: true
@@ -1125,7 +1125,7 @@ SkyPage {
     footer: Rectangle {
         id: textFooter
         width: page.width
-        height: getFooterHeight() + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
+        height: getFooterHeight() + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
 

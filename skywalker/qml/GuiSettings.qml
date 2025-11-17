@@ -26,9 +26,9 @@ Item {
     }
 
     // Geometry
-    readonly property int footerHeight: 50 + footerMargin
+    readonly property int footerHeight: 50
     readonly property int footerZLevel: 10
-    readonly property int headerHeight: 50 + headerMargin
+    readonly property int headerHeight: 50
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
@@ -472,5 +472,13 @@ Item {
             text = text.slice(7)
 
         return `<a href="${link}" style="color: ${guiSettings.linkColor}; text-decoration: none">${text}</a>`
+    }
+
+    Component.onDestruction: {
+        root.onIsPortraitChanged.disconnect(updateScreenMargins)
+    }
+
+    Component.onCompleted: {
+        root.onIsPortraitChanged.connect(updateScreenMargins)
     }
 }

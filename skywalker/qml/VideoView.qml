@@ -57,7 +57,7 @@ Column {
     signal activateSwipe
 
     id: videoStack
-    spacing: isFullViewMode ? -playControls.height : 10
+    spacing: isFullViewMode ? -playControls.height - (swipeMode ? 0 : guiSettings.footerMargin) : 10
 
     Rectangle {
         id: videoRect
@@ -126,7 +126,7 @@ Column {
                             return filter.width
 
                         if (isFullViewMode)
-                            return videoStack.width
+                            return videoStack.width - guiSettings.leftMargin - guiSettings.rightMargin
 
                         return item ? item.width : 0
                     }

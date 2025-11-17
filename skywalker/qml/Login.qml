@@ -44,13 +44,8 @@ SkyPage {
         onBack: loginPage.canceled()
     }
 
-    footer: DeadFooterMargin {
-        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
-    }
-
     Flickable {
         id: flick
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
