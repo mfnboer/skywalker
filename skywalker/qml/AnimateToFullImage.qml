@@ -96,6 +96,11 @@ Item {
     }
 
     ImageAltText {
+        anchors.left: parent.left
+        anchors.leftMargin: altText.leftMargin
+        anchors.right: parent.right
+        anchors.rightMargin: altText.rightMargin
+
         id: altText
         parent: Overlay.overlay
         alt: imageAlt

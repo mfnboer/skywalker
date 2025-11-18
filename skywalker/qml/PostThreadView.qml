@@ -137,6 +137,7 @@ SkyListView {
     footer: Rectangle {
         width: parent.width
         height: 0
+        z: guiSettings.footerZLevel
 
         PostButton {
             y: -height - 10

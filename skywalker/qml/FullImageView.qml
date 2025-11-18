@@ -45,6 +45,8 @@ SkyPage {
         interactive: !zooming
 
         Repeater {
+            width: parent.width
+            height: parent.height
             model: images.length
 
             Rectangle {
@@ -53,6 +55,8 @@ SkyPage {
                 property bool zooming: img.zooming
 
                 id: imgRect
+                width: parent.width
+                height: parent.height
                 color: guiSettings.fullScreenColor
 
                 MouseArea {
@@ -74,7 +78,7 @@ SkyPage {
                     anchors.bottomMargin: altText.bottomMargin
                     height: Math.min(contentHeight, altText.maxHeight)
                     clip: true
-                    contentWidth: parent.width
+                    contentWidth: width
                     contentHeight: altText.contentHeight
                     flickableDirection: Flickable.VerticalFlick
                     boundsBehavior: Flickable.StopAtBounds
