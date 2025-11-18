@@ -183,6 +183,23 @@ public:
     void setHideLists(const QString& did, const QStringList& listUris);
     QStringList getHideLists(const QString& did) const;
 
+    // listUri can be "following" for label prefs for your following list
+    void setContentLabelPref(
+        const QString& did, const QString& listUri, const QString& labelerDid,
+        const QString& labelId, QEnums::ContentPrefVisibility pref);
+    QEnums::ContentPrefVisibility getContentLabelPref(
+        const QString& did, const QString& listUri,
+        const QString& labelerDid, const QString& labelId) const;
+
+    void removeContentLabelPref(const QString& did, const QString& listUri, const QString& labelerDid,
+                                const QString& labelId);
+    void removeContentLabelPrefList(const QString& did, const QString& listUri);
+
+    // tuple: listUri, labelerDid, labelId
+    std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const;
+
+    QStringList getContentLabelPrefListUris(const QString& did) const;
+
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
 
@@ -454,6 +471,8 @@ private:
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
     QString fixedLabelerKey(const QString& did, const QString& labelerDid) const;
+    QString labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
+                           const QString& labelId) const;
     void cleanup();
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;

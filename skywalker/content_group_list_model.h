@@ -12,6 +12,7 @@ class ContentGroupListModel : public QAbstractListModel
     Q_PROPERTY(bool adultContent READ getAdultContent WRITE setAdultContent NOTIFY adultContentChanged FINAL)
     Q_PROPERTY(bool subscribed READ isSubscribed WRITE setSubscribed NOTIFY subscribedChanged FINAL)
     Q_PROPERTY(bool fixedLabelerEnabled READ isFixedLabelerEnabled WRITE setFixedLabelerEnabled NOTIFY fixedLabelerEnabledChanged FINAL)
+    QML_ELEMENT
 
 public:
     enum class Role {
@@ -22,7 +23,7 @@ public:
 
     using Ptr = std::unique_ptr<ContentGroupListModel>;
 
-    explicit ContentGroupListModel(ContentFilter& contentFilter, QObject* parent = nullptr);
+    ContentGroupListModel(ContentFilter& contentFilter, const QString& listUri, QObject* parent = nullptr);
     ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, QObject* parent = nullptr);
     void setGlobalContentGroups();
     void setContentGroups(std::vector<ContentGroup> groups);
@@ -33,6 +34,8 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     const QString& getLabelerDid() const { return mLabelerDid; }
+    const QString& getListUri() const { return mListUri; }
+    bool hasListPrefs() const { return !mListUri.isEmpty(); }
 
     bool getAdultContent() const { return mAdultContent; }
     void setAdultContent(bool adultContent);
@@ -47,6 +50,7 @@ public:
 
     bool isModified(const ATProto::UserPreferences& userPreferences) const;
     void saveTo(ATProto::UserPreferences& userPreferences) const;
+    void saveToContentFilter();
 
 signals:
     void adultContentChanged();
@@ -62,6 +66,7 @@ private:
 
     bool mAdultContent = false;
     ContentFilter& mContentFilter;
+    QString mListUri; // filter prefs for "following" or list
     QString mLabelerDid;
     bool mSubscribed = false;
     bool mFixedLabelerEnabled = true;

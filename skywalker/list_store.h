@@ -31,8 +31,23 @@ public:
     const BasicProfile* get(const QString& did) const override;
     ScopedHandle* registerRemovedCb(const RemovedCb&, QObject*) override { Q_ASSERT(false); return nullptr; }
 
+    bool contains(const QString& listUri, const QString& did) const;
+    QStringList getListUrisForDid(const QString& did) const;
+    const ListViewBasic& getList(const QString& uri) const;
+
+signals:
+    void listRemoved(const QString& uri);
+
 private:
-    std::unordered_map<QString, ProfileListItemStore> mLists; // list uri -> list members
+    QString getListName(const QString& uri) const;
+
+    struct ListEntry
+    {
+        ListViewBasic mList;
+        ProfileListItemStore mStore; // List members
+    };
+
+    std::unordered_map<QString, ListEntry> mLists; // list uri -> list entry
 };
 
 }

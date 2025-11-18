@@ -184,15 +184,16 @@ public:
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
-    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels) const;
-    Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels) const;
-    Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels) const;
+    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels, const QString& authorDid = {}) const;
+    Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
+    Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
     Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
-    Q_INVOKABLE int createContentGroupListModel(const QString& did, const LabelerPolicies& policies);
+    Q_INVOKABLE int createGlobalContentGroupListModel(const QString& listUri);
+    Q_INVOKABLE int createContentGroupListModel(const QString& labelerDid, const LabelerPolicies& policies);
     Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;
     Q_INVOKABLE void removeContentGroupListModel(int id);
     Q_INVOKABLE void saveGlobalContentFilterPreferences();
-    Q_INVOKABLE void saveContentFilterPreferences(const ContentGroupListModel* model);
+    Q_INVOKABLE void saveContentFilterPreferences(ContentGroupListModel* model);
     Q_INVOKABLE ContentFilter* getContentFilter() { return &mContentFilter; }
     Q_INVOKABLE Anniversary* getAnniversary() { return &mAnniversary; }
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
@@ -357,6 +358,8 @@ private:
     void updateFavoriteFeeds();
     void loadTimelineHide();
     void loadTimelineHide(QStringList uris);
+    void loadContentFilterPolicies();
+    void loadContentFilterPolicies(QStringList uris);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void initLabelers();
     void loadLabelSettings();
@@ -392,6 +395,7 @@ private:
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     UserSettings mUserSettings;
     SessionManager mSessionManager;
+    ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;

@@ -96,6 +96,13 @@ QString UserSettings::fixedLabelerKey(const QString& did, const QString& labeler
     return QString("%1/fixedLabeler/%2").arg(did, labelerDid);
 }
 
+QString UserSettings::labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
+                     const QString& labelId) const
+{
+    const QString labeler = labelerDid.isEmpty() ? "global" : labelerDid;
+    return QString("%1/labelpolicy/%2/%3/%4").arg(did, uriToKey(listUri), labeler, labelId);
+}
+
 void UserSettings::reset()
 {
     mSyncFeeds.reset();
@@ -674,6 +681,78 @@ void UserSettings::setHideLists(const QString& did, const QStringList& listUris)
 QStringList UserSettings::getHideLists(const QString& did) const
 {
     return mSettings.value(key(did, "hideLists")).toStringList();
+}
+
+void UserSettings::setContentLabelPref(
+    const QString& did, const QString& listUri, const QString& labelerDid,
+    const QString& labelId, QEnums::ContentPrefVisibility pref)
+{
+    mSettings.setValue(labelPolicyKey(did, listUri, labelerDid, labelId), (int)pref);
+}
+
+QEnums::ContentPrefVisibility UserSettings::getContentLabelPref(
+    const QString& did, const QString& listUri,
+    const QString& labelerDid, const QString& labelId) const
+{
+    const int pref = mSettings.value(labelPolicyKey(did, listUri, labelerDid, labelId), int(QEnums::CONTENT_PREF_VISIBILITY_UNKNOWN)).toInt();
+
+    if (pref < 0 || pref > QEnums::CONTENT_PREF_VISIBILITY_LAST)
+        return QEnums::CONTENT_PREF_VISIBILITY_UNKNOWN;
+
+    return QEnums::ContentPrefVisibility(pref);
+}
+
+void UserSettings::removeContentLabelPref(const QString& did, const QString& listUri,
+                                          const QString& labelerDid, const QString& labelId)
+{
+    mSettings.remove(labelPolicyKey(did, listUri, labelerDid, labelId));
+}
+
+void UserSettings::removeContentLabelPrefList(const QString& did, const QString& listUri)
+{
+    qDebug() << "Remove content label prefs list:" << listUri << "did:" << did;
+    mSettings.remove(key(did, "labelpolicy", listUri));
+}
+
+std::vector<std::tuple<QString, QString, QString>> UserSettings::getContentLabelPrefKeys(const QString& did) const
+{
+    const_cast<QSettings&>(mSettings).beginGroup(key(did, "labelpolicy"));
+    const QStringList keys = mSettings.allKeys();
+    const_cast<QSettings&>(mSettings).endGroup();
+
+    std::vector<std::tuple<QString, QString, QString>> result;
+    result.reserve(keys.size());
+
+    for (const auto& key : keys)
+    {
+        auto subKeys = key.split('/');
+
+        Q_ASSERT(!subKeys.empty());
+        if (subKeys.size() != 3)
+        {
+            qWarning() << "Invalid key:" << key;
+            continue;
+        }
+
+        const auto& listUri = keyToUri(subKeys[0]);
+        const auto labelerDid = subKeys[1] == "global" ? "" : subKeys[1];
+        const auto& labelId = subKeys[2];
+
+        result.push_back({listUri, labelerDid, labelId});
+    }
+
+    return result;
+}
+
+QStringList UserSettings::getContentLabelPrefListUris(const QString& did) const
+{
+    std::unordered_set<QString> uriSet;
+    auto keys = getContentLabelPrefKeys(did);
+
+    for (auto& [listUri, _, __] : keys)
+        uriSet.insert(keyToUri(listUri));
+
+    return QStringList{uriSet.begin(), uriSet.end()};
 }
 
 void UserSettings::setBookmarks(const QString& did, const QStringList& bookmarks)

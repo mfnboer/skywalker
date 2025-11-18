@@ -341,7 +341,7 @@ Item {
             return false
 
         const sw = getSkywalker(userDid)
-        let visibility = sw.getContentVisibility(author.labels)
+        let visibility = sw.getContentVisibility(author.labels, author.did)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 

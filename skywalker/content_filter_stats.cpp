@@ -92,7 +92,7 @@ void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideRea
 
         ++mRepostsFromAuthor;
         break;
-    case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
+    case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED: // TODO: add list to details
         if (std::holds_alternative<BasicProfile>(details))
             add(std::get<BasicProfile>(details), mAuthorsHideFromFollowingFeed);
 

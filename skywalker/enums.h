@@ -188,7 +188,10 @@ public:
     {
         CONTENT_PREF_VISIBILITY_SHOW = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::SHOW,
         CONTENT_PREF_VISIBILITY_WARN = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::WARN,
-        CONTENT_PREF_VISIBILITY_HIDE = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::HIDE
+        CONTENT_PREF_VISIBILITY_HIDE = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::HIDE,
+        CONTENT_PREF_VISIBILITY_UNKNOWN = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::UNKNOWN,
+
+        CONTENT_PREF_VISIBILITY_LAST = CONTENT_PREF_VISIBILITY_UNKNOWN
     };
     Q_ENUM(ContentPrefVisibility)
 

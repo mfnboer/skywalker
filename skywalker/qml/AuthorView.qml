@@ -658,7 +658,7 @@ SkyPage {
 
             SkyTabBar {
                 id: feedMenuBar
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                width: parent.width
                 currentIndex: 0
 
                 AccessibleTabButton {
@@ -1731,9 +1731,9 @@ SkyPage {
         authorBanner = author.banner
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
-        contentVisibility = skywalker.getContentVisibility(author.labels)
-        contentWarning = skywalker.getContentWarning(author.labels)
-        const labelerDid = skywalker.getContentLabelerDid(author.labels)
+        contentVisibility = skywalker.getContentVisibility(author.labels, author.did)
+        contentWarning = skywalker.getContentWarning(author.labels, author.did)
+        const labelerDid = skywalker.getContentLabelerDid(author.labels, author.did)
 
         if (labelerDid)
             profileUtils.getBasicProfile(labelerDid)
