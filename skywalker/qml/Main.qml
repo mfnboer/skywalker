@@ -618,8 +618,6 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? 0 : guiSettings.footerMargin)
 
-        onFullScreenChanged: console.debug("FULLSCREEN:", fullScreen)
-
         onResizingChanged: {
             if (resizing)
                 return
@@ -776,6 +774,7 @@ ApplicationWindow {
     // Making this full screen rectangle visible, blocks Talkback from window beneath.
     Rectangle {
         id: popupShield
+        parent: Overlay.overlay
         anchors.fill: parent
         color: "black"
         opacity: 0.2
@@ -932,9 +931,6 @@ ApplicationWindow {
         dragMargin: 0
         bottomPadding: guiSettings.footerMargin
         modal: true
-
-        onAboutToShow: enablePopupShield(true)
-        onAboutToHide: enablePopupShield(false)
 
         onSelectedUser: (profile) => {
             if (!profile.did) {
@@ -1227,7 +1223,8 @@ ApplicationWindow {
         id: guiSettings
     }
 
-    function enablePopupShield(enable) {
+    function enablePopupShield(enable, opacity = 0.2) {
+        popupShield.opacity = opacity
         popupShield.visible = enable
     }
 
@@ -1932,10 +1929,14 @@ ApplicationWindow {
         let view = component.createObject(root, {
                 images: imageList,
                 imageIndex: currentIndex,
-                previewImage: previewImage,
-                closeCb: closeCb
+                previewImage: previewImage
         })
-        view.onClosed.connect(() => { popStack(null, StackView.Immediate) }) // qmllint disable missing-property
+        view.onClosed.connect(() => {
+            if (closeCb)
+                closeCb()
+
+            popStack(null, StackView.Immediate)
+        })
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })
         pushStack(view, StackView.Immediate)

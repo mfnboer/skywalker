@@ -58,6 +58,8 @@ Item {
         easing.type: Easing.InOutQuad
 
         onStopped: {
+            root.enablePopupShield(false)
+
             if (from < to)
                 done(zoomImage.item)
             else
@@ -74,6 +76,7 @@ Item {
             zoomImage.item.y = newY
             zoomImage.item.width = orig.x + origWidth + (right - orig.x - origWidth) * zoom - newX
             zoomImage.item.height = orig.y + origHeight + (bottom - orig.y - origHeight) * zoom - newY
+            root.enablePopupShield(true, zoom)
         }
 
         function run() {
@@ -87,6 +90,7 @@ Item {
         }
 
         function reverseRun() {
+            root.enablePopupShield(true, 1.0)
             zoomImage.item.visible = true
             thumbImage.visible = false
             from = 1.0

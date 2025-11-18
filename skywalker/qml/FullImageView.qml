@@ -8,7 +8,6 @@ SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
     property var previewImage
-    property var closeCb
     property bool showControls: true
     readonly property bool noSideBar: true
 
@@ -45,8 +44,6 @@ SkyPage {
         interactive: !zooming
 
         Repeater {
-            width: parent.width
-            height: parent.height
             model: images.length
 
             Rectangle {
@@ -55,8 +52,6 @@ SkyPage {
                 property bool zooming: img.zooming
 
                 id: imgRect
-                width: parent.width
-                height: parent.height
                 color: guiSettings.fullScreenColor
 
                 MouseArea {
@@ -184,11 +179,12 @@ SkyPage {
         displayUtils.setStatusBarTransparent(false, guiSettings.headerColor)
     }
 
+    function cancel() {
+        closed()
+    }
+
     Component.onDestruction: {
         resetSystemBarsColor()
-
-        if (closeCb)
-            closeCb()
     }
 
     Component.onCompleted: {
