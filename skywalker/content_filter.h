@@ -114,11 +114,16 @@ public:
     std::unordered_set<QString> getLabelerDidsWithNewLabels() const;
 
     bool hasFollowingPrefs() const;
-    Q_INVOKABLE bool hasFollowingPref(const QString& labelerDid) const;
     void clearFollowingPrefs();
     Q_INVOKABLE void createFollowingPrefs();
-    void setFollowingPref(const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref);
-    void removeFollowingPref(const QString& labelerDid, const QString& labelId);
+
+    Q_INVOKABLE bool hasListPref(const QString& listUri, const QString& labelerDid) const;
+    Q_INVOKABLE void createListPref(const QString& listUri);
+
+    void setListPref(const QString& listUri, const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref);
+    void removeListPref(const QString& listUri, const QString& labelerDid, const QString& labelId);
+
+    Q_INVOKABLE QString getListName(const QString& listUri) const;
 
     static bool isFixedLabelerSubscription(const QString& did);
 
@@ -126,7 +131,7 @@ signals:
     void contentGroupsChanged(const QString& listUri);
     void subscribedLabelersChanged();
     void hasFollowingPrefsChanged();
-    void followingPrefsChanged(const QString& labelerDid);
+    void listPrefsChanged(const QString& listUri, const QString& labelerDid);
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;
@@ -137,6 +142,8 @@ private:
     ATProto::UserPreferences::LabelVisibility getVisibilityAuthorPrefs(const QString& authorDid, const ContentGroup& group) const;
     ATProto::UserPreferences::LabelVisibility getLabelVisibility(
         const ATProto::UserPreferences::ContentLabelPrefs& labelPrefs, const ContentGroup& group) const;
+    const ATProto::UserPreferences::ContentLabelPrefs* getContentLabelPrefs(const QString& listUri) const;
+    ATProto::UserPreferences::ContentLabelPrefs* getContentLabelPrefs(const QString& listUri);
 
     const QString& mUserDid;
     const IProfileStore& mFollowing;

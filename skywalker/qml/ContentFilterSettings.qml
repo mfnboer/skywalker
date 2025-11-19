@@ -13,7 +13,7 @@ SkyPage {
     readonly property SvgImage sideBarSvg: SvgOutline.visibility
     readonly property SvgImage sideBarButtonSvg: SvgOutline.moreVert
     readonly property string sideBarButtonName: qsTr("options")
-    property list<string> listPrefNames: []
+    property list<string> listPrefUris: []
 
     signal closed()
 
@@ -63,12 +63,14 @@ SkyPage {
         }
 
         Repeater {
-            model: listPrefNames
+            model: listPrefUris
 
             AccessibleTabButton {
                 required property string modelData
+                readonly property alias listUri: listPrefTab.modelData
 
-                text: modelData
+                id: listPrefTab
+                text: contentFilter.getListName(listUri)
             }
         }
     }
@@ -190,27 +192,28 @@ SkyPage {
 
         Repeater {
             id: listViews
-            model: listPrefNames
+            model: listPrefUris
 
             Flickable {
                 required property string modelData
+                readonly property alias listUri: labelPrefsList.modelData
 
-                id: labelPrefsFollowing
+                id: labelPrefsList
                 clip: true
                 contentHeight: contentItem.childrenRect.height
                 flickableDirection: Flickable.VerticalFlick
                 boundsBehavior: Flickable.StopAtBounds
 
                 HeaderText {
-                    id: globalHeaderFollowing
+                    id: globalHeaderList
                     text: qsTr("Global filters")
                 }
 
                 ListView {
-                    readonly property int modelId: skywalker.createGlobalContentGroupListModel("following")
+                    readonly property int modelId: skywalker.createGlobalContentGroupListModel(listUri)
 
-                    id: globalLabelListViewFollowing
-                    anchors.top: globalHeaderFollowing.bottom
+                    id: globalLabelListViewList
+                    anchors.top: globalHeaderList.bottom
                     width: parent.width
                     height: contentHeight
                     clip: true
@@ -228,14 +231,14 @@ SkyPage {
                 }
 
                 HeaderText {
-                    id: subscribedLabelersFollowing
-                    anchors.top: globalLabelListViewFollowing.bottom
+                    id: subscribedLabelersList
+                    anchors.top: globalLabelListViewList.bottom
                     text: qsTr("Subscribed labeler filters")
                 }
 
                 ListView {
-                    id: labelerListViewFollowing
-                    anchors.top: subscribedLabelersFollowing.bottom
+                    id: labelerListViewList
+                    anchors.top: subscribedLabelersList.bottom
                     anchors.topMargin: 10
                     width: parent.width
                     height: contentHeight
@@ -250,7 +253,7 @@ SkyPage {
                         width: parent.width
                         textRightPadding: 20
                         maximumDescriptionLineCount: 3
-                        highlight: contentFilter.hasFollowingPref(author.did)
+                        highlight: contentFilter.hasListPref(labelPrefsList.listUri, author.did)
                         highlightColor: guiSettings.labelPrefDefaultColor
 
                         SkySvg {
@@ -265,21 +268,21 @@ SkyPage {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                labelPrefsFollowing.saveModel()
-                                skywalker.getDetailedProfile(author.did, "following")
+                                labelPrefsList.saveModel()
+                                skywalker.getDetailedProfile(author.did, labelPrefsList.listUri)
                             }
                         }
 
                         function refresh(labelerDid) {
                             if (author.did === labelerDid)
-                                labelerListDelegate.highlight = contentFilter.hasFollowingPref(author.did)
+                                labelerListDelegate.highlight = contentFilter.hasListPref(labelPrefsList.listUri, author.did)
                         }
                     }
                 }
 
                 function refresh(labelerDid) {
-                    for (let i = 0; i < labelerListViewFollowing.count; ++i) {
-                        const item = labelerListViewFollowing.itemAtIndex(i)
+                    for (let i = 0; i < labelerListViewList.count; ++i) {
+                        const item = labelerListViewList.itemAtIndex(i)
 
                         if (item)
                             item.refresh(labelerDid)
@@ -287,11 +290,11 @@ SkyPage {
                 }
 
                 function saveModel() {
-                    skywalker.saveContentFilterPreferences(globalLabelListViewFollowing.model)
+                    skywalker.saveContentFilterPreferences(globalLabelListViewList.model)
                 }
 
                 function removeModel() {
-                    skywalker.removeContentGroupListModel(globalLabelListViewFollowing.modelId)
+                    skywalker.removeContentGroupListModel(globalLabelListViewList.modelId)
                 }
             }
         }
@@ -299,7 +302,7 @@ SkyPage {
 
     function addFollowingPrefs() {
         contentFilter.createFollowingPrefs()
-        listPrefNames.unshift("following")
+        listPrefUris.unshift("following")
     }
 
     function sideBarButtonClicked() {
@@ -310,22 +313,27 @@ SkyPage {
         skywalker.getAuthorList(labelerAuthorListModelId)
     }
 
-    function refreshLabelers(labelerDid) {
-        for (let i = 0; i < page.listPrefNames.length; ++i) {
+    function refreshLabelers(listUri, labelerDid) {
+        for (let i = 0; i < page.listPrefUris.length; ++i) {
+            if (listPrefUris[i] !== listUri)
+                continue
+
             let item = listViews.itemAt(i)
 
             if (item)
                 item.refresh(labelerDid)
+
+            break
         }
     }
 
     Component.onDestruction: {
         contentFilter.onSubscribedLabelersChanged.disconnect(reloadSubscribedLabelers)
-        contentFilter.onFollowingPrefsChanged.disconnect(refreshLabelers)
+        contentFilter.onListPrefsChanged.disconnect(refreshLabelers)
 
         skywalker.saveGlobalContentFilterPreferences()
 
-        for (let i = 0; i < listPrefNames.length; ++i) {
+        for (let i = 0; i < listPrefUris.length; ++i) {
             let item = listViews.itemAt(i)
 
             if (item) {
@@ -339,9 +347,9 @@ SkyPage {
 
     Component.onCompleted: {
         if (contentFilter.hasFollowingPrefs)
-            listPrefNames.unshift("following")
+            listPrefUris.unshift("following")
 
         contentFilter.onSubscribedLabelersChanged.connect(reloadSubscribedLabelers)
-        contentFilter.onFollowingPrefsChanged.connect(refreshLabelers)
+        contentFilter.onListPrefsChanged.connect(refreshLabelers)
     }
 }

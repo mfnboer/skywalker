@@ -34,13 +34,12 @@ public:
     bool contains(const QString& listUri, const QString& did) const;
     QStringList getListUrisForDid(const QString& did) const;
     const ListViewBasic& getList(const QString& uri) const;
+    QString getListName(const QString& uri) const;
 
 signals:
     void listRemoved(const QString& uri);
 
 private:
-    QString getListName(const QString& uri) const;
-
     struct ListEntry
     {
         ListViewBasic mList;

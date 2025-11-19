@@ -173,7 +173,7 @@ Pane {
                 SvgPlainButton {
                     anchors.right: parent.right
                     anchors.top: parent.top
-                    svg: SvgOutline.info
+                    svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
                     accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
                     visible: typeof rootItem?.sideBarButtonSvg != 'undefined'
                     onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked() : () => {}

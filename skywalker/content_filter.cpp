@@ -187,11 +187,7 @@ void ContentFilter::initListPrefs()
     {
         const auto pref = mUserSettings->getContentLabelPref(mUserDid, listUri, labelerDid, labelId);
         qDebug() << "list:" << listUri << "labeler:" << labelerDid << "label:" << labelId << "pref:" << pref;
-
-        if (listUri == "following")
-            setFollowingPref(labelerDid, labelId, pref);
-        else
-            mListPrefs[listUri][labelerDid][labelId] = (ATProto::UserPreferences::LabelVisibility)pref;
+        setListPref(listUri, labelerDid, labelId, pref);
     }
 }
 
@@ -655,11 +651,30 @@ bool ContentFilter::hasFollowingPrefs() const
     return !mFollowingPrefs.empty();
 }
 
-bool ContentFilter::hasFollowingPref(const QString& labelerDid) const
+const ATProto::UserPreferences::ContentLabelPrefs* ContentFilter::getContentLabelPrefs(const QString& listUri) const
 {
-    const auto it = mFollowingPrefs.find(labelerDid);
+    return const_cast<ContentFilter*>(this)->getContentLabelPrefs(listUri);
+}
 
-    if (it == mFollowingPrefs.end())
+ATProto::UserPreferences::ContentLabelPrefs* ContentFilter::getContentLabelPrefs(const QString& listUri)
+{
+    if (listUri == "following")
+        return &mFollowingPrefs;
+
+    const auto it = mListPrefs.find(listUri);
+    return it != mListPrefs.end() ? &it->second : nullptr;
+}
+
+bool ContentFilter::hasListPref(const QString& listUri, const QString& labelerDid) const
+{
+    const auto* prefs = getContentLabelPrefs(listUri);
+
+    if (!prefs)
+        return false;
+
+    const auto it = prefs->find(labelerDid);
+
+    if (it == prefs->end())
         return false;
 
     for (const auto& [labelId, visibility] : it->second)
@@ -703,23 +718,58 @@ void ContentFilter::createFollowingPrefs()
     emit hasFollowingPrefsChanged();
 }
 
-void ContentFilter::setFollowingPref(const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref)
+void ContentFilter::createListPref(const QString& listUri)
 {
-    const bool wasEmpty = mFollowingPrefs.empty();
-    mFollowingPrefs[labelerDid][labelId] = (ATProto::UserPreferences::LabelVisibility)pref;
-    mUserSettings->setContentLabelPref(mUserDid, "following", labelerDid, labelId, pref);
+    if (listUri == "following")
+    {
+        createFollowingPrefs();
+        return;
+    }
 
-    if (wasEmpty)
-        emit hasFollowingPrefsChanged();
-
-    emit followingPrefsChanged(labelerDid);
+    mListPrefs[listUri][""] = {};
 }
 
-void ContentFilter::removeFollowingPref(const QString& labelerDid, const QString& labelId)
+void ContentFilter::setListPref(const QString& listUri, const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref)
 {
-    mFollowingPrefs[labelerDid].erase(labelId);
+    auto* prefs = getContentLabelPrefs(listUri);
+
+    if (!prefs)
+    {
+        qWarning() << "Cannot set prefs for:" << listUri;
+        return;
+    }
+
+    const bool wasEmpty = prefs->empty();
+    (*prefs)[labelerDid][labelId] = (ATProto::UserPreferences::LabelVisibility)pref;
+    mUserSettings->setContentLabelPref(mUserDid, "following", labelerDid, labelId, pref);
+
+    if (wasEmpty && listUri == "following")
+        emit hasFollowingPrefsChanged();
+
+    emit listPrefsChanged(listUri, labelerDid);
+}
+
+void ContentFilter::removeListPref(const QString& listUri, const QString& labelerDid, const QString& labelId)
+{
+    auto* prefs = getContentLabelPrefs(listUri);
+
+    if (!prefs)
+    {
+        qWarning() << "Cannot remove prefs for:" << listUri;
+        return;
+    }
+
+    (*prefs)[labelerDid].erase(labelId);
     mUserSettings->removeContentLabelPref(mUserDid, "following", labelerDid, labelId);
-    emit followingPrefsChanged(labelerDid);
+    emit listPrefsChanged(listUri, labelerDid);
+}
+
+QString ContentFilter::getListName(const QString& listUri) const
+{
+    if (listUri == "following")
+        return tr("Following");
+
+    return mListsWithPolicies.getListName(listUri);
 }
 
 }

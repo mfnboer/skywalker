@@ -304,18 +304,11 @@ void ContentGroupListModel::saveToContentFilter()
         if (visibility == defaultVisibility)
         {
             qDebug() << "Label:" << label << "did:" << labelerDid << "visibility is default:" << visibility;
-
-            if (mListUri == "following")
-                mContentFilter.removeFollowingPref(labelerDid, label);
-
-            // TODO: other lists
+            mContentFilter.removeListPref(mListUri, labelerDid, label);
         }
         else
         {
-            if (mListUri == "following")
-                mContentFilter.setFollowingPref(labelerDid, label, visibility);
-
-            // TODO: other lists
+            mContentFilter.setListPref(mListUri, labelerDid, label, visibility);
         }
     }
 }
