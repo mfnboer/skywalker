@@ -12,6 +12,7 @@ class ContentGroupListModel : public QAbstractListModel
     Q_PROPERTY(bool adultContent READ getAdultContent WRITE setAdultContent NOTIFY adultContentChanged FINAL)
     Q_PROPERTY(bool subscribed READ isSubscribed WRITE setSubscribed NOTIFY subscribedChanged FINAL)
     Q_PROPERTY(bool fixedLabelerEnabled READ isFixedLabelerEnabled WRITE setFixedLabelerEnabled NOTIFY fixedLabelerEnabledChanged FINAL)
+    Q_PROPERTY(bool hasListPrefs READ hasListPrefs CONSTANT FINAL)
     QML_ELEMENT
 
 public:
@@ -24,7 +25,7 @@ public:
     using Ptr = std::unique_ptr<ContentGroupListModel>;
 
     ContentGroupListModel(ContentFilter& contentFilter, const QString& listUri, QObject* parent = nullptr);
-    ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, QObject* parent = nullptr);
+    ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, const QString& listUri, QObject* parent = nullptr);
     void setGlobalContentGroups();
     void setContentGroups(std::vector<ContentGroup> groups);
     void clear();

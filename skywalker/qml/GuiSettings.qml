@@ -75,6 +75,7 @@ Item {
     readonly property string headerTextColor: textColor
     readonly property string hideReasonLabelColor: "palevioletred"
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
+    readonly property string labelPrefDefaultColor: isLightMode ? Qt.lighter(buttonColor, 1.9) : Qt.darker(buttonColor, 2.5)
     readonly property string likeColor: "palevioletred"
     readonly property string linkColorDarkMode: "#58a6ff"
     property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
@@ -352,7 +353,7 @@ Item {
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function filterContentLabelsToShow(contentLabels, userDid = "") {
+    function filterContentLabelsToShow(authorDid, contentLabels, userDid = "") {
         const sw = getSkywalker(userDid)
         let contentFilter = sw.getContentFilter()
         let labels = []
@@ -361,7 +362,7 @@ Item {
             const label = contentLabels[i]
 
             if ((!label.isSystemLabel() || label.isOverridableSytemLabel()) &&
-                    contentFilter.mustShowBadge(label))
+                    contentFilter.mustShowBadge(authorDid, label))
                 labels.push(label)
         }
 

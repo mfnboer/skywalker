@@ -18,7 +18,8 @@ SkyPage {
     signal closed()
 
     id: page
-    padding: 10
+    topPadding: 10
+    bottomPadding: 10
 
     Accessible.role: Accessible.Pane
 
@@ -88,6 +89,7 @@ SkyPage {
         currentIndex: tabBar.currentIndex
 
         onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
+        onCurrentItemChanged: currentItem.saveModel()
 
         // All content
         Flickable {
@@ -132,6 +134,7 @@ SkyPage {
                     width: parent.width
                     isSubscribed: true
                     adultContent: page.globalLabelModel.adultContent
+                    isListPref: false
                 }
             }
 
@@ -154,14 +157,16 @@ SkyPage {
                 Accessible.role: Accessible.List
 
                 delegate: AuthorViewDelegate {
-                    width: labelerListView.width - 20
+                    id: labelerDelegate
+                    width: parent.width
+                    textRightPadding: 20
                     highlight: contentFilter.hasNewLabels(author.did)
                     maximumDescriptionLineCount: 3
 
                     SkySvg {
                         height: 40
                         width: height
-                        x: parent.width - 20
+                        x: parent.width - 40
                         y: (parent.height + height) / 2
                         svg: SvgOutline.navigateNext
                         color: guiSettings.textColor
@@ -172,10 +177,14 @@ SkyPage {
                         onClicked: {
                             skywalker.saveGlobalContentFilterPreferences();
                             skywalker.getDetailedProfile(author.did)
-                            parent.highlight = false
+                            labelerDelegate.highlight = false
                         }
                     }
                 }
+            }
+
+            function saveModel() {
+                skywalker.saveGlobalContentFilterPreferences()
             }
         }
 
@@ -186,6 +195,7 @@ SkyPage {
             Flickable {
                 required property string modelData
 
+                id: labelPrefsFollowing
                 clip: true
                 contentHeight: contentItem.childrenRect.height
                 flickableDirection: Flickable.VerticalFlick
@@ -213,11 +223,74 @@ SkyPage {
                         width: parent.width
                         isSubscribed: true
                         adultContent: page.globalLabelModel.adultContent
+                        isListPref: true
                     }
                 }
 
-                function saveGlobalModel() {
+                HeaderText {
+                    id: subscribedLabelersFollowing
+                    anchors.top: globalLabelListViewFollowing.bottom
+                    text: qsTr("Subscribed labeler filters")
+                }
+
+                ListView {
+                    id: labelerListViewFollowing
+                    anchors.top: subscribedLabelersFollowing.bottom
+                    anchors.topMargin: 10
+                    width: parent.width
+                    height: contentHeight
+                    clip: true
+                    model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Accessible.role: Accessible.List
+
+                    delegate: AuthorViewDelegate {
+                        id: labelerListDelegate
+                        width: parent.width
+                        textRightPadding: 20
+                        maximumDescriptionLineCount: 3
+                        highlight: contentFilter.hasFollowingPref(author.did)
+                        highlightColor: guiSettings.labelPrefDefaultColor
+
+                        SkySvg {
+                            height: 40
+                            width: height
+                            x: parent.width - 40
+                            y: (parent.height + height) / 2
+                            svg: SvgOutline.navigateNext
+                            color: guiSettings.textColor
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                labelPrefsFollowing.saveModel()
+                                skywalker.getDetailedProfile(author.did, "following")
+                            }
+                        }
+
+                        function refresh(labelerDid) {
+                            if (author.did === labelerDid)
+                                labelerListDelegate.highlight = contentFilter.hasFollowingPref(author.did)
+                        }
+                    }
+                }
+
+                function refresh(labelerDid) {
+                    for (let i = 0; i < labelerListViewFollowing.count; ++i) {
+                        const item = labelerListViewFollowing.itemAtIndex(i)
+
+                        if (item)
+                            item.refresh(labelerDid)
+                    }
+                }
+
+                function saveModel() {
                     skywalker.saveContentFilterPreferences(globalLabelListViewFollowing.model)
+                }
+
+                function removeModel() {
                     skywalker.removeContentGroupListModel(globalLabelListViewFollowing.modelId)
                 }
             }
@@ -237,16 +310,28 @@ SkyPage {
         skywalker.getAuthorList(labelerAuthorListModelId)
     }
 
+    function refreshLabelers(labelerDid) {
+        for (let i = 0; i < page.listPrefNames.length; ++i) {
+            let item = listViews.itemAt(i)
+
+            if (item)
+                item.refresh(labelerDid)
+        }
+    }
+
     Component.onDestruction: {
         contentFilter.onSubscribedLabelersChanged.disconnect(reloadSubscribedLabelers)
+        contentFilter.onFollowingPrefsChanged.disconnect(refreshLabelers)
 
-        skywalker.saveGlobalContentFilterPreferences();
+        skywalker.saveGlobalContentFilterPreferences()
 
         for (let i = 0; i < listPrefNames.length; ++i) {
             let item = listViews.itemAt(i)
 
-            if (item)
-                item.saveGlobalModel()
+            if (item) {
+                item.saveModel()
+                item.removeModel()
+            }
         }
 
         skywalker.removeAuthorListModel(labelerAuthorListModelId)
@@ -257,5 +342,6 @@ SkyPage {
             listPrefNames.unshift("following")
 
         contentFilter.onSubscribedLabelersChanged.connect(reloadSubscribedLabelers)
+        contentFilter.onFollowingPrefsChanged.connect(refreshLabelers)
     }
 }

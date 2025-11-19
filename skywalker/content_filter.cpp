@@ -8,7 +8,7 @@
 namespace Skywalker {
 
 // We are implicitly subscribed to the Bluesky moderator
-#define BLUESKY_MODERATOR_DID QStringLiteral("did:plc:ar7c4by46qjdydhdevvrndac")
+const QString ContentFilter::BLUESKY_MODERATOR_DID = QStringLiteral("did:plc:ar7c4by46qjdydhdevvrndac");
 
 const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     {
@@ -243,7 +243,7 @@ void ContentFilter::addContentLabels(ContentLabelList& contentLabels, const Labe
     }
 }
 
-QEnums::ContentPrefVisibility ContentFilter::getGroupPrefVisibility(const ContentGroup& group, const QString& listUri) const
+ QEnums::ContentPrefVisibility ContentFilter::getGroupPrefVisibility(const ContentGroup& group, const QString& listUri) const
 {
     if (group.isAdult() && !getAdultContent())
         return QEnums::CONTENT_PREF_VISIBILITY_HIDE;
@@ -379,14 +379,18 @@ QEnums::ContentVisibility ContentFilter::getVisibility(
     return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
-bool ContentFilter::mustShowBadge(const ContentLabel& label) const
+bool ContentFilter::mustShowBadge(const QString& authorDid, const ContentLabel& label) const
 {
     const auto* group = getContentGroup(label.getDid(), label.getLabelId());
 
     if (!group || !group->isBadge())
         return true;
 
-    auto visibility = mUserPreferences.getLabelVisibility(group->getLabelerDid(), group->getLabelId());
+    auto visibility = getVisibilityAuthorPrefs(authorDid, *group);
+
+    if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
+        visibility = getVisibilityDefaultPrefs(*group);
+
     return group->mustShowBadge(visibility);
 }
 
@@ -651,6 +655,32 @@ bool ContentFilter::hasFollowingPrefs() const
     return !mFollowingPrefs.empty();
 }
 
+bool ContentFilter::hasFollowingPref(const QString& labelerDid) const
+{
+    const auto it = mFollowingPrefs.find(labelerDid);
+
+    if (it == mFollowingPrefs.end())
+        return false;
+
+    for (const auto& [labelId, visibility] : it->second)
+    {
+        const auto* group = getContentGroup(labelerDid, labelId);
+
+        if (!group)
+        {
+            qWarning() << "No group, labler:" << labelerDid << "label:" << labelId;
+            continue;
+        }
+
+        const auto groupVisibility = getGroupPrefVisibility(*group);
+
+        if ((QEnums::ContentPrefVisibility)visibility != groupVisibility)
+            return true;
+    }
+
+    return false;
+}
+
 void ContentFilter::clearFollowingPrefs()
 {
     if (!mFollowingPrefs.empty())
@@ -681,12 +711,15 @@ void ContentFilter::setFollowingPref(const QString& labelerDid, const QString& l
 
     if (wasEmpty)
         emit hasFollowingPrefsChanged();
+
+    emit followingPrefsChanged(labelerDid);
 }
 
 void ContentFilter::removeFollowingPref(const QString& labelerDid, const QString& labelId)
 {
     mFollowingPrefs[labelerDid].erase(labelId);
     mUserSettings->removeContentLabelPref(mUserDid, "following", labelerDid, labelId);
+    emit followingPrefsChanged(labelerDid);
 }
 
 }

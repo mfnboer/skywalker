@@ -36,6 +36,8 @@ public:
     using LabelList = std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>;
     using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
 
+    static const QString BLUESKY_MODERATOR_DID;
+
     // System labels have a hard coded setting.
     static const std::vector<ContentGroup> SYSTEM_CONTENT_GROUP_LIST;
 
@@ -70,7 +72,8 @@ public:
 
     Q_INVOKABLE bool getAdultContent() const { return mUserPreferences.getAdultContent(); }
 
-    QEnums::ContentPrefVisibility getGroupPrefVisibility(const ContentGroup& group, const QString& listUri = {}) const;
+    Q_INVOKABLE QEnums::ContentPrefVisibility getGroupPrefVisibility(
+        const ContentGroup& group, const QString& listUri = {}) const;
     QEnums::ContentVisibility getGroupVisibility(
         const QString& authorDid,
         const ContentGroup& group,
@@ -79,7 +82,7 @@ public:
         const QString& authorDid,
         const ContentLabel& label,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
-    Q_INVOKABLE bool mustShowBadge(const ContentLabel& label) const;
+    Q_INVOKABLE bool mustShowBadge(const QString& authorDid, const ContentLabel& label) const;
     QString getGroupWarning(const ContentGroup& group) const;
     QString getWarning(const ContentLabel& label) const;
 
@@ -111,6 +114,7 @@ public:
     std::unordered_set<QString> getLabelerDidsWithNewLabels() const;
 
     bool hasFollowingPrefs() const;
+    Q_INVOKABLE bool hasFollowingPref(const QString& labelerDid) const;
     void clearFollowingPrefs();
     Q_INVOKABLE void createFollowingPrefs();
     void setFollowingPref(const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref);
@@ -122,6 +126,7 @@ signals:
     void contentGroupsChanged(const QString& listUri);
     void subscribedLabelersChanged();
     void hasFollowingPrefsChanged();
+    void followingPrefsChanged(const QString& labelerDid);
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;

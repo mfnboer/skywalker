@@ -12,6 +12,7 @@
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "post_thread_cache.h"
+#include "search_utils.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include "utils.h"
@@ -210,7 +211,7 @@ Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::S
     connect(skywalker.get(), &Skywalker::statusMessage, this, [this](auto did, auto msg, auto level, auto seconds){ emit statusMessage(did, msg, level, seconds); });
     connect(skywalker.get(), &Skywalker::statusClear, this, [this]{ emit statusClear(); });
     connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
-    connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile){ emit getDetailedProfileOK(did, profile); });
+    connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile, auto labelPrefsListUri){ emit getDetailedProfileOK(did, profile, labelPrefsListUri); });
     connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
     connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack){ emit getStarterPackViewOk(did, starterPack); });
 
@@ -2202,18 +2203,18 @@ void Skywalker::getNotificationsNextPage(bool mentionsOnly)
     getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, mentionsOnly, false, cursor);
 }
 
-void Skywalker::getDetailedProfile(const QString& author)
+void Skywalker::getDetailedProfile(const QString& author, const QString& labelPrefsListUri)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get detailed profile:" << author;
     incGetDetailedProfileInProgress();
 
     mBsky->getProfile(author,
-        [this](auto profile){
+        [this, labelPrefsListUri](auto profile){
             decGetDetailedProfileInProgress();
             const DetailedProfile detailedProfile(profile);
             AuthorCache::instance().put(detailedProfile);
-            emit getDetailedProfileOK(mUserDid, detailedProfile);
+            emit getDetailedProfileOK(mUserDid, detailedProfile, labelPrefsListUri);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getDetailedProfile failed:" << error << " - " << msg;
@@ -2865,6 +2866,18 @@ void Skywalker::getLabelersAuthorList(int modelId)
             {
                 (*model)->setGetFeedInProgress(false);
                 (*model)->clear();
+                std::sort(profileDetailedList.begin(), profileDetailedList.end(),
+                    [](const auto& lhs, const auto& rhs){
+                        if (lhs->mDid == ContentFilter::BLUESKY_MODERATOR_DID && lhs->mDid != rhs->mDid)
+                            return true;
+
+                        if (rhs->mDid == ContentFilter::BLUESKY_MODERATOR_DID && rhs->mDid != lhs->mDid)
+                            return false;
+
+                        return SearchUtils::normalizedCompare(
+                            lhs->mDisplayName.value_or(lhs->mHandle),
+                            rhs->mDisplayName.value_or(rhs->mHandle)) < 0;
+                    });
                 (*model)->addAuthors(std::move(profileDetailedList), "");
             }
         },
@@ -3814,9 +3827,11 @@ int Skywalker::createGlobalContentGroupListModel(const QString& listUri)
     return mContentGroupListModels.put(std::move(model));
 }
 
-int Skywalker::createContentGroupListModel(const QString& labelerDid, const LabelerPolicies& policies)
+int Skywalker::createContentGroupListModel(const QString& labelerDid,
+                                           const LabelerPolicies& policies,
+                                           const QString& listUri)
 {
-    auto model = std::make_unique<ContentGroupListModel>(labelerDid, mContentFilter, this);
+    auto model = std::make_unique<ContentGroupListModel>(labelerDid, mContentFilter, listUri, this);
     model->setContentGroups(policies.getContentGroupList());
     connect(model.get(), &ContentGroupListModel::error, this, [this](QString error)
             { showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });

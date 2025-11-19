@@ -21,7 +21,9 @@ Rectangle {
     property bool showFollow: true
     property bool showActivitySubscription: false
     property bool highlight: false
+    property string highlightColor: guiSettings.postHighLightColor
     property int maximumDescriptionLineCount: 25
+    property int textRightPadding: 0
     readonly property int margin: 10
 
     signal follow(basicprofile profile)
@@ -31,7 +33,7 @@ Rectangle {
 
     id: authorRect
     height: grid.height
-    color: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
+    color: highlight ? highlightColor : guiSettings.backgroundColor
 
     Accessible.role: Accessible.Button
     Accessible.name: author.name
@@ -135,7 +137,7 @@ Rectangle {
         }
 
         SkyCleanedText {
-            rightPadding: 10
+            rightPadding: 10 + authorRect.textRightPadding
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
@@ -147,7 +149,7 @@ Rectangle {
         }
 
         SkyCleanedText {
-            rightPadding: 10
+            rightPadding: 10 + authorRect.textRightPadding
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
@@ -155,6 +157,7 @@ Rectangle {
             elide: Text.ElideRight
             textFormat: Text.RichText
             maximumLineCount: authorRect.maximumDescriptionLineCount
+            showEllipsis: false
             color: guiSettings.textColor
             plainText: postUtils.linkiFy(author.description, guiSettings.linkColor)
             visible: showAuthor && author.description

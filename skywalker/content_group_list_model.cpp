@@ -5,7 +5,8 @@
 
 namespace Skywalker {
 
-ContentGroupListModel::ContentGroupListModel(ContentFilter& contentFilter, const QString& listUri, QObject* parent) :
+ContentGroupListModel::ContentGroupListModel(ContentFilter& contentFilter, const QString& listUri,
+                                             QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
     mListUri(listUri),
@@ -14,9 +15,11 @@ ContentGroupListModel::ContentGroupListModel(ContentFilter& contentFilter, const
     init();
 }
 
-ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, QObject* parent) :
+ContentGroupListModel::ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter,
+                                             const QString& listUri, QObject* parent) :
     QAbstractListModel(parent),
     mContentFilter(contentFilter),
+    mListUri(listUri),
     mLabelerDid(labelerDid),
     mSubscribed(mContentFilter.isSubscribedToLabeler(mLabelerDid))
 {

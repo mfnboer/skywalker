@@ -122,7 +122,7 @@ public:
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
-    Q_INVOKABLE void getDetailedProfile(const QString& author);
+    Q_INVOKABLE void getDetailedProfile(const QString& author, const QString& labelPrefsListUri = {});
 
     // If avatar is a "image://", then the profile takes ownership of the image
     Q_INVOKABLE void updateUserProfile(const QString& displayName, const QString& description,
@@ -189,7 +189,7 @@ public:
     Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
     Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
     Q_INVOKABLE int createGlobalContentGroupListModel(const QString& listUri);
-    Q_INVOKABLE int createContentGroupListModel(const QString& labelerDid, const LabelerPolicies& policies);
+    Q_INVOKABLE int createContentGroupListModel(const QString& labelerDid, const LabelerPolicies& policies, const QString& listUri = {});
     Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;
     Q_INVOKABLE void removeContentGroupListModel(int id);
     Q_INVOKABLE void saveGlobalContentFilterPreferences();
@@ -300,7 +300,7 @@ signals:
     void userChanged();
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
-    void getDetailedProfileOK(QString userDid, DetailedProfile);
+    void getDetailedProfileOK(QString userDid, DetailedProfile profile, QString labelPrefsListUri);
     void getFeedGeneratorOK(QString userDid, GeneratorView generatorView, bool viewPosts);
     void getStarterPackViewOk(QString userDid, StarterPackView starterPack);
     void getPostThreadInProgressChanged();

@@ -10,6 +10,7 @@ SkyPage {
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property detailedprofile author
     required property int modelId
+    property string showLabelPrefsForListUri
     readonly property string sideBarTitle: author.name
     readonly property alias sideBarAuthor: page.author
 
@@ -409,7 +410,7 @@ SkyPage {
                     Layout.preferredHeight: 40
                     flat: true
                     text: qsTr("Unsubscribe")
-                    visible: isSubscribed && isLabeler && !author.isFixedLabeler()
+                    visible: isSubscribed && isLabeler && !author.isFixedLabeler() && !showLabelPrefsForListUri
                     onClicked: contentGroupListModel.subscribed = false
                     Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
@@ -789,7 +790,6 @@ SkyPage {
                             Layout.rightMargin: 10
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
-                            color: guiSettings.textColor
                             text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
                         }
 
@@ -797,11 +797,22 @@ SkyPage {
                             Layout.leftMargin: 10
                             Layout.rightMargin: 10
                             Layout.fillWidth: true
-                            Layout.preferredHeight: page.isSubscribed ? 0 : implicitHeight
+                            Layout.preferredHeight: visible ? implicitHeight : 0
                             wrapMode: Text.Wrap
-                            color: guiSettings.textColor
                             text: qsTr(`Subscribe to ${author.handle} to use these labels`)
                             visible: !page.isSubscribed
+                        }
+
+                        AccessibleText {
+                            Layout.leftMargin: 10
+                            Layout.rightMargin: 10
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: visible ? implicitHeight : 0
+                            wrapMode: Text.Wrap
+                            font.italic: true
+                            font.bold: true
+                            text: qsTr(`Set your label preferences for ${page.showLabelPrefsForListUri}`)
+                            visible: Boolean(page.showLabelPrefsForListUri)
                         }
 
                         Rectangle {
@@ -826,6 +837,7 @@ SkyPage {
                         userDid: page.userDid
                         isSubscribed: page.isSubscribed
                         adultContent: labelList.model.adultContent
+                        isListPref: labelList.model.hasListPrefs
                     }
 
                     FlickableRefresher {}
@@ -1668,7 +1680,8 @@ SkyPage {
     }
 
     function setLabeler(view) {
-        contentGroupListModelId = skywalker.createContentGroupListModel(author.did, view.policies)
+        contentGroupListModelId = skywalker.createContentGroupListModel(
+                    author.did, view.policies, showLabelPrefsForListUri)
         labeler = view
         labelerLikeUri = labeler.viewer.like
         labelerLikeCount = labeler.likeCount
@@ -1707,7 +1720,10 @@ SkyPage {
         skywalker.removeStarterPackListModel(starterPackListModelId)
 
         if (contentGroupListModelId > -1) {
-            skywalker.getContentFilter().saveLabelIdsToSettings(author.did)
+            // Tracking for new labels is only done for the default settings
+            if (!showLabelPrefsForListUri)
+                skywalker.getContentFilter().saveLabelIdsToSettings(author.did)
+
             skywalker.saveContentFilterPreferences(contentGroupListModel)
             skywalker.removeContentGroupListModel(contentGroupListModelId)
         }

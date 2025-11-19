@@ -8,7 +8,7 @@ Column {
     required property basicprofile author
     required property double postIndexedSecondsAgo
     property contentlabel filteredContentLabel
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.labels, userDid)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.did, author.labels, userDid)
 
     id: postHeader
 
