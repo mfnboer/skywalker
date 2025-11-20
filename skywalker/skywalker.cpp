@@ -3,6 +3,7 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
+#include "definitions.h"
 #include "file_utils.h"
 #include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"
@@ -530,7 +531,6 @@ void Skywalker::getUserPreferences()
             updateFavoriteFeeds();
             initLabelers();
             loadLabelSettings();
-            mContentFilter.initListPrefs();
 
             if (mChat)
                 mChat->initSettings();
@@ -695,6 +695,8 @@ void Skywalker::loadContentFilterPolicies(QStringList uris)
     Q_ASSERT(mBsky);
     if (uris.empty())
     {
+        qDebug() << "All lists for content filter policies loaded";
+        mContentFilter.initListPrefs();
         emit getUserPreferencesOK();
         return;
     }
@@ -702,7 +704,7 @@ void Skywalker::loadContentFilterPolicies(QStringList uris)
     const QString uri = uris.back();
     uris.pop_back();
 
-    if (uri == "following")
+    if (uri == FOLLOWING_LIST_URI)
     {
         qDebug() << "Skip following list";
         loadContentFilterPolicies(uris);
@@ -738,8 +740,8 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 
     if (!mIsActiveUser)
     {
-        qDebug() << "Do not load muted repost for other users than the active user";
-        emit getUserPreferencesOK();
+        qDebug() << "Do not load muted repost, not timelineHide lists for other users than the active user";
+        loadContentFilterPolicies();
         return;
     }
 

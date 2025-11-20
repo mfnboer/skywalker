@@ -3,6 +3,7 @@ next
 * Filtered post statistics
 * Show handle of labeler with content warnings
 * Change content visibility level for !hide and !warn labels per labeler
+* Override content label preferences for a user list
 * Side bar can be enabled in portait mode
 * Width of side bar can be changed
 * Sorting orders for replies in a post thread

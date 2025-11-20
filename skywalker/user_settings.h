@@ -193,7 +193,7 @@ public:
 
     void removeContentLabelPref(const QString& did, const QString& listUri, const QString& labelerDid,
                                 const QString& labelId);
-    void removeContentLabelPrefList(const QString& did, const QString& listUri);
+    void removeContentLabelPrefList(const QString& did, QString listUri);
 
     // tuple: listUri, labelerDid, labelId
     std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const;

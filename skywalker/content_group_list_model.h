@@ -24,8 +24,10 @@ public:
 
     using Ptr = std::unique_ptr<ContentGroupListModel>;
 
+    explicit ContentGroupListModel(QObject* parent = nullptr);
     ContentGroupListModel(ContentFilter& contentFilter, const QString& listUri, QObject* parent = nullptr);
     ContentGroupListModel(const QString& labelerDid, ContentFilter& contentFilter, const QString& listUri, QObject* parent = nullptr);
+
     void setGlobalContentGroups();
     void setContentGroups(std::vector<ContentGroup> groups);
     void clear();
@@ -66,7 +68,7 @@ private:
     void init();
 
     bool mAdultContent = false;
-    ContentFilter& mContentFilter;
+    ContentFilter* mContentFilter = nullptr;
     QString mListUri; // filter prefs for "following" or list
     QString mLabelerDid;
     bool mSubscribed = false;

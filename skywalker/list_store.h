@@ -21,6 +21,10 @@ public:
     void loadList(const QString& uri, const SuccessCb& successCb, const ErrorCb& errorCb,
                   int maxPages = 2, int pagesLoaded = 0, const QString& cursor = {});
     void addList(const QString& uri, const SuccessCb& successCb, const ErrorCb& errorCb);
+
+    // Creates a list entry with an empty store before loading the list members.
+    void addList(const ListViewBasic& list, const SuccessCb& successCb, const ErrorCb& errorCb);
+
     void removeList(const QString& uri);
     void addProfile(const QString& uri, const BasicProfile& profile, const QString& listItemUri);
     void removeProfile(const QString& uri, const QString& listItemUri);

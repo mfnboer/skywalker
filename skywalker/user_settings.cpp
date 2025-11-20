@@ -708,10 +708,10 @@ void UserSettings::removeContentLabelPref(const QString& did, const QString& lis
     mSettings.remove(labelPolicyKey(did, listUri, labelerDid, labelId));
 }
 
-void UserSettings::removeContentLabelPrefList(const QString& did, const QString& listUri)
+void UserSettings::removeContentLabelPrefList(const QString& did, QString listUri)
 {
     qDebug() << "Remove content label prefs list:" << listUri << "did:" << did;
-    mSettings.remove(key(did, "labelpolicy", listUri));
+    mSettings.remove(key(did, "labelpolicy", uriToKey(listUri)));
 }
 
 std::vector<std::tuple<QString, QString, QString>> UserSettings::getContentLabelPrefKeys(const QString& did) const

@@ -23,6 +23,7 @@ Rectangle {
     property bool highlight: false
     property string highlightColor: guiSettings.postHighLightColor
     property int maximumDescriptionLineCount: 25
+    property bool formatDescription: true
     property int textRightPadding: 0
     readonly property int margin: 10
 
@@ -155,11 +156,11 @@ Rectangle {
             Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
             elide: Text.ElideRight
-            textFormat: Text.RichText
+            textFormat: authorRect.formatDescription ? Text.RichText : Text.AutoText
             maximumLineCount: authorRect.maximumDescriptionLineCount
             showEllipsis: false
             color: guiSettings.textColor
-            plainText: postUtils.linkiFy(author.description, guiSettings.linkColor)
+            plainText: authorRect.formatDescription ?  postUtils.linkiFy(author.description, guiSettings.linkColor) : author.description
             visible: showAuthor && author.description
 
             LinkCatcher {

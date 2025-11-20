@@ -101,6 +101,24 @@ void ListStore::addList(const QString& uri, const SuccessCb& successCb, const Er
              [errorCb](const auto& error, const auto& msg){ errorCb(error, msg); });
 }
 
+void ListStore::addList(const ListViewBasic& list, const SuccessCb& successCb, const ErrorCb& errorCb)
+{
+    const QString uri = list.getUri();
+    qDebug() << "Add list:" << uri << list.getName();
+
+    if (mLists.contains(uri))
+    {
+        qWarning() << "List already added:" << uri;
+        return;
+    }
+
+    mLists[uri].mList = list;
+
+    loadList(uri,
+             [successCb]{ successCb(); },
+             [errorCb](const auto& error, const auto& msg){ errorCb(error, msg); });
+}
+
 void ListStore::removeList(const QString& uri)
 {
     qDebug() << "Remove list:" << uri;

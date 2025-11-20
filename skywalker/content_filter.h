@@ -8,6 +8,7 @@
 namespace Skywalker {
 
 class IProfileStore;
+class ListViewBasic;
 class ListStore;
 class UserSettings;
 
@@ -58,9 +59,11 @@ public:
     static ContentLabelList getContentLabels(const LabelList& labels);
     static void addContentLabels(ContentLabelList& contentLabels, const LabelList& labels);
 
+    explicit ContentFilter(QObject* parent = nullptr);
+
     explicit ContentFilter(const QString& userDid,
                            const IProfileStore& following,
-                           const ListStore& policies,
+                           ListStore& policies,
                            const ATProto::UserPreferences& userPreferences,
                            UserSettings* userSettings, QObject* parent = nullptr);
 
@@ -70,7 +73,7 @@ public:
     // Returns a global content group if the labelId is a global label
     const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const override;
 
-    Q_INVOKABLE bool getAdultContent() const { return mUserPreferences.getAdultContent(); }
+    Q_INVOKABLE bool getAdultContent() const { return mUserPreferences->getAdultContent(); }
 
     Q_INVOKABLE QEnums::ContentPrefVisibility getGroupPrefVisibility(
         const ContentGroup& group, const QString& listUri = {}) const;
@@ -114,16 +117,19 @@ public:
     std::unordered_set<QString> getLabelerDidsWithNewLabels() const;
 
     bool hasFollowingPrefs() const;
-    void clearFollowingPrefs();
     Q_INVOKABLE void createFollowingPrefs();
+    Q_INVOKABLE void removeFollowing();
 
     Q_INVOKABLE bool hasListPref(const QString& listUri, const QString& labelerDid) const;
-    Q_INVOKABLE void createListPref(const QString& listUri);
+    Q_INVOKABLE void createListPref(const ListViewBasic& list);
+    Q_INVOKABLE void removeList(const QString& listUri);
 
     void setListPref(const QString& listUri, const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref);
     void removeListPref(const QString& listUri, const QString& labelerDid, const QString& labelId);
 
+    Q_INVOKABLE ListViewBasic getList(const QString& listUri) const;
     Q_INVOKABLE QString getListName(const QString& listUri) const;
+    Q_INVOKABLE QStringList getListUris() const;
 
     static bool isFixedLabelerSubscription(const QString& did);
 
@@ -132,11 +138,17 @@ signals:
     void subscribedLabelersChanged();
     void hasFollowingPrefsChanged();
     void listPrefsChanged(const QString& listUri, const QString& labelerDid);
+    void listAdded(const QString& listUri);
+    void listAddingFailed(const QString& listUri, const QString& error);
 
 private:
     static GlobalContentGroupMap CONTENT_GROUPS;
+
     static void initContentGroups();
+
     void removeListPrefs(const QString& listUri);
+    void clearFollowingPrefs();
+
     QStringList getLabelIds(const QString& labelerDid) const;
     ATProto::UserPreferences::LabelVisibility getVisibilityDefaultPrefs(const ContentGroup& group) const;
     ATProto::UserPreferences::LabelVisibility getVisibilityAuthorPrefs(const QString& authorDid, const ContentGroup& group) const;
@@ -145,11 +157,11 @@ private:
     const ATProto::UserPreferences::ContentLabelPrefs* getContentLabelPrefs(const QString& listUri) const;
     ATProto::UserPreferences::ContentLabelPrefs* getContentLabelPrefs(const QString& listUri);
 
-    const QString& mUserDid;
-    const IProfileStore& mFollowing;
-    const ListStore& mListsWithPolicies;
-    const ATProto::UserPreferences& mUserPreferences;
-    UserSettings* mUserSettings;
+    const QString* mUserDid = nullptr;
+    const IProfileStore* mFollowing = nullptr;
+    ListStore* mListsWithPolicies = nullptr;
+    const ATProto::UserPreferences* mUserPreferences = nullptr;
+    UserSettings* mUserSettings = nullptr;
     std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map
 
     ATProto::UserPreferences::ContentLabelPrefs mFollowingPrefs; // labeler DID -> label visibility

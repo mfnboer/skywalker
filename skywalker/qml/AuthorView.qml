@@ -811,7 +811,9 @@ SkyPage {
                             wrapMode: Text.Wrap
                             font.italic: true
                             font.bold: true
-                            text: qsTr(`Set your label preferences for ${page.showLabelPrefsForListUri}`)
+                            text: utils.isFollowingListUri(page.showLabelPrefsForListUri) ?
+                                qsTr("Set your label preferences for users you follow.") :
+                                qsTr(`Set your label preferences for users in list "${skywalker.getContentFilter().getListName(showLabelPrefsForListUri)}"`)
                             visible: Boolean(page.showLabelPrefsForListUri)
                         }
 
@@ -1443,6 +1445,11 @@ SkyPage {
 
     AccessibilityUtils {
         id: accessibilityUtils
+    }
+
+    Utils {
+        id: utils
+        skywalker: page.skywalker
     }
 
     function authorCanBeMentioned() {

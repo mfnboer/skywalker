@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "content_filter.h"
+#include "definitions.h"
 #include "list_store.h"
 #include "profile_store.h"
 #include "user_settings.h"
@@ -155,19 +156,24 @@ bool ContentFilter::isOverridableSytemLabelId(const QString& labelId)
     return OVERRIDABLE_SYSTEM_LABELS_IDS.contains(labelId);
 }
 
+ContentFilter::ContentFilter(QObject* parent) :
+    QObject(parent)
+{
+}
+
 ContentFilter::ContentFilter(const QString& userDid,
                              const IProfileStore& following,
-                             const ListStore& policies,
+                             ListStore& policies,
                              const ATProto::UserPreferences& userPreferences,
                              UserSettings* userSettings, QObject* parent) :
     QObject(parent),
-    mUserDid(userDid),
-    mFollowing(following),
-    mListsWithPolicies(policies),
-    mUserPreferences(userPreferences),
+    mUserDid(&userDid),
+    mFollowing(&following),
+    mListsWithPolicies(&policies),
+    mUserPreferences(&userPreferences),
     mUserSettings(userSettings)
 {
-    connect(&mListsWithPolicies, &ListStore::listRemoved, this,
+    connect(mListsWithPolicies, &ListStore::listRemoved, this,
             [this](const QString& uri){ removeListPrefs(uri); });
 }
 
@@ -180,12 +186,20 @@ void ContentFilter::clear()
 
 void ContentFilter::initListPrefs()
 {
-    qDebug() << "Initialize list prefs:" << mUserDid;
-    const auto keys = mUserSettings->getContentLabelPrefKeys(mUserDid);
+    qDebug() << "Initialize list prefs:" << *mUserDid;
+    const auto listUris = mListsWithPolicies->getListUris();
+
+    for (const auto& listUri : listUris)
+    {
+        qDebug() << "Initiliaze prefs for:" << listUri;
+        mListPrefs[listUri][""] = {};
+    }
+
+    const auto keys = mUserSettings->getContentLabelPrefKeys(*mUserDid);
 
     for (const auto& [listUri, labelerDid, labelId] : keys)
     {
-        const auto pref = mUserSettings->getContentLabelPref(mUserDid, listUri, labelerDid, labelId);
+        const auto pref = mUserSettings->getContentLabelPref(*mUserDid, listUri, labelerDid, labelId);
         qDebug() << "list:" << listUri << "labeler:" << labelerDid << "label:" << labelId << "pref:" << pref;
         setListPref(listUri, labelerDid, labelId, pref);
     }
@@ -246,7 +260,7 @@ void ContentFilter::addContentLabels(ContentLabelList& contentLabels, const Labe
 
     ATProto::UserPreferences::LabelVisibility visibility = ATProto::UserPreferences::LabelVisibility::UNKNOWN;
 
-    if (listUri == "following")
+    if (listUri == FOLLOWING_LIST_URI)
     {
         visibility = getLabelVisibility(mFollowingPrefs, group);
 
@@ -262,6 +276,9 @@ void ContentFilter::addContentLabels(ContentLabelList& contentLabels, const Labe
     }
     else
     {
+        if (!listUri.isEmpty())
+            qWarning() << "No preferences found for list:" << listUri;
+
         visibility = getVisibilityDefaultPrefs(group);
     }
 
@@ -301,13 +318,13 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(
 ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityDefaultPrefs(
     const ContentGroup& group) const
 {
-    auto visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), group.getLabelId());
+    auto visibility = mUserPreferences->getLabelVisibility(group.getLabelerDid(), group.getLabelId());
 
     if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
     {
         for (const auto& legacyId : group.getLegacyLabelIds())
         {
-            visibility = mUserPreferences.getLabelVisibility(group.getLabelerDid(), legacyId);
+            visibility = mUserPreferences->getLabelVisibility(group.getLabelerDid(), legacyId);
 
             if (visibility != ATProto::UserPreferences::LabelVisibility::UNKNOWN)
                 break;
@@ -325,7 +342,7 @@ ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityAuthorPref
     if (authorDid.isEmpty())
         return visibility;
 
-    if (!mFollowingPrefs.empty() && mFollowing.contains(authorDid))
+    if (!mFollowingPrefs.empty() && mFollowing->contains(authorDid))
         visibility = getLabelVisibility(mFollowingPrefs, group);
 
     for (const auto& [listUri, prefs] : mListPrefs)
@@ -333,7 +350,7 @@ ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityAuthorPref
         if (visibility == ATProto::UserPreferences::LabelVisibility::SHOW)
             break;
 
-        if (mListsWithPolicies.contains(listUri, authorDid))
+        if (mListsWithPolicies->contains(listUri, authorDid))
         {
             const auto v = getLabelVisibility(prefs, group);
 
@@ -454,7 +471,7 @@ bool ContentFilter::isSubscribedToLabeler(const QString& did) const
 
     ATProto::AppBskyActor::LabelerPrefItem item;
     item.mDid = did;
-    const auto& prefs = mUserPreferences.getLabelersPref();
+    const auto& prefs = mUserPreferences->getLabelersPref();
     return prefs.mLabelers.contains(item);
 }
 
@@ -466,7 +483,7 @@ bool ContentFilter::isFixedLabelerEnabled(const QString& did) const
         return false;
     }
 
-    return mUserSettings->getFixedLabelerEnabled(mUserDid, did);
+    return mUserSettings->getFixedLabelerEnabled(*mUserDid, did);
 }
 
 void ContentFilter::enableFixedLabeler(const QString& did, bool enabled)
@@ -477,14 +494,14 @@ void ContentFilter::enableFixedLabeler(const QString& did, bool enabled)
         return;
     }
 
-    mUserSettings->setFixedLabelerEnabled(mUserDid, did, enabled);
+    mUserSettings->setFixedLabelerEnabled(*mUserDid, did, enabled);
 }
 
 std::unordered_set<QString> ContentFilter::getSubscribedLabelerDids(bool includeDisabledFixedLabelers) const
 {
-    auto dids = mUserPreferences.getLabelerDids();
+    auto dids = mUserPreferences->getLabelerDids();
 
-    if (includeDisabledFixedLabelers || mUserSettings->getFixedLabelerEnabled(mUserDid, BLUESKY_MODERATOR_DID))
+    if (includeDisabledFixedLabelers || mUserSettings->getFixedLabelerEnabled(*mUserDid, BLUESKY_MODERATOR_DID))
         dids.insert(BLUESKY_MODERATOR_DID);
 
     return dids;
@@ -494,10 +511,10 @@ std::vector<QString> ContentFilter::getSubscribedLabelerDidsOrdered() const
 {
     std::vector<QString> dids;
 
-    if (mUserSettings->getFixedLabelerEnabled(mUserDid, BLUESKY_MODERATOR_DID))
+    if (mUserSettings->getFixedLabelerEnabled(*mUserDid, BLUESKY_MODERATOR_DID))
         dids.push_back(BLUESKY_MODERATOR_DID);
 
-    auto subscribedDids = mUserPreferences.getLabelerDids();
+    auto subscribedDids = mUserPreferences->getLabelerDids();
 
     for (const auto& did : subscribedDids)
         dids.push_back(did);
@@ -507,7 +524,7 @@ std::vector<QString> ContentFilter::getSubscribedLabelerDidsOrdered() const
 
 size_t ContentFilter::numLabelers() const
 {
-    return mUserPreferences.numLabelers() + 1; // +1 for Bluesky labeler
+    return mUserPreferences->numLabelers() + 1; // +1 for Bluesky labeler
 }
 
 QStringList ContentFilter::getLabelIds(const QString& labelerDid) const
@@ -561,37 +578,37 @@ void ContentFilter::removeContentGroups(const QString& did)
 void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid) const
 {
     qDebug() << "Save label ids:" << labelerDid;
-    Q_ASSERT(!mUserDid.isEmpty());
+    Q_ASSERT(!mUserDid->isEmpty());
 
-    if (mUserDid.isEmpty())
+    if (mUserDid->isEmpty())
     {
         qWarning() << "No DID";
         return;
     }
 
     const auto labels = getLabelIds(labelerDid);
-    mUserSettings->setLabels(mUserDid, labelerDid, labels);
+    mUserSettings->setLabels(*mUserDid, labelerDid, labels);
 }
 
 void ContentFilter::removeLabelIdsFromSettings(const QString &labelerDid) const
 {
     qDebug() << "Remove label ids:" << labelerDid;
-    Q_ASSERT(!mUserDid.isEmpty());
+    Q_ASSERT(!mUserDid->isEmpty());
 
-    if (mUserDid.isEmpty())
+    if (mUserDid->isEmpty())
     {
         qWarning() << "No DID";
         return;
     }
 
-    mUserSettings->removeLabels(mUserDid, labelerDid);
+    mUserSettings->removeLabels(*mUserDid, labelerDid);
 }
 
 std::unordered_set<QString> ContentFilter::getNewLabelIds(const QString& labelerDid) const
 {
-    Q_ASSERT(!mUserDid.isEmpty());
+    Q_ASSERT(!mUserDid->isEmpty());
 
-    if (mUserDid.isEmpty())
+    if (mUserDid->isEmpty())
     {
         qWarning() << "No DID";
         return {};
@@ -603,7 +620,7 @@ std::unordered_set<QString> ContentFilter::getNewLabelIds(const QString& labeler
         return {};
     }
 
-    if (!mUserSettings->containsLabeler(mUserDid, labelerDid))
+    if (!mUserSettings->containsLabeler(*mUserDid, labelerDid))
     {
         qDebug() << "No labels saved for:" << labelerDid;
         saveLabelIdsToSettings(labelerDid);
@@ -611,7 +628,7 @@ std::unordered_set<QString> ContentFilter::getNewLabelIds(const QString& labeler
     }
 
     std::unordered_set<QString> newLabels;
-    const QStringList savedLabels = mUserSettings->getLabels(mUserDid, labelerDid);
+    const QStringList savedLabels = mUserSettings->getLabels(*mUserDid, labelerDid);
     const std::unordered_set<QString> savedLabelSet(savedLabels.begin(), savedLabels.end());
     const ContentGroupMap& labelMap = mLabelerGroupMap.at(labelerDid);
 
@@ -658,7 +675,7 @@ const ATProto::UserPreferences::ContentLabelPrefs* ContentFilter::getContentLabe
 
 ATProto::UserPreferences::ContentLabelPrefs* ContentFilter::getContentLabelPrefs(const QString& listUri)
 {
-    if (listUri == "following")
+    if (listUri == FOLLOWING_LIST_URI)
         return &mFollowingPrefs;
 
     const auto it = mListPrefs.find(listUri);
@@ -718,19 +735,57 @@ void ContentFilter::createFollowingPrefs()
     emit hasFollowingPrefsChanged();
 }
 
-void ContentFilter::createListPref(const QString& listUri)
+void ContentFilter::removeFollowing()
 {
-    if (listUri == "following")
-    {
-        createFollowingPrefs();
-        return;
-    }
+    clearFollowingPrefs();
+    mUserSettings->removeContentLabelPrefList(*mUserDid, FOLLOWING_LIST_URI);
+}
 
+void ContentFilter::createListPref(const ListViewBasic& list)
+{
+    const QString listUri = list.getUri();
     mListPrefs[listUri][""] = {};
+
+    if (!mListsWithPolicies->hasList(listUri))
+    {
+        mListsWithPolicies->addList(list,
+            [this, listUri]{
+                emit listAdded(listUri);
+            },
+            [this, listUri](const QString& error, const QString& msg){
+                qDebug() << "Failed to add list:" << listUri << error << " - " << msg;
+                emit listAddingFailed(listUri, msg);
+            }
+        );
+    }
+}
+
+void ContentFilter::removeList(const QString& listUri)
+{
+    // Preference will be removed on the signal ListStore::listRemoved
+    mListsWithPolicies->removeList(listUri);
 }
 
 void ContentFilter::setListPref(const QString& listUri, const QString& labelerDid, const QString& labelId, QEnums::ContentPrefVisibility pref)
 {
+    const auto* group = getContentGroup(labelerDid, labelId);
+
+    if (group)
+    {
+        const auto defaultVisibility = getGroupPrefVisibility(*group);
+
+        if (pref == defaultVisibility)
+        {
+            qDebug() << "Label:" << labelId << "did:" << labelerDid << "visibility is default:" << pref;
+            removeListPref(listUri, labelerDid, labelId);
+            return;
+        }
+    }
+    else
+    {
+        qWarning() << "No group for label:" << labelId << "did:" << labelerDid;
+    }
+
     auto* prefs = getContentLabelPrefs(listUri);
 
     if (!prefs)
@@ -741,9 +796,9 @@ void ContentFilter::setListPref(const QString& listUri, const QString& labelerDi
 
     const bool wasEmpty = prefs->empty();
     (*prefs)[labelerDid][labelId] = (ATProto::UserPreferences::LabelVisibility)pref;
-    mUserSettings->setContentLabelPref(mUserDid, "following", labelerDid, labelId, pref);
+    mUserSettings->setContentLabelPref(*mUserDid, listUri, labelerDid, labelId, pref);
 
-    if (wasEmpty && listUri == "following")
+    if (wasEmpty && listUri == FOLLOWING_LIST_URI)
         emit hasFollowingPrefsChanged();
 
     emit listPrefsChanged(listUri, labelerDid);
@@ -760,16 +815,34 @@ void ContentFilter::removeListPref(const QString& listUri, const QString& labele
     }
 
     (*prefs)[labelerDid].erase(labelId);
-    mUserSettings->removeContentLabelPref(mUserDid, "following", labelerDid, labelId);
+    mUserSettings->removeContentLabelPref(*mUserDid, listUri, labelerDid, labelId);
     emit listPrefsChanged(listUri, labelerDid);
+}
+
+ListViewBasic ContentFilter::getList(const QString& listUri) const
+{
+    if (listUri == FOLLOWING_LIST_URI)
+        return {};
+
+    return mListsWithPolicies->getList(listUri);
 }
 
 QString ContentFilter::getListName(const QString& listUri) const
 {
-    if (listUri == "following")
+    if (listUri == FOLLOWING_LIST_URI)
         return tr("Following");
 
-    return mListsWithPolicies.getListName(listUri);
+    return mListsWithPolicies->getListName(listUri);
+}
+
+QStringList ContentFilter::getListUris() const
+{
+    auto uris = mListsWithPolicies->getListUris();
+
+    if (hasFollowingPrefs())
+        uris.push_front(FOLLOWING_LIST_URI);
+
+    return uris;
 }
 
 }

@@ -37,6 +37,7 @@ SkyPage {
 
             SkyMenu {
                 id: moreMenu
+                width: 250
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
@@ -44,9 +45,23 @@ SkyPage {
                 }
 
                 AccessibleMenuItem {
-                    text: qsTr("Add following filters")
+                    id: followingItem
+                    text: qsTr("Add filters for following")
                     enabled: !contentFilter.hasFollowingPrefs
                     onTriggered: addFollowingPrefs()
+                    MenuItemSvg { svg: SvgOutline.group }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Add filters for list")
+                    onTriggered: selectList()
+                    MenuItemSvg { svg: SvgOutline.list }
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Help")
+                    onTriggered: showHelp()
+                    MenuItemSvg { svg: SvgOutline.help }
                 }
             }
         }
@@ -65,12 +80,15 @@ SkyPage {
         Repeater {
             model: listPrefUris
 
-            AccessibleTabButton {
+            SkyTabListButton {
                 required property string modelData
                 readonly property alias listUri: listPrefTab.modelData
 
                 id: listPrefTab
-                text: contentFilter.getListName(listUri)
+                list: contentFilter.getList(listUri)
+                name: contentFilter.getListName(listUri)
+
+                onClosed: closeTab(listUri)
             }
         }
     }
@@ -84,6 +102,8 @@ SkyPage {
     }
 
     SwipeView {
+        property var prevItem: allContentItem
+
         id: swipeView
         anchors.top: tabSeparator.bottom
         anchors.bottom: parent.bottom
@@ -91,10 +111,16 @@ SkyPage {
         currentIndex: tabBar.currentIndex
 
         onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
-        onCurrentItemChanged: currentItem.saveModel()
+        onCurrentItemChanged: {
+            if (prevItem)
+                prevItem.saveModel()
+
+            prevItem = currentItem
+        }
 
         // All content
         Flickable {
+            id: allContentItem
             clip: true
             contentHeight: labelerListView.y + labelerListView.height
             flickableDirection: Flickable.VerticalFlick
@@ -164,6 +190,7 @@ SkyPage {
                     textRightPadding: 20
                     highlight: contentFilter.hasNewLabels(author.did)
                     maximumDescriptionLineCount: 3
+                    formatDescription: false
 
                     SkySvg {
                         height: 40
@@ -253,6 +280,7 @@ SkyPage {
                         width: parent.width
                         textRightPadding: 20
                         maximumDescriptionLineCount: 3
+                        formatDescription: false
                         highlight: contentFilter.hasListPref(labelPrefsList.listUri, author.did)
                         highlightColor: guiSettings.labelPrefDefaultColor
 
@@ -300,9 +328,87 @@ SkyPage {
         }
     }
 
+    Utils {
+        id: utils
+        skywalker: page.skywalker
+    }
+
+    function selectList() {
+        const modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+        skywalker.getListList(modelId)
+        let component = guiSettings.createComponent("SelectList.qml")
+        let dialog = component.createObject(page, { listModelId: modelId })
+        dialog.onAccepted.connect(() => {
+            const list = dialog.getList()
+            console.debug("Selected:", list.uri, list.name)
+
+            if (!list.isNull())
+                addListPrefs(list)
+
+            dialog.destroy()
+            skywalker.removeListListModel(modelId)
+        })
+        dialog.onNewList.connect(() => {
+            const model = skywalker.getListListModel(modelId)
+            dialog.close()
+            root.newList(model, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid(), () => { dialog.open() })
+        })
+        dialog.onRejected.connect(() => {
+            dialog.destroy()
+            skywalker.removeListListModel(modelId)
+        })
+        dialog.open()
+    }
+
     function addFollowingPrefs() {
         contentFilter.createFollowingPrefs()
-        listPrefUris.unshift("following")
+        const followingUri = utils.getFollowingUri()
+        listPrefUris.unshift(followingUri)
+    }
+
+    function removeFollowingPrefs() {
+        removeListPrefUri(utils.getFollowingUri())
+        contentFilter.removeFollowing()
+    }
+
+    function addListPrefs(list) {
+        if (listPrefUris.indexOf(list.uri) >= 0 ) {
+            skywalker.showStatusMessage(qsTr(`${list.name} already added`), QEnums.STATUS_LEVEL_INFO)
+            return
+        }
+
+        contentFilter.createListPref(list)
+        listPrefUris.push(list.uri)
+    }
+
+    function removeListPrefs(listUri) {
+        if (utils.isFollowingListUri(listUri)) {
+            removeFollowingPrefs()
+        } else {
+            removeListPrefUri(listUri)
+            contentFilter.removeList(listUri)
+        }
+    }
+
+    function closeTab(listUri) {
+        const listName = contentFilter.getListName(listUri)
+
+        guiSettings.askYesNoQuestion(page,
+            qsTr(`Do you want to remove your label preferences for ${listName}?`),
+            () => removeListPrefs(listUri)
+        )
+    }
+
+    function handleAddListFailure(listUri, error) {
+        skywalker.showStatusMessage(qsTr(`Failed to add list: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        removeListPrefUri(listUri)
+    }
+
+    function removeListPrefUri(listUri) {
+        const index = listPrefUris.indexOf(listUri)
+
+        if (index >= 0)
+            listPrefUris.splice(index, 1)
     }
 
     function sideBarButtonClicked() {
@@ -327,9 +433,27 @@ SkyPage {
         }
     }
 
+    function showHelp() {
+        guiSettings.notice(page, qsTr(
+            "Here you can set the your preferences for labeled content." +
+            "<ul>" +
+            "<li><b>show</b> - show content</li>" +
+            "<li><b>warn</b> - warn for content before showing</li>" +
+            "<li><b>hide</b> - remove content from your feeds</li>" +
+            "</ul>" +
+            "You can override your preferences set for <i>all content</i> for users you follow or users in a list. " +
+            "The preferences from <i>all content</i> will be highlighted, so you can see where you made changes.<br><br>" +
+            "The subscribed labelers are the same for all tabs. You cannot unsubscribe from a labeler for a list only.<br><br>" +
+            "For example, you can set strict preferences for <i>all content</i> and set less strict preferences for your friends.<br><br>" +
+            "NOTE: your preferences for <i>all content</i> are stored in the network and shared with other apps. Your preferences for users " +
+            "you follow and lists are stored locally on your device."
+        ))
+    }
+
     Component.onDestruction: {
         contentFilter.onSubscribedLabelersChanged.disconnect(reloadSubscribedLabelers)
         contentFilter.onListPrefsChanged.disconnect(refreshLabelers)
+        contentFilter.onListAddingFailed.disconnect(handleAddListFailure)
 
         skywalker.saveGlobalContentFilterPreferences()
 
@@ -346,10 +470,10 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        if (contentFilter.hasFollowingPrefs)
-            listPrefUris.unshift("following")
+        listPrefUris = contentFilter.getListUris()
 
         contentFilter.onSubscribedLabelersChanged.connect(reloadSubscribedLabelers)
         contentFilter.onListPrefsChanged.connect(refreshLabelers)
+        contentFilter.onListAddingFailed.connect(handleAddListFailure)
     }
 }
