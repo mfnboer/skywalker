@@ -165,7 +165,7 @@ bool ListStore::contains(const QString& did) const
     return false;
 }
 
-bool ListStore::contains(const QString& listUri, const QString& did) const
+bool ListStore::containsListMember(const QString& listUri, const QString& did) const
 {
     const auto it = mLists.find(listUri);
     return it != mLists.end() ? it->second.mStore.contains(did) : false;

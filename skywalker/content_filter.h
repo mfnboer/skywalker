@@ -10,7 +10,7 @@ namespace Skywalker {
 class IProfileStore;
 class ListViewBasic;
 class ListStore;
-class UserSettings;
+class IUserSettingsContentFilter;
 
 class IContentFilter
 {
@@ -65,7 +65,8 @@ public:
                            const IProfileStore& following,
                            ListStore& policies,
                            const ATProto::UserPreferences& userPreferences,
-                           UserSettings* userSettings, QObject* parent = nullptr);
+                           IUserSettingsContentFilter* userSettings,
+                           QObject* parent = nullptr);
 
     void clear();
     void initListPrefs();
@@ -161,7 +162,7 @@ private:
     const IProfileStore* mFollowing = nullptr;
     ListStore* mListsWithPolicies = nullptr;
     const ATProto::UserPreferences* mUserPreferences = nullptr;
-    UserSettings* mUserSettings = nullptr;
+    IUserSettingsContentFilter* mUserSettings = nullptr;
     std::unordered_map<QString, ContentGroupMap> mLabelerGroupMap; // labeler DID -> group map
 
     ATProto::UserPreferences::ContentLabelPrefs mFollowingPrefs; // labeler DID -> label visibility

@@ -70,7 +70,9 @@ SkyPage {
     SkyTabBar {
         id: tabBar
         width: parent.width
+        height: visible ? undefined : 0
         clip: true
+        visible: listPrefUris.length > 0
 
         AccessibleTabButton {
             id: tabAll

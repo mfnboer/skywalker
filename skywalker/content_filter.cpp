@@ -165,7 +165,7 @@ ContentFilter::ContentFilter(const QString& userDid,
                              const IProfileStore& following,
                              ListStore& policies,
                              const ATProto::UserPreferences& userPreferences,
-                             UserSettings* userSettings, QObject* parent) :
+                             IUserSettingsContentFilter* userSettings, QObject* parent) :
     QObject(parent),
     mUserDid(&userDid),
     mFollowing(&following),
@@ -350,7 +350,7 @@ ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityAuthorPref
         if (visibility == ATProto::UserPreferences::LabelVisibility::SHOW)
             break;
 
-        if (mListsWithPolicies->contains(listUri, authorDid))
+        if (mListsWithPolicies->containsListMember(listUri, authorDid))
         {
             const auto v = getLabelVisibility(prefs, group);
 
