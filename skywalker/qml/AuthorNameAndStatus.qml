@@ -29,7 +29,7 @@ Rectangle {
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
-            x: nameText.contentWidth + 5
+            x: nameText.advanceWidth + 5
             y: (nameText.height - height) / 2
             width: badgeSize
             height: width
@@ -44,7 +44,7 @@ Rectangle {
 
         sourceComponent: VerifierBadge {
             id: verifierStatus
-            x: nameText.contentWidth + 5 + (authorVerified ? verificationStatusLoader.item.width + 5 : 0)
+            x: nameText.advanceWidth + 5 + (authorVerified ? verificationStatusLoader.item.width + 5 : 0)
             y: (nameText.height - height) / 2
             width: badgeSize
             height: width

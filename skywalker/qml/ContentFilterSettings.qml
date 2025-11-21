@@ -70,7 +70,6 @@ SkyPage {
     SkyTabBar {
         id: tabBar
         width: parent.width
-        height: visible ? undefined : 0
         clip: true
         visible: listPrefUris.length > 0
 
@@ -97,7 +96,7 @@ SkyPage {
 
     Rectangle {
         id: tabSeparator
-        anchors.top: tabBar.bottom
+        anchors.top: tabBar.visible ? tabBar.bottom : tabBar.top
         width: parent.width
         height: 1
         color: guiSettings.separatorColor
