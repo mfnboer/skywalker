@@ -78,22 +78,15 @@ public:
 
     Q_INVOKABLE QEnums::ContentPrefVisibility getGroupPrefVisibility(
         const ContentGroup& group, const QString& listUri = {}) const;
-    QEnums::ContentVisibility getGroupVisibility(
-        const QString& authorDid,
-        const ContentGroup& group,
-        std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
-    QEnums::ContentVisibility getVisibility(
-        const QString& authorDid,
-        const ContentLabel& label,
-        std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
+
     Q_INVOKABLE bool mustShowBadge(const QString& authorDid, const ContentLabel& label) const;
-    QString getGroupWarning(const ContentGroup& group) const;
-    QString getWarning(const ContentLabel& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(
         const QString& authorDid,
         const ATProto::ComATProtoLabel::Label::List& labels,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
+
+    // Return { visibility, warning, label-index }
     std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(
         const QString& authorDid,
         const ContentLabelList& contentLabels,
@@ -149,6 +142,19 @@ private:
 
     void removeListPrefs(const QString& listUri);
     void clearFollowingPrefs();
+
+    QEnums::ContentVisibility getGroupVisibility(
+        const QString& authorDid,
+        const ContentGroup& group,
+        std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
+
+    QEnums::ContentVisibility getVisibility(
+        const QString& authorDid,
+        const ContentLabel& label,
+        std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
+
+    QString getGroupWarning(const ContentGroup& group) const;
+    QString getWarning(const ContentLabel& label) const;
 
     QStringList getLabelIds(const QString& labelerDid) const;
     ATProto::UserPreferences::LabelVisibility getVisibilityDefaultPrefs(const ContentGroup& group) const;

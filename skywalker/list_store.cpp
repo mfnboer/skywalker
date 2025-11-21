@@ -115,8 +115,14 @@ void ListStore::addList(const ListViewBasic& list, const SuccessCb& successCb, c
     mLists[uri].mList = list;
 
     loadList(uri,
-             [successCb]{ successCb(); },
-             [errorCb](const auto& error, const auto& msg){ errorCb(error, msg); });
+            [successCb]{
+                if (successCb)
+                    successCb();
+            },
+            [errorCb](const auto& error, const auto& msg){
+                if (errorCb)
+                    errorCb(error, msg);
+            });
 }
 
 void ListStore::removeList(const QString& uri)
