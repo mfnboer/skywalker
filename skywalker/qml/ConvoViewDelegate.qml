@@ -10,7 +10,7 @@ Rectangle {
     required property bool endOfList
     property var skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember.labels)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember.did, firstMember.labels)
     readonly property int margin: 10
     readonly property bool showLastReaction: !convo.lastReaction.isNull() && convo.lastReaction.reaction.createdAt > convo.lastMessageDate
 

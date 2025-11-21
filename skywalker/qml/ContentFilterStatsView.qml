@@ -9,8 +9,8 @@ SkyPage {
     readonly property string sideBarTitle: qsTr("Filtered posts")
     property string sideBarSubTitle
     readonly property SvgImage sideBarSvg: SvgOutline.hideVisibility
-    readonly property SvgImage sideBarButtonSvg: SvgOutline.info
-    readonly property string sideBarButtonName: qsTr("info")
+    readonly property SvgImage sideBarButtonSvg: SvgOutline.help
+    readonly property string sideBarButtonName: qsTr("help")
 
     id: page
 

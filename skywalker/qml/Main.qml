@@ -422,10 +422,10 @@ ApplicationWindow {
             getTimelineView().resumeTimeline(postIndex, offsetY)
         }
 
-        onGetDetailedProfileOK: (did, profile) => { // qmllint disable signal-handler-parameters
+        onGetDetailedProfileOK: (did, profile, labelPrefsListUri) => { // qmllint disable signal-handler-parameters
             Qt.callLater((p) => {
                     let modelId = getSkywalker(did).createAuthorFeedModel(profile)
-                    viewAuthor(profile, modelId, did)
+                    viewAuthor(profile, labelPrefsListUri, modelId, did)
                 },
                 profile)
         }
@@ -2119,12 +2119,13 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
-    function viewAuthor(profile, modelId, viewByDid) {
+    function viewAuthor(profile, labelPrefsListUri, modelId, viewByDid) {
         let component = guiSettings.createComponent("AuthorView.qml")
         let view = component.createObject(root, {
                 userDid: viewByDid,
                 author: profile,
                 modelId: modelId,
+                showLabelPrefsForListUri: labelPrefsListUri
         })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
@@ -2283,7 +2284,7 @@ ApplicationWindow {
         pushStack(form)
     }
 
-    function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "") {
+    function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "", doneCb = () => {}) {
         const sw = getSkywalker(userDid)
         let component = guiSettings.createComponent("EditList.qml")
         let page = component.createObject(root, {
@@ -2297,12 +2298,18 @@ ApplicationWindow {
             }
             else {
                 sw.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
-                listModel.prependList(list)
+
+                if (listModel)
+                    listModel.prependList(list)
             }
 
             root.popStack()
+            doneCb()
         })
-        page.onClosed.connect(() => { root.popStack() })
+        page.onClosed.connect(() => {
+            root.popStack()
+            doneCb()
+        })
         root.pushStack(page)
     }
 

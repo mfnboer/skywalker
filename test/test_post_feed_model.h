@@ -4,6 +4,7 @@
 #include <definitions.h>
 #include <focus_hashtags.h>
 #include <follows_activity_store.h>
+#include <list_store.h>
 #include <muted_words.h>
 #include <post_feed_model.h>
 #include <user_settings.h>
@@ -498,9 +499,10 @@ private:
     FollowsActivityStore mFollowsActivityStore{mFollowing, this};
     ProfileStore mMutedReposts;
     ProfileStore mHideLists;
+    ListStore mContentFilterPolicies;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
-    ContentFilter mContentFilter{mUserDid, mUserPreferences, &mUserSettings};
+    ContentFilter mContentFilter{mUserDid, mFollowing, mContentFilterPolicies, mUserPreferences, &mUserSettings};
     MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};

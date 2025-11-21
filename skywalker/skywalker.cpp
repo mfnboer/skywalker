@@ -3,6 +3,7 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
+#include "definitions.h"
 #include "file_utils.h"
 #include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"
@@ -12,6 +13,7 @@
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "post_thread_cache.h"
+#include "search_utils.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include "utils.h"
@@ -53,7 +55,8 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide(this),
     mUserSettings(this),
     mSessionManager(this, this),
-    mContentFilter(mUserDid, mUserPreferences, &mUserSettings, this),
+    mContentFilterPolicies(this),
+    mContentFilter(mUserDid, mUserFollows, mContentFilterPolicies, mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
@@ -73,6 +76,7 @@ Skywalker::Skywalker(QObject* parent) :
     mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
+    mContentFilterPolicies.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
@@ -89,6 +93,9 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
+
+    connect(&mContentFilterPolicies, &ListStore::listRemoved, this,
+            [this](const QString& uri){ mUserSettings.removeContentLabelPrefList(mUserDid, uri); });
 
     AuthorCache::instance().setSkywalker(this);
     AuthorCache::instance().addProfileStore(&mUserFollows);
@@ -138,7 +145,8 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mTimelineHide(this),
     mUserSettings(this),
     mSessionManager(this, this),
-    mContentFilter(mUserDid, mUserPreferences, &mUserSettings, this),
+    mContentFilterPolicies(this),
+    mContentFilter(mUserDid, mUserFollows, mContentFilterPolicies, mUserPreferences, &mUserSettings, this),
     mMutedWords(mUserFollows, this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
@@ -159,6 +167,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
+    mContentFilterPolicies.setSkywalker(this);
 
     connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
@@ -203,7 +212,7 @@ Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::S
     connect(skywalker.get(), &Skywalker::statusMessage, this, [this](auto did, auto msg, auto level, auto seconds){ emit statusMessage(did, msg, level, seconds); });
     connect(skywalker.get(), &Skywalker::statusClear, this, [this]{ emit statusClear(); });
     connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
-    connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile){ emit getDetailedProfileOK(did, profile); });
+    connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile, auto labelPrefsListUri){ emit getDetailedProfileOK(did, profile, labelPrefsListUri); });
     connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
     connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack){ emit getStarterPackViewOk(did, starterPack); });
 
@@ -642,7 +651,7 @@ void Skywalker::loadTimelineHide(QStringList uris)
     Q_ASSERT(mBsky);
     if (uris.empty())
     {
-        emit getUserPreferencesOK();
+        loadContentFilterPolicies();
         return;
     }
 
@@ -659,7 +668,7 @@ void Skywalker::loadTimelineHide(QStringList uris)
             {
                 qDebug() << "Hide list not found:" << uri << error << " - " << msg;
 
-                // The list is probbaly delete through another interface. Remove from settings.
+                // The list is probbaly deleted through another interface. Remove from settings.
                 QStringList listUris = mUserSettings.getHideLists(mUserDid);
                 listUris.removeOne(uri);
                 mUserSettings.setHideLists(mUserDid, listUris);
@@ -669,7 +678,58 @@ void Skywalker::loadTimelineHide(QStringList uris)
             else
             {
                 qWarning() << "Failed:" << error << " - " << msg;
-                emit getUserPreferencesFailed(tr("Failed to hide list %1 : %2").arg(uri, msg));
+                emit getUserPreferencesFailed(tr("Failed to load hide list %1 : %2").arg(uri, msg));
+            }
+        });
+}
+
+void Skywalker::loadContentFilterPolicies()
+{
+    qDebug() << "Load content filter policy lists";
+    const QStringList listUris = mUserSettings.getContentLabelPrefListUris(mUserDid);
+    loadContentFilterPolicies(listUris);
+}
+
+void Skywalker::loadContentFilterPolicies(QStringList uris)
+{
+    Q_ASSERT(mBsky);
+    if (uris.empty())
+    {
+        qDebug() << "All lists for content filter policies loaded";
+        mContentFilter.initListPrefs();
+        emit getUserPreferencesOK();
+        return;
+    }
+
+    const QString uri = uris.back();
+    uris.pop_back();
+
+    if (uri == FOLLOWING_LIST_URI)
+    {
+        qDebug() << "Skip following list";
+        loadContentFilterPolicies(uris);
+        return;
+    }
+
+    mContentFilterPolicies.loadList(uri,
+        [this, uri, uris]{
+            qDebug() << "Loaded:" << uri;
+            loadContentFilterPolicies(uris);
+        },
+        [this, uri, uris](const QString& error, const QString& msg){
+            if (ATProto::ATProtoErrorMsg::isListNotFound(error))
+            {
+                qDebug() << "Content filter policy list not found:" << uri << error << " - " << msg;
+
+                // The list is probbaly deleted through another interface. Remove from settings.
+                mUserSettings.removeContentLabelPrefList(mUserDid, uri);
+
+                loadContentFilterPolicies(uris);
+            }
+            else
+            {
+                qWarning() << "Failed:" << error << " - " << msg;
+                emit getUserPreferencesFailed(tr("Failed to load hide list %1 : %2").arg(uri, msg));
             }
         });
 }
@@ -680,8 +740,8 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
 
     if (!mIsActiveUser)
     {
-        qDebug() << "Do not load muted repost for other users than the active user";
-        emit getUserPreferencesOK();
+        qDebug() << "Do not load muted repost, not timelineHide lists for other users than the active user";
+        loadContentFilterPolicies();
         return;
     }
 
@@ -2145,18 +2205,18 @@ void Skywalker::getNotificationsNextPage(bool mentionsOnly)
     getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, mentionsOnly, false, cursor);
 }
 
-void Skywalker::getDetailedProfile(const QString& author)
+void Skywalker::getDetailedProfile(const QString& author, const QString& labelPrefsListUri)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get detailed profile:" << author;
     incGetDetailedProfileInProgress();
 
     mBsky->getProfile(author,
-        [this](auto profile){
+        [this, labelPrefsListUri](auto profile){
             decGetDetailedProfileInProgress();
             const DetailedProfile detailedProfile(profile);
             AuthorCache::instance().put(detailedProfile);
-            emit getDetailedProfileOK(mUserDid, detailedProfile);
+            emit getDetailedProfileOK(mUserDid, detailedProfile, labelPrefsListUri);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getDetailedProfile failed:" << error << " - " << msg;
@@ -2808,6 +2868,18 @@ void Skywalker::getLabelersAuthorList(int modelId)
             {
                 (*model)->setGetFeedInProgress(false);
                 (*model)->clear();
+                std::sort(profileDetailedList.begin(), profileDetailedList.end(),
+                    [](const auto& lhs, const auto& rhs){
+                        if (lhs->mDid == ContentFilter::BLUESKY_MODERATOR_DID && lhs->mDid != rhs->mDid)
+                            return true;
+
+                        if (rhs->mDid == ContentFilter::BLUESKY_MODERATOR_DID && rhs->mDid != lhs->mDid)
+                            return false;
+
+                        return SearchUtils::normalizedCompare(
+                            lhs->mDisplayName.value_or(lhs->mHandle),
+                            rhs->mDisplayName.value_or(rhs->mHandle)) < 0;
+                    });
                 (*model)->addAuthors(std::move(profileDetailedList), "");
             }
         },
@@ -3716,21 +3788,21 @@ ContentGroup Skywalker::getContentGroup(const QString& did, const QString& label
     return ContentGroup(labelId, did);
 }
 
-QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels) const
+QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels, const QString& authorDid) const
 {
-    const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(contentLabels);
+    const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(authorDid, contentLabels);
     return visibility;
 }
 
-QString Skywalker::getContentWarning(const ContentLabelList& contentLabels) const
+QString Skywalker::getContentWarning(const ContentLabelList& contentLabels, const QString& authorDid) const
 {
-    const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(contentLabels);
+    const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(authorDid, contentLabels);
     return warning;
 }
 
-QString Skywalker::getContentLabelerDid(const ContentLabelList& contentLabels) const
+QString Skywalker::getContentLabelerDid(const ContentLabelList& contentLabels, const QString& authorDid) const
 {
-    const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(contentLabels);
+    const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(authorDid, contentLabels);
 
     if (visibility == QEnums::CONTENT_VISIBILITY_SHOW)
         return {};
@@ -3743,14 +3815,25 @@ QString Skywalker::getContentLabelerDid(const ContentLabelList& contentLabels) c
 
 const ContentGroupListModel* Skywalker::getGlobalContentGroupListModel()
 {
-    mGlobalContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, this);
+    mGlobalContentGroupListModel = std::make_unique<ContentGroupListModel>(mContentFilter, "", this);
     mGlobalContentGroupListModel->setGlobalContentGroups();
     return mGlobalContentGroupListModel.get();
 }
 
-int Skywalker::createContentGroupListModel(const QString& did, const LabelerPolicies& policies)
+int Skywalker::createGlobalContentGroupListModel(const QString& listUri)
 {
-    auto model = std::make_unique<ContentGroupListModel>(did, mContentFilter, this);
+    auto model = std::make_unique<ContentGroupListModel>(mContentFilter, listUri, this);
+    model->setGlobalContentGroups();
+    connect(model.get(), &ContentGroupListModel::error, this, [this](QString error)
+            { showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
+    return mContentGroupListModels.put(std::move(model));
+}
+
+int Skywalker::createContentGroupListModel(const QString& labelerDid,
+                                           const LabelerPolicies& policies,
+                                           const QString& listUri)
+{
+    auto model = std::make_unique<ContentGroupListModel>(labelerDid, mContentFilter, listUri, this);
     model->setContentGroups(policies.getContentGroupList());
     connect(model.get(), &ContentGroupListModel::error, this, [this](QString error)
             { showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
@@ -3783,10 +3866,13 @@ void Skywalker::saveGlobalContentFilterPreferences()
     saveContentFilterPreferences(mGlobalContentGroupListModel.get());
 }
 
-void Skywalker::saveContentFilterPreferences(const ContentGroupListModel* model)
+void Skywalker::saveContentFilterPreferences(ContentGroupListModel* model)
 {
     Q_ASSERT(model);
-    qDebug() << "Save label preferences, labeler DID:" << model->getLabelerDid();
+    if (!model)
+        return;
+
+    qDebug() << "Save label preferences, labeler DID:" << model->getLabelerDid() << "list:" << model->getListUri();
 
     if (!model->isModified(mUserPreferences))
     {
@@ -3794,11 +3880,18 @@ void Skywalker::saveContentFilterPreferences(const ContentGroupListModel* model)
         return;
     }
 
+    if (model->hasListPrefs())
+    {
+        model->saveToContentFilter();
+        emit mContentFilter.contentGroupsChanged(model->getListUri());
+        return;
+    }
+
     auto prefs = mUserPreferences;
     model->saveTo(prefs);
     saveUserPreferences(prefs, [this]{
         initLabelers();
-        emit mContentFilter.contentGroupsChanged();
+        emit mContentFilter.contentGroupsChanged("");
     });
 }
 
@@ -4261,6 +4354,7 @@ void Skywalker::signOut()
     mUserFollows.clear();
     mMutedReposts.clear();
     mTimelineHide.clear();
+    mContentFilterPolicies.clear();
     setUnreadNotificationCount(0);
     mBookmarksModel = nullptr;
     mMutedWords.clear();

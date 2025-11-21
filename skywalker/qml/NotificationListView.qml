@@ -34,21 +34,16 @@ SkyPage {
     SkyTabBar {
         id: tabBar
         width: parent.width - (root.showSideBar ? moreOptions.width + page.margin : 0)
-        Material.background: guiSettings.backgroundColor
-        leftPadding: page.margin
-        rightPadding: page.margin
         clip: true
 
         SkyTabCounterButton {
             id: tabAll
             counter: sessionManager.activeUserUnreadNotificationCount
             text: qsTr("All")
-            width: implicitWidth;
         }
         AccessibleTabButton {
             id: tabMentions
             text: qsTr("Mentions")
-            width: implicitWidth;
         }
 
         Repeater {

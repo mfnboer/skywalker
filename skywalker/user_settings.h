@@ -12,15 +12,50 @@
 
 namespace Skywalker {
 
-class IUserSettings
+class IUserSettingsAnniversary
 {
 public:
-    virtual ~IUserSettings() = default;
+    virtual ~IUserSettingsAnniversary() = default;
     virtual QDate getAnniversaryNoticeDate(const QString& did) const = 0;
     virtual void setAnniversaryNoticeDate(const QString& did, QDate date) = 0;
 };
 
-class UserSettings : public QObject, public IUserSettings
+class IUserSettingsContentFilter
+{
+public:
+    virtual ~IUserSettingsContentFilter() = default;
+
+    // listUri can be "following" for label prefs for your following list
+    virtual void setContentLabelPref(
+        const QString& did, const QString& listUri, const QString& labelerDid,
+        const QString& labelId, QEnums::ContentPrefVisibility pref) = 0;
+
+    virtual QEnums::ContentPrefVisibility getContentLabelPref(
+        const QString& did, const QString& listUri,
+        const QString& labelerDid, const QString& labelId) const = 0;
+
+    virtual void removeContentLabelPref(const QString& did, const QString& listUri, const QString& labelerDid,
+                                const QString& labelId) = 0;
+
+    virtual void removeContentLabelPrefList(const QString& did, QString listUri) = 0;
+
+    // tuple: listUri, labelerDid, labelId
+    virtual std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const = 0;
+
+    virtual QStringList getContentLabelPrefListUris(const QString& did) const = 0;
+
+    virtual QStringList getLabels(const QString& did, const QString& labelerDid) const = 0;
+    virtual void setLabels(const QString& did, const QString& labelerDid, const QStringList labels) = 0;
+    virtual void removeLabels(const QString& did, const QString& labelerDid) = 0;
+    virtual bool containsLabeler(const QString& did, const QString& labelerDid) const = 0;
+
+    virtual bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const = 0;
+    virtual void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled) = 0;
+};
+
+class UserSettings : public QObject,
+                     public IUserSettingsAnniversary,
+                     public IUserSettingsContentFilter
 {
     Q_OBJECT
     Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
@@ -182,6 +217,25 @@ public:
 
     void setHideLists(const QString& did, const QStringList& listUris);
     QStringList getHideLists(const QString& did) const;
+
+    // listUri can be "following" for label prefs for your following list
+    void setContentLabelPref(
+        const QString& did, const QString& listUri, const QString& labelerDid,
+        const QString& labelId, QEnums::ContentPrefVisibility pref) override;
+
+    QEnums::ContentPrefVisibility getContentLabelPref(
+        const QString& did, const QString& listUri,
+        const QString& labelerDid, const QString& labelId) const  override;
+
+    void removeContentLabelPref(const QString& did, const QString& listUri, const QString& labelerDid,
+                                const QString& labelId) override;
+
+    void removeContentLabelPrefList(const QString& did, QString listUri) override;
+
+    // tuple: listUri, labelerDid, labelId
+    std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const override;
+
+    QStringList getContentLabelPrefListUris(const QString& did) const override;
 
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
@@ -396,13 +450,13 @@ public:
     const QJsonDocument getFocusHashtags(const QString& did) const;
     void setFocusHashtags(const QString& did, const QJsonDocument& jsonHashtags);
 
-    QStringList getLabels(const QString& did, const QString& labelerDid) const;
-    void setLabels(const QString& did, const QString& labelerDid, const QStringList labels);
-    void removeLabels(const QString& did, const QString& labelerDid);
-    bool containsLabeler(const QString& did, const QString& labelerDid) const;
+    QStringList getLabels(const QString& did, const QString& labelerDid) const override;
+    void setLabels(const QString& did, const QString& labelerDid, const QStringList labels) override;
+    void removeLabels(const QString& did, const QString& labelerDid) override;
+    bool containsLabeler(const QString& did, const QString& labelerDid) const override;
 
-    bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const;
-    void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled);
+    bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const override;
+    void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled) override;
 
     SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
@@ -454,6 +508,8 @@ private:
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
     QString fixedLabelerKey(const QString& did, const QString& labelerDid) const;
+    QString labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
+                           const QString& labelId) const;
     void cleanup();
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;

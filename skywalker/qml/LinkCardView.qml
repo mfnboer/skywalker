@@ -74,7 +74,7 @@ RoundCornerMask {
             color: Material.foreground
             plainText: card.title
             wrapMode: Text.Wrap
-            maximumLineCount: 2
+            maximumLineCount: 3
             textFormat: titleIsHtml ? Text.RichText : Text.PlainText
             elide: titleIsHtml ? Text.ElideNone : Text.ElideRight
             font.bold: true
@@ -88,7 +88,7 @@ RoundCornerMask {
             color: Material.foreground
             plainText: card.description ? card.description : card.uri
             wrapMode: Text.Wrap
-            maximumLineCount: 5
+            maximumLineCount: 8
             textFormat: descriptionIsHtml ? Text.RichText : Text.PlainText
             elide: descriptionIsHtml ? Text.ElideNone : Text.ElideRight
         }

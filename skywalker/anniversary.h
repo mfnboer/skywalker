@@ -12,7 +12,7 @@ class Anniversary : public QObject
     Q_OBJECT
 
 public:
-    explicit Anniversary(const QString& userDid, IUserSettings& userSettings, QObject* parent = nullptr);
+    explicit Anniversary(const QString& userDid, IUserSettingsAnniversary& userSettings, QObject* parent = nullptr);
 
     Q_INVOKABLE bool isAnniversary(QDate date = QDate::currentDate()) const;
     Q_INVOKABLE int getAnniversaryYears(QDate date = QDate::currentDate()) const;
@@ -21,7 +21,7 @@ public:
 
 private:
     const QString& mUserDid;
-    IUserSettings& mUserSettings;
+    IUserSettingsAnniversary& mUserSettings;
     QDateTime mFirstAppearance;
 };
 

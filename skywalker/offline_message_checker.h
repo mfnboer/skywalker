@@ -3,6 +3,7 @@
 #pragma once
 #include "content_filter.h"
 #include "image_reader.h"
+#include "list_store.h"
 #include "muted_words.h"
 #include "notification_list_model.h"
 #include "user_settings.h"
@@ -92,6 +93,7 @@ private:
     ATProto::UserPreferences mUserPreferences;
     ATProto::AppBskyNotification::Preferences::SharedPtr mNotificationPrefs;
     ProfileStore mUserFollows;
+    ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     MutedWords mMutedWords;
     NotificationListModel mNotificationListModel;

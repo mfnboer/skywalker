@@ -8,12 +8,15 @@ Rectangle {
     property string userDid
     property bool isLast: false
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property ContentFilter contentFilter: skywalker.getContentFilter()
     required property var model
     required property bool isSubscribed
     required property bool adultContent
     required property contentgroup contentGroup
     required property int contentPrefVisibility
     required property bool isNewLabel
+    required property bool isListPref
+    readonly property int defaultPrefVisibility: contentFilter.getGroupPrefVisibility(contentGroup)
 
     id: contentGroupView
     height: contentGroupColumn.height
@@ -102,6 +105,7 @@ Rectangle {
                 Layout.fillWidth: true
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW
                 horizontalAlignment: Qt.AlignHCenter
+                labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW ? guiSettings.labelPrefDefaultColor : "transparent"
                 text: contentGroup.isBadge ? qsTr("Off") : qsTr("Show");
                 visible: !contentGroup.isAdult || adultContent
                 onCheckedChanged: {
@@ -115,6 +119,7 @@ Rectangle {
                 Layout.fillWidth: true
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN
                 horizontalAlignment: Qt.AlignHCenter
+                labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN ? guiSettings.labelPrefDefaultColor : "transparent"
                 text: contentGroup.isBadge ? qsTr("Show badge") : qsTr("Warn");
                 visible: !contentGroup.isAdult || adultContent
                 onCheckedChanged: {
@@ -129,6 +134,7 @@ Rectangle {
                 Layout.fillWidth: true
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE
                 horizontalAlignment: Qt.AlignHCenter
+                labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE ? guiSettings.labelPrefDefaultColor : "transparent"
                 text: qsTr("Hide");
                 visible: !contentGroup.isAdult || adultContent
                 onCheckedChanged: {

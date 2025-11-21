@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
 Text {
     required property string plainText
     property string elidedText
+    property bool showEllipsis: true
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
@@ -15,7 +17,9 @@ Text {
 
     id: theText
     height: mustElideRich && wrapMode !== Text.NoWrap ?
-                Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
+        Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
+    Layout.maximumHeight: mustElideRich && wrapMode !== Text.NoWrap ?
+        capLineCount * fontMetrics.height + topPadding + bottomPadding : -1
     clip: true
     color: guiSettings.textColor
 
@@ -95,8 +99,9 @@ Text {
     }
 
     Loader {
-        active: theText.height > 0 && theText.height < theText.contentHeight
+        active: theText.height > 0 && theText.height < theText.contentHeight && showEllipsis
         anchors.right: parent.right
+        anchors.rightMargin: parent.rightPadding
         anchors.bottom: parent.bottom
         visible: status == Loader.Ready
 
