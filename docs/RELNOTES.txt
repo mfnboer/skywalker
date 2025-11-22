@@ -7,6 +7,7 @@ next
 * Side bar can be enabled in portait mode
 * Width of side bar can be changed
 * Sorting orders for replies in a post thread
+* Support new report categories and reasons from Bluesky
 * Bug fixes
 
 4.18

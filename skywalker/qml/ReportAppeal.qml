@@ -93,7 +93,7 @@ SkyPage {
             parentPage: page
             parentFlick: flick
             placeholderText: qsTr("Please explain why you think this label was incorrectly applied.")
-            maxLength: 2000
+            maxLength: reportUtils.REPORT_DETAILS_SIZE
         }
     }
 
@@ -115,11 +115,11 @@ SkyPage {
 
     function sendAppeal() {
         if (label.appliesToActor()) {
-            reportUtils.reportAuthor(label.getActorDid(), QEnums.REPORT_REASON_TYPE_APPEAL,
+            reportUtils.reportAuthor(label.getActorDid(), QEnums.REPORT_REASON_TYPE_OZONE_APPEAL,
                                      detailsText.text, label.did)
         }
         else {
-            reportUtils.reportPostOrFeed(label.uri, label.cid, QEnums.REPORT_REASON_TYPE_APPEAL,
+            reportUtils.reportPostOrFeed(label.uri, label.cid, QEnums.REPORT_REASON_TYPE_OZONE_APPEAL,
                                          detailsText.text, label.did)
         }
     }

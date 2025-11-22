@@ -304,19 +304,6 @@ void ContentGroupListModel::saveToContentFilter()
 
         Q_ASSERT(contentGroup.isGlobal() == ContentFilter::isGlobalLabel(label) || ContentFilter::isOverridableSytemLabelId(label));
         mContentFilter->setListPref(mListUri, labelerDid, label, visibility);
-
-        // TODO
-        // const auto defaultVisibility = mContentFilter->getGroupPrefVisibility(contentGroup);
-
-        // if (visibility == defaultVisibility)
-        // {
-        //     qDebug() << "Label:" << label << "did:" << labelerDid << "visibility is default:" << visibility;
-        //     mContentFilter->removeListPref(mListUri, labelerDid, label);
-        // }
-        // else
-        // {
-        //     mContentFilter->setListPref(mListUri, labelerDid, label, visibility);
-        // }
     }
 }
 

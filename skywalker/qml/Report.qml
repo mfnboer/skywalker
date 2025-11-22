@@ -16,8 +16,9 @@ SkyPage {
     property starterpackview starterPack
     property string convoId
     property messageview message
+    property int categoryType: QEnums.REPORT_CATEGORY_TYPE_NULL // QEnums.CategoryType
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
-    property string details
+    readonly property string details: detailsText.text
     readonly property int labelerAuthorListModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LABELERS, "")
 
     signal closed
@@ -77,213 +78,371 @@ SkyPage {
         }
     }
 
-    AccessibleText {
-        id: labelerHeaderText
-        x: 10
-        width: parent.width - 20
-        height: visible ? implicitHeight : 0
-        font.pointSize: guiSettings.scaledFont(9/8)
-        font.bold: true
-        text: qsTr("Report to:")
-        visible: labelerComboBox.visible
+    footer: Rectangle {
+        id: pageFooter
+        width: page.width
+        height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
+        z: guiSettings.footerZLevel
+        color: guiSettings.footerColor
+        visible: detailsText.activeFocus
+
+        TextLengthBar {
+            textField: detailsText
+        }
+
+        TextLengthCounter {
+            y: 10
+            anchors.rightMargin: 10
+            anchors.right: parent.right
+            textField: detailsText
+        }
     }
 
-    AuthorComboBox {
-        id: labelerComboBox
-        anchors.top: labelerHeaderText.bottom
+    Rectangle {
+        id: quotedText
         x: 10
         width: parent.width - 20
-        height: visible ? implicitHeight : 0
-        model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
-        visible: count > 1 && message.isNull()
-    }
+        height: calcHeight()
+        radius: 3
+        color: guiSettings.postHighLightColor
+        border.width: 1
+        border.color: guiSettings.borderHighLightColor
 
-    ListView {
-        id: reasonList
-        anchors.top: labelerComboBox.bottom
-        anchors.bottom: parent.bottom
-        x: 10
-        width: parent.width - 20
-        spacing: 0
-        boundsBehavior: Flickable.StopAtBounds
-        clip: true
-        model: reportUtils.getReportReasons(getReportTarget())
+        function calcHeight() {
+            if (quotePost.visible)
+                return quotePost.height
 
-        header: Rectangle {
-            z: guiSettings.headerZLevel
+            if (quoteMessage.visible)
+                return quoteMessage.height
+
+            if (authorRow.visible)
+                return authorRow.height
+
+            if (quoteFeed.visible)
+                return quoteFeed.height
+
+            if (quoteList.visible)
+                return quoteList.height
+
+            if (quoteStarterPack.visible)
+                return quoteStarterPack.height
+        }
+
+        RowLayout {
+            id: authorRow
             width: parent.width
-            height: calcHeight()
-            radius: 3
-            color: guiSettings.postHighLightColor
-            border.width: 1
-            border.color: guiSettings.borderHighLightColor
+            spacing: 10
+            visible: !postUri && message.isNull() && !page.author.isNull()
 
-            function calcHeight() {
-                if (quotePost.visible)
-                    return quotePost.height
+            Rectangle {
+                Layout.preferredWidth: 60
+                Layout.preferredHeight: 60
+                color: "transparent"
 
-                if (quoteMessage.visible)
-                    return quoteMessage.height
-
-                if (authorRow.visible)
-                    return authorRow.height
-
-                if (quoteFeed.visible)
-                    return quoteFeed.height
-
-                if (quoteList.visible)
-                    return quoteList.height
-
-                if (quoteStarterPack.visible)
-                    return quoteStarterPack.height
-            }
-
-            RowLayout {
-                id: authorRow
-                width: parent.width
-                spacing: 10
-                visible: !postUri && message.isNull() && !page.author.isNull()
-
-                Rectangle {
-                    Layout.preferredWidth: 60
-                    Layout.preferredHeight: 60
-                    color: "transparent"
-
-                    Avatar {
-                        x: 10
-                        y: 10
-                        width: 40
-                        userDid: page.userDid
-                        author: page.author
-                    }
-                }
-                Column {
-                    Layout.fillWidth: true
-
-                    AuthorNameAndStatus {
-                        width: parent.width
-                        userDid: page.userDid
-                        author: page.author
-                    }
-                    Text {
-                        width: parent.width
-                        elide: Text.ElideRight
-                        font.pointSize: guiSettings.scaledFont(7/8)
-                        color: guiSettings.handleColor
-                        text: author.handle ? `@${author.handle}` : ""
-
-                        Accessible.ignored: true
-                    }
+                Avatar {
+                    x: 10
+                    y: 10
+                    width: 40
+                    userDid: page.userDid
+                    author: page.author
                 }
             }
+            Column {
+                Layout.fillWidth: true
 
-            QuotePost {
-                id: quotePost
-                width: parent.width
-                userDid: page.userDid
-                author: page.author
-                postText: page.postText
-                postDateTime: page.postDateTime
-                postBackgroundColor: parent.color.toString()
-                visible: page.postUri
-            }
-
-            QuotePost {
-                id: quoteMessage
-                width: parent.width
-                userDid: page.userDid
-                author: page.author
-                postText: page.message.formattedText
-                postDateTime: message.sentAt
-                postBackgroundColor: parent.color.toString()
-                visible: !page.message.isNull()
-            }
-
-            QuoteFeed {
-                id: quoteFeed
-                width: parent.width
-                userDid: page.userDid
-                feed: page.feed
-                visible: !page.feed.isNull();
-            }
-
-            QuoteList {
-                id: quoteList
-                width: parent.width
-                userDid: page.userDid
-                list: page.list
-                visible: !page.list.isNull();
-            }
-
-            QuoteStarterPack {
-                id: quoteStarterPack
-                width: parent.width
-                userDid: page.userDid
-                starterPack: page.starterPack
-                visible: !page.starterPack.isNull()
-            }
-        }
-        headerPositioning: ListView.OverlayHeader
-
-        footer: Rectangle {
-            z: guiSettings.headerZLevel
-            width: parent.width
-            height: guiSettings.footerHeight
-            color: "transparent"
-
-            SkyButton {
-                id: detailsButton
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: details ? qsTr("Modify details") : qsTr("Add details")
-                onClicked: page.editDetails()
-            }
-        }
-        footerPositioning: ListView.OverlayFooter
-
-        delegate: SkyRoundRadioButton {
-            required property reportreason modelData
-            property alias reportReason: reasonEntry.modelData
-
-            id: reasonEntry
-            width: reasonList.width
-            height: titleText.height + descriptionText.height
-            leftPadding: 10
-            rightPadding: 10
-
-            contentItem: Column {
-                id: buttonText
-                anchors.top: parent.top
-                anchors.left: reasonEntry.indicator.right
-                anchors.leftMargin: 20
-                width: parent.width - reasonEntry.indicator.width - 20
-
-                Text {
-                    id: titleText
-                    topPadding: 5
-                    width: parent.width - 20
-                    wrapMode: Text.Wrap
-                    font.bold: true
-                    color: guiSettings.textColor
-                    text: reasonEntry.reportReason.title
+                AuthorNameAndStatus {
+                    width: parent.width
+                    userDid: page.userDid
+                    author: page.author
                 }
                 Text {
-                    id: descriptionText
-                    bottomPadding: 5
-                    width: parent.width - 20
-                    wrapMode: Text.Wrap
-                    color: guiSettings.textColor
+                    width: parent.width
+                    elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
-                    text: reasonEntry.reportReason.description
+                    color: guiSettings.handleColor
+                    text: author.handle ? `@${author.handle}` : ""
+
+                    Accessible.ignored: true
                 }
             }
+        }
 
-            onCheckedChanged: {
-                if (checked)
-                    page.reasonType = reasonEntry.reportReason.type
+        QuotePost {
+            id: quotePost
+            width: parent.width
+            userDid: page.userDid
+            author: page.author
+            postText: page.postText
+            postDateTime: page.postDateTime
+            postBackgroundColor: parent.color.toString()
+            visible: page.postUri
+        }
+
+        QuotePost {
+            id: quoteMessage
+            width: parent.width
+            userDid: page.userDid
+            author: page.author
+            postText: page.message.formattedText
+            postDateTime: message.sentAt
+            postBackgroundColor: parent.color.toString()
+            visible: !page.message.isNull()
+        }
+
+        QuoteFeed {
+            id: quoteFeed
+            width: parent.width
+            userDid: page.userDid
+            feed: page.feed
+            visible: !page.feed.isNull();
+        }
+
+        QuoteList {
+            id: quoteList
+            width: parent.width
+            userDid: page.userDid
+            list: page.list
+            visible: !page.list.isNull();
+        }
+
+        QuoteStarterPack {
+            id: quoteStarterPack
+            width: parent.width
+            userDid: page.userDid
+            starterPack: page.starterPack
+            visible: !page.starterPack.isNull()
+        }
+    }
+
+    Flickable {
+        id: flick
+        anchors.top: quotedText.bottom
+        anchors.topMargin: 10
+        anchors.bottom: parent.bottom
+        clip: true
+        width: parent.width
+        contentHeight: contentItem.childrenRect.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
+
+        AccessibleText {
+            id: labelerHeaderText
+            x: 10
+            width: parent.width - 20
+            height: visible ? implicitHeight : 0
+            font.pointSize: guiSettings.scaledFont(9/8)
+            font.bold: true
+            text: qsTr("1. Report to:")
+            visible: labelerComboBox.visible
+        }
+
+        AuthorComboBox {
+            id: labelerComboBox
+            anchors.top: labelerHeaderText.bottom
+            anchors.topMargin: 10
+            x: 10
+            width: parent.width - 20
+            height: visible ? implicitHeight : 0
+            model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
+            enabled: count > 1 && message.isNull()
+        }
+
+        AccessibleText {
+            id: categoryHeader
+            anchors.top: labelerComboBox.bottom
+            topPadding: 10
+            bottomPadding: 10
+            x: 10
+            width: parent.width - 20
+            font.pointSize: guiSettings.scaledFont(9/8)
+            font.bold: true
+            text: qsTr("2. Why should this post be reviewed?")
+        }
+
+        Rectangle {
+            id: categorySection
+            anchors.top: categoryHeader.bottom
+            x: 10
+            width: parent.width - 20
+            height: categoryList.height + 20
+            radius: guiSettings.radius
+            color: guiSettings.textInputBackgroundColor
+
+            ListView {
+                id: categoryList
+                x: 10
+                y: 10
+                width: parent.width - 20
+                height: contentHeight
+                spacing: 0
+                boundsBehavior: Flickable.StopAtBounds
+                clip: true
+                model: reportUtils.getReportCategories()
+
+                delegate: SkyRoundRadioButton {
+                    required property reportcategory modelData
+                    property alias categoryReason: categoryEntry.modelData
+
+                    id: categoryEntry
+                    width: categoryList.width
+                    height: titleText.height + descriptionText.height
+                    leftPadding: 10
+                    rightPadding: 10
+
+                    contentItem: Column {
+                        id: buttonText
+                        anchors.top: parent.top
+                        anchors.left: categoryEntry.indicator.right
+                        anchors.leftMargin: 20
+                        width: parent.width - categoryEntry.indicator.width - 20
+
+                        Text {
+                            id: titleText
+                            topPadding: 5
+                            width: parent.width - 20
+                            wrapMode: Text.Wrap
+                            font.bold: true
+                            color: guiSettings.textColor
+                            text: categoryEntry.categoryReason.title
+                        }
+                        Text {
+                            id: descriptionText
+                            bottomPadding: 5
+                            width: parent.width - 20
+                            wrapMode: Text.Wrap
+                            color: guiSettings.textColor
+                            font.pointSize: guiSettings.scaledFont(7/8)
+                            text: categoryEntry.categoryReason.description
+                        }
+                    }
+
+                    onCheckedChanged: {
+                        if (checked)
+                        {
+                            page.reasonType = QEnums.REPORT_REASON_TYPE_NULL
+                            page.categoryType = categoryEntry.categoryReason.type
+                        }
+                    }
+
+                    Component.onCompleted: {
+                        categoryEntry.indicator.x = 0
+                    }
+                }
             }
+        }
 
-            Component.onCompleted: {
-                reasonEntry.indicator.x = 0
+        AccessibleText {
+            id: reasonHeader
+            anchors.top: categorySection.bottom
+            topPadding: 10
+            bottomPadding: 10
+            x: 10
+            width: parent.width - 20
+            font.pointSize: guiSettings.scaledFont(9/8)
+            font.bold: true
+            text: qsTr("3. Select a reason")
+        }
+
+        Rectangle {
+            id: reasonSection
+            anchors.top: reasonHeader.bottom
+            x: 10
+            width: parent.width - 20
+            height: reasonList.height + 20
+            radius: guiSettings.radius
+            color: guiSettings.textInputBackgroundColor
+            visible: page.categoryType !== QEnums.REPORT_CATEGORY_TYPE_NULL
+
+            ListView {
+                id: reasonList
+                x: 10
+                y: 10
+                width: parent.width - 20
+                height: contentHeight
+                spacing: 5
+                boundsBehavior: Flickable.StopAtBounds
+                clip: true
+                model: reportUtils.getReportReasons(page.categoryType)
+
+                onModelChanged: {
+                    if (model.length === 1)
+                        page.reasonType = model[0].type
+                }
+
+                delegate: SkyRoundRadioButton {
+                    required property reportreason modelData
+                    property alias reportReason: reasonEntry.modelData
+
+                    id: reasonEntry
+                    width: reasonList.width
+                    height: reasonTitleText.height
+                    leftPadding: 10
+                    rightPadding: 10
+
+                    contentItem: Column {
+                        anchors.top: parent.top
+                        anchors.left: reasonEntry.indicator.right
+                        anchors.leftMargin: 20
+                        width: parent.width - reasonEntry.indicator.width - 20
+
+                        Text {
+                            id: reasonTitleText
+                            topPadding: 5
+                            bottomPadding: 5
+                            width: parent.width - 20
+                            wrapMode: Text.Wrap
+                            font.bold: true
+                            color: guiSettings.textColor
+                            text: reasonEntry.reportReason.title
+                        }
+                    }
+
+                    checked: page.reasonType === reasonEntry.reportReason.type
+
+                    onCheckedChanged: {
+                        if (checked)
+                            page.reasonType = reasonEntry.reportReason.type
+                    }
+
+                    Component.onCompleted: {
+                        reasonEntry.indicator.x = 0
+                    }
+                }
+            }
+        }
+
+        AccessibleText {
+            id: detailsHeader
+            anchors.top: reasonSection.bottom
+            topPadding: 10
+            bottomPadding: 10
+            x: 10
+            width: parent.width - 20
+            font.pointSize: guiSettings.scaledFont(9/8)
+            font.bold: true
+            text: qsTr("4. Details")
+        }
+
+        Rectangle {
+            anchors.top: detailsHeader.bottom
+            x: 10
+            width: parent.width - 20
+            height: detailsText.height
+            radius: guiSettings.radius
+            border.width: detailsText.activeFocus ? 1 : 0
+            border.color: guiSettings.buttonColor
+            color: guiSettings.textInputBackgroundColor
+            visible: page.reasonType !== QEnums.REPORT_REASON_TYPE_NULL
+
+            SkyFormattedTextEdit {
+                id: detailsText
+                width: parent.width
+                topPadding: 10
+                bottomPadding: 10
+                parentPage: page
+                parentFlick: flick
+                placeholderText: qsTr("Additional details (optional)")
+                maxLength: reportUtils.REPORT_DETAILS_SIZE
             }
         }
     }
@@ -300,15 +459,8 @@ SkyPage {
         onReportFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-
-    function editDetails() {
-        let component = guiSettings.createComponent("ReportDetailsEditor.qml")
-        let detailsPage = component.createObject(page, { text: page.details })
-        detailsPage.onDetailsChanged.connect((text) => { // qmllint disable missing-property
-                page.details = text
-                root.popStack()
-        })
-        root.pushStack(detailsPage)
+    VirtualKeyboardHandler {
+        id: keyboardHandler
     }
 
     function sendReport() {
@@ -353,24 +505,6 @@ SkyPage {
 
         console.warn("UKNOWN REPORT")
         return "Report"
-    }
-
-    function getReportTarget() {
-        if (postUri)
-            return QEnums.REPORT_TARGET_POST
-        if (!message.isNull())
-            return QEnums.REPORT_DIRECT_MESSAGE
-        if (!author.isNull())
-            return QEnums.REPORT_TARGET_ACCOUNT
-        if (!feed.isNull())
-            return QEnums.REPORT_TARGET_FEED
-        if (!list.isNull())
-            return QEnums.REPORT_TARGET_LIST
-        if (!starterPack.isNull())
-            return QEnums.REPORT_TARGET_STARTERPACK
-
-        console.warn("UKNOWN REPORT TARGET")
-        return QEnums.REPORT_TARGET_POST
     }
 
     Component.onDestruction: {

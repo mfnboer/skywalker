@@ -232,7 +232,6 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Name")
             }
 
@@ -359,38 +358,6 @@ SkyPage {
                     return !Boolean(link) || linkUtils.isWebLink(link)
                 }
             }
-
-            // Rectangle {
-            //     id: websiteRect
-            //     Layout.fillWidth: true
-            //     Layout.preferredHeight: websiteField.height
-            //     radius: 5
-            //     border.width: 1
-            //     border.color: guiSettings.borderColor
-            //     color: websiteField.isValid() ? "transparent" : guiSettings.textInputInvalidColor
-
-            //     SkyTextEdit {
-            //         id: websiteField
-            //         width: parent.width
-            //         topPadding: 10
-            //         bottomPadding: 10
-            //         focus: true
-            //         parentFlick: flick
-            //         initialText: authorWebsite
-            //         placeholderText: qsTr("Your website")
-            //         singleLine: true
-            //         inputMethodHints: Qt.ImhNoPredictiveText
-
-            //         function getLink() {
-            //             return linkUtils.getLinkWithScheme(text)
-            //         }
-
-            //         function isValid() {
-            //             const link = getLink()
-            //             return !Boolean(link) || linkUtils.isWebLink(link)
-            //         }
-            //     }
-            // }
         }
     }
 
