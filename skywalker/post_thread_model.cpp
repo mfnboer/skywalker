@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post_thread_model.h"
 #include "author_cache.h"
+#include "list_store.h"
 #include "thread_unroller.h"
 
 namespace Skywalker {
@@ -14,7 +15,7 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThre
                                  const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mThreadEntryUri(threadEntryUri),

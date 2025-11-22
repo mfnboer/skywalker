@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "draft_posts_model.h"
 #include "draft_posts.h"
+#include "list_store.h"
 #include "meme_maker.h"
 #include "unicode_fonts.h"
 
@@ -13,7 +14,7 @@ DraftPostsModel::DraftPostsModel(const QString& userDid, const IProfileStore& fo
                                  const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {

@@ -1,7 +1,9 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "content_filter_stats.h"
+#include "list_store.h"
 #include "post_feed_model.h"
+#include "search_utils.h"
 
 namespace Skywalker {
 
@@ -28,6 +30,11 @@ QString ContentFilterStats::detailsToString(const Details& details, const IConte
     return {};
 }
 
+ContentFilterStats::ContentFilterStats(const IListStore& timelineHide) :
+    mTimelineHide(&timelineHide)
+{
+}
+
 void ContentFilterStats::clear()
 {
     mMutedAuthor = 0;
@@ -37,7 +44,7 @@ void ContentFilterStats::clear()
     mAuthorsRepostsFromAuthor.clear();
 
     mHideFromFollowingFeed = 0;
-    mAuthorsHideFromFollowingFeed.clear();
+    mListsHideFromFollowingFeed.clear();
 
     mLabel = 0;
     mLabelMap.clear();
@@ -92,9 +99,23 @@ void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideRea
 
         ++mRepostsFromAuthor;
         break;
-    case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED: // TODO: add list to details
+    case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
         if (std::holds_alternative<BasicProfile>(details))
-            add(std::get<BasicProfile>(details), mAuthorsHideFromFollowingFeed);
+        {
+            const BasicProfile& profile = std::get<BasicProfile>(details);
+
+            const auto uris = mTimelineHide->getListUrisForDid(profile.getDid());
+
+            if (uris.isEmpty())
+            {
+                qWarning() << "Cannot get timeline hide list for:" << profile.getDid();
+            }
+            else
+            {
+                const auto& list = mTimelineHide->getList(uris.first());
+                add(list, profile, mListsHideFromFollowingFeed);
+            }
+        }
 
         ++mHideFromFollowingFeed;
         break;
@@ -300,7 +321,21 @@ void ContentFilterStats::removeReport(const Post& post, QEnums::HideReasonType h
         break;
     case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
         if (std::holds_alternative<BasicProfile>(details))
-            remove(std::get<BasicProfile>(details), mAuthorsHideFromFollowingFeed);
+        {
+            const BasicProfile& profile = std::get<BasicProfile>(details);
+
+            const auto uris = mTimelineHide->getListUrisForDid(profile.getDid());
+
+            if (uris.isEmpty())
+            {
+                qWarning() << "Cannot get timeline hide list for:" << profile.getDid();
+            }
+            else
+            {
+                const auto& list = mTimelineHide->getList(uris.first());
+                remove(list, profile, mListsHideFromFollowingFeed);
+            }
+        }
 
         --mHideFromFollowingFeed;
         break;
@@ -390,9 +425,33 @@ std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsRepostsF
     return getProfileStats(mAuthorsRepostsFromAuthor);
 }
 
-std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsHideFromFollowingFeed() const
+static auto listNameCompare = [](const ContentFilterStats::ListProfileStat& lhs, const QString& rhs)
 {
-    return getProfileStats(mAuthorsHideFromFollowingFeed);
+    return SearchUtils::normalizedCompare(lhs.first.getName(), rhs) < 0;
+};
+
+std::vector<ContentFilterStats::ListProfileStat> ContentFilterStats::listsHideFromFollowingFeed() const
+{
+    std::vector<ContentFilterStats::ListProfileStat> result;
+    result.reserve(mListsHideFromFollowingFeed.size());
+
+    for (const auto& [listUri, didStatMap] : mListsHideFromFollowingFeed)
+    {
+        auto itList = mListMap.find(listUri);
+
+        if (itList == mListMap.end())
+        {
+            qWarning() << "List not found:" << listUri;
+            continue;
+        }
+
+        const auto& list = itList->second.mList;
+        const auto profileStats = getProfileStats(didStatMap);
+        auto resultIt = std::lower_bound(result.cbegin(), result.cend(), list.getName(), listNameCompare);
+        result.insert(resultIt, { list, profileStats });
+    }
+
+    return result;
 }
 
 void ContentFilterStats::add(const BasicProfile& profile, DidStatMap& didStatMap)
@@ -400,10 +459,21 @@ void ContentFilterStats::add(const BasicProfile& profile, DidStatMap& didStatMap
     if (!mProfileMap.contains(profile.getDid()))
         mProfileMap[profile.getDid()] = { profile, 0 };
 
-    const auto count = ++mProfileMap[profile.getDid()].mCount;
-    qDebug() << "Added:" << profile.getHandle() << "count:" <<  count;
-
+    ++mProfileMap[profile.getDid()].mCount;
     ++didStatMap[profile.getDid()];
+}
+
+void ContentFilterStats::add(const ListViewBasic& list, const BasicProfile& profile, ListUriProfileStatsMap& listUriProfileStatMap)
+{
+    if (!mListMap.contains(list.getUri()))
+        mListMap[list.getUri()] = { list, 0 };
+
+    if (!mProfileMap.contains(profile.getDid()))
+        mProfileMap[profile.getDid()] = { profile, 0 };
+
+    ++mListMap[list.getUri()].mCount;
+    ++mProfileMap[profile.getDid()].mCount;
+    ++listUriProfileStatMap[list.getUri()][profile.getDid()];
 }
 
 void ContentFilterStats::remove(const BasicProfile& profile, DidStatMap& didStatMap)
@@ -424,6 +494,47 @@ void ContentFilterStats::remove(const BasicProfile& profile, DidStatMap& didStat
 
     if (--didStatMap[profile.getDid()] <= 0)
         didStatMap.erase(profile.getDid());
+}
+
+void ContentFilterStats::remove(const ListViewBasic& list, const BasicProfile& profile, ListUriProfileStatsMap& listUriProfileStatMap)
+{
+    if (!mProfileMap.contains(profile.getDid()))
+    {
+        qWarning() << "Profile was not present:" << profile.getHandle();
+        return;
+    }
+
+    if (!mListMap.contains(list.getUri()))
+    {
+        qWarning() << "List was not present:" << list.getName();
+        return;
+    }
+
+    auto count = --mProfileMap[profile.getDid()].mCount;
+
+    if (count <= 0)
+    {
+        mProfileMap.erase(profile.getDid());
+        qDebug() << "Removed profile:" << profile.getHandle();
+    }
+
+    count = --mListMap[list.getUri()].mCount;
+
+    if (count <= 0)
+    {
+        mListMap.erase(list.getUri());
+        qDebug() << "Removed list:" << list.getName();
+    }
+
+    auto& listEntry = listUriProfileStatMap[list.getUri()];
+
+    if (--listEntry[profile.getDid()] <= 0)
+    {
+        listEntry.erase(profile.getDid());
+
+        if (listEntry.empty())
+            listUriProfileStatMap.erase(list.getUri());
+    }
 }
 
 }

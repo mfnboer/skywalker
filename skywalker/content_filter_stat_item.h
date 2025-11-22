@@ -29,6 +29,7 @@ public:
     ContentFilterStatItem(const MutedWordEntry& mutedWordEntry, int stat, ContentFilterStatItem* parent = nullptr);
     ContentFilterStatItem(const LabelerDid& labeler, int stat, ContentFilterStatItem* parent = nullptr);
     ContentFilterStatItem(const Label& label, int stat, ContentFilterStatItem* parent = nullptr);
+    ContentFilterStatItem(const ListViewBasic& list, int stat, ContentFilterStatItem* parent = nullptr);
 
     void setHideReason(QEnums::HideReasonType hideReason) { mHideReason = hideReason; }
     void clearChildItems() { mChildItems.clear(); };
@@ -45,7 +46,7 @@ public:
     int row() const;
 
 private:
-    using Key = std::variant<QString, BasicProfile, MutedWordEntry, LabelerDid, Label>;
+    using Key = std::variant<QString, BasicProfile, MutedWordEntry, LabelerDid, Label, ListViewBasic>;
     Key mKey;
     int mStat;
     QEnums::HideReasonType mHideReason = QEnums::HIDE_REASON_ANY;

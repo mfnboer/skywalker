@@ -9,6 +9,8 @@ namespace Skywalker {
 
 static constexpr int LIST_PAGE_SIZE = 100;
 
+const ListStore ListStore::NULL_STORE;
+
 ListStore::ListStore(QObject* parent) :
     WrappedSkywalker(parent)
 {

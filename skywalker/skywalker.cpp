@@ -2785,7 +2785,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     const PostFeedModel::FeedVariant feedVariant{generatorView};
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(), &feedVariant,
-            mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE, mContentFilter, mMutedWords,
+            mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE, mContentFilter, mMutedWords,
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
             mBsky, this);
     model->enableLanguageFilter(true);
@@ -2797,7 +2797,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
     const PostFeedModel::FeedVariant feedVariant{listView};
     auto model = std::make_unique<PostFeedModel>(listView.getName(), &feedVariant,
-                                                 mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
+                                                 mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -2810,7 +2810,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"), &feedVariant,
-                                                 mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
+                                                 mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -2823,7 +2823,7 @@ int Skywalker::createFilteredPostFeedModel(QEnums::HideReasonType hideReason, co
     const PostFeedModel::FeedVariant feedVariant{hideReason};
     auto model = std::make_unique<FilteredContentPostFeedModel>(
         tr("Filtered posts"), &feedVariant,
-        mUserDid, mUserFollows, mMutedReposts, ProfileStore::NULL_STORE,
+        mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
         mContentFilter, mMutedWords, *mFocusHashtags,
         mSeenHashtags, mUserPreferences, mUserSettings,
         mFollowsActivityStore, mBsky, this);

@@ -5,6 +5,8 @@
 
 namespace Skywalker {
 
+class IListStore;
+
 class FilteredContentPostFeedModel : public PostFeedModel
 {
     Q_OBJECT
@@ -14,7 +16,7 @@ public:
         const QString& feedName, const FeedVariant* feedVariant,
         const QString& userDid, const IProfileStore& following,
         const IProfileStore& mutedReposts,
-        const IProfileStore& feedHide,
+        const IListStore& feedHide,
         const IContentFilter& contentFilter,
         const IMatchWords& mutedWords,
         const FocusHashtags& focusHashtags,

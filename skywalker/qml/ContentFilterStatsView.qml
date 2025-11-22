@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
 SkyPage {
@@ -110,6 +111,8 @@ SkyPage {
                         return mutedWordComp
                     case QEnums.VALUE_TYPE_LABELER_DID:
                         return labelerComp
+                    case QEnums.VALUE_TYPE_LIST_VIEW_BASIC:
+                        return listComp
                     default:
                         return labelComp
                     }
@@ -153,6 +156,39 @@ SkyPage {
                         author: page.getTypeName(control.value) === 'BasicProfile' ? control.value : parent.nullLabeler
                         postIndexedSecondsAgo: -1
                         labelsToShow: []
+                    }
+                }
+            }
+
+            Component {
+                id: listComp
+
+                Rectangle {
+                    color: "transparent"
+                    implicitHeight: listValue.implicitHeight
+
+                    RowLayout {
+                        id: listValue
+                        width: parent.width
+                        spacing: 10
+
+                        ListAvatar {
+                            id: avatar
+                            Layout.preferredWidth: 34
+                            Layout.preferredHeight: 34
+                            userDid: page.userDid
+                            avatarUrl: page.getTypeName(control.value) === 'ListViewBasic' ? control.value.avatarThumb : ""
+
+                            onClicked: root.viewListByUri(control.value.uri, false)
+                        }
+
+                        SkyCleanedTextLine {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            elide: Text.ElideRight
+                            font.bold: true
+                            plainText: page.getTypeName(control.value) === 'ListViewBasic' ? control.value.name : ""
+                        }
                     }
                 }
             }

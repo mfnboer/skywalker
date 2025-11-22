@@ -43,6 +43,8 @@ class ListStore : public WrappedSkywalker,
     Q_OBJECT
 
 public:
+    static const ListStore NULL_STORE;
+
     explicit ListStore(QObject* parent = nullptr);
 
     void clear() override;

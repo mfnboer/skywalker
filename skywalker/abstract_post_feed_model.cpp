@@ -5,6 +5,8 @@
 #include "content_filter.h"
 #include "content_filter_stats_model.h"
 #include "focus_hashtags.h"
+#include "list_store.h"
+#include "profile_store.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
 
@@ -13,6 +15,7 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 const QString AbstractPostFeedModel::NULL_STRING;
+const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
 const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
@@ -24,7 +27,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
     mUserDid{NULL_STRING},
     mFollowing(NULL_PROFILE_STORE),
     mMutedReposts(NULL_PROFILE_STORE),
-    mFeedHide(NULL_PROFILE_STORE),
+    mFeedHide(NULL_LIST_STORE),
     mContentFilter(NULL_CONTENT_FILTER),
     mMutedWords(NULL_MATCH_WORDS),
     mFocusHashtags(NULL_FOCUS_HASHTAGS),
@@ -34,7 +37,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
-                                             const IProfileStore& feedHide,
+                                             const IListStore& feedHide,
                                              const IContentFilter& contentFilter,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,

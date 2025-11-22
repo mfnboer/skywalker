@@ -39,6 +39,13 @@ ContentFilterStatItem::ContentFilterStatItem(const Label& label, int stat, Conte
 {
 }
 
+ContentFilterStatItem::ContentFilterStatItem(const ListViewBasic& list, int stat, ContentFilterStatItem* parent) :
+    mKey(list),
+    mStat(stat),
+    mParentItem(parent)
+{
+}
+
 void ContentFilterStatItem::addChild(ContentFilterStatItem::Ptr child)
 {
     mChildItems.push_back(std::move(child));
@@ -106,6 +113,8 @@ QEnums::ValueType ContentFilterStatItem::valueType(int column) const
             return QEnums::VALUE_TYPE_LABELER_DID;
         if (std::holds_alternative<Label>(mKey))
             return QEnums::VALUE_TYPE_STRING;
+        if (std::holds_alternative<ListViewBasic>(mKey))
+            return QEnums::VALUE_TYPE_LIST_VIEW_BASIC;
 
         qWarning() << "Unknown key type";
         return QEnums::VALUE_TYPE_STRING;

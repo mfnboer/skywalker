@@ -9,7 +9,6 @@
 #include "local_profile_changes.h"
 #include "muted_words.h"
 #include "post.h"
-#include "profile_store.h"
 #include <QAbstractListModel>
 #include <deque>
 #include <queue>
@@ -19,6 +18,8 @@ namespace Skywalker {
 
 class ContentFilterStatsModel;
 class FocusHashtags;
+class IListStore;
+class IProfileStore;
 
 class AbstractPostFeedModel : public QAbstractListModel,
                               public BaseListModel,
@@ -118,7 +119,7 @@ public:
 
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
-                          const IProfileStore& feedHide,
+                          const IListStore& feedHide,
                           const IContentFilter& contentFilter,
                           const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                           HashtagIndex& hashtags,
@@ -218,17 +219,18 @@ protected:
     const QString& mUserDid;
     const IProfileStore& mFollowing;
     const IProfileStore& mMutedReposts;
-    const IProfileStore& mFeedHide;
+    const IListStore& mFeedHide;
     const IContentFilter& mContentFilter;
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
-    ContentFilterStats mContentFilterStats;
+    ContentFilterStats mContentFilterStats{mFeedHide};
     const ContentFilterStats::PostHideInfoMap* mPostHideInfoMap = nullptr;
     int mModelId = -1;
 
 private:
     static const QString NULL_STRING;
+    static const ListStore NULL_LIST_STORE;
     static const ProfileStore NULL_PROFILE_STORE;
     static const ContentFilterShowAll NULL_CONTENT_FILTER;
     static const MutedWordsNoMutes NULL_MATCH_WORDS;

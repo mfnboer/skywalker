@@ -38,7 +38,7 @@ ComboBox {
         implicitWidth: 140
         implicitHeight: 40
         color: backgroundColor
-        border.color: contentItem.color
+        border.color: control.activeFocus ? guiSettings.buttonColor : contentItem.color
         border.width: 1
         radius: 3
     }

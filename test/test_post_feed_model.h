@@ -498,7 +498,7 @@ private:
     ProfileStore mFollowing;
     FollowsActivityStore mFollowsActivityStore{mFollowing, this};
     ProfileStore mMutedReposts;
-    ProfileStore mHideLists;
+    ListStore mHideLists;
     ListStore mContentFilterPolicies;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;

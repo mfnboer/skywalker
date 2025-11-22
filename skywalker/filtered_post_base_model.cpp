@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "filtered_post_base_model.h"
+#include "list_store.h"
 
 namespace Skywalker {
 
@@ -12,7 +13,7 @@ FilteredPostBaseModel::FilteredPostBaseModel(IPostFilter::Ptr postFilter,
                                              const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mPostFilter(std::move(postFilter))

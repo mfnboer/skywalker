@@ -232,8 +232,8 @@ SkyPage {
             height: visible ? implicitHeight : 0
             font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
+            elide: Text.ElideRight
             text: qsTr("1. Report to:")
-            visible: labelerComboBox.visible
         }
 
         AuthorComboBox {
@@ -256,6 +256,7 @@ SkyPage {
             width: parent.width - 20
             font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
+            elide: Text.ElideRight
             text: qsTr("2. Why should this post be reviewed?")
         }
 
@@ -340,6 +341,7 @@ SkyPage {
             width: parent.width - 20
             font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
+            elide: Text.ElideRight
             text: qsTr("3. Select a reason")
         }
 
@@ -420,6 +422,7 @@ SkyPage {
             width: parent.width - 20
             font.pointSize: guiSettings.scaledFont(9/8)
             font.bold: true
+            elide: Text.ElideRight
             text: qsTr("4. Details")
         }
 

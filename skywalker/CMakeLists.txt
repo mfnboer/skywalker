@@ -181,7 +181,7 @@ qt_add_qml_module(libskywalker
         SOURCES report_utils.cpp
         QML_FILES qml/SkyTextEdit.qml
         QML_FILES qml/SimpleButtonHeader.qml
-        QML_FILES qml/ReportDetailsEditor.qml
+        QML_FILES
         SOURCES muted_words.h
         SOURCES muted_words.cpp
         QML_FILES qml/MutedWords.qml

@@ -1,18 +1,21 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "content_filter_stats_model.h"
+#include "list_store.h"
 #include "post_feed_model.h"
 
 namespace Skywalker {
 
 ContentFilterStatsModel::ContentFilterStatsModel(QObject* parent) :
     QAbstractItemModel(parent),
+    mContentFilterStats(ListStore::NULL_STORE),
     mRootItem(std::make_unique<ContentFilterStatItem>("root", 0))
 {
 }
 
 ContentFilterStatsModel::ContentFilterStatsModel(const ContentFilterStats& stats, const IContentFilter& contentFilter, QObject* parent) :
     QAbstractItemModel(parent),
+    mContentFilterStats(ListStore::NULL_STORE),
     mRootItem(std::make_unique<ContentFilterStatItem>("root", 0))
 {
     setStats(stats, contentFilter);
@@ -73,7 +76,22 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IC
     addStat(root, stats.mutedAuthor(), QEnums::HIDE_REASON_MUTED_AUTHOR, stats.authorsMutedAuthor());
     addStat(root, stats.repostsFromAuthor(), QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, stats.authorsRepostsFromAuthor());
 
-    addStat(root, stats.hideFromFollowingFeed(), QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, stats.authorsHideFromFollowingFeed());
+    // addStat(root, stats.hideFromFollowingFeed(), QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, stats.authorsHideFromFollowingFeed());
+
+    auto* hideFromFollowingItem = addStat(root, stats.hideFromFollowingFeed(), QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED);
+
+    if (hideFromFollowingItem)
+    {
+        for (const auto& [list, profileStats] : stats.listsHideFromFollowingFeed())
+        {
+            int profileCount = 0;
+
+            for (const auto& [_, count] : profileStats)
+                profileCount += count;
+
+            addKeyStat(hideFromFollowingItem, list, profileCount, QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, profileStats);
+        }
+    }
 
     auto* labelItem = addStat(root, stats.label(), QEnums::HIDE_REASON_LABEL);
 

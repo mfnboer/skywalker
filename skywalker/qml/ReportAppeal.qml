@@ -56,7 +56,7 @@ SkyPage {
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
-        contentHeight: detailsText.y + detailsText.height
+        contentHeight: detailsField.y + detailsField.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
@@ -79,21 +79,33 @@ SkyPage {
             width: parent.width
             leftPadding: page.margin
             rightPadding: page.margin
+            textFormat: Text.RichText
             wrapMode: Text.Wrap
             text: qsTr(`This appeal will be sent to ${labelerHandle}`)
         }
 
-        SkyFormattedTextEdit {
-            id: detailsText
+        Rectangle {
+            id: detailsField
             anchors.top: appealHeaderText.bottom
             anchors.topMargin: 10
-            width: parent.width
-            leftPadding: page.margin
-            rightPadding: page.margin
-            parentPage: page
-            parentFlick: flick
-            placeholderText: qsTr("Please explain why you think this label was incorrectly applied.")
-            maxLength: reportUtils.REPORT_DETAILS_SIZE
+            x: page.margin
+            width: parent.width - 20
+            height: detailsText.height
+            radius: guiSettings.radius
+            border.width: detailsText.activeFocus ? 1 : 0
+            border.color: guiSettings.buttonColor
+            color: guiSettings.textInputBackgroundColor
+
+            SkyFormattedTextEdit {
+                id: detailsText
+                width: parent.width
+                topPadding: 10
+                bottomPadding: 10
+                parentPage: page
+                parentFlick: flick
+                placeholderText: qsTr("Please explain why you think this label was incorrectly applied.")
+                maxLength: reportUtils.REPORT_DETAILS_SIZE
+            }
         }
     }
 

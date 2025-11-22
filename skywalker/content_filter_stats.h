@@ -11,6 +11,7 @@
 
 namespace Skywalker {
 
+class IListStore;
 class PostFeedModel;
 
 class ContentFilterStats
@@ -18,8 +19,11 @@ class ContentFilterStats
 public:
     using Details = std::variant<std::nullptr_t, BasicProfile, MutedWordEntry, QString, ContentLabel>;
     using ProfileStat = std::pair<BasicProfile, int>;
+    using DidStatMap = std::unordered_map<QString, int>;
     using LabelIdStatMap = std::unordered_map<QString, int>;
-    using LabelerDidLabelStatsMap = std::unordered_map<QString, LabelIdStatMap>;
+    using LabelerDidLabelStatMap = std::unordered_map<QString, LabelIdStatMap>;
+    using ListUriProfileStatsMap = std::unordered_map<QString, DidStatMap>;
+    using ListProfileStat = std::pair<ListViewBasic, std::vector<ProfileStat>>;
 
     static QString detailsToString(const Details& details, const IContentFilter& contentFilter);
 
@@ -31,6 +35,10 @@ public:
 
     using PostHideInfoMap = std::unordered_map<QString, PostHideInfo>; // cid -> info
 
+    explicit ContentFilterStats(const IListStore& timelineHide);
+    ContentFilterStats(const ContentFilterStats&) = default;
+    ContentFilterStats& operator=(const ContentFilterStats&) = default;
+
     int total() const { return mPosts.size(); }
     int checkedPosts() const { return mCheckedPostCids.size(); }
 
@@ -41,10 +49,10 @@ public:
     std::vector<ProfileStat> authorsRepostsFromAuthor() const;
 
     int hideFromFollowingFeed() const { return mHideFromFollowingFeed; }
-    std::vector<ProfileStat> authorsHideFromFollowingFeed() const;
+    std::vector<ListProfileStat> listsHideFromFollowingFeed() const;
 
     int label() const { return mLabel; }
-    const LabelerDidLabelStatsMap& labelMap() const { return mLabelMap; }
+    const LabelerDidLabelStatMap& labelMap() const { return mLabelMap; }
 
     int mutedWord() const { return mMutedWord; }
     const std::map<MutedWordEntry, int>& entriesMutedWord() const { return mEntriesMutedWord; }
@@ -73,10 +81,10 @@ public:
     void setFeed(PostFeedModel* model, QVariantList detailList) const;
 
 private:
-    using DidStatMap = std::unordered_map<QString, int>;
-
     void add(const BasicProfile& profile, DidStatMap& didStatMap);
+    void add(const ListViewBasic& list, const BasicProfile& profile, ListUriProfileStatsMap& listUriProfileStatMap);
     void remove(const BasicProfile& profile, DidStatMap& didStatMap);
+    void remove(const ListViewBasic& list, const BasicProfile& profile, ListUriProfileStatsMap& listUriProfileStatMap);
     std::vector<ProfileStat> getProfileStats(const DidStatMap& didStatMap) const;
     void addPost(const Post& post);
     void removeLastPost();
@@ -89,10 +97,10 @@ private:
     DidStatMap mAuthorsRepostsFromAuthor;
 
     int mHideFromFollowingFeed = 0;
-    DidStatMap mAuthorsHideFromFollowingFeed;
+    ListUriProfileStatsMap mListsHideFromFollowingFeed;
 
     int mLabel = 0;
-    LabelerDidLabelStatsMap mLabelMap;
+    LabelerDidLabelStatMap mLabelMap;
 
     int mMutedWord = 0;
     std::map<MutedWordEntry, int> mEntriesMutedWord;
@@ -120,7 +128,15 @@ private:
         int mCount = 0;
     };
 
+    struct ListLink
+    {
+        ListViewBasic mList;
+        int mCount = 0;
+    };
+
+    const IListStore* mTimelineHide = nullptr;
     std::unordered_map<QString, ProfileLink> mProfileMap;
+    std::unordered_map<QString, ListLink> mListMap;
     std::deque<Post> mPosts;
     PostHideInfoMap mPostHideInfoMap;
     std::unordered_set<QString> mCheckedPostCids;
