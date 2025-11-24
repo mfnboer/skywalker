@@ -57,6 +57,8 @@ public:
     static QString getFirstGrapheme(const QString& text);
     static QString getLastGrapheme(const QString& text);
 
+    static std::vector<QString> extractHashtags(const QString& text);
+
 private:
     static uint convertToSmallCaps(QChar c);
 };

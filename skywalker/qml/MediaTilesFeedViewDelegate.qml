@@ -58,9 +58,12 @@ Rectangle {
     required property bool postIsHiddenReply
     required property bool postBookmarked
     required property bool postBookmarkTransient
+    required property int postFeedback // QEnums::FeedbackType
+    required property int postFeedbackTransient // QEnums::FeedbackType
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsThread
@@ -68,6 +71,8 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
+    property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
 
@@ -77,14 +82,27 @@ Rectangle {
     readonly property int rightMargin: isRightCell ? 0 : (isLeftCell ? GridView.view.spacing : GridView.view.spacing / GridView.view.columns)
     readonly property int bottomMargin: GridView.view.spacing
 
-    property var videoItem: postVideo ? videoLoader.item : null
-    property var imageItem: postImages.length > 0 ? imageLoader.item : null
+    property var videoItem: postOrRecordVideo ? videoLoader.item : null
+    property var imageItem: postOrRecordImages.length > 0 ? imageLoader.item : null
     property var mediaItem: videoItem ? videoItem : imageItem
+    property bool onScreen: false
 
     signal activateSwipe
 
     id: page
     color: guiSettings.backgroundColor
+
+    onYChanged: checkOnScreen()
+
+    onOnScreenChanged: {
+        if (feedAcceptsInteractions)
+        {
+            if (onScreen)
+                GridView.view.model.reportOnScreen(postUri)
+            else
+                GridView.view.model.reportOffScreen(postUri, postFeedContext)
+        }
+    }
 
     Rectangle {
         id: mediaRect
@@ -95,16 +113,17 @@ Rectangle {
 
         Loader {
             id: videoLoader
-            active: Boolean(postVideo)
+            active: Boolean(postOrRecordVideo)
 
             sourceComponent: VideoView {
                 id: video
                 width: mediaRect.width
                 height: mediaRect.height
                 maxHeight: mediaRect.height
-                videoView: postVideo
+                videoView: postOrRecordVideo
                 contentVisibility: postContentVisibility
                 contentWarning: postContentWarning
+                contentLabeler: postContentLabeler
                 autoLoad: false // avoid loading tens of videos
                 autoPlay: false
                 swipeMode: true
@@ -116,7 +135,7 @@ Rectangle {
 
         Loader {
             id: imageLoader
-            active: postImages.length > 0
+            active: postOrRecordImages.length > 0
 
             sourceComponent: ImageAutoRetry {
                 property alias contentFilter: filter
@@ -134,7 +153,7 @@ Rectangle {
                     anchors.rightMargin: 5
                     anchors.top: parent.top
                     anchors.topMargin: 5
-                    active: postImages.length > 1
+                    active: postOrRecordImages.length > 1
 
                     sourceComponent: SkySvg {
                         width: 20
@@ -151,7 +170,8 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     contentVisibility: postContentVisibility
                     contentWarning: postContentWarning
-                    images: postImages
+                    contentLabeler: postContentLabeler
+                    images: postOrRecordImages
                 }
             }
         }
@@ -177,14 +197,13 @@ Rectangle {
         visible: mediaItem ? mediaItem.contentFilter.imageVisible() : true
 
         Loader {
-            active: true
             width: parent.width
-            height: guiSettings.statsHeight + 10
+            height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10, true)
+            active: true
             asynchronous: true
 
             sourceComponent: PostStats {
                 id: postStats
-                width: parent.width
                 topPadding: 10
                 skywalker: page.skywalker
                 replyCount: postReplyCount
@@ -204,6 +223,8 @@ Rectangle {
                 authorIsUser: author.did === userDid
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
+                feedback: postFeedback
+                feedbackTransient: postFeedbackTransient
                 isThread: postIsThread || postIsThreadReply
                 showViewThread: true
                 record: postRecord
@@ -216,7 +237,7 @@ Rectangle {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                                       author, postReplyRootUri, postReplyRootCid, lang,
-                                      postMentionDids, "", "", userDid)
+                                      postMentionDids, "", "", feedDid, postFeedContext, userDid)
                 }
 
                 onReplyLongPress: (mouseEvent) => {
@@ -232,14 +253,17 @@ Rectangle {
                 }
 
                 onRepost: {
-                    root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled, postPlainText,
-                                userDid)
+                    root.repost(postRepostUri, postUri, postCid,
+                                postReasonRepostUri, postReasonRepostCid,
+                                feedDid, postFeedContext, postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                postPlainText, userDid)
                 }
 
                 function quote(quoteByDid = "") {
                     root.quotePost(postUri, postCid,
-                            postText, postIndexedDateTime, author, postEmbeddingDisabled, quoteByDid)
+                            postText, postIndexedDateTime, author, postEmbeddingDisabled,
+                            feedDid, postFeedContext, quoteByDid)
                 }
 
                 onRepostLongPress: (mouseEvent) => {
@@ -257,7 +281,9 @@ Rectangle {
                         quote()
                 }
 
-                onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, userDid)
+                onLike: root.like(postLikeUri, postUri, postCid,
+                                  postReasonRepostUri, postReasonRepostCid,
+                                  feedDid, postFeedContext, userDid)
 
                 onLikeLongPress: (mouseEvent) => {
                     if (root.isActiveUser(userDid))
@@ -285,12 +311,13 @@ Rectangle {
 
                 onUnrollThread: {
                     if (!postIsPlaceHolder && postUri)
-                        skywalker.getPostThread(postUri, true)
+                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                 }
 
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
                 onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                 onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                onEditPost: root.composePostEdit(page.GridView.view.model, page.index)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)
@@ -299,8 +326,8 @@ Rectangle {
                 onPin: root.pinPost(postUri, postCid, userDid)
                 onUnpin: root.unpinPost(postCid, userDid)
                 onBlockAuthor: root.blockAuthor(author, userDid)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
-                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
             }
         }
 
@@ -318,10 +345,33 @@ Rectangle {
         onClicked: activateSwipe()
     }
 
+    function checkOnScreen() {
+        const headerHeight = GridView.view.headerItem ? GridView.view.headerItem.height : 0
+        const topY = GridView.view.contentY + headerHeight
+        onScreen = (y + height > topY) && (y < GridView.view.contentY + GridView.view.height)
+    }
+
+    function cover() {
+        if (feedAcceptsInteractions && onScreen)
+            GridView.view.model.reportOffScreen(postUri, postFeedContext)
+    }
+
     function confirmDelete() {
         guiSettings.askYesNoQuestion(
                     page,
                     qsTr("Do you really want to delete your post?"),
                     () => root.deletePost(postUri, postCid, userDid))
+    }
+
+    Component.onDestruction: {
+        if (feedAcceptsInteractions && onScreen)
+            GridView.view.model.reportOffScreen(postUri, postFeedContext)
+
+        GridView.view.onContentMoved.disconnect(checkOnScreen)
+    }
+
+    Component.onCompleted: {
+        checkOnScreen()
+        GridView.view.onContentMoved.connect(checkOnScreen)
     }
 }

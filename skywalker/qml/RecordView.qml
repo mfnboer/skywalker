@@ -66,6 +66,7 @@ Item {
                 postContentLabels: record.contentLabels
                 postContentVisibility: record.contentVisibility
                 postContentWarning: record.contentWarning
+                postContentLabeler: record.contentLabeler
                 postMuted: record.mutedReason
                 postIsThread: record.postIsThread === QEnums.TRIPLE_BOOL_YES
                 postIsThreadReply: record.postIsThreadReply
@@ -76,7 +77,7 @@ Item {
 
                 onUnrollThread: {
                     if (record.postUri)
-                        skywalker.getPostThread(record.postUri, true)
+                        skywalker.getPostThread(record.postUri, QEnums.POST_THREAD_UNROLLED)
                 }
             }
         }
@@ -157,6 +158,7 @@ Item {
             sourceComponent: Text {
                 width: parent.width
                 color: guiSettings.textColor
+                textFormat: Text.RichText
                 text: record.detachedByDid === skywalker.getUserDid() ?
                           qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
                           qsTr("🗑 Detached by author")

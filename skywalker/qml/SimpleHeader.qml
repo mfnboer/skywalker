@@ -26,7 +26,6 @@ Rectangle {
     RowLayout
     {
         id: headerRow
-        y: !isSideBar ? guiSettings.headerMargin : 0
         width: parent.width
         visible: headerVisible
         Accessible.role: Accessible.Pane
@@ -58,6 +57,7 @@ Rectangle {
                 width: parent.width
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
+                elide: Text.ElideRight
                 text: subTitle
                 visible: Boolean(subTitle)
             }
@@ -69,7 +69,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: Layout.preferredHeight
-            active: !root.isActiveUser(userDid)
+            active: !root.isActiveUser(headerRect.userDid)
 
             sourceComponent: CurrentUserAvatar {
                 userDid: headerRect.userDid

@@ -181,7 +181,7 @@ qt_add_qml_module(libskywalker
         SOURCES report_utils.cpp
         QML_FILES qml/SkyTextEdit.qml
         QML_FILES qml/SimpleButtonHeader.qml
-        QML_FILES qml/ReportDetailsEditor.qml
+        QML_FILES
         SOURCES muted_words.h
         SOURCES muted_words.cpp
         QML_FILES qml/MutedWords.qml
@@ -533,8 +533,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/AuthorViewerState.qml
         QML_FILES qml/LiveLabel.qml
         QML_FILES qml/ThumbImageFixedSizeView.qml
-        QML_FILES qml/DeadFooterMargin.qml
-        QML_FILES qml/DeadHeaderMargin.qml
+        QML_FILES
+        QML_FILES
         QML_FILES qml/NotificationTypeSetting.qml
         QML_FILES qml/NotificationIncludeSetting.qml
         SOURCES edit_notification_preferences.h
@@ -583,6 +583,33 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/MainLinkUtils.qml
         QML_FILES qml/AdvancedSettingsForm.qml
         QML_FILES
+        SOURCES post_edit_utils.h
+        SOURCES post_edit_utils.cpp
+        SOURCES interaction_sender.h
+        SOURCES interaction_sender.cpp
+        SOURCES post_attachment.h
+        SOURCES post_feed_context.h
+        SOURCES post_feed_context.cpp
+        SOURCES content_filter_stats.h
+        SOURCES content_filter_stats.cpp
+        SOURCES content_filter_stat_item.h
+        SOURCES content_filter_stat_item.cpp
+        SOURCES content_filter_stats_model.h
+        SOURCES content_filter_stats_model.cpp
+        QML_FILES qml/ContentFilterStatsView.qml
+        QML_FILES qml/MutedWordEntry.qml
+        QML_FILES qml/FilteredPostFeedView.qml
+        SOURCES words_highlighter.h
+        SOURCES words_highlighter.cpp
+        SOURCES filtered_content_post_feed_model.h
+        SOURCES filtered_content_post_feed_model.cpp
+        QML_FILES qml/SkyTreeView.qml
+        QML_FILES qml/SkySplitView.qml
+        QML_FILES qml/SkyDrawer.qml
+        QML_FILES qml/SettingsPostThread.qml
+        QML_FILES qml/SelectList.qml
+        QML_FILES qml/SkyTabListButton.qml
+        SOURCES report_category.h
 )
 
 if (NOT ANDROID)

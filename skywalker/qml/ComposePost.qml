@@ -10,12 +10,14 @@ SkyPage {
     property string initialText
     property string initialImage
     property string initialVideo: ""
+    property list<DraftPostData> editPostData: []
     property int margin: 15
 
     property bool largeEditor: false
     readonly property int maxLanguageIdentificationLength: 200
     readonly property int maxPostLength: largeEditor ? 15000 : 300
-    readonly property int maxThreadPosts: 99
+    property int threadCountOffset: 0
+    readonly property int maxThreadPosts: 50
     readonly property int minPostSplitLineLength: 30
     readonly property int maxImages: 4 // per post
     property bool pickingImage: false
@@ -44,6 +46,8 @@ SkyPage {
     property string replyToPostText
     property date replyToPostDateTime
     property string replyToLanguage
+    property string replyFeedDid // for feed interaction
+    property string replyFeedContext // for feed interaction
     property list<string> replyToMentionDids: []
 
     // Quote post (for first post only)
@@ -53,6 +57,8 @@ SkyPage {
     property string quoteCid: ""
     property string quoteText
     property date quoteDateTime
+    property string quoteFeedDid // for feed interaction
+    property string quoteFeedContext // for feed interaction
 
     property basicprofile nullAuthor
     property generatorview nullFeed
@@ -82,7 +88,7 @@ SkyPage {
     property bool isAnniversary: skywalker.getAnniversary().isAnniversary()
     readonly property string sideBarTitle: qsTr("Compose post")
     readonly property SvgImage sideBarSvg: SvgOutline.chat
-    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
+    readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
     // Cache
     property list<string> tmpImages: []
@@ -108,7 +114,7 @@ SkyPage {
         color: guiSettings.headerColor
 
         SvgPlainButton {
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             id: cancelButton
             anchors.left: parent.left
             svg: SvgOutline.cancel
@@ -117,9 +123,9 @@ SkyPage {
         }
 
         CurrentUserAvatar {
-            y: guiSettings.headerMargin + 5
+            y: 5
             anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.height - guiSettings.headerMargin - 10
+            width: parent.height - 10
             userDid: postByDid
             onPressAndHold: skywalker.showStatusMessage(qsTr("Yes, you're really gorgeous!"), QEnums.STATUS_LEVEL_INFO)
 
@@ -132,7 +138,7 @@ SkyPage {
             property bool isPosting: false
 
             id: postButton
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: moreOptions.left
             text: replyToPostUri ? qsTr("Reply", "verb on post composition") : qsTr("Post", "verb on post composition")
             enabled: !isPosting && postsAreValid() && hasFullContent() && checkAltText()
@@ -161,7 +167,7 @@ SkyPage {
 
         SvgPlainButton {
             id: moreOptions
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: parent.right
             svg: SvgOutline.moreVert
             accessibleName: qsTr("post options")
@@ -171,8 +177,6 @@ SkyPage {
             SkyMenu {
                 id: moreMenu
                 width: Math.max(altItem.width, numberPrefixItem.width)
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: root.enablePopupShield(false)
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
@@ -245,7 +249,7 @@ SkyPage {
         }
 
         AccessibleText {
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: parent.right
             anchors.rightMargin: page.margin
             font.italic: true
@@ -262,16 +266,6 @@ SkyPage {
         contentHeight: threadColumn.y + threadColumn.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-
-        onHeightChanged: {
-            let postItem = currentPostItem()
-
-            if (!postItem)
-                return
-
-            let postText = postItem.getPostText()
-            postText.ensureVisible(postText.cursorRectangle)
-        }
 
         // Reply-to
         Rectangle {
@@ -291,7 +285,7 @@ SkyPage {
             userDid: postByDid
             postText: replyToPostText
             postDateTime: replyToPostDateTime
-            ellipsisBackgroundColor: guiSettings.postHighLightColor
+            postBackgroundColor: guiSettings.postHighLightColor
             visible: replyToPostUri
         }
 
@@ -674,7 +668,7 @@ SkyPage {
                         anchors.top: postText.bottom
                         textFormat: Text.RichText
                         text: getPostCountText(index, threadPosts.count)
-                        visible: threadPosts.count > 1 && threadAutoNumber
+                        visible: (threadPosts.count > 1 || threadCountOffset > 0) && threadAutoNumber
 
                         function size() {
                             // +1 for newline
@@ -838,7 +832,7 @@ SkyPage {
                         author: postItem.quoteAuthor
                         postText: postItem.quoteText
                         postDateTime: postItem.quoteDateTime
-                        ellipsisBackgroundColor: guiSettings.postHighLightColor
+                        postBackgroundColor: guiSettings.postHighLightColor
                         showCloseButton: postItem.quoteFixed
                         visible: postItem.quoteUri
 
@@ -1131,7 +1125,7 @@ SkyPage {
     footer: Rectangle {
         id: textFooter
         width: page.width
-        height: getFooterHeight() + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
+        height: getFooterHeight() + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
 
@@ -1509,6 +1503,7 @@ SkyPage {
         property var callbackCannotUploadVideo: (error) => {}
         property var callbackCanQuotePost: (canQuote) => {}
         property var callbackCanQuotePostFailed: (error) => {}
+        property int deletePostIndex: 0
 
         id: postUtils
         skywalker: page.skywalker
@@ -1695,6 +1690,30 @@ SkyPage {
 
                 postItem.languageSource = QEnums.LANGUAGE_SOURCE_AUTO
             }
+        }
+
+        function deleteEditedPosts() {
+            if (deletePostIndex >= page.editPostData.length) {
+                console.debug("No edited posts")
+                skywalker.clearStatusMessage()
+                finish()
+                return
+            }
+
+            console.debug("Delete edited post:", deletePostIndex)
+            skywalker.showStatusMessage(qsTr(`Deleting post #${deletePostIndex + 1}`), QEnums.STATUS_LEVEL_INFO, 60)
+            const postData = page.editPostData[deletePostIndex]
+            deletePost(postData.uri, postData.cid)
+        }
+
+        onPostDeletedOk: {
+            ++deletePostIndex
+            deleteEditedPosts()
+        }
+
+        onPostDeletedFailed: (msg) => {
+            skywalker.showStatusMessage(qsTr("Failed to delete post: ") + msg, QEnums.STATUS_LEVEL_ERROR)
+            finish()
         }
     }
 
@@ -2107,8 +2126,12 @@ SkyPage {
     }
 
     function postDone() {
-        busyIndicator.running = false
         skywalker.clearStatusMessage()
+        postUtils.deleteEditedPosts()
+    }
+
+    function finish() {
+        busyIndicator.running = false
         page.closed()
     }
 
@@ -2205,7 +2228,7 @@ SkyPage {
     }
 
     function getPostCountText(postIndex, postCount) {
-        return `${UnicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + 1)}/${postCount}`
+        return `${UnicodeFonts.toCleanedHtml(threadPrefix)}${(postIndex + threadCountOffset + 1)}/${postCount + threadCountOffset}`
     }
 
     function editThreadPrefix() {
@@ -2274,9 +2297,13 @@ SkyPage {
         const qCid = postItem.getQuoteCid()
         const labels = postItem.getContentLabels()
 
+        const postFeedContext = postIndex === 0 ?
+                postUtils.makePostFeedContext(replyFeedDid, replyFeedContext, quoteFeedDid, quoteFeedContext) :
+                postUtils.makePostFeedContext()
+
         let postText = postItem.text
 
-        if (threadAutoNumber && postCount > 1)
+        if (threadAutoNumber && (postCount > 1 || threadCountOffset > 0))
             postText += `\n${getPostCountText(postIndex, postCount)}`
 
         if (postItem.card) {
@@ -2286,7 +2313,8 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid,
                            postItem.embeddedLinks,
-                           labels, postItem.language)
+                           labels, postItem.language,
+                           postFeedContext)
         } else if (!postItem.gif.isNull()) {
             tenor.registerShare(postItem.gif)
 
@@ -2303,7 +2331,8 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid,
                            postItem.embeddedLinks,
-                           labels, postItem.language)
+                           labels, postItem.language,
+                           postFeedContext)
         } else if (Boolean(postItem.video)) {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
@@ -2315,7 +2344,8 @@ SkyPage {
                                 rootUri, rootCid,
                                 qUri, qCid,
                                 postItem.embeddedLinks,
-                                labels, postItem.language) },
+                                labels, postItem.language,
+                                postFeedContext) },
                         (error) => postFailed(error)),
                 (error) => postFailed(error))
         } else {
@@ -2325,7 +2355,8 @@ SkyPage {
                            rootUri, rootCid,
                            qUri, qCid,
                            postItem.embeddedLinks,
-                           labels, postItem.language);
+                           labels, postItem.language,
+                           postFeedContext);
         }
 
         postUtils.cacheTags(postItem.text)
@@ -2892,11 +2923,16 @@ SkyPage {
         page.tmpVideos.forEach((value, index, array) => { postUtils.dropVideo(value); })
 
         if (initialImage)
-            getPostUtils().dropPhoto(initialImage)
+            initialVideo.dropPhoto(initialImage)
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
 
         draftPosts.removeDraftPostsModel()
+
+        for (const postData of editPostData)
+            postData.release()
+
+        editPostData = []
     }
 
     Component.onCompleted: {
@@ -2919,5 +2955,12 @@ SkyPage {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
+
+        if (editPostData.length > 0) {
+            setDraftPost(editPostData)
+
+            if (editPostData[0].postThreadCount > 1)
+                threadCountOffset = editPostData[0].postThreadCount - 1
+        }
     }
 }

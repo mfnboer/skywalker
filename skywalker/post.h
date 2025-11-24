@@ -66,6 +66,8 @@ public:
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
 
     WebLink::List getDraftEmbeddedLinks() const;
+    WebLink::List getEmbeddedLinks() const;
+
     BasicProfile getAuthor() const;
     QString getAuthorDid() const override { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
@@ -91,10 +93,10 @@ public:
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const override;
-    bool hasImages() const;
+    bool hasImages(bool includingRecordWithMedia = false) const;
     QList<ImageView> getDraftImages() const;
     VideoView::Ptr getVideoView() const override;
-    bool hasVideo() const;
+    bool hasVideo(bool includingRecordWithMedia = false) const;
     VideoView::Ptr getDraftVideoView() const;
     ExternalView::Ptr getExternalView() const override;
     bool hasExternal() const;

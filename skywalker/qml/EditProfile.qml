@@ -20,7 +20,7 @@ SkyPage {
     readonly property int avatarSize: 1000
     readonly property int bannerWidth: 3000
     readonly property int bannerHeight: 1000
-    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
+    readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
     signal closed
     signal profileUpdated(string name, string description, string avatar, string banner, string pronouns, string website)
@@ -42,7 +42,6 @@ SkyPage {
             id: updateProfileButton
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             accessibleName: qsTr("save profile")
@@ -58,7 +57,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editProfilePage.width
-        height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
+        height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus || websiteField.textInput.activeFocus
@@ -121,17 +120,6 @@ SkyPage {
         contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-
-        onHeightChanged: {
-            if (nameField.activeFocus)
-                nameField.ensureVisible(nameField.cursorRectangle)
-            else if (pronounsField.activeFocus)
-                pronounsField.ensureVisible(pronounsField.cursorRectangle)
-            else if (descriptionField.activeFocus)
-                descriptionField.ensureVisible(descriptionField.cursorRectangle)
-            else if (websiteField.textInput.activeFocus)
-                websiteField.textInput.ensureVisible(websiteField.textInput.cursorRectangle)
-        }
 
         ColumnLayout {
             id: pageColumn
@@ -244,7 +232,6 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Name")
             }
 
@@ -371,38 +358,6 @@ SkyPage {
                     return !Boolean(link) || linkUtils.isWebLink(link)
                 }
             }
-
-            // Rectangle {
-            //     id: websiteRect
-            //     Layout.fillWidth: true
-            //     Layout.preferredHeight: websiteField.height
-            //     radius: 5
-            //     border.width: 1
-            //     border.color: guiSettings.borderColor
-            //     color: websiteField.isValid() ? "transparent" : guiSettings.textInputInvalidColor
-
-            //     SkyTextEdit {
-            //         id: websiteField
-            //         width: parent.width
-            //         topPadding: 10
-            //         bottomPadding: 10
-            //         focus: true
-            //         parentFlick: flick
-            //         initialText: authorWebsite
-            //         placeholderText: qsTr("Your website")
-            //         singleLine: true
-            //         inputMethodHints: Qt.ImhNoPredictiveText
-
-            //         function getLink() {
-            //             return linkUtils.getLinkWithScheme(text)
-            //         }
-
-            //         function isValid() {
-            //             const link = getLink()
-            //             return !Boolean(link) || linkUtils.isWebLink(link)
-            //         }
-            //     }
-            // }
         }
     }
 

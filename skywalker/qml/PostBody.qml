@@ -14,8 +14,10 @@ Column {
     required property date postDateTime
     required property list<language> postLanguageLabels
     required property list<contentlabel> postContentLabels
+    property contentlabel filteredContentLabel
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
     required property bool postIsThread
@@ -117,58 +119,99 @@ Column {
             }
 
             // The content warning is shown when the post is not muted
-            Text {
-                id: warnText
+            Column {
                 width: parent.width
-                Layout.fillWidth: true
                 anchors.verticalCenter: parent.verticalCenter
-                wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                textFormat: Text.RichText
-                color: Material.color(Material.Grey)
-                text: postContentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                 visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
-                onLinkActivated: {
-                    showWarnedPost = true
 
-                    if (postVisible())
-                        showPostAttachements()
+                Text {
+                    width: parent.width
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    color: Material.color(Material.Grey)
+                    text: postContentWarning
+                }
+                Text {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    font.italic: true
+                    text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">@${postContentLabeler.handle}</a>`)
+                    visible: !postContentLabeler.isNull()
+                    onLinkActivated: root.getSkywalker().getDetailedProfile(postContentLabeler.did)
+                }
+                Text {
+                    topPadding: 20
+                    width: parent.width
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    text: `<a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                    onLinkActivated: {
+                        showWarnedPost = true
+
+                        if (postVisible())
+                            showPostAttachements()
+                    }
                 }
             }
 
             // If the post is muted, then this takes precendence over the content warning
-            Text {
-                id: mutedText
+            Column {
                 width: parent.width
-                Layout.fillWidth: true
                 anchors.verticalCenter: parent.verticalCenter
-                wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                textFormat: Text.RichText
-                color: Material.color(Material.Grey)
-                text: getMuteText() + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                 visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
-                onLinkActivated: {
-                    mutePost = false
 
-                    // The post may still not be visible due to content filtering
-                    if (postVisible())
-                        showPostAttachements()
+                Text {
+                    width: parent.width
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    color: Material.color(Material.Grey)
+                    text: getMuteText()
+                }
+                Text {
+                    topPadding: 20
+                    width: parent.width
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    text: `<a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
+                    onLinkActivated: {
+                        mutePost = false
+
+                        // The post may still not be visible due to content filtering
+                        if (postVisible())
+                            showPostAttachements()
+                    }
                 }
             }
 
             // If a post is hidden then this text will show no matter whether the post is muted
-            Text {
-                id: hideText
-                width: parent.width
-                Layout.fillWidth: true
+            Column {
                 anchors.verticalCenter: parent.verticalCenter
-                wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                textFormat: Text.RichText
-                color: Material.color(Material.Grey)
-                text: postContentWarning
+                width: parent.width
                 visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
+
+                Text {
+                    width: parent.width
+                    wrapMode: Text.Wrap
+                    elide: Text.ElideRight
+                    textFormat: Text.RichText
+                    color: Material.color(Material.Grey)
+                    text: postContentWarning
+                }
+                Text {
+                    width: parent.width
+                    textFormat: Text.RichText
+                    elide: Text.ElideRight
+                    color: Material.color(Material.Grey)
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    font.italic: true
+                    text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">@${postContentLabeler.handle}</a>`)
+                    visible: !postContentLabeler.isNull()
+                    onLinkActivated: root.getSkywalker().getDetailedProfile(postContentLabeler.did)
+                }
             }
         }
     }
@@ -277,6 +320,7 @@ Column {
         if (postContentLabels.length > 0) {
             contentLabelsLoader.setSource("ContentLabels.qml", {
                                         contentLabels: postContentLabels,
+                                        filteredContentLabel: postBody.filteredContentLabel,
                                         contentAuthorDid: postAuthor.did,
                                         parentWidth: width})
         }
@@ -296,6 +340,7 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
             onActivateSwipe: postBody.activateSwipe()
@@ -310,6 +355,7 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
             onActivateSwipe: postBody.activateSwipe()
@@ -324,6 +370,7 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
             onActivateSwipe: postBody.activateSwipe()
@@ -338,6 +385,7 @@ Column {
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
             onActivateSwipe: postBody.activateSwipe()
@@ -363,6 +411,7 @@ Column {
             videoView: postBody.postVideo
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            contentLabeler: postContentLabeler
             backgroundColor: bodyBackgroundColor
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
             swipeMode: postBody.swipeMode
@@ -379,6 +428,7 @@ Column {
             postExternal: postBody.postExternal
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
+            contentLabeler: postContentLabeler
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
         }
     }
@@ -444,6 +494,7 @@ Column {
                                    backgroundColor: bodyBackgroundColor,
                                    contentVisibility: postContentVisibility,
                                    contentWarning: postContentWarning,
+                                   contentLabeler: postContentLabeler,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
                                    isDraft: isDraft,
                                    swipeMode: swipeMode })

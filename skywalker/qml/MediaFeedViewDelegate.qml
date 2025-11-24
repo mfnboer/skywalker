@@ -58,9 +58,12 @@ Rectangle {
     required property bool postIsHiddenReply
     required property bool postBookmarked
     required property bool postBookmarkTransient
+    required property int postFeedback // QEnums::FeedbackType
+    required property int postFeedbackTransient // QEnums::FeedbackType
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsThread
@@ -68,6 +71,8 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
+    property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property int headerHeight: 0
@@ -78,8 +83,8 @@ Rectangle {
 
     property bool onScreen: ListView.isCurrentItem
     property bool showFullPostText: false
-    property var videoItem: postVideo ? videoLoader.item : null
-    property var imageItem: postImages.length > 0 ? imageLoader.item : null
+    property var videoItem: postOrRecordVideo ? videoLoader.item : null
+    property var imageItem: postOrRecordImages.length > 0 ? imageLoader.item : null
     property bool zooming: imageItem ? imageItem.zooming : false
 
     signal closed
@@ -90,13 +95,23 @@ Rectangle {
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
-        if (!onScreen) {
+        if (onScreen) {
+            if (feedAcceptsInteractions)
+                videoPage.ListView.view.model.reportOnScreen(postUri)
+
+            if (postOrRecordVideo)
+                videoItem.play()
+        } else {
             cover()
         }
-        else {
-            if (postVideo)
-                videoItem.play()
-        }
+    }
+
+    function cover() {
+        if (feedAcceptsInteractions)
+            videoPage.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+
+        if (postOrRecordVideo)
+            videoItem.pause()
     }
 
     Rectangle {
@@ -112,16 +127,17 @@ Rectangle {
 
         Loader {
             id: videoLoader
-            active: Boolean(postVideo)
+            active: Boolean(postOrRecordVideo)
 
             sourceComponent: VideoView {
                 id: video
                 width: mediaRect.width
                 height: root.height - videoPage.footerHeight
                 maxHeight: root.height
-                videoView: postVideo
+                videoView: postOrRecordVideo
                 contentVisibility: postContentVisibility
                 contentWarning: postContentWarning
+                contentLabeler: postContentLabeler
                 controlColor: "white"
                 disabledColor: "darkslategrey"
                 backgroundColor: videoPage.color
@@ -141,7 +157,7 @@ Rectangle {
             property bool showDetails: true
 
             id: imageLoader
-            active: postImages.length > 0
+            active: postOrRecordImages.length > 0
 
             sourceComponent: SwipeView {
                 property int imageWidth: currentItem ? currentItem.imageWidth : 0
@@ -152,7 +168,7 @@ Rectangle {
                 interactive: !zooming
 
                 Repeater {
-                    model: postImages.length
+                    model: postOrRecordImages.length
 
                     Rectangle {
                         required property int index
@@ -187,8 +203,8 @@ Rectangle {
                                 backgroundColor: "black"
                                 backgroundOpacity: 0.6
                                 color: "white"
-                                text: `${index + 1}/${postImages.length}`
-                                visible: postImages.length > 1 && filter.imageVisible() && showDetails
+                                text: `${index + 1}/${postOrRecordImages.length}`
+                                visible: postOrRecordImages.length > 1 && filter.imageVisible() && showDetails
                             }
                         }
 
@@ -210,7 +226,8 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             contentVisibility: postContentVisibility
                             contentWarning: postContentWarning
-                            images: postImages
+                            contentLabeler: postContentLabeler
+                            images: postOrRecordImages
                         }
                     }
                 }
@@ -247,7 +264,7 @@ Rectangle {
             AccessibleMenuItem {
                 text: qsTr("Save picture")
                 textColor: "black"
-                onTriggered: root.savePhoto(postImages[imageItem.currentIndex].fullSizeUrl)
+                onTriggered: root.savePhoto(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
 
                 MenuItemSvg { svg: SvgOutline.save; color: "black" }
@@ -256,7 +273,7 @@ Rectangle {
             AccessibleMenuItem {
                 text: qsTr("Share picture")
                 textColor: "black"
-                onTriggered: root.sharePhotoToApp(postImages[imageItem.currentIndex].fullSizeUrl)
+                onTriggered: root.sharePhotoToApp(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
 
                 MenuItemSvg { svg: SvgOutline.share; color: "black" }
@@ -265,7 +282,7 @@ Rectangle {
             AccessibleMenuItem {
                 text: qsTr("Save video")
                 textColor: "black"
-                onTriggered: root.saveVideo(videoItem.videoSource, postVideo.playlistUrl)
+                onTriggered: root.saveVideo(videoItem.videoSource, postOrRecordVideo.playlistUrl)
                 visible: Boolean(videoItem)
 
                 MenuItemSvg { svg: SvgOutline.save; color: "black" }
@@ -292,7 +309,7 @@ Rectangle {
         width: parent.width
         anchors.top: postColumn.top
         //anchors.bottom: postColumn.bottom
-        height: postColumn.height + (Boolean(postVideo) ? 0 : (root.height - postColumn.y - postColumn.height))
+        height: postColumn.height + (Boolean(postOrRecordVideo) ? 0 : (root.height - postColumn.y - postColumn.height))
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#00000000" }
             GradientStop { position: 1.0; color: "#EF000000" }
@@ -353,6 +370,7 @@ Rectangle {
             postContentLabels: videoPage.postLabels
             postContentVisibility: videoPage.postContentVisibility
             postContentWarning: videoPage.postContentWarning
+            postContentLabeler: videoPage.postContentLabeler
             postMuted: videoPage.postMutedReason
             postIsThread: videoPage.postIsThread
             postIsThreadReply: videoPage.postIsThreadReply
@@ -362,19 +380,18 @@ Rectangle {
 
             onUnrollThread: {
                 if (!postIsPlaceHolder && postUri)
-                    skywalker.getPostThread(postUri, true)
+                    skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
             }
         }
 
         Loader {
-            active: true
             width: parent.width
-            height: guiSettings.statsHeight + 10
+            height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10)
+            active: true
             asynchronous: true
 
             sourceComponent: PostStats {
                 id: postStats
-                width: parent.width
                 topPadding: 10
                 skywalker: videoPage.skywalker
                 replyCount: postReplyCount
@@ -394,6 +411,8 @@ Rectangle {
                 authorIsUser: author.did === userDid
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
+                feedback: postFeedback
+                feedbackTransient: postFeedbackTransient
                 isThread: postIsThread || postIsThreadReply
                 showViewThread: true
                 record: postRecord
@@ -404,7 +423,7 @@ Rectangle {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
                     root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                                       author, postReplyRootUri, postReplyRootCid, lang,
-                                      postMentionDids, "", "", userDid)
+                                      postMentionDids, "", "", feedDid, postFeedContext, userDid)
                 }
 
                 onReplyLongPress: (mouseEvent) => {
@@ -420,15 +439,17 @@ Rectangle {
                 }
 
                 onRepost: {
-                    root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled, postPlainText,
-                                userDid)
+                    root.repost(postRepostUri, postUri, postCid,
+                                postReasonRepostUri, postReasonRepostCid,
+                                feedDid, postFeedContext, postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                postPlainText, userDid)
                 }
 
                 function quote(quoteByDid = "") {
                     root.quotePost(postUri, postCid,
                             postText, postIndexedDateTime, author, postEmbeddingDisabled,
-                            quoteByDid)
+                            feedDid, postFeedContext, quoteByDid)
                 }
 
                 onRepostLongPress: (mouseEvent) => {
@@ -446,7 +467,9 @@ Rectangle {
                         quote()
                 }
 
-                onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, userDid)
+                onLike: root.like(postLikeUri, postUri, postCid,
+                                  postReasonRepostUri, postReasonRepostCid,
+                                  feedDid, postFeedContext, userDid)
 
                 onLikeLongPress: (mouseEvent) => {
                     if (root.isActiveUser(userDid))
@@ -474,12 +497,13 @@ Rectangle {
 
                 onUnrollThread: {
                     if (!postIsPlaceHolder && postUri)
-                        skywalker.getPostThread(postUri, true)
+                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                 }
 
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
                 onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                 onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                onEditPost: root.composePostEdit(videoPage.ListView.view.model, videoPage.index)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)
@@ -489,8 +513,8 @@ Rectangle {
                 onUnpin: root.unpinPost(postCid, userDid)
                 onBlockAuthor: root.blockAuthor(author, userDid)
                 onShowEmojiNames: root.showEmojiNamesList(postPlainText)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
-                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
             }
         }
 
@@ -547,12 +571,12 @@ Rectangle {
                     () => root.deletePost(postUri, postCid, userDid))
     }
 
-    function cover() {
-        if (postVideo)
-            videoItem.pause()
-    }
-
     function checkOnScreen() {}
+
+    Component.onDestruction: {
+        if (feedAcceptsInteractions && onScreen)
+            videoPage.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+    }
 
     Component.onCompleted: {
         ListView.view.enableOnScreenCheck = true

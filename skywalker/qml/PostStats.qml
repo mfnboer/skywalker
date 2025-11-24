@@ -22,6 +22,9 @@ Item {
     required property bool isBookmarked
     required property bool bookmarkTransient
     required property bool isThread
+    property UserSettings userSettings: skywalker.getUserSettings()
+    property int feedback: QEnums.FEEDBACK_NONE
+    property int feedbackTransient: QEnums.FEEDBACK_NONE
     property bool isUnrolledThread: false
     property bool showViewThread: false
     property var record: null // recordview
@@ -45,6 +48,7 @@ Item {
     signal share()
     signal threadgate()
     signal hideReply()
+    signal editPost()
     signal deletePost()
     signal copyPostText()
     signal reportPost()
@@ -58,7 +62,7 @@ Item {
     signal showLessLikeThis()
 
     id: postStats
-    height: replyIcon.height + topPadding
+    height: replyIcon.height + topPadding + (showMoreIcon.visible ? showMoreIcon.height + topPadding : 0)
 
     StatIcon {
         id: replyIcon
@@ -96,19 +100,11 @@ Item {
         iconColor: likeUri ? guiSettings.likeColor : postStats.color
         svg: likeUri ? SvgFilled.like : SvgOutline.like
         statistic: likeCount
+        blinking: likeTransient
         onClicked: like()
         onPressAndHold: (mouseEvent) => likeLongPress(mouseEvent)
 
         Accessible.name: qsTr("like") + statSpeech(likeCount, "like", "likes")
-
-        Loader {
-            active: likeTransient || active
-
-            BlinkingOpacity {
-                target: likeIcon
-                running: likeTransient
-            }
-        }
     }
     StatIcon {
         id: bookmarkIcon
@@ -117,20 +113,12 @@ Item {
         width: parent.width / 8
         iconColor: isBookmarked ? guiSettings.buttonColor : postStats.color
         svg: isBookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
+        blinking: bookmarkTransient
         visible: !limitedStats
         onClicked: bookmark()
         onPressAndHold: (mouseEvent) => bookmarkLongPress(mouseEvent)
 
         Accessible.name: isBookmarked ? qsTr("remove bookmark") : qsTr("bookmark")
-
-        Loader {
-            active: bookmarkTransient || active
-
-            sourceComponent: BlinkingOpacity {
-                target: bookmarkIcon
-                running: bookmarkTransient
-            }
-        }
     }
     StatIcon {
         id: moreIcon
@@ -160,8 +148,8 @@ Item {
 
             sourceComponent: SkyMenu {
                 id: moreMenu
-                onAboutToShow: root.enablePopupShield(true)
-                onAboutToHide: { root.enablePopupShield(false); parent.active = false }
+                width: 210
+                onAboutToHide: parent.active = false
 
                 CloseMenuItem {
                     text: qsTr("<b>Post</b>")
@@ -187,18 +175,26 @@ Item {
                     MenuItemSvg { svg: SvgOutline.share }
                 }
                 AccessibleMenuItem {
+                    textColor: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
                     text: qsTr("Show more like this")
                     visible: feedAcceptsInteractions
-                    onTriggered: showMoreLikeThis()
+                    onTriggered: emitShowMoreLikeThis()
 
-                    MenuItemSvg { svg: SvgOutline.sentimentSatisfied }
+                    MenuItemSvg {
+                        color: parent.textColor
+                        svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
+                    }
                 }
                 AccessibleMenuItem {
+                    textColor: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
                     text: qsTr("Show less like this")
                     visible: feedAcceptsInteractions
-                    onTriggered: showLessLikeThis()
+                    onTriggered: emitShowLessLikeThis()
 
-                    MenuItemSvg { svg: SvgOutline.sentimentDissatisfied }
+                    MenuItemSvg {
+                        color: parent.textColor
+                        svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
+                    }
                 }
                 AccessibleMenuItem {
                     text: qsTr("View thread")
@@ -259,6 +255,14 @@ Item {
                     MenuItemSvg { svg: viewerStatePinned ? SvgFilled.unpin : SvgFilled.pin }
                 }
 
+                // Only allow the active user to edit posts to avoid too much complexity
+                AccessibleMenuItem {
+                    text: qsTr("Edit")
+                    visible: authorIsUser && !isUnrolledThread && root.isActiveUser(skywalker.getUserDid())
+                    onTriggered: editPost()
+
+                    MenuItemSvg { svg: SvgOutline.edit }
+                }
                 AccessibleMenuItem {
                     text: qsTr("Delete")
                     visible: authorIsUser && !isUnrolledThread
@@ -286,16 +290,63 @@ Item {
 
                     MenuItemSvg { svg: SvgOutline.emojiLanguage }
                 }
-
-                Component.onCompleted: background.color = guiSettings.menuColor
             }
         }
+    }
+
+    StatIcon {
+        id: showMoreIcon
+        anchors.topMargin: topPadding
+        anchors.top: likeIcon.bottom
+        anchors.left: likeIcon.left
+        width: parent.width / 4
+        iconColor: postStats.color
+        svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
+        blinking: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS
+        visible: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
+        Accessible.name: qsTr("Show more like this")
+        onClicked: emitShowMoreLikeThis()
+        onPressAndHold: showFeedbackNotice(true)
+    }
+
+    StatIcon {
+        id: showLessIcon
+        anchors.topMargin: topPadding
+        anchors.top: moreIcon.bottom
+        anchors.left: moreIcon.left
+        width: parent.width / 8
+        iconColor: postStats.color
+        svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
+        blinking: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS
+        visible: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
+        Accessible.name: qsTr("Show more less this")
+        onClicked: emitShowLessLikeThis()
+        onPressAndHold: showFeedbackNotice(true)
     }
 
     AccessibilityUtils {
         id: accessibilityUtils
     }
 
+    function emitShowMoreLikeThis() {
+        if (showFeedbackNotice())
+            return
+
+        if (feedback === QEnums.FEEDBACK_NONE)
+            showMoreLikeThis()
+        else
+            skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO, 1)
+    }
+
+    function emitShowLessLikeThis() {
+        if (showFeedbackNotice())
+            return
+
+        if (feedback === QEnums.FEEDBACK_NONE)
+            showLessLikeThis()
+        else
+            skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO, 1)
+    }
 
     function getRecordPostUri() {
         if (record)
@@ -338,5 +389,27 @@ Item {
 
     function statSpeech(stat, textSingular, textPlural) {
         return accessibilityUtils.statSpeech(stat, textSingular, textPlural)
+    }
+
+    function showFeedbackNotice(unconditional = false) {
+        if (!unconditional) {
+            if (!userSettings.getShowFeedbackNotice())
+                return false
+
+            userSettings.setShowFeedbackNotice(false)
+        }
+
+        let msg = qsTr("With the feedback buttons (thumb up/down) you give feedback to the creator of the feed.<br><br>" +
+                       "👍 = you like more posts like this<br><br>" +
+                       "👎 = you prefer less posts like this<br><br>" +
+                       "Not all feeds support feedback. These buttons are only shown for feeds that support it.<br><br>" +
+                       "You can also give feedback via the menu button (⋮). If you don't want the feedback buttons, you can disable them in the appearance " +
+                       `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Settings</a>.`)
+
+        if (!unconditional)
+            msg += qsTr("<br><br>This message will not be shown again.")
+
+        guiSettings.notice(root, msg, "", () => {}, (link) => { root.editSettings() })
+        return true
     }
 }

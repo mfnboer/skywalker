@@ -8,16 +8,20 @@ Rectangle {
     property string userDid
     property bool isLast: false
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property ContentFilter contentFilter: skywalker.getContentFilter()
     required property var model
     required property bool isSubscribed
     required property bool adultContent
     required property contentgroup contentGroup
     required property int contentPrefVisibility
     required property bool isNewLabel
+    required property bool isListPref
+    readonly property int defaultPrefVisibility: contentFilter.getGroupPrefVisibility(contentGroup)
 
     id: contentGroupView
     height: contentGroupColumn.height
     color: isNewLabel ? guiSettings.postHighLightColor : "transparent"
+    visible: isSubscribed || !contentGroup.isSystem
 
     ColumnLayout {
         id: contentGroupColumn
@@ -39,7 +43,6 @@ Rectangle {
                 Layout.fillWidth: true
                 font.bold: true
                 elide: Text.ElideRight
-                color: guiSettings.textColor
                 plainText: contentGroup.title
             }
             SvgButton {
@@ -51,7 +54,6 @@ Rectangle {
                 accessibleName: qsTr("target of the label")
                 iconColor: guiSettings.textColor
                 Material.background: "transparent"
-                visible: !contentGroup.isBadge
 
                 onClicked: {
                     if (contentGroup.target === QEnums.LABEL_TARGET_CONTENT)
@@ -70,8 +72,26 @@ Rectangle {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
             text: contentGroup.formattedDescription
+        }
+
+        AccessibleText {
+            Layout.leftMargin: contentGroupView.margin
+            Layout.rightMargin: contentGroupView.margin
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            text: getSystemLabelWarning()
+            visible: contentGroup.isSystem
+
+            function getSystemLabelWarning() {
+                if (contentGroup.labelId === "!hide")
+                    return qsTr("⚠️ This is a general system label (!hide) that any labeler may set to hide seriously bad content. Be careful when you change this setting.")
+
+                if (contentGroup.labelId === "!warn")
+                    return qsTr("⚠️ This is a general system label (!warn) that any labeler may set to warn for seriously bad content. Be careful when you change this setting.")
+
+                return qsTr(`⚠️ This is a general system label (${contentGroup.labelId}) that any labeler may set. Be careful when you change this setting.`)
+            }
         }
 
         RowLayout {
@@ -85,6 +105,7 @@ Rectangle {
                 Layout.fillWidth: true
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW
                 horizontalAlignment: Qt.AlignHCenter
+                labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW ? guiSettings.labelPrefDefaultColor : "transparent"
                 text: contentGroup.isBadge ? qsTr("Off") : qsTr("Show");
                 visible: !contentGroup.isAdult || adultContent
                 onCheckedChanged: {
@@ -98,6 +119,7 @@ Rectangle {
                 Layout.fillWidth: true
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN
                 horizontalAlignment: Qt.AlignHCenter
+                labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_WARN ? guiSettings.labelPrefDefaultColor : "transparent"
                 text: contentGroup.isBadge ? qsTr("Show badge") : qsTr("Warn");
                 visible: !contentGroup.isAdult || adultContent
                 onCheckedChanged: {
@@ -112,6 +134,7 @@ Rectangle {
                 Layout.fillWidth: true
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE
                 horizontalAlignment: Qt.AlignHCenter
+                labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE ? guiSettings.labelPrefDefaultColor : "transparent"
                 text: qsTr("Hide");
                 visible: !contentGroup.isAdult || adultContent
                 onCheckedChanged: {

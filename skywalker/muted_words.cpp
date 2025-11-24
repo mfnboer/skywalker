@@ -14,6 +14,26 @@ MutedWordEntry::MutedWordEntry(const QString& value, QEnums::ActorTarget actorTa
     mIsDomain = LinkUtils::isDomain(mValue);
 }
 
+MutedWordEntry::MutedWordEntry(const IMatchEntry* entry)
+{
+    qDebug() << "Entry:" << entry;
+
+    if (!entry)
+        return;
+
+    const auto* mutedWordsEntry = dynamic_cast<const MutedWords::Entry*>(entry);
+    qDebug() << "Muted word entry:" << mutedWordsEntry;
+
+    if (!mutedWordsEntry)
+        return;
+
+    mValue = mutedWordsEntry->mRaw;
+    mIsDomain = LinkUtils::isDomain(mValue);
+    mActorTarget = mutedWordsEntry->mActorTarget;
+    mExpiresAt = mutedWordsEntry->mExpiresAt;
+}
+
+
 MutedWords::MutedWords(const ProfileStore& userFollows, QObject* parent) :
     QObject(parent),
     mUserFollows(userFollows)
@@ -231,27 +251,27 @@ bool MutedWords::mustSkip(const Entry& entry, const QString& authorDid, QDateTim
     return false;
 }
 
-bool MutedWords::match(const NormalizedWordIndex& post) const
+std::pair<bool, const IMatchEntry*> MutedWords::match(const NormalizedWordIndex& post) const
 {
     if (mEntries.empty())
-        return false;
+        return { false, nullptr };
 
     const auto now = QDateTime::currentDateTimeUtc();
     const QString authorDid = post.getAuthorDid();
 
-    if (matchDomain(post, now, authorDid))
-        return true;
+    if (auto match = matchDomain(post, now, authorDid); match.first)
+        return match;
 
-    if (matchHashtag(post, now, authorDid))
-        return true;
+    if (auto match = matchHashtag(post, now, authorDid); match.first)
+        return match;
 
     return matchWords(post, now, authorDid);
 }
 
-bool MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+std::pair<bool, const IMatchEntry*> MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
 {
     if (mDomainIndex.empty())
-        return false;
+        return { false, nullptr };
 
     const auto& domains = post.getUniqueDomains();
 
@@ -269,23 +289,23 @@ bool MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, con
             if (domain == word)
             {
                 qDebug() << "Match on domain:" << word;
-                return true;
+                return { true, entry };
             }
             else if (domain.endsWith(word) && domain.at(domain.length() - word.length() - 1) == '.')
             {
                 qDebug() << "Match on domain:" << word;
-                return true;
+                return { true, entry };
             }
         }
     }
 
-    return false;
+    return { false, nullptr };
 }
 
-bool MutedWords::matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+std::pair<bool, const IMatchEntry*> MutedWords::matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
 {
     if (mHashTagIndex.empty())
-        return false;
+        return { false, nullptr };
 
     const auto& postHashtags = post.getUniqueHashtags();
 
@@ -297,14 +317,14 @@ bool MutedWords::matchHashtag(const NormalizedWordIndex& post, QDateTime now, co
         if (!mustSkip(*entry, authorDid, now) && postHashtags.count(word))
         {
             qDebug() << "Match on hashtag:" << word;
-            return true;
+            return { true, entry };
         }
     }
 
-    return false;
+    return { false, nullptr };
 }
 
-bool MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+std::pair<bool, const IMatchEntry*> MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
 {
     const auto& uniquePostWords = post.getUniqueNormalizedWords();
 
@@ -316,7 +336,7 @@ bool MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, cons
         if (!mustSkip(*entry, authorDid, now) && uniquePostWords.count(word))
         {
             qDebug() << "Match on single word entry:" << word;
-            return true;
+            return { true, entry };
         }
     }
 
@@ -356,13 +376,13 @@ bool MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, cons
                 if (matchedWords == (int)mutedEntry->mNormalizedWords.size())
                 {
                     qDebug() << "Match on multi-word entry:" << mutedEntry->mRaw;
-                    return true;
+                    return { true, mutedEntry };
                 }
             }
         }
     }
 
-    return false;
+    return { false, nullptr };
 }
 
 bool MutedWords::legacyLoad(const UserSettings* userSettings)

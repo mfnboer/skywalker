@@ -26,7 +26,6 @@ SkyPage {
             anchors.rightMargin: 10
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             accessibleName: qsTr("add card")
             onClicked: addCard(anniversaryCard.imageSource, page.years)

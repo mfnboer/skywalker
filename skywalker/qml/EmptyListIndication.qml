@@ -7,13 +7,14 @@ Rectangle {
     required property SvgImage svg
     required property string text
     required property var list
+    property basicprofile labeler
 
     signal linkActivated(string link)
     signal retry()
 
     id: emptyListIndication
     width: parent.width
-    height: visible ? noListsImage.height + noListsText.height : 0
+    height: visible ? noListsImage.height + noListsText.height + (labelerText.visible ? labelerText.height : 0) + (retryLink.visible ? retryLink.height : 0) : 0
     color: "transparent"
     visible: list.count === 0
 
@@ -46,6 +47,23 @@ Rectangle {
         onLinkActivated: (link) => emptyListIndication.linkActivated(link)
     }
     Text {
+        id: labelerText
+        anchors.top: noListsText.bottom
+        width: parent.width
+        leftPadding: 10
+        rightPadding: 10
+        horizontalAlignment: Text.AlignHCenter
+        textFormat: Text.RichText
+        elide: Text.ElideRight
+        font.italic: true
+        font.pointSize: guiSettings.scaledFont(7/8)
+        text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">@${labeler.handle}</a>`)
+        visible: !labeler.isNull() && !Boolean(list.error)
+        onLinkActivated: root.getSkywalker().getDetailedProfile(labeler.did)
+    }
+
+    Text {
+        id: retryLink
         anchors.top: noListsText.bottom
         anchors.topMargin: 10
         width: parent.width

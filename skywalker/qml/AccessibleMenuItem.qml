@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 MenuItem {
-    property string textColor: guiSettings.textColor
+    property string textColor: enabled ? guiSettings.textColor : guiSettings.disabledColor
 
     height: visible ? implicitHeight : 0
     Accessible.role: Accessible.MenuItem

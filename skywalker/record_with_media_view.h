@@ -29,14 +29,23 @@ public:
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;
     QList<ImageView> getImages() const;
+    bool hasImages() const;
     QVariant getVideo() const;
     VideoView::Ptr getVideoView() const;
+    bool hasVideo() const;
     QVariant getExternal() const;
     ExternalView::Ptr getExternalView() const;
+
+    void setImages(const QList<ImageView>& images) { mImages = images; }
+    void setVideo(const VideoView& video) { mVideo = video; }
+    void setExternal(const ExternalView& external) { mExternal = external; }
 
 private:
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr mView;
     RecordView::SharedPtr mRecordView;
+    QList<ImageView> mImages;
+    VideoView mVideo;
+    ExternalView mExternal;
 };
 
 }

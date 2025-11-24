@@ -26,7 +26,7 @@ ImageAutoRetry {
 
         background: Rectangle {
             radius: 3
-            color: "black"
+            color: imageView.hasHtmlAlt() ? guiSettings.hideReasonLabelColor : "black"
             opacity: 0.6
         }
     }

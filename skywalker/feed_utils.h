@@ -18,8 +18,8 @@ public:
     Q_INVOKABLE void like(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLike(const QString& likeUri, const QString& cid);
     Q_INVOKABLE void hideFollowing(const QString& feedUri, bool hide);
-    Q_INVOKABLE void showMoreLikeThis(const QString& postUri, const QString& feedDid, const QString& feedContext);
-    Q_INVOKABLE void showLessLikeThis(const QString& postUri, const QString& feedDid, const QString& feedContext);
+    Q_INVOKABLE void showMoreLikeThis(const QString& postUri, const QString& postCid, const QString& feedDid, const QString& feedContext);
+    Q_INVOKABLE void showLessLikeThis(const QString& postUri, const QString& postCid, const QString& feedDid, const QString& feedContext);
 
 signals:
     void likeOk(QString likeUri);

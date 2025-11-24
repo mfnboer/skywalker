@@ -24,8 +24,6 @@ SkyPage {
         onBack: page.closed()
     }
 
-    footer: DeadFooterMargin {}
-
     SwipeListView {
         id: feedStack
         width: parent.width
@@ -121,7 +119,7 @@ SkyPage {
     Column {
         id: starterPackHeader
         x: margin
-        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height) + (!root.showSideBar ? 0 : guiSettings.headerMargin)
+        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height)
         width: parent.width - 2 * margin
 
         GridLayout {
@@ -220,7 +218,6 @@ SkyPage {
     SvgPlainButton {
         id: moreButton
         parent: page.header.visible ? page.header : page
-        y: guiSettings.headerMargin
         anchors.right: parent.right
         anchors.rightMargin: page.margin
         svg: SvgOutline.moreVert
@@ -300,7 +297,7 @@ SkyPage {
 
         onCreatedListFromStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
-        onGetListOk: (list) => root.viewListFeedDescription(list, page.userDid)
+        onGetListOk: (did, list) => root.viewListFeedDescription(list, did)
         onGetListFailed: (error) => {
             // The network may take a while before you can retrieve a new list.
             console.warn(error)

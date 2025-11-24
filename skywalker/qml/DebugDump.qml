@@ -15,15 +15,13 @@ SkyPage {
         onBack: closed()
 
         SkyButton {
-            y: guiSettings.headerMargin + (parent.height - guiSettings.headerMargin - height) / 2
+            y: (parent.height - height) / 2
             anchors.right: parent.right
             anchors.rightMargin: 10
             text: "Copy"
             onClicked: root.getSkywalker().copyToClipboard(dumpData)
         }
     }
-
-    footer: DeadFooterMargin {}
 
     Flickable {
         anchors.fill: parent

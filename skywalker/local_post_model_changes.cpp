@@ -112,6 +112,18 @@ void LocalPostModelChanges::updateBookmarkTransient(const QString& cid, bool tra
     bookmarkTransientChanged();
 }
 
+void LocalPostModelChanges::updateFeedback(const QString& cid, QEnums::FeedbackType feedback)
+{
+    mChanges[cid].mFeedback = feedback;
+    feedbackChanged();
+}
+
+void LocalPostModelChanges::updateFeedbackTransient(const QString& cid, QEnums::FeedbackType transient)
+{
+    mChanges[cid].mFeedbackTransient = transient;
+    feedbackTransientChanged();
+}
+
 bool LocalPostModelChanges::updateDetachedRecord(const QString& cid, const QString& postUri)
 {
     if (postUri.isEmpty())

@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "list_view_include.h"
 #include "record_view.h"
+#include <atproto/lib/lexicon/app_bsky_feed.h>
 #include <QHashFunctions>
 #include <QString>
 #include <optional>
@@ -37,6 +38,8 @@ public:
         RecordView::SharedPtr mDetachedRecord;
         RecordView::SharedPtr mReAttachedRecord;
         std::optional<bool> mViewerStatePinned;
+        QEnums::FeedbackType mFeedback = QEnums::FEEDBACK_NONE;
+        QEnums::FeedbackType  mFeedbackTransient = QEnums::FEEDBACK_NONE;
 
         bool mPostDeleted = false;
     };
@@ -63,6 +66,8 @@ public:
     void updateThreadMuted(const QString& uri, bool muted);
     void updateBookmarked(const QString& cid, bool bookmarked);
     void updateBookmarkTransient(const QString& cid, bool transient);
+    void updateFeedback(const QString& cid, QEnums::FeedbackType feedback);
+    void updateFeedbackTransient(const QString& cid, QEnums::FeedbackType transient);
 
     /**
      * @brief updateDetachedRecord
@@ -92,6 +97,8 @@ protected:
     virtual void threadMutedChanged() = 0;
     virtual void bookmarkedChanged() = 0;
     virtual void bookmarkTransientChanged() = 0;
+    virtual void feedbackChanged() = 0;
+    virtual void feedbackTransientChanged() = 0;
     virtual void detachedRecordChanged() = 0;
     virtual void reAttachedRecordChanged() = 0;
     virtual void viewerStatePinnedChanged() = 0;

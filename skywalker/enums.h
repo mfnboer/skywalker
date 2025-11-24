@@ -27,6 +27,17 @@ public:
     };
     Q_ENUM(DisplayMode)
 
+    enum SideBarType
+    {
+        SIDE_BAR_OFF = 0,
+        SIDE_BAR_LANDSCAPE,
+        SIDE_BAR_PORTRAIT,
+        SIDE_BAR_BOTH,
+
+        SIDE_BAR_LAST = SIDE_BAR_BOTH
+    };
+    Q_ENUM(SideBarType)
+
     enum UiPage
     {
         UI_PAGE_NONE = 0,
@@ -177,7 +188,10 @@ public:
     {
         CONTENT_PREF_VISIBILITY_SHOW = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::SHOW,
         CONTENT_PREF_VISIBILITY_WARN = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::WARN,
-        CONTENT_PREF_VISIBILITY_HIDE = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::HIDE
+        CONTENT_PREF_VISIBILITY_HIDE = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::HIDE,
+        CONTENT_PREF_VISIBILITY_UNKNOWN = (int)ATProto::AppBskyActor::ContentLabelPref::Visibility::UNKNOWN,
+
+        CONTENT_PREF_VISIBILITY_LAST = CONTENT_PREF_VISIBILITY_UNKNOWN
     };
     Q_ENUM(ContentPrefVisibility)
 
@@ -198,9 +212,29 @@ public:
     };
     Q_ENUM(LabelSeverity)
 
+    enum ReportCategoryType
+    {
+        REPORT_CATEGORY_TYPE_NULL = -1,
+
+        REPORT_CATEGORY_OZONE_VIOLENCE = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_VIOLENCE,
+        REPORT_CATEGORY_TYPE_OZONE_SEXUAL = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_SEXUAL,
+        REPORT_CATEGORY_TYPE_OZONE_CHILD = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_CHILD,
+        REPORT_CATEGORY_TYPE_OZONE_HARASSMENT = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_HARASSMENT,
+        REPORT_CATEGORY_TYPE_OZONE_MISLEADING = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_MISLEADING,
+        REPORT_CATEGORY_TYPE_OZONE_RULE = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_RULE,
+        REPORT_CATEGORY_TYPE_OZONE_SELF_HARM = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_SELF_HARM,
+        REPORT_CATEGORY_TYPE_OZONE_OTHER = (int)ATProto::ComATProtoModeration::CategoryType::OZONE_OTHER,
+
+        REPORT_CATEGORY_FIRST = REPORT_CATEGORY_OZONE_VIOLENCE,
+        REPORT_CATEGORY_LAST = REPORT_CATEGORY_TYPE_OZONE_OTHER
+    };
+    Q_ENUM(ReportCategoryType)
+
     enum ReportReasonType
     {
         REPORT_REASON_TYPE_NULL = -1,
+
+        /* DEPRECATED
         REPORT_REASON_TYPE_SPAM = (int)ATProto::ComATProtoModeration::ReasonType::SPAM,
         REPORT_REASON_TYPE_VIOLATION = (int)ATProto::ComATProtoModeration::ReasonType::VIOLATION,
         REPORT_REASON_TYPE_MISLEADING = (int)ATProto::ComATProtoModeration::ReasonType::MISLEADING,
@@ -208,19 +242,57 @@ public:
         REPORT_REASON_TYPE_RUDE = (int)ATProto::ComATProtoModeration::ReasonType::RUDE,
         REPORT_REASON_TYPE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OTHER,
         REPORT_REASON_TYPE_APPEAL = (int)ATProto::ComATProtoModeration::ReasonType::APPEAL
+        */
+
+        REPORT_REASON_TYPE_OZONE_APPEAL = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_APPEAL,
+        REPORT_REASON_TYPE_OZONE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_ANIMAL = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_ANIMAL,
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_THREATS = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_THREATS,
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_GRAPHIC_CONTENT = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_GRAPHIC_CONTENT,
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_GLORIFICATION = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_GLORIFICATION,
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_EXTREMIST_CONTENT = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_EXTREMIST_CONTENT,
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_TRAFFICKING = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_TRAFFICKING,
+        REPORT_REASON_TYPE_OZONE_VIOLENCE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_VIOLENCE_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_SEXUAL_ABUSE_CONTENT = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SEXUAL_ABUSE_CONTENT,
+        REPORT_REASON_TYPE_OZONE_SEXUAL_NCII = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SEXUAL_NCII,
+        REPORT_REASON_TYPE_OZONE_SEXUAL_DEEP_FAKE = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SEXUAL_DEEP_FAKE,
+        REPORT_REASON_TYPE_OZONE_SEXUAL_ANIMAL = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SEXUAL_ANIMAL,
+        REPORT_REASON_TYPE_OZONE_SEXUAL_UNLABELED = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SEXUAL_UNLABELED,
+        REPORT_REASON_TYPE_OZONE_SEXUAL_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SEXUAL_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_CHILD_SAFETY_CSAM = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_CHILD_SAFETY_CSAM,
+        REPORT_REASON_TYPE_OZONE_CHILD_SAFETY_GROOM = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_CHILD_SAFETY_GROOM,
+        REPORT_REASON_TYPE_OZONE_CHILD_SAFETY_PRIVACY = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_CHILD_SAFETY_PRIVACY,
+        REPORT_REASON_TYPE_OZONE_CHILD_SAFETY_HARASSMENT = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_CHILD_SAFETY_HARASSMENT,
+        REPORT_REASON_TYPE_OZONE_CHILD_SAFETY_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_CHILD_SAFETY_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_HARASSMENT_TROLL = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_HARASSMENT_TROLL,
+        REPORT_REASON_TYPE_OZONE_HARASSMENT_TARGETED = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_HARASSMENT_TARGETED,
+        REPORT_REASON_TYPE_OZONE_HARASSMENT_HATE_SPEECH = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_HARASSMENT_HATE_SPEECH,
+        REPORT_REASON_TYPE_OZONE_HARASSMENT_DOXXING = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_HARASSMENT_DOXXING,
+        REPORT_REASON_TYPE_OZONE_HARASSMENT_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_HARASSMENT_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_MISLEADING_BOT = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_MISLEADING_BOT,
+        REPORT_REASON_TYPE_OZONE_MISLEADING_IMPERSONATION = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_MISLEADING_IMPERSONATION,
+        REPORT_REASON_TYPE_OZONE_MISLEADING_SPAM = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_MISLEADING_SPAM,
+        REPORT_REASON_TYPE_OZONE_MISLEADING_SCAM = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_MISLEADING_SCAM,
+        REPORT_REASON_TYPE_OZONE_MISLEADING_ELECTIONS = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_MISLEADING_ELECTIONS,
+        REPORT_REASON_TYPE_OZONE_MISLEADING_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_MISLEADING_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_RULE_SITE_SECURITY = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_RULE_SITE_SECURITY,
+        REPORT_REASON_TYPE_OZONE_RULE_PROHIBITED_SALES = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_RULE_PROHIBITED_SALES,
+        REPORT_REASON_TYPE_OZONE_RULE_BAN_EVASION = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_RULE_BAN_EVASION,
+        REPORT_REASON_TYPE_OZONE_RULE_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_RULE_OTHER,
+
+        REPORT_REASON_TYPE_OZONE_SELF_HARM_CONTENT = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SELF_HARM_CONTENT,
+        REPORT_REASON_TYPE_OZONE_SELF_HARM_ED = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SELF_HARM_ED,
+        REPORT_REASON_TYPE_OZONE_SELF_HARM_STUNTS = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SELF_HARM_STUNTS,
+        REPORT_REASON_TYPE_OZONE_SELF_HARM_SUBSTANCES = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SELF_HARM_SUBSTANCES,
+        REPORT_REASON_TYPE_OZONE_SELF_HARM_OTHER = (int)ATProto::ComATProtoModeration::ReasonType::OZONE_SELF_HARM_OTHER
     };
     Q_ENUM(ReportReasonType)
-
-    enum ReportTarget
-    {
-        REPORT_TARGET_POST,
-        REPORT_TARGET_ACCOUNT,
-        REPORT_TARGET_FEED,
-        REPORT_TARGET_LIST,
-        REPORT_TARGET_STARTERPACK,
-        REPORT_TARGET_DIRECT_MESSAGE
-    };
-    Q_ENUM(ReportTarget)
 
     enum MutedPostReason
     {
@@ -431,6 +503,67 @@ public:
         NON_ACTIVE_USER_REPOST
     };
     Q_ENUM(NonActiveUserAction)
+
+    enum PostThreadType
+    {
+        POST_THREAD_NORMAL,
+        POST_THREAD_UNROLLED,
+        POST_THREAD_ENTRY_AUTHOR_POSTS
+    };
+    Q_ENUM(PostThreadType)
+
+    enum FeedbackType
+    {
+        FEEDBACK_NONE,
+        FEEDBACK_MORE_LIKE_THIS,
+        FEEDBACK_LESS_LIKE_THIS
+    };
+    Q_ENUM(FeedbackType)
+
+    enum HideReasonType
+    {
+        HIDE_REASON_NONE = 0,
+        HIDE_REASON_MUTED_AUTHOR,
+        HIDE_REASON_REPOST_FROM_AUTHOR,
+        HIDE_REASON_HIDE_FROM_FOLLOWING_FEED,
+        HIDE_REASON_LABEL,
+        HIDE_REASON_MUTED_WORD,
+        HIDE_REASON_HIDE_FOLLOWING_FROM_FEED,
+        HIDE_REASON_LANGUAGE,
+        HIDE_REASON_QUOTE_BLOCKED_POST,
+        HIDE_REASON_REPLY_TO_UNFOLLOWED,
+        HIDE_REASON_REPLY_THREAD_UNFOLLOWED,
+        HIDE_REASON_SELF_REPOST,
+        HIDE_REASON_FOLLOWING_REPOST,
+        HIDE_REASON_REPLY,
+        HIDE_REASON_REPOST,
+        HIDE_REASON_QUOTE,
+        HIDE_REASON_CONTENT_MODE,
+        HIDE_REASON_ANY
+    };
+    Q_ENUM(HideReasonType)
+    Q_INVOKABLE static QString hideReasonToString(HideReasonType reason);
+
+    enum ValueType
+    {
+        VALUE_TYPE_INT,
+        VALUE_TYPE_STRING,
+        VALUE_TYPE_BASIC_PROFILE,
+        VALUE_TYPE_MUTED_WORD_ENTRY,
+        VALUE_TYPE_LABELER_DID,
+        VALUE_TYPE_LIST_VIEW_BASIC
+    };
+    Q_ENUM(ValueType)
+
+    enum ReplyOrder
+    {
+        REPLY_ORDER_SMART,
+        REPLY_ORDER_OLDEST_FIRST,
+        REPLY_ORDER_NEWEST_FIRST,
+
+        REPLY_ORDER_LAST = REPLY_ORDER_NEWEST_FIRST
+    };
+    Q_ENUM(ReplyOrder)
 };
 
 }

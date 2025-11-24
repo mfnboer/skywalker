@@ -132,6 +132,9 @@ QString RecordView::getText() const
 
 QString RecordView::getFormattedText() const
 {
+    if (!mPrivate->mFormattedText.isEmpty())
+        return mPrivate->mFormattedText;
+
     if (!mPrivate->mRecord)
         return {};
 
@@ -212,6 +215,9 @@ QString RecordView::getUnknownEmbedType() const
 
 QList<ImageView> RecordView::getImages() const
 {
+    if (!mPrivate->mImages.empty())
+        return mPrivate->mImages;
+
     ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView;
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW);
 
@@ -254,6 +260,9 @@ QVariant RecordView::getVideo() const
 
 VideoView::Ptr RecordView::getVideoView() const
 {
+    if (!mPrivate->mVideo.isNull())
+        return  std::make_unique<VideoView>(mPrivate->mVideo);
+
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW);
 
     if (embed)
@@ -288,6 +297,9 @@ QVariant RecordView::getExternal() const
 
 ExternalView::Ptr RecordView::getExternalView() const
 {
+    if (!mPrivate->mExternal.isNull())
+        return std::make_unique<ExternalView>(mPrivate->mExternal);
+
     auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW);
 
     if (embed)
@@ -506,7 +518,7 @@ void RecordView::setMutedReason(const IMatchWords& mutedWords)
 {
     if (getAuthor().getViewer().isMuted())
         setMutedReason(QEnums::MUTED_POST_AUTHOR);
-    else if (mutedWords.match(*this))
+    else if (mutedWords.match(*this).first)
         setMutedReason(QEnums::MUTED_POST_WORDS);
     else
         setMutedReason(QEnums::MUTED_POST_NONE);

@@ -26,20 +26,18 @@ SkyPage {
     }
 
     footer: Rectangle {
-        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0
         color: "transparent"
     }
 
     Flickable {
         id: flick
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
         contentHeight: altImage.y + altImage.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: altText.ensureVisible(altText.cursorRectangle)
 
         SkyFormattedTextEdit {
             id: altText

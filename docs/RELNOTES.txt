@@ -1,3 +1,25 @@
+4.19
+====
+* Filtered post statistics
+* Change content visibility level for !hide and !warn labels per labeler
+* Override content label preferences for a user list
+* Show handle of labeler with content warnings
+* Side bar can be enabled in portait mode
+* Width of side bar can be changed
+* Sorting orders for replies in a post thread
+* Support new report categories and reasons from Bluesky
+* Bug fixes
+
+4.18
+====
+* Edit post
+* Full text (scrollable) of reply-to or quote post in post composer
+* Show blue dot on ava when you follow that user
+* Feed feedback buttons (thumb up/down) in feeds that support feedback
+* Send feed interactions: seen, like, reply, repost, quote
+* Long press on feed avatar in favorite feed opens feed options menu
+* Bug fixes
+
 4.17
 ====
 * Improve sharing of saved/pinned feeds with the Bluesky app

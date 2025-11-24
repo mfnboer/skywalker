@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "search_post_feed_model.h"
+#include "list_store.h"
 #include <ranges>
 
 namespace Skywalker {
@@ -12,7 +13,7 @@ SearchPostFeedModel::SearchPostFeedModel(const QString& feedName, const QString&
                                          const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                          HashtagIndex& hashtags,
                                          QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mFeedName(feedName)
@@ -206,9 +207,13 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
         if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
         {
             Post post(feedEntry);
+            mContentFilterStats.reportChecked(post);
 
-            if (mustHideContent(post))
+            if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+            {
+                mContentFilterStats.report(post, reason.first, reason.second);
                 continue;
+            }
 
             preprocess(post);
             page->addPost(post);

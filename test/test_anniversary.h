@@ -90,7 +90,7 @@ private slots:
     }
 
 private:
-    class MockUserSettings : public IUserSettings
+    class MockUserSettings : public IUserSettingsAnniversary
     {
     public:
         QDate getAnniversaryNoticeDate(const QString&) const override { return mAnniversaryNoticeDate; }

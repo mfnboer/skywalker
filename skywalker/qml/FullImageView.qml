@@ -8,7 +8,6 @@ SkyPage {
     required property var images // list<imageview>: var to allow regular javascript arrays
     required property int imageIndex
     property var previewImage
-    property var closeCb
     property bool showControls: true
     readonly property bool noSideBar: true
 
@@ -20,10 +19,6 @@ SkyPage {
     width: parent.width
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
-
-    header: DeadHeaderMargin {
-        color: "transparent"
-    }
 
     Loader {
         id: previewLoader
@@ -70,12 +65,15 @@ SkyPage {
                 }
                 Flickable {
                     id: altFlick
+                    anchors.left: parent.left
+                    anchors.leftMargin: altText.leftMargin
+                    anchors.right: parent.right
+                    anchors.rightMargin: altText.rightMargin
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: altText.bottomMargin
-                    width: parent.width
                     height: Math.min(contentHeight, altText.maxHeight)
                     clip: true
-                    contentWidth: parent.width
+                    contentWidth: width
                     contentHeight: altText.contentHeight
                     flickableDirection: Flickable.VerticalFlick
                     boundsBehavior: Flickable.StopAtBounds
@@ -92,6 +90,7 @@ SkyPage {
                     ImageAltText {
                         id: altText
                         alt: images[index].alt
+                        isHtml: images[index].hasHtmlAlt()
                         visible: alt
                     }
                 }
@@ -117,6 +116,7 @@ SkyPage {
 
     SvgButton {
         x: guiSettings.leftMargin
+        y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
@@ -128,6 +128,8 @@ SkyPage {
 
     SvgButton {
         anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin
+        y: guiSettings.headerMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
@@ -177,11 +179,12 @@ SkyPage {
         displayUtils.setStatusBarTransparent(false, guiSettings.headerColor)
     }
 
+    function cancel() {
+        closed()
+    }
+
     Component.onDestruction: {
         resetSystemBarsColor()
-
-        if (closeCb)
-            closeCb()
     }
 
     Component.onCompleted: {

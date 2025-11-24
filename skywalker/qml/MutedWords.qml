@@ -32,7 +32,6 @@ ListView {
 
         SvgPlainButton {
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             anchors.right: parent.right
             svg: SvgOutline.add
             onClicked: addWord()
@@ -42,9 +41,6 @@ ListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
-
     delegate: ColumnLayout {
         required property mutedwordentry modelData
 
@@ -53,49 +49,19 @@ ListView {
         RowLayout {
             Layout.fillWidth: true
 
-            ColumnLayout {
+            MutedWordEntry {
+                id: mutedWordEntry
                 Layout.fillWidth: true
-
-                AccessibleText {
-                    id: entryText
-                    Layout.fillWidth: true
-                    leftPadding: 10
-                    rightPadding: 10
-                    elide: Text.ElideRight
-                    wrapMode: Text.Wrap
-                    font.pointSize: guiSettings.scaledFont(9/8)
-                    text: modelData.value + (modelData.isDomain ? " 🔗" : "")
-                }
-                AccessibleText {
-                    Layout.fillWidth: true
-                    leftPadding: 10
-                    rightPadding: 10
-                    elide: Text.ElideRight
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    color: Material.color(Material.Grey)
-                    text: getExpiresIndication(modelData.expiresAt)
-                    visible: !isNaN(modelData.expiresAt.getTime())
-                }
-
-                AccessibleText {
-                    Layout.fillWidth: true
-                    leftPadding: 10
-                    rightPadding: 10
-                    elide: Text.ElideRight
-                    font.pointSize: guiSettings.scaledFont(7/8)
-                    color: Material.color(Material.Grey)
-                    text: qsTr("Exclude users you follow")
-                    visible: modelData.actorTarget === QEnums.ACTOR_TARGET_EXCLUDE_FOLLOWING
-                }
+                entry: modelData
             }
             SvgPlainButton {
                 svg: SvgOutline.edit
-                accessibleName: qsTr(`edit ${entryText.text}`)
+                accessibleName: qsTr(`edit ${mutedWordEntry.text}`)
                 onClicked: editWord(modelData)
             }
             SvgPlainButton {
                 svg: SvgOutline.delete
-                accessibleName: qsTr(`delete ${entryText.text}`)
+                accessibleName: qsTr(`delete ${mutedWordEntry.text}`)
                 onClicked: skywalker.mutedWords.removeEntry(modelData.value)
             }
         }
@@ -114,18 +80,6 @@ ListView {
         svg: SvgOutline.mutedWords
         text: qsTr("No muted words")
         list: view
-    }
-
-    function getExpiresIndication(expiresAt) {
-        if (isNaN(expiresAt.getTime()))
-            return ""
-
-        const today = new Date()
-
-        if (expiresAt < today)
-            return qsTr("Expired")
-
-        return qsTr(`Expires ${guiSettings.expiresIndication(expiresAt)}`)
     }
 
     function addWord() {

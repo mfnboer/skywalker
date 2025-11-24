@@ -7,7 +7,7 @@ import skywalker
 ApplicationWindow {
     property double postButtonRelativeX: 1.0
     readonly property bool isPortrait: width < height
-    readonly property bool showSideBar: !isPortrait && skywalker.getUserSettings().landscapeSideBar && sideBar.width >= guiSettings.sideBarMinWidth
+    readonly property bool showSideBar: mustShowSideBar()
     property var didSkywalkerMap: new Map()
     property var didPostUtilsMap: new Map()
     property var didProfileUtilsMap: new Map()
@@ -63,10 +63,10 @@ ApplicationWindow {
     }
 
     onIsPortraitChanged: {
-        guiSettings.updateScreenMargins()
-
         // HACK: the light/dark mode of the status bar gets lost when orientation changes
         displayUtils.resetStatusBarLightMode()
+
+        rootSplitView.init()
     }
 
     onClosing: (event) => {
@@ -134,7 +134,7 @@ ApplicationWindow {
         id: busyIndicator
         z: 200
         anchors.centerIn: parent
-        running: skywalker.getPostThreadInProgress || skywalker.getDetailedProfileInProgress
+        running: skywalker.getPostThreadInProgress || skywalker.getDetailedProfileInProgress || postEditUtils.busy
     }
 
     StatusPopup {
@@ -150,8 +150,8 @@ ApplicationWindow {
         property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
-        x: sideBar.visible ? sideBar.x + sideBar.width : 0
-        y: (favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0
+        x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
+        y: guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
         z: guiSettings.headerZLevel - 1
         width: parent.width - x - guiSettings.rightMargin
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
@@ -189,6 +189,7 @@ ApplicationWindow {
         timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
         skywalker: root.getSkywalker()
         activePage: QEnums.UI_PAGE_HOME
+        footerMargin: guiSettings.footerMargin
         extraFooterMargin: getExtraFooterMargin()
         onHomeClicked: favoritesSwipeView.currentView.moveToHome()
         onNotificationsClicked: viewNotifications()
@@ -201,7 +202,7 @@ ApplicationWindow {
             if (favoritesTabBar.position == TabBar.Footer)
                 return favoritesTabBar.visible ? y - favoritesTabBar.y : 0
             else
-                return favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0
+                return (favoritesSwipeView && favoritesSwipeView.currentView ? favoritesSwipeView.currentView.extraFooterMargin : 0)
         }
     }
 
@@ -357,6 +358,7 @@ ApplicationWindow {
         onStatusClear: statusPopup.clear()
 
         onPostThreadOk: (did, modelId, postEntryIndex) => viewPostThread(did, modelId, postEntryIndex)
+
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 
         onGetUserProfileFailed: (error) => {
@@ -420,10 +422,10 @@ ApplicationWindow {
             getTimelineView().resumeTimeline(postIndex, offsetY)
         }
 
-        onGetDetailedProfileOK: (did, profile) => { // qmllint disable signal-handler-parameters
+        onGetDetailedProfileOK: (did, profile, labelPrefsListUri) => { // qmllint disable signal-handler-parameters
             Qt.callLater((p) => {
                     let modelId = getSkywalker(did).createAuthorFeedModel(profile)
-                    viewAuthor(profile, modelId, did)
+                    viewAuthor(profile, labelPrefsListUri, modelId, did)
                 },
                 profile)
         }
@@ -602,123 +604,167 @@ ApplicationWindow {
         }
     }
 
-    SideBar {
-        property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+    SkySplitView {
+        readonly property bool noSideBar: (currentStackItem() && typeof currentStackItem().noSideBar !== 'undefined' ? currentStackItem().noSideBar : false)
+        readonly property bool fullScreen: noSideBar
 
-        id: sideBar
-        x: guiSettings.leftMargin
-        y: guiSettings.headerMargin
-        width: Math.min(parent.width * 0.25, guiSettings.sideBarMaxWidth)
-        height: parent.height - guiSettings.headerMargin - guiSettings.footerMargin
-        timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
-        skywalker: root.getSkywalker()
-        homeActive: rootContent.currentIndex === rootContent.timelineIndex
-        notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
-        searchActive: rootContent.currentIndex === rootContent.searchIndex
-        messagesActive: rootContent.currentIndex === rootContent.chatIndex
-        onHomeClicked: {
-            if (homeActive)
-                favoritesSwipeView.currentView.moveToHome()
+        id: rootSplitView
+        anchors.left: parent.left
+        anchors.leftMargin: fullScreen ? 0 : guiSettings.leftMargin
+        anchors.right: parent.right
+        anchors.rightMargin: fullScreen ? 0 : guiSettings.rightMargin
+        anchors.top: parent.top
+        anchors.topMargin: fullScreen ? 0 : guiSettings.headerMargin
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? 0 : guiSettings.footerMargin)
+
+        onResizingChanged: {
+            if (resizing)
+                return
+
+            console.debug("Save side bar width:", sideBar.SplitView.preferredWidth, "portrait:", isPortrait)
+            let userSettings = skywalker.getUserSettings()
+
+            if (isPortrait)
+                userSettings.setPortraitSideBarWidth(sideBar.SplitView.preferredWidth)
             else
-                root.viewTimeline()
-        }
-        onNotificationsClicked: {
-            if (!notificationsActive)
-                viewNotifications()
-            else if (currentStackItem() instanceof NotificationListView)
-                currentStackItem().handleNotificationsClicked()
-        }
-        onSearchClicked: {
-            if (!searchActive)
-                viewSearchView()
-        }
-        onMessagesClicked: {
-            if (!messagesActive)
-                viewChat()
-            else if (currentStackItem() instanceof ConvoListView)
-                currentStackItem().positionViewAtBeginning()
-        }
-        onAddConvoClicked: {
-            if (currentStackItem() instanceof ConvoListView)
-                currentStackItem().addConvo()
+                userSettings.setLandscapeSideBarWidth(sideBar.SplitView.preferredWidth)
         }
 
-        visible: showSideBar && currentStackItem() && typeof currentStackItem().noSideBar === 'undefined'
+        function init() {
+            let userSettings = skywalker.getUserSettings()
+
+            const w = isPortrait ? userSettings.getPortraitSideBarWidth() : userSettings.getLandscapeSideBarWidth()
+            console.debug("Init side bar width:", w, "portrait:", isPortrait)
+            sideBar.SplitView.preferredWidth = w
+        }
+
+        SideBar {
+            property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+
+            id: sideBar
+            SplitView.minimumWidth: guiSettings.sideBarMinWidth
+            SplitView.preferredWidth: 200
+            SplitView.maximumWidth: Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth)
+            height: parent.height
+            timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+            skywalker: root.getSkywalker()
+            homeActive: rootContent.currentIndex === rootContent.timelineIndex
+            notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
+            searchActive: rootContent.currentIndex === rootContent.searchIndex
+            messagesActive: rootContent.currentIndex === rootContent.chatIndex
+            onHomeClicked: {
+                if (homeActive)
+                    favoritesSwipeView.currentView.moveToHome()
+                else
+                    root.viewTimeline()
+            }
+            onNotificationsClicked: {
+                if (!notificationsActive)
+                    viewNotifications()
+                else if (currentStackItem() instanceof NotificationListView)
+                    currentStackItem().handleNotificationsClicked()
+            }
+            onSearchClicked: {
+                if (!searchActive)
+                    viewSearchView()
+            }
+            onMessagesClicked: {
+                if (!messagesActive)
+                    viewChat()
+                else if (currentStackItem() instanceof ConvoListView)
+                    currentStackItem().positionViewAtBeginning()
+            }
+            onAddConvoClicked: {
+                if (currentStackItem() instanceof ConvoListView)
+                    currentStackItem().addConvo()
+            }
+
+            visible: showSideBar && !rootSplitView.noSideBar
+        }
+
+        StackLayout {
+            readonly property int timelineIndex: 0
+            readonly property int notificationIndex: 1
+            readonly property int searchIndex: 2
+            readonly property int chatIndex: 3
+            property int prevIndex: timelineIndex
+
+            id: rootContent
+            SplitView.fillWidth: true
+            height: parent.height
+            currentIndex: timelineIndex
+            clip: true
+
+            onCurrentIndexChanged: {
+                let prevStack = rootContent.children[prevIndex]
+
+                if (prevStack.depth > 0) {
+                    let prevItem = prevStack.get(prevStack.depth - 1)
+
+                    if (typeof prevItem.cover === 'function')
+                        prevItem.cover()
+                }
+
+                if (prevIndex === notificationIndex) {
+                    skywalker.notificationListModel.updateRead()
+                    skywalker.mentionListModel.updateRead()
+                    getNotificationView().reset()
+                    unwindStack(notificationStack)
+                }
+
+                prevIndex = currentIndex
+                let currentItem = currentStackItem()
+
+                if (currentItem && typeof currentItem.uncover === 'function')
+                    currentItem.uncover()
+
+                favoritesTabBar.update()
+            }
+
+            StackView {
+                id: timelineStack
+            }
+            StackView {
+                id: notificationStack
+            }
+            StackView {
+                id: searchStack
+            }
+            StackView {
+                id: chatStack
+            }
+        }
     }
 
-    StackLayout {
-        readonly property int timelineIndex: 0
-        readonly property int notificationIndex: 1
-        readonly property int searchIndex: 2
-        readonly property int chatIndex: 3
-        property int prevIndex: timelineIndex
-
-        id: rootContent
-        x: sideBar.visible ? sideBar.x + sideBar.width : 0
-        width: parent.width - x - guiSettings.rightMargin
-        height: parent.height
-        currentIndex: timelineIndex
-        clip: true
-
-        onCurrentIndexChanged: {
-            let prevStack = rootContent.children[prevIndex]
-
-            if (prevStack.depth > 0) {
-                let prevItem = prevStack.get(prevStack.depth - 1)
-
-                if (typeof prevItem.cover === 'function')
-                    prevItem.cover()
-            }
-
-            if (prevIndex === notificationIndex) {
-                skywalker.notificationListModel.updateRead()
-                skywalker.mentionListModel.updateRead()
-                getNotificationView().reset()
-                unwindStack(notificationStack)
-            }
-
-            prevIndex = currentIndex
-            let currentItem = currentStackItem()
-
-            if (currentItem && typeof currentItem.uncover === 'function')
-                currentItem.uncover()
-
-            favoritesTabBar.update()
-        }
-
-        StackView {
-            id: timelineStack
-        }
-        StackView {
-            id: notificationStack
-        }
-        StackView {
-            id: searchStack
-        }
-        StackView {
-            id: chatStack
-        }
+    // Left margin (navbar on Android)
+    Rectangle {
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: rootSplitView.left
+        color: getBackgroundColor()
     }
 
     // Right margin (navbar on Android)
     Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.left: rootContent.right
+        anchors.left: rootSplitView.right
         anchors.right: parent.right
         color: getBackgroundColor()
+    }
 
-        function getBackgroundColor() {
-            const item = currentStackItem()
+    function getBackgroundColor() {
+        const item = currentStackItem()
 
-            if (item && typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
-                return item.background.color
+        if (item && typeof item.background !== 'undefined' && item.background !== null && typeof item.background.color !== 'undefined')
+            return item.background.color
 
-            if (item && typeof item.color !== 'undefined')
-                return item.color
+        if (item && typeof item.color !== 'undefined')
+            return item.color
 
-            return guiSettings.backgroundColor
-        }
+        return guiSettings.backgroundColor
     }
 
     // Hack for Talkback
@@ -728,6 +774,7 @@ ApplicationWindow {
     // Making this full screen rectangle visible, blocks Talkback from window beneath.
     Rectangle {
         id: popupShield
+        parent: Overlay.overlay
         anchors.fill: parent
         color: "black"
         opacity: 0.2
@@ -748,11 +795,6 @@ ApplicationWindow {
         id: settingsDrawer
         height: parent.height
         edge: !showSideBar ? Qt.RightEdge : Qt.LeftEdge
-        dragMargin: 0
-        modal: true
-
-        onAboutToShow: enablePopupShield(true)
-        onAboutToHide: enablePopupShield(false)
 
         onProfile: {
             let did = skywalker.getUserDid()
@@ -890,9 +932,6 @@ ApplicationWindow {
         bottomPadding: guiSettings.footerMargin
         modal: true
 
-        onAboutToShow: enablePopupShield(true)
-        onAboutToHide: enablePopupShield(false)
-
         onSelectedUser: (profile) => {
             if (!profile.did) {
                 signOutCurrentUser()
@@ -925,13 +964,15 @@ ApplicationWindow {
         }
     }
 
-    Drawer {
+    SkyDrawer {
         property string repostByDid
         property string repostedAlreadyUri
         property string repostUri
         property string repostCid
         property string repostViaUri
         property string repostViaCid
+        property string repostFeedDid
+        property string repostFeedContext
         property string repostText
         property date repostDateTime
         property basicprofile repostAuthor
@@ -941,12 +982,7 @@ ApplicationWindow {
         id: repostDrawer
         width: parent.width
         edge: Qt.BottomEdge
-        dragMargin: 0
         bottomPadding: guiSettings.footerMargin
-        modal: true
-
-        onAboutToShow: enablePopupShield(true)
-        onAboutToHide: enablePopupShield(false)
 
         Column {
             id: menuColumn
@@ -969,10 +1005,16 @@ ApplicationWindow {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
                     onClicked: {
-                        if (repostDrawer.repostedAlreadyUri)
-                            getPostUtils(repostDrawer.repostByDid).undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostCid)
-                        else
-                            getPostUtils(repostDrawer.repostByDid).repost(repostDrawer.repostUri, repostDrawer.repostCid, repostDrawer.repostViaUri, repostDrawer.repostViaCid)
+                        const pu = getPostUtils(repostDrawer.repostByDid)
+
+                        if (repostDrawer.repostedAlreadyUri) {
+                            pu.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostUri,
+                                          repostDrawer.repostCid, repostDrawer.repostFeedDid)
+                        } else {
+                            pu.repost(repostDrawer.repostUri, repostDrawer.repostCid,
+                                      repostDrawer.repostViaUri, repostDrawer.repostViaCid,
+                                      repostDrawer.repostFeedDid, repostDrawer.repostFeedContext)
+                        }
 
                         repostDrawer.close()
                     }
@@ -987,8 +1029,10 @@ ApplicationWindow {
                     // No need to check if post still exist. Already checked before
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
-                                      repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor, "", repostDrawer.repostByDid)
+                                        repostDrawer.repostText, repostDrawer.repostDateTime,
+                                        repostDrawer.repostAuthor, "",
+                                        repostDrawer.repostFeedDid, repostDrawer.repostFeedContext,
+                                        repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -1002,9 +1046,10 @@ ApplicationWindow {
                     // No need to check if post still exist. Already checked before
                     // opening this drawer
                     root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
-                                      repostDrawer.repostText, repostDrawer.repostDateTime,
-                                      repostDrawer.repostAuthor, repostDrawer.repostPlainText,
-                                      repostDrawer.repostByDid)
+                                        repostDrawer.repostText, repostDrawer.repostDateTime,
+                                        repostDrawer.repostAuthor, repostDrawer.repostPlainText,
+                                        repostDrawer.repostFeedDid, repostDrawer.repostFeedContext,
+                                        repostDrawer.repostByDid)
                     repostDrawer.close()
                 }
             }
@@ -1023,13 +1068,16 @@ ApplicationWindow {
             }
         }
 
-        function show(hasRepostedUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, byDid = "") {
+        function show(hasRepostedUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                      dateTime, author, embeddingDisabled, plainText, byDid = "") {
             repostByDid = byDid
             repostedAlreadyUri =  hasRepostedUri
             repostUri = uri
             repostCid = cid
             repostViaUri = viaUri
             repostViaCid = viaCid
+            repostFeedDid = feedDid
+            repostFeedContext = feedContext
             repostText = text
             repostDateTime = dateTime
             repostAuthor = author
@@ -1042,6 +1090,56 @@ ApplicationWindow {
     MainPostUtils {
         id: postUtils
         skywalker: skywalker
+    }
+
+    PostEditUtils {
+        property bool busy: false
+
+        id: postEditUtils
+        skywalker: skywalker
+
+        onEditPostDataProgress: (msg) => {
+            busy = true
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 120)
+        }
+
+        onEditPostDataFailed: (error) => {
+            busy = false
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onEditPostDataOk: (draft) => {
+            busy = false
+            skywalker.clearStatusMessage()
+            doComposePostEdit(draft)
+        }
+
+        onEditPostPaused: (replyCount, repostCount, quoteCount, likeCount) => {
+            busy = false
+            skywalker.clearStatusMessage()
+            askEditPermission(replyCount, repostCount, quoteCount, likeCount)
+        }
+
+        function askEditPermission(replyCount, repostCount, quoteCount, likeCount) {
+            let msg = qsTr("By editing this post you will lose:<br>")
+
+            if (replyCount > 0)
+                msg += statText(replyCount, qsTr("reply"), qsTr("replies"))
+            if (repostCount > 0)
+                msg += statText(repostCount, qsTr("repost"), qsTr("reposts"))
+            if (quoteCount > 0)
+                msg += statText(quoteCount, qsTr("quote"), qsTr("quotes"))
+            if (likeCount > 0)
+                msg += statText(likeCount, qsTr("like"), qsTr("likes"))
+
+            guiSettings.noticeOkCancel(root, msg,
+                () => { postEditUtils.resume() },
+                () => { postEditUtils.cancel() })
+        }
+
+        function statText(count, single, plural) {
+            return "<br>" + (count === 1 ? `1 ${single}` : `${count} ${plural}`)
+        }
     }
 
     MainProfileUtils {
@@ -1102,6 +1200,11 @@ ApplicationWindow {
     DisplayUtils {
         id: displayUtils
         skywalker: skywalker
+
+        function updateBackground() {
+            displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
+            displayUtils.setStatusBarColor(guiSettings.headerColor)
+        }
     }
 
     Utils {
@@ -1120,7 +1223,8 @@ ApplicationWindow {
         id: guiSettings
     }
 
-    function enablePopupShield(enable) {
+    function enablePopupShield(enable, opacity = 0.2) {
+        popupShield.opacity = opacity
         popupShield.visible = enable
     }
 
@@ -1336,6 +1440,24 @@ ApplicationWindow {
         pushStack(page)
     }
 
+    function composePostEdit(postFeedModel, postIndex) {
+        postEditUtils.getEditPostData(postFeedModel, postIndex)
+    }
+
+    function doComposePostEdit(draftPostData) {
+        if (!Boolean(draftPostData)) {
+            skywalker.showStatusMessage(qsTr("Failed to load post for editing."), QEnums.STATUS_LEVEL_ERROR)
+            return
+        }
+
+        let component = guiSettings.createComponent("ComposePost.qml")
+        let page = component.createObject(root, {
+                editPostData: draftPostData
+        })
+        page.onClosed.connect(() => { popStack() })
+        pushStack(page)
+    }
+
     function composeVideoPost(initialText = "", videoSource = "", postByDid = "") {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1349,18 +1471,18 @@ ApplicationWindow {
 
     function composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
-                          postByDid = "")
+                          feedDid = "", feedContext = "", postByDid = "")
     {
         const pu = getPostUtils(postByDid)
         pu.checkPost(replyToUri, replyToCid,
             () => doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,initialText, imageSource,
-                                 postByDid))
+                                 feedDid, feedContext, postByDid))
     }
 
     function doComposeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                           replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids, initialText = "", imageSource = "",
-                          postByDid = "")
+                          feedDid = "", feedContext = "", postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1375,6 +1497,8 @@ ApplicationWindow {
                 replyToPostDateTime: replyToDateTime,
                 replyToAuthor: replyToAuthor,
                 replyToLanguage: replyToLanguage,
+                replyFeedDid: feedDid,
+                replyFeedContext: feedContext,
                 replyToMentionDids: replyToMentionDids
         })
         page.onClosed.connect(() => { popStack() })
@@ -1416,7 +1540,7 @@ ApplicationWindow {
     }
 
     function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor,
-                            initialText = "", quoteByDid = "")
+                            initialText = "", feedDid = "", feedContext = "", quoteByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1427,42 +1551,48 @@ ApplicationWindow {
                 quoteCid: quoteCid,
                 quoteText: quoteText,
                 quoteDateTime: quoteDateTime,
-                quoteAuthor: quoteAuthor
+                quoteAuthor: quoteAuthor,
+                quoteFeedDid: feedDid,
+                quoteFeedContext: feedContext
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
+    function repost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                    dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
         const pu = getPostUtils(repostByDid)
         pu.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid))
+            () => doRepost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                           dateTime, author, embeddingDisabled, plainText, repostByDid))
     }
 
-    function doRepost(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
-        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, text, dateTime, author, embeddingDisabled, plainText, repostByDid)
+    function doRepost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                      dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
+        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                          dateTime, author, embeddingDisabled, plainText, repostByDid)
     }
 
-    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, quoteByDid = "") {
+    function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, feedDid = "", feedContext = "", quoteByDid = "") {
         if (embeddingDisabled) {
             skywalker.showStatusMessage(qsTr("Quoting not allowed"), QEnums.STATUS_LEVEL_INFO)
             return
         }
 
         const pu = getPostUtils(quoteByDid)
-        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", quoteByDid))
+        pu.checkPost(uri, cid, () => doComposeQuote(uri, cid, text, dateTime, author, "", feedDid, feedContext, quoteByDid))
     }
 
-    function like(likeUri, uri, cid, viaUri = "", viaCid = "", likeByDid = "") {
+    function like(likeUri, uri, cid, viaUri = "", viaCid = "", feedDid = "", feedContext = "", likeByDid = "") {
         const pu = getPostUtils(likeByDid)
 
         if (!pu)
             return
 
         if (likeUri)
-            pu.undoLike(likeUri, cid)
+            pu.undoLike(likeUri, uri, cid, feedDid)
         else
-            pu.like(uri, cid, viaUri, viaCid)
+            pu.like(uri, cid, viaUri, viaCid, feedDid, feedContext)
     }
 
     function likeFeed(likeUri, uri, cid, likeByDid = "") {
@@ -1500,7 +1630,7 @@ ApplicationWindow {
 
                         composeReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                      replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                                     "", "", user.profile.did)
+                                     "", "", "", "", user.profile.did)
                     })
     }
 
@@ -1519,7 +1649,7 @@ ApplicationWindow {
                         }
 
                         quotePost(postUri, postCid, text, dateTime, author, embeddingDisabled,
-                                  user.profile.did)
+                                  "", "", user.profile.did)
                     })
     }
 
@@ -1559,14 +1689,14 @@ ApplicationWindow {
         return !did || skywalker.getUserDid() === did
     }
 
-    function showMoreLikeThis(feedDid, postUri, feedContext, interactByDid = "") {
+    function showMoreLikeThis(feedDid, postUri, postCid, feedContext, interactByDid = "") {
         const fu = getFeedUtils(interactByDid)
-        fu.showMoreLikeThis(postUri, feedDid, feedContext)
+        fu.showMoreLikeThis(postUri, postCid, feedDid, feedContext)
     }
 
-    function showLessLikeThis(feedDid, postUri, feedContext, interactByDid = "") {
+    function showLessLikeThis(feedDid, postUri, postCid, feedContext, interactByDid = "") {
         const fu = getFeedUtils(interactByDid)
-        fu.showLessLikeThis(postUri, feedDid, feedContext)
+        fu.showLessLikeThis(postUri, postCid, feedDid, feedContext)
     }
 
     function muteThread(uri, threadMuted, muteByDid = "") {
@@ -1799,10 +1929,14 @@ ApplicationWindow {
         let view = component.createObject(root, {
                 images: imageList,
                 imageIndex: currentIndex,
-                previewImage: previewImage,
-                closeCb: closeCb
+                previewImage: previewImage
         })
-        view.onClosed.connect(() => { popStack(null, StackView.Immediate) }) // qmllint disable missing-property
+        view.onClosed.connect(() => {
+            if (closeCb)
+                closeCb()
+
+            popStack(null, StackView.Immediate)
+        })
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })
         pushStack(view, StackView.Immediate)
@@ -1985,12 +2119,13 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
-    function viewAuthor(profile, modelId, viewByDid) {
+    function viewAuthor(profile, labelPrefsListUri, modelId, viewByDid) {
         let component = guiSettings.createComponent("AuthorView.qml")
         let view = component.createObject(root, {
                 userDid: viewByDid,
                 author: profile,
                 modelId: modelId,
+                showLabelPrefsForListUri: labelPrefsListUri
         })
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
@@ -2057,6 +2192,14 @@ ApplicationWindow {
         let component = guiSettings.createComponent("ListFeedDescriptionView.qml")
         let view = component.createObject(root, { list: list, skywalker: skywalker })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(view)
+    }
+
+    function viewContentFilterStats(postFeedModel) {
+        const statsModel = postFeedModel.createContentFilterStatsModel()
+        let component = guiSettings.createComponent("ContentFilterStatsView.qml")
+        let view = component.createObject(root, { model: statsModel, sideBarSubTitle: postFeedModel.feedName })
+        view.onClosed.connect(() => { popStack() })
         pushStack(view)
     }
 
@@ -2141,7 +2284,7 @@ ApplicationWindow {
         pushStack(form)
     }
 
-    function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "") {
+    function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "", doneCb = () => {}) {
         const sw = getSkywalker(userDid)
         let component = guiSettings.createComponent("EditList.qml")
         let page = component.createObject(root, {
@@ -2155,12 +2298,18 @@ ApplicationWindow {
             }
             else {
                 sw.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
-                listModel.prependList(list)
+
+                if (listModel)
+                    listModel.prependList(list)
             }
 
             root.popStack()
+            doneCb()
         })
-        page.onClosed.connect(() => { root.popStack() })
+        page.onClosed.connect(() => {
+            root.popStack()
+            doneCb()
+        })
         root.pushStack(page)
     }
 
@@ -2248,6 +2397,29 @@ ApplicationWindow {
             popStack(stack)
     }
 
+    function mustShowSideBar() {
+        let settings = skywalker.getUserSettings()
+
+        switch (settings.sideBarType) {
+        case QEnums.SIDE_BAR_OFF:
+            return false
+        case QEnums.SIDE_BAR_LANDSCAPE:
+            if (isPortrait)
+                return false
+
+            break
+        case QEnums.SIDE_BAR_PORTRAIT:
+            if (!isPortrait)
+                return false
+
+            break
+        case QEnums.SIDE_BAR_BOTH:
+            break
+        }
+
+        return root.width * 0.33 >= guiSettings.sideBarMinWidth
+    }
+
     function setDisplayMode(displayMode) {
         switch (displayMode) {
         case QEnums.DISPLAY_MODE_SYSTEM:
@@ -2276,8 +2448,7 @@ ApplicationWindow {
         userSettings.setActiveDisplayMode(newDisplayMode)
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor
-        displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
-        displayUtils.setStatusBarColor(guiSettings.headerColor)
+        displayUtils.updateBackground()
 
         // Refreshing the models makes them format text with the new colors (e.g. link color)
         if (oldDisplayMode !== newDisplayMode)
@@ -2420,5 +2591,8 @@ ApplicationWindow {
         // NOTE: the user is not yet logged in, but global app settings are available.
         let settings = root.getSkywalker().getUserSettings()
         postButtonRelativeX = settings.getPostButtonRelativeX()
+        rootSplitView.init()
+
+        settings.onBackgroundColorChanged.connect(() => displayUtils.updateBackground() )
     }
 }

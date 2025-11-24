@@ -26,10 +26,7 @@ SkyPage {
         onBack: closed()
     }
 
-    footer: DeadFooterMargin {}
-
     Flickable {
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
@@ -92,6 +89,14 @@ SkyPage {
             id: notificationsLoader
             anchors.top: settingsAppearance.bottom
             width: parent.width
+        }
+
+        SettingsPostThread {
+            id: settingsPostThread
+            anchors.top: notificationsLoader.bottom
+            width: parent.width
+            height: visible ? undefined : 0
+            visible: allVisible
         }
     }
 

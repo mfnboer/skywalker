@@ -21,6 +21,7 @@ AccessibleTabButton {
             anchors.verticalCenter: parent.verticalCenter
             width: parent.height
             author: profile
+            showFollowingStatus: false
             onClicked: button.click()
         }
 

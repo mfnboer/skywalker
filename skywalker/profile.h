@@ -239,6 +239,7 @@ private:
 class BasicProfile
 {
     Q_GADGET
+    Q_PROPERTY(QString typeName READ typeName CONSTANT FINAL)
     Q_PROPERTY(QString did READ getDid FINAL)
     Q_PROPERTY(QString handle READ getHandle FINAL)
     Q_PROPERTY(QString handleOrDid READ getHandleOrDid FINAL)
@@ -258,6 +259,8 @@ class BasicProfile
     QML_VALUE_TYPE(basicprofile)
 
 public:
+    static QString typeName() { return "BasicProfile"; }
+
     BasicProfile() = default;
     BasicProfile(const BasicProfile&) = default;
     explicit BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile);

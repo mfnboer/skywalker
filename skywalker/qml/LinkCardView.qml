@@ -6,10 +6,13 @@ RoundCornerMask {
     property string userDid
     property string uri
     property string title
+    property bool titleIsHtml: false
     property string description
+    property bool descriptionIsHtml: false
     property string thumbUrl
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    property basicprofile contentLabeler
     property string borderColor: guiSettings.borderColor
     property int columnHeight: externalColumn.height
     property bool showSonglinkWidget: false
@@ -29,6 +32,7 @@ RoundCornerMask {
             width: parent.width
             contentVisibility: card.contentVisibility
             contentWarning: card.contentWarning
+            contentLabeler: card.contentLabeler
             imageUrl: card.thumbUrl
         }
         Loader {
@@ -62,29 +66,31 @@ RoundCornerMask {
             elide: Text.ElideRight
             color: guiSettings.linkColor
         }
-        Text {
+        SkyCleanedText {
             id: titleText
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
             color: Material.foreground
-            text: card.title
+            plainText: card.title
             wrapMode: Text.Wrap
-            maximumLineCount: 2
-            elide: Text.ElideRight
+            maximumLineCount: 3
+            textFormat: titleIsHtml ? Text.RichText : Text.PlainText
+            elide: titleIsHtml ? Text.ElideNone : Text.ElideRight
             font.bold: true
         }
-        Text {
+        SkyCleanedText {
             id: descriptionText
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
             bottomPadding: 5
             color: Material.foreground
-            text: card.description ? card.description : card.uri
+            plainText: card.description ? card.description : card.uri
             wrapMode: Text.Wrap
-            maximumLineCount: 5
-            elide: Text.ElideRight
+            maximumLineCount: 8
+            textFormat: descriptionIsHtml ? Text.RichText : Text.PlainText
+            elide: descriptionIsHtml ? Text.ElideNone : Text.ElideRight
         }
 
         SonglinkWidget {

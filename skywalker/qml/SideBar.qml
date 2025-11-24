@@ -27,7 +27,8 @@ Pane {
     }
 
     Flickable {
-        width: parent.width
+        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: postButton.top
         anchors.bottomMargin: 10
@@ -61,6 +62,7 @@ Pane {
                 onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
                 onAddMediaView: root.getTimelineView().showMediaView()
                 onAddVideoView: root.getTimelineView().showVideoView()
+                onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
             }
 
             PostFeedHeader {
@@ -89,7 +91,7 @@ Pane {
                 visible: Boolean(postFeedView)
 
                 onClosed: postFeedView.closed()
-                onFeedAvatarClicked: postFeedView.showFeed()
+                onFeedAvatarClicked: postFeedView.showFeedOptions()
 
                 onViewChanged: (newContentMode) => {
                     postFeedView.headerItem.contentMode = newContentMode
@@ -137,7 +139,7 @@ Pane {
                 isSideBar: true
                 visible: Boolean(searchFeedView)
 
-                onFeedAvatarClicked: root.viewSearchViewFeed(searchFeedView.searchFeed)
+                onFeedAvatarClicked: searchFeedView.showOptionsMenu()
             }
 
             MessagesListHeader {
@@ -167,6 +169,15 @@ Pane {
                 subTitle: typeof rootItem?.sideBarSubTitle == 'string' ? rootItem.sideBarSubTitle : ""
                 isSideBar: true
                 visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
+
+                SvgPlainButton {
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
+                    accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
+                    visible: typeof rootItem?.sideBarButtonSvg != 'undefined'
+                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked() : () => {}
+                }
 
                 onBack: {
                     if (typeof rootItem.cancel == 'function')

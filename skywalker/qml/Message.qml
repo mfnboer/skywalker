@@ -6,6 +6,8 @@ import skywalker
 Dialog {
     property string emoji: ""
 
+    signal linkActivated(string link)
+
     id: msgDialog
     contentHeight: msgRow.height
     width: parent.width - 40
@@ -16,33 +18,44 @@ Dialog {
 
     onOpened: msgLabel.focus = true
 
-    RowLayout {
-        id: msgRow
-        width: parent.width
-        spacing: 10
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentWidth: parent.width
+        contentHeight: msgRow.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
-        Label {
-            id: emojiLabel
-            height: visible ? implicitHeight : 0
-            verticalAlignment: Text.AlignVCenter
-            font.pointSize: guiSettings.scaledFont(6)
-            font.family: UnicodeFonts.getEmojiFontFamily()
-            text: emoji
-            visible: emoji
-        }
+        RowLayout {
+            id: msgRow
+            width: parent.width
+            spacing: 10
 
-        Label {
-            id: msgLabel
-            Layout.fillWidth: true
+            Label {
+                id: emojiLabel
+                height: visible ? implicitHeight : 0
+                verticalAlignment: Text.AlignVCenter
+                font.pointSize: guiSettings.scaledFont(6)
+                font.family: UnicodeFonts.getEmojiFontFamily()
+                text: emoji
+                visible: emoji
+            }
 
-            verticalAlignment: Text.AlignVCenter
-            padding: 10
-            textFormat: Text.StyledText
-            wrapMode: Text.Wrap
+            Label {
+                id: msgLabel
+                Layout.fillWidth: true
 
-            Accessible.role: Accessible.StaticText
-            Accessible.name: text
-            Accessible.description: Accessible.name
+                verticalAlignment: Text.AlignVCenter
+                padding: 10
+                textFormat: Text.RichText
+                wrapMode: Text.Wrap
+
+                Accessible.role: Accessible.StaticText
+                Accessible.name: text
+                Accessible.description: Accessible.name
+
+                onLinkActivated: (link) => msgDialog.linkActivated(link)
+            }
         }
     }
 

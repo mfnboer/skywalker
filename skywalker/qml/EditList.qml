@@ -12,7 +12,7 @@ SkyPage {
     readonly property int avatarSize: 1000
     readonly property string sideBarTitle: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
     readonly property SvgImage sideBarSvg: SvgOutline.list
-    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
+    readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
 
     signal closed
@@ -35,7 +35,7 @@ SkyPage {
     footer: Rectangle {
         id: pageFooter
         width: editListPage.width
-        height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight - guiSettings.footerMargin : 0)
+        height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
         visible: nameField.activeFocus || descriptionField.activeFocus
@@ -95,14 +95,12 @@ SkyPage {
     Flickable {
         id: flick
         width: parent.width
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
         contentWidth: pageColumn.width
         contentHeight: pageColumn.y + descriptionRect.y + descriptionField.y + descriptionField.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        onHeightChanged: descriptionField.ensureVisible(descriptionField.cursorRectangle)
 
         ColumnLayout {
             id: pageColumn
@@ -229,7 +227,6 @@ SkyPage {
         anchors.right: parent.right
         anchors.rightMargin: 10
         anchors.top: parent.top
-        anchors.topMargin: guiSettings.headerMargin
         svg: SvgOutline.check
         iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
         accessibleName: qsTr("save list")

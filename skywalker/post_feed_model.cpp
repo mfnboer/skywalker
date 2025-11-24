@@ -12,10 +12,10 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-PostFeedModel::PostFeedModel(const QString& feedName,
+PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                              const QString& userDid, const IProfileStore& following,
                              const IProfileStore& mutedReposts,
-                             const IProfileStore& feedHide,
+                             const IListStore& feedHide,
                              const IContentFilter& contentFilter,
                              const IMatchWords& mutedWords,
                              const FocusHashtags& focusHashtags,
@@ -23,6 +23,7 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                              const ATProto::UserPreferences& userPrefs,
                              UserSettings& userSettings,
                              FollowsActivityStore& followsActivityStore,
+                             ATProto::Client::SharedPtr bsky,
                              QObject* parent) :
     AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
@@ -30,6 +31,11 @@ PostFeedModel::PostFeedModel(const QString& feedName,
     mFollowsActivityStore(followsActivityStore),
     mFeedName(feedName)
 {
+    if (feedVariant)
+        std::visit([this](auto&& variant){ setFeedVariant(variant); }, *feedVariant);
+
+    createInteractionSender(bsky);
+
     connect(&mUserSettings, &UserSettings::contentLanguageFilterChanged, this,
             [this]{ emit languageFilterConfiguredChanged(); });
 
@@ -46,6 +52,24 @@ PostFeedModel::PostFeedModel(const QString& feedName,
                 if (did == mUserDid && feedUri == getFeedUri())
                     mFeedHideFollowing = mUserSettings.getFeedHideFollowing(did, feedUri);
             });
+}
+
+void PostFeedModel::createInteractionSender(ATProto::Client::SharedPtr bsky)
+{
+    if (feedAcceptsInteractions() && !getFeedDid().isEmpty())
+    {
+        Q_ASSERT(bsky);
+
+        if (bsky)
+        {
+            qDebug() << "Create feed interaction sender:" << getFeedDid();
+            mInteractionSender = std::make_unique<InteractionSender>(getFeedDid(), bsky, this);
+        }
+        else
+        {
+            qWarning() << "No ATProto client, feedDid:" << getFeedDid();
+        }
+    }
 }
 
 const QString PostFeedModel::getFeedDid() const
@@ -110,6 +134,16 @@ LanguageList PostFeedModel::getFilterdLanguages() const
 bool PostFeedModel::showPostWithMissingLanguage() const
 {
     return mUserSettings.getShowUnknownContentLanguage(mUserDid);
+}
+
+void PostFeedModel::setFeed(const std::deque<Post>& filteredPosts,
+                            const ContentFilterStats::PostHideInfoMap* postHideInfoMap,
+                            ContentFilterStats::Details& hideDetails)
+{
+    clear();
+    mPostHideInfoMap = postHideInfoMap;
+    auto page = createPageFilteredPosts(filteredPosts, hideDetails);
+    addPage(std::move(page));
 }
 
 void PostFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
@@ -246,7 +280,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
     if (page->mFeed.empty())
     {
-        qDebug() << "Page has no posts";
+        qDebug() << "Page has no posts" << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
 
         if (fillGapId > 0)
             gapFillFilteredPostModels(*page, 0, fillGapId);
@@ -287,14 +321,14 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         endInsertRows();
 
         mLastInsertedRowIndex = (int)lastInsertIndex;
-        qDebug() << "Full feed inserted, new size:" << mFeed.size();
+        qDebug() << "Full feed inserted, new size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
         logIndices();
         return gapId;
     }
 
     if (*overlapStart == 0)
     {
-        qDebug() << "Full overlap, no new posts";
+        qDebug() << "Full overlap, no new posts" << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
 
         if (fillGapId > 0)
         {
@@ -317,7 +351,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     endInsertRows();
 
     mLastInsertedRowIndex = insertIndex + *overlapStart - 1;
-    qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size();
+    qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size()<< "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     logIndices();
     return 0;
 }
@@ -377,7 +411,7 @@ void PostFeedModel::addPage(Page::Ptr page)
         endInsertRows();
 
         mLastInsertedRowIndex = newRowCount - 1;
-        qDebug() << "New feed size:" << mFeed.size();
+        qDebug() << "New feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     }
     else
     {
@@ -830,6 +864,39 @@ void PostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalP
         update(model.get());
 }
 
+bool PostFeedModel::addFeedInteraction(const QString& feedDid,
+                                       ATProto::AppBskyFeed::Interaction::EventType event,
+                                       const QString& postUri, const QString& feedContext)
+{
+    if (!mInteractionSender || feedDid != getFeedDid())
+        return false;
+
+    mInteractionSender->addInteraction(event, postUri, feedContext);
+    return true;
+}
+
+void PostFeedModel::removeFeedInteraction(const QString& feedDid,
+                                          ATProto::AppBskyFeed::Interaction::EventType event,
+                                          const QString& postUri)
+{
+    if (!mInteractionSender || feedDid != getFeedDid())
+        return;
+
+    mInteractionSender->removeInteraction(event, postUri);
+}
+
+void PostFeedModel::reportOnScreen(const QString& postUri)
+{
+    if (mInteractionSender)
+        mInteractionSender->reportOnScreen(postUri);
+}
+
+void PostFeedModel::reportOffScreen(const QString& postUri, const QString& feedContext)
+{
+    if (mInteractionSender)
+        mInteractionSender->reportOffScreen(postUri, feedContext);
+}
+
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 {
     mFeed.push_back(post);
@@ -853,7 +920,7 @@ void PostFeedModel::Page::collectThreadgate(const Post& post)
     }
 }
 
-bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef)
+bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef, ContentFilterStats& contentFilterStats)
 {
     auto parentIt = mParentIndexMap.find(post.getCid());
     if (parentIt == mParentIndexMap.end())
@@ -884,6 +951,8 @@ bool PostFeedModel::Page::tryAddToExistingThread(const Post& post, const PostRep
     mFeed[parentIndex].setParentInThread(true);
 
     // Add parent of this parent
+    qDebug() << "Add parent:" << replyRef.mParent.getCid();
+    contentFilterStats.reportChecked(replyRef.mParent);
     mFeed.insert(mFeed.begin() + parentIndex, replyRef.mParent);
     mFeed[parentIndex].setReplyRefTimestamp(oldPost.getTimelineTimestamp());
     mFeed[parentIndex].setPostType(oldPost.getPostType());
@@ -920,17 +989,28 @@ bool PostFeedModel::getFeedHideFollowing() const
     return *mFeedHideFollowing;
 }
 
-bool PostFeedModel::mustHideContent(const Post& post) const
+std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mustHideContent(const Post& post) const
 {
-    if (AbstractPostFeedModel::mustHideContent(post))
-        return true;
+    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
+
+    if (feedViewPref.mHideReposts && post.isRepost())
+        return { QEnums::HIDE_REASON_REPOST, nullptr };
+
+    if (post.isQuotePost())
+    {
+        if (auto reason = mustHideQuotePost(post); reason != QEnums::HIDE_REASON_NONE)
+            return { reason, nullptr };
+    }
+
+    if (auto reason = AbstractPostFeedModel::mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+        return reason;
 
     if (getFeedHideFollowing())
     {
         if (mFollowing.contains(post.getAuthorDid()))
         {
             qDebug() << "Hide post from followed user:" << post.getAuthorDid();
-            return true;
+            return { QEnums::HIDE_REASON_HIDE_FOLLOWING_FROM_FEED, nullptr };
         }
     }
 
@@ -941,28 +1021,35 @@ bool PostFeedModel::mustHideContent(const Post& post) const
         if (repostedBy->getDid() == post.getAuthorDid())
         {
             if (!mUserSettings.getShowSelfReposts(mUserDid))
-                return true;
+                return { QEnums::HIDE_REASON_SELF_REPOST, nullptr };
         }
         else if (!mUserSettings.getShowFollowedReposts(mUserDid))
         {
             if (mFollowing.contains(post.getAuthorDid()))
-                return true;
+                return { QEnums::HIDE_REASON_FOLLOWING_REPOST, nullptr };
 
             // Technically you do not follow yourself, but your own posts
             // show up in your timeline, so we hide such resposts.
             if (post.getAuthorDid() == mUserDid)
-                return true;
+                return { QEnums::HIDE_REASON_FOLLOWING_REPOST, nullptr };
         }
     }
 
     // All posts should be video posts in a video feed.
-    if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.getVideoView())
+    if (getContentMode() == QEnums::CONTENT_MODE_VIDEO && !post.hasVideo(true))
     {
         qWarning() << "Non-video post in video feed!";
-        return true;
+        return { QEnums::HIDE_REASON_CONTENT_MODE, nullptr };
     }
 
-    return !passLanguageFilter(post);
+    if (!passLanguageFilter(post))
+    {
+        auto& languages = post.getLanguages();
+        const QString lang = languages.empty() ? tr("no language") : languages.first().getShortCode();
+        return { QEnums::HIDE_REASON_LANGUAGE, lang };
+    }
+
+    return { QEnums::HIDE_REASON_NONE, nullptr };
 }
 
 bool PostFeedModel::passLanguageFilter(const Post& post) const
@@ -996,26 +1083,26 @@ bool PostFeedModel::passLanguageFilter(const Post& post) const
     return false;
 }
 
-bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
+QEnums::HideReasonType PostFeedModel::mustHideReply(const Post& post, const std::optional<PostReplyRef>& replyRef) const
 {
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideReplies)
-        return false;
+        return QEnums::HIDE_REASON_REPLY;
 
     if (getFeedHideReplies())
-        return false;
+        return QEnums::HIDE_REASON_REPLY;
 
     // Always show the replies of the user.
     if (post.getAuthor().getDid() == mUserDid)
-        return true;
+        return QEnums::HIDE_REASON_NONE;
 
     if (mUserSettings.getHideRepliesInThreadFromUnfollowed(mUserDid))
     {
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
-            return false;
+            return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
 
         const auto parentAuthor = replyRef->mParent.getAuthor();
         const auto& parentDid = parentAuthor.getDid();
@@ -1023,14 +1110,14 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         // Do not show replies in threads starting with blocked and not-found root posts.
         // Unless the reply is directly to the user.
         if (replyRef->mRoot.isPlaceHolder() && parentDid != mUserDid)
-            return false;
+            return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
 
         const auto rootAuthor = replyRef->mRoot.getAuthor();
         const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies to the user
         if (parentDid != mUserDid && !mFollowing.contains(rootDid))
-            return false;
+            return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
     }
 
     if (feedViewPref.mHideRepliesByUnfollowed)
@@ -1038,50 +1125,50 @@ bool PostFeedModel::mustShowReply(const Post& post, const std::optional<PostRepl
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.
         if (!replyRef)
-            return false;
+            return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
 
         // Do not show replies to blocked and not-found posts
         if (replyRef->mParent.isPlaceHolder())
-            return false;
+            return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
 
         const auto parentAuthor = replyRef->mParent.getAuthor();
         const auto& parentDid = parentAuthor.getDid();
 
         // Always show replies to the user
         if (parentDid == mUserDid)
-            return true;
+            return QEnums::HIDE_REASON_NONE;
 
         const auto rootAuthor = replyRef->mRoot.getAuthor();
         const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies in a thread from the user
         if (rootDid == mUserDid)
-            return true;
+            return QEnums::HIDE_REASON_NONE;
 
         if (!mFollowing.contains(parentDid))
-            return false;
+            return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
     }
 
-    return true;
+    return QEnums::HIDE_REASON_NONE;
 }
 
-bool PostFeedModel::mustShowQuotePost(const Post& post) const
+QEnums::HideReasonType PostFeedModel::mustHideQuotePost(const Post& post) const
 {
     Q_ASSERT(post.isQuotePost());
     const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
 
     if (feedViewPref.mHideQuotePosts)
-        return false;
+        return QEnums::HIDE_REASON_QUOTE;
 
     if (!mUserSettings.getShowQuotesWithBlockedPost(mUserDid))
     {
         const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
 
         if (record && record->getBlocked())
-            return false;
+            return QEnums::HIDE_REASON_QUOTE_BLOCKED_POST;
     }
 
-    return true;
+    return QEnums::HIDE_REASON_NONE;
 }
 
 void PostFeedModel::reportActivity(const Post& post)
@@ -1168,7 +1255,6 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    const auto& feedViewPref = mUserPreferences.getFeedViewPref(getPreferencesFeedKey());
     const bool assembleThreads = mUserSettings.getAssembleThreads(mUserDid);
     auto page = std::make_unique<Page>();
 
@@ -1198,14 +1284,13 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 continue;
             }
 
-            if (feedViewPref.mHideReposts && post.isRepost())
-                continue;
+            mContentFilterStats.reportChecked(post);
 
-            if (post.isQuotePost() && !mustShowQuotePost(post))
+            if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+            {
+                mContentFilterStats.report(post, reason.first, reason.second);
                 continue;
-
-            if (mustHideContent(post))
-                continue;
+            }
 
             const auto& replyRef = post.getViewPostReplyRef();
 
@@ -1223,14 +1308,16 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 // If a reply fits in an existing thread then always show it as it provides
                 // context to the user. The leaf of this thread is a reply that passed
                 // through the filter settings.
-                if (assembleThreads && page->tryAddToExistingThread(post, *replyRef))
+                if (assembleThreads && page->tryAddToExistingThread(post, *replyRef, mContentFilterStats))
                 {
                     preprocess(post);
                     continue;
                 }
 
-                if (!mustShowReply(post, replyRef))
+                if (auto reason = mustHideReply(post, replyRef); reason != QEnums::HIDE_REASON_NONE)
                 {
+                    mContentFilterStats.report(post, reason, nullptr);
+
                     // Preprocess replies when they are not shown. Those can help
                     // identify threads.
                     preprocess(post);
@@ -1242,49 +1329,71 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                 const auto& parentCid = replyRef->mParent.getCid();
 
                 if (assembleThreads && !rootCid.isEmpty() && rootCid != parentCid &&
-                    !cidIsStored(rootCid) && !page->cidAdded(rootCid) &&
-                    !mustHideContent(replyRef->mRoot))
+                    !cidIsStored(rootCid) && !page->cidAdded(rootCid))
                 {
-                    preprocess(replyRef->mRoot);
-                    page->addPost(replyRef->mRoot);
-                    page->mFeed.back().setPostType(QEnums::POST_ROOT);
-                    rootAdded = true;
+                    mContentFilterStats.reportChecked(replyRef->mRoot);
+
+                    if (auto reason = mustHideContent(replyRef->mRoot); reason.first == QEnums::HIDE_REASON_NONE)
+                    {
+                        preprocess(replyRef->mRoot);
+                        page->addPost(replyRef->mRoot);
+                        page->mFeed.back().setPostType(QEnums::POST_ROOT);
+                        rootAdded = true;
+                    }
+                    else
+                    {
+                        mContentFilterStats.report(replyRef->mRoot, reason.first, reason.second);
+                    }
                 }
 
                 // If the parent was seen already, but the root not, then show the parent
                 // again for consistency of the thread.
                 if (assembleThreads &&
-                    ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded) &&
-                    !mustHideContent(replyRef->mParent))
+                    ((!parentCid.isEmpty() && !cidIsStored(parentCid) && !page->cidAdded(parentCid)) || rootAdded))
                 {
-                    preprocess(replyRef->mParent);
-                    page->addPost(replyRef->mParent, true);
-                    auto& parentPost = page->mFeed.back();
-                    parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
+                    mContentFilterStats.reportChecked(replyRef->mParent);
 
-                    // Determine author of the parent's parent
-                    if (parentPost.getReplyToCid() == rootCid)
+                    if (auto reason = mustHideContent(replyRef->mParent); reason.first == QEnums::HIDE_REASON_NONE)
                     {
-                        parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
-                        parentPost.setParentInThread(rootAdded);
-                    }
+                        preprocess(replyRef->mParent);
+                        page->addPost(replyRef->mParent, true);
+                        auto& parentPost = page->mFeed.back();
+                        parentPost.setPostType(rootAdded ? QEnums::POST_REPLY : QEnums::POST_ROOT);
 
-                    post.setPostType(QEnums::POST_LAST_REPLY);
-                    post.setParentInThread(true);
+                        // Determine author of the parent's parent
+                        if (parentPost.getReplyToCid() == rootCid)
+                        {
+                            parentPost.setReplyToAuthor(replyRef->mRoot.getAuthor());
+                            parentPost.setParentInThread(rootAdded);
+                        }
+
+                        post.setPostType(QEnums::POST_LAST_REPLY);
+                        post.setParentInThread(true);
+                    }
+                    else
+                    {
+                        mContentFilterStats.report(replyRef->mParent, reason.first, reason.second);
+                    }
                 }
             }
             else if (post.isReply() && !post.isRepost())
             {
                 // A post can still be a reply even if there is no reply reference.
                 // The reference may be missing due to blocked posts.
-                if (!mustShowReply(post, {}))
+                if (auto reason = mustHideReply(post, {}); reason != QEnums::HIDE_REASON_NONE)
+                {
+                    mContentFilterStats.report(post, reason, nullptr);
                     continue;
+                }
             }
             else
             {
                 // A post may have been added already as a parent/root of a reply
                 if (page->cidAdded(post.getCid()))
+                {
+                    qDebug() << "Post already added:" << post.getCid();
                     continue;
+                }
             }
 
             preprocess(post);
@@ -1310,6 +1419,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     page->setThreadgates();
     page->foldThreads();
 
+    qDebug() << "Created page, size:" << page->mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     return page;
 }
 
@@ -1345,6 +1455,91 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     }
 
     return page;
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(
+    const std::deque<Post>& posts, const ContentFilterStats::Details& hideDetails)
+{
+    auto page = std::make_unique<Page>();
+
+    Q_ASSERT(mHideReason);
+
+    if (!mHideReason)
+    {
+        qWarning() << "No hide reason set";
+        return page;
+    }
+
+    qDebug() << "Create page, posts:" << posts.size() << "reason:" << *mHideReason;
+
+    for (const auto& post : posts)
+    {
+        if (!mustHideFilteredPost(post, hideDetails))
+        {
+            preprocess(post);
+            page->addPost(post);
+        }
+    }
+
+    if (!page->mFeed.empty())
+        page->mFeed.back().setEndOfFeed(true);
+
+    qDebug() << "Created page, size:" << page->mFeed.size();
+    return page;
+}
+
+bool PostFeedModel::mustHideFilteredPost(
+    const Post& post, const ContentFilterStats::Details& hideDetails) const
+{
+    if (*mHideReason == QEnums::HIDE_REASON_ANY)
+        return false;
+
+    if (!mPostHideInfoMap)
+    {
+        qWarning() << "Post hide info missing";
+        return true;
+    }
+
+    const auto it = mPostHideInfoMap->find(post.getCid());
+
+    if (it == mPostHideInfoMap->end())
+    {
+        qWarning() << "No hide info for post:" << post.getCid();
+        return true;
+    }
+
+    const ContentFilterStats::PostHideInfo& postHideInfo = it->second;
+
+    if (*mHideReason != postHideInfo.mHideReason)
+        return true;
+
+    if (std::holds_alternative<std::nullptr_t>(hideDetails))
+        return false;
+
+    if (std::holds_alternative<BasicProfile>(hideDetails) && std::holds_alternative<BasicProfile>(postHideInfo.mDetails))
+        return std::get<BasicProfile>(hideDetails).getDid() != std::get<BasicProfile>(postHideInfo.mDetails).getDid();
+
+    if (std::holds_alternative<MutedWordEntry>(hideDetails) && std::holds_alternative<MutedWordEntry>(postHideInfo.mDetails))
+        return std::get<MutedWordEntry>(hideDetails).getValue() != std::get<MutedWordEntry>(postHideInfo.mDetails).getValue();
+
+    if (std::holds_alternative<ContentLabel>(hideDetails) && std::holds_alternative<ContentLabel>(postHideInfo.mDetails))
+    {
+        const auto& label1 = std::get<ContentLabel>(hideDetails);
+        const auto& label2 = std::get<ContentLabel>(postHideInfo.mDetails);
+
+        if (label1.getDid() != label2.getDid())
+            return true;
+
+        if (label1.getLabelId().isEmpty())
+            return false;
+
+        return label1.getLabelId() != label2.getLabelId();
+    }
+
+    if (std::holds_alternative<QString>(hideDetails) && std::holds_alternative<QString>(postHideInfo.mDetails))
+        return std::get<QString>(hideDetails) != std::get<QString>(postHideInfo.mDetails);
+
+    return true;
 }
 
 std::tuple<std::optional<size_t>, bool> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const

@@ -32,6 +32,7 @@ private:
 class ListViewBasic
 {
     Q_GADGET
+    Q_PROPERTY(QString typeName READ typeName CONSTANT FINAL)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
@@ -44,6 +45,8 @@ class ListViewBasic
     QML_VALUE_TYPE(listviewbasic)
 
 public:
+    static QString typeName() { return "ListViewBasic"; }
+
     ListViewBasic() = default;
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedPtr& view);
     explicit ListViewBasic(const ATProto::AppBskyGraph::ListView::SharedPtr& view);

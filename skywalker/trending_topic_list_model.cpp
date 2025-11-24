@@ -57,7 +57,7 @@ void TrendingTopicListModel::addTopics(const ATProto::AppBskyUnspecced::TrendVie
 
         if (!trendingTopic.getTopic().isEmpty() && !trendingTopic.getLink().isEmpty())
         {
-            if (!mMutedWords.match(trendingTopic))
+            if (!mMutedWords.match(trendingTopic).first)
                 trendingTopics.push_back(trendingTopic);
         }
         else

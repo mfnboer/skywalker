@@ -22,9 +22,8 @@ Rectangle {
 
     RowLayout {
         id: convoRow
-        y: !isSideBar ? guiSettings.headerMargin : 0
         width: parent.width
-        height: parent.height - guiSettings.headerMargin
+        height: parent.height
         spacing: 5
 
         SvgPlainButton {
@@ -82,6 +81,7 @@ Rectangle {
 
                         width: 25
                         author: modelData.basicProfile
+                        showFollowingStatus: false
                     }
                 }
 

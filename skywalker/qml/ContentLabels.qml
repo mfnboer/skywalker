@@ -7,7 +7,8 @@ ScrollView {
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property string contentAuthorDid
     required property list<contentlabel> contentLabels
-    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentLabels, userDid)
+    property contentlabel filteredContentLabel
+    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentAuthorDid, contentLabels, userDid)
     property int parentWidth: parent.width
 
     id: labelView
@@ -37,7 +38,14 @@ ScrollView {
                 width: label.width + (labelerAvatar.active ? label.height : 0)
                 height: label.height
                 radius: 2
-                color: modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
+                color: getLabelColor()
+
+                function getLabelColor() {
+                    if (modelData.did == filteredContentLabel.did && modelData.labelId == filteredContentLabel.labelId)
+                        return guiSettings.hideReasonLabelColor
+
+                    return modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
+                }
 
                 Loader {
                     id: labelerAvatar

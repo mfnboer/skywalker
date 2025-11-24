@@ -113,15 +113,16 @@ public:
 
     Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
-    Q_INVOKABLE void getPostThread(const QString& uri, bool unrollThread = false);
+    Q_INVOKABLE void getPostThread(const QString& uri, QEnums::PostThreadType postThreadType = QEnums::POST_THREAD_NORMAL);
     Q_INVOKABLE void addPostThread(const QString& uri, int modelId, int maxPages = 20);
     Q_INVOKABLE void addOlderPostThread(int modelId);
+    int createPostThreadModel(const QString& uri, QEnums::PostThreadType type);
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
     Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
-    Q_INVOKABLE void getDetailedProfile(const QString& author);
+    Q_INVOKABLE void getDetailedProfile(const QString& author, const QString& labelPrefsListUri = {});
 
     // If avatar is a "image://", then the profile takes ownership of the image
     Q_INVOKABLE void updateUserProfile(const QString& displayName, const QString& description,
@@ -159,6 +160,7 @@ public:
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri);
+    Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
     Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});
@@ -182,14 +184,16 @@ public:
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
-    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels) const;
-    Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels) const;
+    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels, const QString& authorDid = {}) const;
+    Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
+    Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
     Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
-    Q_INVOKABLE int createContentGroupListModel(const QString& did, const LabelerPolicies& policies);
+    Q_INVOKABLE int createGlobalContentGroupListModel(const QString& listUri);
+    Q_INVOKABLE int createContentGroupListModel(const QString& labelerDid, const LabelerPolicies& policies, const QString& listUri = {});
     Q_INVOKABLE ContentGroupListModel* getContentGroupListModel(int id) const;
     Q_INVOKABLE void removeContentGroupListModel(int id);
     Q_INVOKABLE void saveGlobalContentFilterPreferences();
-    Q_INVOKABLE void saveContentFilterPreferences(const ContentGroupListModel* model);
+    Q_INVOKABLE void saveContentFilterPreferences(ContentGroupListModel* model);
     Q_INVOKABLE ContentFilter* getContentFilter() { return &mContentFilter; }
     Q_INVOKABLE Anniversary* getAnniversary() { return &mAnniversary; }
     Q_INVOKABLE EditUserPreferences* getEditUserPreferences();
@@ -220,6 +224,11 @@ public:
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update);
     void makeLocalModelChange(const std::function<void(LocalListModelChanges*)>& update);
+
+    void addFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
+                            const QString& postUri, const QString& feedContext);
+    void removeFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
+                               const QString& postUri);
 
     const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
@@ -291,7 +300,7 @@ signals:
     void userChanged();
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
-    void getDetailedProfileOK(QString userDid, DetailedProfile);
+    void getDetailedProfileOK(QString userDid, DetailedProfile profile, QString labelPrefsListUri);
     void getFeedGeneratorOK(QString userDid, GeneratorView generatorView, bool viewPosts);
     void getStarterPackViewOk(QString userDid, StarterPackView starterPack);
     void getPostThreadInProgressChanged();
@@ -349,6 +358,8 @@ private:
     void updateFavoriteFeeds();
     void loadTimelineHide();
     void loadTimelineHide(QStringList uris);
+    void loadContentFilterPolicies();
+    void loadContentFilterPolicies(QStringList uris);
     void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
     void initLabelers();
     void loadLabelSettings();
@@ -384,6 +395,7 @@ private:
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     UserSettings mUserSettings;
     SessionManager mSessionManager;
+    ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
     ContentGroupListModel::Ptr mGlobalContentGroupListModel;

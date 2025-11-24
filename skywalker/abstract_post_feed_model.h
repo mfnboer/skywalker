@@ -3,12 +3,12 @@
 #pragma once
 #include "base_list_model.h"
 #include "content_filter.h"
+#include "content_filter_stats.h"
 #include "hashtag_index.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
 #include "muted_words.h"
 #include "post.h"
-#include "profile_store.h"
 #include <QAbstractListModel>
 #include <deque>
 #include <queue>
@@ -16,13 +16,18 @@
 
 namespace Skywalker {
 
+class ContentFilterStatsModel;
 class FocusHashtags;
+class IListStore;
+class IProfileStore;
 
 class AbstractPostFeedModel : public QAbstractListModel,
                               public BaseListModel,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
 {
+    Q_MOC_INCLUDE("content_filter_stats_model.h")
+
     Q_OBJECT
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
@@ -89,15 +94,21 @@ public:
         PostIsHiddenReply,
         PostBookmarked,
         PostBookmarkTransient,
+        PostFeedback,
+        PostFeedbackTransient,
         PostLabels,
         PostContentVisibility,
         PostContentWarning,
+        PostContentLabeler,
         PostMutedReason,
         PostHighlightColor,
         PostIsPinned,
         PostIsThread,
         PostIsThreadReply,
         PostLocallyDeleted,
+        FilteredPostHideReason,
+        FilteredPostHideDetail,
+        FilteredPostContentLabel,
         EndOfFeed
     };
     Q_ENUM(Role)
@@ -108,7 +119,7 @@ public:
 
     AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                           const IProfileStore& mutedReposts,
-                          const IProfileStore& feedHide,
+                          const IListStore& feedHide,
                           const IContentFilter& contentFilter,
                           const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                           HashtagIndex& hashtags,
@@ -129,9 +140,7 @@ public:
     virtual bool isEndOfFeed() const { return mEndOfFeed; }
     virtual void setEndOfFeed(bool endOfFeed);
 
-    const Post& getPost(int index) const { return mFeed.at(index); }
-    void preprocess(const Post& post);
-
+    const Post& getPost(int index) const;
     Q_INVOKABLE void unfoldPosts(int startIndex);
 
     // Get the timestamp of the last post in the feed
@@ -155,6 +164,9 @@ public:
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
 
+    bool isFilteredPostFeed() const { return mPostHideInfoMap; }
+    Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
+
 signals:
     void endOfFeedChanged();
     void getFeedInProgressChanged();
@@ -168,8 +180,9 @@ protected:
     void removeStoredCid(const QString& cid);
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
+    void preprocess(const Post& post);
 
-    virtual bool mustHideContent(const Post& post) const;
+    virtual std::pair<QEnums::HideReasonType, ContentFilterStats::Details> mustHideContent(const Post& post) const;
 
     // LocalPostModelChanges
     virtual void postIndexedSecondsAgoChanged() override;
@@ -187,6 +200,8 @@ protected:
     virtual void threadMutedChanged() override;
     virtual void bookmarkedChanged() override;
     virtual void bookmarkTransientChanged() override;
+    virtual void feedbackChanged() override;
+    virtual void feedbackTransientChanged() override;
     virtual void detachedRecordChanged() override;
     virtual void reAttachedRecordChanged() override;
     virtual void viewerStatePinnedChanged() override;
@@ -204,15 +219,18 @@ protected:
     const QString& mUserDid;
     const IProfileStore& mFollowing;
     const IProfileStore& mMutedReposts;
-    const IProfileStore& mFeedHide;
+    const IListStore& mFeedHide;
     const IContentFilter& mContentFilter;
     const IMatchWords& mMutedWords;
     const FocusHashtags& mFocusHashtags;
     HashtagIndex& mHashtags;
+    ContentFilterStats mContentFilterStats{mFeedHide};
+    const ContentFilterStats::PostHideInfoMap* mPostHideInfoMap = nullptr;
     int mModelId = -1;
 
 private:
     static const QString NULL_STRING;
+    static const ListStore NULL_LIST_STORE;
     static const ProfileStore NULL_PROFILE_STORE;
     static const ContentFilterShowAll NULL_CONTENT_FILTER;
     static const MutedWordsNoMutes NULL_MATCH_WORDS;
@@ -224,6 +242,11 @@ private:
 
     void postIsThreadChanged(const QString& postUri);
     void replyToAuthorAdded(const QString& did);
+    void labelerAdded(const QString& did);
+
+    BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,
+                                   const ContentLabelList& labels,
+                                   int labelIndex) const;
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;

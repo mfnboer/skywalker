@@ -77,6 +77,7 @@ Rectangle {
     required property list<contentlabel> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
+    required property basicprofile notificationPostContentLabeler
     required property int notificationPostMutedReason // QEnums::MutedPostReason
     required property bool notificationPostIsReply
     required property basicprofile replyToAuthor
@@ -288,6 +289,7 @@ Rectangle {
                     postContentLabels: notificationPostLabels
                     postContentVisibility: notificationPostContentVisibility
                     postContentWarning: notificationPostContentWarning
+                    postContentLabeler: notificationPostContentLabeler
                     postMuted: notificationPostMutedReason
                     postIsThread: false
                     postIsThreadReply: false
@@ -301,14 +303,13 @@ Rectangle {
                 }
 
                 Loader {
-                    active: true
                     width: parent.width
-                    height: guiSettings.statsHeight + 10
+                    height: guiSettings.postStatsHeight(false, 10)
+                    active: true
                     asynchronous: true
 
                     sourceComponent: PostStats {
                         id: postStats
-                        width: parent.width
                         topPadding: 10
                         skywalker: notification.skywalker
                         replyCount: notificationPostReplyCount
@@ -340,7 +341,7 @@ Rectangle {
                             root.composeReply(notificationPostUri, notificationCid, notificationPostText,
                                               notificationPostTimestamp, notificationAuthor,
                                               notificationPostReplyRootUri, notificationPostReplyRootCid,
-                                              lang, notificationPostMentionDids, "", "",
+                                              lang, notificationPostMentionDids, "", "", "", "",
                                               postByDid)
                         }
 
@@ -363,7 +364,7 @@ Rectangle {
 
                         function repostNotification(nonActiveUserDid = "") {
                             root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
-                                        "", "", notificationPostText, notificationPostTimestamp,
+                                        "", "", "", "", notificationPostText, notificationPostTimestamp,
                                         notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText,
                                         nonActiveUserDid)
                         }
@@ -374,7 +375,7 @@ Rectangle {
                             root.quotePost(notificationPostUri, notificationCid,
                                     notificationPostText, notificationPostTimestamp,
                                     notificationAuthor, notificationPostEmbeddingDisabled,
-                                    nonActiveUserDid)
+                                    "", "", nonActiveUserDid)
                         }
 
                         onRepostLongPress: (mouseEvent) => {
@@ -394,7 +395,8 @@ Rectangle {
                         }
 
                         onLike: {
-                            root.like(notificationPostLikeUri, notificationPostUri, notificationCid, "", "", notification.owner.did)
+                            root.like(notificationPostLikeUri, notificationPostUri, notificationCid,
+                            "", "", "", "", notification.owner.did)
                         }
 
                         onLikeLongPress: (mouseEvent) => {
@@ -480,6 +482,7 @@ Rectangle {
                             width: authorAvatar.width
                             userDid: owner.did
                             author: notificationOtherAuthors[index]
+                            showFollowingStatus: false
 
                             onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
 
@@ -556,6 +559,7 @@ Rectangle {
                     postContentLabels: notificationReasonPostLabels
                     postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                     postContentWarning: ""
+                    postContentLabeler: accessibilityUtils.nullAuthor
                     postMuted: QEnums.MUTED_POST_NONE
                     postIsThread: false
                     postIsThreadReply: false

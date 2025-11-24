@@ -39,7 +39,7 @@ SkyListView {
         visible: !root.showSideBar
 
         onClosed: feedView.closed()
-        onFeedAvatarClicked: root.viewSearchViewFeed(searchFeed)
+        onFeedAvatarClicked: showOptionsMenu()
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -168,6 +168,44 @@ SkyListView {
             // Remove models now before the Skywalker object is destroyed.
             searchUtils.removeModels()
         }
+    }
+
+    SkyMenu {
+        id: optionsMenu
+
+        CloseMenuItem {
+            text: qsTr("<b>Hashtag</b>")
+            Accessible.name: qsTr("close hashtag options menu")
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Search")
+            onTriggered: root.viewSearchViewFeed(searchFeed)
+            MenuItemSvg { svg: SvgOutline.search }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Remove favorite")
+            onTriggered: {
+                skywalker.favoriteFeeds.pinSearch(searchFeed, false)
+                skywalker.saveFavoriteFeeds()
+            }
+
+            MenuItemSvg {
+                svg: SvgFilled.star
+                color: guiSettings.favoriteColor
+            }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Filtered posts")
+            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            onTriggered: root.viewContentFilterStats(underlyingModel)
+        }
+    }
+
+    function showOptionsMenu() {
+        optionsMenu.open()
     }
 
     function getFavoritesY() {

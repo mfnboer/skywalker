@@ -28,14 +28,13 @@ public:
             createdAt)}
     {}
 
-    static bool isSystemLabelId(const QString& labelId) { return labelId.startsWith('!'); }
-
     const QString& getDid() const { return mPrivate->mDid; }
     const QString& getUri() const { return mPrivate->mUri; }
     const QString& getCid() const { return mPrivate->mCid; }
     const QString& getLabelId() const { return mPrivate->mLabelId; }
     const QDateTime& getCreatedAt() const { return mPrivate->mCreatedAt; }
-    Q_INVOKABLE bool isSystemLabel() const { return isSystemLabelId(mPrivate->mLabelId); }
+    Q_INVOKABLE bool isSystemLabel() const;
+    Q_INVOKABLE bool isOverridableSytemLabel() const;
 
     Q_INVOKABLE bool appliesToActor() const;
     Q_INVOKABLE const QString& getActorDid() const;

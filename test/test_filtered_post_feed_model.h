@@ -3,6 +3,7 @@
 #pragma once
 #include <definitions.h>
 #include <focus_hashtags.h>
+#include <list_store.h>
 #include <muted_words.h>
 #include <filtered_post_feed_model.h>
 #include <user_settings.h>
@@ -324,9 +325,10 @@ private:
     QString mUserDid;
     ProfileStore mFollowing;
     ProfileStore mMutedReposts;
+    ListStore mContentFilterPolicies;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
-    ContentFilter mContentFilter{mUserDid, mUserPreferences, &mUserSettings};
+    ContentFilter mContentFilter{mUserDid, mFollowing, mContentFilterPolicies, mUserPreferences, &mUserSettings};
     MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};

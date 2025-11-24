@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "bookmarks_model.h"
+#include "list_store.h"
 
 namespace Skywalker {
 
@@ -10,7 +11,7 @@ BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& foll
                                const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                HashtagIndex& hashtags,
                                QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {

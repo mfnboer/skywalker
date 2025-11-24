@@ -8,6 +8,7 @@ RoundedFrame {
     property string title
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property size imgSize
     readonly property double aspectRatio: (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
     property alias status: img.status
@@ -46,6 +47,7 @@ RoundedFrame {
         width: parent.width
         contentVisibility: frame.contentVisibility
         contentWarning: frame.contentWarning
+        contentLabeler: frame.contentLabeler
         imageUrl: frame.url
     }
 }

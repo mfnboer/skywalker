@@ -12,28 +12,24 @@ class ReportReason
     Q_GADGET
     Q_PROPERTY(QEnums::ReportReasonType type READ getType FINAL)
     Q_PROPERTY(QString title READ getTitle FINAL)
-    Q_PROPERTY(QString description READ getDescription FINAL)
     QML_VALUE_TYPE(reportreason)
 
 public:
+    using List = QList<ReportReason>;
+
     ReportReason() = default;
-    ReportReason(QEnums::ReportReasonType reasonType, const QString& title, const QString& description) :
+    ReportReason(QEnums::ReportReasonType reasonType, const QString& title) :
         mReasonType(reasonType),
-        mTitle(title),
-        mDescription(description)
+        mTitle(title)
     {}
 
     QEnums::ReportReasonType getType() const { return mReasonType; }
     QString getTitle() const { return mTitle; }
-    QString getDescription() const { return mDescription; }
 
 private:
     QEnums::ReportReasonType mReasonType = QEnums::REPORT_REASON_TYPE_NULL;
     QString mTitle;
-    QString mDescription;
 };
-
-using ReportReasonList = QList<ReportReason>;
 
 }
 

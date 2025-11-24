@@ -12,12 +12,14 @@ namespace Skywalker {
 class ContentGroup
 {
     Q_GADGET
+    Q_PROPERTY(QString labelId MEMBER mLabelId CONSTANT FINAL)
     Q_PROPERTY(QString title MEMBER mTitle CONSTANT FINAL)
     Q_PROPERTY(QString titleWithSeverity READ getTitleWithSeverity CONSTANT FINAL)
     Q_PROPERTY(QString description MEMBER mDescription CONSTANT FINAL)
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription CONSTANT FINAL)
     Q_PROPERTY(bool isAdult MEMBER mAdult CONSTANT FINAL)
     Q_PROPERTY(bool isBadge MEMBER mIsBadge CONSTANT FINAL)
+    Q_PROPERTY(bool isSystem READ isSystem CONSTANT FINAL)
     Q_PROPERTY(QEnums::LabelTarget target MEMBER mLabelTarget CONSTANT FINAL)
     Q_PROPERTY(QEnums::LabelSeverity severity MEMBER mSeverity CONSTANT FINAL)
     QML_VALUE_TYPE(contentgroup)
@@ -46,7 +48,9 @@ public:
     QEnums::ContentVisibility getContentVisibility(ATProto::UserPreferences::LabelVisibility visibility) const;
     bool mustShowBadge(ATProto::UserPreferences::LabelVisibility visibility) const;
     const QString& getLabelerDid() const { return mLabelerDid; }
+    void setLabelerDid(const QString& did) { mLabelerDid = did; }
     bool isGlobal() const { return mLabelerDid.isEmpty(); }
+    bool isSystem() const;
 
 private:
     QString mLabelId;

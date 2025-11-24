@@ -11,7 +11,7 @@ SkyPage {
     readonly property double maskOpacity: 0.7
     readonly property string cutToolColor: guiSettings.buttonColor
     readonly property string maskColor: guiSettings.backgroundColor
-    readonly property int usableHeight: height - header.height - buttonRow.height - footer.height
+    readonly property int usableHeight: height - header.height - buttonRow.height
 
     signal cancel
     signal done(string newImgSource)
@@ -28,14 +28,11 @@ SkyPage {
         SvgPlainButton {
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             accessibleName: qsTr("editing finished")
             onClicked: transformImage()
         }
     }
-
-    footer: DeadFooterMargin {}
 
     Item {
         id: editItem

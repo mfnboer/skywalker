@@ -41,7 +41,7 @@ SkyPage {
             x: 10
             y: 10
             width: parent.width - 20
-            height: parent.height - guiSettings.footerMargin - 20
+            height: parent.height - 20
             fillMode: Image.PreserveAspectFit
             source: "/images/PB_tenor_logo_blue_horizontal.svg"
             asynchronous: true
@@ -50,7 +50,6 @@ SkyPage {
 
     StackLayout {
         id: viewStack
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
 
         // Categories

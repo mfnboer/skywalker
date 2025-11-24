@@ -24,7 +24,7 @@ Column {
             Layout.preferredWidth: 34
             Layout.preferredHeight: 34
             Layout.alignment: Qt.AlignTop
-            userDid: userDid
+            userDid: quoteColumn.userDid
             avatarUrl: feed.avatarThumb
             contentMode: feed.contentMode
             unknownSvg: guiSettings.feedDefaultAvatar(feed)

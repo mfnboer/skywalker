@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Drawer {
+SkyDrawer {
     property list<basicprofile> userList
 
     signal selectedUser(basicprofile user)

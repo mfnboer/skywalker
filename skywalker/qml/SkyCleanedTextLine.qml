@@ -7,6 +7,10 @@ Text {
     property bool isCompleted: false
     property bool inWidthChanged: false
 
+    // When textFormat = Text.RichText then Text.contentWidth gives the full width
+    // of the field. advanceWidth seems to work better.
+    readonly property real advanceWidth: textMetrics.advanceWidth
+
     id: theText
     color: guiSettings.textColor
     textFormat: mustClean ? Text.RichText : Text.PlainText
@@ -66,6 +70,20 @@ Text {
         }
     }
 
+    Loader {
+        readonly property real advanceWidth: active ? Math.min(item.advanceWidth, theText.width) : theText.contentWidth
+
+        id: textMetrics
+        active: theText.textFormat == Text.RichText
+
+        sourceComponent: TextMetrics {
+            font.family: theText.fontInfo.family
+            font.bold: theText.fontInfo.bold
+            font.italic: theText.fontInfo.italic
+            font.pointSize: theText.fontInfo.pointSize
+            text: theText.plainText
+        }
+    }
 
     Component.onCompleted: {
         isCompleted = true

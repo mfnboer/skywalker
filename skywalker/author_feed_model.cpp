@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "author_feed_model.h"
+#include "list_store.h"
 
 namespace Skywalker {
 
@@ -10,7 +11,7 @@ AuthorFeedModel::AuthorFeedModel(const DetailedProfile& author, const QString& u
                                  const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ProfileStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mAuthor(author),
@@ -102,8 +103,13 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
             if (!mustShow(post))
                 continue;
 
-            if (mustHideContent(post))
+            mContentFilterStats.reportChecked(post);
+
+            if (auto reason = mustHideContent(post); reason.first != QEnums::HIDE_REASON_NONE)
+            {
+                mContentFilterStats.report(post, reason.first, reason.second);
                 continue;
+            }
 
             if (mPinnedPostUri == post.getUri())
                 post.setPinned(true);

@@ -33,7 +33,6 @@ SkyPage {
 
     SkyTabBar {
         id: tabBar
-        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
@@ -169,7 +168,6 @@ SkyPage {
         id: moreOptions
         parent: page.header.visible ? page.header : page
         anchors.top: parent.top
-        anchors.topMargin: guiSettings.headerMargin
         anchors.right: parent.right
         anchors.rightMargin: page.margin
         svg: SvgOutline.moreVert
@@ -178,8 +176,6 @@ SkyPage {
 
         SkyMenu {
             id: moreMenu
-            onAboutToShow: root.enablePopupShield(true)
-            onAboutToHide: root.enablePopupShield(false)
 
             CloseMenuItem {
                 text: qsTr("<b>Options</b>")

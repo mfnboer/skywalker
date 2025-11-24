@@ -37,8 +37,17 @@ public:
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mVideoView ? mVideoView->mAspectRatio.get() : nullptr; }
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
-    QString getAlt() const { return mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : mAlt; }
-    ImageView getImageView() const { return ImageView(getThumbUrl(), getAlt(), getWidth(), getHeight()); }
+    QString getAlt() const { return !mHtmlAlt.isEmpty() ? mHtmlAlt : (mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : mAlt); }
+
+    ImageView getImageView() const {
+        ImageView imageView(getThumbUrl(), getAlt(), getWidth(), getHeight());
+
+        if (hasHtmlAlt())
+            imageView.setHtmlAlt(mHtmlAlt);
+
+        return imageView;
+    }
+
     int getStartMs() const { return mStartMs; }
     void setStartMs(int startMs) { mStartMs = startMs; }
     int getEndMs() const { return mEndMs; }
@@ -48,12 +57,16 @@ public:
     int getNewHeight() const { return mNewHeight; }
     void setNewHeight(int newHeight) { mNewHeight = newHeight; }
 
+    Q_INVOKABLE bool hasHtmlAlt() const { return !mHtmlAlt.isEmpty(); }
+    void setHtmlAlt(const QString& htmlAlt) { mHtmlAlt = htmlAlt; }
+
     const ATProto::AppBskyEmbed::VideoView::SharedPtr& getATProtoView() const { return mVideoView; }
 
 private:
     ATProto::AppBskyEmbed::VideoView::SharedPtr mVideoView;
     QString mPlayListUrl;
     QString mAlt;
+    QString mHtmlAlt;
 
     // Only for draft posts
     int mStartMs = 0;

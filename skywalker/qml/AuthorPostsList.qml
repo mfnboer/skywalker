@@ -11,6 +11,7 @@ SkyListView {
     required property var getFeedNextPage
     required property var getEmptyListIndicationSvg
     required property var getEmptyListIndicationText
+    required property var getEmptyListIndicationLabeler
     required property var visibilityShowProfileLink
     required property var disableWarning
     property var skywalker: root.getSkywalker(userDid)
@@ -40,9 +41,6 @@ SkyListView {
         if (verticalOvershoot < 0)
             enclosingView.interactive = true
     }
-
-    footer: DeadFooterMargin {}
-    footerPositioning: ListView.OverlayFooter
 
     delegate: PostFeedViewDelegate {
         width: enclosingView.width
@@ -94,6 +92,7 @@ SkyListView {
         id: noPostIndication
         svg: getEmptyListIndicationSvg()
         text: getEmptyListIndicationText()
+        labeler: getEmptyListIndicationLabeler()
         list: authorPostsList
         onLinkActivated: (link) => root.viewListByUri(link, false)
         onRetry: retryGetFeed()

@@ -4,6 +4,7 @@
 #include <definitions.h>
 #include <focus_hashtags.h>
 #include <follows_activity_store.h>
+#include <list_store.h>
 #include <muted_words.h>
 #include <post_feed_model.h>
 #include <user_settings.h>
@@ -19,9 +20,9 @@ private slots:
     void init()
     {
         mPostFeedModel = std::make_unique<PostFeedModel>(
-            HOME_FEED, mUserDid, mFollowing, mMutedReposts, mHideLists, mContentFilter,
+            HOME_FEED, nullptr, mUserDid, mFollowing, mMutedReposts, mHideLists, mContentFilter,
             mMutedWords, mFocusHashtags, mHashtags, mUserPreferences, mUserSettings,
-            mFollowsActivityStore);
+            mFollowsActivityStore, nullptr);
     }
 
     void cleanup()
@@ -497,10 +498,11 @@ private:
     ProfileStore mFollowing;
     FollowsActivityStore mFollowsActivityStore{mFollowing, this};
     ProfileStore mMutedReposts;
-    ProfileStore mHideLists;
+    ListStore mHideLists;
+    ListStore mContentFilterPolicies;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
-    ContentFilter mContentFilter{mUserDid, mUserPreferences, &mUserSettings};
+    ContentFilter mContentFilter{mUserDid, mFollowing, mContentFilterPolicies, mUserPreferences, &mUserSettings};
     MutedWords mMutedWords{mFollowing};
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};

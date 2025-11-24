@@ -16,7 +16,7 @@ SkyPage {
     property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
     property int lastIndex: -1
     readonly property alias sideBarAuthor: page.firstMember
-    readonly property int usableHeight: height - guiSettings.headerMargin - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin)
+    readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
     signal closed
     signal acceptConvo(convoview convo)
@@ -33,13 +33,12 @@ SkyPage {
 
     footer: Rectangle {
         width: parent.width
-        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0
         color: guiSettings.backgroundColor
     }
 
     SkyListView {
         id: messagesView
-        y: !root.showSideBar ? 0 : guiSettings.headerMargin
         width: parent.width
         height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
@@ -117,8 +116,6 @@ SkyPage {
         boundsBehavior: Flickable.StopAtBounds
         visible: convoAccepted
 
-        onHeightChanged: newMessageText.ensureVisible(newMessageText.cursorRectangle)
-
         onContentYChanged: {
             if (contentYUpdating)
                 return
@@ -148,6 +145,7 @@ SkyPage {
             width: parent.width - sendButton.width - 3 * page.margin
             padding: page.margin
             bottomPadding: 2 * page.margin + textInputToolbarHeight + quotedContentHeight
+            bottomOffset: -bottomPadding // NOTE: the fick only covers the text content
             parentPage: page
             parentFlick: flick
             color: guiSettings.messageNewTextColor
@@ -251,7 +249,7 @@ SkyPage {
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
-            ellipsisBackgroundColor: guiSettings.postHighLightColor
+            postBackgroundColor: guiSettings.postHighLightColor
             showCloseButton: newMessageText.quoteFixed
             visible: newMessageText.quoteUri
 

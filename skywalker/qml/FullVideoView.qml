@@ -15,16 +15,12 @@ SkyPage {
     width: parent.width
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
-    leftPadding: guiSettings.leftMargin
-    rightPadding: guiSettings.rightMargin
 
     onCover: view.pause()
 
-    footer: DeadFooterMargin {
-        color: guiSettings.fullScreenColor
-    }
-
     VideoView {
+        property basicprofile nullProfile
+
         id: view
         y: (parent.height - height) / 2
         width: parent.width
@@ -33,6 +29,7 @@ SkyPage {
         videoView: page.videoView
         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
         contentWarning: ""
+        contentLabeler: nullProfile
         controlColor: "white"
         disabledColor: "darkslategrey"
         backgroundColor: guiSettings.fullScreenColor
@@ -40,7 +37,10 @@ SkyPage {
     }
 
     Rectangle {
-        width: parent.width
+        anchors.left: parent.left
+        anchors.leftMargin: guiSettings.leftMargin
+        anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin
         anchors.top: altFlick.top
         anchors.bottom: parent.bottom
         color: "black"
@@ -50,8 +50,12 @@ SkyPage {
 
     Flickable {
         id: altFlick
+        anchors.left: parent.left
+        anchors.leftMargin: guiSettings.leftMargin
+        anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10
+        anchors.bottomMargin: 10 + guiSettings.footerMargin
         width: parent.width
         height: Math.min(contentHeight, 6 * 21)
         clip: true
@@ -60,7 +64,7 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: ScrollBar { id: altScrollBar }
-        visible: !view.videoPlayingOrPaused
+        visible: !view.videoPlayingOrPaused && Boolean(videoView.alt)
 
         onHeightChanged: setScrollBarPolicy()
         onContentHeightChanged: setScrollBarPolicy()
@@ -77,7 +81,7 @@ SkyPage {
             wrapMode: Text.Wrap
             color: "white"
             plainText: videoView.alt
-            visible: Boolean(videoView.alt)
+            textFormat: videoView.hasHtmlAlt() ? Text.RichText : Text.PlainText
         }
     }
 
@@ -96,6 +100,7 @@ SkyPage {
     SvgButton {
         y: guiSettings.headerMargin
         anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin
         iconColor: "white"
         Material.background: guiSettings.fullScreenColor
         opacity: 0.7
@@ -136,8 +141,8 @@ SkyPage {
     }
 
     function setSystemBarsColor() {
-        displayUtils.setNavigationBarColorAndMode(guiSettings.fullScreenColor, false)
-        displayUtils.setStatusBarColorAndMode(guiSettings.fullScreenColor, false)
+        displayUtils.setNavigationBarColorAndMode("transparent", false)
+        displayUtils.setStatusBarTransparentAndMode(true, guiSettings.fullScreenColor, false)
     }
 
     function resetSystemBarsColor() {
@@ -145,7 +150,7 @@ SkyPage {
         // the normal background color here instead of taking it from guiSettings
         const backgroundColor = userSettings ? userSettings.backgroundColor : Material.background
         displayUtils.setNavigationBarColor(backgroundColor)
-        displayUtils.setStatusBarColor(backgroundColor)
+        displayUtils.setStatusBarTransparent(false, backgroundColor)
     }
 
     Component.onDestruction: {
@@ -153,6 +158,7 @@ SkyPage {
     }
 
     Component.onCompleted: {
+        guiSettings.updateScreenMargins()
         setSystemBarsColor()
     }
 }

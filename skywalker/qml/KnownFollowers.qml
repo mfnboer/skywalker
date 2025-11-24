@@ -26,6 +26,7 @@ RowLayout {
                 width: 34
                 userDid: knownOthersRow.userDid
                 author: modelData
+                showFollowingStatus: false
                 onClicked: knownOthersRow.showKnownFollowers()
             }
         }

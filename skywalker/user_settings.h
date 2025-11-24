@@ -12,15 +12,50 @@
 
 namespace Skywalker {
 
-class IUserSettings
+class IUserSettingsAnniversary
 {
 public:
-    virtual ~IUserSettings() = default;
+    virtual ~IUserSettingsAnniversary() = default;
     virtual QDate getAnniversaryNoticeDate(const QString& did) const = 0;
     virtual void setAnniversaryNoticeDate(const QString& did, QDate date) = 0;
 };
 
-class UserSettings : public QObject, public IUserSettings
+class IUserSettingsContentFilter
+{
+public:
+    virtual ~IUserSettingsContentFilter() = default;
+
+    // listUri can be "following" for label prefs for your following list
+    virtual void setContentLabelPref(
+        const QString& did, const QString& listUri, const QString& labelerDid,
+        const QString& labelId, QEnums::ContentPrefVisibility pref) = 0;
+
+    virtual QEnums::ContentPrefVisibility getContentLabelPref(
+        const QString& did, const QString& listUri,
+        const QString& labelerDid, const QString& labelId) const = 0;
+
+    virtual void removeContentLabelPref(const QString& did, const QString& listUri, const QString& labelerDid,
+                                const QString& labelId) = 0;
+
+    virtual void removeContentLabelPrefList(const QString& did, QString listUri) = 0;
+
+    // tuple: listUri, labelerDid, labelId
+    virtual std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const = 0;
+
+    virtual QStringList getContentLabelPrefListUris(const QString& did) const = 0;
+
+    virtual QStringList getLabels(const QString& did, const QString& labelerDid) const = 0;
+    virtual void setLabels(const QString& did, const QString& labelerDid, const QStringList labels) = 0;
+    virtual void removeLabels(const QString& did, const QString& labelerDid) = 0;
+    virtual bool containsLabeler(const QString& did, const QString& labelerDid) const = 0;
+
+    virtual bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const = 0;
+    virtual void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled) = 0;
+};
+
+class UserSettings : public QObject,
+                     public IUserSettingsAnniversary,
+                     public IUserSettingsContentFilter
 {
     Q_OBJECT
     Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
@@ -31,8 +66,10 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
+    Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
-    Q_PROPERTY(bool landscapeSideBar READ getLandscapeSideBar WRITE setLandscapeSideBar NOTIFY landscapeSideBarChanged FINAL)
+    Q_PROPERTY(bool showFeedbackButtons READ getShowFeedbackButtons WRITE setShowFeedbackButtons NOTIFY showFeedbackButtonsChanged FINAL)
+    Q_PROPERTY(QEnums::SideBarType sideBarType READ getSideBarType WRITE setSideBarType NOTIFY sideBarTypeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
@@ -47,6 +84,7 @@ class UserSettings : public QObject, public IUserSettings
     Q_PROPERTY(bool showSuggestedStarterPacks READ getShowSuggestedStarterPacks WRITE setShowSuggestedStarterPacks NOTIFY showSuggestedStarterPacksChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
+    QML_ELEMENT
 
 public:
     void reset();
@@ -180,6 +218,25 @@ public:
     void setHideLists(const QString& did, const QStringList& listUris);
     QStringList getHideLists(const QString& did) const;
 
+    // listUri can be "following" for label prefs for your following list
+    void setContentLabelPref(
+        const QString& did, const QString& listUri, const QString& labelerDid,
+        const QString& labelId, QEnums::ContentPrefVisibility pref) override;
+
+    QEnums::ContentPrefVisibility getContentLabelPref(
+        const QString& did, const QString& listUri,
+        const QString& labelerDid, const QString& labelId) const  override;
+
+    void removeContentLabelPref(const QString& did, const QString& listUri, const QString& labelerDid,
+                                const QString& labelId) override;
+
+    void removeContentLabelPrefList(const QString& did, QString listUri) override;
+
+    // tuple: listUri, labelerDid, labelId
+    std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const override;
+
+    QStringList getContentLabelPrefListUris(const QString& did) const override;
+
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
 
@@ -224,8 +281,14 @@ public:
     Q_INVOKABLE void setPostButtonRelativeX(double x);
     Q_INVOKABLE double getPostButtonRelativeX() const;
 
-    void setLandscapeSideBar(bool enabled);
-    bool getLandscapeSideBar() const;
+    Q_INVOKABLE void setPortraitSideBarWidth(int width);
+    Q_INVOKABLE int getPortraitSideBarWidth() const;
+
+    Q_INVOKABLE void setLandscapeSideBarWidth(int width);
+    Q_INVOKABLE int getLandscapeSideBarWidth() const;
+
+    void setSideBarType(QEnums::SideBarType sideBarType);
+    QEnums::SideBarType getSideBarType() const;
 
     void setGifAutoPlay(bool autoPlay);
     bool getGifAutoPlay() const;
@@ -254,8 +317,17 @@ public:
     void setSonglinkEnabled(bool enabled);
     bool getSonglinkEnabled() const;
 
+    void setShowFollowsStatus(bool show);
+    bool getShowFollowsStatus() const;
+
     void setShowFollowsActiveStatus(bool show);
     bool getShowFollowsActiveStatus() const;
+
+    void setShowFeedbackButtons(bool show);
+    bool getShowFeedbackButtons() const;
+
+    Q_INVOKABLE void setShowFeedbackNotice(bool show);
+    Q_INVOKABLE bool getShowFeedbackNotice() const;
 
     Q_INVOKABLE void setRequireAltText(const QString& did, bool require);
     Q_INVOKABLE bool getRequireAltText(const QString& did) const;
@@ -319,6 +391,9 @@ public:
     Q_INVOKABLE bool getAssembleThreads(const QString& did) const;
     Q_INVOKABLE void setAssembleThreads(const QString& did, bool assemble);
 
+    Q_INVOKABLE QEnums::ReplyOrder getThreadReplyOrder(const QString& did) const;
+    Q_INVOKABLE void setThreadReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder);
+
     Q_INVOKABLE bool getRewindToLastSeenPost(const QString& did) const;
     Q_INVOKABLE void setRewindToLastSeenPost(const QString& did, bool rewind);
 
@@ -375,13 +450,13 @@ public:
     const QJsonDocument getFocusHashtags(const QString& did) const;
     void setFocusHashtags(const QString& did, const QJsonDocument& jsonHashtags);
 
-    QStringList getLabels(const QString& did, const QString& labelerDid) const;
-    void setLabels(const QString& did, const QString& labelerDid, const QStringList labels);
-    void removeLabels(const QString& did, const QString& labelerDid);
-    bool containsLabeler(const QString& did, const QString& labelerDid) const;
+    QStringList getLabels(const QString& did, const QString& labelerDid) const override;
+    void setLabels(const QString& did, const QString& labelerDid, const QStringList labels) override;
+    void removeLabels(const QString& did, const QString& labelerDid) override;
+    bool containsLabeler(const QString& did, const QString& labelerDid) const override;
 
-    bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const;
-    void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled);
+    bool getFixedLabelerEnabled(const QString& did, const QString& labelerDid) const override;
+    void setFixedLabelerEnabled(const QString& did, const QString& labelerDid, bool enabled) override;
 
     SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
@@ -403,8 +478,10 @@ signals:
     void favoritesBarPositionChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();
+    void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();
-    void landscapeSideBarChanged();
+    void showFeedbackButtonsChanged();
+    void sideBarTypeChanged();
     void gifAutoPlayChanged();
     void videoSoundChanged();
     void videoAutoPlayChanged();
@@ -431,6 +508,8 @@ private:
     QString displayKey(const QString& key) const;
     QString labelsKey(const QString& did, const QString& labelerDid) const;
     QString fixedLabelerKey(const QString& did, const QString& labelerDid) const;
+    QString labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
+                           const QString& labelId) const;
     void cleanup();
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;

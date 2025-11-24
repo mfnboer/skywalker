@@ -15,4 +15,7 @@ constexpr char const* INVALID_HANDLE_SUFFIX = ".invalid";
 // RKEY's may not be longer than 15 chars (the spec says more, but the bsky does not allow it)
 constexpr char const* RKEY_MUTED_REPOSTS = "sw-muted-repsts";
 
+// This is not really an uri, but we use it as a a uri to indicate the list of user you follow
+constexpr char const* FOLLOWING_LIST_URI = "following";
+
 }

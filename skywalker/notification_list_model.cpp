@@ -26,7 +26,8 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
                                  int(Role::NotificationPostRecord),
                                  int(Role::NotificationPostRecordWithMedia),
                                  int(Role::NotificationReasonPostRecord),
-                                 int(Role::NotificationReasonPostRecordWithMedia) });
+                                 int(Role::NotificationReasonPostRecordWithMedia),
+                                 int(Role::NotificationPostContentLabeler) });
             });
 }
 
@@ -273,7 +274,8 @@ void NotificationListModel::filterNotificationList(NotificationList& list) const
     for (auto it = list.begin(); it != list.end();)
     {
         const auto& post = it->getNotificationPost(mPostCache);
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
+        const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels());
 
         if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
         {
@@ -686,10 +688,14 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                     AuthorCache::instance().putProfile(did);
             }
 
-            const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabels());
+            const auto labels = mContentFilter.getContentLabels(record->getLabels());
+            const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+                record->getAuthorDid(), labels);
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
+            record->setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
             record->setMutedReason(mMutedWords);
+
             return QVariant::fromValue(*record);
         }
 
@@ -713,9 +719,12 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                 AuthorCache::instance().putProfile(did);
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabels());
+        const auto labels = mContentFilter.getContentLabels(record.getLabels());
+        const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            record.getAuthorDid(), labels);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
         record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
@@ -798,9 +807,12 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                 AuthorCache::instance().putProfile(did);
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels());
+        const auto& labels = record->getLabelsIncludingAuthorLabels();
+        const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            record->getAuthorDid(), labels);
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
+        record->setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
         record->setMutedReason(mMutedWords);
         return QVariant::fromValue(*record);
     }
@@ -830,9 +842,12 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
                 AuthorCache::instance().putProfile(did);
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels());
+        const auto& labels = record.getLabelsIncludingAuthorLabels();
+        const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            record.getAuthorDid(), labels);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
         record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
@@ -941,14 +956,25 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostContentVisibility:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
+        const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels());
         return visibility;
     }
     case Role::NotificationPostContentWarning:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels());
+        const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels());
         return warning;
+    }
+    case Role::NotificationPostContentLabeler:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        const auto& labels = post.getLabelsIncludingAuthorLabels();
+        const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), labels);
+        const auto labeler = getContentLabeler(visibility, labels, labelIndex);
+        return QVariant::fromValue(labeler);
     }
     case Role::NotificationPostMutedReason:
     {
@@ -957,7 +983,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         const auto& post = notification.getNotificationPost(mPostCache);
 
-        if (mMutedWords.match(post))
+        if (mMutedWords.match(post).first)
             return QEnums::MUTED_POST_WORDS;
 
         return QEnums::MUTED_POST_NONE;
@@ -1075,6 +1101,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostLabels), "notificationPostLabels" },
         { int(Role::NotificationPostContentVisibility), "notificationPostContentVisibility" },
         { int(Role::NotificationPostContentWarning), "notificationPostContentWarning" },
+        { int(Role::NotificationPostContentLabeler), "notificationPostContentLabeler" },
         { int(Role::NotificationPostMutedReason), "notificationPostMutedReason" },
         { int(Role::NotificationPostIsReply), "notificationPostIsReply" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
@@ -1191,4 +1218,28 @@ void NotificationListModel::changeData(const QList<int>& roles)
     emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
+
+BasicProfile NotificationListModel::getContentLabeler(QEnums::ContentVisibility visibility,
+                                                      const ContentLabelList& labels,
+                                                      int labelIndex) const
+{
+    if (visibility == QEnums::CONTENT_VISIBILITY_SHOW)
+        return {};
+
+    if (labelIndex < 0 || labelIndex >= labels.size())
+        return {};
+
+    const QString& labelerDid = labels[labelIndex].getDid();
+
+    if (labelerDid.isEmpty())
+        return {};
+
+    const BasicProfile* profile = AuthorCache::instance().get(labelerDid);
+
+    if (profile)
+        return *profile;
+
+    QTimer::singleShot(0, this, [labelerDid]{ AuthorCache::instance().putProfile(labelerDid); });
+    return {};
+}
 }

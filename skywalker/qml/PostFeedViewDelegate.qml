@@ -65,15 +65,21 @@ Rectangle {
     required property bool postIsHiddenReply
     required property bool postBookmarked
     required property bool postBookmarkTransient
+    required property int postFeedback // QEnums::FeedbackType
+    required property int postFeedbackTransient // QEnums::FeedbackType
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsPinned
     required property bool postIsThread
     required property bool postIsThreadReply
     required property bool postLocallyDeleted
+    required property int filteredPostHideReason // QEnums::HideReasonType
+    required property string filteredPostHideDetail
+    required property contentlabel filteredPostContentLabel
     required property bool endOfFeed
     property bool unrollThread: false
     property var postThreadModel // provided when thread is unrolled
@@ -140,11 +146,18 @@ Rectangle {
     }
 
     onOnScreenChanged: {
-        if (!onScreen)
+        if (onScreen) {
+            if (feedAcceptsInteractions)
+                postEntry.ListView.view.model.reportOnScreen(postUri)
+        } else {
             cover()
+        }
     }
 
     function cover() {
+        if (feedAcceptsInteractions)
+            postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+
         postBody.movedOffScreen()
     }
 
@@ -385,6 +398,7 @@ Rectangle {
                 width: parent.width - 13
                 userDid: postEntry.userDid
                 author: postEntry.author
+                showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
                 visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
                 onClicked: skywalker.getDetailedProfile(author.did)
@@ -433,6 +447,7 @@ Rectangle {
                     userDid: postEntry.userDid
                     author: postEntry.author
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                    filteredContentLabel: postEntry.filteredPostContentLabel
                 }
             }
             Loader {
@@ -445,6 +460,7 @@ Rectangle {
                     userDid: postEntry.userDid
                     author: postEntry.author
                     postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                    filteredContentLabel: postEntry.filteredPostContentLabel
                 }
             }
 
@@ -471,6 +487,42 @@ Rectangle {
                 }
             }
 
+            // Hide reason (only when filtered posts are shown
+            Loader {
+                width: parent.width
+                active: filteredPostHideReason !== QEnums.HIDE_REASON_NONE
+                visible: status == Loader.Ready
+
+                sourceComponent: Rectangle {
+                    width: hideReasonRow.width
+                    height: hideReasonRow.height
+                    radius: 3
+                    color: guiSettings.hideReasonLabelColor
+
+                    Row {
+                        id: hideReasonRow
+                        width: parent.width
+                        spacing: 10
+
+                        SkySvg {
+                            id: hideIcon
+                            width: 20
+                            height: 20
+                            color: guiSettings.textColor
+                            svg: SvgOutline.hideVisibility
+                        }
+
+                        AccessibleText {
+                            width: parent.width - hideIcon.width
+                            rightPadding: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            elide: Text.ElideRight
+                            text: qEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
+                        }
+                    }
+                }
+            }
+
             PostBody {
                 id: postBody
                 width: parent.width
@@ -485,6 +537,7 @@ Rectangle {
                 postContentLabels: postLabels
                 postContentVisibility: postEntry.postContentVisibility
                 postContentWarning: postEntry.postContentWarning
+                postContentLabeler: postEntry.postContentLabeler
                 postMuted: postEntry.postMutedReason
                 postIsThread: postEntry.postIsThread && !postEntry.unrollThread
                 postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
@@ -503,7 +556,7 @@ Rectangle {
                 onActivateSwipe: postEntry.activateSwipe()
                 onUnrollThread: {
                     if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
-                        skywalker.getPostThread(postUri, true)
+                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                 }
             }
 
@@ -546,15 +599,14 @@ Rectangle {
 
             // Stats
             Loader {
-                active: !unrollThread || endOfFeed
                 width: parent.width
-                height: guiSettings.statsHeight + 10
+                height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10)
+                active: !unrollThread || endOfFeed
                 asynchronous: true
                 visible: active
 
                 sourceComponent: PostStats {
                     id: postStats
-                    width: parent.width
                     topPadding: 10
                     skywalker: postEntry.skywalker
                     replyCount: postReplyCount
@@ -574,6 +626,8 @@ Rectangle {
                     authorIsUser: author.did === userDid
                     isBookmarked: postBookmarked
                     bookmarkTransient: postBookmarkTransient
+                    feedback: postFeedback
+                    feedbackTransient: postFeedbackTransient
                     isThread: postIsThread || postIsThreadReply
                     isUnrolledThread: postEntry.unrollThread
                     showViewThread: swipeMode
@@ -587,7 +641,7 @@ Rectangle {
                                           postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                           postIndexedDateTime,
                                           author, postReplyRootUri, postReplyRootCid, lang,
-                                          postMentionDids, "", "", userDid)
+                                          postMentionDids, "", "", feedDid, postFeedContext, userDid)
                     }
 
                     onReplyLongPress: (mouseEvent) => {
@@ -605,7 +659,9 @@ Rectangle {
                     }
 
                     onRepost: {
-                        root.repost(postRepostUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid,
+                        root.repost(postRepostUri, postUri, postCid,
+                                    postReasonRepostUri, postReasonRepostCid,
+                                    feedDid, postFeedContext,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
                                     postIndexedDateTime, author, postEmbeddingDisabled,
                                     postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText,
@@ -615,7 +671,8 @@ Rectangle {
                     function quote(quoteByDid = "") {
                         root.quotePost(postUri, postCid,
                             postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                            postIndexedDateTime, author, postEmbeddingDisabled, quoteByDid)
+                            postIndexedDateTime, author, postEmbeddingDisabled,
+                            feedDid, postFeedContext, quoteByDid)
                     }
 
                     onRepostLongPress: (mouseEvent) => {
@@ -634,7 +691,9 @@ Rectangle {
                             quote()
                     }
 
-                    onLike: root.like(postLikeUri, postUri, postCid, postReasonRepostUri, postReasonRepostCid, userDid)
+                    onLike: root.like(postLikeUri, postUri, postCid,
+                                      postReasonRepostUri, postReasonRepostCid,
+                                      feedDid, postFeedContext, userDid)
 
                     onLikeLongPress: (mouseEvent) => {
                         if (root.isActiveUser(userDid))
@@ -660,13 +719,14 @@ Rectangle {
 
                     onUnrollThread: {
                         if (!postIsPlaceHolder && postUri)
-                            skywalker.getPostThread(postUri, true)
+                            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                     }
 
                     onShare: skywalker.sharePost(postUri)
                     onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
                     onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                     onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                    onEditPost: root.composePostEdit(postEntry.ListView.view.model, postEntry.index)
                     onDeletePost: confirmDelete()
                     onCopyPostText: skywalker.copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                     onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author, userDid)
@@ -676,8 +736,8 @@ Rectangle {
                     onUnpin: root.unpinPost(postCid, userDid)
                     onBlockAuthor: root.blockAuthor(author, userDid)
                     onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postFeedContext, userDid)
-                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postFeedContext, userDid)
+                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
                 }
             }
 
@@ -928,6 +988,9 @@ Rectangle {
         id: accessibilityUtils
     }
 
+    QEnums {
+        id: qEnums
+    }
 
     function confirmDelete() {
         guiSettings.askYesNoQuestion(
@@ -1009,8 +1072,17 @@ Rectangle {
         onScreen = (y + height > topY) && (y < ListView.view.contentY + ListView.view.height)
     }
 
+    Component.onDestruction: {
+        if (feedAcceptsInteractions && onScreen)
+            postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+
+        ListView.view.onContentMoved.disconnect(checkOnScreen)
+    }
+
     Component.onCompleted: {
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()
+
+        ListView.view.onContentMoved.connect(checkOnScreen)
     }
 }

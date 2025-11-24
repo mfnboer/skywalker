@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property PostUtils postUtils: root.getPostUtils(userDid)
     required property profile author
     required property string followingUri
     required property string blockingUri
@@ -20,7 +21,10 @@ Rectangle {
     property bool showFollow: true
     property bool showActivitySubscription: false
     property bool highlight: false
+    property string highlightColor: guiSettings.postHighLightColor
     property int maximumDescriptionLineCount: 25
+    property bool formatDescription: true
+    property int textRightPadding: 0
     readonly property int margin: 10
 
     signal follow(basicprofile profile)
@@ -30,7 +34,7 @@ Rectangle {
 
     id: authorRect
     height: grid.height
-    color: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
+    color: highlight ? highlightColor : guiSettings.backgroundColor
 
     Accessible.role: Accessible.Button
     Accessible.name: author.name
@@ -46,7 +50,7 @@ Rectangle {
         // Avatar
         Rectangle {
             id: avatar
-            Layout.rowSpan: 2
+            Layout.rowSpan: 3
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
@@ -134,16 +138,34 @@ Rectangle {
         }
 
         SkyCleanedText {
-            rightPadding: 10
+            rightPadding: 10 + authorRect.textRightPadding
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
+            width: parent.width
+            font.italic: true
+            font.pointSize: guiSettings.scaledFont(7/8)
+            plainText: author.pronouns
+            visible: Boolean(author.pronouns)
+        }
+
+        SkyCleanedText {
+            rightPadding: 10 + authorRect.textRightPadding
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             wrapMode: Text.Wrap
             elide: Text.ElideRight
+            textFormat: authorRect.formatDescription ? Text.RichText : Text.AutoText
             maximumLineCount: authorRect.maximumDescriptionLineCount
+            showEllipsis: false
             color: guiSettings.textColor
-            plainText: author.description
+            plainText: authorRect.formatDescription ?  postUtils.linkiFy(author.description, guiSettings.linkColor) : author.description
             visible: showAuthor && author.description
+
+            LinkCatcher {
+                userDid: authorRect.userDid
+            }
         }
 
         Rectangle {

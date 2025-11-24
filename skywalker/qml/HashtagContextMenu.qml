@@ -21,13 +21,11 @@ SkyMenu {
     id: hashtagMenu
 
     onAboutToShow: {
-        root.enablePopupShield(true)
         isMuted = skywalker.mutedWords.containsEntry(hashtag)
         isPinned = skywalker.favoriteFeeds.isPinnedSearch(hashtag)
     }
 
     onAboutToHide: {
-        root.enablePopupShield(false)
         done()
     }
 

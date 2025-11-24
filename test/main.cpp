@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "test_anniversary.h"
+#include "test_content_filter.h"
 #include "test_filtered_post_feed_model.h"
 #include "test_focus_hashtags.h"
 #include "test_hashtag_index.h"
@@ -17,6 +18,9 @@ int main(int argc, char *argv[])
 {
     TestAnniversary testAnniversary;
     QTest::qExec(&testAnniversary, argc, argv);
+
+    TestContentFilter testContentFilter;
+    QTest::qExec(&testContentFilter, argc, argv);
 
     TestFocusHashTags testFocusHashtags;
     QTest::qExec(&testFocusHashtags, argc, argv);

@@ -10,7 +10,6 @@ Item {
     property SvgImage unknownSvg: SvgFilled.unknownAvatar
     property Skywalker skywalker: root.getSkywalker(userDid)
     property var userSettings: skywalker.getUserSettings()
-    readonly property int contentVisibility: skywalker.getContentVisibility(author.labels)
     property bool showWarnedMedia: false
     readonly property bool showThumb: width < 90 // from bsky client code
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
@@ -18,7 +17,7 @@ Item {
     readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author.did)
     readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
     readonly property bool isActive: activityStatus ? activityStatus.active : false
-    property bool showActivityStatus: true
+    property bool showFollowingStatus: true
 
     signal clicked
     signal pressAndHold
@@ -92,8 +91,12 @@ Item {
     }
 
     Loader {
-        id: activeLoader
-        active: avatarItem.isActive && userSettings.showFollowsActiveStatus && showActivityStatus
+        readonly property bool activeStatus: avatarItem.isActive && userSettings.showFollowsActiveStatus && showFollowingStatus
+        readonly property bool followsStatus: author.viewer.following && userSettings.showFollowsStatus && showFollowingStatus
+
+        id: followingLoader
+        active: activeStatus || followsStatus
+        //active: avatarItem.isActive && userSettings.showFollowsActiveStatus && showActivityStatus
 
         sourceComponent: Rectangle {
             x: avatarItem.width - width
@@ -101,8 +104,8 @@ Item {
             width: avatarItem.width * 0.15
             height: width
             radius: width / 2
-            color: guiSettings.activeColor
-            border.color: guiSettings.activeBorderColor
+            color: followingLoader.activeStatus ? guiSettings.activeColor : guiSettings.accentColor
+            border.color: followingLoader.activeStatus ? guiSettings.activeBorderColor : guiSettings.accentColor
             border.width: 1
         }
     }

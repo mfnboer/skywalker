@@ -19,9 +19,9 @@ SkyListView {
     boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {
-        height: (headerVisible ? guiSettings.headerHeight : guiSettings.headerMargin) + (restrictionRow.visible ? restrictionRow.height : 0)
+        height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
-        userDid: userDid
+        userDid: view.userDid
         headerVisible: !root.showSideBar
         onBack: view.closed()
 
@@ -134,7 +134,11 @@ SkyListView {
     }
     headerPositioning: ListView.OverlayHeader
 
-    footer: DeadFooterMargin {
+    footer: Rectangle {
+        width: parent.width
+        height: 0
+        z: guiSettings.footerZLevel
+
         PostButton {
             y: -height - 10
             svg: SvgOutline.reply
@@ -194,7 +198,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,
                           author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                          initialText, imageSource, userDid)
+                          initialText, imageSource, "", "", userDid)
     }
 
     function videoReply(initialText, videoSource) {

@@ -21,6 +21,7 @@ Rectangle {
     required property list<contentlabel> postLabels
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
+    required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property bool endOfFeed
 
@@ -95,6 +96,7 @@ Rectangle {
                 postContentLabels: draftPostView.postLabels
                 postContentVisibility: draftPostView.postContentVisibility
                 postContentWarning: draftPostView.postContentWarning
+                postContentLabeler: draftPostView.postContentLabeler
                 postMuted: draftPostView.postMutedReason
                 postExternal: draftPostView.postExternal
                 postRecord: draftPostView.postRecord

@@ -180,6 +180,18 @@ void FilteredPostFeedModel::getFeedNextPage(IFeedPager* pager)
         qWarning() << "No underlying model:" << getFeedName();
 }
 
+void FilteredPostFeedModel::reportOnScreen(const QString& postUri)
+{
+    if (mUnderlyingModel)
+        mUnderlyingModel->reportOnScreen(postUri);
+}
+
+void FilteredPostFeedModel::reportOffScreen(const QString& postUri, const QString& feedContext)
+{
+    if (mUnderlyingModel)
+        mUnderlyingModel->reportOffScreen(postUri, feedContext);
+}
+
 void FilteredPostFeedModel::Page::addPost(const Post* post)
 {
     mFeed.push_back(post);

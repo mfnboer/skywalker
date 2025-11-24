@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "feed_utils.h"
+#include "local_post_model_changes.h"
 #include "skywalker.h"
 
 namespace Skywalker {
@@ -127,45 +128,81 @@ void FeedUtils::hideFollowing(const QString& feedUri, bool hide)
         });
 }
 
-void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& feedDid, const QString& feedContext)
+void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& postCid, const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
 
+    mSkywalker->makeLocalModelChange(
+        [postCid](LocalPostModelChanges* model){
+            model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_MORE_LIKE_THIS);
+        });
+
     mPostMaster->sendInteractionShowMoreLikeThis(postUri, feedDid, feedContext,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), postCid]{
             if (!presence)
                 return;
 
             qDebug() << "Show more like this ok";
+
+            mSkywalker->makeLocalModelChange(
+                [postCid](LocalPostModelChanges* model){
+                    model->updateFeedback(postCid, QEnums::FEEDBACK_MORE_LIKE_THIS);
+                    model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_NONE);
+                });
+
             emit interactionsSent();
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), postCid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Show more like this failed:" << error << " - '" << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [postCid](LocalPostModelChanges* model){
+                    model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_NONE);
+                });
+
             emit failure(msg);
         });
 }
 
-void FeedUtils::showLessLikeThis(const QString& postUri, const QString& feedDid, const QString& feedContext)
+void FeedUtils::showLessLikeThis(const QString& postUri, const QString& postCid, const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
 
+    mSkywalker->makeLocalModelChange(
+        [postCid](LocalPostModelChanges* model){
+            model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_LESS_LIKE_THIS);
+        });
+
     mPostMaster->sendInteractionShowLessLikeThis(postUri, feedDid, feedContext,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), postCid]{
             if (!presence)
                 return;
             qDebug() << "Show less like this ok";
+
+            mSkywalker->makeLocalModelChange(
+                [postCid](LocalPostModelChanges* model){
+                    model->updateFeedback(postCid, QEnums::FEEDBACK_LESS_LIKE_THIS);
+                    model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_NONE);
+                });
+
             emit interactionsSent();
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), postCid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Show less like this failed:" << error << " - '" << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [postCid](LocalPostModelChanges* model){
+                    model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_NONE);
+                });
+
             emit failure(msg);
         });
 }

@@ -57,6 +57,9 @@ QString RecordWithMediaView::getUnknownEmbedType() const
 
 QList<ImageView> RecordWithMediaView::getImages() const
 {
+    if (!mImages.empty())
+        return mImages;
+
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
         return {};
 
@@ -67,6 +70,17 @@ QList<ImageView> RecordWithMediaView::getImages() const
         images.append(ImageView(img));
 
     return images;
+}
+
+bool RecordWithMediaView::hasImages() const
+{
+    if (!mImages.empty())
+        return true;
+
+    if (!mView)
+        return false;
+
+    return mView->mMediaType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
 }
 
 QVariant RecordWithMediaView::getVideo() const
@@ -81,11 +95,25 @@ QVariant RecordWithMediaView::getVideo() const
 
 VideoView::Ptr RecordWithMediaView::getVideoView() const
 {
+    if (!mVideo.isNull())
+        return std::make_unique<VideoView>(mVideo);
+
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
         return {};
 
     const auto& video = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(mView->mMedia);
     return std::make_unique<VideoView>(video);
+}
+
+bool RecordWithMediaView::hasVideo() const
+{
+    if (!mVideo.isNull())
+        return true;
+
+    if (!mView)
+        return false;
+
+    return mView->mMediaType == ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
 }
 
 QVariant RecordWithMediaView::getExternal() const
@@ -100,6 +128,9 @@ QVariant RecordWithMediaView::getExternal() const
 
 ExternalView::Ptr RecordWithMediaView::getExternalView() const
 {
+    if (!mExternal.isNull())
+        return std::make_unique<ExternalView>(mExternal);
+
     if (!mView || mView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
         return {};
 

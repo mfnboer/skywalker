@@ -27,7 +27,6 @@ SkyPage {
             id: saveButton
             anchors.right: parent.right
             anchors.top: parent.top
-            anchors.topMargin: guiSettings.headerMargin
             svg: SvgOutline.check
             iconColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
             accessibleName: qsTr("save settings")
@@ -40,30 +39,14 @@ SkyPage {
         }
     }
 
-    footer: DeadFooterMargin {
-        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : guiSettings.footerMargin
-    }
-
     Flickable {
         id: flick
-        anchors.topMargin: !root.showSideBar ? 0 : guiSettings.headerMargin
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
         contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-
-        onHeightChanged: {
-            if (appViewField.textInput.activeFocus)
-                appViewField.textInput.ensureVisible(appViewField.textInput.cursorRectangle)
-            else if (chatField.textInput.activeFocus)
-                chatField.textInput.ensureVisible(chatField.textInput.cursorRectangle)
-            else if (videoHostField.textInput.activeFocus)
-                videoHostField.textInput.ensureVisible(videoHostField.textInput.cursorRectangle)
-            else if (videoDidField.textInput.activeFocus)
-                videoDidField.textInput.ensureVisible(videoDidField.textInput.cursorRectangle)
-        }
 
         GridLayout {
             columns: 2

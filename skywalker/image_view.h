@@ -42,7 +42,7 @@ public:
     Q_INVOKABLE bool isNull() const { return getFullSizeUrl().isEmpty(); }
     QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : mFullSizeUrl; }
     QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : mFullSizeUrl; }
-    QString getAlt() const { return mViewImage ? mViewImage->mAlt : mAlt; }
+    QString getAlt() const { return !mHtmlAlt.isEmpty() ? mHtmlAlt : (mViewImage ? mViewImage->mAlt : mAlt); }
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mViewImage ? mViewImage->mAspectRatio.get() : nullptr; }
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : mWidth;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : mHeight;  }
@@ -51,11 +51,15 @@ public:
     const QString& getMemeBottomText() const { return mMemeBottomText; }
     void setMemeBottomText(const QString& text) { mMemeBottomText = text; }
 
+    Q_INVOKABLE bool hasHtmlAlt() const { return !mHtmlAlt.isEmpty(); }
+    void setHtmlAlt(const QString& htmlAlt) { mHtmlAlt = htmlAlt; }
+
 private:
     ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr mViewImage;
 
     QString mFullSizeUrl;
     QString mAlt;
+    QString mHtmlAlt;
     int mWidth = 0;
     int mHeight = 0;
 

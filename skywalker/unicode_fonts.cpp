@@ -528,4 +528,16 @@ QString UnicodeFonts::turnLastThreadSymbolIntoLink(const QString& text)
     return result.replace(index, THREAD_SYMBOL_STRING.size(), LINK);
 }
 
+std::vector<QString> UnicodeFonts::extractHashtags(const QString& text)
+{
+    std::vector<QString> tags;
+    const auto matches = ATProto::RichTextMaster::parseTags(text);
+    tags.reserve(matches.size());
+
+    for (const auto& match : matches)
+        tags.push_back(match.mMatch);
+
+    return tags;
+}
+
 }

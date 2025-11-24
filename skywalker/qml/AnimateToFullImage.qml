@@ -42,11 +42,11 @@ Item {
         property int origImplicitHeight: root.height
         property real zoom: 0.0
         readonly property int marginHeight: altText.alt ? Math.min(altText.contentHeight, altText.maxHeight) + altText.bottomMargin : 0
-        readonly property int maxHeight: root.height - marginHeight - guiSettings.headerMargin
+        readonly property int maxHeight: root.height - marginHeight
         readonly property real scale: Math.min(root.width / origImplicitWidth, maxHeight / origImplicitHeight)
         readonly property real left: (root.width - origImplicitWidth * scale) / 2
         readonly property real right: left + origImplicitWidth * scale
-        readonly property real top: (maxHeight - origImplicitHeight * scale) / 2 + guiSettings.headerMargin
+        readonly property real top: (maxHeight - origImplicitHeight * scale) / 2
         readonly property real bottom: top + origImplicitHeight * scale
 
         id: zoomAnimation
@@ -58,6 +58,8 @@ Item {
         easing.type: Easing.InOutQuad
 
         onStopped: {
+            root.enablePopupShield(false)
+
             if (from < to)
                 done(zoomImage.item)
             else
@@ -74,6 +76,7 @@ Item {
             zoomImage.item.y = newY
             zoomImage.item.width = orig.x + origWidth + (right - orig.x - origWidth) * zoom - newX
             zoomImage.item.height = orig.y + origHeight + (bottom - orig.y - origHeight) * zoom - newY
+            root.enablePopupShield(true, zoom)
         }
 
         function run() {
@@ -87,6 +90,7 @@ Item {
         }
 
         function reverseRun() {
+            root.enablePopupShield(true, 1.0)
             zoomImage.item.visible = true
             thumbImage.visible = false
             from = 1.0
@@ -96,6 +100,11 @@ Item {
     }
 
     ImageAltText {
+        anchors.left: parent.left
+        anchors.leftMargin: altText.leftMargin
+        anchors.right: parent.right
+        anchors.rightMargin: altText.rightMargin
+
         id: altText
         parent: Overlay.overlay
         alt: imageAlt

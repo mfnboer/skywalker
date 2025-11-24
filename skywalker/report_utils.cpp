@@ -5,95 +5,6 @@
 
 namespace Skywalker {
 
-const ReportReasonList ReportUtils::ACCOUNT_REASONS = {
-    {
-        QEnums::REPORT_REASON_TYPE_MISLEADING,
-        tr("Misleading Account"),
-        tr("Impersonation or false claims about identity or affiliation")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_SPAM,
-        tr("Frequently Posts Unwanted Content"),
-        tr("Spam; excessive mentions or replies")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_VIOLATION,
-        tr("Illegal and Urgent"),
-        tr("Glaring violations of law, community standards or terms of service")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_OTHER,
-        tr("Other"),
-        tr("An issue not included in these options")
-    }
-};
-
-const ReportReasonList ReportUtils::POST_REASONS = {
-    {
-        QEnums::REPORT_REASON_TYPE_SPAM,
-        tr("Spam"),
-        tr("Excessive mentions or replies")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_SEXUAL,
-        tr("Unwanted Sexual Content"),
-        tr("Nudity or adult content not labeled as such")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_RUDE,
-        tr("Anti-Social Behavior"),
-        tr("Harassment, trolling, or intolerance")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_VIOLATION,
-        tr("Illegal and Urgent"),
-        tr("Glaring violations of law, community standards or terms of service")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_OTHER,
-        tr("Other"),
-        tr("An issue not included in these options")
-    }
-};
-
-const ReportReasonList ReportUtils::FEED_REASONS = {
-    {
-        QEnums::REPORT_REASON_TYPE_RUDE,
-        tr("Anti-Social Behavior"),
-        tr("Harassment, trolling, or intolerance")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_VIOLATION,
-        tr("Illegal and Urgent"),
-        tr("Glaring violations of law, community standards or terms of service")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_OTHER,
-        tr("Other"),
-        tr("An issue not included in these options")
-    }
-};
-
-const ReportReasonList ReportUtils::LIST_REASONS = {
-    {
-        QEnums::REPORT_REASON_TYPE_RUDE,
-        tr("Anti-Social Behavior"),
-        tr("Harassment, trolling, or intolerance")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_VIOLATION,
-        tr("Illegal and Urgent"),
-        tr("Glaring violations of law, community standards or terms of service")
-    },
-    {
-        QEnums::REPORT_REASON_TYPE_OTHER,
-        tr("Other"),
-        tr("An issue not included in these options")
-    }
-};
-
-const ReportReasonList ReportUtils::DIRECT_MESSAGE_REASONS = ReportUtils::POST_REASONS;
-
 ReportUtils::ReportUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {
@@ -168,25 +79,34 @@ void ReportUtils::reportDirectMessage(const QString& did, const QString& convoId
         });
 }
 
-ReportReasonList ReportUtils::getReportReasons(QEnums::ReportTarget target)
+ReportCategory::List ReportUtils::getReportCategories()
 {
-    switch (target)
+    ReportCategory::List categories;
+
+    for (int cat = QEnums::REPORT_CATEGORY_FIRST; cat <= QEnums::REPORT_CATEGORY_LAST; ++cat)
     {
-    case QEnums::ReportTarget::REPORT_TARGET_ACCOUNT:
-        return ACCOUNT_REASONS;
-    case QEnums::ReportTarget::REPORT_TARGET_POST:
-        return POST_REASONS;
-    case QEnums::ReportTarget::REPORT_TARGET_FEED:
-        return FEED_REASONS;
-    case QEnums::ReportTarget::REPORT_TARGET_LIST:
-    case QEnums::ReportTarget::REPORT_TARGET_STARTERPACK:
-        return LIST_REASONS;
-    case QEnums::ReportTarget::REPORT_TARGET_DIRECT_MESSAGE:
-        return DIRECT_MESSAGE_REASONS;
+        const QString title = ATProto::ComATProtoModeration::categoryTypeToTitle(ATProto::ComATProtoModeration::CategoryType(cat));
+        const QString description = ATProto::ComATProtoModeration::categoryTypeToDescription(ATProto::ComATProtoModeration::CategoryType(cat));
+        const ReportCategory category(QEnums::ReportCategoryType(cat), title, description);
+        categories.push_back(category);
     }
 
-    Q_ASSERT(false);
-    return POST_REASONS;
+    return categories;
+}
+
+ReportReason::List ReportUtils::getReportReasons(QEnums::ReportCategoryType category)
+{
+    const auto reasons = ATProto::ComATProtoModeration::getCategoryReasons(ATProto::ComATProtoModeration::CategoryType(category));
+    ReportReason::List reasonList;
+    reasonList.reserve(reasons.size());
+
+    for (const auto r : reasons)
+    {
+        const ReportReason reason{ QEnums::ReportReasonType(r), ATProto::ComATProtoModeration::reasonTypeToTitle(r) };
+        reasonList.push_back(reason);
+    }
+
+    return reasonList;
 }
 
 }

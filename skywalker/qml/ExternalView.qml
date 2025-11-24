@@ -5,6 +5,7 @@ Item {
     property string userDid
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property externalview postExternal
     property bool highlight: false
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
@@ -32,10 +33,13 @@ Item {
             userDid: view.userDid
             uri: postExternal.uri
             title: postExternal.title
+            titleIsHtml: postExternal.hasHtmlTitle()
             description: postExternal.description
+            descriptionIsHtml: postExternal.hasHtmlDescription()
             thumbUrl: postExternal.thumbUrl
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
+            contentLabeler: view.contentLabeler
             borderColor: view.borderColor
             maskColor: view.maskColor
             showSonglinkWidget: true
@@ -54,6 +58,7 @@ Item {
             title: postExternal.title
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
+            contentLabeler: view.contentLabeler
         }
     }
 

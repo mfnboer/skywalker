@@ -5,6 +5,7 @@ import skywalker
 Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
     property list<imageview> images
     readonly property int maxHeight: guiSettings.maxImageHeight
     property bool settingSize: false
@@ -61,6 +62,7 @@ Item {
             width: parent.width - x * 2
             contentVisibility: preview.contentVisibility
             contentWarning: preview.contentWarning
+            contentLabeler: preview.contentLabeler
             images: preview.images
         }
     }

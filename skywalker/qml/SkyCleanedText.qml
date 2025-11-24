@@ -1,10 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
 Text {
     required property string plainText
     property string elidedText
+    property bool showEllipsis: true
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
     property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
@@ -13,9 +15,15 @@ Text {
     property bool isCompleted: false
     property bool inWidthChanged: false
 
+    // When textFormat = Text.RichText then Text.contentWidth gives the full width
+    // of the field. advanceWidth seems to work better.
+    readonly property real advanceWidth: textMetrics.advanceWidth
+
     id: theText
     height: mustElideRich && wrapMode !== Text.NoWrap ?
-                Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
+        Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
+    Layout.maximumHeight: mustElideRich && wrapMode !== Text.NoWrap ?
+        capLineCount * fontMetrics.height + topPadding + bottomPadding : -1
     clip: true
     color: guiSettings.textColor
 
@@ -95,8 +103,9 @@ Text {
     }
 
     Loader {
-        active: theText.height > 0 && theText.height < theText.contentHeight
+        active: theText.height > 0 && theText.height < theText.contentHeight && showEllipsis
         anchors.right: parent.right
+        anchors.rightMargin: parent.rightPadding
         anchors.bottom: parent.bottom
         visible: status == Loader.Ready
 
@@ -140,6 +149,21 @@ Text {
     FontMetrics {
         id: fontMetrics
         font: theText.font
+    }
+
+    Loader {
+        readonly property real advanceWidth: active ? Math.min(item.advanceWidth, theText.width) : theText.contentWidth
+
+        id: textMetrics
+        active: theText.textFormat == Text.RichText
+
+        sourceComponent: TextMetrics {
+            font.family: theText.fontInfo.family
+            font.bold: theText.fontInfo.bold
+            font.italic: theText.fontInfo.italic
+            font.pointSize: theText.fontInfo.pointSize
+            text: theText.plainText
+        }
     }
 
     Component.onCompleted: {

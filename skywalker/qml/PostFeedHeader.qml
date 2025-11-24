@@ -25,11 +25,13 @@ Rectangle {
 
     signal closed
     signal feedAvatarClicked
+    signal feedAvatarPressAndHold
     signal addUserView
     signal addHashtagView
     signal addFocusHashtagView
     signal addVideoView
     signal addMediaView
+    signal filterStatistics
     signal viewChanged(int contentMode)
 
     id: header
@@ -42,9 +44,8 @@ Rectangle {
 
     RowLayout {
         id: headerRow
-        y: !isSideBar ? guiSettings.headerMargin : 0
         width: parent.width
-        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight - guiSettings.headerMargin) : 0
+        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight) : 0
         spacing: 0
 
         SvgPlainButton {
@@ -105,6 +106,12 @@ Rectangle {
                     onTriggered: addVideoView()
                     MenuItemSvg { svg: SvgOutline.film }
                 }
+
+                AccessibleMenuItem {
+                    text: qsTr("Filtered posts")
+                    MenuItemSvg { svg: SvgOutline.hideVisibility }
+                    onTriggered: filterStatistics()
+                }
             }
         }
         FeedAvatar {
@@ -120,6 +127,7 @@ Rectangle {
             visible: showAsHome && !isHomeFeed
 
             onClicked: header.feedAvatarClicked()
+            onPressAndHold: header.feedAvatarPressAndHold()
 
             Accessible.role: Accessible.Button
             Accessible.name: header.feedName
@@ -300,8 +308,6 @@ Rectangle {
 
         SkyMenu {
             id: viewMenu
-            onAboutToShow: root.enablePopupShield(true)
-            onAboutToHide: root.enablePopupShield(false)
 
             CloseMenuItem {
                 text: qsTr("<b>View</b>")

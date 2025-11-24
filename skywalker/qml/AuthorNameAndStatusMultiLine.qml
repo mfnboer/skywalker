@@ -4,6 +4,7 @@ import skywalker
 Rectangle {
     property string userDid
     required property basicprofile author
+    property string authorName: author.name
     property int topPadding: 0
     property double pointSize: guiSettings.scaledFont(1)
     property alias maximumLineCount: nameText.maximumLineCount
@@ -25,7 +26,7 @@ Rectangle {
         font.bold: true
         font.pointSize: nameRect.pointSize
         color: guiSettings.textColor
-        plainText: author.name
+        plainText: authorName
     }
 
     Loader {
@@ -34,7 +35,7 @@ Rectangle {
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
-            x: nameText.contentWidth + 5
+            x: nameText.advanceWidth + 5
             y: (nameText.height - height) / 2
             width: badgeSize
             height: width
@@ -48,7 +49,7 @@ Rectangle {
 
         sourceComponent: VerifierBadge {
             id: verifierStatus
-            x: nameText.contentWidth + 5 + (authorVerified ? verificationStatusLoader.item.width + 5 : 0)
+            x: nameText.advanceWidth + 5 + (authorVerified ? verificationStatusLoader.item.width + 5 : 0)
             y: (nameText.height - height) / 2
             width: badgeSize
             height: width

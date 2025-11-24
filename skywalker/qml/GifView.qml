@@ -7,6 +7,7 @@ Item {
     required property string title
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
+    required property basicprofile contentLabeler
 
     id: view
     height: Math.max(gifImage.height + (tenorAttribution.visible ? tenorAttribution.height : 0) + (giphyAttribution.visible ? giphyAttribution.height : 0) + 5, gifLoadingIndicator.height)
@@ -17,6 +18,7 @@ Item {
         title: view.title
         contentVisibility: view.contentVisibility
         contentWarning: view.contentWarning
+        contentLabeler: view.contentLabeler
         imgSize: gifUtils.gitGifSize(url)
     }
     BusyIndicator {

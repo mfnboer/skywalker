@@ -22,6 +22,8 @@ public:
     Q_INVOKABLE void showEmojiPicker();
     Q_INVOKABLE static void dismissEmojiPicker();
     Q_INVOKABLE static bool isEmojiPickerShown() { return sEmojiPickerShown; }
+    Q_INVOKABLE static bool isFollowingListUri(const QString& uri);
+    Q_INVOKABLE static QString getFollowingUri();
 
 signals:
     void emojiPicked(QString emoji);

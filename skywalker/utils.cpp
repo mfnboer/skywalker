@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "utils.h"
 #include "android_utils.h"
+#include "definitions.h"
 #include "jni_callback.h"
 #include "skywalker.h"
 
@@ -69,6 +70,16 @@ void Utils::handleEmojiPicked(const QString& emoji)
 {
     sEmojiPickerShown = false;
     emit emojiPicked(emoji);
+}
+
+bool Utils::isFollowingListUri(const QString& uri)
+{
+    return uri == FOLLOWING_LIST_URI;
+}
+
+QString Utils::getFollowingUri()
+{
+    return FOLLOWING_LIST_URI;
 }
 
 }

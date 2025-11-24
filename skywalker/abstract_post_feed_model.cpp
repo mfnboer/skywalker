@@ -3,7 +3,10 @@
 #include "abstract_post_feed_model.h"
 #include "author_cache.h"
 #include "content_filter.h"
+#include "content_filter_stats_model.h"
 #include "focus_hashtags.h"
+#include "list_store.h"
+#include "profile_store.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
 
@@ -12,6 +15,7 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 const QString AbstractPostFeedModel::NULL_STRING;
+const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
 const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
@@ -23,7 +27,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
     mUserDid{NULL_STRING},
     mFollowing(NULL_PROFILE_STORE),
     mMutedReposts(NULL_PROFILE_STORE),
-    mFeedHide(NULL_PROFILE_STORE),
+    mFeedHide(NULL_LIST_STORE),
     mContentFilter(NULL_CONTENT_FILTER),
     mMutedWords(NULL_MATCH_WORDS),
     mFocusHashtags(NULL_FOCUS_HASHTAGS),
@@ -33,7 +37,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
                                              const IProfileStore& mutedReposts,
-                                             const IProfileStore& feedHide,
+                                             const IListStore& feedHide,
                                              const IContentFilter& contentFilter,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
@@ -49,7 +53,11 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
     mHashtags(hashtags)
 {
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this](const QString& did){ replyToAuthorAdded(did); }, Qt::QueuedConnection);
+            [this](const QString& did) {
+                replyToAuthorAdded(did);
+                labelerAdded(did);
+            },
+            Qt::QueuedConnection);
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
             [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
 }
@@ -71,6 +79,7 @@ void AbstractPostFeedModel::clearFeed()
     mFeed.clear();
     mStoredCids.clear();
     mStoredCidQueue = {};
+    mContentFilterStats.clear();
     setEndOfFeed(false);
     clearLocalChanges();
     clearLocalProfileChanges();
@@ -113,58 +122,73 @@ void AbstractPostFeedModel::cleanupStoredCids()
     qDebug() << "Stored cid set:" << mStoredCids.size() << "cid queue:" << mStoredCidQueue.size();
 }
 
-bool AbstractPostFeedModel::mustHideContent(const Post& post) const
+std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedModel::mustHideContent(const Post& post) const
 {
     const auto& author = post.getAuthor();
+    const auto repostedBy = post.getRepostedBy();
 
     if (author.getViewer().isMuted())
     {
         qDebug() << "Hide post of muted author:" << author.getHandleOrDid() << post.getCid();
-        return true;
+        return { QEnums::HIDE_REASON_MUTED_AUTHOR, author };
+    }
+
+    if (repostedBy && repostedBy->getViewer().isMuted())
+    {
+        qDebug() << "Hide repost of muted author:" << repostedBy->getHandleOrDid() << post.getCid();
+        return { QEnums::HIDE_REASON_MUTED_AUTHOR, *repostedBy };
     }
 
     if (mFeedHide.contains(author.getDid()))
     {
         qDebug () << "Hide post from author:" << author.getHandleOrDid();
-        return true;
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, author };
     }
 
-    const auto repostedBy = post.getRepostedBy();
     if (repostedBy && mFeedHide.contains(repostedBy->getDid()))
     {
-        qDebug () << "Hide repost from author:" << author.getHandleOrDid();
-        return true;
+        qDebug () << "Hide repost from author:" << repostedBy->getHandleOrDid();
+        return { QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, *repostedBy };
     }
 
-    const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+    const auto& postLabels = post.getLabelsIncludingAuthorLabels();
+    const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+        author.getDid(), postLabels, mOverrideAdultVisibility);
 
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
     {
         qDebug() << "Hide post:" << post.getCid() << warning;
-        return true;
+
+        if (labelIndex >= 0 && labelIndex < postLabels.size())
+            return { QEnums::HIDE_REASON_LABEL, postLabels[labelIndex] };
+        else
+            return { QEnums::HIDE_REASON_LABEL, nullptr };
     }
 
     if (post.isRepost() && mMutedReposts.contains(post.getRepostedBy()->getDid()))
     {
         qDebug() << "Mute repost, did:" << post.getRepostedBy()->getDid();
-        return true;
+        return { QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, *post.getRepostedBy() };
     }
 
-    if (mMutedWords.match(post))
+    if (auto match = mMutedWords.match(post); match.first)
     {
         qDebug() << "Hide post due to muted words" << post.getCid();
-        return true;
+        return { QEnums::HIDE_REASON_MUTED_WORD, MutedWordEntry(match.second) };
     }
 
     const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
 
-    if (record && mMutedWords.match(*record))
+    if (record)
     {
-        qDebug() << "Hide post due to muted words in record" << post.getCid();
-        return true;
+        if (auto match = mMutedWords.match(*record); match.first)
+        {
+            qDebug() << "Hide post due to muted words in record" << post.getCid();
+            return { QEnums::HIDE_REASON_MUTED_WORD, MutedWordEntry(match.second) };
+        }
     }
 
-    return false;
+    return { QEnums::HIDE_REASON_NONE, nullptr };
 }
 
 void AbstractPostFeedModel::preprocess(const Post& post)
@@ -194,6 +218,19 @@ void AbstractPostFeedModel::identifyThreadPost(const Post& post)
         auto& postThreadCache = PostThreadCache::instance();
         postThreadCache.put(replyRootUri, true);
     }
+}
+
+const Post& AbstractPostFeedModel::getPost(int index) const
+{
+    static const Post NULL_POST;
+
+    if (index < 0 || index >= (int)mFeed.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mFeed.size() << "modelId:" << mModelId;
+        return NULL_POST;
+    }
+
+    return mFeed.at(index);
 }
 
 void AbstractPostFeedModel::unfoldPosts(int startIndex)
@@ -399,9 +436,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record->getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record->getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto& recordLabels = record->getLabelsIncludingAuthorLabels();
+        auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            record->getAuthorDid(), recordLabels, mOverrideAdultVisibility);
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
+        record->setContentLabeler(getContentLabeler(visibility, recordLabels, labelIndex));
         record->setMutedReason(mMutedWords);
         return QVariant::fromValue(*record);
     }
@@ -435,9 +475,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record.getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
-        const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(record.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto& recordLabels = record.getLabelsIncludingAuthorLabels();
+        const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            record.getAuthorDid(), recordLabels, mOverrideAdultVisibility);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
+        record.setContentLabeler(getContentLabeler(visibility, recordLabels, labelIndex));
         record.setMutedReason(mMutedWords);
         return QVariant::fromValue(*recordWithMedia);
     }
@@ -571,24 +614,38 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return change && change->mBookmarked ? *change->mBookmarked : post.isBookmarked();
     case Role::PostBookmarkTransient:
         return change ? change->mBookmarkTransient : false;
+    case Role::PostFeedback:
+        return change ? change->mFeedback : QEnums::FEEDBACK_NONE;
+    case Role::PostFeedbackTransient:
+        return change ? change->mFeedbackTransient : QEnums::FEEDBACK_NONE;
     case Role::PostLabels:
         return QVariant::fromValue(ContentFilter::getContentLabels(post.getLabels()));
     case Role::PostContentVisibility:
     {
-        const auto [visibility, _] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return visibility;
     }
     case Role::PostContentWarning:
     {
-        const auto [_, warning] = mContentFilter.getVisibilityAndWarning(post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+        const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return warning;
+    }
+    case Role::PostContentLabeler:
+    {
+        const auto& labels = post.getLabelsIncludingAuthorLabels();
+        const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(
+            post.getAuthorDid(), labels, mOverrideAdultVisibility);
+        const auto labeler = getContentLabeler(visibility, labels, labelIndex);
+        return QVariant::fromValue(labeler);
     }
     case Role::PostMutedReason:
     {
         if (post.getAuthor().getViewer().isMuted())
             return QEnums::MUTED_POST_AUTHOR;
 
-        if (mMutedWords.match(post))
+        if (mMutedWords.match(post).first)
             return QEnums::MUTED_POST_WORDS;
 
         return QEnums::MUTED_POST_NONE;
@@ -646,6 +703,12 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
         return post.getRepostUri() != *change->mRepostUri;
     }
+    case Role::FilteredPostHideReason:
+        return QEnums::HIDE_REASON_NONE;
+    case Role::FilteredPostHideDetail:
+        return "";
+    case Role::FilteredPostContentLabel:
+        return QVariant::fromValue(ContentLabel{});
     case Role::EndOfFeed:
         return post.isEndOfFeed();
     }
@@ -722,15 +785,21 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostIsHiddenReply), "postIsHiddenReply" },
         { int(Role::PostBookmarked), "postBookmarked" },
         { int(Role::PostBookmarkTransient), "postBookmarkTransient" },
+        { int(Role::PostFeedback), "postFeedback" },
+        { int(Role::PostFeedbackTransient), "postFeedbackTransient" },
         { int(Role::PostLabels), "postLabels" },
         { int(Role::PostContentVisibility), "postContentVisibility" },
         { int(Role::PostContentWarning), "postContentWarning" },
+        { int(Role::PostContentLabeler), "postContentLabeler" },
         { int(Role::PostMutedReason), "postMutedReason" },
         { int(Role::PostHighlightColor), "postHighlightColor" },
         { int(Role::PostIsPinned), "postIsPinned" },
         { int(Role::PostIsThread), "postIsThread" },
         { int(Role::PostIsThreadReply), "postIsThreadReply" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },
+        { int(Role::FilteredPostHideReason), "filteredPostHideReason" },
+        { int(Role::FilteredPostHideDetail), "filteredPostHideDetail" },
+        { int(Role::FilteredPostContentLabel), "filteredPostContentLabel" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 
@@ -847,6 +916,16 @@ void AbstractPostFeedModel::bookmarkTransientChanged()
     changeData({ int(Role::PostBookmarkTransient) });
 }
 
+void AbstractPostFeedModel::feedbackChanged()
+{
+    changeData({ int(Role::PostFeedback) });
+}
+
+void AbstractPostFeedModel::feedbackTransientChanged()
+{
+    changeData({ int(Role::PostFeedbackTransient) });
+}
+
 void AbstractPostFeedModel::changeData(const QList<int>& roles)
 {
     emit dataChanged(createIndex(0, 0), createIndex(mFeed.size() - 1, 0), roles);
@@ -914,6 +993,45 @@ void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
                 emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
         }
     }
+}
+
+void AbstractPostFeedModel::labelerAdded(const QString& did)
+{
+    const auto* profile = AuthorCache::instance().get(did);
+
+    if (profile && profile->getAssociated().isLabeler())
+        changeData({ int(Role::PostContentLabeler), int(Role::PostRecord), int(Role::PostRecordWithMedia) });
+}
+
+BasicProfile AbstractPostFeedModel::getContentLabeler(QEnums::ContentVisibility visibility,
+                                                      const ContentLabelList& labels,
+                                                      int labelIndex) const
+{
+    if (visibility == QEnums::CONTENT_VISIBILITY_SHOW)
+        return {};
+
+    if (labelIndex < 0 || labelIndex >= labels.size())
+        return {};
+
+    const QString& labelerDid = labels[labelIndex].getDid();
+
+    if (labelerDid.isEmpty())
+        return {};
+
+    const BasicProfile* profile = AuthorCache::instance().get(labelerDid);
+
+    if (profile)
+        return *profile;
+
+    QTimer::singleShot(0, this, [labelerDid]{ AuthorCache::instance().putProfile(labelerDid); });
+    return {};
+}
+
+ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
+{
+    qDebug() << "Feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
+    auto* model = new ContentFilterStatsModel(mContentFilterStats, mContentFilter, this);
+    return model;
 }
 
 }

@@ -10,6 +10,7 @@ SkyPage {
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property detailedprofile author
     required property int modelId
+    property string showLabelPrefsForListUri
     readonly property string sideBarTitle: author.name
     readonly property alias sideBarAuthor: page.author
 
@@ -32,6 +33,7 @@ SkyPage {
     property bool authorHideFromTimeline: false
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
+    property basicprofile contentLabeler
     property bool showWarnedMedia: false
     readonly property bool hasFeeds: author.associated.feeds > 0
     readonly property int feedListModelId: skywalker.createFeedListModel()
@@ -58,9 +60,11 @@ SkyPage {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr(`${author.name}\n\n@${author.handle}`)
 
-    header: DeadHeaderMargin {}
+    footer: Rectangle {
+        width: parent.width
+        height: 0
+        z: guiSettings.footerZLevel
 
-    footer: DeadFooterMargin {
         PostButton {
             y: -height - 10
             svg: authorCanBeMentioned() ? SvgOutline.atSign : SvgOutline.chat
@@ -247,8 +251,7 @@ SkyPage {
 
                         sourceComponent: SkyMenu {
                             id: moreMenu
-                            onAboutToShow: root.enablePopupShield(true)
-                            onAboutToHide: { root.enablePopupShield(false); parent.active = false }
+                            onAboutToHide: parent.active = false
 
                             CloseMenuItem {
                                 text: qsTr("<b>Account</b>")
@@ -256,8 +259,8 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Translate")
-                                visible: authorDescription
-                                onTriggered: root.translateText(authorDescription)
+                                visible: authorDescription || authorPronouns
+                                onTriggered: root.translateText(authorPronouns ? authorPronouns + "\n" + authorDescription : authorDescription)
 
                                 MenuItemSvg { svg: SvgOutline.googleTranslate }
                             }
@@ -407,7 +410,7 @@ SkyPage {
                     Layout.preferredHeight: 40
                     flat: true
                     text: qsTr("Unsubscribe")
-                    visible: isSubscribed && isLabeler && !author.isFixedLabeler()
+                    visible: isSubscribed && isLabeler && !author.isFixedLabeler() && !showLabelPrefsForListUri
                     onClicked: contentGroupListModel.subscribed = false
                     Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
@@ -434,9 +437,19 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 userDid: page.userDid
                 author: page.author
+                authorName: page.authorName // pass name, so name changes will be shown immediately
                 pointSize: guiSettings.scaledFont(12/8)
                 maximumLineCount: 3
                 wrapMode: Text.Wrap
+            }
+
+            SkyCleanedText {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 5
+                bottomPadding: 5
+                font.italic: true
+                plainText: `${authorPronouns}`
+                visible: Boolean(authorPronouns)
             }
 
             RowLayout {
@@ -461,14 +474,6 @@ SkyPage {
                     text: qsTr("hide from timeline")
                     visible: authorHideFromTimeline
                 }
-            }
-
-            SkyCleanedText {
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                topPadding: 5
-                bottomPadding: 5
-                plainText: `${authorPronouns}`
-                visible: Boolean(authorPronouns)
             }
 
             Rectangle {
@@ -503,6 +508,7 @@ SkyPage {
                     thumbUrl: author.actorStatus.externalView.thumbUrl
                     contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
                     contentWarning: ""
+                    contentLabeler: accessibilityUtils.nullAuthor
                     isLiveExternal: true
 
                     LiveLabel {
@@ -653,7 +659,7 @@ SkyPage {
 
             SkyTabBar {
                 id: feedMenuBar
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                width: parent.width
                 currentIndex: 0
 
                 AccessibleTabButton {
@@ -740,7 +746,7 @@ SkyPage {
             width: parent.width
 
             // -1 to make the interactive enable/disable work
-            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0) - guiSettings.headerMargin
+            height: page.height - (authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBarHeight() - 1 : 0)
 
             currentIndex: authorFeedView.headerItem ? authorFeedView.headerItem.getFeedMenuBar().currentIndex : 0
 
@@ -784,7 +790,6 @@ SkyPage {
                             Layout.rightMargin: 10
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
-                            color: guiSettings.textColor
                             text: qsTr("Labels are annotations on users and content. They can be used to warn, hide and categorize content.")
                         }
 
@@ -792,11 +797,24 @@ SkyPage {
                             Layout.leftMargin: 10
                             Layout.rightMargin: 10
                             Layout.fillWidth: true
-                            Layout.preferredHeight: page.isSubscribed ? 0 : implicitHeight
+                            Layout.preferredHeight: visible ? implicitHeight : 0
                             wrapMode: Text.Wrap
-                            color: guiSettings.textColor
                             text: qsTr(`Subscribe to ${author.handle} to use these labels`)
                             visible: !page.isSubscribed
+                        }
+
+                        AccessibleText {
+                            Layout.leftMargin: 10
+                            Layout.rightMargin: 10
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: visible ? implicitHeight : 0
+                            wrapMode: Text.Wrap
+                            font.italic: true
+                            font.bold: true
+                            text: utils.isFollowingListUri(page.showLabelPrefsForListUri) ?
+                                qsTr("Set your label preferences for users you follow.") :
+                                qsTr(`Set your label preferences for users in list "${skywalker.getContentFilter().getListName(showLabelPrefsForListUri)}"`)
+                            visible: Boolean(page.showLabelPrefsForListUri)
                         }
 
                         Rectangle {
@@ -813,9 +831,6 @@ SkyPage {
                         }
                     }
 
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
-
                     delegate: ContentGroupDelegate {
                         required property int index
 
@@ -824,6 +839,7 @@ SkyPage {
                         userDid: page.userDid
                         isSubscribed: page.isSubscribed
                         adultContent: labelList.model.adultContent
+                        isListPref: labelList.model.hasListPrefs
                     }
 
                     FlickableRefresher {}
@@ -843,6 +859,7 @@ SkyPage {
                 getFeedNextPage: (id) => page.getFeedNextPage(id)
                 getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                 getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                 visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                 disableWarning: () => page.disableWarning()
                 modelId: page.modelId
@@ -869,6 +886,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_REPLIES
@@ -896,6 +914,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
@@ -923,6 +942,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_MEDIA
@@ -951,6 +971,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_VIDEO
@@ -978,6 +999,7 @@ SkyPage {
                     getFeedNextPage: (id) => page.getFeedNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_VIDEO
@@ -1007,6 +1029,7 @@ SkyPage {
                     getFeedNextPage: (id) => skywalker.getAuthorLikesNextPage(id)
                     getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
                     getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_NONE
@@ -1036,9 +1059,6 @@ SkyPage {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
                     }
-
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
 
                     delegate: GeneratorViewDelegate {
                         width: authorFeedView.width
@@ -1097,9 +1117,6 @@ SkyPage {
                             authorFeedView.interactive = true
                     }
 
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
-
                     delegate: StarterPackViewDelegate {
                         width: authorFeedView.width
                         userDid: page.userDid
@@ -1154,9 +1171,6 @@ SkyPage {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
                     }
-
-                    footer: DeadFooterMargin {}
-                    footerPositioning: ListView.OverlayFooter
 
                     delegate: ListViewDelegate {
                         width: authorFeedView.width
@@ -1398,6 +1412,8 @@ SkyPage {
         }
 
         onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
+
+        onBasicProfileOk: (profile) => contentLabeler = profile
     }
 
     NotificationUtils {
@@ -1429,6 +1445,11 @@ SkyPage {
 
     AccessibilityUtils {
         id: accessibilityUtils
+    }
+
+    Utils {
+        id: utils
+        skywalker: page.skywalker
     }
 
     function authorCanBeMentioned() {
@@ -1463,7 +1484,7 @@ SkyPage {
                 authorBanner: authorBanner,
                 authorVerified: authorVerified
             })
-        editPage.profileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
+        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
             skywalker.showStatusMessage(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
             authorName = name
             authorPronouns = pronouns
@@ -1641,6 +1662,10 @@ SkyPage {
         return qsTr("No posts")
     }
 
+    function getEmptyListIndicationLabeler() {
+        return !contentVisible() ? contentLabeler : accessibilityUtils.nullAuthor
+    }
+
     function getBlockingText() {
         const blocksWithExpiry = skywalker.getUserSettings().blocksWithExpiry
         const expiresAt = blocksWithExpiry.getExpiry(blocking)
@@ -1658,11 +1683,12 @@ SkyPage {
         if (!isNaN(expiresAt.getTime()))
             return qsTr(`You muted this account till ${guiSettings.expiresIndication(expiresAt)}`)
 
-        return qsTr("You mutes this account")
+        return qsTr("You muted this account")
     }
 
     function setLabeler(view) {
-        contentGroupListModelId = skywalker.createContentGroupListModel(author.did, view.policies)
+        contentGroupListModelId = skywalker.createContentGroupListModel(
+                    author.did, view.policies, showLabelPrefsForListUri)
         labeler = view
         labelerLikeUri = labeler.viewer.like
         labelerLikeCount = labeler.likeCount
@@ -1701,7 +1727,10 @@ SkyPage {
         skywalker.removeStarterPackListModel(starterPackListModelId)
 
         if (contentGroupListModelId > -1) {
-            skywalker.getContentFilter().saveLabelIdsToSettings(author.did)
+            // Tracking for new labels is only done for the default settings
+            if (!showLabelPrefsForListUri)
+                skywalker.getContentFilter().saveLabelIdsToSettings(author.did)
+
             skywalker.saveContentFilterPreferences(contentGroupListModel)
             skywalker.removeContentGroupListModel(contentGroupListModelId)
         }
@@ -1725,8 +1754,12 @@ SkyPage {
         authorBanner = author.banner
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
-        contentVisibility = skywalker.getContentVisibility(author.labels)
-        contentWarning = skywalker.getContentWarning(author.labels)
+        contentVisibility = skywalker.getContentVisibility(author.labels, author.did)
+        contentWarning = skywalker.getContentWarning(author.labels, author.did)
+        const labelerDid = skywalker.getContentLabelerDid(author.labels, author.did)
+
+        if (labelerDid)
+            profileUtils.getBasicProfile(labelerDid)
 
         getFeed(modelId)
 

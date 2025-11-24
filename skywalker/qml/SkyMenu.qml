@@ -5,4 +5,11 @@ Menu {
     modal: true
     topMargin:  guiSettings.headerMargin
     bottomMargin: guiSettings.footerMargin
+
+    onAboutToShow: {
+        background.color = guiSettings.menuColor
+        root.enablePopupShield(true)
+    }
+
+    onAboutToHide: root.enablePopupShield(false)
 }

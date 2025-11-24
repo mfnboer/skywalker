@@ -6,6 +6,6 @@ FeedUtils {
 
     onLikeFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     onUndoLikeFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-    onInteractionsSent: skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO)
+    onInteractionsSent: skywalker.showStatusMessage(qsTr("Feedback sent"), QEnums.STATUS_LEVEL_INFO, 1)
     onFailure: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 }

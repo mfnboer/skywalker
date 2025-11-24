@@ -4,7 +4,7 @@
 
 namespace Skywalker {
 
-Anniversary::Anniversary(const QString& userDid, IUserSettings& userSettings, QObject* parent) :
+Anniversary::Anniversary(const QString& userDid, IUserSettingsAnniversary& userSettings, QObject* parent) :
     QObject(parent),
     mUserDid(userDid),
     mUserSettings(userSettings)

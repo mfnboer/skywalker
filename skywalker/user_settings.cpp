@@ -96,6 +96,13 @@ QString UserSettings::fixedLabelerKey(const QString& did, const QString& labeler
     return QString("%1/fixedLabeler/%2").arg(did, labelerDid);
 }
 
+QString UserSettings::labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
+                     const QString& labelId) const
+{
+    const QString labeler = labelerDid.isEmpty() ? "global" : labelerDid;
+    return QString("%1/labelpolicy/%2/%3/%4").arg(did, uriToKey(listUri), labeler, labelId);
+}
+
 void UserSettings::reset()
 {
     mSyncFeeds.reset();
@@ -676,6 +683,78 @@ QStringList UserSettings::getHideLists(const QString& did) const
     return mSettings.value(key(did, "hideLists")).toStringList();
 }
 
+void UserSettings::setContentLabelPref(
+    const QString& did, const QString& listUri, const QString& labelerDid,
+    const QString& labelId, QEnums::ContentPrefVisibility pref)
+{
+    mSettings.setValue(labelPolicyKey(did, listUri, labelerDid, labelId), (int)pref);
+}
+
+QEnums::ContentPrefVisibility UserSettings::getContentLabelPref(
+    const QString& did, const QString& listUri,
+    const QString& labelerDid, const QString& labelId) const
+{
+    const int pref = mSettings.value(labelPolicyKey(did, listUri, labelerDid, labelId), int(QEnums::CONTENT_PREF_VISIBILITY_UNKNOWN)).toInt();
+
+    if (pref < 0 || pref > QEnums::CONTENT_PREF_VISIBILITY_LAST)
+        return QEnums::CONTENT_PREF_VISIBILITY_UNKNOWN;
+
+    return QEnums::ContentPrefVisibility(pref);
+}
+
+void UserSettings::removeContentLabelPref(const QString& did, const QString& listUri,
+                                          const QString& labelerDid, const QString& labelId)
+{
+    mSettings.remove(labelPolicyKey(did, listUri, labelerDid, labelId));
+}
+
+void UserSettings::removeContentLabelPrefList(const QString& did, QString listUri)
+{
+    qDebug() << "Remove content label prefs list:" << listUri << "did:" << did;
+    mSettings.remove(key(did, "labelpolicy", uriToKey(listUri)));
+}
+
+std::vector<std::tuple<QString, QString, QString>> UserSettings::getContentLabelPrefKeys(const QString& did) const
+{
+    const_cast<QSettings&>(mSettings).beginGroup(key(did, "labelpolicy"));
+    const QStringList keys = mSettings.allKeys();
+    const_cast<QSettings&>(mSettings).endGroup();
+
+    std::vector<std::tuple<QString, QString, QString>> result;
+    result.reserve(keys.size());
+
+    for (const auto& key : keys)
+    {
+        auto subKeys = key.split('/');
+
+        Q_ASSERT(!subKeys.empty());
+        if (subKeys.size() != 3)
+        {
+            qWarning() << "Invalid key:" << key;
+            continue;
+        }
+
+        const auto& listUri = keyToUri(subKeys[0]);
+        const auto labelerDid = subKeys[1] == "global" ? "" : subKeys[1];
+        const auto& labelId = subKeys[2];
+
+        result.push_back({listUri, labelerDid, labelId});
+    }
+
+    return result;
+}
+
+QStringList UserSettings::getContentLabelPrefListUris(const QString& did) const
+{
+    std::unordered_set<QString> uriSet;
+    auto keys = getContentLabelPrefKeys(did);
+
+    for (auto& [listUri, _, __] : keys)
+        uriSet.insert(keyToUri(listUri));
+
+    return QStringList{uriSet.begin(), uriSet.end()};
+}
+
 void UserSettings::setBookmarks(const QString& did, const QStringList& bookmarks)
 {
     mSettings.setValue(key(did, "bookmarks"), bookmarks);
@@ -930,18 +1009,43 @@ double UserSettings::getPostButtonRelativeX() const
     return mSettings.value("postButtonRelativeX", 1.0).toDouble();
 }
 
-void UserSettings::setLandscapeSideBar(bool enabled)
+void UserSettings::setPortraitSideBarWidth(int width)
 {
-    if (enabled == getLandscapeSideBar())
-        return;
-
-    mSettings.setValue("landscapeSideBar", enabled);
-    emit landscapeSideBarChanged();
+    mSettings.setValue("portraitSideBarWidth", width);
 }
 
-bool UserSettings::getLandscapeSideBar() const
+int UserSettings::getPortraitSideBarWidth() const
 {
-    return mSettings.value("landscapeSideBar", true).toBool();
+    return mSettings.value("portraitSideBarWidth", 200).toInt();
+}
+
+void UserSettings::setLandscapeSideBarWidth(int width)
+{
+    mSettings.setValue("landscapeSideBarWidth", width);
+}
+
+int UserSettings::getLandscapeSideBarWidth() const
+{
+    return mSettings.value("landscapeSideBarWidth", 200).toInt();
+}
+
+void UserSettings::setSideBarType(QEnums::SideBarType sideBarType)
+{
+    if (sideBarType == getSideBarType())
+        return;
+
+    mSettings.setValue("sideBarType", int(sideBarType));
+    emit sideBarTypeChanged();
+}
+
+QEnums::SideBarType UserSettings::getSideBarType() const
+{
+    const int sideBarType = mSettings.value("sideBarType", int(QEnums::SIDE_BAR_LANDSCAPE)).toInt();
+
+    if (sideBarType < 0 || sideBarType > QEnums::SIDE_BAR_LAST)
+        return QEnums::SIDE_BAR_LANDSCAPE;
+
+    return QEnums::SideBarType(sideBarType);
 }
 
 void UserSettings::setGifAutoPlay(bool autoPlay)
@@ -1076,6 +1180,20 @@ bool UserSettings::getSonglinkEnabled() const
     return mSettings.value("songlinkEnabled", true).toBool();
 }
 
+void UserSettings::setShowFollowsStatus(bool show)
+{
+    if (show == getShowFollowsStatus())
+        return;
+
+    mSettings.setValue("showFollowsStatus", show);
+    emit showFollowsActiveStatusChanged();
+}
+
+bool UserSettings::getShowFollowsStatus() const
+{
+    return mSettings.value("showFollowsStatus", true).toBool();
+}
+
 void UserSettings::setShowFollowsActiveStatus(bool show)
 {
     if (show == getShowFollowsActiveStatus())
@@ -1088,6 +1206,30 @@ void UserSettings::setShowFollowsActiveStatus(bool show)
 bool UserSettings::getShowFollowsActiveStatus() const
 {
     return mSettings.value("showFollowsActiveStatus", true).toBool();
+}
+
+void UserSettings::setShowFeedbackButtons(bool show)
+{
+    if (show == getShowFeedbackButtons())
+        return;
+
+    mSettings.setValue("showFeedbackButtons", show);
+    emit showFeedbackButtonsChanged();
+}
+
+bool UserSettings::getShowFeedbackButtons() const
+{
+    return mSettings.value("showFeedbackButtons", true).toBool();
+}
+
+void UserSettings::setShowFeedbackNotice(bool show)
+{
+    mSettings.setValue("showFeedbackNotice", show);
+}
+
+bool UserSettings::getShowFeedbackNotice() const
+{
+    return mSettings.value("showFeedbackNotice", true).toBool();
 }
 
 void UserSettings::setRequireAltText(const QString& did, bool require)
@@ -1332,6 +1474,21 @@ void UserSettings::setAssembleThreads(const QString& did, bool assemble)
 {
     mSettings.setValue(key(did, "assembleThreads"), assemble);
     mAssembleThreads = assemble;
+}
+
+QEnums::ReplyOrder UserSettings::getThreadReplyOrder(const QString& did) const
+{
+    const int replyOrder = mSettings.value(key(did, "threadReplyOrder"), int(QEnums::REPLY_ORDER_SMART)).toInt();
+
+    if (replyOrder < 0 || replyOrder > QEnums::REPLY_ORDER_LAST)
+        return QEnums::REPLY_ORDER_SMART;
+
+    return QEnums::ReplyOrder(replyOrder);
+}
+
+void UserSettings::setThreadReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder)
+{
+    mSettings.setValue(key(did, "threadReplyOrder"), int(replyOrder));
 }
 
 bool UserSettings::getRewindToLastSeenPost(const QString& did) const
@@ -1654,6 +1811,7 @@ void UserSettings::cleanup()
 {
     mSettings.remove("draftRepoToFileMigration");
     mSettings.remove("floatingNavButtons");
+    mSettings.remove("landscapeSideBar");
 }
 
 }

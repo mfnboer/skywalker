@@ -15,7 +15,7 @@ static constexpr int MAX_TRENDING_TOPICS = 10;
 static constexpr int MAX_SUGGESTIONS = 10;
 static constexpr char const* USER_ME = "me";
 
-static std::vector<QString> combineSingleCharsToWords(const std::vector<QString>& words)
+std::vector<QString> SearchUtils::combineSingleCharsToWords(const std::vector<QString>& words)
 {
     static const int MIN_COMBINE_SIZE = 3;
 
@@ -67,7 +67,7 @@ std::vector<QString> SearchUtils::getNormalizedWords(const QString& text)
 
     const QString normalized = SearchUtils::normalizeText(text);
     std::vector<QString> words = getWords(normalized);
-    const std::vector<QString>& combinedWords = combineSingleCharsToWords(words);
+    const std::vector<QString> combinedWords = combineSingleCharsToWords(words);
     words.insert(words.end(), combinedWords.begin(), combinedWords.end());
 
     return words;

@@ -126,7 +126,7 @@ QImage loadImage(const QString& imgName)
         return img;
     }
 
-    qWarning() << "Unsupported image name:" << imgName;
+    qDebug() << "Unsupported image name:" << imgName;
     return {};
 }
 

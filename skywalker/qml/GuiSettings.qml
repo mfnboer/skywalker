@@ -26,18 +26,17 @@ Item {
     }
 
     // Geometry
-    readonly property int footerHeight: 50 + footerMargin
+    readonly property int footerHeight: 50
     readonly property int footerZLevel: 10
-    readonly property int headerHeight: 50 + headerMargin
+    readonly property int headerHeight: 50
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
     readonly property int maxImageHeight: root.height - headerHeight
     readonly property int radius: 8
     readonly property int sideBarHeaderHeight: 44
-    readonly property int sideBarMinWidth: 175
-    readonly property int sideBarMaxWidth: 325
-    readonly property int statsHeight: appFontHeight + 4
+    readonly property int sideBarMinWidth: 180
+    readonly property int statsIconHeight: appFontHeight + 4
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
@@ -74,7 +73,9 @@ Item {
     readonly property string headerColor: backgroundColor
     readonly property string headerHighLightColor: isLightMode ? "lightblue" : "darkslategrey"
     readonly property string headerTextColor: textColor
+    readonly property string hideReasonLabelColor: "palevioletred"
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
+    readonly property string labelPrefDefaultColor: isLightMode ? Qt.lighter(buttonColor, 1.9) : Qt.darker(buttonColor, 2.5)
     readonly property string likeColor: "palevioletred"
     readonly property string linkColorDarkMode: "#58a6ff"
     property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
@@ -96,12 +97,12 @@ Item {
     readonly property string separatorColor: isLightMode ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
     readonly property string separatorHighLightColor: isLightMode ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
     readonly property string settingsHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.05) : Qt.lighter(backgroundColor, 1.4)
-    readonly property string sideBarColor: isLightMode ? Qt.darker(backgroundColor, 1.01) : Qt.lighter(backgroundColor, 1.2)
+    readonly property string sideBarColor: backgroundColor // isLightMode ? Qt.darker(backgroundColor, 1.01) : Qt.lighter(backgroundColor, 1.2)
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
     property string textColor: Material.foreground
-    readonly property string textInputBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string textInputBackgroundColor: isLightMode ? Qt.darker(backgroundColor, 1.05) : Qt.lighter(backgroundColor, 1.5) //isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string textInputInvalidColor: "palevioletred"
     readonly property string textLengthExceededColor: "palevioletred"
 
@@ -244,11 +245,12 @@ Item {
         message.show(question)
     }
 
-    function notice(parent, msg, emoji = "", onOkCb = () => {}) {
+    function notice(parent, msg, emoji = "", onOkCb = () => {}, onLinkCb = (link) => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { emoji: emoji, standardButtons: Dialog.Ok })
         message.onAccepted.connect(() => { message.destroy(); onOkCb() })
         message.onRejected.connect(() => message.destroy())
+        message.onLinkActivated.connect((link) => { onLinkCb(link) })
         message.show(msg)
     }
 
@@ -340,7 +342,7 @@ Item {
             return false
 
         const sw = getSkywalker(userDid)
-        let visibility = sw.getContentVisibility(author.labels)
+        let visibility = sw.getContentVisibility(author.labels, author.did)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
@@ -351,7 +353,7 @@ Item {
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function filterContentLabelsToShow(contentLabels, userDid = "") {
+    function filterContentLabelsToShow(authorDid, contentLabels, userDid = "") {
         const sw = getSkywalker(userDid)
         let contentFilter = sw.getContentFilter()
         let labels = []
@@ -359,7 +361,8 @@ Item {
         for (let i = 0; i < contentLabels.length; ++i) {
             const label = contentLabels[i]
 
-            if (!label.isSystemLabel() && contentFilter.mustShowBadge(label))
+            if ((!label.isSystemLabel() || label.isOverridableSytemLabel()) &&
+                    contentFilter.mustShowBadge(authorDid, label))
                 labels.push(label)
         }
 
@@ -442,6 +445,13 @@ Item {
                 postHighLightColor]
     }
 
+    function postStatsHeight(feedAcceptsInteractions, padding, limitedStats = false) {
+        if (feedAcceptsInteractions && userSettings.showFeedbackButtons && !limitedStats)
+            return (guiSettings.statsIconHeight + padding) * 2
+        else
+            return guiSettings.statsIconHeight + padding
+    }
+
     function getNavigationBarSize(side) {
         return displayUtils.getNavigationBarSize(side) / Screen.devicePixelRatio
     }
@@ -463,5 +473,13 @@ Item {
             text = text.slice(7)
 
         return `<a href="${link}" style="color: ${guiSettings.linkColor}; text-decoration: none">${text}</a>`
+    }
+
+    Component.onDestruction: {
+        root.onIsPortraitChanged.disconnect(updateScreenMargins)
+    }
+
+    Component.onCompleted: {
+        root.onIsPortraitChanged.connect(updateScreenMargins)
     }
 }
