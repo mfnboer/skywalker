@@ -9,7 +9,6 @@
 #include "android_utils.h"
 #include <QJniObject>
 #include <QOperatingSystemVersion>
-#include <QtCore/private/qandroidextras_p.h>
 #endif
 
 namespace {

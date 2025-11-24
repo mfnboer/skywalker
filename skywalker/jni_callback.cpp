@@ -5,7 +5,6 @@
 
 #if defined(Q_OS_ANDROID)
 #include <QJniObject>
-#include <QtCore/private/qandroidextras_p.h>
 #endif
 
 namespace Skywalker {

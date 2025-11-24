@@ -97,7 +97,13 @@ void FontDownloader::downloadEmojiFont()
     }
 
     QFile file;
-    file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle);
+    const bool opened = file.open(fd, QFile::OpenModeFlag::ReadOnly, QFile::FileHandleFlag::AutoCloseHandle);
+
+    if (!opened)
+    {
+        qWarning() << "Could not open file.";
+        return;
+    }
 
     const QByteArray fileData = file.readAll();
     qDebug() << "Data size:" << fileData.size();
