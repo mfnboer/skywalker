@@ -25,6 +25,7 @@ Dialog {
         contentHeight: msgRow.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: SkyScrollBarVertical {}
 
         RowLayout {
             id: msgRow

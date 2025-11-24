@@ -224,6 +224,7 @@ SkyPage {
         contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: SkyScrollBarVertical {}
 
         AccessibleText {
             id: labelerHeaderText

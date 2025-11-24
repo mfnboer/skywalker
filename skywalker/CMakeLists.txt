@@ -614,6 +614,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SelectList.qml
         QML_FILES qml/SkyTabListButton.qml
         SOURCES report_category.h
+        QML_FILES qml/SkyScrollBarVertical.qml
 )
 
 if (NOT ANDROID)
