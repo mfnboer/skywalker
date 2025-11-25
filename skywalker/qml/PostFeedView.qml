@@ -630,7 +630,6 @@ SkyListView {
 
     function forceDestroy() {
         if (modelId !== -1) {
-            postFeedView.model = null
             skywalker.removePostFeedModel(modelId)
             modelId = -1
             destroy()
@@ -643,10 +642,8 @@ SkyListView {
         skywalker.onFeedSyncOk.disconnect(setInSync)
         skywalker.onFeedSyncFailed.disconnect(syncToHome)
 
-        if (modelId !== -1) {
-            model = null
+        if (modelId !== -1)
             skywalker.removePostFeedModel(modelId)
-        }
     }
 
     Component.onCompleted: {

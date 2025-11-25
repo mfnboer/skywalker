@@ -4,6 +4,7 @@ import skywalker
 
 ThumbImageView {
     required property imageview image
+    property color canvasColor: guiSettings.postHighLightColor
 
     id: thumb
     fillMode: Image.PreserveAspectFit
@@ -16,7 +17,30 @@ ThumbImageView {
         width: parent.width
         height: parent.height
         z: parent.z - 1
-        color: guiSettings.postHighLightColor
+        color: canvasColor
         visible: fillMode == Image.PreserveAspectFit
     }
+
+    // TODO: seems not to work consitently on Android
+    // ImageUtils {
+    //     id: imageUtils
+    // }
+
+    // onStatusChanged: {
+    //     if (fillMode != Image.PreserveAspectFit)
+    //         return
+
+    //     if (status != Image.Ready)
+    //         return
+
+    //     const cutX = Math.max((width - paintedWidth) / 2, 0)
+    //     const cutY = Math.max((height - paintedHeight) / 2, 0)
+    //     const cutWidth = Math.min(paintedWidth, width - cutX)
+    //     const cutHeight = Math.min(paintedHeight, height - cutY)
+    //     const cutRect = Qt.rect(cutX, cutY, cutWidth, cutHeight)
+
+    //     grabToImage((result) => {
+    //         canvasColor = imageUtils.getDominantColor(result.image, cutRect)
+    //     })
+    // }
 }

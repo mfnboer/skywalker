@@ -151,7 +151,7 @@ ApplicationWindow {
 
         id: favoritesTabBar
         x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
-        y: guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
+        y: calcY()
         z: guiSettings.headerZLevel - 1
         width: parent.width - x - guiSettings.rightMargin
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
@@ -174,6 +174,13 @@ ApplicationWindow {
             else if (favoritesSwipeView) {
                 favoritesSwipeView.setCurrentIndex(currentIndex)
             }
+        }
+
+        function calcY() {
+            if (position == TabBar.Header)
+                return guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
+
+            return parent.height - footer.height - height
         }
 
         function update() {

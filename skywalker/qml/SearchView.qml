@@ -1206,10 +1206,6 @@ SkyPage {
 
     function forceDestroy() {
         searchUtils.clearAllSearchResults()
-        feedListView.model = null
-        usersView.model = null
-        postsViewTop.model = null
-        postsViewLatest.model = null
         searchUtils.removeModels()
         destroy()
     }

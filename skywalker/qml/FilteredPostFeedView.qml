@@ -48,7 +48,6 @@ SkyListView {
 
     function forceDestroy() {
         if (modelId !== -1) {
-            postFeedView.model = null
             skywalker.removePostFeedModel(modelId)
             modelId = -1
             destroy()

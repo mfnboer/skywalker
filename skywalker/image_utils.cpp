@@ -276,4 +276,56 @@ Q_INVOKABLE QString ImageUtils::transformImage(const QString& imgSource, bool ho
     return newSource;
 }
 
+struct ColorInfo
+{
+    int mRed = 0;
+    int mGreen = 0;
+    int mBlue = 0;
+    int mCount = 0;
+};
+
+QColor ImageUtils::getDominantColor(const QImage& img, const QRect& cutRect)
+{
+    static constexpr int STEP_SIZE = 16;
+    static constexpr int COLOR_MASK = 0x00e0;
+
+    qDebug() << "Get dominant color, img size:" << img.size() << "cut:" << cutRect;
+    std::unordered_map<QRgb, ColorInfo> colorMap;
+
+    for (int y = cutRect.y(); y < cutRect.y() + cutRect.height(); y += STEP_SIZE)
+    {
+        for (int x = cutRect.x(); x < cutRect.x() + cutRect.width(); x += STEP_SIZE)
+        {
+            const QColor color = img.pixelColor(x,y);
+            const int r = color.red();
+            const int g = color.green();
+            const int b = color.blue();
+            const auto keyRgb = qRgb(r & COLOR_MASK, g & COLOR_MASK, b & COLOR_MASK);
+
+            auto& colorInfo = colorMap[keyRgb];
+            colorInfo.mCount++;
+            colorInfo.mRed += r;
+            colorInfo.mGreen += g;
+            colorInfo.mBlue += b;
+        }
+    }
+
+    qDebug() << "Color map size:" << colorMap.size();
+    QRgb dominantRgb = 0;
+    int maxCount = 0;
+
+    for (const auto& [rgb, colorInfo] : colorMap)
+    {
+        if (colorInfo.mCount > maxCount)
+        {
+            maxCount = colorInfo.mCount;
+            dominantRgb = qRgb(colorInfo.mRed / maxCount, colorInfo.mGreen / maxCount, colorInfo.mBlue / maxCount);
+        }
+    }
+
+    const QColor dominantColor(dominantRgb);
+    qDebug() << "Dominant color:" << dominantColor;
+    return dominantColor;
+}
+
 }

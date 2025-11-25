@@ -349,7 +349,6 @@ SkyListView {
 
     function forceDestroy() {
         searchUtils.clearAllSearchResults()
-        feedView.model = null
         searchUtils.removeModels()
         destroy()
     }
