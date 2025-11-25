@@ -236,14 +236,19 @@ SkyListView {
 
         switch (contentMode) {
         case QEnums.CONTENT_MODE_UNSPECIFIED:
+            // Resetting the model before changing is needed since Qt6.10.1
+            // Without resetting, the code will crash
+            model.reset()
             model = model.getUnderlyingModel()
             break
         case QEnums.CONTENT_MODE_VIDEO:
         case QEnums.CONTENT_MODE_VIDEO_TILES:
+            model.reset()
             model = model.getUnderlyingModel().addVideoFilter()
             break
         case QEnums.CONTENT_MODE_MEDIA:
         case QEnums.CONTENT_MODE_MEDIA_TILES:
+            model.reset()
             model = model.getUnderlyingModel().addMediaFilter()
             break
         default:

@@ -339,6 +339,12 @@ void AbstractPostFeedModel::setFeedError(const QString& error)
     }
 }
 
+void AbstractPostFeedModel::reset()
+{
+    beginResetModel();
+    endResetModel();
+}
+
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
 {
     Q_UNUSED(parent);

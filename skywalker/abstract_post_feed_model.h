@@ -134,6 +134,8 @@ public:
     Q_INVOKABLE void setOverrideLinkColor(const QString& color);
     Q_INVOKABLE void clearOverrideLinkColor();
 
+    Q_INVOKABLE void reset();
+
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
