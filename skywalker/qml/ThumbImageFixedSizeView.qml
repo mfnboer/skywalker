@@ -21,26 +21,26 @@ ThumbImageView {
         visible: fillMode == Image.PreserveAspectFit
     }
 
-    // TODO: seems not to work consitently on Android
-    // ImageUtils {
-    //     id: imageUtils
-    // }
+    ImageUtils {
+        id: imageUtils
+    }
 
-    // onStatusChanged: {
-    //     if (fillMode != Image.PreserveAspectFit)
-    //         return
+    onStatusChanged: {
+        if (fillMode != Image.PreserveAspectFit)
+            return
 
-    //     if (status != Image.Ready)
-    //         return
+        if (status != Image.Ready)
+            return
 
-    //     const cutX = Math.max((width - paintedWidth) / 2, 0)
-    //     const cutY = Math.max((height - paintedHeight) / 2, 0)
-    //     const cutWidth = Math.min(paintedWidth, width - cutX)
-    //     const cutHeight = Math.min(paintedHeight, height - cutY)
-    //     const cutRect = Qt.rect(cutX, cutY, cutWidth, cutHeight)
+        const cutX = Math.max((width - paintedWidth) / 2, 0)
+        const cutY = Math.max((height - paintedHeight) / 2, 0)
+        const cutWidth = Math.min(paintedWidth, width - cutX)
+        const cutHeight = Math.min(paintedHeight, height - cutY)
+        const cutRect = Qt.rect(cutX * Screen.devicePixelRatio, cutY * Screen.devicePixelRatio,
+                                cutWidth * Screen.devicePixelRatio, cutHeight * Screen.devicePixelRatio)
 
-    //     grabToImage((result) => {
-    //         canvasColor = imageUtils.getDominantColor(result.image, cutRect)
-    //     })
-    // }
+        const grabbed = thumb.grabToImage((result) => {
+            canvasColor = imageUtils.getDominantColor(result.image, cutRect, 16 * Screen.devicePixelRatio)
+        })
+    }
 }
