@@ -35,7 +35,7 @@ std::unordered_map<QString, QString> LanguageUtils::sLanguageShortCodeToNameMap;
 
 QString LanguageUtils::languageCodeToShortCode(const QString& languageCode)
 {
-    return languageCode.split('_').front();
+    return languageCode.split('_').front().split('-').front();
 }
 
 bool LanguageUtils::existsShortCode(const QString& shortCode)
