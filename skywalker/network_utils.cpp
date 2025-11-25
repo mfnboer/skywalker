@@ -1,12 +1,12 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "network_utils.h"
+#include <QDebug>
 #include <QtGlobal>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
 #include <QOperatingSystemVersion>
-#include <QtCore/private/qandroidextras_p.h>
 #endif
 
 namespace Skywalker::NetworkUtils {

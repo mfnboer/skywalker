@@ -9,7 +9,6 @@
 #include "android_utils.h"
 #include "jni_utils.h"
 #include <QJniObject>
-#include <QtCore/private/qandroidextras_p.h>
 #include <QTimer>
 #include <QHostInfo>
 #endif

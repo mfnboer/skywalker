@@ -54,10 +54,7 @@ Column {
         contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        ScrollBar.vertical: ScrollBar {
-            width: 6
-            policy: flick.contentHeight > flick.height ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
-        }
+        ScrollBar.vertical: SkyScrollBarVertical {}
 
         PostBody {
             width: parent.width - (height > guiSettings.appFontHeight * 5 ? 10 : 0)

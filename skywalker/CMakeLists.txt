@@ -5,6 +5,10 @@ set(CMAKE_AUTORCC ON)
 include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
 
+if (ANDROID)
+    find_package(Qt6 REQUIRED COMPONENTS CorePrivate)
+endif()
+
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
 endif()
@@ -610,6 +614,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SelectList.qml
         QML_FILES qml/SkyTabListButton.qml
         SOURCES report_category.h
+        QML_FILES qml/SkyScrollBarVertical.qml
 )
 
 if (NOT ANDROID)
@@ -624,5 +629,11 @@ target_link_libraries(libskywalker
     PRIVATE Qt6::Svg
     ${COVERAGE_LIB}
 )
+
+if (ANDROID)
+    target_link_libraries(libskywalker
+        PRIVATE Qt6::CorePrivate
+    )
+endif()
 
 target_include_directories(libskywalker INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ..)

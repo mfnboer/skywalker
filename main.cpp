@@ -13,6 +13,7 @@ using namespace Qt::Literals::StringLiterals;
 
 int main(int argc, char *argv[])
 {
+    qputenv("QT_LOGGING_RULES", "qt.network.http2.*=true"); // TODO
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
 
     QGuiApplication app(argc, argv);
