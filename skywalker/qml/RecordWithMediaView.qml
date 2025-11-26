@@ -11,6 +11,9 @@ Item {
     property bool highlight: false
     property bool isDraft: false
     property bool swipeMode: false
+    readonly property int margin: 10
+
+    signal activateSwipe
 
     id: recordItem
     width: parent.width
@@ -22,9 +25,11 @@ Item {
         anchors.centerIn: parent
         spacing: 5
 
+        // See media loader in PostBody.qml
         Loader {
             id: mediaLoader
-            width: parent.width
+            x: swipeMode ? -margin - 1 : 0
+            width: parent.width + (swipeMode ? 2 * margin + 2 : 0)
             visible: status == Loader.Ready
         }
 
@@ -33,6 +38,7 @@ Item {
             record: recordItem.record.record
             backgroundColor: recordItem.backgroundColor
             highlight: recordItem.highlight
+            visible: !recordItem.swipeMode
         }
 
         Component {
@@ -44,6 +50,9 @@ Item {
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
                 contentLabeler: recordItem.contentLabeler
+                swipeMode: recordItem.swipeMode
+
+                onActivateSwipe: recordItem.activateSwipe()
             }
         }
 
@@ -56,6 +65,9 @@ Item {
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
                 contentLabeler: recordItem.contentLabeler
+                swipeMode: recordItem.swipeMode
+
+                onActivateSwipe: recordItem.activateSwipe()
             }
         }
 
@@ -68,6 +80,9 @@ Item {
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
                 contentLabeler: recordItem.contentLabeler
+                swipeMode: recordItem.swipeMode
+
+                onActivateSwipe: recordItem.activateSwipe()
             }
         }
 
@@ -80,6 +95,9 @@ Item {
                 contentVisibility: recordItem.contentVisibility
                 contentWarning: recordItem.contentWarning
                 contentLabeler: recordItem.contentLabeler
+                swipeMode: recordItem.swipeMode
+
+                onActivateSwipe: recordItem.activateSwipe()
             }
         }
 
@@ -104,6 +122,8 @@ Item {
                 backgroundColor: recordItem.backgroundColor
                 highlight: recordItem.highlight
                 swipeMode: recordItem.swipeMode
+
+                onActivateSwipe: recordItem.activateSwipe()
             }
         }
 

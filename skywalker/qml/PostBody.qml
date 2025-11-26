@@ -239,6 +239,11 @@ Column {
     Loader {
         id: recordLoader
         width: parent.width
+
+        onItemChanged: {
+            if (item && typeof item.onActivateSwipe != 'undefined')
+                item.onActivateSwipe.connect(postBody.activateSwipe)
+        }
     }
 
     Loader {
