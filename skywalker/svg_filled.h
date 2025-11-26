@@ -26,6 +26,7 @@ class SvgFilled : public QObject
     Q_PROPERTY(SvgImage* pause MEMBER sPause CONSTANT FINAL)
     Q_PROPERTY(SvgImage* pin MEMBER sKeep CONSTANT FINAL)
     Q_PROPERTY(SvgImage* play MEMBER sPlayArrow CONSTANT FINAL)
+    Q_PROPERTY(SvgImage* quote MEMBER sFormatQuote CONSTANT FINAL)
     Q_PROPERTY(SvgImage* repost MEMBER sRepeat CONSTANT FINAL)
     Q_PROPERTY(SvgImage* search MEMBER sSearch CONSTANT FINAL)
     Q_PROPERTY(SvgImage* send MEMBER sSend CONSTANT FINAL)
@@ -46,6 +47,7 @@ private:
     // fonts.google.com weight=100, grade=0, optical size=24px
     SvgImage* sBookmark = new SvgImage{"M252-198v-530q0-26 17-43t43-17h336q26 0 43 17t17 43v530l-228-98-228 98Z", this};
     SvgImage* sFavorite = new SvgImage{"m480-190-22-20q-97-89-160.5-152t-100-110.5Q161-520 146.5-558T132-634q0-71 48.5-119.5T300-802q53 0 99 28.5t81 83.5q35-55 81-83.5t99-28.5q71 0 119.5 48.5T828-634q0 38-14.5 76t-51 85.5Q726-425 663-362T502-210l-22 20Z", this};
+    SvgImage* sFormatQuote = new SvgImage{"m274-276 97-169q-9 5-21 7t-24 2q-53 0-88.5-36.5T202-560q0-53 35.5-88.5T326-684q51 0 87.5 35.5T450-560q0 18-4.5 34T433-496L306-276h-32Zm348 0 97-169q-9 5-21 7t-24 2q-53 0-88.5-36.5T550-560q0-54 35.5-89t88.5-35q51 0 87.5 35.5T798-560q0 18-4.5 34T781-496L654-276h-32Z", this};
     SvgImage* sHome = new SvgImage{"M212-172v-402l268-203 268 203v402H550v-248H410v248H212Z", this};
     SvgImage* sImage = new SvgImage{"M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm40-160h480L570-480 450-320l-90-120-120 160Z", this}; // weight=400
     SvgImage* sKeep = new SvgImage{"m588-458 58 58v28H494v188l-14 14-14-14v-188H314v-28l58-58v-302h-40v-28h296v28h-40v302Z", this};

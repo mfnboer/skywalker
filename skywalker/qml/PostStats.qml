@@ -22,6 +22,7 @@ Item {
     required property bool isBookmarked
     required property bool bookmarkTransient
     required property bool isThread
+    required property bool isQuotePost
     property UserSettings userSettings: skywalker.getUserSettings()
     property int feedback: QEnums.FEEDBACK_NONE
     property int feedbackTransient: QEnums.FEEDBACK_NONE
@@ -42,6 +43,7 @@ Item {
     signal likeLongPress(MouseEvent mouseEvent)
     signal viewThread()
     signal unrollThread()
+    signal quoteChain()
     signal muteThread()
     signal bookmark()
     signal bookmarkLongPress(MouseEvent mouseEvent)
@@ -209,6 +211,13 @@ Item {
                     onTriggered: unrollThread()
 
                     MenuItemSvg { svg: SvgOutline.thread }
+                }
+                AccessibleMenuItem {
+                    text: qsTr("Unwrap quote chain")
+                    visible: isQuotePost
+                    onTriggered: quoteChain()
+
+                    MenuItemSvg { svg: SvgOutline.quote }
                 }
                 AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")

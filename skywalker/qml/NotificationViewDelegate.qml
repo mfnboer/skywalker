@@ -331,6 +331,7 @@ Rectangle {
                         isBookmarked: notificationPostBookmarked
                         bookmarkTransient: notificationPostBookmarkTransient
                         isThread: false
+                        isQuotePost: Boolean(notificationPostRecord) || Boolean(notificationPostRecordWithMedia)
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
 
@@ -396,7 +397,7 @@ Rectangle {
 
                         onLike: {
                             root.like(notificationPostLikeUri, notificationPostUri, notificationCid,
-                            "", "", "", "", notification.owner.did)
+                                "", "", "", "", notification.owner.did)
                         }
 
                         onLikeLongPress: (mouseEvent) => {
@@ -419,6 +420,10 @@ Rectangle {
                                 return
 
                             root.bookmarkByNonActiveUser(mouseEvent, postStats, notification.ListView.view, notificationPostUri)
+                        }
+
+                        onQuoteChain: {
+                            root.viewQuoteChain(notificationPostUri, notification.owner.did)
                         }
 
                         onShare: skywalker.sharePost(notificationPostUri)

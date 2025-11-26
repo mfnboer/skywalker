@@ -37,6 +37,7 @@ Column {
     property string postHighlightColor: "transparent"
     property bool isDraft: false
     property bool swipeMode: false
+    property bool showRecord: true
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
     readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
 
@@ -483,6 +484,9 @@ Column {
     }
 
     function showPostRecord() {
+        if (!showRecord)
+            return
+
         // Cannot use a direct component here, because of cyclic dependency.
         // RecordView has a PostBody
         recordLoader.setSource("RecordView.qml", {
@@ -502,7 +506,8 @@ Column {
                                    contentLabeler: postContentLabeler,
                                    highlight: bodyBackgroundColor === guiSettings.postHighLightColor,
                                    isDraft: isDraft,
-                                   swipeMode: swipeMode })
+                                   swipeMode: postBody.swipeMode,
+                                   showRecord: postBody.showRecord })
     }
 
     onBodyBackgroundColorChanged: {

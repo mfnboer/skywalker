@@ -81,6 +81,7 @@ Rectangle {
     required property string filteredPostHideDetail
     required property contentlabel filteredPostContentLabel
     required property bool endOfFeed
+    property bool showRecord: true
     property bool unrollThread: false
     property var postThreadModel // provided when thread is unrolled
     property bool feedAcceptsInteractions: false
@@ -552,6 +553,7 @@ Rectangle {
                 borderColor: postEntry.border.color.toString()
                 postHighlightColor: postEntry.postHighlightColor
                 swipeMode: postEntry.swipeMode
+                showRecord: postEntry.showRecord
 
                 onActivateSwipe: postEntry.activateSwipe()
                 onUnrollThread: {
@@ -629,6 +631,7 @@ Rectangle {
                     feedback: postFeedback
                     feedbackTransient: postFeedbackTransient
                     isThread: postIsThread || postIsThreadReply
+                    isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
                     isUnrolledThread: postEntry.unrollThread
                     showViewThread: swipeMode
                     record: postRecord
@@ -720,6 +723,11 @@ Rectangle {
                     onUnrollThread: {
                         if (!postIsPlaceHolder && postUri)
                             skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
+                    }
+
+                    onQuoteChain: {
+                        if (!postIsPlaceHolder && postUri)
+                            root.viewQuoteChain(postUri, userDid)
                     }
 
                     onShare: skywalker.sharePost(postUri)

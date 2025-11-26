@@ -226,6 +226,7 @@ Rectangle {
                 feedback: postFeedback
                 feedbackTransient: postFeedbackTransient
                 isThread: postIsThread || postIsThreadReply
+                isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
                 showViewThread: true
                 record: postRecord
                 recordWithMedia: postRecordWithMedia
@@ -312,6 +313,11 @@ Rectangle {
                 onUnrollThread: {
                     if (!postIsPlaceHolder && postUri)
                         skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
+                }
+
+                onQuoteChain: {
+                    if (!postIsPlaceHolder && postUri)
+                        root.viewQuoteChain(postUri, userDid)
                 }
 
                 onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)

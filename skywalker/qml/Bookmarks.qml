@@ -17,7 +17,7 @@ SkyListView {
 
     header: Item {
         width: parent.width
-        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        height: portraitHeader.visible ? portraitHeader.height : 0
         z: guiSettings.headerZLevel
 
         SimpleHeader {

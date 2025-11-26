@@ -47,6 +47,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TIMELINE_NEXT_PAGE_THRESHOLD MEMBER TIMELINE_NEXT_PAGE_THRESHOLD CONSTANT)
+    Q_PROPERTY(int QUOTE_CHAIN_PAGE_SIZE MEMBER QUOTE_CHAIN_PAGE_SIZE CONSTANT)
     Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* mentionListModel READ getMentionListModel CONSTANT FINAL)
@@ -72,6 +73,7 @@ public:
 
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 50;
     static constexpr int TIMELINE_NEXT_PAGE_THRESHOLD = 30; // Get next page when less posts till current end
+    static constexpr int QUOTE_CHAIN_PAGE_SIZE = 10;
 
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();
@@ -113,6 +115,8 @@ public:
 
     Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
+    Q_INVOKABLE void getQuoteChain(int modelId);
+    Q_INVOKABLE void getQuoteChainNextPage(int modelId);
     Q_INVOKABLE void getPostThread(const QString& uri, QEnums::PostThreadType postThreadType = QEnums::POST_THREAD_NORMAL);
     Q_INVOKABLE void addPostThread(const QString& uri, int modelId, int maxPages = 20);
     Q_INVOKABLE void addOlderPostThread(int modelId);
@@ -160,6 +164,7 @@ public:
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri);
+    Q_INVOKABLE int createQuoteChainPostFeedModel(const QString& quoteUri);
     Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
@@ -337,6 +342,8 @@ private:
     void getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getQuoteChain(int modelId, const QString& nextPostUri, std::deque<Post> quoteChain);
+    void setQuoteChainInModel(int modelId, std::deque<Post> quoteChain);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
     QString processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);

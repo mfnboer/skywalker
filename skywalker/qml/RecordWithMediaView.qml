@@ -11,6 +11,7 @@ Item {
     property bool highlight: false
     property bool isDraft: false
     property bool swipeMode: false
+    property bool showRecord: true
     readonly property int margin: 10
 
     signal activateSwipe
@@ -38,7 +39,7 @@ Item {
             record: recordItem.record.record
             backgroundColor: recordItem.backgroundColor
             highlight: recordItem.highlight
-            visible: !recordItem.swipeMode
+            visible: !recordItem.swipeMode && recordItem.showRecord
         }
 
         Component {

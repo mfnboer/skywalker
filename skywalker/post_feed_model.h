@@ -34,7 +34,7 @@ public:
     using Ptr = std::unique_ptr<PostFeedModel>;
     using FeedVariant = std::variant<GeneratorView,
                                      ListViewBasic,
-                                     QString /* quote uri */,
+                                     QString, /* quote uri */
                                      QEnums::HideReasonType>;
 
     explicit PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
@@ -95,6 +95,8 @@ public:
 
     void setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
     void addFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
+
+    void addQuoteChain(std::deque<Post> feed);
 
     // Returns new gap id if the gap was not fully filled, i.e. there is a new gap.
     // Returns 0 otherwise.
@@ -206,6 +208,7 @@ private:
     void reportActivity(const Post& post);
     Page::Ptr createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Page::Ptr createPage(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& feed);
+    Page::Ptr createPageQuoteChain(TimelineFeed&& feed);
     Page::Ptr createPageFilteredPosts(const std::deque<Post>& posts, const ContentFilterStats::Details& hideDetails);
     bool mustHideFilteredPost(const Post& post, const ContentFilterStats::Details& hideDetails) const;
 
@@ -241,7 +244,7 @@ private:
     QString mFeedName;
     GeneratorView mGeneratorView;
     ListViewBasic mListView;
-    QString mQuoteUri; // posts quoting this post
+    QString mQuoteUri; // posts quoting this post, or first post of a quote chain
     std::optional<QEnums::HideReasonType> mHideReason;
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;

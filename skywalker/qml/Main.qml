@@ -2093,6 +2093,16 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
+    function viewQuoteChain(uri, viewByDid = "") {
+        const sw = getSkywalker(viewByDid)
+        const modelId = sw.createQuoteChainPostFeedModel(uri)
+        sw.getQuoteChain(modelId)
+        let component = guiSettings.createComponent("QuoteChainPostFeedView.qml")
+        let view = component.createObject(root, { userDid: viewByDid, modelId: modelId })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        root.pushStack(view)
+    }
+
     function viewListByUri(listUri, viewPosts, viewByDid = "") {
         const gu = getGraphUtils(viewByDid)
         gu.getListView(listUri, viewPosts)

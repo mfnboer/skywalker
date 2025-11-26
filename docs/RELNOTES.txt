@@ -1,5 +1,6 @@
 next
 ====
+* Unwrap quote chain
 * Matching frame color for images of unknown size
 * Upgraded to Qt6.10.1
 * Bug fixes

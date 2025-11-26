@@ -400,6 +400,13 @@ void PostFeedModel::addFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& f
     addPage(std::move(page));
 }
 
+void PostFeedModel::addQuoteChain(std::deque<Post> feed)
+{
+    qDebug() << "Add posts:" << feed.size();
+    auto page = createPageQuoteChain(std::forward<TimelineFeed>(feed));
+    addPage(std::move(page));
+}
+
 void PostFeedModel::addPage(Page::Ptr page)
 {
     if (!page->mFeed.empty())
@@ -1451,6 +1458,22 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     else
     {
         if (!page->mFeed.empty())
+            page->mFeed.back().setEndOfFeed(true);
+    }
+
+    return page;
+}
+
+PostFeedModel::Page::Ptr PostFeedModel::createPageQuoteChain(TimelineFeed&& feed)
+{
+    auto page = std::make_unique<Page>();
+    page->mFeed = std::forward<TimelineFeed>(feed);
+
+    if (!page->mFeed.empty())
+    {
+        if (page->mFeed.back().getRecordViewFromRecordOrRecordWithMedia())
+            page->mCursorNextPage = page->mFeed.back().getRecordViewFromRecordOrRecordWithMedia()->getUri();
+        else
             page->mFeed.back().setEndOfFeed(true);
     }
 

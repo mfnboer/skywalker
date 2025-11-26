@@ -1632,7 +1632,7 @@ void Skywalker::getQuotesFeed(int modelId, int limit, int maxPages, int minEntri
                 getFeedNextPage(modelId, maxPages - 1, postsToAdd);
         },
         [this, modelId](const QString& error, const QString& msg){
-            qInfo() << "getQuotesFeed FAILED:" << error << " - " << msg;
+            qDebug() << "getQuotesFeed FAILED:" << error << " - " << msg;
             auto* model = getPostFeedModel(modelId);
 
             if (model)
@@ -1671,6 +1671,129 @@ void Skywalker::getQuotesFeedNextPage(int modelId, int maxPages, int minEntries)
     }
 
     getQuotesFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
+void Skywalker::getQuoteChain(int modelId)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get quote chain model:" << modelId;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const QString& quoteUri = model->getQuoteUri();
+    model->setGetFeedInProgress(true);
+    model->clear();
+
+    getQuoteChain(modelId, quoteUri, {});
+}
+
+void Skywalker::getQuoteChainNextPage(int modelId)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get quote chain next page model:" << modelId;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& cursor = model->getLastCursor();
+    if (cursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        return;
+    }
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    // The next URI of the next quoted post is set as cursor
+    qDebug() << "Cursor:" << cursor;
+    model->setGetFeedInProgress(true);
+    getQuoteChain(modelId, cursor, {});
+}
+
+void Skywalker::getQuoteChain(int modelId, const QString& nextPostUri, std::deque<Post> quoteChain)
+{
+    qDebug() << "Get quote chain model:" << modelId << "next:" << nextPostUri << "chain size:" << quoteChain.size();
+
+    if (nextPostUri.isEmpty() || quoteChain.size() >= QUOTE_CHAIN_PAGE_SIZE)
+    {
+        setQuoteChainInModel(modelId, std::move(quoteChain));
+        return;
+    }
+
+    mBsky->getPosts({ nextPostUri },
+        [this, modelId, quoteChain](auto postViewList){
+            if (postViewList.empty())
+            {
+                qWarning() << "Failed to get posts";
+
+                auto* model = getPostFeedModel(modelId);
+
+                if (model)
+                {
+                    setQuoteChainInModel(modelId, std::move(quoteChain));
+                    model->setFeedError(tr("Failed to get posts"));
+                }
+
+                return;
+            }
+
+            const Post post(postViewList.front());
+            auto chain = std::move(quoteChain);
+            chain.push_back(post);
+
+            const auto record = post.getRecordViewFromRecordOrRecordWithMedia();
+            QString uri = record ? record->getUri() : "";
+            getQuoteChain(modelId, uri, std::move(chain));
+        },
+        [this, modelId, quoteChain](const QString& error, const QString& msg){
+            qDebug() << "getPosts FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                setQuoteChainInModel(modelId, std::move(quoteChain));
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
+}
+
+void Skywalker::setQuoteChainInModel(int modelId, std::deque<Post> quoteChain)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    model->setGetFeedInProgress(false);
+    model->addQuoteChain(std::move(quoteChain));
 }
 
 void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
@@ -2809,6 +2932,18 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"), &feedVariant,
+                                                 mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
+                                                 mContentFilter, mMutedWords, *mFocusHashtags,
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, mBsky, this);
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
+    return id;
+}
+
+int Skywalker::createQuoteChainPostFeedModel(const QString& quoteUri)
+{
+    const PostFeedModel::FeedVariant feedVariant{quoteUri};
+    auto model = std::make_unique<PostFeedModel>(tr("Quote chain"), &feedVariant,
                                                  mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
