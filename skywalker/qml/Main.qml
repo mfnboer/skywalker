@@ -2071,10 +2071,15 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
-    function viewMediaFeed(model, index, closeCb = (newIndex) => {}, viewByDid = "") {
-        console.debug("View media feed:", model.feedName, "index:", index)
+    function viewMediaFeed(model, index, previewIndex, previewImg, closeCb = (newIndex) => {}, viewByDid = "") {
+        console.debug("View media feed:", model.feedName, "index:", index, "previewIndex:", previewIndex)
         let component = guiSettings.createComponent("MediaFeedView.qml")
-        let view = component.createObject(root, { userDid: viewByDid, model: model, currentIndex: index })
+        let view = component.createObject(root, {
+                userDid: viewByDid,
+                model: model,
+                startIndex: index,
+                previewIndex: previewIndex,
+                previewImage: previewImg})
         view.onClosed.connect(() => {
             console.debug("Close media feed:", model.feedName, "index:", view.currentIndex)
             closeCb(view.currentIndex)

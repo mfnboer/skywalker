@@ -53,7 +53,7 @@ Item {
                 contentLabeler: recordItem.contentLabeler
                 swipeMode: recordItem.swipeMode
 
-                onActivateSwipe: recordItem.activateSwipe()
+                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
             }
         }
 
@@ -68,7 +68,7 @@ Item {
                 contentLabeler: recordItem.contentLabeler
                 swipeMode: recordItem.swipeMode
 
-                onActivateSwipe: recordItem.activateSwipe()
+                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
             }
         }
 
@@ -83,7 +83,7 @@ Item {
                 contentLabeler: recordItem.contentLabeler
                 swipeMode: recordItem.swipeMode
 
-                onActivateSwipe: recordItem.activateSwipe()
+                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
             }
         }
 
@@ -98,7 +98,7 @@ Item {
                 contentLabeler: recordItem.contentLabeler
                 swipeMode: recordItem.swipeMode
 
-                onActivateSwipe: recordItem.activateSwipe()
+                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
             }
         }
 
@@ -124,7 +124,7 @@ Item {
                 highlight: recordItem.highlight
                 swipeMode: recordItem.swipeMode
 
-                onActivateSwipe: recordItem.activateSwipe()
+                onActivateSwipe: recordItem.activateSwipe(0, null)
             }
         }
 

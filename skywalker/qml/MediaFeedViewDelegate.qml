@@ -71,6 +71,7 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    property int startImageIndex: 0
     property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
     property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
@@ -88,6 +89,7 @@ Rectangle {
     property bool zooming: imageItem ? imageItem.zooming : false
 
     signal closed
+    signal imageLoaded
 
     id: videoPage
     width: root.width
@@ -163,6 +165,7 @@ Rectangle {
                 property int imageWidth: currentItem ? currentItem.imageWidth : 0
                 property bool zooming: currentItem ? currentItem.zooming : false
 
+                id: imgSwipeView
                 width: mediaRect.width
                 height: root.height
                 interactive: !zooming
@@ -187,10 +190,10 @@ Rectangle {
                             source: filter.getImage(index).fullSizeUrl
                             reloadIconColor: "white"
 
-                            onHeightChanged: alighImage()
-                            onPaintedHeightChanged: alighImage()
+                            onHeightChanged: alignImage()
+                            onPaintedHeightChanged: alignImage()
 
-                            function alighImage() {
+                            function alignImage() {
                                 if (status === Image.Ready && height - paintedHeight < 300)
                                     verticalAlignment = Image.AlignTop;
                                 else
@@ -205,6 +208,13 @@ Rectangle {
                                 color: "white"
                                 text: `${index + 1}/${postOrRecordImages.length}`
                                 visible: postOrRecordImages.length > 1 && filter.imageVisible() && showDetails
+                            }
+
+                            onStatusChanged: {
+                                if (status == Image.Ready && index == videoPage.startImageIndex) {
+                                    imgSwipeView.currentIndex = videoPage.startImageIndex
+                                    imageLoaded()
+                                }
                             }
                         }
 

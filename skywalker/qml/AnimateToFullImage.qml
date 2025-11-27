@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Controls
-import skywalker
 
 Item {
     required property var thumbImage
     required property string imageAlt
+    property bool swipeMode: false
     property bool thumbImageVisible: true
     property var currentPage
     property int headerHeight: 0
@@ -21,11 +21,14 @@ Item {
 
         sourceComponent: Rectangle {
             property var img: image
+            readonly property real offsetZoom: 1.0 - zoomAnimation.zoom
+            readonly property real headerOffset: headerHeight * offsetZoom
+            readonly property real footerOffset: footerHeight * offsetZoom
 
             parent: Overlay.overlay
-            y: headerHeight
+            y: headerOffset
             width: parent.width
-            height: parent.height - headerHeight - footerHeight
+            height: parent.height - headerOffset - footerOffset
             color: "transparent"
             clip: true
 
@@ -36,7 +39,7 @@ Item {
 
                 id: image
                 x: relX
-                y: relY - headerHeight
+                y: relY - headerOffset
                 width: thumbImage.width
                 height: thumbImage.height
                 fillMode: thumbImage.fillMode
@@ -62,13 +65,13 @@ Item {
         property int origImplicitWidth: root.width
         property int origImplicitHeight: root.height
         property real zoom: 0.0
-        //readonly property int marginHeight: altText.alt ? Math.min(altText.contentHeight, altText.maxHeight) + altText.bottomMargin : 0
         readonly property int marginHeight: altText.alt ? altFlick.height + altText.bottomMargin : 0
         readonly property int maxHeight: root.height - marginHeight
         readonly property real scale: Math.min(root.width / origImplicitWidth, maxHeight / origImplicitHeight)
         readonly property real left: (root.width - origImplicitWidth * scale) / 2
         readonly property real right: left + origImplicitWidth * scale
-        readonly property real top: (maxHeight - origImplicitHeight * scale) / 2
+        readonly property bool alignToTop: swipeMode && maxHeight - origImplicitHeight * scale < 300
+        readonly property real top: alignToTop ? 0 : (maxHeight - origImplicitHeight * scale) / 2
         readonly property real bottom: top + origImplicitHeight * scale
 
         id: zoomAnimation
@@ -76,7 +79,7 @@ Item {
         property: "zoom"
         from: 0.0
         to: 1.0
-        duration: 200
+        duration: 250
         easing.type: Easing.InOutQuad
 
         onStopped: {
@@ -142,7 +145,7 @@ Item {
 
         ImageAltText {
             id: altText
-            alt: imageAlt
+            alt: swipeMode ? "" : imageAlt
         }
     }
 
@@ -152,18 +155,26 @@ Item {
 
     function setCurrentPage() {
         currentPage = root.currentStackItem()
+        setHeaderHeight()
+        setFooterHeight()
+    }
 
+    function setHeaderHeight() {
         if (typeof currentPage.getHeaderHeight == 'function')
             headerHeight = currentPage.getHeaderHeight()
         else
             headerHeight = 0
 
+        console.debug("Current page:", currentPage, "header:", headerHeight)
+    }
+
+    function setFooterHeight() {
         if (typeof currentPage.getFooterHeight == 'function')
             footerHeight = currentPage.getFooterHeight()
         else
             footerHeight = 0
 
-        console.debug("Current page:", currentPage, "header:", headerHeight,  "footer:", footerHeight)
+        console.debug("Current page:", currentPage, "footer:", footerHeight)
     }
 
     Component.onCompleted: {

@@ -6,6 +6,9 @@ import skywalker
 SkyListView {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property int startIndex: 0
+    property int previewIndex: 0
+    property var previewImage
     readonly property int closeTransition: StackView.Immediate
     property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
     property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
@@ -24,7 +27,7 @@ SkyListView {
     boundsBehavior: Flickable.StopAtBounds
     snapMode: ListView.SnapOneItem
     spacing: 2 // to avoid the next video peeping at the bottom of the screen sometimes
-    currentIndex: 0
+    currentIndex: startIndex
     highlightMoveVelocity: 2000
     maximumFlickVelocity: 8000
     interactive: !currentItem.zooming // qmllint disable missing-property
@@ -33,6 +36,7 @@ SkyListView {
 
     delegate: MediaFeedViewDelegate {
         width: postFeedView.width
+        startImageIndex: index == postFeedView.startIndex ? postFeedView.previewIndex : 0
         footerHeight: postFeedView.footerHeight
         headerHeight: postFeedView.headerHeight
         leftMarginWidth: postFeedView.leftMarginWidth
@@ -42,6 +46,11 @@ SkyListView {
         feedDid: postFeedView.feedDid
 
         onClosed: postFeedView.closed()
+
+        onImageLoaded: {
+            if (index === postFeedView.startIndex)
+                postFeedView.previewImage = null
+        }
 
         Loader {
             id: extraFooterLoader
@@ -103,6 +112,21 @@ SkyListView {
                 text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColorDarkMode}; text-decoration: none">Load more</a>`)
                 onLinkActivated: model.getFeedNextPage(skywalker)
             }
+        }
+    }
+
+    Loader {
+        id: previewLoader
+        active: Boolean(previewImage) && startIndex === currentIndex
+
+        sourceComponent: Image {
+            parent: Overlay.overlay
+            x: previewImage.relX
+            y: previewImage.relY
+            width: previewImage.width
+            height: previewImage.height
+            fillMode: previewImage.fillMode
+            source: previewImage.source
         }
     }
 

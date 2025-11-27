@@ -46,9 +46,9 @@ SkyListView {
         width: enclosingView.width
         swipeMode: [QEnums.AUTHOR_FEED_FILTER_VIDEO, QEnums.AUTHOR_FEED_FILTER_MEDIA].includes(feedFilter)
 
-        onActivateSwipe: {
+        onActivateSwipe: (imgIndex, previewImg) => {
             if (swipeMode)
-                root.viewMediaFeed(model, index, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
+                root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
             else
                 console.warn("This is not a media feed")
         }

@@ -48,11 +48,11 @@ ThumbImageView {
     }
 
     function getVisible() {
-        return canvas.visible ? !canvas.hideImage : visible
+        return fillMode == Image.PreserveAspectFit ? !canvas.hideImage : visible
     }
 
     function setVisible(v) {
-        if (canvas.visible)
+        if (fillMode == Image.PreserveAspectFit)
             canvas.hideImage = !v
         else
             visible = v

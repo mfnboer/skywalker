@@ -102,7 +102,7 @@ Rectangle {
 
     signal showHiddenReplies
     signal unfoldPosts
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
     signal addMorePosts(string uri)
     signal addOlderPosts
 
@@ -555,7 +555,7 @@ Rectangle {
                 swipeMode: postEntry.swipeMode
                 showRecord: postEntry.showRecord
 
-                onActivateSwipe: postEntry.activateSwipe()
+                onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
                 onUnrollThread: {
                     if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
                         skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
@@ -985,7 +985,7 @@ Rectangle {
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !unrollThread
         onClicked: {
             if (swipeMode)
-                activateSwipe()
+                activateSwipe(0, null)
             else
                 openPostThread()
         }

@@ -58,9 +58,9 @@ SkyListView {
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
 
-        onActivateSwipe: {
+        onActivateSwipe: (imgIndex, previewImg) => {
             let view = postFeedView
-            root.viewMediaFeed(model, index, (newIndex) => { view.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
+            root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => { view.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
         }
 
         Loader {

@@ -12,7 +12,7 @@ RoundCornerMask {
     readonly property list<var> imgList: [img1, img2, img3]
     readonly property int maxWidth: (guiSettings.maxImageHeight) * 1.5
 
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
 
     id: frame
     width: parent.width
@@ -100,12 +100,8 @@ RoundCornerMask {
                 }
             }
 
-            if (index >= 0) {
-                if (swipeMode)
-                    activateSwipe()
-                else
-                    fullImageLoader.show(index)
-            }
+            if (index >= 0)
+                fullImageLoader.show(index, swipeMode)
         }
     }
 
@@ -123,5 +119,7 @@ RoundCornerMask {
         id: fullImageLoader
         thumbImageViewList: imgList
         images: frame.images
+
+        onActivateSwipe: (imgIndex, previewImg) => frame.activateSwipe(imgIndex, previewImg)
     }
 }

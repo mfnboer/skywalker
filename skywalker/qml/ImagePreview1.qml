@@ -13,7 +13,7 @@ Item {
     property string maskColor: guiSettings.backgroundColor
     readonly property bool imgSizeKnown: images[0].width > 0 && images[0].height > 0 && frame.parent.width > 0
 
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
 
     id: preview
 
@@ -49,10 +49,8 @@ Item {
             onClicked: {
                 if (img.item && img.item.failedCanReload)
                     img.item.reload()
-                else if (swipeMode)
-                    activateSwipe()
                 else
-                    fullImageLoader.show(0)
+                    fullImageLoader.show(0, swipeMode)
             }
         }
 
@@ -71,6 +69,8 @@ Item {
         id: fullImageLoader
         thumbImageViewList: [img.item]
         images: preview.images
+
+        onActivateSwipe: (imgIndex, previewImg) => preview.activateSwipe(imgIndex, previewImg)
     }
 
     Component {

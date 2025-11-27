@@ -85,7 +85,7 @@ GridView {
 
         onActivateSwipe: {
             let item = mediaTilesView
-            root.viewMediaFeed(model, index, (newIndex) => {
+            root.viewMediaFeed(model, index, 0, null, (newIndex) => {
                 if (item)
                     item.goToIndex(newIndex)
                 else

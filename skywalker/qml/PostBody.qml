@@ -49,7 +49,7 @@ Column {
         (replaceThreadIndicator ? UnicodeFonts.turnLastThreadSymbolIntoLink(postText) : postText) +
         (showThreadIndicator ? `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none; font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</a>` : "")
 
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
     signal unrollThread
 
     id: postBody
@@ -349,7 +349,7 @@ Column {
             contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
-            onActivateSwipe: postBody.activateSwipe()
+            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
         }
     }
 
@@ -364,7 +364,7 @@ Column {
             contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
-            onActivateSwipe: postBody.activateSwipe()
+            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
         }
     }
 
@@ -379,7 +379,7 @@ Column {
             contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
-            onActivateSwipe: postBody.activateSwipe()
+            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
         }
     }
 
@@ -394,7 +394,7 @@ Column {
             contentLabeler: postContentLabeler
             swipeMode: postBody.swipeMode
 
-            onActivateSwipe: postBody.activateSwipe()
+            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
         }
     }
 
@@ -422,7 +422,7 @@ Column {
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
             swipeMode: postBody.swipeMode
 
-            onActivateSwipe: postBody.activateSwipe()
+            onActivateSwipe: postBody.activateSwipe(0, null)
         }
     }
 
