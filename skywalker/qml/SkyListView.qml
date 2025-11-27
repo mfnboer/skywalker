@@ -199,6 +199,14 @@ ListView {
         privateResetHeaderPosition()
     }
 
+    function getHeaderHeight() {
+        return (headerItem ? headerItem.height + headerTopY : 0) + guiSettings.headerMargin
+    }
+
+    function getFooterHeight() {
+        return (footerItem ? footerItem.height : 0) + guiSettings.footerMargin
+    }
+
     Component.onCompleted: {
         prevOriginY = originY
         virtualFooterStartY = originY - contentY

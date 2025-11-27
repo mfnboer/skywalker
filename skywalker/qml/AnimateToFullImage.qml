@@ -6,6 +6,9 @@ Item {
     required property var thumbImage
     required property string imageAlt
     property bool thumbImageVisible: true
+    property var currentPage
+    property int headerHeight: 0
+    property int footerHeight: 0
 
     signal done(var img)
     signal reverseDone()
@@ -16,20 +19,38 @@ Item {
         id: zoomImage
         active: false
 
-        sourceComponent: Image {
-            property point orig: thumbImage.parent.mapToItem(root.contentItem, thumbImage.x, thumbImage.y)
+        sourceComponent: Rectangle {
+            property var img: image
 
             parent: Overlay.overlay
-            x: orig.x
-            y: orig.y
-            width: thumbImage.width
-            height: thumbImage.height
-            fillMode: thumbImage.fillMode
-            source: thumbImage.source
+            y: headerHeight
+            width: parent.width
+            height: parent.height - headerHeight - footerHeight
+            color: "transparent"
+            clip: true
 
-            onStatusChanged: {
-                if (status == Image.Ready)
-                    thumbImage.visible = false
+            Image {
+                property point orig: thumbImage.parent.mapToItem(root.contentItem, thumbImage.x, thumbImage.y)
+                property int relX: orig.x
+                property int relY: orig.y
+
+                id: image
+                x: relX
+                y: relY - headerHeight
+                width: thumbImage.width
+                height: thumbImage.height
+                fillMode: thumbImage.fillMode
+                source: thumbImage.source
+
+                onStatusChanged: {
+                    if (status == Image.Ready)
+                        thumbImage.setVisible(false)
+                }
+
+                function setRelPos(posX, posY) {
+                    relX = posX
+                    relY = posY
+                }
             }
         }
     }
@@ -41,7 +62,8 @@ Item {
         property int origImplicitWidth: root.width
         property int origImplicitHeight: root.height
         property real zoom: 0.0
-        readonly property int marginHeight: altText.alt ? Math.min(altText.contentHeight, altText.maxHeight) + altText.bottomMargin : 0
+        //readonly property int marginHeight: altText.alt ? Math.min(altText.contentHeight, altText.maxHeight) + altText.bottomMargin : 0
+        readonly property int marginHeight: altText.alt ? altFlick.height + altText.bottomMargin : 0
         readonly property int maxHeight: root.height - marginHeight
         readonly property real scale: Math.min(root.width / origImplicitWidth, maxHeight / origImplicitHeight)
         readonly property real left: (root.width - origImplicitWidth * scale) / 2
@@ -61,25 +83,25 @@ Item {
             root.enablePopupShield(false)
 
             if (from < to)
-                done(zoomImage.item)
+                done(zoomImage.item.img)
             else
                 reverseDone()
 
             zoomImage.item.visible = false
-            thumbImage.visible = thumbImageVisible
+            thumbImage.setVisible(thumbImageVisible)
         }
 
         onZoomChanged: {
             const newX = orig.x - (orig.x - left) * zoom
             const newY = orig.y - (orig.y - top) * zoom
-            zoomImage.item.x = newX
-            zoomImage.item.y = newY
-            zoomImage.item.width = orig.x + origWidth + (right - orig.x - origWidth) * zoom - newX
-            zoomImage.item.height = orig.y + origHeight + (bottom - orig.y - origHeight) * zoom - newY
+            zoomImage.item.img.setRelPos(newX, newY)
+            zoomImage.item.img.width = orig.x + origWidth + (right - orig.x - origWidth) * zoom - newX
+            zoomImage.item.img.height = orig.y + origHeight + (bottom - orig.y - origHeight) * zoom - newY
             root.enablePopupShield(true, zoom)
         }
 
         function run() {
+            setCurrentPage()
             orig = thumbImage.parent.mapToItem(root.contentItem, thumbImage.x, thumbImage.y)
             origWidth = thumbImage.width
             origHeight = thumbImage.height
@@ -90,34 +112,63 @@ Item {
         }
 
         function reverseRun() {
+            setCurrentPage()
             root.enablePopupShield(true, 1.0)
             zoomImage.item.visible = true
-            thumbImage.visible = false
+            thumbImage.setVisible(false)
             from = 1.0
             to = 0.0
             start()
         }
     }
 
-    ImageAltText {
+    // The flickable is needed to calculate the correct height of the alt-text when
+    // a scrollbar gets added.
+    Flickable {
+        id: altFlick
+        parent: Overlay.overlay
         anchors.left: parent.left
         anchors.leftMargin: altText.leftMargin
         anchors.right: parent.right
         anchors.rightMargin: altText.rightMargin
-
-        id: altText
-        parent: Overlay.overlay
-        alt: imageAlt
+        height: Math.min(contentHeight, altText.maxHeight)
+        clip: true
+        contentWidth: width
+        contentHeight: altText.contentHeight
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: ScrollBar { id: altScrollBar }
         visible: false
+
+        ImageAltText {
+            id: altText
+            alt: imageAlt
+        }
     }
 
     function reverseRun() {
         zoomAnimation.reverseRun()
     }
 
+    function setCurrentPage() {
+        currentPage = root.currentStackItem()
+
+        if (typeof currentPage.getHeaderHeight == 'function')
+            headerHeight = currentPage.getHeaderHeight()
+        else
+            headerHeight = 0
+
+        if (typeof currentPage.getFooterHeight == 'function')
+            footerHeight = currentPage.getFooterHeight()
+        else
+            footerHeight = 0
+
+        console.debug("Current page:", currentPage, "header:", headerHeight,  "footer:", footerHeight)
+    }
+
     Component.onCompleted: {
         // An image in a RoundedFrame has its visible property set to false
-        thumbImageVisible = thumbImage.visible
+        thumbImageVisible = thumbImage.getVisible()
 
         zoomAnimation.run()
     }

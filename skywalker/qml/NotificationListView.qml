@@ -331,4 +331,8 @@ SkyPage {
                 nonActiveUser.notificationListModel.clear()
         }
     }
+
+    function getHeaderHeight() {
+        return header.height + tabBar.height + guiSettings.headerMargin
+    }
 }

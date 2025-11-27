@@ -14,9 +14,12 @@ ThumbImageView {
     smooth: false
 
     Rectangle {
+        property bool hideImage: false
+
+        id: canvas
         width: parent.width
         height: parent.height
-        z: parent.z - 1
+        z: parent.z - (hideImage ? -1 : 1)
         color: canvasColor
         visible: fillMode == Image.PreserveAspectFit
     }
@@ -42,5 +45,16 @@ ThumbImageView {
         thumb.grabToImage((result) => {
             canvasColor = imageUtils.getDominantColor(result.image, cutRect, 16 * Screen.devicePixelRatio)
         })
+    }
+
+    function getVisible() {
+        return canvas.visible ? !canvas.hideImage : visible
+    }
+
+    function setVisible(v) {
+        if (canvas.visible)
+            canvas.hideImage = !v
+        else
+            visible = v
     }
 }

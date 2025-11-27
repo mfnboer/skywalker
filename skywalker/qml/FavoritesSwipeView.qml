@@ -67,6 +67,11 @@ SwipeView {
                 if (item)
                     item.resetHeaderPosition()
             }
+
+            function getHeaderHeight() {
+                if (item && typeof item.getHeaderHeight == 'function')
+                    return item.getHeaderHeight()
+            }
         }
     }
 
@@ -170,5 +175,16 @@ SwipeView {
             let loader = itemAt(i)
             loader.active = false
         }
+    }
+
+    function getHeaderHeight() {
+        if (currentItem && typeof currentItem.getHeaderHeight == 'function')
+            return currentItem.getHeaderHeight()
+
+        return 0
+    }
+
+    function getFooterHeight() {
+        return root.footer.visible ? root.footer.height : 0
     }
 }

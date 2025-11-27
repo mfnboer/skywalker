@@ -1711,6 +1711,10 @@ SkyPage {
         return isUserDid(author.did)
     }
 
+    function getHeaderHeight() {
+        return authorFeedView.headerItem.getFeedMenuBar().height + guiSettings.headerMargin
+    }
+
     Component.onDestruction: {
         skywalker.onGetAuthorFeedFailed.disconnect(feedFailedHandler)
         skywalker.onGetAuthorFeedOk.disconnect(feedOkHandler)

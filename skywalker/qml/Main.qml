@@ -1939,10 +1939,10 @@ ApplicationWindow {
                 previewImage: previewImage
         })
         view.onClosed.connect(() => {
+            popStack(null, StackView.Immediate)
+
             if (closeCb)
                 closeCb()
-
-            popStack(null, StackView.Immediate)
         })
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })

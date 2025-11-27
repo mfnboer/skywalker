@@ -7,4 +7,11 @@ Page {
 
     Material.background: guiSettings.backgroundColor
 
+    function getHeaderHeight() {
+        return (header ? header.height : 0) + guiSettings.headerMargin
+    }
+
+    function getFooterHeight() {
+        return (footer ? footer.height : 0) + guiSettings.footerMargin
+    }
 }

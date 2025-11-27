@@ -26,8 +26,8 @@ SkyPage {
 
         sourceComponent: Image {
             parent: Overlay.overlay
-            x: previewImage.x
-            y: previewImage.y
+            x: previewImage.relX
+            y: previewImage.relY
             width: previewImage.width
             height: previewImage.height
             fillMode: previewImage.fillMode

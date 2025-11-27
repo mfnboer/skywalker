@@ -188,6 +188,13 @@ SkyPage {
         running: !parent.enabled
     }
 
+    function getHeaderHeight() {
+        if (currentViewItem && typeof currentViewItem.getHeaderHeight == 'function')
+            return currentViewItem.getHeaderHeight()
+
+        return 0
+    }
+
     function resetHeaderPosition() {
         if (currentViewItem)
             currentViewItem.resetHeaderPosition()

@@ -84,4 +84,12 @@ Image {
         retryTimer.interval = 1
         retryTimer.start()
     }
+
+    function getVisible() {
+        return visible
+    }
+
+    function setVisible(v) {
+        visible = v
+    }
 }

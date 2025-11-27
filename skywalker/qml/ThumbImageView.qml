@@ -30,5 +30,4 @@ ImageAutoRetry {
             opacity: 0.6
         }
     }
-
 }

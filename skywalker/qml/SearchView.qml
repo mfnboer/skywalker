@@ -1204,6 +1204,14 @@ SkyPage {
         postsViewLatest.model.clear()
     }
 
+    function getHeaderHeight() {
+        return searchStack.y + header.height + guiSettings.headerMargin
+    }
+
+    function getFooterHeight() {
+        return pageFooter.height + guiSettings.footerMargin
+    }
+
     function forceDestroy() {
         searchUtils.clearAllSearchResults()
         searchUtils.removeModels()
