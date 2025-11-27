@@ -7,7 +7,7 @@ SkyListView {
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     readonly property string sideBarTitle: model.feedName
-    readonly property SvgImage sideBarSvg: SvgOutline.quote
+    readonly property SvgImage sideBarSvg: SvgFilled.quote
 
     signal closed
 
@@ -19,7 +19,7 @@ SkyListView {
     header: PostFeedHeader {
         userDid: postFeedView.userDid
         feedName: sideBarTitle
-        defaultSvg: SvgFilled.quote
+        defaultSvg: sideBarSvg
         visible: !root.showSideBar
 
         onClosed: postFeedView.closed()

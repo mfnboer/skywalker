@@ -1473,7 +1473,10 @@ PostFeedModel::Page::Ptr PostFeedModel::createPageQuoteChain(TimelineFeed&& feed
     {
         if (page->mFeed.back().getRecordViewFromRecordOrRecordWithMedia())
             page->mCursorNextPage = page->mFeed.back().getRecordViewFromRecordOrRecordWithMedia()->getUri();
-        else
+
+        // There could be a record in the post, but that may be NotFound or Blocked. In that case
+        // The URI is empty, and the chain cannot be coninued further.
+        if (page->mCursorNextPage.isEmpty())
             page->mFeed.back().setEndOfFeed(true);
     }
 

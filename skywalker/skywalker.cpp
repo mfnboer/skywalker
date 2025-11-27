@@ -1735,6 +1735,7 @@ void Skywalker::getQuoteChain(int modelId, const QString& nextPostUri, std::dequ
 {
     qDebug() << "Get quote chain model:" << modelId << "next:" << nextPostUri << "chain size:" << quoteChain.size();
 
+    // The URI will be empty in case of a deleted or blocked post
     if (nextPostUri.isEmpty() || quoteChain.size() >= QUOTE_CHAIN_PAGE_SIZE)
     {
         setQuoteChainInModel(modelId, std::move(quoteChain));

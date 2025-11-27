@@ -217,7 +217,7 @@ Item {
                     visible: isQuotePost
                     onTriggered: quoteChain()
 
-                    MenuItemSvg { svg: SvgOutline.quote }
+                    MenuItemSvg { svg: SvgFilled.quote }
                 }
                 AccessibleMenuItem {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
