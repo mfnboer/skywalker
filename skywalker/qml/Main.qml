@@ -1969,11 +1969,16 @@ ApplicationWindow {
         }
     }
 
-    function viewFullVideo(videoView) {
+    function viewFullVideo(videoView, previewImage, closeCb) {
         let component = guiSettings.createComponent("FullVideoView.qml")
-        let view = component.createObject(root, { videoView: videoView })
-        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
-        pushStack(view)
+        let view = component.createObject(root, { videoView: videoView, previewImage: previewImage })
+        view.onClosed.connect(() => {
+            popStack(null, StackView.Immediate)
+
+            if (closeCb)
+                closeCb()
+        })
+        pushStack(view, StackView.Immediate)
     }
 
     function viewTimeline() {

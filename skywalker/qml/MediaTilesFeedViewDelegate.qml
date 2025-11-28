@@ -129,7 +129,7 @@ Rectangle {
                 swipeMode: true
                 tileMode: true
 
-                onActivateSwipe: page.activateSwipe(0, null)
+                onActivateSwipe: (imgIndex, previewImg) => page.activateSwipe(imgIndex, previewImg)
             }
         }
 

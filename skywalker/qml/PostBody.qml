@@ -422,7 +422,7 @@ Column {
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
             swipeMode: postBody.swipeMode
 
-            onActivateSwipe: postBody.activateSwipe(0, null)
+            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
         }
     }
 

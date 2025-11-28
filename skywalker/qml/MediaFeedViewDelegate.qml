@@ -148,6 +148,8 @@ Rectangle {
                 autoPlay: false
                 useIfNeededHeight: postColumn.height
 
+                onThumbImageLoaded: imageLoaded()
+
                 onVideoLoaded: {
                     if (onScreen)
                         videoItem.play()

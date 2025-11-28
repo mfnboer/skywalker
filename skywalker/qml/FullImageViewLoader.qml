@@ -6,6 +6,7 @@ Loader {
     required property list<imageview> images
     property int imageIndex: 0
     property bool swipeMode: false
+    property var videoView
 
     signal finished
     signal activateSwipe(int imgIndex, var img)
@@ -23,6 +24,9 @@ Loader {
             if (swipeMode) {
                 fullImageLoader.activateSwipe(imageIndex, fullImg)
                 fullImageLoader.active = false
+            } else if (videoView) {
+                let imgAnimation = animation
+                root.viewFullVideo(videoView, fullImg, () => { imgAnimation.reverseRun() })
             } else {
                 let imgAnimation = animation
                 root.viewFullImage(images, imageIndex, fullImg, () => { imgAnimation.reverseRun() })

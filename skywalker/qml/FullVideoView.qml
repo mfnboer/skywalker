@@ -7,6 +7,7 @@ SkyPage {
     property Skywalker skywalker: root.getSkywalker()
     readonly property var userSettings: skywalker ? skywalker.getUserSettings() : null
     required property var videoView // videoview
+    property var previewImage
     readonly property bool noSideBar: true
 
     signal closed
@@ -17,6 +18,21 @@ SkyPage {
     background: Rectangle { color: guiSettings.fullScreenColor }
 
     onCover: view.pause()
+
+    Loader {
+        id: previewLoader
+        active: Boolean(previewImage)
+
+        sourceComponent: Image {
+            parent: Overlay.overlay
+            x: previewImage.relX
+            y: previewImage.relY
+            width: previewImage.width
+            height: previewImage.height
+            fillMode: previewImage.fillMode
+            source: previewImage.source
+        }
+    }
 
     VideoView {
         property basicprofile nullProfile
@@ -34,6 +50,8 @@ SkyPage {
         disabledColor: "darkslategrey"
         backgroundColor: guiSettings.fullScreenColor
         isFullViewMode: true
+
+        onThumbImageLoaded: previewImage = null
     }
 
     Rectangle {

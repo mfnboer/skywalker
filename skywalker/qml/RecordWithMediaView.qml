@@ -124,7 +124,7 @@ Item {
                 highlight: recordItem.highlight
                 swipeMode: recordItem.swipeMode
 
-                onActivateSwipe: recordItem.activateSwipe(0, null)
+                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
             }
         }
 

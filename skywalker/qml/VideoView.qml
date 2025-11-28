@@ -4,7 +4,7 @@ import QtMultimedia
 import skywalker
 
 Column {
-    required property var videoView // videoView
+    required property videoview videoView // videoView
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     required property basicprofile contentLabeler
@@ -53,8 +53,9 @@ Column {
     // Cache
     property var videoHandle
 
+    signal thumbImageLoaded
     signal videoLoaded
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
 
     id: videoStack
     spacing: isFullViewMode ? -playControls.height - (swipeMode ? 0 : guiSettings.footerMargin) : 10
@@ -107,11 +108,18 @@ Column {
                 }
 
                 Loader {
+                    readonly property int imgStatus: item ? item.status : Image.Null
+
                     id: thumbImg
                     x: (parent.width - getWidth()) / 2
                     y: moveToTop ? 0 : (parent.height - getHeight()) / 2
                     active: filter.imageVisible()
                     sourceComponent: videoSizeIsKnown ? knownSizeComp : (videoStack.isFullViewMode ? unknownSizeComp : fixedSizeComp)
+
+                    onImgStatusChanged: {
+                        if (imgStatus == Image.Ready || imgStatus == Image.Error)
+                            thumbImageLoaded()
+                    }
 
                     function getWidth() {
                         return item ? item.width : 0
@@ -137,10 +145,6 @@ Column {
 
                         return item ? item.height : 0
                     }
-
-                    function getStatus() {
-                        return item ? item.status : Image.Null
-                    }
                 }
 
                 Rectangle {
@@ -151,7 +155,7 @@ Column {
                     width: tileMode ? parent.width : ((maxWidth > 0 && parent.width > maxWidth) ? maxWidth : parent.width)
                     height: tileMode ? videoStack.height : (width / videoStack.getAspectRatio())
                     color: guiSettings.avatarDefaultColor
-                    visible: (videoView.imageView.isNull() || thumbImg.getStatus() !== Image.Ready && filter.imageVisible()) && !videoPlayer.playing
+                    visible: (videoView.imageView.isNull() || thumbImg.imgStatus === Image.Error && filter.imageVisible()) && !videoPlayer.playing
 
                     onHeightChanged: {
                         if (maxHeight && height > maxHeight && !tileMode)
@@ -200,7 +204,7 @@ Column {
 
             onClicked: {
                 if (swipeMode && !isFullViewMode) {
-                    activateSwipe()
+                    fullImageLoader.show(0, true)
                     return
                 }
 
@@ -380,13 +384,15 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
-            enabled: filter.imageVisible() && (!swipeMode || isFullViewMode)
+            enabled: filter.imageVisible()
 
             onClicked: {
                 if (isFullViewMode)
                     playControls.show = !playControls.show
-                else
+                else if (thumbImg.imgStatus !== Image.Ready)
                     root.viewFullVideo(videoView)
+                else
+                    fullImageLoader.show(0, swipeMode)
             }
         }
 
@@ -396,6 +402,15 @@ Column {
             maskColor: videoStack.backgroundColor == "transparent" ? guiSettings.backgroundColor : videoStack.backgroundColor
             visible: !isFullViewMode && !swipeMode && !tileMode
         }
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [thumbImg.item]
+        images: [videoStack.videoView.imageView]
+        videoView: videoStack.videoView
+
+        onActivateSwipe: (imgIndex, previewImg) => videoStack.activateSwipe(imgIndex, previewImg)
     }
 
     Rectangle {
