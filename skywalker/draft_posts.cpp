@@ -187,8 +187,8 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
 
     draft->mReplyToPost = createReplyToPost(draftPost->replyToUri(), draftPost->replyToAuthor(),
                                             draftPost->replyToText(), draftPost->replyToDateTime());
-    draft->mQuote = createQuote(draftPost->quoteUri(), draftPost->quoteAuthor(), draftPost->quoteText(),
-                                draftPost->quoteDateTime(),
+    draft->mQuote = createQuote(draftPost->quoteUri(), draftPost->quoteAuthor(),
+                                draftPost->quoteText(), draftPost->quoteDateTime(),
                                 draftPost->quoteFeed(), draftPost->quoteList());
 
     draft->mEmbeddingDisabled = draftPost->embeddingDisabled();
@@ -200,6 +200,16 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
 
         if (!threadPost)
             return false;
+
+        auto quote = createQuote(draftThreadPost->quoteUri(), draftThreadPost->quoteAuthor(),
+                                 draftThreadPost->quoteText(), draftThreadPost->quoteDateTime(),
+                                 draftThreadPost->quoteFeed(), draftThreadPost->quoteList());
+
+        if (quote)
+        {
+            auto quoteJson = quote->toJson();
+            threadPost->mJson.insert(Lexicon::DRAFT_POST_QUOTE_FIELD, quoteJson);
+        }
 
         draft->mThreadPosts.push_back(std::move(threadPost));
     }
@@ -776,6 +786,13 @@ ATProto::AppBskyGraph::ListView::SharedPtr DraftPosts::createQuoteList(const Lis
     return view;
 }
 
+static Draft::Quote::SharedPtr getDraftQuote(const ATProto::AppBskyFeed::Record::Post::SharedPtr& post)
+{
+    const ATProto::XJsonObject xjson(post->mJson);
+    auto quote = xjson.getOptionalObject<Draft::Quote>(Lexicon::DRAFT_POST_QUOTE_FIELD);
+    return quote;
+}
+
 ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Draft& draft, const QString& recordUri)
 {
     ATProto::AppBskyFeed::PostFeed postFeed;
@@ -788,6 +805,7 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Dra
     {
         Draft::Draft threadPostDraft;
         threadPostDraft.mPost = std::move(threadPost);
+        threadPostDraft.mQuote = getDraftQuote(threadPostDraft.mPost);
         auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
         view->mPost = convertDraftToPostView(threadPostDraft, recordUri);
         postFeed.push_back(std::move(view));
@@ -958,6 +976,14 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(
     case ATProto::AppBskyEmbed::EmbedType::UNKNOWN:
         qWarning() << "Unknown embed type";
         break;
+    }
+
+    const bool embedSet = std::visit([](const auto& v){ return v != nullptr; }, view->mEmbed);
+
+    if (!embedSet)
+    {
+        qWarning() << "Embed could not be created for:" << (int)view->mType;
+        return nullptr;
     }
 
     return view;
