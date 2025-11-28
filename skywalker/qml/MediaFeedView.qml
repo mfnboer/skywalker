@@ -34,9 +34,25 @@ SkyListView {
 
     Accessible.name: postFeedView.model.feedName
 
+    Loader {
+        id: previewLoader
+        active: Boolean(previewImage) && startIndex === currentIndex
+
+        sourceComponent: Image {
+            parent: Overlay.overlay
+            x: previewImage.relX
+            y: previewImage.relY
+            width: previewImage.width
+            height: previewImage.height
+            fillMode: previewImage.fillMode
+            source: previewImage.source
+        }
+    }
+
     delegate: MediaFeedViewDelegate {
         width: postFeedView.width
-        startImageIndex: index == postFeedView.startIndex ? postFeedView.previewIndex : 0
+        startImageIndex: index == postFeedView.startIndex ? postFeedView.previewIndex : -1
+        startImageWidth: (index == postFeedView.startIndex && postFeedView.previewImage) ? postFeedView.previewImage.width : -1
         footerHeight: postFeedView.footerHeight
         headerHeight: postFeedView.headerHeight
         leftMarginWidth: postFeedView.leftMarginWidth
@@ -112,21 +128,6 @@ SkyListView {
                 text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColorDarkMode}; text-decoration: none">Load more</a>`)
                 onLinkActivated: model.getFeedNextPage(skywalker)
             }
-        }
-    }
-
-    Loader {
-        id: previewLoader
-        active: Boolean(previewImage) && startIndex === currentIndex
-
-        sourceComponent: Image {
-            parent: Overlay.overlay
-            x: previewImage.relX
-            y: previewImage.relY
-            width: previewImage.width
-            height: previewImage.height
-            fillMode: previewImage.fillMode
-            source: previewImage.source
         }
     }
 

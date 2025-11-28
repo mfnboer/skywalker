@@ -65,12 +65,12 @@ Item {
         property int origImplicitWidth: root.width
         property int origImplicitHeight: root.height
         property real zoom: 0.0
-        readonly property int marginHeight: altText.alt ? altFlick.height + altText.bottomMargin : 0
+        readonly property int marginHeight: Boolean(altText.alt) ? altFlick.height + altText.bottomMargin : 0
         readonly property int maxHeight: root.height - marginHeight
         readonly property real scale: Math.min(root.width / origImplicitWidth, maxHeight / origImplicitHeight)
         readonly property real left: (root.width - origImplicitWidth * scale) / 2
         readonly property real right: left + origImplicitWidth * scale
-        readonly property bool alignToTop: swipeMode && maxHeight - origImplicitHeight * scale < 300
+        readonly property bool alignToTop: swipeMode && (maxHeight - origImplicitHeight * scale) < guiSettings.topAlignmentThreshold
         readonly property real top: alignToTop ? 0 : (maxHeight - origImplicitHeight * scale) / 2
         readonly property real bottom: top + origImplicitHeight * scale
 
@@ -111,6 +111,7 @@ Item {
             origImplicitWidth = thumbImage.implicitWidth
             origImplicitHeight = thumbImage.implicitHeight
             zoomImage.active = true
+            console.debug("ALIGNMENT:", maxHeight - origImplicitHeight * scale)
             start()
         }
 

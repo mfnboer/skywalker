@@ -40,6 +40,7 @@ Item {
     readonly property int tabBarHeight: 40
     readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
+    readonly property int topAlignmentThreshold: 300
     readonly property int verificationBadgeSize: 13
 
     // Aspect ratio (height / width)

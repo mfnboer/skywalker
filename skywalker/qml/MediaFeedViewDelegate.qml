@@ -71,7 +71,8 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
-    property int startImageIndex: 0
+    property int startImageIndex: -1
+    property int startImageWidth: -1
     property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
     property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
@@ -122,8 +123,7 @@ Rectangle {
         property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
 
         id: mediaRect
-        x: leftMarginWidth
-        width: root.width - leftMarginWidth - rightMarginWidth
+        width: root.width
         height: root.height
         color: "transparent"
 
@@ -194,7 +194,7 @@ Rectangle {
                             onPaintedHeightChanged: alignImage()
 
                             function alignImage() {
-                                if (status === Image.Ready && height - paintedHeight < 300)
+                                if (status === Image.Ready && height - paintedHeight < guiSettings.topAlignmentThreshold)
                                     verticalAlignment = Image.AlignTop;
                                 else
                                     verticalAlignment = Image.AlignVCenter
@@ -212,6 +212,7 @@ Rectangle {
 
                             onStatusChanged: {
                                 if (status == Image.Ready && index == videoPage.startImageIndex) {
+                                    console.debug("ALIGNMENT:", height - paintedHeight)
                                     imgSwipeView.currentIndex = videoPage.startImageIndex
                                     imageLoaded()
                                 }
@@ -318,7 +319,6 @@ Rectangle {
     Rectangle {
         width: parent.width
         anchors.top: postColumn.top
-        //anchors.bottom: postColumn.bottom
         height: postColumn.height + (Boolean(postOrRecordVideo) ? 0 : (root.height - postColumn.y - postColumn.height))
         gradient: Gradient {
             GradientStop { position: 0.0; color: "#00000000" }
@@ -337,11 +337,18 @@ Rectangle {
 
     Column {
         id: postColumn
-        x: leftMarginWidth + (mediaRect.width - width) / 2
+        x: Math.max(leftMarginWidth + 10, (mediaRect.width - width) / 2)
         anchors.bottom: mediaRect.bottom
         anchors.bottomMargin: mediaRect.bottomMargin + videoPage.footerHeight
-        width: Math.max(mediaRect.mediaWidth - 20, 200)
+        width: calcColumnWidth()
         visible: mediaRect.showDetails
+
+        function calcColumnWidth() {
+            let w = Math.max(mediaRect.mediaWidth, startImageWidth, 220)
+            w = Math.min(w, mediaRect.width - leftMarginWidth - rightMarginWidth)
+            w -= 20
+            return w
+        }
 
         Rectangle {
             width: parent.width
