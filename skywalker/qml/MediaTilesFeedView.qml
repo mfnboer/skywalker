@@ -83,9 +83,9 @@ GridView {
         feedAcceptsInteractions: mediaTilesView.acceptsInteractions
         feedDid: mediaTilesView.feedDid
 
-        onActivateSwipe: {
+        onActivateSwipe: (imgIndex, previewImg) => {
             let item = mediaTilesView
-            root.viewMediaFeed(model, index, 0, null, (newIndex) => {
+            root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => {
                 if (item)
                     item.goToIndex(newIndex)
                 else

@@ -87,7 +87,7 @@ Rectangle {
     property var mediaItem: videoItem ? videoItem : imageItem
     property bool onScreen: false
 
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
 
     id: page
     color: guiSettings.backgroundColor
@@ -129,7 +129,7 @@ Rectangle {
                 swipeMode: true
                 tileMode: true
 
-                onActivateSwipe: page.activateSwipe()
+                onActivateSwipe: page.activateSwipe(0, null)
             }
         }
 
@@ -173,8 +173,26 @@ Rectangle {
                     contentLabeler: postContentLabeler
                     images: postOrRecordImages
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if (parent.failedCanReload)
+                            parent.reload()
+                        else
+                            fullImageLoader.show(0, true)
+                    }
+                }
             }
         }
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [imageLoader.item]
+        images: postOrRecordImages
+
+        onActivateSwipe: (imgIndex, previewImg) => page.activateSwipe(imgIndex, previewImg)
     }
 
     Rectangle {
@@ -348,7 +366,7 @@ Rectangle {
         z: -2
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY)
-        onClicked: activateSwipe()
+        onClicked: activateSwipe(0, null)
     }
 
     function checkOnScreen() {

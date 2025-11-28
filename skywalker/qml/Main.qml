@@ -2072,7 +2072,7 @@ ApplicationWindow {
     }
 
     function viewMediaFeed(model, index, previewIndex, previewImg, closeCb = (newIndex) => {}, viewByDid = "") {
-        console.debug("View media feed:", model.feedName, "index:", index, "previewIndex:", previewIndex)
+        console.debug("View media feed:", model.feedName, "index:", index, "previewIndex:", previewIndex, previewImg)
         let component = guiSettings.createComponent("MediaFeedView.qml")
         let view = component.createObject(root, {
                 userDid: viewByDid,
