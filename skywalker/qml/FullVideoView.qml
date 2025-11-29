@@ -51,7 +51,7 @@ SkyPage {
         backgroundColor: guiSettings.fullScreenColor
         isFullViewMode: true
 
-        onThumbImageLoaded: previewImage = null
+        onThumbImageLoaded: previewLoader.active = false
     }
 
     Rectangle {
