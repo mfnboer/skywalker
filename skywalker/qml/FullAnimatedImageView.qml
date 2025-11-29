@@ -109,6 +109,10 @@ SkyPage {
         displayUtils.setStatusBarColor(guiSettings.headerColor)
     }
 
+    function cancel() {
+        closed()
+    }
+
     Component.onDestruction: {
         resetSystemBarsColor()
     }

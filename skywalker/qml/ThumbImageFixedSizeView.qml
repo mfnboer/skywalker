@@ -42,6 +42,8 @@ ThumbImageView {
         const cutRect = Qt.rect(cutX * Screen.devicePixelRatio, cutY * Screen.devicePixelRatio,
                                 cutWidth * Screen.devicePixelRatio, cutHeight * Screen.devicePixelRatio)
 
+        console.debug("Grab image:", width, height, image)
+
         thumb.grabToImage((result) => {
             canvasColor = imageUtils.getDominantColor(result.image, cutRect, 16 * Screen.devicePixelRatio)
         })

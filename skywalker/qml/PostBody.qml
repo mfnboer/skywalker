@@ -40,6 +40,7 @@ Column {
     property bool showRecord: true
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
     readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
+    property bool componentCompleted: false
 
     // The font-size is set to make sure the thread indicator is in normal text size when the
     // post is giant emoji only.
@@ -518,24 +519,26 @@ Column {
     }
 
     onPostRecordChanged: {
-        if (postRecord)
+        if (postRecord && componentCompleted)
             showPostRecord()
     }
 
     onPostRecordWithMediaChanged: {
-        if (postRecordWithMedia)
+        if (postRecordWithMedia && componentCompleted)
             showPostRecordWidthMedia()
     }
 
     onVisibleChanged: {
-        if (postBody.visible && !postBody.attachmentsInitialized)
+        if (postBody.visible && !postBody.attachmentsInitialized && componentCompleted)
             initAttachments()
     }
 
     onWidthChanged: {
-        // The disaply of these labels depend on the width of the post body
-        showLanguageLabels()
-        showContentLabels()
+        // The display of these labels depends on the width of the post body
+        if (componentCompleted) {
+            showLanguageLabels()
+            showContentLabels()
+        }
     }
 
     function initAttachments() {
@@ -546,6 +549,8 @@ Column {
     }
 
     Component.onCompleted: {
+        componentCompleted = true
+
         if (!postBody.visible)
             return
 

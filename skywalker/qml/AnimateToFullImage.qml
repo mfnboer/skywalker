@@ -46,6 +46,8 @@ Item {
                 source: thumbImage.source
 
                 onStatusChanged: {
+                    console.debug("Zoom image status:", status)
+
                     if (status == Image.Ready) {
                         thumbImage.setVisible(false)
                         zoomAnimation.start()

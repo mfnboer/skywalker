@@ -171,6 +171,10 @@ SkyPage {
         displayUtils.setStatusBarTransparent(false, backgroundColor)
     }
 
+    function cancel() {
+        closed()
+    }
+
     Component.onDestruction: {
         resetSystemBarsColor()
     }
