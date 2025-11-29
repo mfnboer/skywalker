@@ -71,11 +71,11 @@ SkyPage {
         id: imgLoader
         active: !Boolean(previewImage)
 
-        AnimatedImageAutoRetry {
+        sourceComponent: AnimatedImageAutoRetry {
             id: img
-            y: (parent.height - altText.height - height) / 2
-            width: parent.width
-            height: parent.height - altText.height
+            y: (page.height - altText.height - height) / 2
+            width: page.width
+            height: page.height - altText.height
             fillMode: Image.PreserveAspectFit
             source: imageUrl
         }

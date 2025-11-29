@@ -214,7 +214,6 @@ Rectangle {
 
                             onStatusChanged: {
                                 if (status == Image.Ready && index == videoPage.startImageIndex) {
-                                    console.debug("ALIGNMENT:", height - paintedHeight)
                                     imgSwipeView.currentIndex = videoPage.startImageIndex
                                     imageLoaded()
                                 }

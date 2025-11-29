@@ -46,8 +46,18 @@ Item {
                 source: thumbImage.source
 
                 onStatusChanged: {
-                    if (status == Image.Ready)
+                    if (status == Image.Ready) {
                         thumbImage.setVisible(false)
+                        zoomAnimation.start()
+                    } else if (status == Image.Error) {
+                        // Make sure the animation always gets started
+                        zoomAnimation.start()
+                    }
+                }
+
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: image.status == Image.Loading
                 }
 
                 function setRelPos(posX, posY) {
@@ -111,8 +121,6 @@ Item {
             origImplicitWidth = thumbImage.implicitWidth
             origImplicitHeight = thumbImage.implicitHeight
             zoomImage.active = true
-            console.debug("ALIGNMENT:", maxHeight - origImplicitHeight * scale)
-            start()
         }
 
         function reverseRun() {
