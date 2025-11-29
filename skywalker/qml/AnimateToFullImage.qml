@@ -91,7 +91,7 @@ Item {
         property: "zoom"
         from: 0.0
         to: 1.0
-        duration: 250
+        duration: 200
         easing.type: Easing.InOutQuad
 
         onStopped: {
