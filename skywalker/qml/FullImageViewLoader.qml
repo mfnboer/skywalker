@@ -3,10 +3,12 @@ import skywalker
 
 Loader {
     required property list<var> thumbImageViewList
-    required property list<imageview> images
+    property list<imageview> images
     property int imageIndex: 0
     property bool swipeMode: false
     property var videoView
+    property bool isAnimatedImage: false
+    property string animatedImageAlt
 
     signal finished
     signal activateSwipe(int imgIndex, var img)
@@ -17,7 +19,7 @@ Loader {
     sourceComponent: AnimateToFullImage {
         id: animation
         thumbImage: thumbImageViewList[imageIndex]
-        imageAlt: images[imageIndex].alt
+        imageAlt: isAnimatedImage ? animatedImageAlt : images[imageIndex].alt
         swipeMode: fullImageLoader.swipeMode
 
         onDone: (fullImg) => {
@@ -26,10 +28,13 @@ Loader {
                 fullImageLoader.active = false
             } else if (videoView) {
                 let imgAnimation = animation
-                root.viewFullVideo(videoView, fullImg, () => { imgAnimation.reverseRun() })
+                root.viewFullVideo(videoView, fullImg, imgAnimation.reverseRun)
+            } else if (isAnimatedImage) {
+                let imgAnimation = animation
+                root.viewFullAnimatedImage(thumbImageViewList[imageIndex].url, animatedImageAlt, fullImg, imgAnimation.reverseRun)
             } else {
                 let imgAnimation = animation
-                root.viewFullImage(images, imageIndex, fullImg, () => { imgAnimation.reverseRun() })
+                root.viewFullImage(images, imageIndex, fullImg, imgAnimation.reverseRun)
             }
         }
 

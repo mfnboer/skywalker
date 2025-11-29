@@ -31,4 +31,12 @@ AnimatedImage {
 
         console.debug("Retry loading retry:", retryCount, "source:", img.source)
     }
+
+    function getVisible() {
+        return visible
+    }
+
+    function setVisible(v) {
+        visible = v
+    }
 }

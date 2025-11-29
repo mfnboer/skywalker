@@ -40,7 +40,13 @@ RoundedFrame {
         anchors.fill: img
         cursorShape: Qt.PointingHandCursor
         enabled: filter.imageVisible()
-        onClicked: root.viewFullAnimatedImage(url, title)
+
+        onClicked: {
+            if (img.status == Image.Ready)
+                fullImageLoader.show(0, false)
+            else
+                root.viewFullAnimatedImage(url, title, null, () => {})
+        }
     }
     FilteredImageWarning {
         id: filter
@@ -49,5 +55,12 @@ RoundedFrame {
         contentWarning: frame.contentWarning
         contentLabeler: frame.contentLabeler
         imageUrl: frame.url
+    }
+
+    FullImageViewLoader {
+        id: fullImageLoader
+        thumbImageViewList: [img]
+        isAnimatedImage: true
+        animatedImageAlt: title
     }
 }

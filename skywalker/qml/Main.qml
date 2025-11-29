@@ -1949,11 +1949,20 @@ ApplicationWindow {
         pushStack(view, StackView.Immediate)
     }
 
-    function viewFullAnimatedImage(imageUrl, imageTitle) {
+    function viewFullAnimatedImage(imageUrl, imageTitle, previewImage, closeCb) {
         let component = guiSettings.createComponent("FullAnimatedImageView.qml")
-        let view = component.createObject(root, { imageUrl: imageUrl, imageTitle: imageTitle })
-        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
-        pushStack(view)
+        let view = component.createObject(root, {
+                imageUrl: imageUrl,
+                imageTitle: imageTitle,
+                previewImage: previewImage
+        })
+        view.onClosed.connect(() => {
+            popStack(null, StackView.Immediate)
+
+            if (closeCb)
+                closeCb()
+        })
+        pushStack(view, StackView.Immediate)
     }
 
     function saveVideo(videoSource, playlistUrl) {
