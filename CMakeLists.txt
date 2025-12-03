@@ -14,6 +14,7 @@ set(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL OFF)
 
 include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia)
+message(STATUS "QT version: ${Qt6Core_VERSION}")
 
 qt_standard_project_setup()
 

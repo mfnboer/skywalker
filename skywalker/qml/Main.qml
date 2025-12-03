@@ -536,6 +536,12 @@ ApplicationWindow {
             getNotificationView().moveToNotification(oldestUnreadIndex, mentionsOnly)
         }
 
+        // HACK: workaround for bug causing crash on backgrounding/foregrouning the app on some devices
+        onAppFocusChanged: (hasFocus) => {
+            console.debug("App focus:", hasFocus)
+            root.visible = hasFocus
+        }
+
         onAppPaused: {
             let current = currentStackItem()
 

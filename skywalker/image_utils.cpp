@@ -6,6 +6,7 @@
 #include "shared_image_provider.h"
 #include "songlink.h"
 #include <QTransform>
+#include <QtGlobal>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>
@@ -255,10 +256,22 @@ Q_INVOKABLE QString ImageUtils::transformImage(const QString& imgSource, bool ho
     }
 
     if (horMirror)
+    {
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+        img = img.mirrored(true, false);
+#else
         img = img.flipped(Qt::Horizontal);
+#endif
+    }
 
     if (vertMirror)
+    {
+#if QT_VERSION < QT_VERSION_CHECK(6, 9, 0)
+        img = img.mirrored(false, true);
+#else
         img = img.flipped(Qt::Vertical);
+#endif
+    }
 
     if (rotationAngle != 0)
         img = img.transformed(QTransform().rotate(rotationAngle));

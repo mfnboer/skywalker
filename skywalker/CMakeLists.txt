@@ -5,7 +5,7 @@ set(CMAKE_AUTORCC ON)
 include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
 
-if (ANDROID)
+if (ANDROID AND Qt6Core_VERSION VERSION_GREATER_EQUAL 6.9.0)
     find_package(Qt6 REQUIRED COMPONENTS CorePrivate)
 endif()
 
@@ -631,10 +631,11 @@ target_link_libraries(libskywalker
     ${COVERAGE_LIB}
 )
 
-if (ANDROID)
+if (ANDROID AND Qt6Core_VERSION VERSION_GREATER_EQUAL 6.9.0)
     target_link_libraries(libskywalker
         PRIVATE Qt6::CorePrivate
     )
 endif()
+
 
 target_include_directories(libskywalker INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ..)
