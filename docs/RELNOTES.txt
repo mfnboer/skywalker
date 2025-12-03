@@ -1,3 +1,7 @@
+4.20.1
+======
+* Fix crash that occurred on some devices when switching apps
+
 4.20
 ====
 * Unwrap quote chain
