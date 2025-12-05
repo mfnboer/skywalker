@@ -182,7 +182,7 @@ Dialog {
                                 allowLists = [false, false, false]
                             }
                             else {
-                                if (countReplyRestrictions() == 0)
+                                if (countReplyRestrictions() === 0)
                                     restrictReply = false
                             }
                         }
@@ -246,8 +246,11 @@ Dialog {
 
                             AccessibleCheckBox {
                                 id: allowListCheckBox
+                                width: 140
                                 checked: allowLists[parent.index]
-                                text: qsTr("Users from list:")
+                                wrapMode: Text.NoWrap
+                                elide: Text.ElideRight
+                                text: qsTr("Users from:")
                                 enabled: checked || !hasMaxReplyRestrictions
                                 onCheckStateChanged: allowLists[parent.index] = checked
                             }

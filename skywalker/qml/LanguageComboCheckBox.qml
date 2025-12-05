@@ -16,7 +16,7 @@ ComboBox {
     model: usedLanguages.concat(allLanguages)
     valueRole: "shortCode"
     textRole: "shortCode"
-    popup.width: 250
+    popup.width: guiSettings.scaleWidthToFont(250)
     popup.topMargin: guiSettings.headerMargin
     popup.bottomMargin: guiSettings.footerMargin
 

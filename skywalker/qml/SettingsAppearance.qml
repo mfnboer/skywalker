@@ -300,46 +300,16 @@ ColumnLayout {
             text: qsTr("Side bar")
         }
 
-        RowLayout {
+        SkyComboBox {
             Layout.fillWidth: true
-            spacing: -1
-
-            SkyRadioButton {
-                Layout.fillWidth: true
-                checked: userSettings.sideBarType === QEnums.SIDE_BAR_OFF
-                text: qsTr("Off");
-                onCheckedChanged: {
-                    if (checked)
-                        userSettings.sideBarType = QEnums.SIDE_BAR_OFF
-                }
+            model: ListModel {
+                ListElement { value: QEnums.SIDE_BAR_OFF; text: qsTr("Off") }
+                ListElement { value: QEnums.SIDE_BAR_LANDSCAPE; text: qsTr("Landscape") }
+                ListElement { value: QEnums.SIDE_BAR_PORTRAIT; text: qsTr("Portrait") }
+                ListElement { value: QEnums.SIDE_BAR_BOTH; text: qsTr("Both") }
             }
-            SkyRadioButton {
-                Layout.fillWidth: true
-                checked: userSettings.sideBarType === QEnums.SIDE_BAR_LANDSCAPE
-                text: qsTr("Landscape");
-                onCheckedChanged: {
-                    if (checked)
-                        userSettings.sideBarType = QEnums.SIDE_BAR_LANDSCAPE
-                }
-            }
-            SkyRadioButton {
-                Layout.fillWidth: true
-                checked: userSettings.sideBarType === QEnums.SIDE_BAR_PORTRAIT
-                text: qsTr("Portrait");
-                onCheckedChanged: {
-                    if (checked)
-                        userSettings.sideBarType = QEnums.SIDE_BAR_PORTRAIT
-                }
-            }
-            SkyRadioButton {
-                Layout.fillWidth: true
-                checked: userSettings.sideBarType === QEnums.SIDE_BAR_BOTH
-                text: qsTr("Both");
-                onCheckedChanged: {
-                    if (checked)
-                        userSettings.sideBarType = QEnums.SIDE_BAR_BOTH
-                }
-            }
+            currentValue: userSettings.sideBarType
+            onCurrentValueChanged: userSettings.sideBarType = currentValue
         }
 
         AccessibleText {
@@ -351,6 +321,8 @@ ColumnLayout {
             property int prevY: -1
 
             Layout.fillWidth: true
+            leftPadding: 0
+            rightPadding: 0
             from: 0.5
             to: 2.0
             value: userSettings.fontScale
@@ -377,7 +349,7 @@ ColumnLayout {
             }
 
             AccessibleText {
-                x: parent.visualPosition * parent.width - width / 2
+                x: parent.visualPosition * parent.width - (parent.value > 1.0 ? width : 0)
                 y: 30
                 text: parent.value
                 visible: parent.value > parent.from && parent.value < parent.to
@@ -395,6 +367,12 @@ ColumnLayout {
                 y: 30
                 text: parent.to
             }
+        }
+        Rectangle {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.preferredHeight: 5
+            color: "transparent"
         }
     }
 

@@ -4,6 +4,8 @@ import QtQuick.Layouts
 
 CheckBox {
     property string textColor: enabled ? guiSettings.textColor : guiSettings.disabledColor
+    property int wrapMode: Text.Wrap
+    property int elide: Text.ElideNone
 
     id: control
     width: parent.width
@@ -16,7 +18,8 @@ CheckBox {
         text: control.text
         color: control.textColor
         font.pointSize: guiSettings.scaledFont(1)
-        wrapMode: Text.Wrap
+        wrapMode: control.wrapMode
+        elide: control.elide
         verticalAlignment: Text.AlignVCenter
         anchors.left: control.indicator.right
         anchors.leftMargin: control.spacing

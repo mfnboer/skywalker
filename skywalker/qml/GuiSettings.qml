@@ -153,6 +153,10 @@ Item {
         return Application.font.pointSize * scaleFactor
     }
 
+    function scaleWidthToFont(w) {
+        return Math.min(w * (1 + (guiSettings.fontScaleFactor - 1) * 0.7), root.width - 20)
+    }
+
     function isToday(date) {
         const today = new Date()
         return date.getDate() === today.getDate() &&

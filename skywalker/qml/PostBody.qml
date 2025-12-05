@@ -48,7 +48,7 @@ Column {
     // is prepended.
     readonly property string displayText:
         (replaceThreadIndicator ? UnicodeFonts.turnLastThreadSymbolIntoLink(postText) : postText) +
-        (showThreadIndicator ? `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none; font-size: ${Application.font.pixelSize}px">${UnicodeFonts.THREAD_SYMBOL}</a>` : "")
+        (showThreadIndicator ? `<a href="${UnicodeFonts.THREAD_LINK}" style="text-decoration: none; font-size: ${Application.font.pixelSize * guiSettings.fontScaleFactor}px">${UnicodeFonts.THREAD_SYMBOL}</a>` : "")
 
     signal activateSwipe(int imgIndex, var previewImg)
     signal unrollThread

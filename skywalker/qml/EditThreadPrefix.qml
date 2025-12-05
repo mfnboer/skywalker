@@ -6,7 +6,7 @@ Dialog {
     property string prefix
 
     x: (parent.width - width) / 2
-    width: 250
+    width: parent.width - 40
     title: qsTr("Prefix")
     contentHeight: exampleText.y + exampleText.height
     topMargin: guiSettings.headerHeight

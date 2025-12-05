@@ -18,7 +18,7 @@ ComboBox {
     ]
     valueRole: "display"
     textRole: "display"
-    popup.width: 130
+    popup.width: guiSettings.scaleWidthToFont(130)
     popup.topMargin: guiSettings.headerMargin
     popup.bottomMargin: guiSettings.footerMargin
 
@@ -32,7 +32,7 @@ ComboBox {
 
     indicator: Item {}
 
-    contentItem: AccessibleText {
+    contentItem: Text {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter

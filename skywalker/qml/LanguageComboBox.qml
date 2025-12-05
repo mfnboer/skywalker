@@ -21,7 +21,7 @@ ComboBox {
     model: usedLanguages.concat(allLanguages)
     valueRole: "shortCode"
     textRole: "shortCode"
-    popup.width: 220
+    popup.width: guiSettings.scaleWidthToFont(220)
     popup.topMargin: guiSettings.headerMargin
     popup.bottomMargin: guiSettings.footerMargin
 
@@ -50,7 +50,7 @@ ComboBox {
 
     indicator: Item {}
 
-    contentItem: AccessibleText {
+    contentItem: Text {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter

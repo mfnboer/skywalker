@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import QtQuick.Window 2.2
 import skywalker
 
@@ -123,6 +124,7 @@ SkyPage {
         }
 
         CurrentUserAvatar {
+            id: currentUserAvatar
             y: 5
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.height - 10
@@ -215,9 +217,18 @@ SkyPage {
                 }
                 AccessibleMenuItem {
                     id: numberPrefixItem
-                    contentItem: AccessibleText {
-                        textFormat: Text.RichText
-                        text: qsTr(`Number prefix: ${(threadPrefix ? UnicodeFonts.toCleanedHtml(threadPrefix) : qsTr("<i>&lt;none&gt;</i>"))}`)
+                    contentItem: RowLayout {
+                        width: numberPrefixItem.width
+
+                        AccessibleText {
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                            text: qsTr("Number prefix:")
+                        }
+                        AccessibleText {
+                            textFormat: Text.RichText
+                            text: qsTr(`${(threadPrefix ? UnicodeFonts.toCleanedHtml(threadPrefix) : qsTr("<i>&lt;none&gt;</i>"))}`)
+                        }
                     }
                     enabled: autoNumberItem.checked
                     onTriggered: editThreadPrefix()
@@ -249,9 +260,14 @@ SkyPage {
 
         AccessibleText {
             y: (parent.height - height) / 2
+            anchors.left: currentUserAvatar.right
+            anchors.leftMargin: page.margin
             anchors.right: parent.right
             anchors.rightMargin: page.margin
             font.italic: true
+            horizontalAlignment: Text.AlignRight
+            elide: Text.ElideRight
+
             text: qsTr("document editor")
             visible: largeEditor
         }
