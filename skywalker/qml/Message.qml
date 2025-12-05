@@ -36,13 +36,13 @@ Dialog {
                 id: emojiLabel
                 height: visible ? implicitHeight : 0
                 verticalAlignment: Text.AlignVCenter
-                font.pointSize: guiSettings.scaledFont(6)
+                font.pointSize: guiSettings.absScaledFont(6)
                 font.family: UnicodeFonts.getEmojiFontFamily()
                 text: emoji
                 visible: emoji
             }
 
-            Label {
+            AccessibleLabel {
                 id: msgLabel
                 Layout.fillWidth: true
 
@@ -50,10 +50,6 @@ Dialog {
                 padding: 10
                 textFormat: Text.RichText
                 wrapMode: Text.Wrap
-
-                Accessible.role: Accessible.StaticText
-                Accessible.name: text
-                Accessible.description: Accessible.name
 
                 onLinkActivated: (link) => msgDialog.linkActivated(link)
             }

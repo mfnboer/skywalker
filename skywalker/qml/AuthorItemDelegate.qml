@@ -30,7 +30,7 @@ RowLayout {
             width: parent.width
             author: authorItem.author
         }
-        Text {
+        AccessibleText {
             width: parent.width
             elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)

@@ -145,7 +145,7 @@ Rectangle {
                 Accessible.name: qsTr(`hide ${contentGroup.text}`)
             }
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 padding: 10
                 color: guiSettings.buttonColor

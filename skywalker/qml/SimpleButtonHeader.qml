@@ -17,7 +17,7 @@ Rectangle {
 
     Accessible.role: Accessible.Pane
 
-    Text {
+    AccessibleText {
         anchors.leftMargin: 10
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter

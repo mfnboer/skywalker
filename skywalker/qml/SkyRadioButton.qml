@@ -24,7 +24,9 @@ RadioButton {
             border.color: buttonColor
         }
         horizontalAlignment: radio.horizontalAlignment
+        font.pointSize: guiSettings.scaledFont(1)
         color: checked ? guiSettings.buttonTextColor : buttonColor
+        elide: Text.ElideRight
         text: radio.text
     }
 

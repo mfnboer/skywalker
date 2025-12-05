@@ -200,7 +200,7 @@ ListView {
                          !actionIcon.visible && !repostAction.visible && !progressIcon.visible
             }
 
-            Text {
+            AccessibleText {
                 bottomPadding: rowPadding
                 Layout.fillWidth: true
                 Layout.fillHeight: true

@@ -300,7 +300,7 @@ TextEdit {
         return true
     }
 
-    Text {
+    AccessibleText {
         id: placeholderTextField
         width: parent.width
         leftPadding: editText.leftPadding

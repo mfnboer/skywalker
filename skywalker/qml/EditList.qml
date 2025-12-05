@@ -108,7 +108,7 @@ SkyPage {
             y: 10
             width: editListPage.width - 2 * x
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 font.bold: true
                 color: guiSettings.textColor
@@ -157,7 +157,7 @@ SkyPage {
                 }
             }
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
@@ -187,7 +187,7 @@ SkyPage {
                 }
             }
 
-            Text {
+            AccessibleText {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true

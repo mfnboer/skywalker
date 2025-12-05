@@ -64,13 +64,12 @@ SkyPage {
                 z: guiSettings.headerZLevel
                 color: guiSettings.backgroundColor
 
-                Text {
+                AccessibleText {
                     id: headerText
                     width: parent.width
                     padding: 10
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
-                    color: guiSettings.textColor
                     text: qsTr("Saved lists from other users")
                 }
             }
@@ -112,13 +111,12 @@ SkyPage {
                 z: guiSettings.headerZLevel
                 color: guiSettings.backgroundColor
 
-                Text {
+                AccessibleText {
                     id: savedFeedsheaderText
                     width: parent.width
                     padding: 10
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
-                    color: guiSettings.textColor
                     text: qsTr("You can find feeds on the search page")
                 }
             }

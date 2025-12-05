@@ -77,39 +77,40 @@ Rectangle {
 
                 AccessibleMenuItem {
                     text: qsTr("Add user view")
+                    svg: SvgOutline.user
                     onTriggered: addUserView()
-                    MenuItemSvg { svg: SvgOutline.user }
                 }
 
                 AccessibleMenuItem {
                     text: qsTr("Add hashtag view")
+                    svg: SvgOutline.hashtag
                     onTriggered: addHashtagView()
-                    MenuItemSvg { svg: SvgOutline.hashtag }
                 }
 
                 AccessibleMenuItem {
                     id: focusMenuItem
-                    width: 250
+                    width: 300
                     text: qsTr("Add focus hashtag view")
+                    svg: SvgOutline.hashtag
+                    svgColor: guiSettings.favoriteColor
                     onTriggered: addFocusHashtagView()
-                    MenuItemSvg { svg: SvgOutline.hashtag; color: guiSettings.favoriteColor }
                 }
 
                 AccessibleMenuItem {
                     text: qsTr("Add media view")
+                    svg: SvgOutline.image
                     onTriggered: addMediaView()
-                    MenuItemSvg { svg: SvgOutline.image }
                 }
 
                 AccessibleMenuItem {
                     text: qsTr("Add video view")
+                    svg: SvgOutline.film
                     onTriggered: addVideoView()
-                    MenuItemSvg { svg: SvgOutline.film }
                 }
 
                 AccessibleMenuItem {
                     text: qsTr("Filtered posts")
-                    MenuItemSvg { svg: SvgOutline.hideVisibility }
+                    svg: SvgOutline.hideVisibility
                     onTriggered: filterStatistics()
                 }
             }
@@ -316,6 +317,7 @@ Rectangle {
 
             AccessibleMenuItem {
                 text: qsTr("Post view")
+                svg: SvgOutline.chat
                 visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
                 onTriggered: {
                     if (!isSideBar)
@@ -323,10 +325,10 @@ Rectangle {
 
                     viewChanged(QEnums.CONTENT_MODE_UNSPECIFIED)
                 }
-                MenuItemSvg { svg: SvgOutline.chat }
             }
             AccessibleMenuItem {
                 text: qsTr("Media view")
+                svg: SvgOutline.image
                 visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
                 onTriggered: {
                     if (!isSideBar)
@@ -334,10 +336,10 @@ Rectangle {
 
                     viewChanged(QEnums.CONTENT_MODE_MEDIA)
                 }
-                MenuItemSvg { svg: SvgOutline.image }
             }
             AccessibleMenuItem {
                 text: qsTr("Media gallery")
+                svg: SvgOutline.gallery
                 visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
                 onTriggered: {
                     if (!isSideBar)
@@ -345,27 +347,26 @@ Rectangle {
 
                     viewChanged(QEnums.CONTENT_MODE_MEDIA_TILES)
                 }
-                MenuItemSvg { svg: SvgOutline.gallery }
             }
             AccessibleMenuItem {
                 text: qsTr("Video view")
+                svg: SvgOutline.film
                 onTriggered: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_VIDEO
 
                     viewChanged(QEnums.CONTENT_MODE_VIDEO)
                 }
-                MenuItemSvg { svg: SvgOutline.film }
             }
             AccessibleMenuItem {
                 text: qsTr("Video gallery")
+                svg: SvgOutline.videoGallery
                 onTriggered: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_VIDEO_TILES
 
                     viewChanged(QEnums.CONTENT_MODE_VIDEO_TILES)
                 }
-                MenuItemSvg { svg: SvgOutline.videoGallery }
             }
         }
     }

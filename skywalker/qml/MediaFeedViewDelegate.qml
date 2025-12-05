@@ -275,29 +275,26 @@ Rectangle {
 
             AccessibleMenuItem {
                 text: qsTr("Save picture")
-                textColor: "black"
+                textColor: "white"
+                svg: SvgOutline.save
                 onTriggered: root.savePhoto(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
-
-                MenuItemSvg { svg: SvgOutline.save; color: "black" }
             }
 
             AccessibleMenuItem {
                 text: qsTr("Share picture")
-                textColor: "black"
+                textColor: "white"
+                svg: SvgOutline.share
                 onTriggered: root.sharePhotoToApp(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
-
-                MenuItemSvg { svg: SvgOutline.share; color: "black" }
             }
 
             AccessibleMenuItem {
                 text: qsTr("Save video")
-                textColor: "black"
+                textColor: "white"
+                svg: SvgOutline.save
                 onTriggered: root.saveVideo(videoItem.videoSource, postOrRecordVideo.playlistUrl)
                 visible: Boolean(videoItem)
-
-                MenuItemSvg { svg: SvgOutline.save; color: "black" }
             }
         }
     }

@@ -555,7 +555,7 @@ Column {
                 color: "transparent"
             }
 
-            contentItem: Text {
+            contentItem: AccessibleText {
                 leftPadding: 4
                 rightPadding: 4
                 verticalAlignment: Text.AlignVCenter
@@ -572,7 +572,7 @@ Column {
                 id: delegate
                 width: speedComboBox.popup.width
 
-                contentItem: Text {
+                contentItem: AccessibleText {
                     width: delegate.width
                     verticalAlignment: Text.AlignVCenter
                     color: controlColor

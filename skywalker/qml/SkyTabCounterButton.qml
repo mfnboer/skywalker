@@ -14,7 +14,7 @@ AccessibleTabButton {
         height: parent.height
         spacing: 0
 
-        Text {
+        AccessibleText {
             id: tabText
             anchors.verticalCenter: parent.verticalCenter
             elide: Text.ElideRight

@@ -184,8 +184,8 @@ SkyPage {
 
             AccessibleMenuItem {
                 text: qsTr("Permissions")
+                svg: SvgOutline.key
                 onTriggered: root.editChatSettings()
-                MenuItemSvg { svg: SvgOutline.key }
             }
         }
     }

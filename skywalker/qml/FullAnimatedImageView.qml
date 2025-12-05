@@ -51,7 +51,7 @@ SkyPage {
         }
     }
 
-    Text {
+    AccessibleText {
         id: altText
         anchors.left: parent.left
         anchors.leftMargin: guiSettings.leftMargin

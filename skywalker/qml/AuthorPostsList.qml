@@ -97,7 +97,7 @@ SkyListView {
         onLinkActivated: (link) => root.viewListByUri(link, false)
         onRetry: retryGetFeed()
     }
-    Text {
+    AccessibleText {
         anchors.top: noPostIndication.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         elide: Text.ElideRight

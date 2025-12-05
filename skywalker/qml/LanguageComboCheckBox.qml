@@ -31,7 +31,7 @@ ComboBox {
 
     indicator: Item {}
 
-    contentItem: Text {
+    contentItem: AccessibleText {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
@@ -67,7 +67,7 @@ ComboBox {
             }
         }
 
-        contentItem: Text {
+        contentItem: AccessibleText {
             leftPadding: delegate.indicator.width + delegate.spacing
             width: delegate.width
             verticalAlignment: Text.AlignVCenter

@@ -5,11 +5,25 @@ import skywalker
 
 ColumnLayout {
     required property var userPrefs
-    property var skywalker: root.getSkywalker()
-    property var userSettings: skywalker.getUserSettings()
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
+    property int prevY: -1
+    readonly property int labelSize: width / 3
+
+    signal offsetY(int dy)
+    signal fontScaleChanged
 
     id: settings
+
+    onYChanged: {
+        if (prevY < 0)
+            return
+
+        const dy = y - prevY
+        offsetY(dy)
+        prevY = y
+    }
 
     HeaderText {
         Layout.topMargin: 10
@@ -22,7 +36,7 @@ ColumnLayout {
         rowSpacing: 5
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             text: qsTr("Display")
         }
 
@@ -66,7 +80,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Background color")
         }
@@ -96,7 +110,7 @@ ColumnLayout {
         }
 
         Rectangle {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             Layout.preferredHeight: accentColorLabel.height
             color: "transparent"
 
@@ -146,7 +160,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Link color")
         }
@@ -176,7 +190,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Post thread visualisation")
         }
@@ -206,7 +220,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Post thread color")
         }
@@ -242,7 +256,8 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
             text: qsTr("Favorites bar")
         }
 
@@ -280,7 +295,8 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
             text: qsTr("Side bar")
         }
 
@@ -323,6 +339,61 @@ ColumnLayout {
                     if (checked)
                         userSettings.sideBarType = QEnums.SIDE_BAR_BOTH
                 }
+            }
+        }
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("Font size")
+        }
+        Slider {
+            property int prevY: -1
+
+            Layout.fillWidth: true
+            from: 0.5
+            to: 2.0
+            value: userSettings.fontScale
+            stepSize: 1/8
+            snapMode: Slider.SnapAlways
+
+            onYChanged: {
+                if (prevY < 0)
+                    return
+
+                const dy = y - prevY
+                offsetY(dy)
+                prevY = y
+            }
+
+            onValueChanged: {
+                if (value === userSettings.fontScale)
+                    return
+
+                fontScaleChanged()
+                prevY = y
+                settings.prevY = settings.y
+                userSettings.fontScale = value
+            }
+
+            AccessibleText {
+                x: parent.visualPosition * parent.width - width / 2
+                y: 30
+                text: parent.value
+                visible: parent.value > parent.from && parent.value < parent.to
+            }
+
+            AccessibleText {
+                anchors.left: parent.left
+                anchors.leftMargin: parent.leftPadding
+                y: 30
+                text: parent.from
+            }
+            AccessibleText {
+                anchors.right: parent.right
+                anchors.rightMargin: parent.rightPadding
+                y: 30
+                text: parent.to
             }
         }
     }
@@ -401,7 +472,7 @@ ColumnLayout {
         visible: !userSettings.videoStreamingEnabled
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             text: qsTr("Video quality")
         }
         SkyRadioButton {

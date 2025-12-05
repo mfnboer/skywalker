@@ -19,8 +19,9 @@ RoundButton {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: textColor
+        font.weight: Font.Medium
+        font.pointSize: guiSettings.scaledFont(7/8)
         text: button.text
-        font: button.font
     }
 
     Accessible.role: Accessible.Button

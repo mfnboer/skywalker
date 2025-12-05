@@ -25,6 +25,7 @@ Text {
     Layout.maximumHeight: mustElideRich && wrapMode !== Text.NoWrap ?
         capLineCount * fontMetrics.height + topPadding + bottomPadding : -1
     clip: true
+    font.pointSize: guiSettings.scaledFont(1)
     color: guiSettings.textColor
 
     onPlainTextChanged: {
@@ -128,7 +129,7 @@ Text {
         anchors.bottom: parent.bottom
         visible: status == Loader.Ready
 
-        sourceComponent: Label {
+        sourceComponent: AccessibleLabel {
             id: showMoreLabel
             anchors.left: parent.left
             anchors.right: parent.right
@@ -136,6 +137,7 @@ Text {
             leftPadding: theText.leftPadding
             bottomPadding: 10
             background: Rectangle { color: ellipsisBackgroundColor }
+            wrapMode: Text.Wrap
             text: qsTr(`<a href="show" style="color: ${guiSettings.linkColor}">Show ${numLinesHidden()} lines more</a>`)
 
             onLinkActivated:  capLineCount = theText.maximumLineCount

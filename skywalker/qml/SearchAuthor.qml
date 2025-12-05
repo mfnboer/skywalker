@@ -36,7 +36,7 @@ SkyPage {
         model: searchUtils.authorTypeaheadList
         onAuthorClicked: (profile) => page.authorClicked(profile)
 
-        Text {
+        AccessibleText {
             topPadding: 10
             anchors.horizontalCenter: parent.horizontalCenter
             color: Material.color(Material.Grey)

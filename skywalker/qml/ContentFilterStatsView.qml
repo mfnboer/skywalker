@@ -61,7 +61,7 @@ SkyPage {
         clip: true
         visible: treeView.count > 0
 
-        delegate: Label {
+        delegate: AccessibleLabel {
             required property int column
 
             leftPadding: 10
@@ -71,7 +71,6 @@ SkyPage {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: column == 1 ? Text.AlignRight : Text.AlignLeft
             font.bold: true
-            color: guiSettings.textColor
         }
     }
 
@@ -93,8 +92,8 @@ SkyPage {
             required property int hideReason // QEnums::HideReason
 
             id: control
-            implicitWidth: column == 1 ? 60 : treeView.width - 60
-            implicitHeight: 50
+            implicitWidth: column == 1 ? statTextMetrics.statWidth : treeView.width - statTextMetrics.statWidth
+            implicitHeight: Math.max(50, guiSettings.appFontHeight * 2 + 10)
             leftMargin: row == 0 ? -20 : 4
 
             contentItem: Loader {
@@ -122,7 +121,7 @@ SkyPage {
             Component {
                 id: labelComp
 
-                Label {
+                AccessibleLabel {
                     rightPadding: 10
                     text: typeof control.value != 'object' ? control.value : ""
                     color: control.column == 0 ? guiSettings.textColor : guiSettings.linkColor
@@ -259,6 +258,15 @@ SkyPage {
     LinkUtils {
         id: linkUtils
         skywalker: page.skywalker
+    }
+
+    TextMetrics {
+        readonly property int statWidth: width + 30
+
+        id: statTextMetrics
+        font.pointSize: guiSettings.scaledFont(1)
+        font.bold: true
+        text: "Posts"
     }
 
     function viewFilteredPosts(hideReason, keyList) {

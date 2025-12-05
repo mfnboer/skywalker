@@ -18,13 +18,15 @@ SvgButton {
 
     SkyMenu {
         id: feedsMenu
+        width: 250
 
         MenuItem {
-            contentItem: Text {
+            contentItem: AccessibleText {
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: homeAvatar.width + 5
                 color: guiSettings.textColor
                 elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(1)
                 text: qsTr("Following", "timeline title")
             }
 
@@ -58,6 +60,7 @@ SvgButton {
                     rightPadding: feedAvatar.width + 5
                     color: guiSettings.textColor
                     elide: Text.ElideRight
+                    font.pointSize: guiSettings.scaledFont(1)
                     plainText: modelData.name
 
                     Accessible.ignored: true
@@ -110,12 +113,12 @@ SvgButton {
             }
         }
 
-        AccessibleMenuItem {
-            contentItem: Text {
+        MenuItem {
+            contentItem: AccessibleText {
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: settingsIcon.width + 5
-                color: guiSettings.textColor
                 elide: Text.ElideRight
+                color: guiSettings.textColor
                 text: qsTr("Sort favorites")
             }
 

@@ -63,6 +63,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(QString linkColor READ getLinkColor WRITE setLinkColor NOTIFY linkColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
+    Q_PROPERTY(double fontScale READ getFontScale WRITE setFontScale NOTIFY fontScaleChanged FINAL)
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
@@ -275,6 +276,9 @@ public:
     void setThreadColor(const QString& color);
     QString getThreadColor() const;
 
+    void setFontScale(double scale);
+    double getFontScale() const;
+
     void setFavoritesBarPosition(QEnums::FavoritesBarPosition position);
     QEnums::FavoritesBarPosition getFavoritesBarPosition() const;
 
@@ -475,6 +479,7 @@ signals:
     void linkColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
+    void fontScaleChanged();
     void favoritesBarPositionChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();

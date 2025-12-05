@@ -175,7 +175,7 @@ SkyPage {
                 visible: authFactorTokenRequired()
             }
 
-            Label {
+            AccessibleLabel {
                 id: msgLabel
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10

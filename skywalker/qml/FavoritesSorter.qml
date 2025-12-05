@@ -87,8 +87,8 @@ SkyPage {
 
             AccessibleMenuItem {
                 text: qsTr("Sort alphabetically")
+                svg: SvgOutline.sortByAlpha
                 onTriggered: alphaSort()
-                MenuItemSvg { svg: SvgOutline.sortByAlpha }
             }
         }
     }

@@ -41,7 +41,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 font.bold: true
                 font.pointSize: (Boolean(subTitle) || isSideBar) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)

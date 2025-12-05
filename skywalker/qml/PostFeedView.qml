@@ -242,26 +242,23 @@ SkyListView {
 
         AccessibleMenuItem {
             text: qsTr("Feed profile")
+            svg: SvgOutline.feed
             onTriggered: showFeed()
-            MenuItemSvg { svg: SvgOutline.feed }
         }
 
         AccessibleMenuItem {
             text: qsTr("Remove favorite")
+            svg: SvgFilled.star
+            svgColor: guiSettings.favoriteColor
             onTriggered: {
                 skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
                 skywalker.saveFavoriteFeeds()
-            }
-
-            MenuItemSvg {
-                svg: SvgFilled.star
-                color: guiSettings.favoriteColor
             }
         }
 
         AccessibleMenuItem {
             text: qsTr("Filtered posts")
-            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            svg: SvgOutline.hideVisibility
             onTriggered: root.viewContentFilterStats(underlyingModel)
         }
 
@@ -290,7 +287,7 @@ SkyListView {
         property bool listSync: false
 
         id: listFeedOptionsMenu
-        width: hideListMenuItem.width
+        width: 250
 
         CloseMenuItem {
             text: qsTr("<b>List</b>")
@@ -299,12 +296,14 @@ SkyListView {
 
         AccessibleMenuItem {
             text: qsTr("List profile")
+            svg: SvgOutline.list
             onTriggered: showFeed()
-            MenuItemSvg { svg: SvgOutline.list }
         }
 
         AccessibleMenuItem {
             text: qsTr("Remove favorite")
+            svg: SvgFilled.star
+            svgColor: guiSettings.favoriteColor
             onTriggered: {
                 const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
 
@@ -320,18 +319,13 @@ SkyListView {
 
                 skywalker.saveFavoriteFeeds()
             }
-
-            MenuItemSvg {
-                svg: SvgFilled.star
-                color: guiSettings.favoriteColor
-            }
         }
 
         AccessibleMenuItem {
             id: hideListMenuItem
-            width: 250
             visible: listFeedOptionsMenu.list?.purpose === QEnums.LIST_PURPOSE_CURATE && listFeedOptionsMenu.isOwnList()
             text: listFeedOptionsMenu.listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
+            svg: listFeedOptionsMenu.listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
             onTriggered: {
                 const gu = root.getGraphUtils(userDid)
 
@@ -343,15 +337,11 @@ SkyListView {
                     gu.hideList(listFeedOptionsMenu.list.uri)
                 }
             }
-
-            MenuItemSvg {
-                svg: listFeedOptionsMenu.listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
-            }
         }
 
         AccessibleMenuItem {
             text: qsTr("Filtered posts")
-            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            svg: SvgOutline.hideVisibility
             onTriggered: root.viewContentFilterStats(underlyingModel)
         }
 

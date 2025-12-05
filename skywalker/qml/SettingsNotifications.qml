@@ -7,6 +7,7 @@ ColumnLayout {
     property var skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
+    readonly property int labelSize: width / 3
 
     HeaderText {
         Layout.topMargin: 10
@@ -63,7 +64,7 @@ ColumnLayout {
         rowSpacing: 5
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Likes")
         }
@@ -73,7 +74,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -85,7 +86,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Likes of reposts")
         }
@@ -96,7 +97,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -108,7 +109,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("New followers")
         }
@@ -119,7 +120,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -131,7 +132,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Replies")
         }
@@ -142,7 +143,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -154,7 +155,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Mentions")
         }
@@ -165,7 +166,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -177,7 +178,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Quotes")
         }
@@ -188,7 +189,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -200,7 +201,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Reposts")
         }
@@ -211,7 +212,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -223,7 +224,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Reposts of reposts")
         }
@@ -234,7 +235,7 @@ ColumnLayout {
         }
 
         AccessibleText {
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("from")
         }
@@ -246,7 +247,7 @@ ColumnLayout {
 
         AccessibleText {
             Layout.topMargin: 10
-            Layout.preferredWidth: 120
+            Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
             text: qsTr("Subscribed posts")
         }

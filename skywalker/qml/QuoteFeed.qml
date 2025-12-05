@@ -45,7 +45,7 @@ Column {
                 Accessible.ignored: true
             }
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
@@ -67,12 +67,11 @@ Column {
         }
     }
 
-    Text {
+    AccessibleText {
         width: parent.width - 20
         wrapMode: Text.Wrap
         maximumLineCount: 5
         elide: Text.ElideRight
-        color: guiSettings.textColor
         text: feed.description
     }
 

@@ -98,7 +98,7 @@ Rectangle {
         }
 
 
-        Text {
+        AccessibleText {
             anchors.fill: parent
             padding: parent.padding
             leftPadding: parent.leftPadding

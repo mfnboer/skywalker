@@ -77,7 +77,7 @@ Rectangle {
                 userDid: authorRect.userDid
                 author: authorRect.author
             }
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
@@ -175,7 +175,7 @@ Rectangle {
             color: authorRect.highlight ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
         }
 
-        Text {
+        AccessibleText {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter

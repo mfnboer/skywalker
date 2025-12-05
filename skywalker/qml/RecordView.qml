@@ -132,9 +132,8 @@ Item {
             width: parent.width
             active: record.notFound || record.blocked || record.notSupported
 
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
-                color: guiSettings.textColor
                 text: getDescription()
 
                 Accessible.ignored: true
@@ -155,9 +154,8 @@ Item {
             width: parent.width
             active: record.detached
 
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
-                color: guiSettings.textColor
                 textFormat: Text.RichText
                 text: record.detachedByDid === skywalker.getUserDid() ?
                           qsTr("🗑 Detached by you") + ` <a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>" :
@@ -173,9 +171,8 @@ Item {
             width: parent.width
             active: record.notSupported
 
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
-                color: guiSettings.textColor
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 elide: Text.ElideRight

@@ -129,7 +129,7 @@ Rectangle {
         }
 
         // End of feed indication
-        Text {
+        AccessibleText {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter

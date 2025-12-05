@@ -496,7 +496,7 @@ Rectangle {
                             Accessible.onPressAction: clicked()
                         }
                     }
-                    Text {
+                    AccessibleText {
                         anchors.verticalCenter: parent.verticalCenter
                         color: guiSettings.textColor
                         text: `+${(notificationOtherAuthors.length - 4)}`
@@ -512,7 +512,7 @@ Rectangle {
                 RowLayout {
                     width: parent.width
 
-                    Text {
+                    AccessibleText {
                         Layout.fillWidth: true
                         textFormat: Text.RichText
                         wrapMode: Text.Wrap
@@ -613,7 +613,7 @@ Rectangle {
                     }
                 }
 
-                Text {
+                AccessibleText {
                     width: parent.width
                     textFormat: Text.RichText
                     wrapMode: Text.Wrap
@@ -635,7 +635,7 @@ Rectangle {
         }
 
         // End of feed indication
-        Text {
+        AccessibleText {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter

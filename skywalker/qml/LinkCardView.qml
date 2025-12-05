@@ -57,7 +57,7 @@ RoundCornerMask {
                 }
             }
         }
-        Text {
+        AccessibleText {
             id: linkText
             width: parent.width - 10
             leftPadding: 5

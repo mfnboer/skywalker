@@ -20,7 +20,7 @@ Item {
     anchors.fill: parent
     //z: parent.z - 1
 
-    Text {
+    AccessibleText {
         id: refreshText
         anchors.horizontalCenter: parent.horizontalCenter
         y: ((list.headerItem && list.headerItem.visible) ? list.headerItem.height : 0) - verticalOvershoot - height

@@ -32,7 +32,7 @@ Rectangle {
         anchors.left: statIcon.right
         active: statistic >= 0
 
-        sourceComponent: Text {
+        sourceComponent: AccessibleText {
             topPadding: 2
             bottomPadding: 2
             color: iconColor

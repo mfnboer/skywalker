@@ -44,7 +44,7 @@ SkyPage {
             onClicked: page.closed()
         }
 
-        Text {
+        AccessibleText {
             y: (parent.height - height) / 2
             anchors.left: cancelButton.right
             anchors.right: reportButton.left
@@ -155,7 +155,7 @@ SkyPage {
                     userDid: page.userDid
                     author: page.author
                 }
-                Text {
+                AccessibleText {
                     width: parent.width
                     elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
@@ -298,21 +298,19 @@ SkyPage {
                         anchors.leftMargin: 20
                         width: parent.width - categoryEntry.indicator.width - 20
 
-                        Text {
+                        AccessibleText {
                             id: titleText
                             topPadding: 5
                             width: parent.width - 20
                             wrapMode: Text.Wrap
                             font.bold: true
-                            color: guiSettings.textColor
                             text: categoryEntry.categoryReason.title
                         }
-                        Text {
+                        AccessibleText {
                             id: descriptionText
                             bottomPadding: 5
                             width: parent.width - 20
                             wrapMode: Text.Wrap
-                            color: guiSettings.textColor
                             font.pointSize: guiSettings.scaledFont(7/8)
                             text: categoryEntry.categoryReason.description
                         }
@@ -388,14 +386,13 @@ SkyPage {
                         anchors.leftMargin: 20
                         width: parent.width - reasonEntry.indicator.width - 20
 
-                        Text {
+                        AccessibleText {
                             id: reasonTitleText
                             topPadding: 5
                             bottomPadding: 5
                             width: parent.width - 20
                             wrapMode: Text.Wrap
                             font.bold: true
-                            color: guiSettings.textColor
                             text: reasonEntry.reportReason.title
                         }
                     }

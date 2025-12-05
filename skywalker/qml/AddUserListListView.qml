@@ -52,13 +52,13 @@ ListView {
                     }
                     AccessibleMenuItem {
                         text: qsTr("User list")
+                        svg: SvgOutline.user
                         onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
-                        MenuItemSvg { svg: SvgOutline.user }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Moderation list")
+                        svg: SvgOutline.moderation
                         onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
-                        MenuItemSvg { svg: SvgOutline.moderation }
                     }
                 }
             }

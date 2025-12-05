@@ -130,23 +130,17 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            MenuItem {
+            AccessibleMenuItem {
                 text: qsTr("Save video")
+                svg: SvgOutline.save
                 onTriggered: root.saveVideo(view.videoSource, videoView.playlistUrl)
-
-                MenuItemSvg {
-                    svg: SvgOutline.save
-                }
             }
 
-            MenuItem {
+            AccessibleMenuItem {
                 text: qsTr("Translate")
+                svg: SvgOutline.googleTranslate
                 enabled: Boolean(videoView.alt)
                 onTriggered: root.translateText(videoView.alt)
-
-                MenuItemSvg {
-                    svg: SvgOutline.googleTranslate
-                }
             }
         }
     }

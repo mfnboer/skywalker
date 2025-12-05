@@ -88,7 +88,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            AccessibleText {
                 id: placeHolder
                 width: searchText.width
                 padding: searchText.padding

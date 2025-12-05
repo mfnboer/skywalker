@@ -24,7 +24,7 @@ SkyPage {
             padding: 10 + guiSettings.headerMargin
             color: "white"
             font.bold: true
-            font.pointSize: guiSettings.scaledFont(3.5)
+            font.pointSize: guiSettings.absScaledFont(3.5)
             text: skywalker.APP_NAME
         }
 
@@ -32,7 +32,7 @@ SkyPage {
             id: status
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
-            font.pointSize: guiSettings.scaledFont(2)
+            font.pointSize: guiSettings.absScaledFont(2)
 
             SequentialAnimation on color {
                 loops: Animation.Infinite

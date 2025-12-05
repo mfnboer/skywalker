@@ -180,26 +180,23 @@ SkyListView {
 
         AccessibleMenuItem {
             text: qsTr("Search")
+            svg: SvgOutline.search
             onTriggered: root.viewSearchViewFeed(searchFeed)
-            MenuItemSvg { svg: SvgOutline.search }
         }
 
         AccessibleMenuItem {
             text: qsTr("Remove favorite")
+            svg: SvgFilled.star
+            svgColor: guiSettings.favoriteColor
             onTriggered: {
                 skywalker.favoriteFeeds.pinSearch(searchFeed, false)
                 skywalker.saveFavoriteFeeds()
-            }
-
-            MenuItemSvg {
-                svg: SvgFilled.star
-                color: guiSettings.favoriteColor
             }
         }
 
         AccessibleMenuItem {
             text: qsTr("Filtered posts")
-            MenuItemSvg { svg: SvgOutline.hideVisibility }
+            svg: SvgOutline.hideVisibility
             onTriggered: root.viewContentFilterStats(underlyingModel)
         }
     }

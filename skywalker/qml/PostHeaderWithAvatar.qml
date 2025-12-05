@@ -57,7 +57,7 @@ Column {
             }
         }
 
-        Text {
+        AccessibleText {
             Layout.fillWidth: true
             bottomPadding: labelsToShow.length > 0 ? 0 : 5
             elide: Text.ElideRight

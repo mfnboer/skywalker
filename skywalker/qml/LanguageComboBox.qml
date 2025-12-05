@@ -50,7 +50,7 @@ ComboBox {
 
     indicator: Item {}
 
-    contentItem: Text {
+    contentItem: AccessibleText {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
@@ -66,7 +66,7 @@ ComboBox {
         width: popup.width
         highlighted: languageComboBox.highlightedIndex === index
 
-        contentItem: Text {
+        contentItem: AccessibleText {
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight

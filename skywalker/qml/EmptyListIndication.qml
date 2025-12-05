@@ -30,7 +30,7 @@ Rectangle {
         color: Material.color(Material.Grey)
         svg: Boolean(list.error) ? SvgOutline.warning : emptyListIndication.svg
     }
-    Text {
+    AccessibleText {
         id: noListsText
         y: noListsImage.y
         width: parent.width
@@ -46,7 +46,7 @@ Rectangle {
 
         onLinkActivated: (link) => emptyListIndication.linkActivated(link)
     }
-    Text {
+    AccessibleText {
         id: labelerText
         anchors.top: noListsText.bottom
         width: parent.width
@@ -62,7 +62,7 @@ Rectangle {
         onLinkActivated: root.getSkywalker().getDetailedProfile(labeler.did)
     }
 
-    Text {
+    AccessibleText {
         id: retryLink
         anchors.top: noListsText.bottom
         anchors.topMargin: 10

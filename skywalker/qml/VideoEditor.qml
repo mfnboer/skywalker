@@ -145,14 +145,14 @@ SkyPage {
             video.position = second.value
         }
 
-        Text {
+        AccessibleText {
             x: durationControl.first.handle.x - 5
             y: 0
             font.pointSize: guiSettings.scaledFont(6/8)
             text: guiSettings.videoDurationToString(durationControl.first.value)
         }
 
-        Text {
+        AccessibleText {
             x: durationControl.second.handle.x - 5
             y: 0
             font.pointSize: guiSettings.scaledFont(6/8)

@@ -89,7 +89,7 @@ SkyPage {
                     Accessible.name: qsTr(`GIF category: ${category.searchTerm}`)
                     Accessible.onPressAction: searchCategory(category)
 
-                    Label {
+                    AccessibleLabel {
                         id: imgLabel
                         anchors.centerIn: parent
                         leftPadding: 5

@@ -1,7 +1,7 @@
 import QtQuick
 import skywalker
 
-Text {
+AccessibleText {
     property string userDid
     required property string atUri
     required property int count

@@ -94,7 +94,7 @@ Rectangle {
                 }
             }
 
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
@@ -236,29 +236,25 @@ Rectangle {
                     }
                     AccessibleMenuItem {
                         text: qsTr("Translate")
+                        svg: SvgOutline.googleTranslate
                         enabled: feed.description
                         onTriggered: root.translateText(feed.description)
-
-                        MenuItemSvg { svg: SvgOutline.googleTranslate }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Share")
+                        svg: SvgOutline.share
                         onTriggered: skywalker.shareFeed(feed)
-
-                        MenuItemSvg { svg: SvgOutline.share }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Report feed")
+                        svg: SvgOutline.report
                         onTriggered: root.reportFeed(feed, userDid)
-
-                        MenuItemSvg { svg: SvgOutline.report }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Emoji names")
+                        svg: SvgOutline.emojiLanguage
                         visible: UnicodeFonts.hasEmoji(feed.description)
                         onTriggered: root.showEmojiNamesList(feed.description)
-
-                        MenuItemSvg { svg: SvgOutline.emojiLanguage }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Show following")

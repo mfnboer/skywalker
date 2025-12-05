@@ -60,7 +60,7 @@ Rectangle {
                 Accessible.ignored: true
             }
 
-            Text {
+            AccessibleText {
                 id: listTypeNameText
                 width: parent.width
                 elide: Text.ElideRight

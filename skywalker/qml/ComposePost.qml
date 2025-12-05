@@ -176,7 +176,6 @@ SkyPage {
 
             SkyMenu {
                 id: moreMenu
-                width: Math.max(altItem.width, numberPrefixItem.width)
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
@@ -1084,7 +1083,7 @@ SkyPage {
         }
     }
 
-    Text {
+    AccessibleText {
         id: draftsLink
         anchors.centerIn: parent
         font.pointSize: guiSettings.scaledFont(9/8)
@@ -1098,7 +1097,7 @@ SkyPage {
         Accessible.onPressAction: showDraftPosts()
     }
 
-    Text {
+    AccessibleText {
         anchors.top: draftsLink.bottom
         anchors.topMargin: 10
         anchors.horizontalCenter: parent.horizontalCenter
@@ -1169,7 +1168,7 @@ SkyPage {
 
                 Accessible.ignored: true
             }
-            Text {
+            AccessibleText {
                 id: restrictionText
                 y: 5
                 anchors.left: restrictionIcon.right

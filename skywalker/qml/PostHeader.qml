@@ -38,7 +38,7 @@ Column {
         }
     }
 
-    Text {
+    AccessibleText {
         width: parent.width
         bottomPadding: labelsToShow.length > 0 ? 0 : 5
         elide: Text.ElideRight

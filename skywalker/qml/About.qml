@@ -39,7 +39,7 @@ SkyPage {
             color: "white"
             text: "\u00A9 2025 Michel de Boer"
         }
-        Text {
+        AccessibleText {
             id: handle
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10

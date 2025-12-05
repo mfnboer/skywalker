@@ -36,7 +36,7 @@ Popup {
         }
     }
 
-    Label {
+    AccessibleLabel {
         id: statusText
         padding: 10
         anchors.left: currentUserAvatar.active ? currentUserAvatar.right : parent.left
@@ -45,12 +45,7 @@ Popup {
         wrapMode: Text.Wrap
         maximumLineCount: 8
         elide: Text.ElideRight
-        color: guiSettings.textColor
         text: "Status"
-
-        Accessible.role: Accessible.StaticText
-        Accessible.name: text
-        Accessible.description: Accessible.name
     }
     SvgPlainButton {
         id: closeButton

@@ -274,8 +274,8 @@ SkyPage {
             }
             AccessibleMenuItem {
                 text: qsTr("Settings")
+                svg: SvgOutline.settings
                 onTriggered: root.editNotificationSettings()
-                MenuItemSvg { svg: SvgOutline.settings }
             }
         }
     }

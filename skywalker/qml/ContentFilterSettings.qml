@@ -47,21 +47,21 @@ SkyPage {
                 AccessibleMenuItem {
                     id: followingItem
                     text: qsTr("Add filters for following")
+                    svg: SvgOutline.group
                     enabled: !contentFilter.hasFollowingPrefs
                     onTriggered: addFollowingPrefs()
-                    MenuItemSvg { svg: SvgOutline.group }
                 }
 
                 AccessibleMenuItem {
                     text: qsTr("Add filters for list")
+                    svg: SvgOutline.list
                     onTriggered: selectList()
-                    MenuItemSvg { svg: SvgOutline.list }
                 }
 
                 AccessibleMenuItem {
                     text: qsTr("Help")
+                    svg: SvgOutline.help
                     onTriggered: showHelp()
-                    MenuItemSvg { svg: SvgOutline.help }
                 }
             }
         }

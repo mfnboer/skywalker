@@ -84,7 +84,7 @@ TextEdit {
         return graphemeLength - prevGraphemeLength
     }
 
-    Text {
+    AccessibleText {
         id: placeholder
         anchors.fill: parent
         padding: parent.padding

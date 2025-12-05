@@ -16,6 +16,7 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
+static constexpr double DEFAULT_FONT_SCALE = 1.0;
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sDefaultBackgroundColor("white");
@@ -961,8 +962,11 @@ QEnums::ThreadStyle UserSettings::getThreadStyle() const
 
 void UserSettings::resetThreadColor()
 {
-    mSettings.remove(displayKey("threadColor"));
-    emit threadColorChanged();
+    if (mSettings.contains("threadColor"))
+    {
+        mSettings.remove(displayKey("threadColor"));
+        emit threadColorChanged();
+    }
 }
 
 void UserSettings::setThreadColor(const QString& color)
@@ -978,6 +982,24 @@ QString UserSettings::getThreadColor() const
 {
     const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#000080" : "#8080ff";
     return mSettings.value(displayKey("threadColor"), defaultColor).toString();
+}
+
+void UserSettings::setFontScale(double scale)
+{
+    if (scale != getFontScale())
+    {
+        if (scale == DEFAULT_FONT_SCALE)
+            mSettings.remove("fontScale");
+        else
+            mSettings.setValue("fontScale", scale);
+
+        emit fontScaleChanged();
+    }
+}
+
+double UserSettings::getFontScale() const
+{
+    return mSettings.value("fontScale", DEFAULT_FONT_SCALE).toDouble();
 }
 
 void UserSettings::setFavoritesBarPosition(QEnums::FavoritesBarPosition position)

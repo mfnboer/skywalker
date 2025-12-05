@@ -39,7 +39,7 @@ Rectangle {
                     accessibleName: qsTr("go back")
                     onClicked: header.closed()
                 }
-                Text {
+                AccessibleText {
                     id: headerTexts
                     Layout.alignment: Qt.AlignVCenter
                     Layout.fillWidth: true

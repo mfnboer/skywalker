@@ -36,7 +36,7 @@ Row {
         width: parent.width - imgIcon.width
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
 
-        Text {
+        AccessibleText {
             id: warnText
             width: parent.width
             wrapMode: Text.Wrap
@@ -46,7 +46,7 @@ Row {
                   (images.length === 1 || imageUrl ? showMsg : qsTr("Show pictures")) + "</a>"
             onLinkActivated: showWarnedMedia = true;
         }
-        Text {
+        AccessibleText {
             width: parent.width
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
@@ -63,14 +63,14 @@ Row {
         width: parent.width - imgIcon.width
         visible: contentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
 
-        Text {
+        AccessibleText {
             width: parent.width
             wrapMode: Text.Wrap
             textFormat: Text.RichText
             color: Material.color(Material.Grey)
             text: contentWarning
         }
-        Text {
+        AccessibleText {
             width: parent.width
             elide: Text.ElideRight
             color: Material.color(Material.Grey)

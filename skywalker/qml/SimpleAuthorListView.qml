@@ -84,7 +84,7 @@ ListView {
                 visible: !deleteButton.visible
             }
 
-            Text {
+            AccessibleText {
                 bottomPadding: rowPadding
                 Layout.fillWidth: true
                 Layout.fillHeight: true

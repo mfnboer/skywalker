@@ -36,24 +36,25 @@ SkyMenu {
 
     AccessibleMenuItem {
         text: qsTr("Focus hashtag")
+        svg: SvgOutline.hashtag
         onTriggered: focusHashtag(hashtag)
-        MenuItemSvg { svg: SvgOutline.hashtag }
     }
 
     AccessibleMenuItem {
         text: hashtagMenu.isMuted ? qsTr("Unmute hashtag") : qsTr("Mute hashtag")
+        svg: hashtagMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute
         onTriggered: {
             if (hashtagMenu.isMuted)
                 unmuteWord(hashtag)
             else
                 muteWord(hashtag)
         }
-
-        MenuItemSvg { svg: hashtagMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute }
     }
 
     AccessibleMenuItem {
         text: hashtagMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
+        svg: hashtagMenu.isPinned ? SvgFilled.star : SvgOutline.star
+        svgColor: hashtagMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
         onTriggered: {
             const view = searchUtils.createSearchFeed(hashtag,
                 postAuthorUser, postMentionsUser,
@@ -63,11 +64,6 @@ SkyMenu {
 
             skywalker.favoriteFeeds.pinSearch(view, !hashtagMenu.isPinned)
             skywalker.saveFavoriteFeeds()
-        }
-
-        MenuItemSvg {
-            svg: hashtagMenu.isPinned ? SvgFilled.star : SvgOutline.star
-            color: hashtagMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
         }
     }
 

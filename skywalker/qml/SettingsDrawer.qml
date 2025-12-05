@@ -27,7 +27,7 @@ SkyDrawer {
     signal buyCoffee()
 
     id: drawer
-    width: Math.min(userColumn.width + leftPadding + rightPadding, parent.width - 20)
+    width: Math.min(250 * guiSettings.fontScaleFactor, parent.width - 20)
     topPadding: guiSettings.headerMargin + 10
     bottomPadding: guiSettings.footerMargin + 10
     leftPadding: Math.max(20, guiSettings.leftMargin)
@@ -42,7 +42,7 @@ SkyDrawer {
 
         Column {
             id: userColumn
-            width: Math.max(profileItem.width, moderationItem.width, settingsItem.width) + 80
+            width: parent.width
             spacing: 5
 
             Column {
@@ -70,7 +70,7 @@ SkyDrawer {
                     author: user
                 }
 
-                Text {
+                AccessibleText {
                     id: handleText
                     width: parent.width
                     elide: Text.ElideRight
@@ -121,45 +121,38 @@ SkyDrawer {
                     }
                     AccessibleMenuItem {
                         text: qsTr("Content Filtering")
+                        svg: SvgOutline.visibility
                         onTriggered: contentFiltering()
-
-                        MenuItemSvg { svg: SvgOutline.visibility }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Blocked Accounts")
+                        svg: SvgOutline.block
                         onTriggered: blockedAccounts()
-
-                        MenuItemSvg { svg: SvgOutline.block }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Muted Accounts")
+                        svg: SvgOutline.mute
                         onTriggered: mutedAccounts()
-
-                        MenuItemSvg { svg: SvgOutline.mute }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Muted Reposts")
+                        svg: SvgOutline.repost
                         onTriggered: mutedReposts()
-
-                        MenuItemSvg { svg: SvgOutline.repost }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Moderation Lists")
+                        svg: SvgOutline.list
                         onTriggered: modLists()
-
-                        MenuItemSvg { svg: SvgOutline.list }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Muted Words")
+                        svg: SvgOutline.mutedWords
                         onTriggered: mutedWords()
-
-                        MenuItemSvg { svg: SvgOutline.mutedWords }
                     }
                     AccessibleMenuItem {
                         text: qsTr("Focus Hashtags")
+                        svg: SvgOutline.hashtag
                         onTriggered: focusHashtags()
-
-                        MenuItemSvg { svg: SvgOutline.hashtag }
                     }
                 }
             }

@@ -38,7 +38,7 @@ AccessibleTabButton {
             visible: !profile.isNull()
         }
 
-        Text {
+        AccessibleText {
             id: tabText
             width: Math.min(implicitWidth, 150)
             anchors.verticalCenter: parent.verticalCenter

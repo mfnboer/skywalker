@@ -28,7 +28,7 @@ Item {
     // Geometry
     readonly property int footerHeight: 50
     readonly property int footerZLevel: 10
-    readonly property int headerHeight: 50
+    readonly property int headerHeight: Math.max(50, appFontHeight + appFontHeight * 7/8 + 10) // title + subTitle in SimpleHeader
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
@@ -37,7 +37,7 @@ Item {
     readonly property int sideBarHeaderHeight: 44
     readonly property int sideBarMinWidth: 180
     readonly property int statsIconHeight: appFontHeight + 4
-    readonly property int tabBarHeight: 40
+    readonly property int tabBarHeight: Math.max(40, appFontHeight + 10)
     readonly property int threadColumnWidth: 60
     readonly property int threadLineWidth: 2
     readonly property int topAlignmentThreshold: 300
@@ -108,12 +108,14 @@ Item {
     readonly property string textLengthExceededColor: "palevioletred"
 
     // Opacity
-    readonly property double focusHighlightOpacity: 0.2
+    readonly property real focusHighlightOpacity: 0.2
 
     // Font size
-    readonly property double appFontHeight: fontMetrics.height
-    readonly property double labelFontHeight: appFontHeight * 6/8
-    readonly property double labelFontSize: scaledFont(6/8)
+    readonly property real fontScaleFactor: userSettings ? userSettings.fontScale : 1.0
+    readonly property real appFontHeight: fontMetrics.height * fontScaleFactor
+    readonly property real labelFontHeight: appFontHeight * 6/8
+    readonly property real labelFontSize: scaledFont(6/8)
+    readonly property real lineSpacing: fontMetrics.lineSpacing
 
     // Misc
     readonly property real flickDeceleration: 700
@@ -144,7 +146,11 @@ Item {
     }
 
     function scaledFont(scaleFactor) {
-        return Application.font.pointSize * scaleFactor;
+        return Application.font.pointSize * scaleFactor * fontScaleFactor
+    }
+
+    function absScaledFont(scaleFactor) {
+        return Application.font.pointSize * scaleFactor
     }
 
     function isToday(date) {
@@ -482,5 +488,8 @@ Item {
 
     Component.onCompleted: {
         root.onIsPortraitChanged.connect(updateScreenMargins)
+        console.debug("Font scale factor:", fontScaleFactor)
+        console.debug("Font line spacing:", lineSpacing)
+        console.debug("App font height:", appFontHeight)
     }
 }

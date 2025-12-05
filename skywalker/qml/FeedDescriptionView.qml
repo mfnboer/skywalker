@@ -119,7 +119,7 @@ SkyPage {
                 }
             }
 
-            Text {
+            AccessibleText {
                 topPadding: 2
                 width: parent.width
                 elide: Text.ElideRight
@@ -153,6 +153,7 @@ SkyPage {
                 }
                 AccessibleMenuItem {
                     text: isSavedFeed ? qsTr("Unsave feed") : qsTr("Save feed")
+                    svg: isSavedFeed ? SvgOutline.remove : SvgOutline.add
                     onTriggered: {
                         if (isSavedFeed)
                             skywalker.favoriteFeeds.removeFeed(feed)
@@ -163,56 +164,39 @@ SkyPage {
                         isPinnedFeed = skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
                         skywalker.saveFavoriteFeeds()
                     }
-
-                    MenuItemSvg {
-                        svg: isSavedFeed ? SvgOutline.remove : SvgOutline.add
-                    }
                 }
                 AccessibleMenuItem {
                     text: isPinnedFeed ? qsTr("Remove favorite") : qsTr("Add favorite")
+                    svg: isPinnedFeed ? SvgFilled.star : SvgOutline.star
+                    svgColor: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
                     onTriggered: {
                         skywalker.favoriteFeeds.pinFeed(feed, !isPinnedFeed)
                         isPinnedFeed = !isPinnedFeed
                         isSavedFeed = skywalker.favoriteFeeds.isSavedFeed(feed.uri)
                         skywalker.saveFavoriteFeeds()
                     }
-
-                    MenuItemSvg {
-                        svg: isPinnedFeed ? SvgFilled.star : SvgOutline.star
-                        color: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
-                    }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Translate")
+                    svg: SvgOutline.googleTranslate
                     enabled: feed.description
                     onTriggered: root.translateText(feed.description)
-
-                    MenuItemSvg {
-                        svg: SvgOutline.googleTranslate
-                    }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Share")
+                    svg: SvgOutline.share
                     onTriggered: skywalker.shareFeed(feed)
-
-                    MenuItemSvg {
-                        svg: SvgOutline.share
-                    }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Report feed")
+                    svg: SvgOutline.report
                     onTriggered: root.reportFeed(feed, userDid)
-
-                    MenuItemSvg {
-                        svg: SvgOutline.report
-                    }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Emoji names")
+                    svg: SvgOutline.emojiLanguage
                     visible: UnicodeFonts.hasEmoji(feed.description)
                     onTriggered: root.showEmojiNamesList(feed.description)
-
-                    MenuItemSvg { svg: SvgOutline.emojiLanguage }
                 }
                 AccessibleMenuItem {
                     text: qsTr("Show following")

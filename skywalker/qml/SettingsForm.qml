@@ -21,12 +21,28 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SimpleHeader {
+        property int prevHeight: -1
+
         text: sideBarTitle
         visible: !root.showSideBar
         onBack: closed()
+
+        onHeightChanged: {
+            if (prevHeight < 0)
+                return
+
+            const dh = height - prevHeight
+            flick.contentY += dh
+            prevHeight = height
+        }
+
+        function initPrevHeight() {
+            prevHeight = height
+        }
     }
 
     Flickable {
+        id: flick
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
@@ -83,6 +99,9 @@ SkyPage {
             height: visible ? undefined : 0
             userPrefs: page.userPrefs
             visible: allVisible
+
+            onOffsetY: (dy) => flick.contentY += dy
+            onFontScaleChanged: page.header.initPrevHeight()
         }
 
         Loader {

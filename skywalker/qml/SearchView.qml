@@ -811,7 +811,7 @@ SkyPage {
                 x: page.margin
                 anchors.top: recentSearchesText.bottom
                 width: parent.width - page.margin * 2
-                height: count > 0 ? 90 : 0
+                height: count > 0 ? 70 + 20 * guiSettings.fontScaleFactor : 0
                 model: searchUtils.lastSearchedProfiles
                 orientation: ListView.Horizontal
                 flickDeceleration: guiSettings.flickDeceleration
@@ -830,6 +830,7 @@ SkyPage {
                     spacing: 10
 
                     Avatar {
+                        id: profileAvatar
                         anchors.horizontalCenter: parent.horizontalCenter
                         width: 60
                         author: modelData
@@ -858,6 +859,7 @@ SkyPage {
                     }
 
                     SkyCleanedTextLine {
+                        id: profileName
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         elide: Text.ElideRight

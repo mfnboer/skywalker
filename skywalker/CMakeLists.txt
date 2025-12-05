@@ -170,7 +170,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SelectSignInUser.qml
         QML_FILES qml/SwitchUserDrawer.qml
         QML_FILES qml/AltTextEditor.qml
-        QML_FILES qml/MenuItemSvg.qml
+        QML_FILES
         QML_FILES qml/Bookmarks.qml
         QML_FILES qml/About.qml
         QML_FILES qml/StartupStatus.qml
@@ -275,7 +275,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/CloseMenuItem.qml
         QML_FILES qml/AccessibleCheckBox.qml
         QML_FILES qml/AccessibleText.qml
-        QML_FILES qml/AccessibleSwitch.qml
+        QML_FILES
         SOURCES emoji_fix_highlighter.h
         SOURCES emoji_fix_highlighter.cpp
         QML_FILES qml/SkyCleanedText.qml
@@ -616,6 +616,7 @@ qt_add_qml_module(libskywalker
         SOURCES report_category.h
         QML_FILES qml/SkyScrollBarVertical.qml
         QML_FILES qml/QuoteChainPostFeedView.qml
+        QML_FILES qml/AccessibleLabel.qml
 )
 
 if (NOT ANDROID)

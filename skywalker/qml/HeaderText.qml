@@ -8,13 +8,12 @@ AccessibleText {
     padding: 10
     font.pointSize: guiSettings.scaledFont(9/8)
     font.bold: true
-    color: guiSettings.textColor
+    elide: Text.ElideRight
 
     Rectangle {
         anchors.fill: parent
         z: parent.z - 1
         color: guiSettings.headerHighLightColor
     }
-
 }
 

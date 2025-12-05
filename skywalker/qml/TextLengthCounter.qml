@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 
-Text {
+AccessibleText {
     required property var textField
 
     color: textField.graphemeLength <= textField.maxLength ? Material.color(Material.Grey) : guiSettings.errorColor

@@ -233,35 +233,30 @@ SkyPage {
             }
             AccessibleMenuItem {
                 text: qsTr("Translate")
+                svg: SvgOutline.googleTranslate
                 enabled: starterPack.description
                 onTriggered: root.translateText(starterPack.description)
-
-                MenuItemSvg { svg: SvgOutline.googleTranslate }
             }
             AccessibleMenuItem {
                 text: qsTr("Share")
+                svg: SvgOutline.share
                 onTriggered: skywalker.shareStarterPack(starterPack)
-
-                MenuItemSvg { svg: SvgOutline.share }
             }
             AccessibleMenuItem {
                 text: qsTr("Copy to list")
+                svg: SvgOutline.list
                 onTriggered: copyStarterPackToList()
-
-                MenuItemSvg { svg: SvgOutline.list }
             }
             AccessibleMenuItem {
                 text: qsTr("Report starter pack")
+                svg: SvgOutline.report
                 onTriggered: root.reportStarterPack(starterPack, userDid)
-
-                MenuItemSvg { svg: SvgOutline.report }
             }
             AccessibleMenuItem {
                 text: qsTr("Emoji names")
+                svg: SvgOutline.emojiLanguage
                 visible: UnicodeFonts.hasEmoji(starterPack.description)
                 onTriggered: root.showEmojiNamesList(starterPack.description)
-
-                MenuItemSvg { svg: SvgOutline.emojiLanguage }
             }
         }
     }

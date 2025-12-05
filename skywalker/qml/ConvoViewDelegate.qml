@@ -220,18 +220,17 @@ Rectangle {
                         }
                         AccessibleMenuItem {
                             text: qsTr("Delete")
+                            svg: SvgOutline.delete
                             onTriggered: deleteConvo(convo)
-
-                            MenuItemSvg { svg: SvgOutline.delete }
                         }
                         AccessibleMenuItem {
                             text: convo.muted ? qsTr("Unmute") : qsTr("Mute")
+                            svg: convo.muted ? SvgOutline.notifications : SvgOutline.notificationsOff
                             onTriggered: convo.muted ? unmuteConvo(convo) : muteConvo(convo)
-
-                            MenuItemSvg { svg: convo.muted ? SvgOutline.notifications : SvgOutline.notificationsOff }
                         }
                         AccessibleMenuItem {
                             text: firstMember.viewer.blocking ? qsTr("Unblock account") : qsTr("Block account")
+                            svg: firstMember.viewer.blocking ? SvgOutline.unblock : SvgOutline.block
                             visible: !root.isActiveUser(firstMember.did)
                             onTriggered: {
                                 if (firstMember.viewer.blocking)
@@ -239,8 +238,6 @@ Rectangle {
                                 else
                                     blockAuthor(firstMember)
                             }
-
-                            MenuItemSvg { svg: firstMember.viewer.blocking ? SvgOutline.unblock : SvgOutline.block }
                         }
                     }
                 }
@@ -267,7 +264,7 @@ Rectangle {
     }
 
     // End of feed indication
-    Text {
+    AccessibleText {
         id: endOfFeedText
         anchors.top: convoRow.bottom
         width: parent.width

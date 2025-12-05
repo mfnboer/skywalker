@@ -33,7 +33,7 @@ SkyPage {
             font.pointSize: guiSettings.scaledFont(3.5)
             text: skywalker.APP_NAME
         }
-        Text {
+        AccessibleText {
             id: description
             width: parent.width
             padding: 10

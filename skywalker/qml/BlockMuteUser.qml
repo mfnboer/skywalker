@@ -60,7 +60,7 @@ Dialog {
                 width: parent.width
                 author: page.author
             }
-            Text {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)

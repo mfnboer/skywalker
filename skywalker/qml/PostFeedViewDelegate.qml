@@ -803,7 +803,7 @@ Rectangle {
             Layout.fillWidth: true
             active: postFoldedType === QEnums.FOLDED_POST_FIRST
             visible: status == Loader.Ready
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 topPadding: 10
                 bottomPadding: 10
                 width: parent.width
@@ -824,7 +824,7 @@ Rectangle {
             Layout.fillWidth: true
             active: postGapId > 0
             visible: status == Loader.Ready
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
                 topPadding: 50
                 bottomPadding: 50
@@ -846,7 +846,7 @@ Rectangle {
             Layout.fillWidth: true
             active: postHiddenPosts
             visible: status == Loader.Ready
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
@@ -866,11 +866,10 @@ Rectangle {
             Layout.fillWidth: true
             active: postNotFound || postBlocked || postNotSupported || postLocallyDeleted
             visible: status == Loader.Ready
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
-                color: guiSettings.textColor
                 text: {
                     if (postNotFound)
                         return qsTr("🗑 Not found")
@@ -891,7 +890,7 @@ Rectangle {
             Layout.fillWidth: true
             active: postNotSupported
             visible: status == Loader.Ready
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
@@ -966,13 +965,12 @@ Rectangle {
             Layout.fillWidth: true
             active: endOfFeed
             visible: status == Loader.Ready
-            sourceComponent: Text {
+            sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 topPadding: 10
                 bottomPadding: 50
                 elide: Text.ElideRight
-                color: guiSettings.textColor
                 text: unrollThread ? qsTr("End of thread") : qsTr("End of feed")
                 font.italic: true
             }

@@ -259,19 +259,18 @@ SkyPage {
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Translate")
+                                svg: SvgOutline.googleTranslate
                                 visible: authorDescription || authorPronouns
                                 onTriggered: root.translateText(authorPronouns ? authorPronouns + "\n" + authorDescription : authorDescription)
-
-                                MenuItemSvg { svg: SvgOutline.googleTranslate }
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Share")
+                                svg: SvgOutline.share
                                 onTriggered: skywalker.shareAuthor(author)
-
-                                MenuItemSvg { svg: SvgOutline.share }
                             }
                             AccessibleMenuItem {
                                 text: following ? qsTr("Unfollow") : qsTr("Follow")
+                                svg: following ? SvgOutline.noUsers : SvgOutline.addUser
                                 visible: isLabeler && !page.isUser(author) && contentVisible()
                                 onClicked: {
                                     if (following)
@@ -279,17 +278,15 @@ SkyPage {
                                     else
                                         graphUtils.follow(author)
                                 }
-
-                                MenuItemSvg { svg: following ? SvgOutline.noUsers : SvgOutline.addUser }
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Search")
+                                svg: SvgOutline.search
                                 onTriggered: root.viewSearchView("", author.handle)
-
-                                MenuItemSvg { svg: SvgOutline.search }
                             }
                             AccessibleMenuItem {
                                 text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
+                                svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute
                                 visible: !page.isUser(author) && author.viewer.mutedByList.isNull()
                                 onTriggered: {
                                     if (authorMuted) {
@@ -301,11 +298,10 @@ SkyPage {
                                         root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt), page.userDid)
                                     }
                                 }
-
-                                MenuItemSvg { svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute }
                             }
                             AccessibleMenuItem {
                                 text: blocking ? qsTr("Unblock account") : qsTr("Block account")
+                                svg: blocking ? SvgOutline.unblock : SvgOutline.block
                                 visible: !page.isUser(author) && author.viewer.blockingByList.isNull()
                                 onTriggered: {
                                     if (blocking) {
@@ -317,11 +313,10 @@ SkyPage {
                                         root.showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt), page.userDid)
                                     }
                                 }
-
-                                MenuItemSvg { svg: blocking ? SvgOutline.unblock : SvgOutline.block }
                             }
                             AccessibleMenuItem {
                                text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
+                               svg: SvgOutline.repost
                                visible: !page.isUser(author)
                                onTriggered: {
                                    if (authorMutedReposts)
@@ -329,29 +324,24 @@ SkyPage {
                                    else
                                        graphUtils.muteReposts(author)
                                }
-
-                               MenuItemSvg { svg: SvgOutline.repost }
                             }
 
                             AccessibleMenuItem {
                                 text: qsTr("Update lists")
+                                svg: SvgOutline.list
                                 onTriggered: updateLists()
-
-                                MenuItemSvg { svg: SvgOutline.list }
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Report account")
+                                svg: SvgOutline.report
                                 visible: !page.isUser(author)
                                 onTriggered: root.reportAuthor(author, userDid)
-
-                                MenuItemSvg { svg: SvgOutline.report }
                             }
                             AccessibleMenuItem {
                                 text: qsTr("Emoji names")
+                                svg: SvgOutline.emojiLanguage
                                 visible: UnicodeFonts.hasEmoji(authorDescription)
                                 onTriggered: root.showEmojiNamesList(authorDescription)
-
-                                MenuItemSvg { svg: SvgOutline.emojiLanguage }
                             }
                         }
                     }
@@ -448,6 +438,7 @@ SkyPage {
                 topPadding: 5
                 bottomPadding: 5
                 font.italic: true
+                wrapMode: Text.Wrap
                 plainText: `${authorPronouns}`
                 visible: Boolean(authorPronouns)
             }
@@ -455,7 +446,7 @@ SkyPage {
             RowLayout {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
 
-                Text {
+                AccessibleText {
                     id: handleText
                     Layout.fillWidth: true
                     elide: Text.ElideRight
@@ -518,7 +509,7 @@ SkyPage {
                 }
             }
 
-            Row {
+            Flow {
                 id: statsRow
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 spacing: 15
@@ -543,7 +534,7 @@ SkyPage {
                     authorListType: QEnums.AUTHOR_LIST_FOLLOWS
                     authorListHeader: qsTr("Following")
                 }
-                Text {
+                AccessibleText {
                     color: guiSettings.textColor
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
 
@@ -572,6 +563,7 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
                 textFormat: Text.RichText
+                elide: Text.ElideRight
                 text: qsTr(`🌐 ${guiSettings.toHtmlLink(authorWebsite)}`)
                 visible: contentVisible() && Boolean(authorWebsite)
 
@@ -584,6 +576,7 @@ SkyPage {
 
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
+                wrapMode: Text.Wrap
                 text: qsTr(`${statusIcon} Last activity: ${guiSettings.dateTimeIndication(lastActive)}`)
                 visible: !isNaN(lastActive.getTime())
             }
@@ -592,6 +585,7 @@ SkyPage {
                 id: firstAppearanceText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
+                wrapMode: Text.Wrap
                 text: qsTr(`🗓 First appearance: ${firstAppearanceDate}`)
                 visible: contentVisible()
             }

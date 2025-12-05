@@ -12,6 +12,7 @@ Text {
     readonly property real advanceWidth: textMetrics.advanceWidth
 
     id: theText
+    font.pointSize: guiSettings.scaledFont(1)
     color: guiSettings.textColor
     textFormat: mustClean ? Text.RichText : Text.PlainText
 

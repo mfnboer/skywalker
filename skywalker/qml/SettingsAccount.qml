@@ -114,31 +114,13 @@ GridLayout {
         text: qsTr("Logged-out visibility")
     }
 
-    CheckBox {
+    AccessibleCheckBox {
         id: loggedoutSwitch
         Layout.columnSpan: 2
         Layout.fillWidth: true
-
-        contentItem: Text {
-            text: qsTr("Discourage apps from showing my account to logged-out users");
-            color: guiSettings.textColor
-            wrapMode: Text.Wrap
-            verticalAlignment: Text.AlignVCenter
-            anchors.left: loggedoutSwitch.indicator.right
-            anchors.leftMargin: loggedoutSwitch.spacing
-            anchors.right: parent.right
-            anchors.rightMargin: loggedoutSwitch.rightPadding
-        }
+        text: qsTr("Discourage apps from showing my account to logged-out users")
 
         checked: !userPrefs.loggedOutVisibility
         onCheckedChanged: userPrefs.loggedOutVisibility = !checked
-
-        Accessible.role: Accessible.Button
-        Accessible.name: contentItem.text // qmllint disable missing-property
-        Accessible.onPressAction: toggle()
-
-        Component.onCompleted: {
-            loggedoutSwitch.indicator.x = loggedoutSwitch.leftPadding
-        }
     }
 }

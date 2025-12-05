@@ -126,7 +126,7 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_WARN_POST && !showWarnedPost && !mutePost
 
-                Text {
+                AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
@@ -134,7 +134,7 @@ Column {
                     color: Material.color(Material.Grey)
                     text: postContentWarning
                 }
-                Text {
+                AccessibleText {
                     width: parent.width
                     elide: Text.ElideRight
                     textFormat: Text.RichText
@@ -144,7 +144,7 @@ Column {
                     visible: !postContentLabeler.isNull()
                     onLinkActivated: root.getSkywalker().getDetailedProfile(postContentLabeler.did)
                 }
-                Text {
+                AccessibleText {
                     topPadding: 20
                     width: parent.width
                     elide: Text.ElideRight
@@ -165,7 +165,7 @@ Column {
                 anchors.verticalCenter: parent.verticalCenter
                 visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
 
-                Text {
+                AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
@@ -173,7 +173,7 @@ Column {
                     color: Material.color(Material.Grey)
                     text: getMuteText()
                 }
-                Text {
+                AccessibleText {
                     topPadding: 20
                     width: parent.width
                     elide: Text.ElideRight
@@ -195,7 +195,7 @@ Column {
                 width: parent.width
                 visible: postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST
 
-                Text {
+                AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
@@ -203,7 +203,7 @@ Column {
                     color: Material.color(Material.Grey)
                     text: postContentWarning
                 }
-                Text {
+                AccessibleText {
                     width: parent.width
                     textFormat: Text.RichText
                     elide: Text.ElideRight
@@ -253,7 +253,7 @@ Column {
         width: parent.width
         active: detailedView
         visible: status == Loader.Ready
-        sourceComponent: Text {
+        sourceComponent: AccessibleText {
             width: parent.width
             topPadding: 10
             Layout.fillWidth: true

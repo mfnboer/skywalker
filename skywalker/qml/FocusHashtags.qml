@@ -92,13 +92,13 @@ ListView {
                         }
                         AccessibleMenuItem {
                             text: qsTr("Edit")
+                            svg: SvgOutline.edit
                             onTriggered: editHashtagInEntry(modelData, hashtagMenu.selectedTag)
-                            MenuItemSvg { svg: SvgOutline.edit }
                         }
                         AccessibleMenuItem {
                             text: qsTr("Delete")
+                            svg: SvgOutline.delete
                             onTriggered: removeHashtagFromEntry(modelData, hashtagMenu.selectedTag)
-                            MenuItemSvg { svg: SvgOutline.delete }
                         }
                     }
                 }

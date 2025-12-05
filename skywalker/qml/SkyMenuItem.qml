@@ -8,7 +8,7 @@ Item {
     signal clicked()
 
     id: menuItem
-    width: itemRow.width
+    width: parent.width
     height: itemRow.height
 
     Accessible.role: Accessible.MenuItem
@@ -18,6 +18,7 @@ Item {
 
     Row {
         id: itemRow
+        width: parent.width
         topPadding: 10
         bottomPadding: 10
         spacing: 20
@@ -28,10 +29,11 @@ Item {
             color: guiSettings.textColor
             svg: menuItem.icon
         }
-        Text {
+        AccessibleText {
+            width: parent.width - 30 - parent.spacing
             anchors.verticalCenter: parent.verticalCenter
             font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.textColor
+            elide: Text.ElideRight
             text: menuItem.text
         }
     }
