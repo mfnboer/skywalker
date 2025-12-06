@@ -279,6 +279,8 @@ public:
     void setFontScale(double scale);
     double getFontScale() const;
 
+    Q_INVOKABLE float getDeviceFontScale() const;
+
     void setFavoritesBarPosition(QEnums::FavoritesBarPosition position);
     QEnums::FavoritesBarPosition getFavoritesBarPosition() const;
 

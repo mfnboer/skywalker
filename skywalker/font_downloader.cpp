@@ -46,7 +46,7 @@ void FontDownloader::initAppFonts()
     fontFamilies.push_back(sEmojiFontFamily);
     font.setFamilies(fontFamilies);
     font.setWeight(QFont::Weight(350));
-    font.setPixelSize(std::roundf(16 * fontScale));
+    font.setPixelSize(16);
     QGuiApplication::setFont(font);
 
     qInfo() << "Font:" << font;

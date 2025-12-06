@@ -530,7 +530,7 @@ Column {
             implicitWidth: contentItem.implicitWidth
             height: 32
             popup.x: speedComboBox.width - popup.width
-            popup.width: 60
+            popup.width: guiSettings.scaleWidthToFont(60)
             popup.topMargin: guiSettings.headerMargin
             popup.bottomMargin: guiSettings.footerMargin
             popup.background: Rectangle {

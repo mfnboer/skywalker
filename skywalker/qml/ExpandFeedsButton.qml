@@ -18,7 +18,7 @@ SvgButton {
 
     SkyMenu {
         id: feedsMenu
-        width: 250
+        menuWidth: 250
 
         MenuItem {
             contentItem: AccessibleText {

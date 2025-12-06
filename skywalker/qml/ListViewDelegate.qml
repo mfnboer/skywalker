@@ -239,7 +239,7 @@ Rectangle {
 
     SkyMenu {
         id: moreMenu
-        width: 250
+        menuWidth: 250
 
         CloseMenuItem {
             text: qsTr("<b>List</b>")

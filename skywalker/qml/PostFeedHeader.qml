@@ -68,7 +68,7 @@ Rectangle {
 
             SkyMenu {
                 id: moreMenu
-                width: focusMenuItem.width
+                menuWidth: 300
 
                 CloseMenuItem {
                     text: qsTr("<b>Options</b>")
@@ -89,7 +89,6 @@ Rectangle {
 
                 AccessibleMenuItem {
                     id: focusMenuItem
-                    width: 300
                     text: qsTr("Add focus hashtag view")
                     svg: SvgOutline.hashtag
                     svgColor: guiSettings.favoriteColor

@@ -3,6 +3,7 @@
 #include "user_settings.h"
 #include "activity_status.h"
 #include "definitions.h"
+#include "font_downloader.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/client.h>
@@ -999,7 +1000,14 @@ void UserSettings::setFontScale(double scale)
 
 double UserSettings::getFontScale() const
 {
-    return mSettings.value("fontScale", DEFAULT_FONT_SCALE).toDouble();
+    const auto fontScale = mSettings.value("fontScale", DEFAULT_FONT_SCALE).toDouble();
+    return fontScale > 0 ? fontScale : 1.0;
+}
+
+float UserSettings::getDeviceFontScale() const
+{
+    static const float deviceFontScale = FontDownloader::getFontScale();
+    return deviceFontScale > 0 ? deviceFontScale : 1.0;
 }
 
 void UserSettings::setFavoritesBarPosition(QEnums::FavoritesBarPosition position)

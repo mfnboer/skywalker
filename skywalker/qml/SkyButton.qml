@@ -8,6 +8,7 @@ RoundButton {
 
     id: button
 
+    height: implicitHeight ? Math.max(implicitHeight, guiSettings.appFontHeight + 10) : undefined
     Material.background: flat ? guiSettings.buttonFlatColor : guiSettings.buttonColor
     display: AbstractButton.TextOnly
     icon.name: ""

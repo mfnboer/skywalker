@@ -3,6 +3,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 RadioButton {
+    property int wrapMode: Text.Wrap
+    property int elide: Text.ElideNone
+
     id: control
     width: parent.width
     Layout.fillWidth: true
@@ -13,11 +16,12 @@ RadioButton {
     contentItem: Text {
         text: control.text
         font.pointSize: guiSettings.scaledFont(1)
-        wrapMode: Text.Wrap
+        wrapMode: control.wrapMode
+        elide: control.elide
         verticalAlignment: Text.AlignVCenter
         anchors.left: control.indicator.right
         anchors.leftMargin: control.spacing
-        anchors.right: parent.right
+        anchors.right: control.right
         anchors.rightMargin: control.rightPadding
     }
 

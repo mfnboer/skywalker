@@ -6,10 +6,11 @@ import skywalker
 Dialog {
     property string focusHashtag
     property bool isTyping: false
+    readonly property int hashTagTypeaheadHeight: 200 * guiSettings.fontScaleFactor
 
     id: page
     width: parent.width
-    contentHeight: textInput.height + (hashtagTypeaheadView.visible ? hashtagTypeaheadView.height : 0)
+    contentHeight: textInput.height + hashTagTypeaheadHeight
     topMargin: guiSettings.headerHeight
     modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
@@ -40,7 +41,7 @@ Dialog {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: textInput.bottom
-        height: 200
+        height: hashTagTypeaheadHeight
         model: searchUtils.hashtagTypeaheadList
         visible: page.isTyping
 

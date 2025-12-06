@@ -111,11 +111,10 @@ Item {
     readonly property real focusHighlightOpacity: 0.2
 
     // Font size
-    readonly property real fontScaleFactor: userSettings ? userSettings.fontScale : 1.0
+    readonly property real fontScaleFactor: userSettings ? userSettings.fontScale * userSettings.getDeviceFontScale() : 1.0
     readonly property real appFontHeight: fontMetrics.height * fontScaleFactor
     readonly property real labelFontHeight: appFontHeight * 6/8
     readonly property real labelFontSize: scaledFont(6/8)
-    readonly property real lineSpacing: fontMetrics.lineSpacing
 
     // Misc
     readonly property real flickDeceleration: 700
@@ -493,7 +492,7 @@ Item {
     Component.onCompleted: {
         root.onIsPortraitChanged.connect(updateScreenMargins)
         console.debug("Font scale factor:", fontScaleFactor)
-        console.debug("Font line spacing:", lineSpacing)
+        console.debug("Font line spacing:", fontMetrics.lineSpacing)
         console.debug("App font height:", appFontHeight)
     }
 }

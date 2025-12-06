@@ -101,7 +101,7 @@ GridLayout {
 
         SkyButton {
             id: advancedButton
-            height: 40
+            implicitHeight: 40
             anchors.horizontalCenter: parent.horizontalCenter
             text: qsTr("Advanced settings")
             onClicked: root.editAdvancedSettings()

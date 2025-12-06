@@ -21,6 +21,8 @@ Item {
 
         SkyRoundRadioButton {
             id: foreverButton
+            wrapMode: Text.NoWrap
+            elide: Text.ElideRight
             text: qsTr("Forever")
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
@@ -29,6 +31,8 @@ Item {
             }
         }
         SkyRoundRadioButton {
+            wrapMode: Text.NoWrap
+            elide: Text.ElideRight
             text: qsTr("24 hours")
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
@@ -37,6 +41,8 @@ Item {
             }
         }
         SkyRoundRadioButton {
+            wrapMode: Text.NoWrap
+            elide: Text.ElideRight
             text: qsTr("7 days")
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
@@ -45,6 +51,8 @@ Item {
             }
         }
         SkyRoundRadioButton {
+            wrapMode: Text.NoWrap
+            elide: Text.ElideRight
             text: qsTr("30 days")
             ButtonGroup.group: durationGroup
             onCheckedChanged: {
@@ -58,6 +66,11 @@ Item {
 
             SkyRoundRadioButton {
                 id: untilButton
+                width: undefined
+                Layout.fillWidth: false
+                Layout.preferredWidth: 120
+                wrapMode: Text.NoWrap
+                elide: Text.ElideRight
                 text: qsTr("Until:")
                 ButtonGroup.group: durationGroup
             }

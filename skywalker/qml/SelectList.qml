@@ -34,7 +34,7 @@ Dialog {
         anchors.top: listComboBox.bottom
         anchors.topMargin: 10
         anchors.right: parent.right
-        height: 40
+        implicitHeight: 40
         text: qsTr("New list")
         onClicked: dialog.newList()
     }

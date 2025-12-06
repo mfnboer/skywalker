@@ -22,7 +22,7 @@ SkyPage {
             padding: 10 + guiSettings.headerMargin
             color: "white"
             font.bold: true
-            font.pointSize: guiSettings.scaledFont(3.5)
+            font.pointSize: guiSettings.absScaledFont(3.5)
             text: skywalker.APP_NAME
         }
         AccessibleText {

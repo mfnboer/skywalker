@@ -104,6 +104,7 @@ Rectangle {
             leftPadding: parent.leftPadding
             font.pointSize: parent.font.pointSize
             color: guiSettings.placeholderTextColor
+            elide: Text.ElideRight
             text: placeholderText
             visible: parent.displayText.length === 0
             Accessible.ignored: true
