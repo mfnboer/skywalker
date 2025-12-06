@@ -8,6 +8,8 @@ ScrollView {
     property bool requireAltText: false
     property var postUtils
 
+    signal returnFocus
+
     id: imageScroller
     height: visible && images.length > 0 ? 180 : 0
     anchors.topMargin: images.length > 0 ? 10 : 0
@@ -137,6 +139,7 @@ ScrollView {
         altPage.onAltTextChanged.connect((text) => {
             altTexts[index] = text
             root.popStack()
+            returnFocus()
         })
         root.pushStack(altPage)
     }
@@ -166,8 +169,12 @@ ScrollView {
             memeBottomTexts[index] = bottomText
             altTexts[index] = makeMemeAltText(topText, bottomText)
             root.popStack()
+            returnFocus()
         })
-        memePage.onCancel.connect(() => root.popStack())
+        memePage.onCancel.connect(() => {
+            root.popStack()
+            returnFocus()
+        })
         root.pushStack(memePage)
     }
 
@@ -179,8 +186,12 @@ ScrollView {
         editPage.onDone.connect((newImgSource) => {
             images[index] = newImgSource
             root.popStack()
+            returnFocus()
         })
-        editPage.onCancel.connect(() => root.popStack())
+        editPage.onCancel.connect(() => {
+            root.popStack()
+            returnFocus()
+        })
         root.pushStack(editPage)
     }
 }

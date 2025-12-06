@@ -713,6 +713,8 @@ SkyPage {
                         requireAltText: page.requireAltText
                         postUtils: page.getPostUtils()
                         visible: !linkCard.visible && !gifAttachment.visible
+
+                        onReturnFocus: currentPostItem().getPostText().forceActiveFocus()
                     }
 
                     VideoAttachment {
