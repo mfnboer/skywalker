@@ -59,7 +59,6 @@ LinkCardReader::LinkCardReader(QObject* parent):
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
-    mNetwork->setCookieJar(new CookieJar);
 
     QLocale locale;
     mAcceptLanguage = QString("%1_%2, *;q=0.5").arg(
@@ -82,9 +81,9 @@ LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title
     return mCardCache[url];
 }
 
-void LinkCardReader::getLinkCard(const QString& link, bool retry)
+void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSaveControl)
 {
-    qDebug() << "Get link card:" << link;
+    qDebug() << "Get link card:" << link << "retry:" << retry << "cookieSaveControl:" << cookieSaveControl;
 
     if (mInProgress)
     {
@@ -142,10 +141,17 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
         }
     }
 
+    if (!retry)
+    {
+        qDebug() << "Reset cookie jar";
+        mNetwork->setCookieJar(new CookieJar);
+    }
+
     QNetworkRequest request(url);
 
-    // Without this YouTube Shorts does not load
-    request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, true);
+    // Without cookieSaveControl YouTube Shorts does not load
+    // With cookieSaveControl www.noordhollandsdagblad.nl fails
+    request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, cookieSaveControl);
 
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
     request.setRawHeader("Accept", "*/*");
@@ -161,6 +167,7 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry)
     mInProgress = reply;
     mPrevDestination = url;
     mRetry = retry;
+    mCookieSaveControl = cookieSaveControl;
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractLinkCard(reply); });
     connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ requestFailed(reply, errCode); });
@@ -236,7 +243,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     if (!description.isEmpty())
         card->setDescription(toPlainText(description));
 
-    qDebug() << QString(data);
+    qDebug() << QString(data.sliced(0, std::min(data.size(), (qsizetype)1024)));
     QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     qDebug() << "img url:" << imgUrlString;
     const auto& url = reply->request().url();
@@ -307,7 +314,12 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         if (!mRetry && cookieJar->setCookiesFromReply(*reply))
         {
             qDebug() << "Cookies stored, retry";
-            getLinkCard(url.toString(), true);
+            getLinkCard(url.toString(), true, mCookieSaveControl);
+        }
+        else if (!mCookieSaveControl)
+        {
+            qDebug() << "Retry with cookie save control on";
+            getLinkCard(url.toString(), false, true);
         }
         else
         {
@@ -348,7 +360,12 @@ void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
     if (!mRetry && cookieJar->setCookiesFromReply(*reply))
     {
         qDebug() << "Cookies stored, retry";
-        getLinkCard(url.toString(), true);
+        getLinkCard(url.toString(), true, mCookieSaveControl);
+    }
+    else if (!mCookieSaveControl)
+    {
+        qDebug() << "Retry with cookie save control on";
+        getLinkCard(url.toString(), false, true);
     }
     else
     {
@@ -365,7 +382,8 @@ void LinkCardReader::requestSslFailed(QNetworkReply* reply)
 
 void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
 {
-    qDebug() << "Prev url:" << mPrevDestination << "redirect url:" << redirectUrl;
+    qDebug() << "Prev url:" << mPrevDestination;
+    qDebug() << "Redirect url:" << redirectUrl;
 
     // Allow: https -> https, http -> http, http -> https
     // Allow https -> http only if the host stays the same
@@ -373,7 +391,12 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
         mPrevDestination.scheme() == "http" ||
         mPrevDestination.host() == redirectUrl.host())
     {
+        qDebug() << "Redirect allowed";
         emit reply->redirectAllowed();
+    }
+    else
+    {
+        qDebug() << "Redirect not allowed";
     }
 
     // For DPG media
