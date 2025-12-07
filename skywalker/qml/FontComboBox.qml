@@ -5,14 +5,17 @@ ComboBox {
     id: fontComboBox
     height: 22
     model: [
+        // Order must be same as QEnums::FontType
         { display: "Aa", font: "Normal" },
         { display: "𝗔𝗮", font: "𝗕𝗼𝗹𝗱" },
         { display: "𝘈𝘢", font: "𝘐𝘵𝘢𝘭𝘪𝘤" },
+        { display: "𝘼𝙖", font: "𝘽𝙤𝙡𝙙 𝙄𝙩𝙖𝙡𝙞𝙘" },
         { display: "A̶𝘢̶", font: "S̶t̶r̶i̶k̶e̶" },
         { display: "𝙰𝚊", font: "𝙼𝚘𝚗𝚘" },
         { display: "Aᴀ", font: "Sᴍᴀʟʟ ᴄᴀᴘs" },
         { display: "𝓐𝓪", font: "𝓒𝓾𝓻𝓼𝓲𝓿𝓮" },
         { display: "Ａａ", font: "Ｗｉｄｅ" },
+        { display: "𝔸𝕒", font: "𝔻𝕠𝕦𝕓𝕝𝕖 𝕊𝕥𝕣𝕦𝕔𝕜" },
         { display: "Ⓐⓐ", font: "Ⓑⓤⓑⓑⓛⓔ" },
         { display: "🄰🄰", font: "🅂🅀🅄🄰🅁🄴" }
     ]

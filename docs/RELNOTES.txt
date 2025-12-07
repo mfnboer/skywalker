@@ -1,6 +1,7 @@
 next
 ====
 * Option to change font size
+* Fonts: bold italic, double struck
 * Prevent horizontal swipe when you scrub video
 * Bug fixes
 

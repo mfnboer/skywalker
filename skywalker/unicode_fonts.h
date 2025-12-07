@@ -61,6 +61,7 @@ public:
 
 private:
     static uint convertToSmallCaps(QChar c);
+    static uint convertToDoubleStruckSpecial(QChar c);
 };
 
 }

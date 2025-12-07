@@ -47,14 +47,34 @@ uint UnicodeFonts::convertToSmallCaps(QChar c)
     return ch.unicode();
 }
 
+uint UnicodeFonts::convertToDoubleStruckSpecial(QChar c)
+{
+    static const std::unordered_map<QChar, uint> SPECIAL = {
+        { 'C', 0x2102 },
+        { 'H', 0x210D },
+        { 'N', 0x2115 },
+        { 'P', 0x2119 },
+        { 'Q', 0x211A },
+        { 'R', 0x211D },
+        { 'Z', 0x2124 }
+    };
+
+    if (!SPECIAL.contains(c))
+        return 0;
+
+    return SPECIAL.at(c);
+}
+
 uint UnicodeFonts::convertToFont(QChar c, FontType font)
 {
     static std::unordered_map<FontType, FontCodePoint> FONT_CODE_POINTS = {
         { QEnums::FONT_BOLD, { 0x1D5D4, 0x1D5EE, 0x1D7EC } },
         { QEnums::FONT_ITALIC, { 0x1D608, 0x1D622, 0 } },
+        { QEnums::FONT_BOLD_ITALIC, { 0x1D63C, 0x1D656, 0x1D7EC } }, // NOTE: bold for digits
         { QEnums::FONT_MONOSPACE, { 0x1D670, 0x1D68A, 0x1D7F6 } },
         { QEnums::FONT_CURSIVE, { 0x1D4D0, 0x1D4EA, 0 } },
         { QEnums::FONT_FULLWIDTH, { 0xFF21, 0xFF41, 0xFF10 } },
+        { QEnums::FONT_DOUBLE_STRUCK, { 0x1D538, 0x1D552, 0 } },
         { QEnums::FONT_BUBBLE, { 0x24B6, 0x24D0, 0x245F } }, // NOTE: 0 = 0x24EA
         { QEnums::FONT_SQUARE, { 0x1F130, 0x1F130, 0 } } // NOTE: only upper case
     };
@@ -67,6 +87,14 @@ uint UnicodeFonts::convertToFont(QChar c, FontType font)
 
     if (font == QEnums::FONT_SMALL_CAPS)
         return convertToSmallCaps(c);
+
+    if (font == QEnums::FONT_DOUBLE_STRUCK)
+    {
+        const uint code = convertToDoubleStruckSpecial(c);
+
+        if (code > 0)
+            return code;
+    }
 
     auto it = FONT_CODE_POINTS.find(font);
     Q_ASSERT(it != FONT_CODE_POINTS.end());
