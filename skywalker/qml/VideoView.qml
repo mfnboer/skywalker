@@ -445,6 +445,12 @@ Column {
             accessibleName: videoPlayer.playing ? qsTr("pause video") : qsTr("continue playing video")
             color: controlColor
 
+            containmentMask: Item {
+                y: -10
+                width: playPauseButton.width
+                height: playPauseButton.height + 20
+            }
+
             onClicked: videoPlayer.playPause()
         }
 
@@ -457,6 +463,12 @@ Column {
             svg: SvgFilled.stop
             accessibleName: qsTr("stop video")
             color: controlColor
+
+            containmentMask: Item {
+                y: -10
+                width: stopButton.width
+                height: stopButton.height + 20
+            }
 
             onClicked: videoPlayer.stopPlaying()
         }
@@ -502,8 +514,11 @@ Column {
 
         MouseArea {
             x: playProgress.x
+            y: -10
             width: playProgress.width
-            height: playControls.height
+            height: playControls.height + 20
+            preventStealing: true
+
             onClicked: (event) => {
                 videoPlayer.position = (videoPlayer.duration / width) * event.x
             }
@@ -565,6 +580,12 @@ Column {
                 text: `${speedComboBox.displayText}x`
             }
 
+            containmentMask: Item {
+                y: -10
+                width: speedComboBox.width
+                height: speedComboBox.height + 20
+            }
+
             delegate: ItemDelegate {
                 required property int index
                 required property var modelData
@@ -593,6 +614,12 @@ Column {
             accessibleName: audioOutput.muted ? qsTr("turn sound on") : qsTr("turn sound off")
             color: controlColor
             visible: videoPlayer.hasAudio
+
+            containmentMask: Item {
+                y: -10
+                width: soundButton.width
+                height: soundButton.height + 20
+            }
 
             onClicked: audioOutput.toggleSound()
         }

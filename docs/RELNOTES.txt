@@ -1,6 +1,7 @@
 next
 ====
 * Option to change font size
+* Prevent horizontal swipe when you scrub video
 * Bug fixes
 
 4.20.1

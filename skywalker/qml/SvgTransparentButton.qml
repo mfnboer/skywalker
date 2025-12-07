@@ -18,6 +18,7 @@ SkySvg {
         width: parent.width
         height: parent.height
         color: "transparent"
+        containmentMask: parent.containmentMask
 
         Accessible.role: Accessible.Button
         Accessible.name: accessibleName
@@ -29,6 +30,8 @@ SkySvg {
         width: parent.width
         height: parent.height
         enabled: button.enabled
+        containmentMask: parent.containmentMask
+
         onClicked: button.clicked()
     }
 
