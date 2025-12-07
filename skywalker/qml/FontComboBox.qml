@@ -21,7 +21,7 @@ ComboBox {
     ]
     valueRole: "display"
     textRole: "display"
-    popup.width: guiSettings.scaleWidthToFont(130)
+    popup.width: guiSettings.scaleWidthToFont(150)
     popup.topMargin: guiSettings.headerMargin
     popup.bottomMargin: guiSettings.footerMargin
 
