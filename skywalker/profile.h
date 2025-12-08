@@ -385,6 +385,27 @@ public:
     QString getPinnedPostUri() const;
 };
 
+class BlockedAuthor
+{
+    Q_GADGET
+    Q_PROPERTY(QString did READ getDid FINAL)
+    Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
+    Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
+    QML_VALUE_TYPE(blockedauthor)
+
+public:
+    BlockedAuthor() = default;
+    explicit BlockedAuthor(const ATProto::AppBskyFeed::BlockedAuthor::SharedPtr& blockedAuthor);
+
+    bool isNull() const;
+    QString getDid() const;
+    BasicProfile getAuthor() const;
+    ProfileViewerState getViewer() const;
+
+private:
+    ATProto::AppBskyFeed::BlockedAuthor::SharedPtr mBlockedAuthor;
+};
+
 }
 
 Q_DECLARE_METATYPE(::Skywalker::ProfileViewerState)

@@ -54,7 +54,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
 {
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
             [this](const QString& did) {
-                replyToAuthorAdded(did);
+                authorAdded(did);
                 labelerAdded(did);
             },
             Qt::QueuedConnection);
@@ -365,7 +365,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return mUserDid;
     case Role::Author:
     {
-        const auto author = post.getAuthor();
+        const auto author = !post.isBlocked() ? post.getAuthor() : post.getBlockedAuthor().getAuthor();
         const BasicProfile* profileChange = getProfileChange(author.getDid());
         return QVariant::fromValue(profileChange ? *profileChange : author);
     }
@@ -508,6 +508,16 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.isNotFound();
     case Role::PostBlocked:
         return post.isBlocked() || getLocallyBlocked(post.getAuthor().getDid());
+    case Role::PostBlockedAuthor:
+    {
+        const auto& blockedAuthor = post.getBlockedAuthor();
+        const QString did = blockedAuthor.getDid();
+
+        if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+            QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
+
+        return QVariant::fromValue(blockedAuthor);
+    }
     case Role::PostNotSupported:
         return post.isNotSupported();
     case Role::PostUnsupportedType:
@@ -763,6 +773,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostHiddenPosts), "postHiddenPosts" },
         { int(Role::PostNotFound), "postNotFound" },
         { int(Role::PostBlocked), "postBlocked" },
+        { int(Role::PostBlockedAuthor), "postBlockedAuthor" },
         { int(Role::PostNotSupported), "postNotSupported" },
         { int(Role::PostUnsupportedType), "postUnsupportedType" },
         { int(Role::PostIsReply), "postIsReply" },
@@ -975,7 +986,7 @@ void AbstractPostFeedModel::postIsThreadChanged(const QString& postUri)
     }
 }
 
-void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
+void AbstractPostFeedModel::authorAdded(const QString& did)
 {
     for (int i = 0; i < (int)mFeed.size(); ++i)
     {
@@ -983,6 +994,9 @@ void AbstractPostFeedModel::replyToAuthorAdded(const QString& did)
 
         if (post.getReplyToAuthorDid() == did)
             emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostReplyToAuthor) });
+
+        if (post.getBlockedAuthor().getDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostBlockedAuthor), int(Role::Author) });
 
         const auto postRecord = post.getRecordView();
 

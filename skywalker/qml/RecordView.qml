@@ -128,6 +128,7 @@ Item {
             }
         }
 
+        // TODO: show more info is the user is blocking
         Loader {
             width: parent.width
             active: record.notFound || record.blocked || record.notSupported

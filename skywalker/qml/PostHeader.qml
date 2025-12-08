@@ -34,6 +34,7 @@ Column {
                 Layout.alignment: Qt.AlignVCenter
                 durationSeconds: postIndexedSecondsAgo
                 Accessible.ignored: true
+                visible: postIndexedSecondsAgo >= 0
             }
         }
     }

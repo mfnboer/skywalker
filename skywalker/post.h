@@ -28,7 +28,7 @@ public:
     static Post createGapPlaceHolder(const QString& gapCursor);
     static Post createHiddenPosts();
     static Post createNotFound(const QString uri = "", const QString cid = "");
-    static Post createBlocked(const QString uri = "", const QString cid = "");
+    static Post createBlocked(const QString uri = "", const QString cid = "", const BlockedAuthor blockedAuthor = {});
     static Post createNotSupported(const QString& unsupportedType);
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
@@ -155,6 +155,7 @@ public:
     bool isHiddenPosts() const { return mHiddenPosts; }
     bool isNotFound() const { return mNotFound; }
     bool isBlocked() const { return mBlocked; }
+    const BlockedAuthor& getBlockedAuthor() const { return mBlockedAuthor; }
     bool isNotSupported() const { return mNotSupported; }
     const QString& getUnsupportedType() const { return mUnsupportedType; }
 
@@ -182,6 +183,8 @@ private:
 
     // null if the post represents a reply ref.
     ATProto::AppBskyFeed::FeedViewPost::SharedPtr mFeedViewPost;
+
+    BlockedAuthor mBlockedAuthor;
 
     QString mUri;
     QString mCid;

@@ -37,6 +37,7 @@ Rectangle {
     required property bool postHiddenPosts;
     required property bool postNotFound;
     required property bool postBlocked;
+    required property blockedauthor postBlockedAuthor;
     required property bool postNotSupported;
     required property string postUnsupportedType;
     required property bool postIsReply
@@ -89,6 +90,8 @@ Rectangle {
     property bool swipeMode: false
     property int extraFooterHeight: 0
     property bool threadBarVisible: !swipeMode
+    readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
+            (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
     readonly property int gridColumns: threadBarVisible ? 2 : 1
     readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0
     readonly property int contentLeftMargin: threadBarVisible ? 0 : margin
@@ -400,7 +403,7 @@ Rectangle {
                 userDid: postEntry.userDid
                 author: postEntry.author
                 showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
-                visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
+                visible: (!postIsPlaceHolder || postBlockedByUser) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
                 onClicked: skywalker.getDetailedProfile(author.did)
 
@@ -860,11 +863,11 @@ Rectangle {
             }
         }
 
-        // Place holder for NOT FOUND, BLOCKED, NOT SUPPORTED, DELETED posts
+        // Place holder for NOT FOUND, NOT SUPPORTED, DELETED posts
         Loader {
             Layout.columnSpan: gridColumns
             Layout.fillWidth: true
-            active: postNotFound || postBlocked || postNotSupported || postLocallyDeleted
+            active: postNotFound || postNotSupported || postLocallyDeleted
             visible: status == Loader.Ready
             sourceComponent: AccessibleText {
                 width: parent.width
@@ -873,8 +876,6 @@ Rectangle {
                 text: {
                     if (postNotFound)
                         return qsTr("🗑 Not found")
-                    else if (postBlocked)
-                        return qsTr("🚫 Blocked")
                     else if (postNotSupported)
                         return qsTr("⚠️ Not supported")
                     else if (postLocallyDeleted)
@@ -882,6 +883,54 @@ Rectangle {
                     else
                         return "⚠️ Error"
                 }
+            }
+        }
+
+        // Place holder for BLOCKED posts where you (probably) did not block the author.
+        // If there is no viewer state we do not know where the block comes from.
+        Loader {
+            Layout.columnSpan: gridColumns
+            Layout.fillWidth: true
+            active: postBlocked && !postBlockedByUser
+            visible: status == Loader.Ready
+            sourceComponent: AccessibleText {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                text: qsTr("🚫 Blocked")
+            }
+        }
+
+        // Place holder for BLOCKED posts where you blocked the author.
+        // Avatar is already displayed in the thread bar!
+        Loader {
+            Layout.fillWidth: true
+            active: postBlockedByUser
+            visible: status == Loader.Ready
+            sourceComponent: Column {
+                width: parent.width
+
+                PostHeader {
+                    width: parent.width
+                    userDid: postEntry.userDid
+                    author: postBlockedAuthor.author
+                    postIndexedSecondsAgo: -1
+                }
+
+                AccessibleText {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    text: {
+                        if (postBlockedAuthor.viewer.blocking)
+                            return qsTr("🚫 Blocked by you")
+                        else if (!postBlockedAuthor.viewer.blockingByList.isNull())
+                            return qsTr("🚫 Blocked by you via list")
+                        else
+                            return qsTr("🚫 Blocked")
+                    }
+                }
+
+                // TODO: show list
             }
         }
 

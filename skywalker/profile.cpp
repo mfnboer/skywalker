@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "profile.h"
+#include "author_cache.h"
 #include "content_filter.h"
 #include "definitions.h"
 
@@ -789,6 +790,41 @@ int DetailedProfile::getPostsCount() const
 QString DetailedProfile::getPinnedPostUri() const
 {
     return mProfileDetailedView && mProfileDetailedView->mPinnedPost ? mProfileDetailedView->mPinnedPost->mUri : "";
+}
+
+
+BlockedAuthor::BlockedAuthor(const ATProto::AppBskyFeed::BlockedAuthor::SharedPtr& blockedAuthor) :
+    mBlockedAuthor(blockedAuthor)
+{
+}
+
+bool BlockedAuthor::isNull() const
+{
+    return !mBlockedAuthor;
+}
+
+QString BlockedAuthor::getDid() const
+{
+    return mBlockedAuthor ? mBlockedAuthor->mDid : "";
+}
+
+BasicProfile BlockedAuthor::getAuthor() const
+{
+    const auto did = getDid();
+
+    if (did.isEmpty())
+        return {};
+
+    auto* profile = AuthorCache::instance().get(did);
+    return profile ? *profile : BasicProfile();
+}
+
+ProfileViewerState BlockedAuthor::getViewer() const
+{
+    if (!mBlockedAuthor || !mBlockedAuthor->mViewer)
+        return {};
+
+    return ProfileViewerState(mBlockedAuthor->mViewer);
 }
 
 }

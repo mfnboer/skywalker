@@ -66,6 +66,7 @@ public:
         PostHiddenPosts,
         PostNotFound,
         PostBlocked,
+        PostBlockedAuthor,
         PostNotSupported,
         PostUnsupportedType,
         PostIsReply,
@@ -243,7 +244,7 @@ private:
     void identifyThreadPost(const Post& post);
 
     void postIsThreadChanged(const QString& postUri);
-    void replyToAuthorAdded(const QString& did);
+    void authorAdded(const QString& did);
     void labelerAdded(const QString& did);
 
     BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,

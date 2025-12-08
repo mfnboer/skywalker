@@ -42,12 +42,13 @@ Post Post::createNotFound(const QString uri, const QString cid)
     return post;
 }
 
-Post Post::createBlocked(const QString uri, const QString cid)
+Post Post::createBlocked(const QString uri, const QString cid, const BlockedAuthor blockedAuthor)
 {
     Post post;
     post.mBlocked = true;
     post.mUri = uri;
     post.mCid = cid;
+    post.mBlockedAuthor = blockedAuthor;
     return post;
 }
 
@@ -75,7 +76,10 @@ Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, 
     case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
         return Post::createNotFound();
     case ATProto::AppBskyFeed::PostElementType::BLOCKED_POST:
-        return Post::createBlocked();
+    {
+        auto blockedPost = std::get<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(threadElement.mPost);
+        return Post::createBlocked("", "", BlockedAuthor(blockedPost->mAuthor));
+    }
     case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
     case ATProto::AppBskyFeed::PostElementType::UNKNOWN:
         return Post::createNotSupported(threadElement.mUnsupportedType);
@@ -99,7 +103,10 @@ Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement)
     case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
         return Post::createNotFound();
     case ATProto::AppBskyFeed::PostElementType::BLOCKED_POST:
-        return Post::createBlocked();
+    {
+        auto blockedPost = std::get<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(replyElement.mPost);
+        return Post::createBlocked("", "", BlockedAuthor(blockedPost->mAuthor));
+    }
     case ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST:
     case ATProto::AppBskyFeed::PostElementType::UNKNOWN:
         return Post::createNotSupported(replyElement.mUnsupportedType);
