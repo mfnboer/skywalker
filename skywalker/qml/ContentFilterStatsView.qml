@@ -166,28 +166,12 @@ SkyPage {
                     color: "transparent"
                     implicitHeight: listValue.implicitHeight
 
-                    RowLayout {
+                    ListHeader {
+                        property listviewbasic nullList
+
                         id: listValue
                         width: parent.width
-                        spacing: 10
-
-                        ListAvatar {
-                            id: avatar
-                            Layout.preferredWidth: 34
-                            Layout.preferredHeight: 34
-                            userDid: page.userDid
-                            avatarUrl: page.getTypeName(control.value) === 'ListViewBasic' ? control.value.avatarThumb : ""
-
-                            onClicked: root.viewListByUri(control.value.uri, false)
-                        }
-
-                        SkyCleanedTextLine {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-                            elide: Text.ElideRight
-                            font.bold: true
-                            plainText: page.getTypeName(control.value) === 'ListViewBasic' ? control.value.name : ""
-                        }
+                        list: page.getTypeName(control.value) === 'ListViewBasic' ? control.value : nullList
                     }
                 }
             }

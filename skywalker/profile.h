@@ -391,6 +391,8 @@ class BlockedAuthor
     Q_PROPERTY(QString did READ getDid FINAL)
     Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
     Q_PROPERTY(ProfileViewerState viewer READ getViewer FINAL)
+    Q_PROPERTY(QString blockingByListUri READ getBlockingByListUri FINAL)
+    Q_PROPERTY(ListViewBasic blockingByList READ getBlockingByList FINAL)
     QML_VALUE_TYPE(blockedauthor)
 
 public:
@@ -401,6 +403,8 @@ public:
     QString getDid() const;
     BasicProfile getAuthor() const;
     ProfileViewerState getViewer() const;
+    QString getBlockingByListUri() const;
+    ListViewBasic getBlockingByList() const;
 
 private:
     ATProto::AppBskyFeed::BlockedAuthor::SharedPtr mBlockedAuthor;

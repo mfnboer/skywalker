@@ -64,6 +64,7 @@ void ListCache::putList(const QString& uri, const std::function<void()>& addedCb
             mFetchingUris.erase(list->mUri);
             mFailedUris.erase(list->mUri);
             put(ListViewBasic(list));
+            emit listAdded(list->mUri);
 
             if (addedCb)
                 addedCb();

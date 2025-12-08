@@ -246,6 +246,7 @@ private:
     void postIsThreadChanged(const QString& postUri);
     void authorAdded(const QString& did);
     void labelerAdded(const QString& did);
+    void listAdded(const QString& uri);
 
     BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,
                                    const ContentLabelList& labels,

@@ -864,10 +864,11 @@ Rectangle {
         }
 
         // Place holder for NOT FOUND, NOT SUPPORTED, DELETED posts
+        // NOTE: if a post is blocked locally, it also gets deleted locally
         Loader {
             Layout.columnSpan: gridColumns
             Layout.fillWidth: true
-            active: postNotFound || postNotSupported || postLocallyDeleted
+            active: (postNotFound || postNotSupported || postLocallyDeleted) && !postBlocked
             visible: status == Loader.Ready
             sourceComponent: AccessibleText {
                 width: parent.width
@@ -915,22 +916,36 @@ Rectangle {
                     userDid: postEntry.userDid
                     author: postBlockedAuthor.author
                     postIndexedSecondsAgo: -1
+                    visible: threadBarVisible
+                }
+
+                PostHeaderWithAvatar {
+                    width: parent.width
+                    userDid: postEntry.userDid
+                    author: postBlockedAuthor.author
+                    postIndexedSecondsAgo: -1
+                    visible: !threadBarVisible
                 }
 
                 AccessibleText {
+                    bottomPadding: 5
                     width: parent.width
                     elide: Text.ElideRight
                     text: {
-                        if (postBlockedAuthor.viewer.blocking)
+                        if (postBlockedAuthor.blockingByListUri)
+                            return qsTr("🚫 Blocked by list")
+                        else if (postBlockedAuthor.viewer.blocking)
                             return qsTr("🚫 Blocked by you")
-                        else if (!postBlockedAuthor.viewer.blockingByList.isNull())
-                            return qsTr("🚫 Blocked by you via list")
                         else
                             return qsTr("🚫 Blocked")
                     }
                 }
 
-                // TODO: show list
+                ListHeader {
+                    width: parent.width
+                    list: postBlockedAuthor.blockingByList
+                    visible: !postBlockedAuthor.blockingByList.isNull()
+                }
             }
         }
 

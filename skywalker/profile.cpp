@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "content_filter.h"
 #include "definitions.h"
+#include "list_cache.h"
 
 namespace Skywalker {
 
@@ -825,6 +826,49 @@ ProfileViewerState BlockedAuthor::getViewer() const
         return {};
 
     return ProfileViewerState(mBlockedAuthor->mViewer);
+}
+
+QString BlockedAuthor::getBlockingByListUri() const
+{
+    if (!mBlockedAuthor || !mBlockedAuthor->mViewer)
+        return {};
+
+    if (mBlockedAuthor->mViewer->mBlockingByList)
+        return mBlockedAuthor->mViewer->mBlockingByList->mUri;
+
+    // It seems that blockingByList may not be filled in. Instead the blocking URI
+    // is set to a list-URI
+    if (!mBlockedAuthor->mViewer->mBlocking)
+        return {};
+
+    const ATProto::ATUri uri(*mBlockedAuthor->mViewer->mBlocking);
+
+    if (uri.getCollection() != ATProto::ATUri::COLLECTION_GRAPH_LIST)
+        return {};
+
+    return *mBlockedAuthor->mViewer->mBlocking;
+}
+
+ListViewBasic BlockedAuthor::getBlockingByList() const
+{
+    if (!mBlockedAuthor || !mBlockedAuthor->mViewer)
+        return {};
+
+    if (mBlockedAuthor->mViewer->mBlockingByList)
+        return ListViewBasic(mBlockedAuthor->mViewer->mBlockingByList);
+
+    // It seems that blockingByList may not be filled in. Instead the blocking URI
+    // is set to a list-URI
+    if (!mBlockedAuthor->mViewer->mBlocking)
+        return {};
+
+    const ATProto::ATUri uri(*mBlockedAuthor->mViewer->mBlocking);
+
+    if (uri.getCollection() != ATProto::ATUri::COLLECTION_GRAPH_LIST)
+        return {};
+
+    auto* list = ListCache::instance().get(*mBlockedAuthor->mViewer->mBlocking);
+    return list ? *list : ListViewBasic();
 }
 
 }

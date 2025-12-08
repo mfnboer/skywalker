@@ -618,6 +618,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/QuoteChainPostFeedView.qml
         QML_FILES qml/AccessibleLabel.qml
         QML_FILES qml/SkyComboBox.qml
+        QML_FILES qml/ListHeader.qml
 )
 
 if (NOT ANDROID)

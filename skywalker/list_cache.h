@@ -32,6 +32,9 @@ public:
     const ListViewBasic* get(const QString& uri) const;
     bool contains(const QString& uri) const;
 
+signals:
+    void listAdded(const QString& uri);
+
 private:
     explicit ListCache(QObject* parent = nullptr);
 

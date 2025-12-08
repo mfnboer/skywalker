@@ -5,6 +5,7 @@
 #include "content_filter.h"
 #include "content_filter_stats_model.h"
 #include "focus_hashtags.h"
+#include "list_cache.h"
 #include "list_store.h"
 #include "profile_store.h"
 #include "post_thread_cache.h"
@@ -58,8 +59,12 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
                 labelerAdded(did);
             },
             Qt::QueuedConnection);
+
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
             [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
+
+    connect(&ListCache::instance(), &ListCache::listAdded, this,
+            [this](const QString& uri){ listAdded(uri); }, Qt::QueuedConnection);
 }
 
 void AbstractPostFeedModel::setOverrideLinkColor(const QString& color)
@@ -512,9 +517,13 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     {
         const auto& blockedAuthor = post.getBlockedAuthor();
         const QString did = blockedAuthor.getDid();
+        const QString listUri = blockedAuthor.getBlockingByListUri();
 
         if (!did.isEmpty() && !AuthorCache::instance().contains(did))
             QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
+
+        if (!listUri.isEmpty() && blockedAuthor.getBlockingByList().isNull())
+            QTimer::singleShot(0, this, [listUri]{ ListCache::instance().putList(listUri); });
 
         return QVariant::fromValue(blockedAuthor);
     }
@@ -1021,6 +1030,17 @@ void AbstractPostFeedModel::labelerAdded(const QString& did)
 
     if (profile && profile->getAssociated().isLabeler())
         changeData({ int(Role::PostContentLabeler), int(Role::PostRecord), int(Role::PostRecordWithMedia) });
+}
+
+void AbstractPostFeedModel::listAdded(const QString& uri)
+{
+    for (int i = 0; i < (int)mFeed.size(); ++i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.getBlockedAuthor().getBlockingByListUri() == uri)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostBlockedAuthor) });
+    }
 }
 
 BasicProfile AbstractPostFeedModel::getContentLabeler(QEnums::ContentVisibility visibility,
