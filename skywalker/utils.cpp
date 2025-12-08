@@ -38,7 +38,10 @@ QColor Utils::determineForegroundColor(const QColor& backgroundColor, const QCol
 
 bool Utils::similarColors(const QColor& lhs, const QColor& rhs)
 {
-    return std::abs(lhs.red() - rhs.red()) < 32 && std::abs(lhs.green() - rhs.green()) < 32 && std::abs(lhs.blue() - rhs.blue()) < 32;
+    const float blackness = lhs.toCmyk().blackF();
+    const bool dark = blackness > 0.3;
+    const int threshold = dark ? 24 : 12;
+    return std::abs(lhs.red() - rhs.red()) < threshold && std::abs(lhs.green() - rhs.green()) < threshold && std::abs(lhs.blue() - rhs.blue()) < threshold;
 }
 
 bool Utils::translate(const QString& text)

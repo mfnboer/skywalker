@@ -18,6 +18,7 @@ RadioButton {
         font.pointSize: guiSettings.scaledFont(1)
         wrapMode: control.wrapMode
         elide: control.elide
+        color: guiSettings.textColor
         verticalAlignment: Text.AlignVCenter
         anchors.left: control.indicator.right
         anchors.leftMargin: control.spacing

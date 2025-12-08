@@ -2487,6 +2487,7 @@ ApplicationWindow {
         console.debug("Theme changed:", root.Material.theme, "old display mode:", oldDisplayMode, "new:", newDisplayMode)
 
         userSettings.setDefaultBackgroundColor(Material.background)
+        userSettings.setDefaultTextColor(Material.foreground)
         userSettings.setActiveDisplayMode(newDisplayMode)
         userSettings.setCurrentLinkColor(guiSettings.linkColor)
         root.Material.accent = guiSettings.accentColor

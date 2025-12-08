@@ -21,6 +21,7 @@ static constexpr double DEFAULT_FONT_SCALE = 1.0;
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sDefaultBackgroundColor("white");
+QString UserSettings::sDefaultTextColor("black");
 QString UserSettings::sCurrentLinkColor("blue");
 
 int UserSettings::getActiveOnlineIntervalMins()
@@ -124,14 +125,18 @@ void UserSettings::reset()
 
 void UserSettings::setActiveDisplayMode(QEnums::DisplayMode mode)
 {
-    if (mode != sActiveDisplayMode)
-    {
-        sActiveDisplayMode = mode;
-        emit threadColorChanged();
-        emit backgroundColorChanged();
-        emit accentColorChanged();
-        emit linkColorChanged();
-    }
+    sActiveDisplayMode = mode;
+    emit threadColorChanged();
+    emit backgroundColorChanged();
+    emit textColorChanged();
+    emit accentColorChanged();
+    emit linkColorChanged();
+}
+
+void UserSettings::setDefaultBackgroundColor(const QString& color)
+{
+    qDebug() << "Default background color:" << color;
+    sDefaultBackgroundColor = color;
 }
 
 QList<BasicProfile> UserSettings::getUserList() const
@@ -895,7 +900,29 @@ void UserSettings::setBackgroundColor(const QString& color)
 
 QString UserSettings::getBackgroundColor() const
 {
-    return mSettings.value(displayKey("backgroundColor"), getDefaultBackgroundColor()).toString();
+    const auto color = mSettings.value(displayKey("backgroundColor"), getDefaultBackgroundColor()).toString();
+    qDebug() << "Get background color:" << color;
+    return color;
+}
+
+void UserSettings::resetTextColor()
+{
+    mSettings.remove(displayKey("textColor"));
+    emit textColorChanged();
+}
+
+void UserSettings::setTextColor(const QString& color)
+{
+    if (getTextColor() != color)
+    {
+        mSettings.setValue(displayKey("textColor"), color);
+        emit textColorChanged();
+    }
+}
+
+QString UserSettings::getTextColor() const
+{
+    return mSettings.value(displayKey("textColor"), getDefaultTextColor()).toString();
 }
 
 void UserSettings::resetAccentColor()

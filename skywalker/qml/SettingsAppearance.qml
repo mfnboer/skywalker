@@ -11,6 +11,9 @@ ColumnLayout {
     property int prevY: -1
     readonly property int labelSize: width / 3
 
+    // NOTE: setting a button background to Material.background causes it to be transparent??
+    readonly property string colorResetButtonColor: guiSettings.isLightMode ? "white" : "black"
+
     signal offsetY(int dy)
     signal fontScaleChanged
 
@@ -102,10 +105,40 @@ ColumnLayout {
                 anchors.right: parent.right
                 width: height
                 height: 34
-                Material.background: guiSettings.backgroundColor
+                Material.background: colorResetButtonColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset background color to default")
                 onClicked: userSettings.resetBackgroundColor()
+            }
+        }
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("Text color")
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 30
+            border.width: 1
+            border.color: guiSettings.buttonColor
+            color: guiSettings.textColor
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: selectTextColor()
+            }
+
+            SvgPlainButton {
+                y: -2
+                anchors.right: parent.right
+                width: height
+                height: 34
+                Material.background: colorResetButtonColor
+                svg: SvgOutline.close
+                accessibleName: qsTr("reset text color to default")
+                onClicked: userSettings.resetTextColor()
             }
         }
 
@@ -149,7 +182,7 @@ ColumnLayout {
                 anchors.right: parent.right
                 width: height
                 height: 34
-                Material.background: guiSettings.backgroundColor
+                Material.background: colorResetButtonColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset accent color to default")
                 onClicked: {
@@ -182,7 +215,7 @@ ColumnLayout {
                 anchors.right: parent.right
                 width: height
                 height: 34
-                Material.background: guiSettings.backgroundColor
+                Material.background: colorResetButtonColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset link color to default")
                 onClicked: userSettings.resetLinkColor()
@@ -248,7 +281,7 @@ ColumnLayout {
                 anchors.right: parent.right
                 width: height
                 height: 34
-                Material.background: guiSettings.backgroundColor
+                Material.background: colorResetButtonColor
                 svg: SvgOutline.close
                 accessibleName: qsTr("reset thread color to default")
                 onClicked: userSettings.resetThreadColor()
@@ -525,6 +558,21 @@ ColumnLayout {
         cs.open()
     }
 
+    function selectTextColor() {
+        let component = guiSettings.createComponent("ColorSelector.qml")
+        let cs = component.createObject(page)
+        cs.selectedColor = userSettings.textColor
+        cs.onRejected.connect(() => cs.destroy())
+        cs.onAccepted.connect(() => {
+            if (checkColor(cs.selectedColor, guiSettings.forbiddenTextColors()))
+                userSettings.textColor = cs.selectedColor
+            else
+                skywalker.showStatusMessage(qsTr("This color would make some text invisible. Pick another color"), QEnums.STATUS_LEVEL_ERROR)
+            cs.destroy()
+        })
+        cs.open()
+    }
+
     function selectAccentColor() {
         let component = guiSettings.createComponent("ColorSelector.qml")
         let cs = component.createObject(page)
@@ -562,7 +610,10 @@ ColumnLayout {
         for (let i = 0; i < forbiddenColors.length; ++i)
         {
             if (utils.similarColors(color, forbiddenColors[i]))
+            {
+                console.debug("Similar colors:", color, forbiddenColors[i])
                 return false
+            }
         }
 
         return true

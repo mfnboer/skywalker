@@ -59,6 +59,7 @@ class UserSettings : public QObject,
 {
     Q_OBJECT
     Q_PROPERTY(QString backgroundColor READ getBackgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged FINAL)
+    Q_PROPERTY(QString textColor READ getTextColor WRITE setTextColor NOTIFY textColorChanged FINAL)
     Q_PROPERTY(QString accentColor READ getAccentColor WRITE setAccentColor NOTIFY accentColorChanged FINAL)
     Q_PROPERTY(QString linkColor READ getLinkColor WRITE setLinkColor NOTIFY linkColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
@@ -96,7 +97,10 @@ public:
     Q_INVOKABLE void setActiveDisplayMode(QEnums::DisplayMode mode);
 
     static QString getDefaultBackgroundColor() { return sDefaultBackgroundColor; }
-    Q_INVOKABLE static void setDefaultBackgroundColor(const QString& color) { sDefaultBackgroundColor = color; }
+    Q_INVOKABLE static void setDefaultBackgroundColor(const QString& color);
+
+    static QString getDefaultTextColor() { return sDefaultTextColor; }
+    Q_INVOKABLE static void setDefaultTextColor(const QString& color) { sDefaultTextColor = color; }
 
     Q_INVOKABLE void resetLinkColor();
     QString getLinkColor() const;
@@ -264,6 +268,10 @@ public:
     Q_INVOKABLE void resetBackgroundColor();
     void setBackgroundColor(const QString& color);
     QString getBackgroundColor() const;
+
+    Q_INVOKABLE void resetTextColor();
+    void setTextColor(const QString& color);
+    QString getTextColor() const;
 
     Q_INVOKABLE void resetAccentColor();
     void setAccentColor(const QString& color);
@@ -477,6 +485,7 @@ signals:
     void serviceVideoDidChanged(QString did);
     void contentLanguageFilterChanged();
     void backgroundColorChanged();
+    void textColorChanged();
     void accentColorChanged();
     void linkColorChanged();
     void threadStyleChanged();
@@ -531,6 +540,7 @@ private:
     // Derived from display mode
     static QEnums::DisplayMode sActiveDisplayMode; // LIGHT or DARK
     static QString sDefaultBackgroundColor;
+    static QString sDefaultTextColor;
     static QString sCurrentLinkColor;
 
     // TODO: this cache only works for as long the calls to the settings are for the

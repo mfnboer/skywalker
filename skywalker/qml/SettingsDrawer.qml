@@ -27,7 +27,7 @@ SkyDrawer {
     signal buyCoffee()
 
     id: drawer
-    width: guiSettings.scaleWidthToFont(250)
+    width: guiSettings.scaleWidthToFont(260)
     topPadding: guiSettings.headerMargin + 10
     bottomPadding: guiSettings.footerMargin + 10
     leftPadding: Math.max(20, guiSettings.leftMargin)
