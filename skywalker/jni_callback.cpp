@@ -213,14 +213,6 @@ void _handleShowLink(JNIEnv* env, jobject, jstring jUri)
     }
 }
 
-void _handleWindowFocusChanged(JNIEnv*, jobject, jboolean hasFocus)
-{
-    auto& instance = *gTheInstance;
-
-    if (instance)
-        instance->handleWindowFocusChanged((bool)hasFocus);
-}
-
 void _handleKeyboardHeightChanged(JNIEnv*, jobject, jint height)
 {
     auto& instance = *gTheInstance;
@@ -306,10 +298,9 @@ JNICallbackListener::JNICallbackListener() : QObject()
         { "emitSharedDmTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedDmTextReceived) },
         { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
         { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) },
-        { "emitShowLink", "(Ljava/lang/String;)V",  reinterpret_cast<void *>(_handleShowLink) },
-        { "emitWindowFocusChanged", "(Z)V", reinterpret_cast<void *>(_handleWindowFocusChanged) }
+        { "emitShowLink", "(Ljava/lang/String;)V",  reinterpret_cast<void *>(_handleShowLink) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 8);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 7);
 #endif
 }
 
@@ -411,11 +402,6 @@ void JNICallbackListener::handleShowDirectMessages()
 void JNICallbackListener::handleShowLink(const QString& uri)
 {
     emit showLink(uri);
-}
-
-void JNICallbackListener::handleWindowFocusChanged(bool hasFocus)
-{
-    emit windowFocusChanged(hasFocus);
 }
 
 void JNICallbackListener::handleKeyboardHeightChanged(int height)

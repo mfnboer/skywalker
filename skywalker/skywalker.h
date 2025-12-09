@@ -319,7 +319,6 @@ signals:
     void showLinkReceived(QString uri); // Action received from the user clicking on a bsky link outside the app
     void bskyClientDeleted();
     void anniversary();
-    void appFocusChanged(bool hasFocus);
     void appPaused();
     void appResumed();
 

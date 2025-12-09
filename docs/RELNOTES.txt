@@ -4,6 +4,7 @@ next
 * Option to change text color
 * Fonts: bold italic, double struck
 * Prevent horizontal swipe when you scrub video
+* Revert to Qt6.8.3
 * Bug fixes
 
 4.20.1

@@ -31,10 +31,10 @@ ApplicationWindow {
 
     // Added for Qt6.9 to make all the changes for full screen display in Android 15
     // work. Instead of those changes, using the SafeArea option may be nicer.
-    topPadding: 0
-    bottomPadding: 0
-    leftPadding: 0
-    rightPadding: 0
+    // topPadding: 0
+    // bottomPadding: 0
+    // leftPadding: 0
+    // rightPadding: 0
 
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // onFrameSwapped: {
@@ -534,12 +534,6 @@ ApplicationWindow {
 
         onUnreadNotificationsLoaded: (mentionsOnly, oldestUnreadIndex) => {
             getNotificationView().moveToNotification(oldestUnreadIndex, mentionsOnly)
-        }
-
-        // HACK: workaround for bug causing crash on backgrounding/foregrouning the app on some devices
-        onAppFocusChanged: (hasFocus) => {
-            console.debug("App focus:", hasFocus)
-            root.visible = hasFocus
         }
 
         onAppPaused: {

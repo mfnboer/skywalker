@@ -43,7 +43,6 @@ public class SkywalkerActivity extends QtActivity {
     public static native void emitShowNotifications();
     public static native void emitShowDirectMessages();
     public static native void emitShowLink(String uri);
-    public static native void emitWindowFocusChanged(boolean hasFocus);
 
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
@@ -81,18 +80,6 @@ public class SkywalkerActivity extends QtActivity {
         super.onStart();
         NewMessageChecker.stopChecker();
         NewMessageNotifier.clearNotifications();
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        Log.d(LOGTAG, "onWindowFocusChanged: " + hasFocus);
-        super.onWindowFocusChanged(hasFocus);
-
-        try {
-            emitWindowFocusChanged(hasFocus);
-        } catch (UnsatisfiedLinkError e) {
-            Log.d(LOGTAG, "Native function not yet registered.");
-        }
     }
 
     @Override
