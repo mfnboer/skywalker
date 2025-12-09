@@ -3,6 +3,7 @@ next
 * Option to change font size
 * Option to change text color
 * Fonts: bold italic, double struck
+* Information on blocked post if you are the blocker
 * Prevent horizontal swipe when you scrub video
 * Revert to Qt6.8.3
 * Bug fixes

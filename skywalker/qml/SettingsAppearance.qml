@@ -341,7 +341,7 @@ ColumnLayout {
                 ListElement { value: QEnums.SIDE_BAR_PORTRAIT; text: qsTr("Portrait") }
                 ListElement { value: QEnums.SIDE_BAR_BOTH; text: qsTr("Both") }
             }
-            currentValue: userSettings.sideBarType
+            currentIndex: userSettings.sideBarType
             onCurrentValueChanged: userSettings.sideBarType = currentValue
         }
 

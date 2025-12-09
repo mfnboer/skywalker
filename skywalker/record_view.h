@@ -41,6 +41,7 @@ class RecordView : public NormalizedWordIndex
     Q_PROPERTY(QVariant external READ getExternal FINAL)
     Q_PROPERTY(bool notFound READ getNotFound FINAL)
     Q_PROPERTY(bool blocked READ getBlocked FINAL)
+    Q_PROPERTY(BlockedAuthor blockedAuthor READ getBlockedAuthor FINAL)
     Q_PROPERTY(bool detached READ getDetached FINAL)
     Q_PROPERTY(QString detachedByDid READ getDetachedByDid FINAL)
     Q_PROPERTY(QString detachedPostUri READ getDetachedPostUri FINAL)
@@ -101,6 +102,7 @@ public:
 
     bool getNotFound() const { return mPrivate->mNotFound; }
     bool getBlocked() const { return mPrivate->mBlocked; }
+    const BlockedAuthor& getBlockedAuthor() const { return mPrivate->mBlockedAuthor; }
     bool getDetached() const { return mPrivate->mDetached; }
     const QString& getDetachedByDid() const { return mPrivate->mDetachedByDid; }
     const QString& getDetachedPostUri() const { return mPrivate->mDetachedPostUri; }
@@ -141,6 +143,7 @@ private:
         ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
         bool mNotFound = false;
         bool mBlocked = false;
+        BlockedAuthor mBlockedAuthor;
         bool mDetached = false;
         QString mDetachedByDid;
         QString mDetachedPostUri;

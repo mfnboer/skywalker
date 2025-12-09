@@ -38,6 +38,8 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_BLOCKED:
     {
+        const auto record = std::get<ATProto::AppBskyEmbed::RecordViewBlocked::SharedPtr>(view.mRecord);
+        mPrivate->mBlockedAuthor = BlockedAuthor(record->mAuthor);
         mPrivate->mBlocked = true;
         break;
     }

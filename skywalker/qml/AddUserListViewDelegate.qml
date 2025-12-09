@@ -73,6 +73,8 @@ Rectangle {
         }
 
         AccessibleCheckBox {
+            width: undefined
+            Layout.fillWidth: false
             Layout.rightMargin: 10
             Layout.alignment: Qt.AlignTop
             Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("in list") : qsTr("not in list")

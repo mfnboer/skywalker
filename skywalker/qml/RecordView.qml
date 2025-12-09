@@ -6,6 +6,8 @@ Item {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     property recordview record
+    readonly property bool postBlockedByUser: record.blocked && record.blockedAuthor.viewer.valid && !record.blockedAuthor.viewer.blockedBy &&
+            (record.blockedAuthor.viewer.blocking || !record.blockedAuthor.viewer.blockingByList.isNull())
     property bool highlight: false
     property string backgroundColor: "transparent"
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
@@ -36,9 +38,9 @@ Item {
         PostHeaderWithAvatar {
             width: parent.width
             userDid: recordView.userDid
-            author: record.author
+            author: recordView.getRecordAuthor()
             postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
-            visible: record.available
+            visible: record.available || recordView.postBlockedByUser
         }
 
         // Reply to
@@ -56,7 +58,7 @@ Item {
             sourceComponent: PostBody {
                 width: parent.width
                 userDid: recordView.userDid
-                postAuthor: record.author
+                postAuthor: recordView.getRecordAuthor()
                 postText: record.postTextFormatted
                 postPlainText: record.postPlainText
                 postHasUnknownEmbed: record.hasUnknownEmbed
@@ -128,10 +130,9 @@ Item {
             }
         }
 
-        // TODO: show more info is the user is blocking
         Loader {
             width: parent.width
-            active: record.notFound || record.blocked || record.notSupported
+            active: record.notFound || record.notSupported
 
             sourceComponent: AccessibleText {
                 width: parent.width
@@ -142,11 +143,49 @@ Item {
                 function getDescription() {
                     if (record.notFound)
                         return qsTr("🗑 Not found")
-                    if (record.blocked)
-                        return qsTr("🚫 Blocked")
                     if (record.notSupported)
                         return qsTr("⚠️ Not supported")
                     return "UNNKNOW"
+                }
+            }
+        }
+
+        Loader {
+            width: parent.width
+            active: record.blocked && !recordView.postBlockedByUser
+
+            sourceComponent: AccessibleText {
+                width: parent.width
+                text: qsTr("🚫 Blocked")
+            }
+        }
+
+        Loader {
+            width: parent.width
+            active: recordView.postBlockedByUser
+
+            sourceComponent: Column {
+                width: parent.width
+
+                AccessibleText {
+                    topPadding: 5
+                    bottomPadding: 5
+                    width: parent.width
+                    elide: Text.ElideRight
+                    text: {
+                        if (record.blockedAuthor.blockingByListUri)
+                            return qsTr("🚫 Blocked by list")
+                        else if (record.blockedAuthor.viewer.blocking)
+                            return qsTr("🚫 Blocked by you")
+                        else
+                            return qsTr("🚫 Blocked")
+                    }
+                }
+
+                ListHeader {
+                    width: parent.width
+                    list: record.blockedAuthor.blockingByList
+                    visible: !record.blockedAuthor.blockingByList.isNull()
                 }
             }
         }
@@ -209,9 +248,13 @@ Item {
         opening()
     }
 
+    function getRecordAuthor() {
+        return record.blocked ? record.blockedAuthor.author : record.author
+    }
+
     function getSpeech() {
         if (record.available && record.postUri) {
-            let speech = accessibilityUtils.getPostSpeech(record.postDateTime, record.author,
+            let speech = accessibilityUtils.getPostSpeech(record.postDateTime, getRecordAuthor(),
                     record.postPlainText, record.images, record.external, null, null,
                     accessibilityUtils.nullAuthor, false, accessibilityUtils.nullAuthor)
             return qsTr(`quoted post\n\n${speech}`)

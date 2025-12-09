@@ -447,6 +447,19 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
                 QTimer::singleShot(0, this, [postUri=record->getUri()]{ PostThreadCache::instance().putPost(postUri); });
         }
 
+        if (record->getBlocked())
+        {
+            const auto& blockedAuthor = record->getBlockedAuthor();
+            const QString did = blockedAuthor.getDid();
+            const QString listUri = blockedAuthor.getBlockingByListUri();
+
+            if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
+
+            if (!listUri.isEmpty() && blockedAuthor.getBlockingByList().isNull())
+                QTimer::singleShot(0, this, [listUri]{ ListCache::instance().putList(listUri); });
+        }
+
         const auto& recordLabels = record->getLabelsIncludingAuthorLabels();
         auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
             record->getAuthorDid(), recordLabels, mOverrideAdultVisibility);
@@ -484,6 +497,19 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         {
             if (record.isThread() == QEnums::TRIPLE_BOOL_UNKNOWN)
                 QTimer::singleShot(0, this, [postUri=record.getUri()]{ PostThreadCache::instance().putPost(postUri); });
+        }
+
+        if (record.getBlocked())
+        {
+            const auto& blockedAuthor = record.getBlockedAuthor();
+            const QString did = blockedAuthor.getDid();
+            const QString listUri = blockedAuthor.getBlockingByListUri();
+
+            if (!did.isEmpty() && !AuthorCache::instance().contains(did))
+                QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
+
+            if (!listUri.isEmpty() && blockedAuthor.getBlockingByList().isNull())
+                QTimer::singleShot(0, this, [listUri]{ ListCache::instance().putList(listUri); });
         }
 
         const auto& recordLabels = record.getLabelsIncludingAuthorLabels();
@@ -1012,6 +1038,9 @@ void AbstractPostFeedModel::authorAdded(const QString& did)
         if (postRecord && postRecord->getReplyToAuthorDid() == did)
             emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecord) });
 
+        if (postRecord && postRecord->getBlockedAuthor().getDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecord) });
+
         const auto recordWithMedia = post.getRecordWithMediaView();
 
         if (recordWithMedia)
@@ -1019,6 +1048,9 @@ void AbstractPostFeedModel::authorAdded(const QString& did)
             const auto record = recordWithMedia->getRecordPtr();
 
             if (record && record->getReplyToAuthorDid() == did)
+                emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
+
+            if (record && record->getBlockedAuthor().getDid() == did)
                 emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
         }
     }
@@ -1040,6 +1072,21 @@ void AbstractPostFeedModel::listAdded(const QString& uri)
 
         if (post.getBlockedAuthor().getBlockingByListUri() == uri)
             emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostBlockedAuthor) });
+
+        const auto postRecord = post.getRecordView();
+
+        if (postRecord && postRecord->getBlockedAuthor().getBlockingByListUri() == uri)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecord) });
+
+        const auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (recordWithMedia)
+        {
+            const auto record = recordWithMedia->getRecordPtr();
+
+            if (record && record->getBlockedAuthor().getBlockingByListUri() == uri)
+                emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
+        }
     }
 }
 
