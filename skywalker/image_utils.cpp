@@ -224,15 +224,22 @@ ImageView ImageUtils::createImageView(const QString& url, const QString& alt)
 
 double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
 {
+    qDebug() << "Link:" << link;
+
     if (Songlink::isMusicLink(link))
         return 1.0;
 
     const QUrl url(link);
+    qDebug() << "Host:" << url.host() << "Path:" << url.path();
 
     if (url.host().endsWith("instagram.com"))
         return 1.0;
+
     if (url.host().endsWith("tiktok.com"))
         return 1000.0 / 690.0;
+
+    if (url.host().endsWith("youtube.com") && url.path().startsWith("/shorts"))
+        return 16.0 / 9.0;
 
     return 720.0 / 1280.0;
 }

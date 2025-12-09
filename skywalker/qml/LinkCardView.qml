@@ -71,7 +71,7 @@ RoundCornerMask {
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
-            color: Material.foreground
+            color: guiSettings.textColor
             plainText: card.title
             wrapMode: Text.Wrap
             maximumLineCount: 3
@@ -85,7 +85,7 @@ RoundCornerMask {
             leftPadding: 5
             rightPadding: 5
             bottomPadding: 5
-            color: Material.foreground
+            color: guiSettings.textColor
             plainText: card.description ? card.description : card.uri
             wrapMode: Text.Wrap
             maximumLineCount: 8
@@ -120,4 +120,6 @@ RoundCornerMask {
     ImageUtils {
         id: imageUtils
     }
+
+    Component.onCompleted: console.debug("CARD:", thumbUrl)
 }
