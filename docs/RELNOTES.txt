@@ -1,3 +1,7 @@
+next
+====
+* Bug fix for favorites bar in bottom position
+
 4.21
 ====
 * Option to change font size

@@ -180,7 +180,7 @@ ApplicationWindow {
             if (position == TabBar.Header)
                 return guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
 
-            return parent.height - footer.height - height
+            return parent.height - height // TODO: needed in 6.10.2? - footer.height
         }
 
         function update() {
