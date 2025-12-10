@@ -70,6 +70,10 @@ public class SkywalkerActivity extends QtActivity {
 
         Log.d(LOGTAG, "Intent action: " + action + " type:" + intent.getType());
 
+        // This should not be needed, but it looks like on some phones, the
+        // intent is not kept.
+        setIntent(intent);
+
         // App is starting up and not ready to receive intents.
         mIsIntentPending = true;
     }
@@ -123,7 +127,7 @@ public class SkywalkerActivity extends QtActivity {
         else if (action.equals(Intent.ACTION_VIEW))
             handleActionShowLink(intent);
         else
-            Log.d(LOGTAG, "Unsupported intent action: " + intent.getAction());
+            Log.w(LOGTAG, "Unsupported intent action: " + intent.getAction());
     }
 
     private void handleActionShowNotifications(Intent intent) {
@@ -139,7 +143,7 @@ public class SkywalkerActivity extends QtActivity {
     private void handleActionShowLink(Intent intent) {
         Log.d(LOGTAG, "Handle SHOW_LINK");
 
-        Uri data = getIntent().getData();
+        Uri data = intent.getData();
         if (data == null) {
             Log.d(LOGTAG, "Empty data received");
             return;
