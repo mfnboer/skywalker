@@ -17,7 +17,7 @@ public:
     // the handling is started.
     static void handlePendingIntent();
 
-    void handlePhotoPicked(int fd, const QString& mimeType);
+    void handlePhotoPicked(int fd, const QString& mimeType, bool last);
     void handlePhotoPickCanceled();
     void handleEmojiPicked(const QString& emoji);
     void handleVideoTranscodingOk(const QString& inputFileName, const QString& outputFileName, int outputWidth, int outputHeight);
@@ -40,7 +40,7 @@ public:
     void handleKeyboardHeightChanged(int height);
 
 signals:
-    void photoPicked(int fd, QString mimeType);
+    void photoPicked(int fd, QString mimeType, bool last);
     void photoPickCanceled();
     void emojiPicked(QString emoji);
     void videoTranscodingOk(QString inputFileName, FileSignal::SharedPtr outputFile, int ouputWidth, int outputHeight);

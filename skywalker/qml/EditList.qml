@@ -127,7 +127,7 @@ SkyPage {
                         return
 
                     if (Qt.platform.os === "android") {
-                        pickingImage = postUtils.pickPhoto()
+                        pickingImage = postUtils.pickPhoto(false, 1)
                     } else {
                         fileDialog.open()
                     }

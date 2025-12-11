@@ -1,6 +1,8 @@
 next
 ====
+* Select multiple images in one go to attach to post
 * Bug fix for favorites bar in bottom position
+* Bug fixes
 
 4.21
 ====

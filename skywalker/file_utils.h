@@ -9,6 +9,7 @@ namespace Skywalker::FileUtils {
 
 bool checkReadMediaPermission();
 bool checkWriteMediaPermission();
+bool isPhotoPickerAvailable();
 QString getAppDataPath(const QString& subDir);
 QString getPicturesPath();
 QString getPicturesPath(const QString& subDir);

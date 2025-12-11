@@ -76,16 +76,19 @@ std::tuple<QImage, QString, QString> readImageFd(int fd)
     return { img, gifTempFileName, "" };
 }
 
-bool pickPhoto(bool pickVideo)
+bool pickPhoto(bool pickVideo, int maxItems)
 {
 #ifdef Q_OS_ANDROID
+    // TODO: needed?
     if (!FileUtils::checkReadMediaPermission())
         return false;
 
     jboolean jVideo = pickVideo;
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker", "start", "(Z)V", jVideo);
+    jint jMaxItems = maxItems;
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/QPhotoPicker", "start", "(ZI)V", jVideo, jMaxItems);
 #endif
     Q_UNUSED(pickVideo)
+    Q_UNUSED(maxItems)
     return true;
 }
 

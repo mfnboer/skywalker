@@ -12,6 +12,7 @@ namespace Skywalker {
 bool AndroidUtils::checkPermission(const QString& permission)
 {
 #if defined(Q_OS_ANDROID)
+    qDebug() << "Check permission:" << permission;
     auto checkFuture = QtAndroidPrivate::checkPermission(permission);
 
     if (!checkFuture.isValid())
@@ -37,6 +38,8 @@ bool AndroidUtils::checkPermission(const QString& permission)
             return false;
         }
     }
+
+    qDebug() << "Permission check succeeded:" << permission;
 #else
     Q_UNUSED(permission)
 #endif

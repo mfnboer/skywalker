@@ -29,7 +29,7 @@ PostUtils::PostUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,
-        this, [this](int fd, QString mimeType){ shareMedia(fd, mimeType);});
+        this, [this](int fd, QString mimeType, bool last){ shareMedia(fd, mimeType, last);});
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
         this, [this]{ cancelPhotoPicking(); });
@@ -1126,14 +1126,14 @@ void PostUtils::batchDeletePosts(const QStringList& postUris)
         });
 }
 
-bool PostUtils::pickPhoto(bool pickVideo)
+bool PostUtils::pickPhoto(bool pickVideo, int maxItems)
 {
-    const bool permission = PhotoPicker::pickPhoto(pickVideo);
+    const bool permission = PhotoPicker::pickPhoto(pickVideo, maxItems);
 
     if (!permission)
     {
         mSkywalker->showStatusMessage(
-            tr("No permission to pick photo. Try sharing a photo from your gallery app."),
+            tr("No permission to pick photo. Grant permission or try sharing a photo from your gallery app."),
             QEnums::STATUS_LEVEL_ERROR);
     }
     else
@@ -1427,12 +1427,15 @@ void PostUtils::identifyLanguage(QString text, int index)
 #endif
 }
 
-void PostUtils::shareMedia(int fd, const QString& mimeType)
+void PostUtils::shareMedia(int fd, const QString& mimeType, bool last)
 {
+    qDebug() << "fd:" << fd << "mimetype:" << mimeType << "last:" << last;
+
     if (!mPickingPhoto)
         return;
 
-    mPickingPhoto = false;
+    if (last)
+        mPickingPhoto = false;
 
     if (fd < 0)
     {

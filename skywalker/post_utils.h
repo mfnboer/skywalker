@@ -79,7 +79,7 @@ public:
     Q_INVOKABLE void unmuteThread(const QString& uri);
     Q_INVOKABLE void deletePost(const QString& postUri, const QString& cid);
     Q_INVOKABLE void batchDeletePosts(const QStringList& postUris);
-    Q_INVOKABLE bool pickPhoto(bool pickVideo = false);
+    Q_INVOKABLE bool pickPhoto(bool pickVideo, int maxItems);
     Q_INVOKABLE void savePhoto(const QString& sourceUrl);
     Q_INVOKABLE void sharePhotoToApp(const QString& sourceUrl);
     Q_INVOKABLE static void dropPhoto(const QString& source);
@@ -177,7 +177,7 @@ private:
                         const QString& viaUri = {}, const QString& viaCid = {},
                         const QString& feedDid = {}, const QString& feedContext = {});
     void continueReAttachQuote(const QString& embeddingUri, int retries =1);
-    void shareMedia(int fd, const QString& mimeType);
+    void shareMedia(int fd, const QString& mimeType, bool last);
     void sharePhoto(int fd);
     void shareVideo(int fd, const QString& mimeType);
     void cancelPhotoPicking();

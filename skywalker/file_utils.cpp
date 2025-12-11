@@ -25,13 +25,10 @@ bool checkReadMediaPermission()
     static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
     static const QString READ_MEDIA_IMAGES = "android.permission.READ_MEDIA_IMAGES";
 
-    // Seems to break on Android 14. Retry when using the photo picker again.
-    // static const QString READ_MEDIA_VISUAL_USER_SELECTED = "android.permission.READ_MEDIA_VISUAL_USER_SELECTED";
-
     const auto osVersion = QOperatingSystemVersion::current();
 
-    if (osVersion > QOperatingSystemVersion::Android13)
-        return AndroidUtils::checkPermission(READ_MEDIA_IMAGES); // && checkPermission(READ_MEDIA_VISUAL_USER_SELECTED);
+    if (osVersion >= QOperatingSystemVersion(QOperatingSystemVersion::Android, 15))
+        return isPhotoPickerAvailable() || AndroidUtils::checkPermission(READ_MEDIA_IMAGES);
 
     if (osVersion >= QOperatingSystemVersion::Android13)
         return AndroidUtils::checkPermission(READ_MEDIA_IMAGES);
@@ -53,6 +50,21 @@ bool checkWriteMediaPermission()
         return AndroidUtils::checkPermission(WRITE_EXTERNAL_STORAGE);
 #endif
     return true;
+}
+
+bool isPhotoPickerAvailable()
+{
+#if defined(Q_OS_ANDROID)
+    bool available = QJniObject::callStaticMethod<bool>(
+        "com/gmail/mfnboer/QPhotoPicker",
+        "isPhotoPickerAvailable",
+        "()Z");
+
+    qDebug() << "Photo picker available:" << available;
+    return available;
+#else
+    return false;
+#endif
 }
 
 QString getAppDataPath(const QString& subDir)

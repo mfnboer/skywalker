@@ -22,6 +22,7 @@ SkyPage {
     readonly property int minPostSplitLineLength: 30
     readonly property int maxImages: 4 // per post
     property bool pickingImage: false
+    property bool editingVideo: false
 
     // Reply restrictions (on post thread)
     property bool restrictReply: false
@@ -1276,9 +1277,15 @@ SkyPage {
 
             onClicked: {
                 const pickVideo = page.canAddVideo()
+                const maxItems = page.maxImagesToAdd()
+
+                if (maxItems === 0) {
+                    console.warn("Cannot add images")
+                    return
+                }
 
                 if (Qt.platform.os === "android") {
-                    pickingImage = postUtils.pickPhoto(pickVideo)
+                    pickingImage = postUtils.pickPhoto(pickVideo, maxItems)
                 } else {
                     fileDialog.pick(pickVideo)
                 }
@@ -1576,6 +1583,13 @@ SkyPage {
 
         onVideoPicked: (videoUrl) => {
             pickingImage = false
+
+            if (!canAddVideo()) {
+                console.debug("Cannot add video")
+                currentPostItem().getPostText().forceActiveFocus()
+                return
+            }
+
             editVideo(videoUrl)
         }
 
@@ -2037,6 +2051,11 @@ SkyPage {
 
     // "file://" or "image://" source
     function photoPicked(source, gifTempFileName = "", altText = "") {
+        if (!canAddImage()) {
+            console.debug("Cannot add photo:", source)
+            return
+        }
+
         if (gifTempFileName)
             page.tmpVideos.push("file://" + gifTempFileName)
 
@@ -2080,6 +2099,12 @@ SkyPage {
 
     function videoPicked(source, altText = "") {
         console.debug("VIDEO:", source)
+
+        if (!canAddVideo()) {
+            console.debug("Cannot add video:", source)
+            return
+        }
+
         let postItem = currentPostItem()
 
         if (!postItem)
@@ -2828,7 +2853,17 @@ SkyPage {
                 postItem.video.length === 0 &&
                 threadPosts.postList[currentPostIndex].gif.isNull() &&
                 !threadPosts.postList[currentPostIndex].card &&
-                !pickingImage
+                !pickingImage &&
+                !editingVideo
+    }
+
+    function maxImagesToAdd() {
+        const postItem = currentPostItem()
+
+        if (!postItem)
+            return 0
+
+        return maxImages - postItem.images.length
     }
 
     function canAddVideo() {
@@ -2901,14 +2936,17 @@ SkyPage {
                 altText = postItem.videoAltText
             }
 
+            page.editingVideo = false
             page.videoPicked(videoSource, altText)
             root.popStack()
             currentPostItem().getPostText().forceActiveFocus()
         })
         videoPage.onCancel.connect(() => {
+            page.editingVideo = false
             root.popStack()
             currentPostItem().getPostText().forceActiveFocus()
         })
+        page.editingVideo = true
         root.pushStack(videoPage)
     }
 
