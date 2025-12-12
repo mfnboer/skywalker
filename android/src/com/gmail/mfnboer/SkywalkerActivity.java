@@ -15,12 +15,13 @@ import org.qtproject.qt.android.QtNative;
 import org.qtproject.qt.android.bindings.QtActivity;
 
 import java.lang.String;
-import java.lang.UnsatisfiedLinkError;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import java.util.ArrayList;
 import android.util.Log;
 
 // For EdgeToEdge
@@ -120,6 +121,8 @@ public class SkywalkerActivity extends QtActivity {
 
         if (action.equals(Intent.ACTION_SEND))
             handleActionSend(intent);
+        else if (action.equals(Intent.ACTION_SEND_MULTIPLE))
+            handleActionSendMultiple(intent);
         else if (action.equals(INTENT_ACTION_SHOW_NOTIFICATIONS))
             handleActionShowNotifications(intent);
         else if (action.equals(INTENT_ACTION_SHOW_DIRECT_MESSAGES))
@@ -156,8 +159,27 @@ public class SkywalkerActivity extends QtActivity {
         emitShowLink(path);
     }
 
+    private String getMimeType(Intent intent) {
+        String type = intent.getType();
+        Log.d(LOGTAG, "Intent type: " + type);
+
+        if (type != null && !type.startsWith("*"))
+            return type;
+
+        String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+        if (text != null)
+            return "text/plain";
+
+        Uri uri = (Uri)intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        return getContentResolver().getType(uri);
+    }
+
     private void handleActionSend(Intent intent) {
         Log.d(LOGTAG, "Handle ACTION_SEND, DM: " + intent.getBooleanExtra(INTENT_EXTRA_DIRECT_MESSAGE, false));
+
+        String type = getMimeType(intent);
+        Log.d(LOGTAG, "Mime type: " + type);
 
         if (intent.getType().equals("text/plain")) {
             handleSharedText(intent);
@@ -175,6 +197,24 @@ public class SkywalkerActivity extends QtActivity {
         }
 
         Log.d(LOGTAG, "Unsupported intent type: " + intent.getType());
+    }
+
+    private void handleActionSendMultiple(Intent intent) {
+        ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        Log.d(LOGTAG, "Handle ACTION_SEND_MULTIPLE: " + uris.size());
+
+        for (Uri uri : uris) {
+            if (uri == null)
+                continue;
+
+            String mimeType = getContentResolver().getType(uri);
+            Log.d(LOGTAG, "URI: " + uri + " mimetype: " + mimeType);
+
+            if (mimeType.startsWith("image/"))
+                emitSharedImageReceived(uri.toString(), "");
+            else
+                Log.w(LOGTAG, "Got non-image uri: " + uri + "mimetype: " + mimeType);
+        }
     }
 
     private void handleSharedText(Intent intent) {

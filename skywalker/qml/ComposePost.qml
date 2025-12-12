@@ -2968,17 +2968,17 @@ SkyPage {
 
             if (Boolean(postItem.video))
                 postUtils.dropVideo(postItem.video)
+        }
 
         if (initialVideo)
             postUtils.dropVideo(initialVideo)
-
-        }
 
         page.tmpImages.forEach((value, index, array) => { postUtils.dropPhoto(value); })
         page.tmpVideos.forEach((value, index, array) => { postUtils.dropVideo(value); })
 
         if (initialImage)
-            initialVideo.dropPhoto(initialImage)
+            postUtils.dropPhoto(initialImage)
+
         if (restrictionsListModelId >= 0)
             skywalker.removeListListModel(restrictionsListModelId)
 

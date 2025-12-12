@@ -103,8 +103,6 @@ public class QPhotoPicker extends AppCompatActivity {
             Log.d(LOGTAG, "Items picked: " + uris.size());
 
             if (!uris.isEmpty()) {
-                Context context = SkywalkerApplication.getContext();
-
                 for (int i = 0; i < uris.size(); ++i) {
                     Uri uri = uris.get(i);
                     selectUri(uri, i == uris.size() - 1);
@@ -153,7 +151,6 @@ public class QPhotoPicker extends AppCompatActivity {
             if (uri != null) {
                 selectUri(uri, true);
             } else if (clipData != null) {
-                Context context = SkywalkerApplication.getContext();
                 int picked = clipData.getItemCount();
                 Log.d(LOGTAG, "Items picked: " + picked);
                 int selectCount = Math.min(picked, mMaxItems);

@@ -79,7 +79,6 @@ std::tuple<QImage, QString, QString> readImageFd(int fd)
 bool pickPhoto(bool pickVideo, int maxItems)
 {
 #ifdef Q_OS_ANDROID
-    // TODO: needed?
     if (!FileUtils::checkReadMediaPermission())
         return false;
 
