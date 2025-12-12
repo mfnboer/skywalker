@@ -38,6 +38,9 @@ public class QPhotoPicker extends AppCompatActivity {
     public static native void emitPhotoPickCanceled();
 
     public static boolean isPhotoPickerAvailable() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            return false;
+
         boolean available = PickVisualMedia.isPhotoPickerAvailable();
         Log.d(LOGTAG, "Photo picker available: " + available);
         return available;
@@ -47,7 +50,11 @@ public class QPhotoPicker extends AppCompatActivity {
     // activity from there without FLAG_ACTIVITY_NEW_TASK
     public static void start(boolean video, int maxItems) {
         Log.d(LOGTAG, "video: " + video + " maxItem: " + maxItems);
-        int maxAllowedItems = MediaStore.getPickImagesMaxLimit();
+        int maxAllowedItems = 100;
+
+        if (isPhotoPickerAvailable())
+            maxAllowedItems = MediaStore.getPickImagesMaxLimit();
+
         Log.d(LOGTAG, "Max allowed to pick: " + maxAllowedItems);
         mMaxItems = Math.min(maxItems, maxAllowedItems);
         mPickVideo = video;
@@ -63,7 +70,7 @@ public class QPhotoPicker extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(LOGTAG, "onCreate");
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM && isPhotoPickerAvailable()) {
+        if (isPhotoPickerAvailable()) {
             if (mMaxItems == 1)
                 pickVisualMedia();
             else
