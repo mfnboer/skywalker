@@ -11,6 +11,7 @@ Rectangle {
     property bool headerVisible: true
     property bool isSideBar: false
     property string userDid
+    property int rightPadding: 0
     readonly property int usedRightMargin: currentUserAvatar.active ? currentUserAvatar.width : 0
 
     signal back
@@ -26,7 +27,7 @@ Rectangle {
     RowLayout
     {
         id: headerRow
-        width: parent.width
+        width: parent.width - headerRect.rightPadding
         visible: headerVisible
         Accessible.role: Accessible.Pane
 
@@ -65,9 +66,9 @@ Rectangle {
 
         Loader {
             id: currentUserAvatar
-            Layout.rightMargin: 10
+            Layout.rightMargin: active ? 10 : 0
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-            Layout.preferredHeight: parent.height - 10
+            Layout.preferredHeight: active ? parent.height - 10 : 0
             Layout.preferredWidth: Layout.preferredHeight
             active: !root.isActiveUser(headerRect.userDid)
 

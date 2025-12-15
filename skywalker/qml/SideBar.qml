@@ -163,6 +163,7 @@ Pane {
                 height: undefined
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
+                rightPadding: simpleHeaderButton.visible ? simpleHeaderButton.width : 0
                 color: guiSettings.sideBarColor
                 text: visible ? rootItem.sideBarTitle : ""
                 userDid: typeof rootItem?.userDid == 'string' ? rootItem.userDid : ""
@@ -171,6 +172,7 @@ Pane {
                 visible: typeof rootItem?.sideBarTitle == 'string' && typeof rootItem.sideBarDescription == 'undefined'
 
                 SvgPlainButton {
+                    id: simpleHeaderButton
                     anchors.right: parent.right
                     anchors.top: parent.top
                     svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
@@ -192,12 +194,23 @@ Pane {
                 height: undefined
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
+                rightPadding: simpleDescriptionHeaderButton.visible ? simpleDescriptionHeaderButton.width : 0
                 color: guiSettings.sideBarColor
                 title: visible ? rootItem.sideBarTitle : ""
                 description: visible ? rootItem.sideBarDescription : ""
                 userDid: typeof rootItem?.userDid == 'string' ? rootItem.userDid : ""
                 isSideBar: true
                 visible: typeof rootItem?.sideBarTitle == 'string' &&  typeof rootItem.sideBarDescription == 'string'
+
+                SvgPlainButton {
+                    id: simpleDescriptionHeaderButton
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
+                    accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
+                    visible: typeof rootItem?.sideBarButtonSvg != 'undefined'
+                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked() : () => {}
+                }
 
                 onClosed: rootItem.closed()
             }

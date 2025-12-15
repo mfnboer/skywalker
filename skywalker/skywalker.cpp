@@ -1253,6 +1253,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const std::fun
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
             setAutoUpdateTimelineInProgress(false);
+            qDebug() << "Feed prepended, gapId:" << gapId;
 
             if (gapId > 0)
             {
@@ -1268,7 +1269,14 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const std::fun
             }
 
             if (cb)
+            {
+                qDebug() << "Callback";
                 cb();
+            }
+            else
+            {
+                qDebug() << "No callback";
+            }
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "getTimelinePrepend FAILED:" << error << " - " << msg;
@@ -4356,11 +4364,15 @@ void Skywalker::resumeApp()
         if (pauseInterval > 60s)
         {
             updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
-                if (postCount != mTimelineModel.rowCount())
-                {
-                    const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
-                    emit timelineResumed(lastSyncIndex, lastSyncOffsetY);
-                }
+                const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
+                qDebug() << "Timeline updated, count:" << mTimelineModel.rowCount() << "prevCount:" << postCount << "lastSyncIndex:" << lastSyncIndex << "lastSyncOffsetY:" << lastSyncOffsetY;
+
+                // TODO: remove
+                // if (postCount != mTimelineModel.rowCount())
+                // {
+                //     const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
+                //     emit timelineResumed(lastSyncIndex, lastSyncOffsetY);
+                // }
             });
         }
 

@@ -72,6 +72,11 @@ SkyListView {
             return
         }
 
+        // Calling later allows the new list elements to render (if they are visible)
+        Qt.callLater(calibrateOnCountChanged)
+    }
+
+    function calibrateOnCountChanged() {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
@@ -201,12 +206,10 @@ SkyListView {
 
         if (index >= firstVisibleIndex && index <= lastVisibleIndex) {
             console.debug("Index visible:", index)
-
             const lastOffsetY = calcVisibleOffsetY(index)
             console.debug("lastOffsetY:", lastOffsetY, "offsetY:", offsetY)
-
-            if (lastOffsetY === offsetY)
-                return
+            contentY += lastOffsetY - offsetY
+            return
         }
 
         moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
@@ -232,6 +235,7 @@ SkyListView {
         if (start <= lastVisibleIndex && count > lastVisibleIndex) {
             newLastVisibleIndex = lastVisibleIndex + (end - start + 1)
             newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+            console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
         }
         else {
             newLastVisibleIndex = -1
@@ -253,6 +257,7 @@ SkyListView {
         if (end < lastVisibleIndex) {
             newLastVisibleIndex = lastVisibleIndex - (end - start + 1)
             newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+            console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
         }
         else {
             newLastVisibleIndex = -1

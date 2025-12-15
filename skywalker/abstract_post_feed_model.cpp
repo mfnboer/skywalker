@@ -268,6 +268,7 @@ QDateTime AbstractPostFeedModel::lastTimestamp() const
 
 int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
 {
+    qDebug() << "Find timestamp:" << timestamp << "cid:" << cid;
     int foundIndex = 0;
 
     for (int i = mFeed.size() - 1; i >= 0; --i)

@@ -10,6 +10,8 @@ ListView {
     required property detailedprofile author
     readonly property string sideBarTitle: qsTr("Update lists")
     readonly property string sideBarDescription: qsTr(`Add/remove ${author.name}`)
+    readonly property SvgImage sideBarButtonSvg: SvgOutline.add
+    readonly property string sideBarButtonName: qsTr("add new list")
 
     signal closed
 
@@ -24,7 +26,7 @@ ListView {
 
     header: Item {
         width: parent.width
-        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
+        height: portraitHeader.visible ? portraitHeader.height : 0
         z: guiSettings.headerZLevel
 
         SimpleDescriptionHeader {
@@ -39,32 +41,33 @@ ListView {
                 anchors.top: parent.top
                 anchors.right: parent.right
                 anchors.rightMargin: parent.usedRightMargin + 10
-                svg: SvgOutline.add
-                onClicked: newListMenu.open()
-                accessibleName: qsTr(`add new list`)
-
-                SkyMenu {
-                    id: newListMenu
-
-                    CloseMenuItem {
-                        text: qsTr("<b>Create list</b>")
-                        Accessible.name: qsTr("close create list menu")
-                    }
-                    AccessibleMenuItem {
-                        text: qsTr("User list")
-                        svg: SvgOutline.user
-                        onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
-                    }
-                    AccessibleMenuItem {
-                        text: qsTr("Moderation list")
-                        svg: SvgOutline.moderation
-                        onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
-                    }
-                }
+                svg: sideBarButtonSvg
+                onClicked: sideBarButtonClicked()
+                accessibleName: sideBarButtonName
             }
         }
     }
     headerPositioning: ListView.OverlayHeader
+
+    SkyMenu {
+        id: newListMenu
+        x: parent.width - width
+
+        CloseMenuItem {
+            text: qsTr("<b>Create list</b>")
+            Accessible.name: qsTr("close create list menu")
+        }
+        AccessibleMenuItem {
+            text: qsTr("User list")
+            svg: SvgOutline.user
+            onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
+        }
+        AccessibleMenuItem {
+            text: qsTr("Moderation list")
+            svg: SvgOutline.moderation
+            onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
+        }
+    }
 
     delegate: AddUserListViewDelegate {
         width: view.width
@@ -98,7 +101,10 @@ ListView {
 
         onAddListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onRemoveListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
 
+    function sideBarButtonClicked() {
+        newListMenu.open()
     }
 
     function refresh() {

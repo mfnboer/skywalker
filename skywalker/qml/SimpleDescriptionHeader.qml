@@ -8,6 +8,7 @@ Rectangle {
     property string description
     property bool isSideBar: false
     property string userDid
+    property int rightPadding: 0
     readonly property int usedRightMargin: currentUserAvatar.active ? currentUserAvatar.width : 0
 
     signal closed
@@ -23,7 +24,7 @@ Rectangle {
         width: parent.width
 
         Rectangle {
-            width: parent.width
+            width: parent.width  - header.rightPadding
             height: guiSettings.headerHeight
             color: guiSettings.headerColor
 
@@ -46,6 +47,7 @@ Rectangle {
                     leftPadding: 10
                     font.bold: true
                     font.pointSize: isSideBar ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
+                    elide: Text.ElideRight
                     color: guiSettings.headerTextColor
                     text: title
 
@@ -55,9 +57,9 @@ Rectangle {
                 }
                 Loader {
                     id: currentUserAvatar
-                    Layout.rightMargin: 10
+                    Layout.rightMargin: active ? 10 : 0
                     Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-                    Layout.preferredHeight: parent.height - 10
+                    Layout.preferredHeight: active ? parent.height - 10 : 0
                     Layout.preferredWidth: Layout.preferredHeight
                     active: !root.isActiveUser(header.userDid)
 
