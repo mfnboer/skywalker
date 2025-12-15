@@ -3,6 +3,8 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
+// Copy from PostBody without record, recordWithMedia
+// Could not use PostBody inside records as that would give a cyclic dependency
 Column {
     property string userDid
     readonly property int margin: 10
@@ -24,8 +26,6 @@ Column {
     required property bool postIsThreadReply
     property var postVideo // videoView
     property var postExternal // externalview (var allows NULL)
-    property var postRecord // recordview
-    property var postRecordWithMedia // record_with_media_view
     property bool detailedView: false
     property int initialShowMaxTextLines: 25
     property int maxTextLines: 10000
@@ -66,7 +66,7 @@ Column {
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: displayText
-        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
+        bottomPadding: postImages.length > 0 || postVideo || postExternal || postHasUnknownEmbed ? 5 : 0
         visible: postVisible() && displayText
 
         Accessible.ignored: true
@@ -276,40 +276,6 @@ Column {
         }
     }
 
-    // Record
-    Loader {
-        id: recordLoader
-        width: parent.width
-        active: Boolean(postRecord) && showRecord && postVisible()
-        sourceComponent: RecordView {
-            userDid: postBody.userDid
-            record: postRecord
-            backgroundColor: bodyBackgroundColor
-            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
-        }
-    }
-
-    // Record with media
-    Loader {
-        id: recordWithMediaLoader
-        width: parent.width
-        active: Boolean(postRecordWithMedia) && postVisible()
-        sourceComponent: RecordWithMediaView {
-            userDid: postBody.userDid
-            record: postRecordWithMedia
-            backgroundColor: bodyBackgroundColor
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
-            isDraft: isDraft
-            swipeMode: postBody.swipeMode
-            showRecord: postBody.showRecord
-
-            onActivateSwipe: (imgIndex, img) => postBody.activateSwipe(imgIndex, img)
-        }
-    }
-
     Loader {
         id: dateTimeLoader
         width: parent.width
@@ -328,12 +294,6 @@ Column {
     function movedOffScreen() {
         if (videoLoader.item)
             videoLoader.item.pause() // qmllint disable missing-property
-
-        if (recordLoader.item)
-            recordLoader.item.movedOffScreen()
-
-        if (recordWithMediaLoader.item)
-            recordWithMediaLoader.item.movedOffScreen()
     }
 
     function postVisible() {
@@ -383,7 +343,6 @@ Column {
         id: images1Component
 
         ImagePreview1 {
-            width: postBody.width + (postBody.swipeMode ? 2 * postBody.margin : 0)
             images: postImages
             maskColor: bodyBackgroundColor
             contentVisibility: postContentVisibility
@@ -487,18 +446,6 @@ Column {
         UnknownEmbedView {
             width: parent.width
             unknownEmbedType: postUnknownEmbedType
-        }
-    }
-
-    onBodyBackgroundColorChanged: {
-        if (recordLoader.item) {
-            recordLoader.item.backgroundColor = bodyBackgroundColor
-            recordLoader.item.highlight = bodyBackgroundColor === guiSettings.postHighLightColor
-        }
-
-        if (recordWithMediaLoader.item) {
-            recordWithMediaLoader.item.backgroundColor = bodyBackgroundColor
-            recordWithMediaLoader.item.highlight = bodyBackgroundColor === guiSettings.postHighLightColor
         }
     }
 }

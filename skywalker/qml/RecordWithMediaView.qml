@@ -14,7 +14,7 @@ Item {
     property bool showRecord: true
     readonly property int margin: 10
 
-    signal activateSwipe
+    signal activateSwipe(int imgIndex, var previewImg)
 
     id: recordItem
     width: parent.width

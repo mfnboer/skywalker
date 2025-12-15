@@ -11,7 +11,7 @@ Item {
     property bool settingSize: false
     property bool swipeMode: false
     property string maskColor: guiSettings.backgroundColor
-    readonly property bool imgSizeKnown: images[0].width > 0 && images[0].height > 0 && frame.parent.width > 0
+    readonly property bool imgSizeKnown: images[0].width > 0 && images[0].height > 0
 
     signal activateSwipe(int imgIndex, var previewImg)
 

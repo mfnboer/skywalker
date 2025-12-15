@@ -42,6 +42,7 @@ SkyPage {
         width: parent.width
         height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
+        cacheBuffer: Screen.height * 2
         boundsMovement: Flickable.StopAtBounds
         clip: true
 

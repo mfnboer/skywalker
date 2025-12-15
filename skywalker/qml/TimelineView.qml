@@ -19,6 +19,7 @@ SkyListView {
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
+    cacheBuffer: Screen.height * 2
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""
@@ -160,7 +161,7 @@ SkyListView {
     function doMoveToPost(index) {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
+        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "contentHeight", contentHeight)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
@@ -257,10 +258,12 @@ SkyListView {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
         if (index >= 0)
-            moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
+            moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition(); syncDone() })
         else
-            moveToEnd()
+            moveToEnd(syncDone)
+    }
 
+    function syncDone() {
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
@@ -282,6 +285,8 @@ SkyListView {
     }
 
     Component.onCompleted: {
+        console.debug("Timeline cacheBuffer:", cacheBuffer)
+
         if (!isView)
             footer = null
     }

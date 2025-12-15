@@ -1,3 +1,8 @@
+next
+====
+* Improve timeline positioning at startup
+* Bug fixes
+
 4.22
 ====
 * Select multiple images in one go to attach to post

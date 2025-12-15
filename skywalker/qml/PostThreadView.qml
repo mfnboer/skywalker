@@ -16,6 +16,7 @@ SkyListView {
     id: view
     width: parent.width
     model: skywalker.getPostThreadModel(modelId)
+    cacheBuffer: Screen.height * 2
     boundsBehavior: Flickable.StopAtBounds
 
     header: SimpleHeader {

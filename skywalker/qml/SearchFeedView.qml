@@ -4,6 +4,12 @@ import QtQuick.Layouts
 import skywalker
 import atproto.lib
 
+// When you use moveToIndex(), you must set enough cacheBuffer space. Position a list
+// to an index, may it to position a few items before the index the first time (size mismatch).
+// Therefore positioning is called a few times. If there is enough buffer then the item to
+// position to will be already created if we are close, and the next positioning call will be
+// accurate. If not, then exisiting items will be destroyed. Positioning will be off again,
+// and so on.
 SkyListView {
     required property var skywalker
     required property searchfeed searchFeed
@@ -21,6 +27,7 @@ SkyListView {
     id: feedView
     width: parent.width
     model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
+    cacheBuffer: Screen.height * 2
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: searchFeed.name

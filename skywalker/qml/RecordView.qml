@@ -55,7 +55,7 @@ Item {
             width: parent.width
             active: record.available
 
-            sourceComponent: PostBody {
+            sourceComponent: RecordPostBody {
                 width: parent.width
                 userDid: recordView.userDid
                 postAuthor: recordView.getRecordAuthor()

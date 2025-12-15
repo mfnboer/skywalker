@@ -79,6 +79,7 @@ SkyPage {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             model: skywalker.notificationListModel
+            cacheBuffer: Screen.height * 2
             clip: true
 
             delegate: NotificationViewDelegate {
@@ -142,6 +143,7 @@ SkyPage {
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
             model: skywalker.mentionListModel
+            cacheBuffer: Screen.height * 2
             clip: true
 
             delegate: NotificationViewDelegate {

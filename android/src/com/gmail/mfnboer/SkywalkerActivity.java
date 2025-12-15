@@ -130,7 +130,7 @@ public class SkywalkerActivity extends QtActivity {
         else if (action.equals(Intent.ACTION_VIEW))
             handleActionShowLink(intent);
         else
-            Log.w(LOGTAG, "Unsupported intent action: " + intent.getAction());
+            Log.d(LOGTAG, "Unsupported intent action: " + intent.getAction());
     }
 
     private void handleActionShowNotifications(Intent intent) {
