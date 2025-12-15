@@ -1143,6 +1143,8 @@ Rectangle {
     }
 
     Component.onDestruction: {
+        console.debug("Post destroyed:", index)
+
         if (feedAcceptsInteractions && onScreen)
             postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
 
@@ -1150,6 +1152,8 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        console.debug("Post created:", index)
+
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()
 

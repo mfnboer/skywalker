@@ -26,7 +26,7 @@ SkyListView {
     id: postFeedView
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
-    cacheBuffer: Screen.height * 2
+    cacheBuffer: Screen.height * 3
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: feedName

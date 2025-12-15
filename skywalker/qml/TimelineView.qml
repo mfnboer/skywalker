@@ -19,7 +19,7 @@ SkyListView {
     id: timelineView
     width: parent.width
     model: skywalker.timelineModel
-    cacheBuffer: Screen.height * 2
+    cacheBuffer: Screen.height * 3
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""
@@ -197,11 +197,16 @@ SkyListView {
     function resumeTimeline(index, offsetY = 0) {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Resume timeline:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+        console.debug("Resume timeline:", index, "offsetY:", offsetY, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
 
         if (index >= firstVisibleIndex && index <= lastVisibleIndex) {
             console.debug("Index visible:", index)
-            return
+
+            const lastOffsetY = calcVisibleOffsetY(index)
+            console.debug("lastOffsetY:", lastOffsetY, "offsetY:", offsetY)
+
+            if (lastOffsetY === offsetY)
+                return
         }
 
         moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
