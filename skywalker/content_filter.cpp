@@ -650,14 +650,16 @@ bool ContentFilter::hasNewLabels(const QString& labelerDid) const
     return !newLabels.empty();
 }
 
-std::unordered_set<QString> ContentFilter::getLabelerDidsWithNewLabels() const
+std::unordered_map<QString, std::unordered_set<QString>> ContentFilter::getLabelerDidsWithNewLabels() const
 {
-    std::unordered_set<QString> labelers;
+    std::unordered_map<QString, std::unordered_set<QString>> labelers;
 
     for (const auto& [labelerDid, _] : mLabelerGroupMap)
     {
-        if (hasNewLabels(labelerDid))
-            labelers.insert(labelerDid);
+        const auto newLabels = getNewLabelIds(labelerDid);
+
+        if (!newLabels.empty())
+            labelers[labelerDid] = newLabels;
     }
 
     return labelers;

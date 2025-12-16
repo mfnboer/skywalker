@@ -108,7 +108,7 @@ public:
     void removeLabelIdsFromSettings(const QString &labelerDid) const;
     std::unordered_set<QString> getNewLabelIds(const QString& labelerDid) const;
     Q_INVOKABLE bool hasNewLabels(const QString& labelerDid) const;
-    std::unordered_set<QString> getLabelerDidsWithNewLabels() const;
+    std::unordered_map<QString, std::unordered_set<QString>> getLabelerDidsWithNewLabels() const;
 
     bool hasFollowingPrefs() const;
     Q_INVOKABLE void createFollowingPrefs();

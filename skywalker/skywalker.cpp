@@ -851,7 +851,7 @@ void Skywalker::loadLabelSettings()
             }
 
             const int notificationCount = mNotificationListModel.addNewLabelsNotifications(labelerProfiles);
-            addToUnreadNotificationCount(notificationCount);
+            mSessionManager.setUnreadExtraCount(mUserDid, notificationCount);
             loadMutedReposts();
         },
         [this](const QString& error, const QString& msg){
@@ -1228,7 +1228,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     );
 }
 
-void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const std::function<void()>& cb)
+void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const updateTimelineCb& cb)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline prepend, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
@@ -1271,7 +1271,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const std::fun
             if (cb)
             {
                 qDebug() << "Callback";
-                cb();
+                cb(false);
             }
             else
             {
@@ -1288,7 +1288,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const std::fun
         );
 }
 
-void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated, const std::function<void()>& cb)
+void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated, const updateTimelineCb& cb)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline for gap:" << gapId << "autoGapFill" << autoGapFill;
@@ -1344,7 +1344,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
             }
 
             if (cb)
-                cb();
+                cb(true);
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "getTimelineForGap FAILED:" << error << " - " << msg;
@@ -1837,20 +1837,10 @@ void Skywalker::decGetDetailedProfileInProgress()
 
 void Skywalker::setUnreadNotificationCount(int unread)
 {
-    const int totalUnread = unread + mNotificationListModel.getUnreadCount();
-
-    if (totalUnread != mUnreadNotificationCount)
+    if (unread != mUnreadNotificationCount)
     {
-        mUnreadNotificationCount = totalUnread;
-        emit unreadNotificationCountChanged();
-    }
-}
-
-void Skywalker::addToUnreadNotificationCount(int addUnread)
-{
-    if (addUnread != 0)
-    {
-        mUnreadNotificationCount += addUnread;
+        mUnreadNotificationCount = unread;
+        qDebug() << "Unread:" << mUnreadNotificationCount;
         emit unreadNotificationCountChanged();
     }
 }
@@ -2318,6 +2308,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
     {
         auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
         model.setNotificationsSeen(true);
+        mSessionManager.setUnreadExtraCount(mUserDid, 0);
         mSessionManager.setUnreadNotificationCount(mUserDid, 0);
     }
 }
@@ -4354,25 +4345,25 @@ void Skywalker::resumeApp()
     const auto lastSyncTimestamp = mUserSettings.getSyncTimestamp(mUserDid);
     const auto lastSyncCid = mUserSettings.getSyncCid(mUserDid);
     const int lastSyncOffsetY = mUserSettings.getSyncOffsetY(mUserDid);
-    const auto postCount = mTimelineModel.rowCount();
-    qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << lastSyncCid << "post count:" << postCount;
+    const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
+    qDebug() << "Pause interval:" << pauseInterval << "last sync:" << lastSyncTimestamp << lastSyncCid << "index:" << lastSyncIndex;
 
-    mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
+    mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, lastSyncIndex]{
         startRefreshTimers();
         startTimelineAutoUpdate();
 
         if (pauseInterval > 60s)
         {
-            updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, postCount]{
-                const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
-                qDebug() << "Timeline updated, count:" << mTimelineModel.rowCount() << "prevCount:" << postCount << "lastSyncIndex:" << lastSyncIndex << "lastSyncOffsetY:" << lastSyncOffsetY;
-
-                // TODO: remove
-                // if (postCount != mTimelineModel.rowCount())
-                // {
-                //     const int lastSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
-                //     emit timelineResumed(lastSyncIndex, lastSyncOffsetY);
-                // }
+            updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, lastSyncIndex](bool gapFilled){
+                // If a gap was filled, then mulitple pages have been prepended to the timeline.
+                // That may cause the position to get lost due to scrolling on prepends when the
+                // position was near the top when the app was paused.
+                // Signal that the update is finished so th GUI can reposition.
+                if (gapFilled && lastSyncIndex <= 5)
+                {
+                    const int newSyncIndex = mTimelineModel.findTimestamp(lastSyncTimestamp, lastSyncCid);
+                    emit timelineResumed(newSyncIndex, lastSyncOffsetY);
+                }
             });
         }
 
@@ -4383,7 +4374,7 @@ void Skywalker::resumeApp()
     });
 }
 
-void Skywalker::updateTimeline(int autoGapFill, int pageSize, const std::function<void()>& cb)
+void Skywalker::updateTimeline(int autoGapFill, int pageSize, const updateTimelineCb& cb)
 {
     qDebug() << "Update timeline, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
     getTimelinePrepend(autoGapFill, pageSize, cb);

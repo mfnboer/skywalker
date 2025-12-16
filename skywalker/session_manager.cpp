@@ -475,6 +475,18 @@ void SessionManager::refreshNotificationCount(const QString& did)
         });
 }
 
+void SessionManager::setUnreadExtraCount(const QString& did, int unread)
+{
+    auto* session = getSession(did);
+
+    if (!session)
+        return;
+
+    int unreadNotificationCount = session->mUnreadNotificationCount - session->mUnreadExtraCount;
+    session->mUnreadExtraCount = unread;
+    setUnreadNotificationCount(did, unreadNotificationCount);
+}
+
 void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
 {
     auto* session = getSession(did);
@@ -482,7 +494,7 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
     if (!session)
         return;
 
-    session->mUnreadNotificationCount = unread;
+    session->mUnreadNotificationCount = unread + session->mUnreadExtraCount;
 
     if (session->mNonActiveUser)
         session->mNonActiveUser->setUnreadNotificationCount(unread);
@@ -506,6 +518,7 @@ int SessionManager::getTotalUnreadNotificationCount() const
     for (const auto& [_, session] : mDidSessionMap)
         unread += session->mUnreadNotificationCount;
 
+    qDebug() << "Unread:" << unread;
     return unread;
 }
 

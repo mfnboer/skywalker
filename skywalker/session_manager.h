@@ -41,6 +41,7 @@ public:
 
     void saveTokens();
 
+    void setUnreadExtraCount(const QString& did, int unread);
     void setUnreadNotificationCount(const QString& did, int unread);
     int getUnreadNotificationCount(const QString& did) const;
     int getTotalUnreadNotificationCount() const;
@@ -82,6 +83,7 @@ private:
         ATProto::Client::SharedPtr mSharedBsky;
 
         int mUnreadNotificationCount = 0;
+        int mUnreadExtraCount = 0;
         QTimer mRefreshNotificationInitialDelayTimer;
         QTimer mRefreshNotificationTimer;
         NonActiveUser::Ptr mNonActiveUser;

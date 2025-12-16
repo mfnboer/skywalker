@@ -215,6 +215,12 @@ SkyListView {
         moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition() })
     }
 
+    function resyncTimeline(index, offsetY) {
+        console.debug("Resync timeline:", index, "offsetY:", offsetY)
+        stopSync()
+        setInSync(index, offsetY)
+    }
+
     function rowsInsertedHandler(parent, start, end) {
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()

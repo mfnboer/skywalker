@@ -30,13 +30,10 @@ Notification::Notification(const MessageAndReactionView& messageAndReactionView,
 {
 }
 
-Notification::Notification(const BasicProfileList& labelersWithNewLabels) :
-    mLabelerWithNewLabels(labelersWithNewLabels.front())
+Notification::Notification(const BasicProfile& labeler, const std::unordered_set<QString> newLabelIds) :
+    mLabelerWithNewLabels(labeler),
+    mNewLabelIds(newLabelIds)
 {
-    mOtherAuthors.reserve(labelersWithNewLabels.size() - 1);
-
-    for (auto it = labelersWithNewLabels.begin() + 1; it != labelersWithNewLabels.end(); ++it)
-        mOtherAuthors.push_back(*it);
 }
 
 QString Notification::getUri() const
@@ -88,7 +85,6 @@ bool Notification::isAggregatable() const
     case Notification::Reason::NOTIFICATION_REASON_REPOST_VIA_REPOST:
     case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
     case Notification::Reason::NOTIFICATION_REASON_UNVERIFIED:
-    case Notification::Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Notification::Reason::NOTIFICATION_REASON_UNKNOWN:
         return true;
     default:

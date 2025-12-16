@@ -519,17 +519,34 @@ void NotificationListModel::dismissInviteCodeUsageNotification(int index)
     endRemoveRows();
 }
 
+void NotificationListModel::dismissNewLabelNotification(int index)
+{
+    qDebug() << "Dismiss new label notification:" << index;
+    Q_ASSERT(mInviteCodeUsedNotifications.empty());
+
+    if (index < 0 || index >= (int)mNewLabelsNotifications.size())
+        return;
+
+    {
+        const auto& notification = mNewLabelsNotifications[index];
+        mContentFilter.saveLabelIdsToSettings(notification.getLabelerDid());
+        mNewLabelsNotifications.erase(mNewLabelsNotifications.begin() + index);
+    }
+
+    if (index >= (int)mList.size())
+        return;
+
+    beginRemoveRows({}, index, index);
+    mList.erase(mList.begin() + index);
+    endRemoveRows();
+}
+
 int NotificationListModel::addNewLabelsNotifications(const std::unordered_map<QString, BasicProfile>& labelerProfiles)
 {
-    const std::unordered_set<QString>& labelerDids = mContentFilter.getLabelerDidsWithNewLabels();
+    const std::unordered_map<QString, std::unordered_set<QString>>& labelerMap = mContentFilter.getLabelerDidsWithNewLabels();
+    int notificationCount = 0;
 
-    if (labelerDids.empty())
-        return 0;
-
-    BasicProfileList labelers;
-    labelers.reserve(labelerDids.size());
-
-    for (const QString& labelerDid : labelerDids)
+    for (const auto& [labelerDid, labels] : labelerMap)
     {
         Q_ASSERT(labelerProfiles.contains(labelerDid));
         if (!labelerProfiles.contains(labelerDid))
@@ -538,31 +555,25 @@ int NotificationListModel::addNewLabelsNotifications(const std::unordered_map<QS
             continue;
         }
 
-        labelers.push_back(labelerProfiles.at(labelerDid));
-    }
-
-    if (!labelers.empty())
-    {
-        const Notification notification(labelers);
+        const BasicProfile& labeler = labelerProfiles.at(labelerDid);
+        const Notification notification(labeler, labels);
         mNewLabelsNotifications.push_back(notification);
-        return 1;
+        ++notificationCount;
     }
 
-    return 0;
-}
-
-int NotificationListModel::getUnreadCount() const
-{
-    return getInviteCodeUsageNotificationCount() + (mNotificationsSeen ? 0 : getNewLabelsNotificationCount());
+    return notificationCount;
 }
 
 void NotificationListModel::setNotificationsSeen(bool seen)
 {
+    qDebug() << "Seen:" << seen;
     mNotificationsSeen = seen;
 }
 
 void NotificationListModel::updateRead()
 {
+    qDebug() << "Update read";
+
     for (auto& notification : mNewLabelsNotifications)
         notification.setIsRead(true);
 
@@ -748,6 +759,24 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getPostUri();
     case Role::NotificationCid:
         return notification.getCid();
+    case Role::NotificationLabels:
+    {
+        const QString did = notification.getLabelerDid();
+
+        if (did.isEmpty())
+            return QStringList{};
+
+        QStringList labels;
+        const auto& labelIds = notification.getLabelIds();
+
+        for (const auto& label : labelIds)
+        {
+            auto* contentGroup = mContentFilter.getContentGroup(did, label);
+            labels.push_back(contentGroup ? contentGroup->getTitle() : label);
+        }
+
+        return labels;
+    }
     case Role::NotificationPostAuthor:
         return QVariant::fromValue(notification.getNotificationPost(mPostCache).getAuthor());
     case Role::NotificationPostText:
@@ -1062,6 +1091,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationIsRead), "notificationIsRead" },
         { int(Role::NotificationPostUri), "notificationPostUri" },
         { int(Role::NotificationCid), "notificationCid" },
+        { int(Role::NotificationLabels), "notificationLabels" },
         { int(Role::NotificationPostAuthor), "notificationPostAuthor" },
         { int(Role::NotificationPostText), "notificationPostText" },
         { int(Role::NotificationPostPlainText), "notificationPostPlainText" },

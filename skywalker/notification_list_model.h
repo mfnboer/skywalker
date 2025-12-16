@@ -59,6 +59,7 @@ public:
         NotificationIsRead,
         NotificationPostUri,
         NotificationCid,
+        NotificationLabels,
         NotificationPostAuthor,
         NotificationPostText,
         NotificationPostPlainText,
@@ -134,10 +135,9 @@ public:
     Q_INVOKABLE void dismissInviteCodeUsageNotification(int index);
     int getInviteCodeUsageNotificationCount() const { return (int)mInviteCodeUsedNotifications.size(); }
 
+    Q_INVOKABLE void dismissNewLabelNotification(int index);
     int addNewLabelsNotifications(const std::unordered_map<QString, BasicProfile>& labelerProfiles);
-    int getNewLabelsNotificationCount() const { return (int)mNewLabelsNotifications.size(); }
 
-    int getUnreadCount() const;
     void setNotificationsSeen(bool seen);
     Q_INVOKABLE void updateRead();
 

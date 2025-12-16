@@ -78,7 +78,7 @@ SkyPage {
         Rectangle {
             id: whitespace
             width: 10
-            height: 10
+            height: 10 + guiSettings.footerMargin
             color: "transparent"
         }
     }

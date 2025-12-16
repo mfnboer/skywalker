@@ -22,7 +22,7 @@ public:
     Notification(const QString& inviteCode, const BasicProfile& usedBy);
     Notification(const MessageView& messageView, const BasicProfile& messageSender);
     Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender);
-    explicit Notification(const BasicProfileList& labelersWithLabels);
+    explicit Notification(const BasicProfile& labeler, const std::unordered_set<QString> newLabelIds);
 
     QString getUri() const;
     QString getCid() const;
@@ -61,6 +61,8 @@ public:
     const MessageAndReactionView& getDirectMessageAndReaction() const { return mDirectMessageAndRection; }
 
     bool updateNewLabels(const ContentFilter* contentFilter);
+    QString getLabelerDid() const { return mLabelerWithNewLabels.getDid(); }
+    const std::unordered_set<QString>& getLabelIds() const { return mNewLabelIds; }
 
 private:
     Post getPost(const PostCache& cache, const QString& uri) const;
@@ -73,6 +75,7 @@ private:
     MessageAndReactionView mDirectMessageAndRection;
     BasicProfile mMessageSender; // sender of reaction in case of MessageAndReactionView
     BasicProfile mLabelerWithNewLabels;
+    std::unordered_set<QString> mNewLabelIds; // when mLabelerWithNewLabels is set
     bool mIsRead = false;
     bool mEndOfList = false;
 };

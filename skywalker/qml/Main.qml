@@ -426,11 +426,11 @@ ApplicationWindow {
 
         onTimelineResumed: (postIndex, offsetY) => {
             console.debug("Timeline resumed, index:", postIndex, "offsetY:", offsetY)
-            getTimelineView().resumeTimeline(postIndex, offsetY)
+            Qt.callLater(() => getTimelineView().resyncTimeline(postIndex, offsetY))
         }
 
         onGetDetailedProfileOK: (did, profile, labelPrefsListUri) => { // qmllint disable signal-handler-parameters
-            Qt.callLater((p) => {
+            Qt.callLater(() => {
                     let modelId = getSkywalker(did).createAuthorFeedModel(profile)
                     viewAuthor(profile, labelPrefsListUri, modelId, did)
                 },

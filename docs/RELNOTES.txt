@@ -1,6 +1,8 @@
 next
 ====
 * Improve timeline positioning at startup
+* Show names of new labels in new label notification
+* Added dismiss button to new label notification
 * Bug fixes
 
 4.22

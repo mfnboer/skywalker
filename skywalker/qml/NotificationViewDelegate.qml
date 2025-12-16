@@ -38,6 +38,7 @@ Rectangle {
     required property bool notificationIsRead
     required property string notificationPostUri
     required property string notificationCid
+    required property list<string> notificationLabels
     required property basicprofile notificationPostAuthor
     required property string notificationPostText
     required property string notificationPostPlainText
@@ -175,16 +176,6 @@ Rectangle {
                 color: guiSettings.textColor
                 svg: SvgOutline.inviteCode
                 visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
-            }
-            SkySvg {
-                x: parent.x + 14
-                y: height + 5
-                width: parent.width - 19
-                height: width
-                color: guiSettings.moderatorIconColor
-                outlineColor: guiSettings.textColor
-                svg: SvgFilled.moderator
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS
             }
             SkySvg {
                 x: parent.x + 14
@@ -498,7 +489,6 @@ Rectangle {
                     }
                     AccessibleText {
                         anchors.verticalCenter: parent.verticalCenter
-                        color: guiSettings.textColor
                         text: `+${(notificationOtherAuthors.length - 4)}`
                         visible: notificationOtherAuthors.length > 4
 
@@ -581,6 +571,47 @@ Rectangle {
         }
 
         Loader {
+            id: newLabelsLoader
+            Layout.preferredWidth: notification.width - guiSettings.threadColumnWidth - notification.margin * 2
+            Layout.minimumHeight: guiSettings.threadColumnWidth // to fit avatar
+            active: notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS
+            visible: status == Loader.Ready
+            sourceComponent: Column {
+                width: newLabelsLoader.width
+                topPadding: 5
+                spacing: 5
+
+                PostHeader {
+                    width: parent.width
+                    userDid: owner.did
+                    author: notificationAuthor
+                    postIndexedSecondsAgo: -1
+                    visible: showAvatarAsIcon()
+                }
+
+                SkyCleanedText {
+                    width: parent.width
+                    wrapMode: Text.Wrap
+                    plainText: reasonText()
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: dismissButton.height
+                    color: "transparent"
+
+                    SkyButton {
+                        id: dismissButton
+                        anchors.right: parent.right
+                        implicitHeight: 40
+                        text: qsTr("Dismiss")
+                        onClicked: skywalker.notificationListModel.dismissNewLabelNotification(index)
+                    }
+                }
+            }
+        }
+
+        Loader {
             id: inviteCodeLoader
             Layout.preferredWidth: parent.width - guiSettings.threadColumnWidth - notification.margin * 2
             active: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
@@ -606,10 +637,7 @@ Rectangle {
                     SkyButton {
                         Layout.alignment: Qt.AlignRight
                         text: qsTr("Dismiss")
-                        onClicked: {
-                            console.debug("DISMISS:", index)
-                            skywalker.notificationListModel.dismissInviteCodeUsageNotification(index)
-                        }
+                        onClicked: skywalker.notificationListModel.dismissInviteCodeUsageNotification(index)
                     }
                 }
 
@@ -665,6 +693,8 @@ Rectangle {
             skywalker.getDetailedProfile(notificationInviteCodeUsedBy.did)
         else if (notificationIsAggregatable)
             showAuthorList()
+        else if (notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS)
+            skywalker.getDetailedProfile(notificationAuthor.did)
     }
 
     function showAuthorList() {
@@ -688,9 +718,6 @@ Rectangle {
         case QEnums.NOTIFICATION_REASON_UNVERIFIED:
             title = qsTr("Unverified by")
             break
-        case QEnums.NOTIFICATION_REASON_NEW_LABELS:
-            title = qsTr("Labelers")
-            break
         }
 
         root.viewSimpleAuthorList(title, notificationAllAuthors, owner.did)
@@ -699,7 +726,8 @@ Rectangle {
     function showAvatarAsIcon() {
         let reasons = [QEnums.NOTIFICATION_REASON_MENTION,
                        QEnums.NOTIFICATION_REASON_REPLY,
-                       QEnums.NOTIFICATION_REASON_QUOTE]
+                       QEnums.NOTIFICATION_REASON_QUOTE,
+                       QEnums.NOTIFICATION_REASON_NEW_LABELS]
         return reasons.includes(notificationReason)
     }
 
@@ -744,7 +772,7 @@ Rectangle {
         case QEnums.NOTIFICATION_REASON_UNVERIFIED:
             return qsTr("deleted your verification")
         case QEnums.NOTIFICATION_REASON_NEW_LABELS:
-            return qsTr("published new labels. Visit the labeler profile to see which labels are new.")
+            return qsTr("published new labels: ") + guiSettings.toWordSequence(notificationLabels)
         case QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST:
             return qsTr("posted")
         case QEnums.NOTIFICATION_REASON_UNKNOWN:
@@ -805,12 +833,23 @@ Rectangle {
         return speech
     }
 
+    function getNewLabelsSpeech() {
+        const reason = reasonText()
+        let speech = `${notificationAuthor.name} ${reason}`
+        return speech
+    }
+
     function getSpeech() {
         if (notificationIsAggregatable)
             return getAggregatableSpeech()
 
         if (showPost())
             return getPostSpeech()
+
+        if (notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS)
+            return getNewLabelsSpeech()
+
+        return qsTr("unknown notification");
     }
 
     function checkOnScreen() {
