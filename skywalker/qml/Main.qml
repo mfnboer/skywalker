@@ -1174,27 +1174,20 @@ ApplicationWindow {
         videoQuality: skywalker.getUserSettings().videoQuality
 
         onGetVideoStreamOk: (durationMs) => {
-            const fileName = videoUtils.getVideoFileNameForGallery("ts")
-
-            if (!fileName) {
-                skywalker.showStatusMessage(qsTr("Cannot create gallery file"), QEnums.STATUS_LEVEL_ERROR)
-                return
-            }
-
-            loadStream(fileName)
+            m3u8Reader.resetStream()
+            loadStream()
         }
 
-        // NOTE: Transcoding to MP4 results in an MP4 that cannot be played by the gallery
-        // app. The MP4 can be played with other players. For now save as mpeg-ts. This
-        // can be played by the gallery app.
         onGetVideoStreamError: skywalker.showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
 
         onLoadStreamOk: (videoSource) => {
-            videoUtils.indexGalleryFile(videoSource.slice(7))
-            skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
+            videoUtils.transcodeVideo(videoSource.slice(7), -1, -1, -1, false)
         }
 
-        onLoadStreamError: skywalker.showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
+        onLoadStreamError: {
+            skywalker.showStatusMessage(qsTr("Failed to save video"), QEnums.STATUS_LEVEL_ERROR)
+            m3u8Reader.resetStream()
+        }
     }
 
     VideoUtils {
@@ -1202,6 +1195,17 @@ ApplicationWindow {
 
         onCopyVideoOk: skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
+            videoUtils.copyVideoToGallery(outputFileName)
+            videoUtils.dropVideo(outputFileName)
+            m3u8Reader.resetStream()
+        }
+
+        onTranscodingFailed: (inputFileName, error) => {
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+            m3u8Reader.resetStream()
+        }
     }
 
     DisplayUtils {

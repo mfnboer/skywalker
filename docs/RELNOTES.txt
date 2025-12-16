@@ -1,6 +1,7 @@
 next
 ====
 * Improve timeline positioning at startup
+* Save video as mp4 instead of mpeg-ts file
 * Show names of new labels in new label notification
 * Added dismiss button to new label notification
 * Bug fixes
