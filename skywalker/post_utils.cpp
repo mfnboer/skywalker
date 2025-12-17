@@ -1523,6 +1523,11 @@ void PostUtils::dropPhoto(const QString& source)
         auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
         imgProvider->removeImage(source);
     }
+    else if (source.startsWith("file://"))
+    {
+        const QString fileName = source.sliced(7);
+        TempFileHolder::instance().remove(fileName);
+    }
 }
 
 void PostUtils::dropVideo(const QString& source)

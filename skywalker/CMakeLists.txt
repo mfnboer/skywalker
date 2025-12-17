@@ -620,6 +620,10 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyComboBox.qml
         QML_FILES qml/ListHeader.qml
         QML_FILES qml/RecordPostBody.qml
+        QML_FILES qml/PhotoCamera.qml
+        SOURCES
+        SOURCES camera_utils.h
+        SOURCES camera_utils.cpp
 )
 
 if (NOT ANDROID)

@@ -76,6 +76,7 @@ qt_add_qml_module(appskywalker
         images/youtubemusic-logo.png
         images/boomplay-logo.png
         images/napster-logo.png
+        sounds/camera-shutter-click.wav
         android/src/com/gmail/mfnboer/QPhotoPicker.java
         android/src/com/gmail/mfnboer/FileUtils.java
         android/src/com/gmail/mfnboer/GMSEmojiFontDownloader.java

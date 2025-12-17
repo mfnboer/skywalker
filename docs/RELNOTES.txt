@@ -1,5 +1,6 @@
 next
 ====
+* Take photo with camera to attach to post
 * Improve timeline positioning at startup
 * Save video as mp4 instead of mpeg-ts file
 * Show names of new labels in new label notification

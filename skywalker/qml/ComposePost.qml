@@ -1292,9 +1292,19 @@ SkyPage {
             }
         }
 
+        SvgTransparentButton {
+            id: addCameraPhoto
+            x: addImage.x + addImage.width + 3
+            y: height + 5 + restrictionRow.height + footerSeparator.height
+            accessibleName: qsTr("take photo to add")
+            svg: SvgOutline.camera
+            enabled: page.canAddImage()
+            onClicked: cameraUtils.takePhoto()
+        }
+
         AddGifButton {
             id: addGif
-            x: addImage.x + addImage.width + 3
+            x: addCameraPhoto.x + addCameraPhoto.width + 3
             y: height + 5 + restrictionRow.height + footerSeparator.height
             enabled: page.canAddGif()
 
@@ -1434,6 +1444,28 @@ SkyPage {
         id: fileDialog
         onImageSelected: (fileUri) => photoPicked(fileUri)
         onVideoSelected: (fileUri) => videoPicked(fileUri)
+    }
+
+    CameraUtils {
+        id: cameraUtils
+
+        function takePhoto() {
+            if (!cameraUtils.checkCameraPermission()) {
+                skywalker.showStatusMessage(qsTr("No permission to access camera"), QEnums.STATUS_LEVEL_INFO)
+                return
+            }
+
+            let component = guiSettings.createComponent("PhotoCamera.qml")
+            let camera = component.createObject(page, {})
+            camera.onCaptured.connect((fileName) => {
+                const source = "file://" + fileName
+                page.tmpImages.push(source)
+                photoPicked(source)
+                root.popStack()
+            })
+            camera.onClosed.connect(() => { root.popStack() })
+            root.pushStack(camera)
+        }
     }
 
     TextSplitter {

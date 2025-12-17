@@ -2334,7 +2334,7 @@ ApplicationWindow {
         page.onListCreated.connect((list) => {
             if (list.isNull()) {
                 // This should rarely happen. Let the user refresh.
-                sw.showStatusMessage(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO);
+                sw.showStatusMessage(qsTr("List created. Please refresh page."), QEnums.STATUS_LEVEL_INFO)
             }
             else {
                 sw.showStatusMessage(qsTr("List created."), QEnums.STATUS_LEVEL_INFO, 2)
