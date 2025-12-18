@@ -304,9 +304,12 @@ struct ColorInfo
     int mCount = 0;
 };
 
-QColor ImageUtils::getDominantColor(const QImage& img, const QRect& cutRect, int stepSize)
+QColor ImageUtils::getDominantColor(const QImage& img, QRect cutRect, int stepSize)
 {
     static constexpr int COLOR_MASK = 0x00e0;
+
+    if (cutRect.isNull())
+        cutRect = img.rect();
 
     qDebug() << "Get dominant color, img size:" << img.size() << "cut:" << cutRect;
     std::unordered_map<QRgb, ColorInfo> colorMap;

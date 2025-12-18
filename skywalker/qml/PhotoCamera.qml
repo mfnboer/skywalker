@@ -49,7 +49,6 @@ SkyPage {
 
             onErrorOccurred: (error, errorString) => {
                 console.warn("Camera error:", errorString)
-                skywalker.showStatusMessage(errorString, QEnums.STATUS_LEVEL_ERROR)
             }
 
             function getHasFlash() {
@@ -344,7 +343,6 @@ SkyPage {
 
         console.debug("Capture to:", fileName)
         imageCapture.captureToFile(fileName)
-        //shutter.go()
     }
 
     function setSystemBarsColor() {
@@ -367,8 +365,5 @@ SkyPage {
 
     Component.onCompleted: {
         setSystemBarsColor()
-        console.debug("Camera zoom:", camera.zoomFactor, "min:", camera.minimumZoomFactor, "max:", camera.maximumZoomFactor)
-        console.debug("Camera focus mode:", camera.focusMode)
-        console.debug("Camera flas mode:", camera.flashMode)
     }
 }

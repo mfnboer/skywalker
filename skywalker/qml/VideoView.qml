@@ -61,13 +61,15 @@ Column {
     spacing: isFullViewMode ? -playControls.height - (swipeMode ? 0 : guiSettings.footerMargin) : 10
 
     Rectangle {
+        property color canvasColor: guiSettings.postHighLightColor
+
         id: videoRect
         width: parent.width
         height: tileMode ? parent.height : videoColumn.height
 
         // The high light color is visible when the thumbnail image is smaller than the
         // given aspect ratio size.
-        color: isFullViewMode ? "transparent" : guiSettings.postHighLightColor
+        color: isFullViewMode ? "transparent" : canvasColor
         visible: videoPlayer.videoFound || videoPlayer.error == MediaPlayer.NoError
 
         FilteredImageWarning {
@@ -117,6 +119,11 @@ Column {
                     sourceComponent: videoSizeIsKnown ? knownSizeComp : (videoStack.isFullViewMode ? unknownSizeComp : fixedSizeComp)
 
                     onImgStatusChanged: {
+                        if (imgStatus == Image.Ready && !isFullViewMode && item.paintedWidth < videoRect.width) {
+                            console.debug("Thumb image is smaller the specified aspect ratio:", item.paintedWidth, item.paintedHeight)
+                            imageUtils.setDominantColor(item, (color) => { videoRect.canvasColor = color })
+                        }
+
                         if (imgStatus == Image.Ready || imgStatus == Image.Error)
                             thumbImageLoaded()
                     }
@@ -708,6 +715,10 @@ Column {
             else
                 videoLoaded()
         }
+    }
+
+    SkyImageUtils {
+        id: imageUtils
     }
 
     Component {

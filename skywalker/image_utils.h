@@ -40,7 +40,7 @@ public:
 
     Q_INVOKABLE QString transformImage(const QString& imgSource, bool horMirror, bool vertMirror, int rotationAngle, const QRect& cutRect) const;
 
-    Q_INVOKABLE QColor getDominantColor(const QImage& img, const QRect& cutRect, int stepSize = 16);
+    Q_INVOKABLE QColor getDominantColor(const QImage& img, QRect cutRect = {}, int stepSize = 16);
 
 signals:
     void checkAvailabilityOk(QEnums::Script script, bool available);

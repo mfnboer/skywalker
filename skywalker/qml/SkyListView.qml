@@ -76,7 +76,7 @@ ListView {
         property int listIndex
         property int moveAttempt
         property var callback
-        property var afterMoveCallback
+        property var afterMoveCallback: () =>{}
 
         id: moveToIndexTimer
         interval: 200
@@ -94,9 +94,17 @@ ListView {
             else {
                 afterMoveCallback()
             }
+
+            afterMoveCallback = () =>{}
         }
 
         function go(index, callbackFunc, afterMoveCb = () =>{}) {
+            if (running) {
+                console.debug("New move to:", index, "previous still running:", listIndex)
+                afterMoveCallback()
+                stop()
+            }
+
             if (!callbackFunc(index)) {
                 // HACK: doing it again after a short interval makes the positioning work.
                 // After the first time the positioning can be off.

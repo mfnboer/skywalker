@@ -200,6 +200,9 @@ SkyListView {
     }
 
     function resumeTimeline(index, offsetY = 0) {
+        if (!inSync)
+            return
+
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Resume timeline:", index, "offsetY:", offsetY, "first:", firstVisibleIndex, "last:", lastVisibleIndex)

@@ -24,7 +24,7 @@ ThumbImageView {
         visible: fillMode == Image.PreserveAspectFit
     }
 
-    ImageUtils {
+    SkyImageUtils {
         id: imageUtils
     }
 
@@ -35,18 +35,7 @@ ThumbImageView {
         if (status != Image.Ready)
             return
 
-        const cutX = Math.max((width - paintedWidth) / 2, 0)
-        const cutY = Math.max((height - paintedHeight) / 2, 0)
-        const cutWidth = Math.min(paintedWidth, width - cutX)
-        const cutHeight = Math.min(paintedHeight, height - cutY)
-        const cutRect = Qt.rect(cutX * Screen.devicePixelRatio, cutY * Screen.devicePixelRatio,
-                                cutWidth * Screen.devicePixelRatio, cutHeight * Screen.devicePixelRatio)
-
-        console.debug("Grab image:", width, height, image)
-
-        thumb.grabToImage((result) => {
-            canvasColor = imageUtils.getDominantColor(result.image, cutRect, 16 * Screen.devicePixelRatio)
-        })
+        imageUtils.setDominantColor(thumb, (color) => { thumb.canvasColor = color })
     }
 
     function getVisible() {
