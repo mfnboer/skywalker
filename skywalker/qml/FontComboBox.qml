@@ -36,8 +36,8 @@ ComboBox {
     indicator: Item {}
 
     contentItem: Text {
-        leftPadding: 10
-        rightPadding: 10
+        leftPadding: 5
+        rightPadding: 5
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
         text: fontComboBox.displayText

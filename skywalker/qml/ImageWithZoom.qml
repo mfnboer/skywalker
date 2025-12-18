@@ -7,12 +7,7 @@ ImageAutoRetry {
     id: img
     transform: Translate { id: imgTranslation }
 
-    PinchHandler {
-        target: null
-        rotationAxis.enabled: false
-        xAxis.enabled: false
-        yAxis.enabled: false
-
+    ZoomHandler {
         onScaleChanged: (delta) => {
             let dx = (centroid.position.x - img.getCenter().x) * img.scale
             let dy = (centroid.position.y - img.getCenter().y) * img.scale
@@ -27,20 +22,11 @@ ImageAutoRetry {
             img.keepInScreen()
         }
 
-        onGrabChanged: (transition, point) => {
-            if (transition === PointerDevice.UngrabPassive) {
-                img.zooming = img.scale > 1
-            }
-        }
+        onReleased: img.zooming = img.scale > 1
     }
 
-    PinchHandler {
+    SkyDragHandler {
         id: imgDrag
-        target: null
-        rotationAxis.enabled: false
-        scaleAxis.enabled: false
-        minimumPointCount: 1
-        maximumPointCount: 1
         enabled: img.zooming
 
         onTranslationChanged: (delta) => {

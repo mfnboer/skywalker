@@ -124,6 +124,16 @@ SkyPage {
             onClicked: page.cancel()
         }
 
+        SvgPlainButton {
+            id: editModeButton
+            anchors.left: cancelButton.right
+            y: (parent.height - height) / 2
+            accessibleName: page.largeEditor ? qsTr("switch to post edit mode") : qsTr("switch to document edit mode")
+            svg: page.largeEditor ? SvgOutline.editDocument : SvgOutline.editPost
+            enabled: page.largeEditor || page.canSwitchToLargeEditor()
+            onClicked: page.toggleEditMode()
+        }
+
         CurrentUserAvatar {
             id: currentUserAvatar
             y: 5
@@ -1324,7 +1334,7 @@ SkyPage {
             allLanguages: languageUtils.languages
             usedLanguages: languageUtils.usedLanguages
             anchors.left: fontSelector.right
-            anchors.leftMargin: 8
+            anchors.leftMargin: 10
             y: 5 + restrictionRow.height + footerSeparator.height + 6
             popup.x: Math.max(-x, Math.min(0, page.width - popup.width - x))
             popup.height: Math.min(page.usableHeight, popup.contentHeight)
@@ -1362,10 +1372,19 @@ SkyPage {
             }
         }
 
+        Rectangle {
+            id: languageMargin
+            anchors.left: languageSelector.right
+            y: height + 7 + restrictionRow.height + footerSeparator.height
+            width: 5
+            height: 30
+            color: "transparent"
+        }
+
         SvgTransparentButton {
             id: mentionsButton
-            anchors.left: languageSelector.right
-            anchors.leftMargin: visible ? 8 : 0
+            anchors.left: languageMargin.right
+            anchors.leftMargin: visible ? 3 : 0
             y: height + 7 + restrictionRow.height + footerSeparator.height
             width: visible ? height: 0
             height: 30
@@ -1380,7 +1399,7 @@ SkyPage {
         SvgTransparentButton {
             id: linkButton
             anchors.left: mentionsButton.right
-            anchors.leftMargin: visible ? 8 : 0
+            anchors.leftMargin: visible ? 3 : 0
             y: height + 5 + restrictionRow.height + footerSeparator.height
             width: visible ? height: 0
             accessibleName: qsTr("embed web link")
@@ -1397,23 +1416,12 @@ SkyPage {
         SvgTransparentButton {
             id: contentWarningIcon
             anchors.left: linkButton.right
-            anchors.leftMargin: visible ? 8 : 0
+            anchors.leftMargin: visible ? 3 : 0
             y: height + 5 + restrictionRow.height + footerSeparator.height
             accessibleName: qsTr("add content warning")
             svg: hasContentWarning() ? SvgOutline.hideVisibility : SvgOutline.visibility
             visible: hasImageContent()
             onClicked: page.addContentWarning()
-        }
-
-        SvgTransparentButton {
-            id: editModeButton
-            anchors.right: addPost.left
-            anchors.rightMargin: visible ? 8 : 0
-            y: height + 5 + restrictionRow.height + footerSeparator.height
-            accessibleName: page.largeEditor ? qsTr("switch to post edit mode") : qsTr("switch to document edit mode")
-            svg: page.largeEditor ? SvgOutline.editDocument : SvgOutline.editPost
-            enabled: page.largeEditor || page.canSwitchToLargeEditor()
-            onClicked: page.toggleEditMode()
         }
 
         SvgButton {

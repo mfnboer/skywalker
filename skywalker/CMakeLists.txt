@@ -624,6 +624,9 @@ qt_add_qml_module(libskywalker
         SOURCES
         SOURCES camera_utils.h
         SOURCES camera_utils.cpp
+        QML_FILES qml/SwipeHandler.qml
+        QML_FILES qml/ZoomHandler.qml
+        QML_FILES qml/SkyDragHandler.qml
 )
 
 if (NOT ANDROID)

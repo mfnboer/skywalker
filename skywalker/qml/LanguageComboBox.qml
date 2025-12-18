@@ -27,7 +27,7 @@ ComboBox {
 
     background: Rectangle {
         id: backgroundRect
-        implicitWidth: 46
+        implicitWidth: 20
         radius: languageComboBox.radius
         border.color: languageComboBox.borderColor
         border.width: languageComboBox.borderWidth
@@ -51,8 +51,8 @@ ComboBox {
     indicator: Item {}
 
     contentItem: Text {
-        leftPadding: 10
-        rightPadding: 10
+        leftPadding: 5
+        rightPadding: 5
         verticalAlignment: Text.AlignVCenter
         color: reversedColors && !autoDetectColor ? "white" : languageComboBox.color
         text: languageComboBox.displayText ? languageComboBox.displayText : ""

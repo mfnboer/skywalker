@@ -103,12 +103,7 @@ SkyPage {
                 }
             ]
 
-            PinchHandler {
-                target: null
-                rotationAxis.enabled: false
-                xAxis.enabled: false
-                yAxis.enabled: false
-
+            ZoomHandler {
                 onScaleChanged: (delta) => {
                     img.updateScale(centroid.position, delta)
 
@@ -119,13 +114,8 @@ SkyPage {
                 }
             }
 
-            PinchHandler {
+            SkyDragHandler {
                 id: imgDrag
-                target: null
-                rotationAxis.enabled: false
-                scaleAxis.enabled: false
-                minimumPointCount: 1
-                maximumPointCount: 1
 
                 onTranslationChanged: (delta) => {
                     img.translate(delta.x, delta.y)

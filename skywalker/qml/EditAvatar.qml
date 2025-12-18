@@ -55,12 +55,7 @@ SkyPage {
         onHeightChanged: initMinScale()
         onSourceSizeChanged: initMinScale()
 
-        PinchHandler {
-            target: null
-            rotationAxis.enabled: false
-            xAxis.enabled: false
-            yAxis.enabled: false
-
+        ZoomHandler {
             onScaleChanged: (delta) => {
                 let dx = (centroid.position.x - img.getCenter().x) * img.scale
                 let dy = (centroid.position.y - img.getCenter().y) * img.scale
@@ -75,20 +70,11 @@ SkyPage {
                 img.keepInScreen()
             }
 
-            onGrabChanged: (transition, point) => {
-                if (transition === PointerDevice.UngrabPassive) {
-                    img.zooming = img.scale > img.minScale
-                }
-            }
+            onReleased: img.zooming = img.scale > img.minScale
         }
 
-        PinchHandler {
+        SkyDragHandler {
             id: imgDrag
-            target: null
-            rotationAxis.enabled: false
-            scaleAxis.enabled: false
-            minimumPointCount: 1
-            maximumPointCount: 1
 
             onTranslationChanged: (delta) => {
                 imgTranslation.x += delta.x

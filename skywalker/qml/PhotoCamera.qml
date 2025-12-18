@@ -18,17 +18,6 @@ SkyPage {
     height: root.height
     background: Rectangle { color: guiSettings.fullScreenColor }
 
-    SvgButton {
-        x: guiSettings.leftMargin
-        y: guiSettings.headerMargin
-        iconColor: "white"
-        Material.background: guiSettings.fullScreenColor
-        opacity: 0.7
-        svg: SvgOutline.arrowBack
-        accessibleName: qsTr("go back")
-        onClicked: page.closed()
-    }
-
     MediaDevices {
         id: mediaDevices
     }
@@ -36,6 +25,8 @@ SkyPage {
     CaptureSession {
         imageCapture : ImageCapture {
             id: imageCapture
+
+            onImageCaptured: shutter.go()
 
             onImageSaved: (id, fileName) => {
                 console.debug("Image saved:", id, "file:", fileName)
@@ -48,15 +39,21 @@ SkyPage {
             }
         }
         camera: Camera {
+            property bool hasFlash: getHasFlash()
+
             id: camera
             cameraDevice: mediaDevices.defaultVideoInput
             active: true
 
-            onErrorChanged: {
-                if (error == Camera.CameraError) {
-                    console.warn("Camera error:", errorString)
-                    skywalker.showStatusMessage(errorString, QEnums.STATUS_LEVEL_ERROR)
-                }
+            onCameraDeviceChanged: hasFlash = getHasFlash()
+
+            onErrorOccurred: (error, errorString) => {
+                console.warn("Camera error:", errorString)
+                skywalker.showStatusMessage(errorString, QEnums.STATUS_LEVEL_ERROR)
+            }
+
+            function getHasFlash() {
+                return isFlashModeSupported(Camera.FlashOn) || isFlashModeSupported(Camera.FlashAuto)
             }
         }
 
@@ -72,10 +69,9 @@ SkyPage {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 10 + guiSettings.footerMargin
-            width: 70
+            width: 80
             height: width
             Material.background: "white"
-            enabled: camera.error == Camera.NoError
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr("take picture")
@@ -83,87 +79,143 @@ SkyPage {
 
             onClicked: page.capturePhoto()
         }
+
+        SvgButton {
+            id: cameraButton
+            anchors.left: photoButton.right
+            anchors.leftMargin: 30
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 20 + guiSettings.footerMargin
+            width: 60
+            height: width
+            background.opacity: 0.2
+            iconColor: "white"
+            Material.background: guiSettings.fullScreenColor
+            svg: SvgOutline.flipCamera
+            accessibleName: qsTr("flip camera")
+            onClicked: toggleCamera(true)
+        }
+
+        Label {
+            id: zoomFactor
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: photoButton.top
+            anchors.bottomMargin: 10
+            padding: 5
+            background: Rectangle {
+                radius: guiSettings.radius
+                opacity: 0.2
+                color: guiSettings.fullScreenColor
+            }
+            color: "white"
+            text: `${Math.round(camera.zoomFactor * 10) / 10}x`
+            visible: false
+
+            Timer {
+                id: hideTimer
+                interval: 1000
+                onTriggered: zoomFactor.visible = false
+            }
+
+            function show() {
+                hideTimer.stop()
+                zoomFactor.visible = true
+            }
+
+            function hide() {
+                hideTimer.start()
+            }
+        }
+
+        SwipeHandler {
+            onSwipeDown: toggleCamera(true)
+            onSwipeUp: toggleCamera(false)
+        }
+
+        ZoomHandler {
+            onScaleChanged: (delta) => {
+                camera.zoomFactor *= delta
+                zoomFactor.show()
+            }
+
+            onReleased: zoomFactor.hide()
+        }
     }
 
-    MultiEffect {
-        id: blur
-        source: videoOutput
+    Item {
         anchors.fill: videoOutput
-        blurEnabled: true
-        blur: 1.0
-        blurMax: 64
-        visible: false
 
-        transform: Rotation {
-            id: pageRotation
-            origin.x: page.width / 2
-            origin.y: page.height / 2
-            axis { x: 1; y: 0; z: 0 }
-            angle: 0
-        }
+        // Add perspective to rotation
+        transform: [
+            Scale {
+                readonly property int angle: Math.abs(videoRotation.angle)
 
-        function activate(active) {
-            visible = active
-            videoOutput.visible = !active
-        }
-    }
+                origin.x: videoOutput.width / 2
+                origin.y: videoOutput.height / 2
+                xScale: 1 - (angle <= 90 ? angle : (360 - angle)) / 360
+                yScale: 1 - (angle <= 90 ? angle : (360 - angle)) / 360
+            }
+        ]
 
-    DragHandler {
-        property real startY: 0
+        MultiEffect {
+            id: blur
+            source: videoOutput
+            anchors.fill: parent
+            blurEnabled: true
+            blur: 1.0
+            blurMax: 64
+            autoPaddingEnabled: false
+            visible: false
 
-        target: null
+            transform: Rotation {
+                id: videoRotation
+                origin.x: videoOutput.width / 2
+                origin.y: videoOutput.height / 2
+                axis { x: 1; y: 0; z: 0 }
+                angle: 0
+            }
 
-        onActiveChanged: {
-            if (active) {
-                startY = centroid.position.y
-            } else {
-                const deltaY = centroid.position.y - startY
-
-                if (deltaY > 90)
-                    toggleCamera(true)
-                else if (deltaY < -90)
-                    toggleCamera(false)
+            function activate(active) {
+                visible = active
+                videoOutput.visible = !active
             }
         }
     }
 
     Rectangle {
-        id: flash
+        id: shutter
         anchors.fill: parent
         color: guiSettings.fullScreenColor
         visible: false
-    }
 
-    Timer {
-        id: flashTimer
-        interval: 200
+        SoundEffect {
+            id: shutterSound
+            audioDevice: mediaDevices.defaultAudioOutput
+            source: "/sounds/camera-shutter-click.wav"
+            volume: 1.0
+            loops: 1
+        }
 
-        onTriggered: flash.visible = false
+        Timer {
+            id: shutterTimer
+            interval: 200
+            onTriggered: shutter.visible = false
+        }
 
         function go() {
-            flash.visible = true
-            start()
+            shutterSound.play()
+            shutter.visible = true
+            shutterTimer.start()
         }
-    }
-
-    SoundEffect {
-        id: cameraShutter
-        audioDevice: mediaDevices.defaultAudioOutput
-        source: "/sounds/camera-shutter-click.wav"
-        volume: 1.0
-        loops: 1
-        onStatusChanged: console.debug("SOUND:", status)
-        onPlayingChanged: console.debug("PLAYING:", playing)
     }
 
     NumberAnimation {
         property var doneCb
 
         id: rotationAnimation
-        target: pageRotation
+        target: videoRotation
         property: "angle"
         duration: 300
-
         onFinished: doneCb()
 
         function go(fromAngle, toAngle, easType, cb = () => {}) {
@@ -172,6 +224,78 @@ SkyPage {
             to = toAngle
             easing.type = easType
             start()
+        }
+    }
+
+    SvgButton {
+        x: guiSettings.leftMargin + 10
+        y: guiSettings.headerMargin
+        iconColor: "white"
+        Material.background: guiSettings.fullScreenColor
+        background.opacity: 0.2
+        svg: SvgOutline.arrowBack
+        accessibleName: qsTr("go back")
+        onClicked: page.closed()
+    }
+
+    SvgButton {
+        anchors.right: parent.right
+        anchors.rightMargin: guiSettings.rightMargin + 10
+        anchors.top: parent.top
+        anchors.topMargin: guiSettings.headerMargin
+        iconColor: "white"
+        Material.background: guiSettings.fullScreenColor
+        background.opacity: 0.2
+        svg: getFlashSvg()
+        accessibleName: getFlashSpeech()
+        onClicked: toggleFlash()
+        visible: camera.hasFlash
+
+        function getFlashSvg() {
+            switch (camera.flashMode) {
+            case Camera.FlashOff:
+                return SvgOutline.flashOff
+            case Camera.FlashOn:
+                return SvgOutline.flashOn
+            case Camera.FlashAuto:
+                return SvgOutline.flashAuto
+            }
+
+            console.warn("Unknown flash mode:", camera.flashMode)
+            return Camera.FlashOff
+        }
+
+        function getFlashSpeech() {
+            switch (camera.flashMode) {
+            case Camera.FlashOff:
+                return qsTr("flash off")
+            case Camera.FlashOn:
+                return qsTr("flash on")
+            case Camera.FlashAuto:
+                return qsTr("auto flash")
+            }
+
+            console.warn("Unknown flash mode:", camera.flashMode)
+            return qsTr("unknown flash mode")
+        }
+
+        function toggleFlash() {
+            switch (camera.flashMode) {
+            case Camera.FlashOff:
+                if (camera.isFlashModeSupported(Camera.FlashOn))
+                    camera.flashMode = Camera.FlashOn
+                break
+            case Camera.FlashOn:
+                if (camera.isFlashModeSupported(Camera.FlashAuto))
+                    camera.flashMode = Camera.FlashAuto
+                break
+            case Camera.FlashAuto:
+                if (camera.isFlashModeSupported(Camera.FlashOff))
+                    camera.flashMode = Camera.FlashOff
+                break
+            }
+
+            console.warn("Unknown flash mode:", camera.flashMode)
         }
     }
 
@@ -211,8 +335,6 @@ SkyPage {
     }
 
     function capturePhoto() {
-        cameraShutter.play()
-        flashTimer.go()
         const fileName = cameraUtils.getCaptureFileName()
 
         if (!fileName) {
@@ -222,6 +344,7 @@ SkyPage {
 
         console.debug("Capture to:", fileName)
         imageCapture.captureToFile(fileName)
+        //shutter.go()
     }
 
     function setSystemBarsColor() {
@@ -244,10 +367,8 @@ SkyPage {
 
     Component.onCompleted: {
         setSystemBarsColor()
-        console.debug("Camera:", camera.cameraDevice)
-
-        for (const dev of mediaDevices.videoInputs) {
-            console.debug("Video input:", dev)
-        }
+        console.debug("Camera zoom:", camera.zoomFactor, "min:", camera.minimumZoomFactor, "max:", camera.maximumZoomFactor)
+        console.debug("Camera focus mode:", camera.focusMode)
+        console.debug("Camera flas mode:", camera.flashMode)
     }
 }
