@@ -13,6 +13,8 @@ RoundButton {
     display: AbstractButton.TextOnly
     icon.name: ""
     icon.source: ""
+    font.pointSize: guiSettings.scaledFont(7/8)
+    font.weight: Font.Medium
 
     contentItem: Text {
         leftPadding: button.textPadding
@@ -20,8 +22,7 @@ RoundButton {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: textColor
-        font.weight: Font.Medium
-        font.pointSize: guiSettings.scaledFont(7/8)
+        font: button.font
         text: button.text
     }
 

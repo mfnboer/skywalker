@@ -165,16 +165,20 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
 static const QString& getConvoLastRevIncludingReactions(const ATProto::ChatBskyConvo::ConvoView& convo)
 {
     if (!convo.mLastReaction)
+    {
+        qDebug() << "Convo rev:" << convo.mRev;
         return convo.mRev;
+    }
 
     auto msgAndReaction = std::get<ATProto::ChatBskyConvo::MessageAndReactionView::SharedPtr>(*convo.mLastReaction);
+    qDebug() << "Convo rev:" << convo.mRev << "reaction rev:" << msgAndReaction->mMessageView->mRev;
     return std::max(convo.mRev, msgAndReaction->mMessageView->mRev);
 }
 
 QString NotificationListModel::addNotifications(
     ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput, const QString& lastRev, const QString& userDid)
 {
-    qDebug() << "Add chat notifications:" << convoListOutput->mConvos.size();
+    qDebug() << "Add chat notifications:" << convoListOutput->mConvos.size() << "lastRev:" << lastRev;
 
     if (convoListOutput->mConvos.empty())
     {
@@ -190,16 +194,17 @@ QString NotificationListModel::addNotifications(
 
         if (convoRev <= lastRev)
         {
-            qDebug() << "Messages already seen, rev:" << convo->mRev << "last:" << lastRev;
+            qDebug() << "Messages already seen, rev:" << convoRev << "last:" << lastRev;
             continue;
         }
 
+        qDebug() << "New convo rev:" << convoRev << "last:" << lastRev;
         newRev = std::max(newRev, convoRev);
         addConvoLastMessage(*convo, lastRev, userDid);
         addConvoLastReaction(*convo, lastRev, userDid);
     }
 
-    return convoListOutput->mConvos.front()->mRev;
+    return newRev;
 }
 
 void NotificationListModel::addConvoLastMessage(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& lastRev, const QString& userDid)

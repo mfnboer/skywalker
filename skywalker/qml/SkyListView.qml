@@ -89,13 +89,13 @@ ListView {
                 else {
                     console.debug("No exact move, no more attempts")
                     afterMoveCallback()
+                    afterMoveCallback = () =>{}
                 }
             }
             else {
                 afterMoveCallback()
+                afterMoveCallback = () =>{}
             }
-
-            afterMoveCallback = () =>{}
         }
 
         function go(index, callbackFunc, afterMoveCb = () =>{}) {

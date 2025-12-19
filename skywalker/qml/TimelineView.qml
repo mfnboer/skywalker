@@ -283,6 +283,7 @@ SkyListView {
     }
 
     function syncDone() {
+        console.debug("Sync done")
         inSync = true
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
@@ -291,6 +292,7 @@ SkyListView {
     }
 
     function stopSync() {
+        console.debug("Stop sync")
         inSync = false
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
