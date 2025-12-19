@@ -1,4 +1,4 @@
-next
+4.23
 ====
 * Take photo with camera to attach to post
 * Improve timeline positioning at startup
