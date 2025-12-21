@@ -98,7 +98,6 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& uri){ mUserSettings.removeContentLabelPrefList(mUserDid, uri); });
 
     AuthorCache::instance().setSkywalker(this);
-    AuthorCache::instance().addProfileStore(&mUserFollows);
     ListCache::instance().setSkywalker(this);
     PostThreadCache::instance().setSkywalker(this);
     OffLineMessageChecker::createNotificationChannels();
@@ -448,65 +447,19 @@ void Skywalker::getUserProfileAndFollows()
     Q_ASSERT(session);
     qDebug() << "Get user profile, handle:" << session->mHandle << "did:" << session->mDid;
 
-    // Get profile and follows in one go. We do not need detailed profile data.
-    mBsky->getFollows(session->mDid, 100, {},
-        [this](auto follows){
-            for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(profile));
-
-            const auto& nextCursor = follows->mCursor;
-            if (!nextCursor->isEmpty())
-                getUserProfileAndFollowsNextPage(*nextCursor);
-            else
-                signalGetUserProfileOk(std::move(follows->mSubject));
+    mBsky->getProfile(session->mDid,
+        [this](auto profile){
+            signalGetUserProfileOk(profile);
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
-            mUserFollows.clear();
             emit getUserProfileFailed(msg);
         });
 }
 
-void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages)
-{   
-    Q_ASSERT(mBsky);
-    const auto* session = mBsky->getSession();
-    Q_ASSERT(session);
-    qDebug() << "Get user profile next page:" << cursor << ", handle:" << session->mHandle <<
-            ", did:" << session->mDid << ", max pages:" << maxPages;
-
-    mBsky->getFollows(session->mDid, 100, cursor,
-        [this, maxPages](auto follows){
-            for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(profile));
-
-            const auto& nextCursor = follows->mCursor;
-
-            if (nextCursor->isEmpty())
-            {
-                signalGetUserProfileOk(std::move(follows->mSubject));
-            }
-            else if (maxPages > 0)
-            {
-                getUserProfileAndFollowsNextPage(*nextCursor, maxPages - 1);
-            }
-            else
-            {
-                qWarning() << "Max pages reached!";
-                signalGetUserProfileOk(std::move(follows->mSubject));
-            }
-        },
-        [this](const QString& error, const QString& msg){
-            qWarning() << error << " - " << msg;
-            mUserFollows.clear();
-            emit getUserProfileFailed(msg);
-        });
-}
-
-void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user)
+void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user)
 {
-    //Q_ASSERT(mUserDid == user->mDid);
-    qDebug() << "Got user:" << user->mHandle << "#follows:" << mUserFollows.size();
+    qDebug() << "Got user:" << user->mHandle;
     AuthorCache::instance().setUser(BasicProfile(user));
     mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
     const auto avatar = user->mAvatar ? *user->mAvatar : QString();
@@ -4490,7 +4443,6 @@ void Skywalker::signOut()
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
     mFollowsActivityStore.clear();
-    mUserFollows.clear();
     mMutedReposts.clear();
     mTimelineHide.clear();
     mContentFilterPolicies.clear();

@@ -256,7 +256,6 @@ public:
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
     Following* getFollowing() { return &mFollowing; }
-    IndexedProfileStore& getUserFollows() { return mUserFollows; }
     Q_INVOKABLE FollowsActivityStore* getFollowsActivityStore() { return &mFollowsActivityStore; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
@@ -326,7 +325,6 @@ signals:
 private:
     Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
 
-    void getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages = 100);
     void getLabelersAuthorList(int modelId);
     void getActiveFollowsAuthorList(int modelId, const QString& cursor);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
@@ -345,7 +343,7 @@ private:
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getQuoteChain(int modelId, const QString& nextPostUri, std::deque<Post> quoteChain);
     void setQuoteChainInModel(int modelId, std::deque<Post> quoteChain);
-    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user);
+    void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
     QString processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
     void finishTimelineSync(int index);
@@ -395,7 +393,6 @@ private:
 
     bool mLoggedOutVisibility = true;
     Following mFollowing;
-    IndexedProfileStore mUserFollows;
     FollowsActivityStore mFollowsActivityStore;
     ProfileListItemStore mMutedReposts;
     ListStore mTimelineHide;

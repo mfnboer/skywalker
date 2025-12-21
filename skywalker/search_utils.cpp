@@ -233,8 +233,13 @@ void SearchUtils::searchHashtagsTypeahead(const QString& typed, int limit)
     setHashtagTypeaheadList(results);
 }
 
-void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher)
+void SearchUtils::localSearchAuthorsTypeahead(const QString&, int, const IProfileMatcher&)
 {
+    // Local search can be implemented here.
+    // Below is an example of a search in all accounts the user follows. As it is too
+    // expensive to load all these accounts we have disabled this. Bluesky's search is
+    // quite decent now.
+#if 0
     const IndexedProfileStore& following = mSkywalker->getUserFollows();
     const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed, limit, matcher);
     BasicProfileList profileList;
@@ -243,6 +248,7 @@ void SearchUtils::localSearchAuthorsTypeahead(const QString& typed, int limit, c
         profileList.append(*profile);
 
     setAuthorTypeaheadList(profileList);
+#endif
 }
 
 QString SearchUtils::preProcessSearchText(const QString& text) const

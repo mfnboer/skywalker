@@ -1,3 +1,7 @@
+next
+====
+* Faster startup if you follow many people
+
 4.23
 ====
 * Take photo with camera to attach to post
