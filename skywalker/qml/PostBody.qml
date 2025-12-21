@@ -284,8 +284,7 @@ Column {
         sourceComponent: RecordView {
             userDid: postBody.userDid
             record: postRecord
-            backgroundColor: bodyBackgroundColor
-            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+            backgroundColor: guiSettings.isLightMode ? Qt.darker(bodyBackgroundColor, 1.05) : Qt.lighter(bodyBackgroundColor, 1.5)
         }
     }
 
@@ -297,7 +296,7 @@ Column {
         sourceComponent: RecordWithMediaView {
             userDid: postBody.userDid
             record: postRecordWithMedia
-            backgroundColor: bodyBackgroundColor
+            backgroundColor: guiSettings.isLightMode ? Qt.darker(bodyBackgroundColor, 1.05) : Qt.lighter(bodyBackgroundColor, 1.5)
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
             contentLabeler: postContentLabeler

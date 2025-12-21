@@ -437,6 +437,7 @@ Column {
             contentWarning: postContentWarning
             contentLabeler: postContentLabeler
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+            maskColor: bodyBackgroundColor
         }
     }
 

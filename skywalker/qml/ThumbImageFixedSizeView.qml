@@ -5,6 +5,7 @@ import skywalker
 ThumbImageView {
     required property imageview image
     property color canvasColor: guiSettings.postHighLightColor
+    property bool dynamicCanvasColor: true
 
     id: thumb
     fillMode: Image.PreserveAspectFit
@@ -35,7 +36,8 @@ ThumbImageView {
         if (status != Image.Ready)
             return
 
-        imageUtils.setDominantColor(thumb, (color) => { thumb.canvasColor = color })
+        if (dynamicCanvasColor)
+            imageUtils.setDominantColor(thumb, (color) => { thumb.canvasColor = color })
     }
 
     function getVisible() {
