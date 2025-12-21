@@ -92,7 +92,6 @@ private:
     ImageReader mImageReader;
     ATProto::UserPreferences mUserPreferences;
     ATProto::AppBskyNotification::Preferences::SharedPtr mNotificationPrefs;
-    ProfileStore mUserFollows;
     ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     MutedWords mMutedWords;

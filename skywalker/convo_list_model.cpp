@@ -194,13 +194,13 @@ void ConvoListModel::addConvoToDidMap(const ConvoView& convo)
 
 void ConvoListModel::reportActivity(const ConvoView& convo)
 {
-    reportActivity(convo.getLastMessage());
+    reportActivity(convo.getLastMessage(), convo);
     const MessageAndReactionView messageAndReaction = convo.getLastReaction();
-    reportActivity(messageAndReaction.getMessageView());
-    reportActivity(messageAndReaction.getReactionView());
+    reportActivity(messageAndReaction.getMessageView(), convo);
+    reportActivity(messageAndReaction.getReactionView(), convo);
 }
 
-void ConvoListModel::reportActivity(const MessageView& message)
+void ConvoListModel::reportActivity(const MessageView& message, const ConvoView& convo)
 {
     if (message.isNull())
         return;
@@ -209,10 +209,15 @@ void ConvoListModel::reportActivity(const MessageView& message)
     const auto timestamp = message.getSentAt();
 
     if (!did.isEmpty() && timestamp.isValid())
-        mFollowsActivityStore.reportActivity(did, timestamp);
+    {
+        const auto member = convo.getMember(did);
+
+        if (!member.isNull())
+            mFollowsActivityStore.reportActivity(member.getBasicProfile(), timestamp);
+    }
 }
 
-void ConvoListModel::reportActivity(const ReactionView& reaction)
+void ConvoListModel::reportActivity(const ReactionView& reaction, const ConvoView& convo)
 {
     if (reaction.isNull())
         return;
@@ -221,7 +226,12 @@ void ConvoListModel::reportActivity(const ReactionView& reaction)
     const auto timestamp = reaction.getCreatedAt();
 
     if (!did.isEmpty() && timestamp.isValid())
-        mFollowsActivityStore.reportActivity(did, timestamp);
+    {
+        const auto member = convo.getMember(did);
+
+        if (!member.isNull())
+            mFollowsActivityStore.reportActivity(member.getBasicProfile(), timestamp);
+    }
 }
 
 void ConvoListModel::deleteConvo(const QString& convoId)

@@ -70,7 +70,6 @@ public:
     // IProfile
     Q_INVOKABLE bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
-    ScopedHandle* registerRemovedCb(const RemovedCb&, QObject*) override { Q_ASSERT(false); return nullptr; }
 
 signals:
     void listRemoved(const QString& uri);

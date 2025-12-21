@@ -19,7 +19,7 @@ public:
 
     explicit PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                              QEnums::ReplyOrder replyOrder,
-                             const QString& userDid, const IProfileStore& following,
+                             const QString& userDid,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
                              const MutedWords& mutedWords, const FocusHashtags& focusHashtags,

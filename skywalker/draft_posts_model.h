@@ -13,7 +13,7 @@ class DraftPostsModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<DraftPostsModel>;
 
-    DraftPostsModel(const QString& userDid, const IProfileStore& following,
+    DraftPostsModel(const QString& userDid,
                     const IProfileStore& mutedReposts,
                     const IContentFilter& contentFilter,
                     const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,

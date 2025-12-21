@@ -7,7 +7,6 @@
 #include "focus_hashtags.h"
 #include "list_cache.h"
 #include "list_store.h"
-#include "profile_store.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
 
@@ -16,8 +15,8 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 const QString AbstractPostFeedModel::NULL_STRING;
-const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
+const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
 const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
 const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
 const FocusHashtags AbstractPostFeedModel::NULL_FOCUS_HASHTAGS;
@@ -26,7 +25,6 @@ HashtagIndex AbstractPostFeedModel::NULL_HASHTAG_INDEX{0};
 AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
     QAbstractListModel(parent),
     mUserDid{NULL_STRING},
-    mFollowing(NULL_PROFILE_STORE),
     mMutedReposts(NULL_PROFILE_STORE),
     mFeedHide(NULL_LIST_STORE),
     mContentFilter(NULL_CONTENT_FILTER),
@@ -36,7 +34,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 {
 }
 
-AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
+AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
                                              const IProfileStore& mutedReposts,
                                              const IListStore& feedHide,
                                              const IContentFilter& contentFilter,
@@ -45,7 +43,6 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid, const IProf
                                              QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
-    mFollowing(following),
     mMutedReposts(mutedReposts),
     mFeedHide(feedHide),
     mContentFilter(contentFilter),
@@ -158,7 +155,7 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
 
     const auto& postLabels = post.getLabelsIncludingAuthorLabels();
     const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-        author.getDid(), postLabels, mOverrideAdultVisibility);
+        author, postLabels, mOverrideAdultVisibility);
 
     if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
     {
@@ -463,7 +460,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
         const auto& recordLabels = record->getLabelsIncludingAuthorLabels();
         auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            record->getAuthorDid(), recordLabels, mOverrideAdultVisibility);
+            record->getAuthor(), recordLabels, mOverrideAdultVisibility);
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
         record->setContentLabeler(getContentLabeler(visibility, recordLabels, labelIndex));
@@ -515,7 +512,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
         const auto& recordLabels = record.getLabelsIncludingAuthorLabels();
         const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            record.getAuthorDid(), recordLabels, mOverrideAdultVisibility);
+            record.getAuthor(), recordLabels, mOverrideAdultVisibility);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
         record.setContentLabeler(getContentLabeler(visibility, recordLabels, labelIndex));
@@ -675,20 +672,20 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostContentVisibility:
     {
         const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+            post.getAuthor(), post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return visibility;
     }
     case Role::PostContentWarning:
     {
         const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
+            post.getAuthor(), post.getLabelsIncludingAuthorLabels(), mOverrideAdultVisibility);
         return warning;
     }
     case Role::PostContentLabeler:
     {
         const auto& labels = post.getLabelsIncludingAuthorLabels();
         const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), labels, mOverrideAdultVisibility);
+            post.getAuthor(), labels, mOverrideAdultVisibility);
         const auto labeler = getContentLabeler(visibility, labels, labelIndex);
         return QVariant::fromValue(labeler);
     }

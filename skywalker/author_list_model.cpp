@@ -220,7 +220,7 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
     for (const auto& author : authors)
     {
         const auto [visibility, warning] = mContentFilter.getVisibilityAndWarning(
-            author->mDid, author->mLabels);
+            BasicProfile(author), author->mLabels);
 
         if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST || visibility == QEnums::CONTENT_VISIBILITY_HIDE_MEDIA)
         {

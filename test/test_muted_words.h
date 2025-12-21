@@ -166,8 +166,7 @@ private slots:
         QFETCH(QString, text);
         QFETCH(bool, match);
 
-        ProfileStore userFollows;
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
 
         for (const auto& entry : muted)
             mutedWords.addEntry(entry);
@@ -178,22 +177,19 @@ private slots:
 
     void excludeFollows()
     {
-        ProfileStore userFollows;
-        userFollows.add(BasicProfile{"did:plc:foo", "@foo.thereforeiam.eu", "Foo", ""});
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
         mutedWords.addEntry("hello", QEnums::ACTOR_TARGET_EXCLUDE_FOLLOWING);
-        const auto post = setPost("hello world");
+        auto post = setPost("hello world");
         QVERIFY(mutedWords.match(post).first);
 
-        userFollows.add(BasicProfile{"did:plc:test", "@test.thereforeiam.eu", "Test", ""});
+        post = setPost("hello world", true);
         QVERIFY(!mutedWords.match(post).first);
     }
 
     void expires()
     {
         const auto now = QDateTime::currentDateTimeUtc();
-        ProfileStore userFollows;
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
         mutedWords.addEntry("hello", QEnums::ACTOR_TARGET_ALL, now + 10s);
         mutedWords.addEntry("world", QEnums::ACTOR_TARGET_ALL, now - 10s);
 
@@ -206,8 +202,7 @@ private slots:
 
     void remove()
     {
-        ProfileStore userFollows;
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
         mutedWords.addEntry("the quick brown fox");
         mutedWords.addEntry("hello");
         mutedWords.addEntry("hello!");
@@ -233,8 +228,7 @@ private slots:
     void entriesChanged()
     {
         int changeCount = 0;
-        ProfileStore userFollows;
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
         connect(&mutedWords, &MutedWords::entriesChanged, this, [&changeCount]{ ++changeCount; });
 
         mutedWords.addEntry("Skywalker");
@@ -255,8 +249,7 @@ private slots:
 
     void sortedEntries()
     {
-        ProfileStore userFollows;
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
         mutedWords.addEntry("walker");
         mutedWords.addEntry("sky");
         mutedWords.addEntry("sky walker");
@@ -274,8 +267,7 @@ private slots:
     void clear()
     {
         int changeCount = 0;
-        ProfileStore userFollows;
-        MutedWords mutedWords{userFollows};
+        MutedWords mutedWords;
         connect(&mutedWords, &MutedWords::entriesChanged, this, [&changeCount]{ ++changeCount; });
 
         mutedWords.addEntry("sky");
@@ -288,18 +280,24 @@ private slots:
     }
 
 private:
-    Post setPost(const QString& text)
+    Post setPost(const QString& text, bool followAuthor = false)
     {
         ATProto::Client client(nullptr);
         ATProto::PostMaster pm(client);
         auto postView = std::make_shared<ATProto::AppBskyFeed::PostView>();
 
-        pm.createPost(text, "", nullptr, {}, [postView](auto&& postRecord){
+        pm.createPost(text, "", nullptr, {}, [postView, followAuthor](auto&& postRecord){
             const auto json = postRecord->toJson();
             postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
             postView->mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);
-            postView->mAuthor = std::make_unique<ATProto::AppBskyActor::ProfileViewBasic>();
+            postView->mAuthor = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
             postView->mAuthor->mDid = "did:plc:test";
+
+            if (followAuthor)
+            {
+                postView->mAuthor->mViewer = std::make_shared<ATProto::AppBskyActor::ViewerState>();
+                postView->mAuthor->mViewer->mFollowing = "at://following";
+            }
         });
 
         return Post(postView);

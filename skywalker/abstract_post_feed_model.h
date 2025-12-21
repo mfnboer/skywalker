@@ -9,6 +9,7 @@
 #include "local_profile_changes.h"
 #include "muted_words.h"
 #include "post.h"
+#include "profile_store.h"
 #include <QAbstractListModel>
 #include <deque>
 #include <queue>
@@ -19,7 +20,6 @@ namespace Skywalker {
 class ContentFilterStatsModel;
 class FocusHashtags;
 class IListStore;
-class IProfileStore;
 
 class AbstractPostFeedModel : public QAbstractListModel,
                               public BaseListModel,
@@ -118,7 +118,7 @@ public:
 
     explicit AbstractPostFeedModel(QObject* parent = nullptr);
 
-    AbstractPostFeedModel(const QString& userDid, const IProfileStore& following,
+    AbstractPostFeedModel(const QString& userDid,
                           const IProfileStore& mutedReposts,
                           const IListStore& feedHide,
                           const IContentFilter& contentFilter,
@@ -220,7 +220,6 @@ protected:
     TimelineFeed mFeed;
 
     const QString& mUserDid;
-    const IProfileStore& mFollowing;
     const IProfileStore& mMutedReposts;
     const IListStore& mFeedHide;
     const IContentFilter& mContentFilter;

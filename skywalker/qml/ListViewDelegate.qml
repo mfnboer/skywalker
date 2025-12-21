@@ -190,7 +190,7 @@ Rectangle {
                 anchors.leftMargin: view.margin
                 anchors.right: undefined
                 contentLabels: list.labels
-                contentAuthorDid: list.creator.did
+                contentAuthor: list.creator
             }
         }
 

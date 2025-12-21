@@ -12,6 +12,7 @@
 #include "favorite_feeds.h"
 #include "feed_list_model.h"
 #include "feed_pager.h"
+#include "following.h"
 #include "follows_activity_store.h"
 #include "graph_utils.h"
 #include "hashtag_index.h"
@@ -189,9 +190,9 @@ public:
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
-    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contetLabels, const QString& authorDid = {}) const;
-    Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
-    Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels, const QString& authorDid = {}) const;
+    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
+    Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
+    Q_INVOKABLE QString getContentLabelerDid(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
     Q_INVOKABLE const ContentGroupListModel* getGlobalContentGroupListModel();
     Q_INVOKABLE int createGlobalContentGroupListModel(const QString& listUri);
     Q_INVOKABLE int createContentGroupListModel(const QString& labelerDid, const LabelerPolicies& policies, const QString& listUri = {});
@@ -254,6 +255,7 @@ public:
     const QString getAvatarUrl() const { return mUserProfile.getAvatarUrl(); }
     int getUnreadNotificationCount() const { return mUnreadNotificationCount; }
     void setUnreadNotificationCount(int unread);
+    Following* getFollowing() { return &mFollowing; }
     IndexedProfileStore& getUserFollows() { return mUserFollows; }
     Q_INVOKABLE FollowsActivityStore* getFollowsActivityStore() { return &mFollowsActivityStore; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
@@ -392,6 +394,7 @@ private:
     bool mIsActiveUser = true;
 
     bool mLoggedOutVisibility = true;
+    Following mFollowing;
     IndexedProfileStore mUserFollows;
     FollowsActivityStore mFollowsActivityStore;
     ProfileListItemStore mMutedReposts;

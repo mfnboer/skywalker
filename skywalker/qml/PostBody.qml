@@ -272,7 +272,7 @@ Column {
             parentWidth: parent.width
             contentLabels: postContentLabels
             filteredContentLabel: postBody.filteredContentLabel
-            contentAuthorDid: postAuthor.did
+            contentAuthor: postAuthor
         }
     }
 

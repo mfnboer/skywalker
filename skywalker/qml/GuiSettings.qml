@@ -352,7 +352,7 @@ Item {
             return false
 
         const sw = getSkywalker(userDid)
-        let visibility = sw.getContentVisibility(author.labels, author.did)
+        let visibility = sw.getContentVisibility(author.labels, author)
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
@@ -363,7 +363,7 @@ Item {
         return visibility === QEnums.CONTENT_VISIBILITY_SHOW
     }
 
-    function filterContentLabelsToShow(authorDid, contentLabels, userDid = "") {
+    function filterContentLabelsToShow(author, contentLabels, userDid = "") {
         const sw = getSkywalker(userDid)
         let contentFilter = sw.getContentFilter()
         let labels = []
@@ -372,7 +372,7 @@ Item {
             const label = contentLabels[i]
 
             if ((!label.isSystemLabel() || label.isOverridableSytemLabel()) &&
-                    contentFilter.mustShowBadge(authorDid, label))
+                    contentFilter.mustShowBadge(author, label))
                 labels.push(label)
         }
 

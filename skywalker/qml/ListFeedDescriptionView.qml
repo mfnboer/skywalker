@@ -187,7 +187,7 @@ SkyPage {
                 anchors.right: undefined
                 userDid: page.userDid
                 contentLabels: list.labels
-                contentAuthorDid: list.creator.did
+                contentAuthor: list.creator
             }
         }
 

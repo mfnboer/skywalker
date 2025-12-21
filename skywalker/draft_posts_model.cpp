@@ -8,13 +8,13 @@
 
 namespace Skywalker {
 
-DraftPostsModel::DraftPostsModel(const QString& userDid, const IProfileStore& following,
+DraftPostsModel::DraftPostsModel(const QString& userDid,
                                  const IProfileStore& mutedReposts,
                                  const IContentFilter& contentFilter,
                                  const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {

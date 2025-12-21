@@ -43,7 +43,7 @@ public:
     ExternalView::Ptr getExternalView() const override { return {}; }
     std::vector<QString> getHashtags() const override { return {}; }
     std::vector<QString> getWebLinks() const override { return {}; }
-    QString getAuthorDid() const override { return {}; }
+    BasicProfile getAuthor() const override { return {}; }
 
 private:
     ATProto::AppBskyUnspecced::TrendView::SharedPtr mTopic;

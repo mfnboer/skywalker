@@ -68,8 +68,8 @@ public:
     WebLink::List getDraftEmbeddedLinks() const;
     WebLink::List getEmbeddedLinks() const;
 
-    BasicProfile getAuthor() const;
-    QString getAuthorDid() const override { return getAuthor().getDid(); }
+    BasicProfile getAuthor() const override;
+    QString getAuthorDid() const { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
     void setOverrideIndexedAt(QDateTime dateTime) { mOverrideIndexedAt = dateTime; }
     bool isRepost() const;

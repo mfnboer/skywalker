@@ -13,7 +13,7 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
-                             const QString& userDid, const IProfileStore& following,
+                             const QString& userDid,
                              const IProfileStore& mutedReposts,
                              const IListStore& feedHide,
                              const IContentFilter& contentFilter,
@@ -25,7 +25,7 @@ PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVar
                              FollowsActivityStore& followsActivityStore,
                              ATProto::Client::SharedPtr bsky,
                              QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
+    AbstractPostFeedModel(userDid, mutedReposts, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
     mUserSettings(userSettings),
     mFollowsActivityStore(followsActivityStore),
@@ -664,7 +664,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     Q_ASSERT(postFilter);
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
     auto model = std::make_unique<FilteredPostFeedModel>(
-            std::move(postFilter), this, mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            std::move(postFilter), this, mUserDid, mMutedReposts, mContentFilter,
             mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setModelId(mModelId);
@@ -1014,7 +1014,7 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mu
 
     if (getFeedHideFollowing())
     {
-        if (mFollowing.contains(post.getAuthorDid()))
+        if (post.getAuthor().getViewer().isFollowing())
         {
             qDebug() << "Hide post from followed user:" << post.getAuthorDid();
             return { QEnums::HIDE_REASON_HIDE_FOLLOWING_FROM_FEED, nullptr };
@@ -1032,7 +1032,7 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mu
         }
         else if (!mUserSettings.getShowFollowedReposts(mUserDid))
         {
-            if (mFollowing.contains(post.getAuthorDid()))
+            if (post.getAuthor().getViewer().isFollowing())
                 return { QEnums::HIDE_REASON_FOLLOWING_REPOST, nullptr };
 
             // Technically you do not follow yourself, but your own posts
@@ -1120,10 +1120,9 @@ QEnums::HideReasonType PostFeedModel::mustHideReply(const Post& post, const std:
             return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
 
         const auto rootAuthor = replyRef->mRoot.getAuthor();
-        const auto& rootDid = rootAuthor.getDid();
 
         // Always show replies to the user
-        if (parentDid != mUserDid && !mFollowing.contains(rootDid))
+        if (parentDid != mUserDid && !rootAuthor.getViewer().isFollowing())
             return QEnums::HIDE_REASON_REPLY_THREAD_UNFOLLOWED;
     }
 
@@ -1152,7 +1151,7 @@ QEnums::HideReasonType PostFeedModel::mustHideReply(const Post& post, const std:
         if (rootDid == mUserDid)
             return QEnums::HIDE_REASON_NONE;
 
-        if (!mFollowing.contains(parentDid))
+        if (!parentAuthor.getViewer().isFollowing())
             return QEnums::HIDE_REASON_REPLY_TO_UNFOLLOWED;
     }
 
@@ -1180,13 +1179,13 @@ QEnums::HideReasonType PostFeedModel::mustHideQuotePost(const Post& post) const
 
 void PostFeedModel::reportActivity(const Post& post)
 {
-    const auto did = post.isRepost() ? post.getRepostedBy()->getDid() : post.getAuthorDid();
+    const BasicProfile author = post.isRepost() ? *post.getRepostedBy() : post.getAuthor();
 
-    if (did.isEmpty())
+    if (author.isNull())
         return;
 
     const QDateTime timestamp = post.isRepost() ? post.getRepostTimestamp() : post.getIndexedAt();
-    mFollowsActivityStore.reportActivity(did, timestamp);
+    mFollowsActivityStore.reportActivity(author, timestamp);
 }
 
 void PostFeedModel::Page::setThreadgates()

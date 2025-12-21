@@ -159,6 +159,7 @@ public:
     bool isBlockedBy() const;
     const QString& getBlocking() const;
     const QString& getFollowing() const;
+    bool isFollowing() const { return !getFollowing().isEmpty(); }
     const QString& getFollowedBy() const;
     const ListViewBasic& getMutedByList() const;
     const ListViewBasic& getBlockingByList() const;
@@ -313,6 +314,9 @@ public:
     Q_INVOKABLE bool isBlocked() const;
 
     ATProto::AppBskyActor::ProfileViewBasic::SharedPtr getProfileBasicView() const;
+
+    // For testing only
+    void setViewer(const QString& followingUri);
 
 protected:
     ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr mProfileDetailedView;

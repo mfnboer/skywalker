@@ -34,9 +34,8 @@ MutedWordEntry::MutedWordEntry(const IMatchEntry* entry)
 }
 
 
-MutedWords::MutedWords(const ProfileStore& userFollows, QObject* parent) :
-    QObject(parent),
-    mUserFollows(userFollows)
+MutedWords::MutedWords(QObject* parent) :
+    QObject(parent)
 {
 }
 
@@ -233,7 +232,7 @@ void MutedWords::removeWordFromIndex(const Entry* entry, WordIndexType& wordInde
         wordIndex.erase(word);
 }
 
-bool MutedWords::mustSkip(const Entry& entry, const QString& authorDid, QDateTime now) const
+bool MutedWords::mustSkip(const Entry& entry, const BasicProfile& author, QDateTime now) const
 {
     if (entry.mExpiresAt.isValid() && now >= entry.mExpiresAt)
     {
@@ -242,9 +241,9 @@ bool MutedWords::mustSkip(const Entry& entry, const QString& authorDid, QDateTim
     }
 
     if (entry.mActorTarget == QEnums::ACTOR_TARGET_EXCLUDE_FOLLOWING &&
-        !authorDid.isEmpty() && mUserFollows.contains(authorDid))
+        !author.isNull() && author.getViewer().isFollowing())
     {
-        qDebug() << "Entry from follower:" << entry.mRaw << authorDid;
+        qDebug() << "Entry from follower:" << entry.mRaw << author.getDid();
         return true;
     }
 
@@ -257,18 +256,18 @@ std::pair<bool, const IMatchEntry*> MutedWords::match(const NormalizedWordIndex&
         return { false, nullptr };
 
     const auto now = QDateTime::currentDateTimeUtc();
-    const QString authorDid = post.getAuthorDid();
+    const BasicProfile author = post.getAuthor();
 
-    if (auto match = matchDomain(post, now, authorDid); match.first)
+    if (auto match = matchDomain(post, now, author); match.first)
         return match;
 
-    if (auto match = matchHashtag(post, now, authorDid); match.first)
+    if (auto match = matchHashtag(post, now, author); match.first)
         return match;
 
-    return matchWords(post, now, authorDid);
+    return matchWords(post, now, author);
 }
 
-std::pair<bool, const IMatchEntry*> MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+std::pair<bool, const IMatchEntry*> MutedWords::matchDomain(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const
 {
     if (mDomainIndex.empty())
         return { false, nullptr };
@@ -280,7 +279,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchDomain(const NormalizedWord
         Q_ASSERT(entries.size() == 1);
         const auto* entry = *entries.begin();
 
-        if (mustSkip(*entry, authorDid, now))
+        if (mustSkip(*entry, author, now))
             continue;
 
         // NOTE: the number of domains should be small, typically 1
@@ -302,7 +301,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchDomain(const NormalizedWord
     return { false, nullptr };
 }
 
-std::pair<bool, const IMatchEntry*> MutedWords::matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+std::pair<bool, const IMatchEntry*> MutedWords::matchHashtag(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const
 {
     if (mHashTagIndex.empty())
         return { false, nullptr };
@@ -314,7 +313,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchHashtag(const NormalizedWor
         Q_ASSERT(entries.size() == 1);
         const auto* entry = *entries.begin();
 
-        if (!mustSkip(*entry, authorDid, now) && postHashtags.count(word))
+        if (!mustSkip(*entry, author, now) && postHashtags.count(word))
         {
             qDebug() << "Match on hashtag:" << word;
             return { true, entry };
@@ -324,7 +323,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchHashtag(const NormalizedWor
     return { false, nullptr };
 }
 
-std::pair<bool, const IMatchEntry*> MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const
+std::pair<bool, const IMatchEntry*> MutedWords::matchWords(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const
 {
     const auto& uniquePostWords = post.getUniqueNormalizedWords();
 
@@ -333,7 +332,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchWords(const NormalizedWordI
         Q_ASSERT(entries.size() == 1);
         const auto* entry = *entries.begin();
 
-        if (!mustSkip(*entry, authorDid, now) && uniquePostWords.count(word))
+        if (!mustSkip(*entry, author, now) && uniquePostWords.count(word))
         {
             qDebug() << "Match on single word entry:" << word;
             return { true, entry };
@@ -356,7 +355,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchWords(const NormalizedWordI
             Q_ASSERT(mutedEntry);
             qDebug() << "Multi-word entry:" << mutedEntry->mRaw;
 
-            if (mustSkip(*mutedEntry, authorDid, now))
+            if (mustSkip(*mutedEntry, author, now))
                 continue;
 
             for (int postWordIndex : uniqueWordIt->second)

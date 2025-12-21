@@ -64,8 +64,8 @@ private:
     bool checkIndex(int index) const;
     void addConvoToDidMap(const ConvoView& convo);
     void reportActivity(const ConvoView& convo);
-    void reportActivity(const MessageView& message);
-    void reportActivity(const ReactionView& reaction);
+    void reportActivity(const MessageView& message, const ConvoView& convo);
+    void reportActivity(const ReactionView& reaction, const ConvoView& convo);
 
     const QString& mUserDid;
     FollowsActivityStore& mFollowsActivityStore;

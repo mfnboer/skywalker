@@ -72,8 +72,8 @@ public:
     QString getCid() const;
     QString getText() const override;
     QString getFormattedText() const;
-    BasicProfile getAuthor() const;
-    QString getAuthorDid() const override { return getAuthor().getDid(); }
+    BasicProfile getAuthor() const override;
+    QString getAuthorDid() const { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;

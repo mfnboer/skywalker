@@ -5,10 +5,10 @@ import skywalker
 ScrollView {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
-    required property string contentAuthorDid
+    required property basicprofile contentAuthor
     required property list<contentlabel> contentLabels
     property contentlabel filteredContentLabel
-    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentAuthorDid, contentLabels, userDid)
+    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentAuthor.did, contentLabels, userDid)
     property int parentWidth: parent.width
 
     id: labelView
@@ -44,7 +44,7 @@ ScrollView {
                     if (modelData.did == filteredContentLabel.did && modelData.labelId == filteredContentLabel.labelId)
                         return guiSettings.hideReasonLabelColor
 
-                    return modelData.did === contentAuthorDid ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
+                    return modelData.did === contentAuthor.did ? guiSettings.contentUserLabelColor : guiSettings.contentLabelColor
                 }
 
                 Loader {
@@ -122,7 +122,7 @@ ScrollView {
         let component = guiSettings.createComponent("ContentLabelInfo.qml")
         let infoPage = component.createObject(root.currentStackItem(), {
                 userDid: labelView.userDid,
-                contentAuthorDid: contentAuthorDid,
+                contentAuthorDid: contentAuthor.did,
                 label: contentLabel
         })
         infoPage.onAccepted.connect(() => infoPage.destroy())

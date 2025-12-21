@@ -107,6 +107,7 @@ signals:
 private:
     ATProto::ChatMaster* chatMaster();
     ATProto::PostMaster* postMaster();
+    const ConvoView* getConvo(const QString& convoId) const;
     ConvoListModel* getConvoListModel(QEnums::ConvoStatus status) const;
     void updateConvoInModel(const ATProto::ChatBskyConvo::ConvoView& convo);
     void updateTotalUnreadCount();

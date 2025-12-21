@@ -20,7 +20,6 @@ public:
     using Ptr = std::unique_ptr<SearchPostFeedModel>;
 
     SearchPostFeedModel(const QString& feedName, const QString& userDid,
-                        const IProfileStore& following,
                         const IProfileStore& mutedReposts,
                         const ContentFilter& contentFilter,
                         const MutedWords& mutedWords, const FocusHashtags& focusHashtags,

@@ -19,7 +19,7 @@ class TestContentFilter : public QObject
 private slots:
     void init()
     {
-        mFollowing.add(mCamus);
+        mCamus.setViewer("at://following");
 
         mUserSettings.setFixedLabelerEnabled(mUserDid, ContentFilter::BLUESKY_MODERATOR_DID, true);
 
@@ -41,11 +41,12 @@ private slots:
 
     void cleanup()
     {
-        mFollowing.clear();
         mUserSettings.setFixedLabelerEnabled(mUserDid, ContentFilter::BLUESKY_MODERATOR_DID, false);
         mUserPreferences = {};
         mLabelPrefLists.clear();
         mContentFilter.clear();
+        mKant.setViewer({});
+        mErnaux.setViewer({});
     }
 
     void systemLabel()
@@ -133,7 +134,7 @@ private slots:
         mContentFilter.setListPref(FOLLOWING_LIST_URI, FOO_LABELER_DID, "bar", QEnums::CONTENT_PREF_VISIBILITY_SHOW);
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mErnaux.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mErnaux, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_HIDE_POST);
             QCOMPARE(warning, "foo title");
             QCOMPARE(index, 0);
@@ -141,20 +142,20 @@ private slots:
 
         mUserPreferences.setLabelVisibility(FOO_LABELER_DID, "foo", ATProto::UserPreferences::LabelVisibility::SHOW);
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mErnaux.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mErnaux, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_WARN_POST);
             QCOMPARE(warning, "bar title");
             QCOMPARE(index, 1);
         }
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_SHOW);
             QCOMPARE(index, -1);
         }
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_WARN_POST);
             QCOMPARE(warning, "bar title");
             QCOMPARE(index, 1);
@@ -163,7 +164,7 @@ private slots:
         mContentFilter.setListPref(mListPhilosophers.getUri(), FOO_LABELER_DID, "bar", QEnums::CONTENT_PREF_VISIBILITY_SHOW);
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_SHOW);
             QCOMPARE(index, -1);
         }
@@ -172,12 +173,12 @@ private slots:
     void conflictingPrefs()
     {
         const ContentLabelList labels{ mLabelFoo, mLabelBar };
-        mFollowing.add(mKant);
+        mKant.setViewer("at://following");
         mUserPreferences.setLabelVisibility(FOO_LABELER_DID, "foo", ATProto::UserPreferences::LabelVisibility::SHOW);
         mContentFilter.setListPref(FOLLOWING_LIST_URI, FOO_LABELER_DID, "bar", QEnums::CONTENT_PREF_VISIBILITY_WARN);
         mContentFilter.setListPref(mListPhilosophers.getUri(), FOO_LABELER_DID, "bar", QEnums::CONTENT_PREF_VISIBILITY_SHOW);
 
-        const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant.getDid(), labels);
+        const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant, labels);
         QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_SHOW);
         QCOMPARE(index, -1);
     }
@@ -230,7 +231,7 @@ private slots:
     {
         ContentLabel labelFoobar{ FOO_LABELER_DID, "at:foobar", "cid-foobar", "foobar", {} };
         const ContentLabelList labels{ labelFoobar };
-        const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant.getDid(), labels);
+        const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant, labels);
         QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_SHOW);
     }
 
@@ -239,13 +240,13 @@ private slots:
         const ContentLabelList labels{ mLabelFoo };
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_HIDE_POST);
             QCOMPARE(warning, "foo title");
         }
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_HIDE_POST);
             QCOMPARE(warning, "foo title");
         }
@@ -255,13 +256,13 @@ private slots:
         mContentFilter.initListPrefs();
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mCamus, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_WARN_POST);
             QCOMPARE(warning, "foo title");
         }
 
         {
-            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant.getDid(), labels);
+            const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant, labels);
             QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_SHOW);
         }
     }
@@ -386,9 +387,8 @@ private:
     QString mUserDid = "did:test";
     MockUserSettings mUserSettings;
     ATProto::UserPreferences mUserPreferences;
-    ProfileStore mFollowing;
     MockListStore mLabelPrefLists;
-    ContentFilter mContentFilter{ mUserDid, mFollowing, mLabelPrefLists, mUserPreferences, &mUserSettings, this };
+    ContentFilter mContentFilter{ mUserDid, mLabelPrefLists, mUserPreferences, &mUserSettings, this };
 
     ListViewBasic mListPhilosophers{ "at:philosophers", "cid-philosophers", "Philosophers", ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, {} };
     BasicProfile mKant{ "did:kant", "kant.koningbergen.de", "Immanuel Kant", "" };

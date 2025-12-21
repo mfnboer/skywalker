@@ -110,7 +110,7 @@ ListView {
                     anchors.right: undefined
                     userDid: searchList.userDid
                     contentLabels: author.labels
-                    contentAuthorDid: author.did
+                    contentAuthor: author
                 }
             }
 

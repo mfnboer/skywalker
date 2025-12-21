@@ -280,7 +280,7 @@ void NotificationListModel::filterNotificationList(NotificationList& list) const
     {
         const auto& post = it->getNotificationPost(mPostCache);
         const auto [visibility, warning, _] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels());
+            post.getAuthor(), post.getLabelsIncludingAuthorLabels());
 
         if (visibility == QEnums::CONTENT_VISIBILITY_HIDE_POST)
         {
@@ -336,7 +336,7 @@ void NotificationListModel::reportActivity(const Notification& notification) con
     if (profile.isNull())
         return;
 
-    mFollowsActivityStore->reportActivity(profile.getDid(), timestamp);
+    mFollowsActivityStore->reportActivity(profile, timestamp);
 }
 
 NotificationListModel::NotificationList NotificationListModel::createNotificationList(const ATProto::AppBskyNotification::Notification::List& rawList) const
@@ -706,7 +706,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
             const auto labels = mContentFilter.getContentLabels(record->getLabels());
             const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-                record->getAuthorDid(), labels);
+                record->getAuthor(), labels);
             record->setContentVisibility(visibility);
             record->setContentWarning(warning);
             record->setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
@@ -737,7 +737,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         const auto labels = mContentFilter.getContentLabels(record.getLabels());
         const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            record.getAuthorDid(), labels);
+            record.getAuthor(), labels);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
         record.setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
@@ -843,7 +843,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         const auto& labels = record->getLabelsIncludingAuthorLabels();
         const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            record->getAuthorDid(), labels);
+            record->getAuthor(), labels);
         record->setContentVisibility(visibility);
         record->setContentWarning(warning);
         record->setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
@@ -878,7 +878,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
         const auto& labels = record.getLabelsIncludingAuthorLabels();
         const auto [visibility, warning, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            record.getAuthorDid(), labels);
+            record.getAuthor(), labels);
         record.setContentVisibility(visibility);
         record.setContentWarning(warning);
         record.setContentLabeler(getContentLabeler(visibility, labels, labelIndex));
@@ -991,14 +991,14 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     {
         const auto& post = notification.getNotificationPost(mPostCache);
         const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels());
+            post.getAuthor(), post.getLabelsIncludingAuthorLabels());
         return visibility;
     }
     case Role::NotificationPostContentWarning:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
         const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), post.getLabelsIncludingAuthorLabels());
+            post.getAuthor(), post.getLabelsIncludingAuthorLabels());
         return warning;
     }
     case Role::NotificationPostContentLabeler:
@@ -1006,7 +1006,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         const auto& post = notification.getNotificationPost(mPostCache);
         const auto& labels = post.getLabelsIncludingAuthorLabels();
         const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(
-            post.getAuthorDid(), labels);
+            post.getAuthor(), labels);
         const auto labeler = getContentLabeler(visibility, labels, labelIndex);
         return QVariant::fromValue(labeler);
     }

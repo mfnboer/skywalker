@@ -8,7 +8,7 @@ Column {
     required property basicprofile author
     required property double postIndexedSecondsAgo
     property contentlabel filteredContentLabel
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.did, author.labels, userDid)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author, author.labels, userDid)
 
     id: postHeader
 
@@ -70,7 +70,7 @@ Column {
                 contentLabels: author.labels
                 filteredContentLabel: postHeader.filteredContentLabel
                 labelsToShow: postHeader.labelsToShow
-                contentAuthorDid: author.did
+                contentAuthor: author
             }
         }
     }

@@ -488,6 +488,16 @@ ProfileAssociated BasicProfile::getAssociated() const
     return {};
 }
 
+void BasicProfile::setViewer(const QString& followingUri)
+{
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
+
+    auto viewerState = std::make_shared<ATProto::AppBskyActor::ViewerState>();
+    viewerState->mFollowing = followingUri;
+    mPrivate->mViewer = ProfileViewerState{viewerState};
+}
+
 ProfileViewerState& BasicProfile::getViewer()
 {
     if (mPrivate)

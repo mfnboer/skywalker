@@ -167,7 +167,7 @@ SkyPage {
             anchors.right: undefined
             userDid: page.userDid
             contentLabels: starterPack.labels
-            contentAuthorDid: starterPack.creator.did
+            contentAuthor: starterPack.creator
         }
 
         SkyCleanedText {

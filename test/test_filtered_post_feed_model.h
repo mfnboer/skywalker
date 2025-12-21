@@ -22,7 +22,7 @@ private slots:
         auto filter = std::make_unique<AuthorPostFilter>(profile);
 
         mPostFeedModel = std::make_unique<FilteredPostFeedModel>(
-            std::move(filter), nullptr, mUserDid, mFollowing, mMutedReposts, mContentFilter,
+            std::move(filter), nullptr, mUserDid, mMutedReposts, mContentFilter,
             mMutedWords, mFocusHashtags, mHashtags);
     }
 
@@ -323,13 +323,12 @@ private:
     }
 
     QString mUserDid;
-    ProfileStore mFollowing;
     ProfileStore mMutedReposts;
     ListStore mContentFilterPolicies;
     ATProto::UserPreferences mUserPreferences;
     UserSettings mUserSettings;
-    ContentFilter mContentFilter{mUserDid, mFollowing, mContentFilterPolicies, mUserPreferences, &mUserSettings};
-    MutedWords mMutedWords{mFollowing};
+    ContentFilter mContentFilter{mUserDid, mContentFilterPolicies, mUserPreferences, &mUserSettings};
+    MutedWords mMutedWords;
     FocusHashtags mFocusHashtags;
     HashtagIndex mHashtags{10};
     FilteredPostFeedModel::Ptr mPostFeedModel;

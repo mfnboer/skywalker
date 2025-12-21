@@ -65,7 +65,7 @@ Rectangle {
             anchors.right: undefined
             userDid: view.userDid
             contentLabels: starterPack.labels
-            contentAuthorDid: starterPack.creator.did
+            contentAuthor: starterPack.creator
         }
 
         SkyCleanedText {

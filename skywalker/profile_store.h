@@ -3,7 +3,6 @@
 #pragma once
 #include "profile.h"
 #include "profile_matcher.h"
-#include "scoped_handle.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <set>
@@ -13,12 +12,9 @@ namespace Skywalker {
 class IProfileStore
 {
 public:
-    using RemovedCb = std::function<void(const QString& did)>;
-
     virtual ~IProfileStore() = default;
     virtual bool contains(const QString& did) const = 0;
     virtual const BasicProfile* get(const QString& did) const = 0;
-    virtual ScopedHandle* registerRemovedCb(const RemovedCb& cb, QObject* owner = nullptr) = 0;
 };
 
 class ProfileStore : public IProfileStore
@@ -28,7 +24,6 @@ public:
 
     bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
-    ScopedHandle* registerRemovedCb(const RemovedCb& cb, QObject* owner = nullptr) override;
     virtual void add(const BasicProfile& profile);
     virtual void remove(const QString& did);
     virtual void clear();
@@ -36,7 +31,6 @@ public:
 
 private:
     std::unordered_map<QString, BasicProfile> mDidProfileMap;
-    std::unordered_map<unsigned, RemovedCb> mRemovedCbMap;
     unsigned mNextRemoveCbId = 0;
 };
 

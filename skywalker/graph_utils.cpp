@@ -78,6 +78,7 @@ void GraphUtils::follow(const BasicProfile& profile)
                 });
 
             mSkywalker->getUserFollows().add(profile);
+            mSkywalker->getFollowing()->follow(profile.getDid());
 
             emit followOk(followingUri);
         },
@@ -106,6 +107,7 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
                 });
 
             mSkywalker->getUserFollows().remove(did);
+            mSkywalker->getFollowing()->unfollow(did);
 
             emit unfollowOk();
         },

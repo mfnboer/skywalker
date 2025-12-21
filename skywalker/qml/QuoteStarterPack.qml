@@ -59,7 +59,7 @@ Column {
         anchors.right: undefined
         userDid: quoteColumn.userDid
         contentLabels: starterPack.labels
-        contentAuthorDid: starterPack.creator.did
+        contentAuthor: starterPack.creator
     }
 
     SkyCleanedText {

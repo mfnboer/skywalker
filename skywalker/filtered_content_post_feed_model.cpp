@@ -7,7 +7,7 @@ namespace Skywalker {
 
 FilteredContentPostFeedModel::FilteredContentPostFeedModel(
         const QString& feedName, const FeedVariant* feedVariant,
-        const QString& userDid, const IProfileStore& following,
+        const QString& userDid,
         const IProfileStore& mutedReposts,
         const IListStore& feedHide,
         const IContentFilter& contentFilter,
@@ -19,7 +19,7 @@ FilteredContentPostFeedModel::FilteredContentPostFeedModel(
         FollowsActivityStore& followsActivityStore,
         ATProto::Client::SharedPtr bsky,
         QObject* parent) :
-    PostFeedModel(feedName, feedVariant, userDid, following, mutedReposts,
+    PostFeedModel(feedName, feedVariant, userDid, mutedReposts,
                   feedHide, contentFilter, mutedWords, focusHashtags, hashtags,
                   userPrefs, userSettings, followsActivityStore, bsky, parent)
 {
