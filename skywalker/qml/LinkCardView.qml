@@ -106,6 +106,7 @@ RoundCornerMask {
             active: isLiveExternal
 
             sourceComponent: SkyButton {
+                implicitHeight: 40
                 text: qsTr("Watch now")
                 onClicked: root.openLink(card.uri, "", userDid)
             }

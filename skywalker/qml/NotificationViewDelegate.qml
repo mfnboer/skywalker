@@ -122,8 +122,9 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: showAuthorList()
+                scrollGestureEnabled: false
                 enabled: notificationIsAggregatable
+                onClicked: showAuthorList()
             }
 
             Avatar {
@@ -494,6 +495,7 @@ Rectangle {
 
                         MouseArea {
                             anchors.fill: parent
+                            scrollGestureEnabled: false
                             onClicked: showAuthorList()
                         }
                     }
@@ -679,6 +681,7 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
+        scrollGestureEnabled: false
         onClicked: openNotification()
     }
 

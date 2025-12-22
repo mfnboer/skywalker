@@ -1,6 +1,7 @@
 next
 ====
 * Faster startup if you follow many people
+* Fix touch sensitivity issues (?)
 
 4.23
 ====

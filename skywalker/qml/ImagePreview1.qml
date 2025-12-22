@@ -45,7 +45,7 @@ Item {
         MouseArea {
             enabled: filter.imageVisible()
             anchors.fill: img
-            cursorShape: Qt.PointingHandCursor
+            scrollGestureEnabled: false
             onClicked: {
                 if (img.item && img.item.failedCanReload)
                     img.item.reload()

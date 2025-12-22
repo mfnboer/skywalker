@@ -95,7 +95,7 @@ RoundCornerMask {
     MouseArea {
         enabled: filter.imageVisible()
         anchors.fill: imgGrid
-        cursorShape: Qt.PointingHandCursor
+        scrollGestureEnabled: false
         onClicked: {
             let p = Qt.point(mouseX, mouseY)
             let index = -1

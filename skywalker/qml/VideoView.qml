@@ -391,6 +391,7 @@ Column {
             width: parent.width
             height: parent.height
             z: -1
+            scrollGestureEnabled: false
             enabled: filter.imageVisible()
 
             onClicked: {

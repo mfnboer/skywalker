@@ -124,7 +124,6 @@ Rectangle {
             x: 10
             width: maxTextWidth - 20
             anchors.top: messageText.bottom
-            backgroundColor: guiSettings.isLightMode ? Qt.darker(guiSettings.backgroundColor, 1.05) : Qt.lighter(guiSettings.backgroundColor, 1.5)
             record: message.embed
             visible: !message.embed.isNull()
 
