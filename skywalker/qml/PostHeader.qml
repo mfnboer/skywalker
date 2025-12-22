@@ -53,13 +53,11 @@ Column {
     Loader {
         active: labelsToShow.length > 0
         width: parent.width
-        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding * 2 : 0
-        asynchronous: true
         visible: active
 
         sourceComponent: Rectangle {
             width: parent.width
-            height: parent.height
+            height: contentLabels.height + guiSettings.labelRowPadding
             color: "transparent"
 
             ContentLabels {

@@ -139,13 +139,11 @@ Rectangle {
                     Loader {
                         active: convoRect.labelsToShow.length > 0 && convo.members.length <= 1
                         width: parent.width
-                        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
-                        asynchronous: true
                         visible: active
 
                         sourceComponent: Rectangle {
                             width: parent.width
-                            height: parent.height
+                            height: contentLabels.height + guiSettings.labelRowPadding
                             color: "transparent"
 
                             ContentLabels {
