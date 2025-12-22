@@ -302,7 +302,6 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(
     }
 
     auto visibility = getVisibilityAuthorPrefs(author, group);
-    qDebug() << "Author prefs:" << author.getDid() << "label:" << group.getTitle() << "visibility:" << (int)visibility;
 
     if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         visibility = getVisibilityDefaultPrefs(group);

@@ -8,7 +8,7 @@ ScrollView {
     required property basicprofile contentAuthor
     required property list<contentlabel> contentLabels
     property contentlabel filteredContentLabel
-    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentAuthor.did, contentLabels, userDid)
+    property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(contentAuthor, contentLabels, userDid)
     property int parentWidth: parent.width
 
     id: labelView
