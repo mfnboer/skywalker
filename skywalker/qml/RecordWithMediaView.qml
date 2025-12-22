@@ -37,7 +37,7 @@ Item {
         RecordView {
             userDid: recordItem.userDid
             record: recordItem.record.record
-            backgroundColor: guiSettings.isLightMode ? Qt.darker(recordItem.backgroundColor, 1.05) : Qt.lighter(recordItem.backgroundColor, 1.5)
+            backgroundColor: guiSettings.highLightColor(recordItem.backgroundColor)
             visible: !recordItem.swipeMode && recordItem.showRecord
         }
 

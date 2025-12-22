@@ -97,13 +97,13 @@ Item {
     readonly property string selectionColor: accentColor
     readonly property string separatorColor: isLightMode ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
     readonly property string separatorHighLightColor: isLightMode ? Qt.darker(separatorColor, 1.1) : Qt.lighter(separatorColor, 1.6)
-    readonly property string settingsHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.05) : Qt.lighter(backgroundColor, 1.4)
-    readonly property string sideBarColor: backgroundColor // isLightMode ? Qt.darker(backgroundColor, 1.01) : Qt.lighter(backgroundColor, 1.2)
+    readonly property string settingsHighLightColor: highLightColor(backgroundColor)
+    readonly property string sideBarColor: backgroundColor
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
     property string textColor: userSettings ? userSettings.textColor : Material.foreground
-    readonly property string textInputBackgroundColor: isLightMode ? Qt.darker(backgroundColor, 1.05) : Qt.lighter(backgroundColor, 1.5) //isLightMode ? "#f3f3f3" : "#1d3030"
+    readonly property string textInputBackgroundColor: highLightColor(backgroundColor)
     readonly property string textInputInvalidColor: "palevioletred"
     readonly property string textLengthExceededColor: "palevioletred"
 
@@ -142,6 +142,10 @@ Item {
             console.warn(component.errorString())
 
         return component
+    }
+
+    function highLightColor(color) {
+        return isLightMode ? Qt.darker(color, 1.05) : Qt.lighter(color, 1.5)
     }
 
     function scaledFont(scaleFactor) {

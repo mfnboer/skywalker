@@ -21,7 +21,7 @@ RoundCornerMask {
     id: card
     height: columnHeight
     cornerRadius: guiSettings.radius
-    color: guiSettings.isLightMode ? Qt.darker(maskColor, 1.05) : Qt.lighter(maskColor, 1.5)
+    color: guiSettings.highLightColor(maskColor)
 
     Column {
         id: externalColumn
