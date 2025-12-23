@@ -121,7 +121,8 @@ Rectangle {
             color: "transparent"
 
             MouseArea {
-                anchors.fill: parent
+                width: parent.width
+                height: width
                 scrollGestureEnabled: false
                 enabled: notificationIsAggregatable
                 onClicked: showAuthorList()
