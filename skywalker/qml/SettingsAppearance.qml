@@ -410,6 +410,12 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Wrap content labels")
+        checked: userSettings.wrapLabels
+        onCheckedChanged: userSettings.wrapLabels = checked
+    }
+
+    AccessibleCheckBox {
         text: qsTr("Show verification badges")
         checked: !userPrefs.hideVerificationBadges
         onCheckedChanged: userPrefs.hideVerificationBadges = !checked

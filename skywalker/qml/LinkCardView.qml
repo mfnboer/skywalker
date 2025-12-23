@@ -13,7 +13,7 @@ RoundCornerMask {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property basicprofile contentLabeler
-    property string borderColor: guiSettings.borderColor
+    property string borderColor: guiSettings.isLightMode ? Qt.darker(color, 1.1) : Qt.lighter(color, 1.6)
     property int columnHeight: externalColumn.height
     property bool showSonglinkWidget: false
     property bool isLiveExternal: false
@@ -21,6 +21,7 @@ RoundCornerMask {
     id: card
     height: columnHeight
     cornerRadius: guiSettings.radius
+    color: guiSettings.highLightColor(maskColor)
 
     Column {
         id: externalColumn
@@ -42,6 +43,8 @@ RoundCornerMask {
                 x: (externalColumn.width - width) / 2
                 width: calcWidth()
                 height: imageUtils.getPreferredLinkCardAspectRatio(card.uri) * width
+                canvasColor: card.color
+                dynamicCanvasColor: false
                 fillMode: Image.PreserveAspectCrop
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
                 indicateLoading: false
@@ -103,6 +106,7 @@ RoundCornerMask {
             active: isLiveExternal
 
             sourceComponent: SkyButton {
+                implicitHeight: 40
                 text: qsTr("Watch now")
                 onClicked: root.openLink(card.uri, "", userDid)
             }

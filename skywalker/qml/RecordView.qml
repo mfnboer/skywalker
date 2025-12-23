@@ -8,9 +8,8 @@ Item {
     property recordview record
     readonly property bool postBlockedByUser: record.blocked && record.blockedAuthor.viewer.valid && !record.blockedAuthor.viewer.blockedBy &&
             (record.blockedAuthor.viewer.blocking || !record.blockedAuthor.viewer.blockingByList.isNull())
-    property bool highlight: false
-    property string backgroundColor: "transparent"
-    property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
+    property string backgroundColor: guiSettings.backgroundColor
+    property string borderColor: guiSettings.isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
 
     signal opening
 
@@ -75,7 +74,7 @@ Item {
                 postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime
-                bodyBackgroundColor: recordView.backgroundColor == "transparent" ? guiSettings.backgroundColor : recordView.backgroundColor
+                bodyBackgroundColor: recordView.backgroundColor
 
                 onUnrollThread: {
                     if (record.postUri)
@@ -226,6 +225,7 @@ Item {
     MouseArea {
         z: -1 // Let other mouse areas, e.g. images, get on top
         anchors.fill: parent
+        scrollGestureEnabled: false
         onClicked: showRecord()
     }
 

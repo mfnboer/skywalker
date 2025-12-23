@@ -12,7 +12,7 @@ class BookmarksModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<BookmarksModel>;
 
-    explicit BookmarksModel(const QString& userDid, const IProfileStore& following,
+    explicit BookmarksModel(const QString& userDid,
                             const IProfileStore& mutedReposts,
                             const ContentFilter& contentFilter,
                             const MutedWords& mutedWords, const FocusHashtags& focusHashtags,

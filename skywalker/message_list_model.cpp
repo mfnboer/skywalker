@@ -6,11 +6,13 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-MessageListModel::MessageListModel(const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
+MessageListModel::MessageListModel(const QString& userDid, const ChatBasicProfileList& members, FollowsActivityStore& followsActivityStore, QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
     mFollowsActivityStore(followsActivityStore)
 {
+    for (const auto& member : members)
+        mDidMemberMap[member.getBasicProfile().getDid()] = member;
 }
 
 int MessageListModel::rowCount(const QModelIndex&) const
@@ -251,7 +253,12 @@ void MessageListModel::reportActivity(const MessageView& message)
     const auto timestamp = message.getSentAt();
 
     if (!did.isEmpty() && timestamp.isValid())
-        mFollowsActivityStore.reportActivity(did, timestamp);
+    {
+        const auto it = mDidMemberMap.find(did);
+
+        if (it != mDidMemberMap.end())
+            mFollowsActivityStore.reportActivity(it->second.getBasicProfile(), timestamp);
+    }
 
     for (const auto& reaction : message.getReactions())
         reportActivity(reaction);
@@ -266,7 +273,12 @@ void MessageListModel::reportActivity(const ReactionView& reaction)
     const auto timestamp = reaction.getCreatedAt();
 
     if (!did.isEmpty() && timestamp.isValid())
-        mFollowsActivityStore.reportActivity(did, timestamp);
+    {
+        const auto it = mDidMemberMap.find(did);
+
+        if (it != mDidMemberMap.end())
+            mFollowsActivityStore.reportActivity(it->second.getBasicProfile(), timestamp);
+    }
 }
 
 }

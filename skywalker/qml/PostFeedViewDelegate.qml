@@ -816,6 +816,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
+                    scrollGestureEnabled: false
                     onClicked: unfoldPosts()
                 }
             }
@@ -838,6 +839,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
+                    scrollGestureEnabled: false
                     onClicked: getGapPosts()
                 }
             }
@@ -858,6 +860,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
+                    scrollGestureEnabled: false
                     onClicked: showHiddenReplies()
                 }
             }
@@ -1044,6 +1047,7 @@ Rectangle {
     MouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
+        scrollGestureEnabled: false
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !unrollThread
         onClicked: {
             if (swipeMode)

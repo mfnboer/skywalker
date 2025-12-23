@@ -18,7 +18,7 @@ public:
 
     explicit FilteredSearchPostFeedModel(IPostFilter::Ptr postFilter,
                                          SearchPostFeedModel* underlyingModel,
-                                         const QString& userDid, const IProfileStore& following,
+                                         const QString& userDid,
                                          const IProfileStore& mutedReposts,
                                          const IContentFilter& contentFilter,
                                          const IMatchWords& mutedWords,

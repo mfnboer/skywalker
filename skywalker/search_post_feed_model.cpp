@@ -7,13 +7,12 @@
 namespace Skywalker {
 
 SearchPostFeedModel::SearchPostFeedModel(const QString& feedName, const QString& userDid,
-                                         const IProfileStore& following,
                                          const IProfileStore& mutedReposts,
                                          const ContentFilter& contentFilter,
                                          const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                          HashtagIndex& hashtags,
                                          QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mFeedName(feedName)
@@ -252,7 +251,7 @@ FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPost
     Q_ASSERT(postFilter);
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
     auto model = std::make_unique<FilteredSearchPostFeedModel>(
-        std::move(postFilter), this, mUserDid, mFollowing, mMutedReposts, mContentFilter,
+        std::move(postFilter), this, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setModelId(mModelId);

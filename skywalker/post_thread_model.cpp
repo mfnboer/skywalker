@@ -9,13 +9,13 @@ namespace Skywalker {
 
 PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                                  QEnums::ReplyOrder replyOrder,
-                                 const QString& userDid, const IProfileStore& following,
+                                 const QString& userDid,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
                                  const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mThreadEntryUri(threadEntryUri),
@@ -525,27 +525,27 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPo
     if (lhsPin != rhsPin)
         return lhsPin < rhsPin;
 
-    const auto& lhsDid = lhsReply->mAuthor->mDid;
-    const auto& rhsDid = rhsReply->mAuthor->mDid;
+    const auto& lhsAuthor = lhsReply->mAuthor;
+    const auto& rhsAuthor = rhsReply->mAuthor;
 
-    if (lhsDid != rhsDid)
+    if (lhsAuthor->mDid != rhsAuthor->mDid)
     {
         // Author before others
-        if (lhsDid == viewPost->mPost->mAuthor->mDid)
+        if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
             return true;
 
-        if (rhsDid == viewPost->mPost->mAuthor->mDid)
+        if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
             return false;
 
         // User before others
-        if (lhsDid == mUserDid)
+        if (lhsAuthor->mDid == mUserDid)
             return true;
 
-        if (rhsDid == mUserDid)
+        if (rhsAuthor->mDid == mUserDid)
             return false;
 
-        const bool lhsFollowing = mFollowing.contains(lhsDid);
-        const bool rhsFollowing = mFollowing.contains(rhsDid);
+        const bool lhsFollowing = lhsAuthor->mViewer && lhsAuthor->mViewer->mFollowing && !lhsAuthor->mViewer->mFollowing->isEmpty();
+        const bool rhsFollowing = rhsAuthor->mViewer && rhsAuthor->mViewer->mFollowing && !rhsAuthor->mViewer->mFollowing->isEmpty();
 
         // Following before non-following
         if (lhsFollowing != rhsFollowing)

@@ -162,13 +162,11 @@ ContentFilter::ContentFilter(QObject* parent) :
 }
 
 ContentFilter::ContentFilter(const QString& userDid,
-                             const IProfileStore& following,
                              ListStore& policies,
                              const ATProto::UserPreferences& userPreferences,
                              IUserSettingsContentFilter* userSettings, QObject* parent) :
     QObject(parent),
     mUserDid(&userDid),
-    mFollowing(&following),
     mListsWithPolicies(&policies),
     mUserPreferences(&userPreferences),
     mUserSettings(userSettings)
@@ -290,7 +288,7 @@ void ContentFilter::addContentLabels(ContentLabelList& contentLabels, const Labe
 }
 
 QEnums::ContentVisibility ContentFilter::getGroupVisibility(
-    const QString& authorDid,
+    const BasicProfile& author,
     const ContentGroup& group,
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
@@ -303,8 +301,7 @@ QEnums::ContentVisibility ContentFilter::getGroupVisibility(
             return *adultOverrideVisibility;
     }
 
-    auto visibility = getVisibilityAuthorPrefs(authorDid, group);
-    qDebug() << "Author prefs:" << authorDid << "label:" << group.getTitle() << "visibility:" << (int)visibility;
+    auto visibility = getVisibilityAuthorPrefs(author, group);
 
     if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         visibility = getVisibilityDefaultPrefs(group);
@@ -335,14 +332,14 @@ ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityDefaultPre
 }
 
 ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityAuthorPrefs(
-    const QString& authorDid, const ContentGroup& group) const
+    const BasicProfile& author, const ContentGroup& group) const
 {
     auto visibility = ATProto::UserPreferences::LabelVisibility::UNKNOWN;
 
-    if (authorDid.isEmpty())
+    if (author.isNull())
         return visibility;
 
-    if (!mFollowingPrefs.empty() && mFollowing->contains(authorDid))
+    if (!mFollowingPrefs.empty() && author.getViewer().isFollowing())
         visibility = getLabelVisibility(mFollowingPrefs, group);
 
     for (const auto& [listUri, prefs] : mListPrefs)
@@ -350,7 +347,7 @@ ATProto::UserPreferences::LabelVisibility ContentFilter::getVisibilityAuthorPref
         if (visibility == ATProto::UserPreferences::LabelVisibility::SHOW)
             break;
 
-        if (mListsWithPolicies->containsListMember(listUri, authorDid))
+        if (mListsWithPolicies->containsListMember(listUri, author.getDid()))
         {
             const auto v = getLabelVisibility(prefs, group);
 
@@ -379,27 +376,27 @@ ATProto::UserPreferences::LabelVisibility ContentFilter::getLabelVisibility(
 }
 
 QEnums::ContentVisibility ContentFilter::getVisibility(
-    const QString& authorDid,
+    const BasicProfile& author,
     const ContentLabel& label,
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     const auto* group = getContentGroup(label.getDid(), label.getLabelId());
 
     if (group)
-        return getGroupVisibility(authorDid, *group, adultOverrideVisibility);
+        return getGroupVisibility(author, *group, adultOverrideVisibility);
 
     qDebug() << "Undefined label:" << label.getLabelId() << "labeler:" << label.getDid();
     return QEnums::CONTENT_VISIBILITY_SHOW;
 }
 
-bool ContentFilter::mustShowBadge(const QString& authorDid, const ContentLabel& label) const
+bool ContentFilter::mustShowBadge(const BasicProfile& author, const ContentLabel& label) const
 {
     const auto* group = getContentGroup(label.getDid(), label.getLabelId());
 
     if (!group || !group->isBadge())
         return true;
 
-    auto visibility = getVisibilityAuthorPrefs(authorDid, *group);
+    auto visibility = getVisibilityAuthorPrefs(author, *group);
 
     if (visibility == ATProto::UserPreferences::LabelVisibility::UNKNOWN)
         visibility = getVisibilityDefaultPrefs(*group);
@@ -427,17 +424,17 @@ QString ContentFilter::getWarning(const ContentLabel& label) const
 }
 
 std::tuple<QEnums::ContentVisibility, QString> ContentFilter::getVisibilityAndWarning(
-    const QString& authorDid,
+    const BasicProfile& author,
     const ATProto::ComATProtoLabel::Label::List& labels,
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
     const auto contentLabels = getContentLabels(labels);
-    const auto [visibility, warning, _] = getVisibilityAndWarning(authorDid, contentLabels, adultOverrideVisibility);
+    const auto [visibility, warning, _] = getVisibilityAndWarning(author, contentLabels, adultOverrideVisibility);
     return { visibility, warning };
 }
 
 std::tuple<QEnums::ContentVisibility, QString, int> ContentFilter::getVisibilityAndWarning(
-    const QString& authorDid,
+    const BasicProfile& author,
     const ContentLabelList& contentLabels,
     std::optional<QEnums::ContentVisibility> adultOverrideVisibility) const
 {
@@ -448,7 +445,7 @@ std::tuple<QEnums::ContentVisibility, QString, int> ContentFilter::getVisibility
     for (int i = 0; i < contentLabels.size(); ++i)
     {
         const auto& label = contentLabels[i];
-        const auto v = getVisibility(authorDid, label, adultOverrideVisibility);
+        const auto v = getVisibility(author, label, adultOverrideVisibility);
 
         if (v <= visibility)
             continue;

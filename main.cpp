@@ -15,6 +15,10 @@ int main(int argc, char *argv[])
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
 
+#ifdef QT_NO_DEBUG_OUTPUT
+    QLoggingCategory::setFilterRules("qml*.debug=false");
+#endif
+
     QGuiApplication app(argc, argv);
     app.setOrganizationName(Skywalker::Skywalker::APP_NAME);
     app.setApplicationName(Skywalker::Skywalker::APP_NAME);

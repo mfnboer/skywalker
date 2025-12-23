@@ -8,7 +8,7 @@ Column {
     required property basicprofile author
     required property double postIndexedSecondsAgo
     property contentlabel filteredContentLabel
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author.did, author.labels, userDid)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author, author.labels, userDid)
 
     id: postHeader
 
@@ -53,13 +53,11 @@ Column {
     Loader {
         active: labelsToShow.length > 0
         width: parent.width
-        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding * 2 : 0
-        asynchronous: true
         visible: active
 
         sourceComponent: Rectangle {
             width: parent.width
-            height: parent.height
+            height: contentLabels.height + guiSettings.labelRowPadding
             color: "transparent"
 
             ContentLabels {
@@ -70,7 +68,7 @@ Column {
                 contentLabels: author.labels
                 filteredContentLabel: postHeader.filteredContentLabel
                 labelsToShow: postHeader.labelsToShow
-                contentAuthorDid: author.did
+                contentAuthor: author
             }
         }
     }

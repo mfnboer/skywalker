@@ -50,13 +50,14 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
     mNetwork(new QNetworkAccessManager(this)),
-    mFollowsActivityStore(mUserFollows, this),
+    mFollowing(this),
+    mFollowsActivityStore(mFollowing, this),
     mTimelineHide(this),
     mUserSettings(this),
     mSessionManager(this, this),
     mContentFilterPolicies(this),
-    mContentFilter(mUserDid, mUserFollows, mContentFilterPolicies, mUserPreferences, &mUserSettings, this),
-    mMutedWords(mUserFollows, this),
+    mContentFilter(mUserDid, mContentFilterPolicies, mUserPreferences, &mUserSettings, this),
+    mMutedWords(this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
     mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
@@ -66,7 +67,7 @@ Skywalker::Skywalker(QObject* parent) :
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), nullptr, mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+    mTimelineModel(tr("Following"), nullptr, mUserDid, mMutedReposts, mTimelineHide,
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
@@ -97,7 +98,6 @@ Skywalker::Skywalker(QObject* parent) :
             [this](const QString& uri){ mUserSettings.removeContentLabelPrefList(mUserDid, uri); });
 
     AuthorCache::instance().setSkywalker(this);
-    AuthorCache::instance().addProfileStore(&mUserFollows);
     ListCache::instance().setSkywalker(this);
     PostThreadCache::instance().setSkywalker(this);
     OffLineMessageChecker::createNotificationChannels();
@@ -140,13 +140,13 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mBsky(bsky),
     mUserDid(did),
     mIsActiveUser(false),
-    mFollowsActivityStore(mUserFollows, this),
+    mFollowsActivityStore(mFollowing, this),
     mTimelineHide(this),
     mUserSettings(this),
     mSessionManager(this, this),
     mContentFilterPolicies(this),
-    mContentFilter(mUserDid, mUserFollows, mContentFilterPolicies, mUserPreferences, &mUserSettings, this),
-    mMutedWords(mUserFollows, this),
+    mContentFilter(mUserDid, mContentFilterPolicies, mUserPreferences, &mUserSettings, this),
+    mMutedWords(this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
     mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
@@ -156,7 +156,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), nullptr, mUserDid, mUserFollows, mMutedReposts, mTimelineHide,
+    mTimelineModel(tr("Following"), nullptr, mUserDid, mMutedReposts, mTimelineHide,
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
@@ -447,65 +447,19 @@ void Skywalker::getUserProfileAndFollows()
     Q_ASSERT(session);
     qDebug() << "Get user profile, handle:" << session->mHandle << "did:" << session->mDid;
 
-    // Get profile and follows in one go. We do not need detailed profile data.
-    mBsky->getFollows(session->mDid, 100, {},
-        [this](auto follows){
-            for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(profile));
-
-            const auto& nextCursor = follows->mCursor;
-            if (!nextCursor->isEmpty())
-                getUserProfileAndFollowsNextPage(*nextCursor);
-            else
-                signalGetUserProfileOk(std::move(follows->mSubject));
+    mBsky->getProfile(session->mDid,
+        [this](auto profile){
+            signalGetUserProfileOk(profile);
         },
         [this](const QString& error, const QString& msg){
             qWarning() << error << " - " << msg;
-            mUserFollows.clear();
             emit getUserProfileFailed(msg);
         });
 }
 
-void Skywalker::getUserProfileAndFollowsNextPage(const QString& cursor, int maxPages)
-{   
-    Q_ASSERT(mBsky);
-    const auto* session = mBsky->getSession();
-    Q_ASSERT(session);
-    qDebug() << "Get user profile next page:" << cursor << ", handle:" << session->mHandle <<
-            ", did:" << session->mDid << ", max pages:" << maxPages;
-
-    mBsky->getFollows(session->mDid, 100, cursor,
-        [this, maxPages](auto follows){
-            for (auto& profile : follows->mFollows)
-                mUserFollows.add(BasicProfile(profile));
-
-            const auto& nextCursor = follows->mCursor;
-
-            if (nextCursor->isEmpty())
-            {
-                signalGetUserProfileOk(std::move(follows->mSubject));
-            }
-            else if (maxPages > 0)
-            {
-                getUserProfileAndFollowsNextPage(*nextCursor, maxPages - 1);
-            }
-            else
-            {
-                qWarning() << "Max pages reached!";
-                signalGetUserProfileOk(std::move(follows->mSubject));
-            }
-        },
-        [this](const QString& error, const QString& msg){
-            qWarning() << error << " - " << msg;
-            mUserFollows.clear();
-            emit getUserProfileFailed(msg);
-        });
-}
-
-void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileView::SharedPtr user)
+void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user)
 {
-    //Q_ASSERT(mUserDid == user->mDid);
-    qDebug() << "Got user:" << user->mHandle << "#follows:" << mUserFollows.size();
+    qDebug() << "Got user:" << user->mHandle;
     AuthorCache::instance().setUser(BasicProfile(user));
     mUserSettings.saveDisplayName(mUserDid, user->mDisplayName.value_or(""));
     const auto avatar = user->mAvatar ? *user->mAvatar : QString();
@@ -1905,7 +1859,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
 
             auto model = std::make_unique<PostThreadModel>(uri, postThreadType,
                 mUserSettings.getThreadReplyOrder(mUserDid),
-                mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+                mUserDid, mMutedReposts, mContentFilter,
                 mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
             int postEntryIndex = model->setPostThread(thread);
@@ -2063,7 +2017,7 @@ int Skywalker::createPostThreadModel(const QString& uri, QEnums::PostThreadType 
     qDebug() << "Create post thread model:" << uri << "type:" << (int)type;
     auto model = std::make_unique<PostThreadModel>(
         uri, type, mUserSettings.getThreadReplyOrder(mUserDid),
-        mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+        mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
     return id;
@@ -2654,7 +2608,7 @@ void Skywalker::removeNotificationListModel(int id)
 int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter)
 {
     auto model = std::make_unique<AuthorFeedModel>(
-        author, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+        author, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setFilter(filter);
     const int id = addModelToStore<AuthorFeedModel>(std::move(model), mAuthorFeedModels);
@@ -2677,7 +2631,7 @@ void Skywalker::removeAuthorFeedModel(int id)
 int Skywalker::createSearchPostFeedModel(const QString& feedName)
 {
     auto model = std::make_unique<SearchPostFeedModel>(
-        feedName, mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+        feedName, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
@@ -2907,7 +2861,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     const PostFeedModel::FeedVariant feedVariant{generatorView};
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(), &feedVariant,
-            mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE, mContentFilter, mMutedWords,
+            mUserDid, mMutedReposts, ListStore::NULL_STORE, mContentFilter, mMutedWords,
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
             mBsky, this);
     model->enableLanguageFilter(true);
@@ -2919,7 +2873,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
     const PostFeedModel::FeedVariant feedVariant{listView};
     auto model = std::make_unique<PostFeedModel>(listView.getName(), &feedVariant,
-                                                 mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -2932,7 +2886,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"), &feedVariant,
-                                                 mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -2944,7 +2898,7 @@ int Skywalker::createQuoteChainPostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote chain"), &feedVariant,
-                                                 mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -2957,7 +2911,7 @@ int Skywalker::createFilteredPostFeedModel(QEnums::HideReasonType hideReason, co
     const PostFeedModel::FeedVariant feedVariant{hideReason};
     auto model = std::make_unique<FilteredContentPostFeedModel>(
         tr("Filtered posts"), &feedVariant,
-        mUserDid, mUserFollows, mMutedReposts, ListStore::NULL_STORE,
+        mUserDid, mMutedReposts, ListStore::NULL_STORE,
         mContentFilter, mMutedWords, *mFocusHashtags,
         mSeenHashtags, mUserPreferences, mUserSettings,
         mFollowsActivityStore, mBsky, this);
@@ -3922,21 +3876,21 @@ ContentGroup Skywalker::getContentGroup(const QString& did, const QString& label
     return ContentGroup(labelId, did);
 }
 
-QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels, const QString& authorDid) const
+QEnums::ContentVisibility Skywalker::getContentVisibility(const ContentLabelList& contentLabels, const BasicProfile& author) const
 {
-    const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(authorDid, contentLabels);
+    const auto [visibility, _, __] = mContentFilter.getVisibilityAndWarning(author, contentLabels);
     return visibility;
 }
 
-QString Skywalker::getContentWarning(const ContentLabelList& contentLabels, const QString& authorDid) const
+QString Skywalker::getContentWarning(const ContentLabelList& contentLabels, const BasicProfile& author) const
 {
-    const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(authorDid, contentLabels);
+    const auto [_, warning, __] = mContentFilter.getVisibilityAndWarning(author, contentLabels);
     return warning;
 }
 
-QString Skywalker::getContentLabelerDid(const ContentLabelList& contentLabels, const QString& authorDid) const
+QString Skywalker::getContentLabelerDid(const ContentLabelList& contentLabels, const BasicProfile& author) const
 {
-    const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(authorDid, contentLabels);
+    const auto [visibility, _, labelIndex] = mContentFilter.getVisibilityAndWarning(author, contentLabels);
 
     if (visibility == QEnums::CONTENT_VISIBILITY_SHOW)
         return {};
@@ -4117,7 +4071,7 @@ void Skywalker::saveUserPreferences()
 BookmarksModel* Skywalker::createBookmarksModel()
 {
     mBookmarksModel = std::make_unique<BookmarksModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilter,
+        mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
     return mBookmarksModel.get();
@@ -4136,7 +4090,7 @@ void Skywalker::deleteBookmarksModel()
 DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
     return std::make_unique<DraftPostsModel>(
-        mUserDid, mUserFollows, mMutedReposts, mContentFilterShowAll,
+        mUserDid, mMutedReposts, mContentFilterShowAll,
         mMutedWordsNoMutes, *mFocusHashtags, mSeenHashtags, this);
 }
 
@@ -4489,7 +4443,6 @@ void Skywalker::signOut()
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
     mFollowsActivityStore.clear();
-    mUserFollows.clear();
     mMutedReposts.clear();
     mTimelineHide.clear();
     mContentFilterPolicies.clear();

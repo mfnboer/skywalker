@@ -8,7 +8,6 @@ Item {
     required property basicprofile contentLabeler
     property externalview postExternal
     property bool highlight: false
-    property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
     property string maskColor: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
 
@@ -40,7 +39,6 @@ Item {
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
             contentLabeler: view.contentLabeler
-            borderColor: view.borderColor
             maskColor: view.maskColor
             showSonglinkWidget: true
         }

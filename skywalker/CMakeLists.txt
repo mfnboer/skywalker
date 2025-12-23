@@ -628,6 +628,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ZoomHandler.qml
         QML_FILES qml/SkyDragHandler.qml
         QML_FILES qml/SkyImageUtils.qml
+        SOURCES following.h
+        SOURCES following.cpp
+        QML_FILES qml/ContentLabelRepeater.qml
 )
 
 if (NOT ANDROID)

@@ -150,6 +150,7 @@ Item {
 
             sourceComponent: SkyMenu {
                 id: moreMenu
+                menuWidth: 240
                 onAboutToHide: parent.active = false
 
                 CloseMenuItem {

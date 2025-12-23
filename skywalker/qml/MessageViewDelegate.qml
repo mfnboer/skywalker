@@ -124,7 +124,6 @@ Rectangle {
             x: 10
             width: maxTextWidth - 20
             anchors.top: messageText.bottom
-            backgroundColor: guiSettings.backgroundColor
             record: message.embed
             visible: !message.embed.isNull()
 

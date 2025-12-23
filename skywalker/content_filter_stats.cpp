@@ -77,8 +77,6 @@ void ContentFilterStats::clear()
 
 void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideReason, const Details& details)
 {
-    qDebug() << "Report hide reason:" << hideReason << post.getCid();
-
     if (mPostHideInfoMap.contains(post.getCid()))
     {
         qDebug() << "Post already reported:" << post.getUri() << post.getCid();
@@ -272,7 +270,6 @@ void ContentFilterStats::addPost(const Post& post)
 {
     const auto it = std::lower_bound(mPosts.cbegin(), mPosts.cend(), post, postTimelineCompare);
     mPosts.insert(it, post);
-    qDebug() << "Post added, size:" << mPosts.size();
 
     if (mPosts.size() > MAX_FILTERED_POSTS)
     {

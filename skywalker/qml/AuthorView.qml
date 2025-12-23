@@ -478,7 +478,7 @@ SkyPage {
                     anchors.right: undefined
                     userDid: page.userDid
                     contentLabels: author.labels
-                    contentAuthorDid: author.did
+                    contentAuthor: author
                 }
             }
 
@@ -613,7 +613,7 @@ SkyPage {
                         anchors.right: undefined
                         userDid: page.userDid
                         contentLabels: labeler.contentLabels
-                        contentAuthorDid: author.did
+                        contentAuthor: author
                     }
                 }
             }
@@ -1752,9 +1752,9 @@ SkyPage {
         authorBanner = author.banner
         authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
-        contentVisibility = skywalker.getContentVisibility(author.labels, author.did)
-        contentWarning = skywalker.getContentWarning(author.labels, author.did)
-        const labelerDid = skywalker.getContentLabelerDid(author.labels, author.did)
+        contentVisibility = skywalker.getContentVisibility(author.labels, author)
+        contentWarning = skywalker.getContentWarning(author.labels, author)
+        const labelerDid = skywalker.getContentLabelerDid(author.labels, author)
 
         if (labelerDid)
             profileUtils.getBasicProfile(labelerDid)

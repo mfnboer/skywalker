@@ -38,7 +38,7 @@ RoundedFrame {
     }
     MouseArea {
         anchors.fill: img
-        cursorShape: Qt.PointingHandCursor
+        scrollGestureEnabled: false
         enabled: filter.imageVisible()
 
         onClicked: {

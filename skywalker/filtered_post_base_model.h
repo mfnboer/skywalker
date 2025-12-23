@@ -18,7 +18,7 @@ class FilteredPostBaseModel : public AbstractPostFeedModel
 
 public:
     explicit FilteredPostBaseModel(IPostFilter::Ptr postFilter,
-                                   const QString& userDid, const IProfileStore& following,
+                                   const QString& userDid,
                                    const IProfileStore& mutedReposts,
                                    const IContentFilter& contentFilter,
                                    const IMatchWords& mutedWords,

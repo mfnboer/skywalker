@@ -3,6 +3,7 @@
 #pragma once
 #include "external_view.h"
 #include "image_view.h"
+#include "profile.h"
 #include "video_view.h"
 #include <QHashFunctions>
 #include <QString>
@@ -21,7 +22,7 @@ public:
     virtual VideoView::Ptr getVideoView() const = 0;
     virtual ExternalView::Ptr getExternalView() const = 0;
     virtual std::vector<QString> getHashtags() const = 0;
-    virtual QString getAuthorDid() const = 0;
+    virtual BasicProfile getAuthor() const = 0;
     virtual std::vector<QString> getWebLinks() const = 0;
 
     const std::unordered_set<QString>& getUniqueHashtags() const;

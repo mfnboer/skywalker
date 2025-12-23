@@ -14,7 +14,7 @@ Item {
     readonly property bool showThumb: width < 90 // from bsky client code
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
     property bool showModeratorIcon: true
-    readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author.did)
+    readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author)
     readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
     readonly property bool isActive: activityStatus ? activityStatus.active : false
     property bool showFollowingStatus: true

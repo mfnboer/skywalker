@@ -14,7 +14,7 @@ class FilteredContentPostFeedModel : public PostFeedModel
 public:
     explicit FilteredContentPostFeedModel(
         const QString& feedName, const FeedVariant* feedVariant,
-        const QString& userDid, const IProfileStore& following,
+        const QString& userDid,
         const IProfileStore& mutedReposts,
         const IListStore& feedHide,
         const IContentFilter& contentFilter,

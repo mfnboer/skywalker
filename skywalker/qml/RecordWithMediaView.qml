@@ -37,8 +37,7 @@ Item {
         RecordView {
             userDid: recordItem.userDid
             record: recordItem.record.record
-            backgroundColor: recordItem.backgroundColor
-            highlight: recordItem.highlight
+            backgroundColor: guiSettings.highLightColor(recordItem.backgroundColor)
             visible: !recordItem.swipeMode && recordItem.showRecord
         }
 

@@ -8,13 +8,18 @@ using namespace std::chrono_literals;
 
 static constexpr auto UPDATE_INTERVAL = 31s;
 
-FollowsActivityStore::FollowsActivityStore(IProfileStore& userFollows, QObject* parent) :
+FollowsActivityStore::FollowsActivityStore(Following& following, QObject* parent) :
     QObject(parent),
-    mUserFollows(userFollows)
+    mFollowing(following)
 {
-    mRemovedCbHandle = mUserFollows.registerRemovedCb([this](const QString& did){ handleUnfollow(did); }, this);
+    mUnfollowConnection = connect(&mFollowing, &Following::stoppedFollowing, this, [this](const QString& did){ handleUnfollow(did); });
     connect(&mUpdateTimer, &QTimer::timeout, this, [this]{ updateActivities(); });
     mUpdateTimer.start(UPDATE_INTERVAL);
+}
+
+FollowsActivityStore::~FollowsActivityStore()
+{
+    disconnect(mUnfollowConnection);
 }
 
 void FollowsActivityStore::clear()
@@ -26,11 +31,12 @@ void FollowsActivityStore::clear()
     mActiveStatusSet.clear();
 }
 
-ActivityStatus* FollowsActivityStore::getActivityStatus(const QString& did)
+ActivityStatus* FollowsActivityStore::getActivityStatus(const BasicProfile& author)
 {
-    if (!mUserFollows.contains(did))
+    if (!author.getViewer().isFollowing())
         return &mNotActiveStatus;
 
+    const auto& did = author.getDid();
     auto it = mDidStatus.find(did);
 
     if (it != mDidStatus.end())
@@ -41,12 +47,12 @@ ActivityStatus* FollowsActivityStore::getActivityStatus(const QString& did)
     return status;
 }
 
-void FollowsActivityStore::reportActivity(const QString& did, QDateTime timestamp)
+void FollowsActivityStore::reportActivity(const BasicProfile& author, QDateTime timestamp)
 {
-    if (!mUserFollows.contains(did))
+    if (!author.getViewer().isFollowing())
         return;
 
-    auto* status = getActivityStatus(did);
+    auto* status = getActivityStatus(author);
     mActiveStatusSet.erase(status);
     status->setLastActive(timestamp);
 

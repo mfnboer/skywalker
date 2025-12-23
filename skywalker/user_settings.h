@@ -68,6 +68,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
+    Q_PROPERTY(bool wrapLabels READ getWrapLabels WRITE setWrapLabels NOTIFY wrapLabelsChanged FINAL)
     Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
     Q_PROPERTY(bool showFeedbackButtons READ getShowFeedbackButtons WRITE setShowFeedbackButtons NOTIFY showFeedbackButtonsChanged FINAL)
@@ -331,6 +332,9 @@ public:
     void setSonglinkEnabled(bool enabled);
     bool getSonglinkEnabled() const;
 
+    void setWrapLabels(bool wrap);
+    bool getWrapLabels() const;
+
     void setShowFollowsStatus(bool show);
     bool getShowFollowsStatus() const;
 
@@ -494,6 +498,7 @@ signals:
     void favoritesBarPositionChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();
+    void wrapLabelsChanged();
     void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();
     void showFeedbackButtonsChanged();

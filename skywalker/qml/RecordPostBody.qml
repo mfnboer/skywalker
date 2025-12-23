@@ -266,13 +266,14 @@ Column {
     }
 
     Loader {
-        anchors.right: parent.right
+        width: parent.width
         active: postContentLabels.length > 0 && postVisible()
         sourceComponent: ContentLabels {
             parentWidth: parent.width
+            alignRight: true
             contentLabels: postContentLabels
             filteredContentLabel: postBody.filteredContentLabel
-            contentAuthorDid: postAuthor.did
+            contentAuthor: postAuthor
         }
     }
 
@@ -437,6 +438,7 @@ Column {
             contentWarning: postContentWarning
             contentLabeler: postContentLabeler
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+            maskColor: bodyBackgroundColor
         }
     }
 

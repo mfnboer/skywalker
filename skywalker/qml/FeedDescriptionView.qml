@@ -234,7 +234,7 @@ SkyPage {
                 anchors.left: parent.left
                 anchors.right: undefined
                 contentLabels: feed.labels
-                contentAuthorDid: feed.creator.did
+                contentAuthor: feed.creator
             }
         }
 

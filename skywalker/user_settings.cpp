@@ -1237,6 +1237,20 @@ bool UserSettings::getSonglinkEnabled() const
     return mSettings.value("songlinkEnabled", true).toBool();
 }
 
+void UserSettings::setWrapLabels(bool wrap)
+{
+    if (wrap == getWrapLabels())
+        return;
+
+    mSettings.setValue("wrapLabels", wrap);
+    emit wrapLabelsChanged();
+}
+
+bool UserSettings::getWrapLabels() const
+{
+    return mSettings.value("wrapLabels", true).toBool();
+}
+
 void UserSettings::setShowFollowsStatus(bool show)
 {
     if (show == getShowFollowsStatus())

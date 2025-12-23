@@ -10,7 +10,7 @@ Rectangle {
     required property bool endOfList
     property var skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
-    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember.did, firstMember.labels)
+    readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember, firstMember.labels)
     readonly property int margin: 10
     readonly property bool showLastReaction: !convo.lastReaction.isNull() && convo.lastReaction.reaction.createdAt > convo.lastMessageDate
 
@@ -139,13 +139,11 @@ Rectangle {
                     Loader {
                         active: convoRect.labelsToShow.length > 0 && convo.members.length <= 1
                         width: parent.width
-                        height: active ? guiSettings.labelHeight + guiSettings.labelRowPadding : 0
-                        asynchronous: true
                         visible: active
 
                         sourceComponent: Rectangle {
                             width: parent.width
-                            height: parent.height
+                            height: contentLabels.height + guiSettings.labelRowPadding
                             color: "transparent"
 
                             ContentLabels {
@@ -154,7 +152,7 @@ Rectangle {
                                 anchors.right: undefined
                                 contentLabels: firstMember.labels
                                 labelsToShow: convoRect.labelsToShow
-                                contentAuthorDid: firstMember.did
+                                contentAuthor: firstMember
                             }
                         }
                     }

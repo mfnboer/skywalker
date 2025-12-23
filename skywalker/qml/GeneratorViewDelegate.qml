@@ -173,7 +173,7 @@ Rectangle {
                 anchors.leftMargin: generatorView.margin
                 anchors.right: undefined
                 contentLabels: feed.labels
-                contentAuthorDid: feed.creator.did
+                contentAuthor: feed.creator
             }
         }
 

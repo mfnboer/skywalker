@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "chat.h"
+#include "chat_profile.h"
 #include "utils.h"
 
 namespace Skywalker {
@@ -502,6 +503,16 @@ bool Chat::convosLoaded() const
     return convosLoaded(QEnums::CONVO_STATUS_ACCEPTED) || convosLoaded(QEnums::CONVO_STATUS_REQUEST);
 }
 
+const ConvoView* Chat::getConvo(const QString& convoId) const
+{
+    const ConvoView* convo = mAcceptedConvoListModel.getConvo(convoId);
+
+    if (!convo)
+        convo = mRequestConvoListModel.getConvo(convoId);
+
+    return convo;
+}
+
 ConvoListModel* Chat::getConvoListModel(QEnums::ConvoStatus status) const
 {
     switch (status)
@@ -605,7 +616,15 @@ MessageListModel* Chat::getMessageListModel(const QString& convoId)
     if (!model)
     {
         qDebug() << "Create message list model for convo:" << convoId;
-        model = std::make_unique<MessageListModel>(mUserDid, mFollowsActivityStore, this);
+        const auto* convo = getConvo(convoId);
+        ChatBasicProfileList profiles;
+
+        if (convo)
+            profiles = convo->getMembers();
+        else
+            qWarning() << "Cannot find convo:" << convoId;
+
+        model = std::make_unique<MessageListModel>(mUserDid, profiles, mFollowsActivityStore, this);
         startMessagesUpdateTimer();
     }
 

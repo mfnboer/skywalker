@@ -223,6 +223,7 @@ Rectangle {
                         MouseArea {
                             width: parent.width
                             height: parent.height
+                            scrollGestureEnabled: false
 
                             onClicked: showDetails = !showDetails
                             onDoubleClicked: (mouse) => {
@@ -329,6 +330,7 @@ Rectangle {
         width: parent.width
         anchors.top: postColumn.top
         anchors.bottom: postColumn.bottom
+        scrollGestureEnabled: false
         enabled: postColumn.visible
         onClicked: showFullPostText = !showFullPostText
     }

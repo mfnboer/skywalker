@@ -108,7 +108,7 @@ Rectangle {
                 anchors.right: undefined
                 userDid: authorRect.userDid
                 contentLabels: author.labels
-                contentAuthorDid: author.did
+                contentAuthor: author
             }
         }
 

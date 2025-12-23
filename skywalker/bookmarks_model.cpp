@@ -5,13 +5,13 @@
 
 namespace Skywalker {
 
-BookmarksModel::BookmarksModel(const QString& userDid, const IProfileStore& following,
+BookmarksModel::BookmarksModel(const QString& userDid,
                                const IProfileStore& mutedReposts,
                                const ContentFilter& contentFilter,
                                const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                                HashtagIndex& hashtags,
                                QObject* parent) :
-    AbstractPostFeedModel(userDid, following, mutedReposts, ListStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {

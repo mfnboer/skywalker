@@ -19,7 +19,7 @@ class AuthorFeedModel : public AbstractPostFeedModel
 public:
     using Ptr = std::unique_ptr<AuthorFeedModel>;
 
-    AuthorFeedModel(const DetailedProfile& author, const QString& userDid, const IProfileStore& following,
+    AuthorFeedModel(const DetailedProfile& author, const QString& userDid,
                     const IProfileStore& mutedReposts,
                     const ContentFilter& contentFilter,
                     const MutedWords& mutedWords, const FocusHashtags& focusHashtags,

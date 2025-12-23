@@ -7,7 +7,7 @@
 
 namespace Skywalker {
 
-class IProfileStore;
+class BasicProfile;
 class ListViewBasic;
 class ListStore;
 class IUserSettingsContentFilter;
@@ -17,11 +17,11 @@ class IContentFilter
 public:
     virtual ~IContentFilter() = default;
     virtual std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(
-        const QString& authorDid,
+        const BasicProfile& author,
         const ATProto::ComATProtoLabel::Label::List& labels,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
     virtual std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(
-        const QString& authorDid,
+        const BasicProfile& author,
         const ContentLabelList& contentLabels,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const = 0;
     virtual const ContentGroup* getContentGroup(const QString& did, const QString& labelId) const = 0;
@@ -62,7 +62,6 @@ public:
     explicit ContentFilter(QObject* parent = nullptr);
 
     explicit ContentFilter(const QString& userDid,
-                           const IProfileStore& following,
                            ListStore& policies,
                            const ATProto::UserPreferences& userPreferences,
                            IUserSettingsContentFilter* userSettings,
@@ -79,16 +78,16 @@ public:
     Q_INVOKABLE QEnums::ContentPrefVisibility getGroupPrefVisibility(
         const ContentGroup& group, const QString& listUri = {}) const;
 
-    Q_INVOKABLE bool mustShowBadge(const QString& authorDid, const ContentLabel& label) const;
+    Q_INVOKABLE bool mustShowBadge(const BasicProfile& author, const ContentLabel& label) const;
 
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(
-        const QString& authorDid,
+        const BasicProfile& author,
         const ATProto::ComATProtoLabel::Label::List& labels,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
 
     // Return { visibility, warning, label-index }
     std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(
-        const QString& authorDid,
+        const BasicProfile& author,
         const ContentLabelList& contentLabels,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const override;
 
@@ -144,12 +143,12 @@ private:
     void clearFollowingPrefs();
 
     QEnums::ContentVisibility getGroupVisibility(
-        const QString& authorDid,
+        const BasicProfile& author,
         const ContentGroup& group,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
 
     QEnums::ContentVisibility getVisibility(
-        const QString& authorDid,
+        const BasicProfile& author,
         const ContentLabel& label,
         std::optional<QEnums::ContentVisibility> adultOverrideVisibility = {}) const;
 
@@ -158,14 +157,13 @@ private:
 
     QStringList getLabelIds(const QString& labelerDid) const;
     ATProto::UserPreferences::LabelVisibility getVisibilityDefaultPrefs(const ContentGroup& group) const;
-    ATProto::UserPreferences::LabelVisibility getVisibilityAuthorPrefs(const QString& authorDid, const ContentGroup& group) const;
+    ATProto::UserPreferences::LabelVisibility getVisibilityAuthorPrefs(const BasicProfile& author, const ContentGroup& group) const;
     ATProto::UserPreferences::LabelVisibility getLabelVisibility(
         const ATProto::UserPreferences::ContentLabelPrefs& labelPrefs, const ContentGroup& group) const;
     const ATProto::UserPreferences::ContentLabelPrefs* getContentLabelPrefs(const QString& listUri) const;
     ATProto::UserPreferences::ContentLabelPrefs* getContentLabelPrefs(const QString& listUri);
 
     const QString* mUserDid = nullptr;
-    const IProfileStore* mFollowing = nullptr;
     ListStore* mListsWithPolicies = nullptr;
     const ATProto::UserPreferences* mUserPreferences = nullptr;
     IUserSettingsContentFilter* mUserSettings = nullptr;
@@ -179,7 +177,7 @@ class ContentFilterShowAll : public IContentFilter
 {
 public:
     std::tuple<QEnums::ContentVisibility, QString> getVisibilityAndWarning(
-        const QString&,
+        const BasicProfile&,
         const ATProto::ComATProtoLabel::Label::List&,
         std::optional<QEnums::ContentVisibility> = {}) const override
     {
@@ -187,7 +185,7 @@ public:
     }
 
     virtual std::tuple<QEnums::ContentVisibility, QString, int> getVisibilityAndWarning(
-        const QString&,
+        const BasicProfile&,
         const ContentLabelList&,
         std::optional<QEnums::ContentVisibility> = {}) const override
     {

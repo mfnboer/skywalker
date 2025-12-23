@@ -266,13 +266,14 @@ Column {
     }
 
     Loader {
-        anchors.right: parent.right
+        width: parent.width
         active: postContentLabels.length > 0 && postVisible()
         sourceComponent: ContentLabels {
             parentWidth: parent.width
+            alignRight: true
             contentLabels: postContentLabels
             filteredContentLabel: postBody.filteredContentLabel
-            contentAuthorDid: postAuthor.did
+            contentAuthor: postAuthor
         }
     }
 
@@ -284,8 +285,7 @@ Column {
         sourceComponent: RecordView {
             userDid: postBody.userDid
             record: postRecord
-            backgroundColor: bodyBackgroundColor
-            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
+            backgroundColor: guiSettings.highLightColor(bodyBackgroundColor)
         }
     }
 
@@ -297,7 +297,7 @@ Column {
         sourceComponent: RecordWithMediaView {
             userDid: postBody.userDid
             record: postRecordWithMedia
-            backgroundColor: bodyBackgroundColor
+            backgroundColor: guiSettings.highLightColor(bodyBackgroundColor)
             contentVisibility: postContentVisibility
             contentWarning: postContentWarning
             contentLabeler: postContentLabeler

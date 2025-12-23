@@ -3,7 +3,6 @@
 #pragma once
 #include "user_settings.h"
 #include "normalized_word_index.h"
-#include "profile_store.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/user_preferences.h>
 #include <QObject>
@@ -58,7 +57,7 @@ class MutedWords : public QObject, public IMatchWords
 public:
     static constexpr size_t MAX_ENTRIES = 100;
 
-    explicit MutedWords(const ProfileStore& userFollows, QObject* parent = nullptr);
+    explicit MutedWords(QObject* parent = nullptr);
 
     MutedWordEntry::List getEntries() const;
     void clear();
@@ -110,10 +109,10 @@ private:
     void addWordToIndex(const Entry* entry, WordIndexType& wordIndex);
     void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
     bool preAdd(const Entry& entry);
-    bool mustSkip(const Entry& entry, const QString& authorDid, QDateTime now) const;
-    std::pair<bool, const IMatchEntry*> matchDomain(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
-    std::pair<bool, const IMatchEntry*> matchHashtag(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
-    std::pair<bool, const IMatchEntry*> matchWords(const NormalizedWordIndex& post, QDateTime now, const QString& authorDid) const;
+    bool mustSkip(const Entry& entry, const BasicProfile& author, QDateTime now) const;
+    std::pair<bool, const IMatchEntry*> matchDomain(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
+    std::pair<bool, const IMatchEntry*> matchHashtag(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
+    std::pair<bool, const IMatchEntry*> matchWords(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
 
     std::set<Entry> mEntries;
 
@@ -127,8 +126,6 @@ private:
     WordIndexType mDomainIndex;
 
     bool mDirty = false;
-
-    const ProfileStore& mUserFollows;
 
     friend class MutedWordEntry;
 };

@@ -225,7 +225,7 @@ ListView {
                     anchors.left: parent.left
                     anchors.right: undefined
                     contentLabels: user.profile.labels
-                    contentAuthorDid: user.profile.did
+                    contentAuthor: user.profile
                 }
             }
 
