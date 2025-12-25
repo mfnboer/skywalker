@@ -669,6 +669,10 @@ SkyPage {
                     width: implicitWidth
                 }
                 AccessibleTabButton {
+                    text: qsTr("Reposts")
+                    width: implicitWidth
+                }
+                AccessibleTabButton {
                     text: qsTr("Media")
                     width: implicitWidth
                 }
@@ -884,6 +888,34 @@ SkyPage {
                     visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
                     disableWarning: () => page.disableWarning()
                     feedFilter: QEnums.AUTHOR_FEED_FILTER_REPLIES
+                }
+            }
+
+            // Reposts
+            Loader {
+                active: true
+                asynchronous: true
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item)
+                        item.changeCurrentItem(SwipeView.isCurrentItem) // qmllint disable missing-property
+                }
+
+                sourceComponent: AuthorPostsList {
+                    id: authorRepostsList
+                    width: parent.width
+                    height: parent.height
+                    userDid: page.userDid
+                    author: page.author
+                    enclosingView: authorFeedView
+                    getFeed: (id) => page.getFeed(id)
+                    getFeedNextPage: (id) => page.getFeedNextPage(id)
+                    getEmptyListIndicationSvg: () => page.getEmptyListIndicationSvg()
+                    getEmptyListIndicationText: () => page.getEmptyListIndicationText()
+                    getEmptyListIndicationLabeler: () => page.getEmptyListIndicationLabeler()
+                    visibilityShowProfileLink: (list) => page.visibilityShowProfileLink(list)
+                    disableWarning: () => page.disableWarning()
+                    feedFilter: QEnums.AUTHOR_FEED_FILTER_REPOSTS
                 }
             }
 

@@ -156,6 +156,8 @@ bool AuthorFeedModel::mustShow(const Post& post) const
         return (!post.getImages().isEmpty() || post.getVideoView()) && !post.isRepost();
     case QEnums::AUTHOR_FEED_FILTER_VIDEO:
         return post.getVideoView() && !post.isRepost();
+    case QEnums::AUTHOR_FEED_FILTER_REPOSTS:
+        return true;
     }
 
     qWarning() << "Unknown filter:" << int(mFilter);

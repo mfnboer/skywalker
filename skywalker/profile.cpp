@@ -5,6 +5,7 @@
 #include "content_filter.h"
 #include "definitions.h"
 #include "list_cache.h"
+#include "utils.h"
 
 namespace Skywalker {
 
@@ -255,6 +256,11 @@ const ActivitySubscription& ProfileViewerState::getActivitySubscription() const
     }
 
     return *mPrivate->mActivitySubscription;
+}
+
+ATProto::AppBskyActor::ViewerState::SharedPtr ProfileViewerState::getViewerState() const
+{
+    return mPrivate ? mPrivate->mViewerState : nullptr;
 }
 
 ProfileAssociatedChat::ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated) :
@@ -733,9 +739,53 @@ bool BasicProfile::isBlocked() const
     return viewer.isBlockedBy() || !viewer.getBlocking().isEmpty() || !viewer.getBlockingByList().isNull();
 }
 
+template<class ProfileType>
+static ATProto::AppBskyActor::ProfileViewBasic::SharedPtr createProfileBasicView(ProfileType p)
+{
+    auto profile = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
+    profile->mDid = p->mDid;
+    profile->mHandle = p->mHandle;
+    profile->mDisplayName = p->mDisplayName;
+    profile->mPronouns = p->mPronouns;
+    profile->mAvatar = p->mAvatar;
+    profile->mAssociated = p->mAssociated;
+    profile->mViewer = p->mViewer;
+    profile->mLabels = p->mLabels;
+    profile->mCreatedAt = p->mCreatedAt;
+    profile->mVerification = p->mVerification;
+    profile->mStatus = p->mStatus;
+    return profile;
+}
+
 ATProto::AppBskyActor::ProfileViewBasic::SharedPtr BasicProfile::getProfileBasicView() const
 {
-    return mPrivate ? mPrivate->mProfileBasicView : nullptr;
+    if (!mPrivate)
+    {
+        if (mProfileDetailedView)
+            return createProfileBasicView(mProfileDetailedView);
+
+        if (mProfileView)
+            return createProfileBasicView(mProfileView);
+
+        return nullptr;
+    }
+
+    if (mPrivate->mProfileBasicView)
+        return mPrivate->mProfileBasicView;
+
+    auto profile = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
+    profile->mDid = getDid();
+    profile->mHandle = getHandle();
+    profile->mDisplayName = Utils::makeOptionalString(getDisplayName());
+    profile->mPronouns = Utils::makeOptionalString(getPronouns());
+    profile->mAvatar = Utils::makeOptionalString(getAvatarUrl());
+    profile->mAssociated = getAssociated().getAssociated();
+    profile->mViewer = getViewer().getViewerState();
+
+    if (hasCreatedAt())
+        profile->mCreatedAt = getCreatedAt();
+
+    return profile;
 }
 
 Profile::Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile) :

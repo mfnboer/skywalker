@@ -1,6 +1,7 @@
 next
 ====
 * Faster startup if you follow many people
+* Reposts tab on profile page
 * Wrap content labels
 * Fix touch sensitivity issues (?)
 

@@ -2410,6 +2410,9 @@ void Skywalker::getAuthorFeed(int id, int limit, int maxPages, int minEntries, c
     case QEnums::AUTHOR_FEED_FILTER_VIDEO:
         filter = ATProto::AppBskyFeed::AuthorFeedFilter::POSTS_WITH_VIDEO;
         break;
+    case QEnums::AUTHOR_FEED_FILTER_REPOSTS:
+        getAuthorRepostFeed(id, limit, cursor);
+        return;
     }
 
     const auto& author = (*model)->getAuthor();
@@ -2931,6 +2934,66 @@ void Skywalker::removePostFeedModel(int id)
 {
     qDebug() << "Remove model:" << id;
     mPostFeedModels.remove(id);
+}
+
+void Skywalker::getAuthorRepostFeed(int id, int limit, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get author repost feed model:" << id << "cursor:" << cursor;
+
+    const auto* model = mAuthorFeedModels.get(id);
+    Q_ASSERT(model);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << id;
+        return;
+    }
+
+    if ((*model)->isGetFeedInProgress())
+    {
+        qDebug() << "Get author feed still in progress";
+        return;
+    }
+
+    const auto& author = (*model)->getAuthor();
+    qDebug() << "Get author repost feed:" << author.getHandle();
+    const auto profile = author.getProfileBasicView();
+
+    if (!profile)
+    {
+        qWarning() << "Cannot get profile:" << author.getDid() << author.getHandle();
+        return;
+    }
+
+    (*model)->setGetFeedInProgress(true);
+    postMaster()->getReposts(profile, std::min(limit, ATProto::PostMaster::MAX_GET_REPOSTS), cursor,
+        [this, id, cursor](auto feed){
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (!model)
+                return;
+
+            (*model)->setGetFeedInProgress(false);
+
+            if (cursor.isEmpty())
+                (*model)->setFeed(std::move(feed));
+            else
+                (*model)->addFeed(std::move(feed));
+
+            emit getAuthorFeedOk(id);
+        },
+        [this, id](const QString& error, const QString& msg){
+            const auto* model = mAuthorFeedModels.get(id);
+
+            if (model) {
+                (*model)->setGetFeedInProgress(false);
+                (*model)->setFeedError(msg);
+            }
+
+            qDebug() << "getAuthorRepostFeed failed:" << error << " - " << msg;
+            emit getAuthorFeedFailed(id, error, msg);
+        });
 }
 
 void Skywalker::getLabelersAuthorList(int modelId)
@@ -4393,6 +4456,21 @@ void Skywalker::updateServiceVideoDid(const QString& did)
         mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
 }
 
+ATProto::PostMaster* Skywalker::postMaster()
+{
+    if (!mPostMaster)
+    {
+        Q_ASSERT(mBsky);
+
+        if (mBsky)
+            mPostMaster = std::make_unique<ATProto::PostMaster>(*mBsky);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mPostMaster.get();
+}
+
 void Skywalker::signOut()
 {
     qDebug() << "Sign out:" << mUserDid;
@@ -4415,6 +4493,7 @@ void Skywalker::signOut()
 
     mUserSettings.sync();
     mSessionManager.saveTokens();
+    mPostMaster = nullptr;
 
     stopTimelineAutoUpdate();
     stopRefreshTimers();

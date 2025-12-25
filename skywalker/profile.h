@@ -165,6 +165,7 @@ public:
     const ListViewBasic& getBlockingByList() const;
     const KnownFollowers& getKnownFollowers() const;
     const ActivitySubscription& getActivitySubscription() const;
+    ATProto::AppBskyActor::ViewerState::SharedPtr getViewerState() const;
 
     void setBlocking(const QString& blocking);
 
@@ -232,6 +233,7 @@ public:
     bool isLabeler() const { return mAssociated ? mAssociated->mLabeler : false; }
     ProfileAssociatedChat getChat() const { return mAssociated ? ProfileAssociatedChat(mAssociated->mChat) : ProfileAssociatedChat{}; }
     ProfileAssociatedActivitySubscription getActivitySubscription() const { return mAssociated ? ProfileAssociatedActivitySubscription(mAssociated->mActivitySubscription) : ProfileAssociatedActivitySubscription{}; }
+    ATProto::AppBskyActor::ProfileAssociated::SharedPtr getAssociated() const { return mAssociated; }
 
 private:
     ATProto::AppBskyActor::ProfileAssociated::SharedPtr mAssociated;

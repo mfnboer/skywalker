@@ -325,6 +325,7 @@ signals:
 private:
     Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
 
+    void getAuthorRepostFeed(int id, int limit = ATProto::PostMaster::MAX_GET_REPOSTS, const QString& cursor = {});
     void getLabelersAuthorList(int modelId);
     void getActiveFollowsAuthorList(int modelId, const QString& cursor);
     void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
@@ -379,6 +380,7 @@ private:
     void updateServiceChat(const QString& did);
     void updateServiceVideoHost(const QString& did);
     void updateServiceVideoDid(const QString& did);
+    ATProto::PostMaster* postMaster();
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
@@ -386,6 +388,7 @@ private:
     QNetworkAccessManager* mNetwork;
     ATProto::Client::SharedPtr mBsky;
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
+    std::unique_ptr<ATProto::PostMaster> mPostMaster;
 
     QString mUserDid;
     Profile mUserProfile;
