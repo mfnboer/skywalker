@@ -302,7 +302,7 @@ Column {
             contentWarning: postContentWarning
             contentLabeler: postContentLabeler
             highlight: bodyBackgroundColor === guiSettings.postHighLightColor
-            isDraft: isDraft
+            isDraft: postBody.isDraft
             swipeMode: postBody.swipeMode
             showRecord: postBody.showRecord
 
