@@ -4,6 +4,7 @@ next
 * Reposts tab on profile page
 * Wrap content labels
 * Fix touch sensitivity issues (?)
+* Bug fixes
 
 4.23
 ====
