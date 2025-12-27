@@ -260,7 +260,7 @@ SkyListView {
         AccessibleMenuItem {
             text: qsTr("Share")
             svg: SvgOutline.share
-            onTriggered: skywalker.shareFeed(feed)
+            onTriggered: skywalker.shareFeed(feedOptionsMenu.feed)
         }
 
         AccessibleMenuItem {
@@ -349,7 +349,16 @@ SkyListView {
         AccessibleMenuItem {
             text: qsTr("Share")
             svg: SvgOutline.share
-            onTriggered: skywalker.shareList(list)
+            onTriggered: {
+                const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
+
+                if (favorite.isNull()) {
+                    console.warn("List is not a favorite:" << listFeedOptionsMenu.list.uri)
+                    return
+                }
+
+                skywalker.shareList(favorite.listView)
+            }
         }
 
         AccessibleMenuItem {
