@@ -239,6 +239,7 @@ void SearchUtils::localSearchAuthorsTypeahead(const QString&, int, const IProfil
     // Below is an example of a search in all accounts the user follows. As it is too
     // expensive to load all these accounts we have disabled this. Bluesky's search is
     // quite decent now.
+    setAuthorTypeaheadList({});
 #if 0
     const IndexedProfileStore& following = mSkywalker->getUserFollows();
     const std::unordered_set<const BasicProfile*> profiles = following.findProfiles(typed, limit, matcher);

@@ -258,6 +258,12 @@ SkyListView {
         }
 
         AccessibleMenuItem {
+            text: qsTr("Share")
+            svg: SvgOutline.share
+            onTriggered: skywalker.shareFeed(feed)
+        }
+
+        AccessibleMenuItem {
             text: qsTr("Filtered posts")
             svg: SvgOutline.hideVisibility
             onTriggered: root.viewContentFilterStats(underlyingModel)
@@ -338,6 +344,12 @@ SkyListView {
                     gu.hideList(listFeedOptionsMenu.list.uri)
                 }
             }
+        }
+
+        AccessibleMenuItem {
+            text: qsTr("Share")
+            svg: SvgOutline.share
+            onTriggered: skywalker.shareList(list)
         }
 
         AccessibleMenuItem {
