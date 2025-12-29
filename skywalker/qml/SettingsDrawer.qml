@@ -213,7 +213,7 @@ SkyDrawer {
                 source: "/images/buycoffee.png"
                 asynchronous: true
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
                     onClicked: buyCoffee()
                 }

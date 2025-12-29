@@ -110,7 +110,7 @@ Item {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         onClicked: {
             console.debug("Avatar clicked");

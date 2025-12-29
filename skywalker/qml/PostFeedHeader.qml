@@ -159,7 +159,7 @@ Rectangle {
                 visible: showAsHome
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: parent.expandFeeds()
             }

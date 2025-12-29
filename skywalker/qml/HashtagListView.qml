@@ -49,7 +49,7 @@ ListView {
             Accessible.ignored: true
         }
 
-        MouseArea {
+        SkyMouseArea {
             z: -1
             anchors.fill: parent
             onClicked: hashtagClicked(hashtagEntry.hashtag)

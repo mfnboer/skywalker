@@ -63,7 +63,7 @@ Rectangle {
                 text: reaction.emoji
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: skywalker.showStatusMessage(emojiNames.getEmojiName(reaction.emoji), QEnums.STATUS_LEVEL_INFO)
             }
@@ -112,7 +112,7 @@ Rectangle {
             visible: root.isActiveUser(reaction.senderDid)
         }
     }
-    MouseArea {
+    SkyMouseArea {
         z: -1
         anchors.fill: parent
         enabled: root.isActiveUser(reaction.senderDid)

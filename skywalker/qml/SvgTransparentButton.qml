@@ -25,7 +25,7 @@ SkySvg {
         Accessible.onPressAction: if (button.enabled) button.clicked()
     }
 
-    MouseArea {
+    SkyMouseArea {
         y: -parent.height
         width: parent.width
         height: parent.height

@@ -121,7 +121,7 @@ ListView {
                 color: guiSettings.separatorColor
             }
         }
-        MouseArea {
+        SkyMouseArea {
             z: -1
             anchors.fill: parent
             onClicked: authorClicked(author)

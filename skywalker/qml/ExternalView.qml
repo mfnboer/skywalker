@@ -60,7 +60,7 @@ Item {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         z: -1
         onClicked: openExternalLink()

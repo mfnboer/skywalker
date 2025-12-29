@@ -296,7 +296,7 @@ Pane {
                     font.bold: homeActive
                     text: qsTr("Home")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: homeClicked()
                     }
@@ -322,7 +322,7 @@ Pane {
                     font.bold: searchActive
                     text: qsTr("Search")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: searchClicked()
                     }
@@ -350,7 +350,7 @@ Pane {
                     font.bold: messagesActive
                     text: qsTr("Direct messages")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: messagesClicked()
                     }
@@ -378,7 +378,7 @@ Pane {
                     font.bold: notificationsActive
                     text: qsTr("Notifications")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: notificationsClicked()
                     }

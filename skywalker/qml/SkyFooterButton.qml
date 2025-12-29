@@ -35,7 +35,7 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: button
         onClicked: button.clicked()
     }

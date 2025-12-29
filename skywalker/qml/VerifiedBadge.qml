@@ -10,7 +10,7 @@ Image {
     source: "/images/verified_check.svg"
     asynchronous: true
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         onClicked: showVerifiedStatus()
     }

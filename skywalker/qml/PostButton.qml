@@ -18,7 +18,7 @@ SvgButton {
             root.postButtonRelativeX = (x - 10) / (parent.width - width - 20)
     }
 
-    MouseArea {
+    SkyMouseArea {
         id: mouseArea
         anchors.fill: parent
         drag.target: button

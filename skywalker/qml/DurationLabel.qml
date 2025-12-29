@@ -15,7 +15,7 @@ SkyLabel {
     color: isOld ? guiSettings.textColor : Material.color(Material.Grey)
     backgroundColor: getBackgroundColor()
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         enabled: parent.isOld
         onClicked: root.getSkywalker().showStatusMessage(qsTr("Post is more than 5 days old"), QEnums.STATUS_LEVEL_INFO)

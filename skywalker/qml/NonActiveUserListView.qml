@@ -236,7 +236,7 @@ ListView {
                 color: guiSettings.separatorColor
             }
         }
-        MouseArea {
+        SkyMouseArea {
             z: -1
             anchors.fill: parent
             enabled: action !== QEnums.NON_ACTIVE_USER_REPOST

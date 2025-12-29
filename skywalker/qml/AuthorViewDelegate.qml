@@ -188,7 +188,7 @@ Rectangle {
             visible: endOfList
         }
     }
-    MouseArea {
+    SkyMouseArea {
         z: -1
         anchors.fill: parent
         onClicked: {

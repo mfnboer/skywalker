@@ -60,7 +60,7 @@ SkyPage {
                 opacity: guiSettings.focusHighlightOpacity
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: page.selected(modelData)
             }

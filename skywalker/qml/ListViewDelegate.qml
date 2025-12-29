@@ -117,7 +117,7 @@ Rectangle {
                 Accessible.name: listCreator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(listCreator.did)
                 }
@@ -134,7 +134,7 @@ Rectangle {
                 Accessible.name: text
                 Accessible.onPressAction: skywalker.getDetailedProfile(listCreator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(listCreator.did)
                 }
@@ -228,7 +228,7 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         z: -2 // Let other mouse areas on top
         anchors.fill: parent
         onClicked: {
@@ -356,7 +356,7 @@ Rectangle {
             visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
             onToggled: hideReplies(list, !checked)
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 enabled: !listPinned
                 onClicked: skywalker.showStatusMessage(qsTr("Show replies can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
@@ -370,7 +370,7 @@ Rectangle {
             visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
             onToggled: hideFollowing(list, !checked)
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 enabled: !listPinned
                 onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
@@ -384,7 +384,7 @@ Rectangle {
             visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
             onToggled: syncList(list, checked)
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 enabled: !listPinned
                 onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)

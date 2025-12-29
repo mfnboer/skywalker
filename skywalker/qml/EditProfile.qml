@@ -151,7 +151,7 @@ SkyPage {
                     Accessible.name: qsTr("change banner")
                     Accessible.onPressAction: pickBannerPhoto()
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: pickBannerPhoto()
                     }

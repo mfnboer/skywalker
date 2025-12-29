@@ -60,10 +60,9 @@ RoundCornerMask {
             }
         }
     }
-    MouseArea {
+    SkyMouseArea {
         enabled: filter.imageVisible()
         anchors.fill: imgRow
-        scrollGestureEnabled: false
         onClicked: {
             let p = Qt.point(mouseX, mouseY)
             let index = -1

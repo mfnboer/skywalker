@@ -239,7 +239,7 @@ Rectangle {
                     verticalAlignment: Text.AlignVCenter
                     text: qsTr("Read older...")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: addOlderPosts()
                     }
@@ -319,7 +319,7 @@ Rectangle {
                 font.pointSize: guiSettings.scaledFont(7/8)
                 Accessible.ignored: true
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
                     onClicked: skywalker.getDetailedProfile(postRepostedByAuthor.did)
                 }
@@ -768,7 +768,7 @@ Rectangle {
                     color: guiSettings.linkColor
                     text: qsTr("Read more...")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: addMorePosts(postUri)
                     }
@@ -792,7 +792,7 @@ Rectangle {
                     color: guiSettings.linkColor
                     text: qsTr("Show more replies...")
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: openPostThread()
                     }
@@ -814,9 +814,8 @@ Rectangle {
                 color: guiSettings.linkColor
                 text: qsTr("Unfold post thread")
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
-                    scrollGestureEnabled: false
                     onClicked: unfoldPosts()
                 }
             }
@@ -837,9 +836,8 @@ Rectangle {
                 color: guiSettings.linkColor
                 text: qsTr("Show more posts")
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
-                    scrollGestureEnabled: false
                     onClicked: getGapPosts()
                 }
             }
@@ -858,9 +856,8 @@ Rectangle {
                 color: guiSettings.linkColor
                 text: qsTr("Show hidden replies")
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
-                    scrollGestureEnabled: false
                     onClicked: showHiddenReplies()
                 }
             }
@@ -1044,10 +1041,9 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
-        scrollGestureEnabled: false
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !unrollThread
         onClicked: {
             if (swipeMode)

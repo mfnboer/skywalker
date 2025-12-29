@@ -44,7 +44,7 @@ RowLayout {
         plainText: qsTr(`Followed by ${getKnownFollowersText()}`)
         visible: author.viewer.knownFollowers.count > 0
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             onClicked: knownOthersRow.showKnownFollowers()
         }

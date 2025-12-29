@@ -57,7 +57,7 @@ Popup {
         onClicked: statusPopup.close()
     }
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: statusText
         onClicked: statusPopup.close()
     }

@@ -42,10 +42,9 @@ Item {
             sourceComponent: imgSizeKnown ? knownSizeComp : unknownSizeComp
         }
 
-        MouseArea {
+        SkyMouseArea {
             enabled: filter.imageVisible()
             anchors.fill: img
-            scrollGestureEnabled: false
             onClicked: {
                 if (img.item && img.item.failedCanReload)
                     img.item.reload()

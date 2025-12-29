@@ -120,10 +120,9 @@ Rectangle {
             Layout.fillHeight: true
             color: "transparent"
 
-            MouseArea {
+            SkyMouseArea {
                 width: parent.width
                 height: width
-                scrollGestureEnabled: false
                 enabled: notificationIsAggregatable
                 onClicked: showAuthorList()
             }
@@ -494,9 +493,8 @@ Rectangle {
                         text: `+${(notificationOtherAuthors.length - 4)}`
                         visible: notificationOtherAuthors.length > 4
 
-                        MouseArea {
+                        SkyMouseArea {
                             anchors.fill: parent
-                            scrollGestureEnabled: false
                             onClicked: showAuthorList()
                         }
                     }
@@ -679,10 +677,9 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         z: -2 // Let other mouse areas, e.g. images, get on top, -2 to allow records on top
         anchors.fill: parent
-        scrollGestureEnabled: false
         onClicked: openNotification()
     }
 

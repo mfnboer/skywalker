@@ -124,7 +124,7 @@ Dialog {
             placeholderText: qsTr("Date")
             text: setSince ? sinceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectDate(sinceText)
             }
@@ -156,7 +156,7 @@ Dialog {
             placeholderText: qsTr("Date")
             text: setUntil ? untilDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectDate(untilText)
             }

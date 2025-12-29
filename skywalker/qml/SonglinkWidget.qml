@@ -93,7 +93,7 @@ Loader {
                         }
                     }
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: root.openLink(linkItem.modelData.link)
                     }
@@ -125,7 +125,7 @@ Loader {
             songlinkFlow.songlinkQueryDone = true
         }
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             enabled: !songlink.inProgress && songlinkRow.visible
             onClicked: songlink.getLinks(uri)

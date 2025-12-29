@@ -111,7 +111,7 @@ SkyPage {
                         }
                     }
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: searchCategory(category)
                     }
@@ -156,7 +156,7 @@ SkyPage {
                         Accessible.name: `GIF: ${gif.description}`
                         Accessible.onPressAction: selected(gif)
 
-                        MouseArea {
+                        SkyMouseArea {
                             anchors.fill: parent
                             onClicked: {
                                 tenor.addRecentGif(gif)

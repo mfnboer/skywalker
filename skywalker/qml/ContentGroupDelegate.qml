@@ -155,7 +155,7 @@ Rectangle {
 
                 Accessible.ignored: true
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
                     onClicked: skywalker.showStatusMessage(qsTr("Adult content disabled"), QEnums.STATUS_LEVEL_INFO)
                 }

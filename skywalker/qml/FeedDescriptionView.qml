@@ -113,7 +113,7 @@ SkyPage {
                 Accessible.name: feed.creator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(feed.creator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(feed.creator.did)
                 }
@@ -131,7 +131,7 @@ SkyPage {
                 Accessible.name: text
                 Accessible.onPressAction: skywalker.getDetailedProfile(feed.creator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(feed.creator.did)
                 }
@@ -207,7 +207,7 @@ SkyPage {
                         feedHideFollowing = !checked
                     }
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         enabled: !isPinnedFeed
                         onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)

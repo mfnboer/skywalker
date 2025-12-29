@@ -227,7 +227,7 @@ SkyPage {
             color: guiSettings.linkColor
             text: page.getSearchPostScopeText()
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: page.changeSearchPostScope()
                 enabled: page.isPostSearch
@@ -610,7 +610,7 @@ SkyPage {
                             color: guiSettings.separatorColor
                         }
 
-                        MouseArea {
+                        SkyMouseArea {
                             anchors.fill: parent
                             onClicked: root.openLink(modelData.topic.link)
                         }
@@ -906,7 +906,7 @@ SkyPage {
                             text: modelData
                         }
 
-                        MouseArea {
+                        SkyMouseArea {
                             anchors.fill: parent
                             onClicked: {
                                 header.setSearchText(recentSearchText.text)

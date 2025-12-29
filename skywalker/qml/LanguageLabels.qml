@@ -37,7 +37,7 @@ ScrollView {
                 Accessible.role: Accessible.StaticText
                 Accessible.name: qsTr(`language indication: ${text}`)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
                     onClicked: showInfo(modelData)
                 }

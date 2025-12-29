@@ -95,7 +95,7 @@ ColumnLayout {
             border.color: guiSettings.buttonColor
             color: guiSettings.backgroundColor
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectBackgroundColor()
             }
@@ -125,7 +125,7 @@ ColumnLayout {
             border.color: guiSettings.buttonColor
             color: guiSettings.textColor
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectTextColor()
             }
@@ -172,7 +172,7 @@ ColumnLayout {
             border.color: guiSettings.accentColor
             color: guiSettings.accentColor
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectAccentColor()
             }
@@ -205,7 +205,7 @@ ColumnLayout {
             border.color: guiSettings.buttonColor
             color: guiSettings.linkColor
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectLinkColor()
             }
@@ -271,7 +271,7 @@ ColumnLayout {
                 GradientStop { position: 1.0; color: guiSettings.threadEndColor(userSettings.threadColor) }
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: selectThreadColor()
             }

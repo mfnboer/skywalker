@@ -174,9 +174,8 @@ Rectangle {
                     images: postOrRecordImages
                 }
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
-                    scrollGestureEnabled: false
                     onClicked: {
                         if (parent.failedCanReload)
                             parent.reload()
@@ -363,10 +362,9 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         z: -2
         anchors.fill: parent
-        scrollGestureEnabled: false
         enabled: !(postThreadType & QEnums.THREAD_ENTRY)
         onClicked: activateSwipe(0, null)
     }

@@ -147,7 +147,7 @@ SkyPage {
                 Accessible.name: list.creator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(list.creator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(list.creator.did)
                 }
@@ -165,7 +165,7 @@ SkyPage {
                 Accessible.name: text
                 Accessible.onPressAction: skywalker.getDetailedProfile(list.creator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(list.creator.did)
                 }
@@ -345,7 +345,7 @@ SkyPage {
                 listHideReplies = !checked
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 enabled: !isPinnedList
                 onClicked: skywalker.showStatusMessage(qsTr("Show replies can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
@@ -361,7 +361,7 @@ SkyPage {
                 listHideFollowing = !checked
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 enabled: !isPinnedList
                 onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
@@ -377,7 +377,7 @@ SkyPage {
                 listSync = checked
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 enabled: !isPinnedList
                 onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)

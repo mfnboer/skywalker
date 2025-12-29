@@ -88,7 +88,7 @@ Rectangle {
                 Accessible.name: feedCreator.name
                 Accessible.onPressAction: skywalker.getDetailedProfile(feedCreator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(feedCreator.did)
                 }
@@ -105,7 +105,7 @@ Rectangle {
                 Accessible.name: text
                 Accessible.onPressAction: skywalker.getDetailedProfile(feedCreator.did)
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill:  parent
                     onClicked: skywalker.getDetailedProfile(feedCreator.did)
                 }
@@ -141,7 +141,7 @@ Rectangle {
                     svg: feedPinned ? SvgFilled.star : SvgOutline.star
                 }
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
                     onClicked: favoriteClicked(feed, !feedPinned)
                 }
@@ -262,7 +262,7 @@ Rectangle {
                         checked: !feedHideFollowing
                         onToggled: hideFollowing(feed, !checked)
 
-                        MouseArea {
+                        SkyMouseArea {
                             anchors.fill: parent
                             enabled: !feedPinned
                             onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)
@@ -300,7 +300,7 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         z: -2 // Let other mouse areas on top
         anchors.fill: parent
         onClicked: {

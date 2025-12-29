@@ -19,7 +19,7 @@ AccessibleText {
     Accessible.name: UnicodeFonts.toPlainText(text)
     Accessible.onPressAction: showAuthors()
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         onClicked: parent.showAuthors()
     }

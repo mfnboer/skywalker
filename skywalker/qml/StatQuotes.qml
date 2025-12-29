@@ -15,7 +15,7 @@ AccessibleText {
     Accessible.name: UnicodeFonts.toPlainText(text)
     Accessible.onPressAction: showQuotes()
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         onClicked: parent.showQuotes()
     }

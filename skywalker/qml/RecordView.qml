@@ -222,10 +222,9 @@ Item {
             }
         }
     }
-    MouseArea {
+    SkyMouseArea {
         z: -1 // Let other mouse areas, e.g. images, get on top
         anchors.fill: parent
-        scrollGestureEnabled: false
         onClicked: showRecord()
     }
 

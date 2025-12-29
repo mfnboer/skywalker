@@ -81,7 +81,7 @@ ComboBox {
             color: delegate.highlighted ? Material.listHighlightColor : (delegate.index < usedLanguages.length ? guiSettings.postHighLightColor : "transparent")
         }
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             onClicked: {
                 const newCode = delegate.modelData.shortCode

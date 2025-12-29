@@ -142,14 +142,14 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         id: postMouseArea
         width: parent.width
         height: postColumn.height
         z: 100 // Cover all mouse areas. Only the draft post can be selected.
         onClicked: selectDraft()
     }
-    MouseArea {
+    SkyMouseArea {
         width: parent.width - deleteButton.width
         anchors.top: postMouseArea.bottom
         anchors.bottom: parent.bottom

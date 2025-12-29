@@ -36,9 +36,8 @@ RoundedFrame {
             return w
         }
     }
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: img
-        scrollGestureEnabled: false
         enabled: filter.imageVisible()
 
         onClicked: {

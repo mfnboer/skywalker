@@ -220,10 +220,9 @@ Rectangle {
                             }
                         }
 
-                        MouseArea {
+                        SkyMouseArea {
                             width: parent.width
                             height: parent.height
-                            scrollGestureEnabled: false
 
                             onClicked: showDetails = !showDetails
                             onDoubleClicked: (mouse) => {
@@ -326,11 +325,10 @@ Rectangle {
         visible: postColumn.visible
     }
 
-    MouseArea {
+    SkyMouseArea {
         width: parent.width
         anchors.top: postColumn.top
         anchors.bottom: postColumn.bottom
-        scrollGestureEnabled: false
         enabled: postColumn.visible
         onClicked: showFullPostText = !showFullPostText
     }

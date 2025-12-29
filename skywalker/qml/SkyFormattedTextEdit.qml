@@ -158,7 +158,7 @@ TextEdit {
     // }
 
     // Avoid keyboard popping up when the user is scrolling the parent flick
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         propagateComposedEvents: true
 

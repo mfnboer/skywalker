@@ -54,7 +54,7 @@ SkyPage {
                 id: imgRect
                 color: guiSettings.fullScreenColor
 
-                MouseArea {
+                SkyMouseArea {
                     width: parent.width
                     height: parent.height
                     onClicked: showControls = !showControls

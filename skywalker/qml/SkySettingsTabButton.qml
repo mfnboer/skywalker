@@ -20,7 +20,7 @@ AccessibleTabButton {
             svg: SvgFilled.settings
         }
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             onClicked: activated()
         }

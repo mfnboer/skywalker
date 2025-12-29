@@ -2,7 +2,7 @@ import QtQuick
 import skywalker
 
 // Should be used inside a Text element
-MouseArea {
+SkyMouseArea {
     property string userDid
     property string containingText
 

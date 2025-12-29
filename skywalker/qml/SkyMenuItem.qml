@@ -38,7 +38,7 @@ Item {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: itemRow
         onClicked: menuItem.clicked()
     }

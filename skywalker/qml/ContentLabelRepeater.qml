@@ -61,7 +61,7 @@ Repeater {
             Accessible.name: qsTr(`content label: ${text}`)
         }
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             onClicked: showInfo(modelData)
         }

@@ -82,7 +82,7 @@ Item {
                 text: enabled ? expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat) : ""
                 enabled: untilButton.checked
 
-                MouseArea {
+                SkyMouseArea {
                     anchors.fill: parent
                     onClicked: selectExpiresDate()
                 }

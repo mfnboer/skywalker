@@ -202,7 +202,7 @@ SkyPage {
                         color: guiSettings.textColor
                     }
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         onClicked: {
                             skywalker.saveGlobalContentFilterPreferences();
@@ -294,7 +294,7 @@ SkyPage {
                             color: guiSettings.textColor
                         }
 
-                        MouseArea {
+                        SkyMouseArea {
                             anchors.fill: parent
                             onClicked: {
                                 labelPrefsList.saveModel()

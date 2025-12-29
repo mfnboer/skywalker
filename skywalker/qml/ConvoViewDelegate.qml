@@ -255,7 +255,7 @@ Rectangle {
         }
     }
 
-    MouseArea {
+    SkyMouseArea {
         z: -2
         anchors.fill: parent
         onClicked: viewConvo(convo)

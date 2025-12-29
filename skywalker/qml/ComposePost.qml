@@ -1266,7 +1266,7 @@ SkyPage {
                 }
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: page.addReplyRestrictions()
             }
@@ -1360,7 +1360,7 @@ SkyPage {
                 }
             }
 
-            MouseArea {
+            SkyMouseArea {
                 anchors.fill: parent
                 onClicked: languageSelector.popup.open()
                 onPressAndHold: {

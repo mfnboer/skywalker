@@ -130,7 +130,7 @@ Rectangle {
             onOpening: openingEmbed()
         }
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             z: -2
             onPressAndHold: moreMenu.open()
@@ -219,7 +219,7 @@ Rectangle {
             }
         }
 
-        MouseArea {
+        SkyMouseArea {
             anchors.fill: parent
             onClicked: showReactions(message)
         }

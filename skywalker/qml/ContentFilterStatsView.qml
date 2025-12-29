@@ -130,7 +130,7 @@ SkyPage {
                     maximumLineCount: 2
                     horizontalAlignment: control.valueType === QEnums.VALUE_TYPE_INT ? Text.AlignRight : Text.AlignLeft
 
-                    MouseArea {
+                    SkyMouseArea {
                         anchors.fill: parent
                         enabled: control.column == 1
                         onClicked: page.viewFilteredPosts(control.hideReason, control.keyList)

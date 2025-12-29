@@ -48,7 +48,7 @@ Rectangle {
             running: blinking
         }
     }
-    MouseArea {
+    SkyMouseArea {
         anchors.fill: parent
         onClicked: control.emitClicked()
         onPressAndHold: (mouseEvent) => control.emitPressAndHold(mouseEvent)
