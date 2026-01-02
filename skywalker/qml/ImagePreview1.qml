@@ -113,4 +113,11 @@ Item {
 
         return img.item.paintedHeight
     }
+
+    function closeMedia(mediaIndex, closeCb) {
+        if (mediaIndex < 1)
+            fullImageLoader.hide(mediaIndex, swipeMode, closeCb)
+        else
+            closeCb()
+    }
 }

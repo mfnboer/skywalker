@@ -1,3 +1,8 @@
+next
+====
+* Improve image open/close animation
+* Bug fixes
+
 4.24
 ====
 * Faster startup if you follow many people

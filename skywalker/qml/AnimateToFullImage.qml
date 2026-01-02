@@ -6,6 +6,7 @@ Item {
     required property point thumbImageOrig
     required property string imageAlt
     property bool swipeMode: false
+    property bool reverse: false
     property bool thumbImageVisible: true
     property var currentPage
     property int headerHeight: 0
@@ -97,6 +98,10 @@ Item {
 
         onStarted: {
             animator.started()
+
+            // An image in a RoundedFrame has its visible property set to false
+            thumbImageVisible = thumbImage.getVisible()
+
             setCurrentPage()
             setThumbImage()
 
@@ -124,6 +129,9 @@ Item {
         onZoomChanged: setZoom()
 
         function setZoom() {
+            if (!zoomImage.item)
+                return
+
             const newX = orig.x - (orig.x - left) * zoom
             const newY = orig.y - (orig.y - top) * zoom
             zoomImage.item.img.setRelPos(newX, newY)
@@ -147,6 +155,7 @@ Item {
         function reverseRun() {
             from = 1.0
             to = 0.0
+            zoomImage.active = true
 
             if (zoomImage.item.img.status !== Image.Loading)
                 start()
@@ -206,9 +215,9 @@ Item {
     }
 
     Component.onCompleted: {
-        // An image in a RoundedFrame has its visible property set to false
-        thumbImageVisible = thumbImage.getVisible()
-
-        zoomAnimation.run()
+        if (reverse)
+            zoomAnimation.reverseRun()
+        else
+            zoomAnimation.run()
     }
 }

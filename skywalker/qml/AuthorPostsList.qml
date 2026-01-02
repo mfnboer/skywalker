@@ -48,7 +48,12 @@ SkyListView {
 
         onActivateSwipe: (imgIndex, previewImg) => {
             if (swipeMode)
-                root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => { authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning) }, userDid)
+                root.viewMediaFeed(model, index, imgIndex, previewImg,
+                                   (newIndex, mediaIndex, closeCb) => {
+                                       authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning)
+                                       authorPostsList.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                                   },
+                                   userDid)
             else
                 console.warn("This is not a media feed")
         }

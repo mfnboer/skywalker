@@ -217,24 +217,28 @@ Column {
 
     // Images
     Loader {
+        id: images1Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
         active: postImages.length === 1 && postVisible()
         sourceComponent: images1Component
     }
     Loader {
+        id: images2Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
         active: postImages.length === 2 && postVisible()
         sourceComponent: images2Component
     }
     Loader {
+        id: images3Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
         active: postImages.length === 3 && postVisible()
         sourceComponent: images3Component
     }
     Loader {
+        id: images4Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
         active: postImages.length === 4 && postVisible()
@@ -323,6 +327,21 @@ Column {
             text: postDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
             font.pointSize: guiSettings.scaledFont(7/8)
         }
+    }
+
+    function closeMedia(mediaIndex, closeCb) {
+        if (images1Loader.item)
+            images1Loader.item.closeMedia(mediaIndex, closeCb)
+        else if (images2Loader.item)
+            images2Loader.item.closeMedia(mediaIndex, closeCb)
+        else if (images3Loader.item)
+            images3Loader.item.closeMedia(mediaIndex, closeCb)
+        else if (images4Loader.item)
+            images4Loader.item.closeMedia(mediaIndex, closeCb)
+        else if (videoLoader.item)
+            videoLoader.item.closeMedia(mediaIndex, closeCb)
+        else
+            closeCb()
     }
 
     function movedOffScreen() {

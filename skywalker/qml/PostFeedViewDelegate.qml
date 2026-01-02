@@ -165,6 +165,10 @@ Rectangle {
         postBody.movedOffScreen()
     }
 
+    function closeMedia(mediaIndex, closeCb) {
+        postBody.closeMedia(mediaIndex, closeCb)
+    }
+
     GridLayout {
         id: grid
         columns: gridColumns

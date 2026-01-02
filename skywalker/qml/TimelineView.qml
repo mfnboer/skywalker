@@ -61,7 +61,14 @@ SkyListView {
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
 
         onUnfoldPosts: model.unfoldPosts(index)
-        onActivateSwipe: (imgIndex, previewImg) => root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => { moveToPost(newIndex) })
+        onActivateSwipe: (imgIndex, previewImg) => {
+                             let view = timelineView
+                             root.viewMediaFeed(model, index, imgIndex, previewImg,
+                                                (newIndex, mediaIndex, closeCb) => {
+                                                    moveToPost(newIndex)
+                                                    view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                                                })
+                         }
     }
 
     onCountChanged: {

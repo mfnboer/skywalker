@@ -132,5 +132,12 @@ RoundCornerMask {
 
         onActivateSwipe: (imgIndex, previewImg) => frame.activateSwipe(imgIndex, previewImg)
     }
+
+    function closeMedia(mediaIndex, closeCb) {
+        if (mediaIndex < 4)
+            fullImageLoader.hide(mediaIndex, swipeMode, closeCb)
+        else
+            closeCb()
+    }
 }
 

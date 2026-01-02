@@ -829,6 +829,13 @@ Column {
             videoHandle.destroy()
     }
 
+    function closeMedia(mediaIndex, closeCb) {
+        if (mediaIndex < 1)
+            fullImageLoader.hide(mediaIndex, swipeMode, closeCb)
+        else
+            closeCb()
+    }
+
     Component.onDestruction: {
         console.debug("Destruct VideoView:", videoView.playlistUrl)
         clearCache()

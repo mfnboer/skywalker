@@ -58,7 +58,11 @@ SkyListView {
 
         onActivateSwipe: (imgIndex, previewImg) => {
             let view = feedView
-            root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => { view.positionViewAtIndex(newIndex, ListView.Beginning) })
+            root.viewMediaFeed(model, index, imgIndex, previewImg,
+                               (newIndex, mediaIndex, closeCb) => {
+                                   view.positionViewAtIndex(newIndex, ListView.Beginning)
+                                   view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                               })
         }
 
         Loader {

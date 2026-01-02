@@ -134,6 +134,8 @@ Rectangle {
         }
 
         Loader {
+            property int imageIndex: 0
+
             id: imageLoader
             active: postOrRecordImages.length > 0
 
@@ -143,7 +145,7 @@ Rectangle {
                 width: mediaRect.width
                 height: mediaRect.height
                 fillMode: Image.PreserveAspectCrop
-                source: filter.getImage(0).thumbUrl
+                source: filter.getImage(imageIndex).thumbUrl
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
@@ -378,6 +380,17 @@ Rectangle {
     function cover() {
         if (feedAcceptsInteractions && onScreen)
             GridView.view.model.reportOffScreen(postUri, postFeedContext)
+    }
+
+    function closeMedia(mediaIndex, closeCb) {
+        if (imageLoader.active) {
+            imageLoader.imageIndex = mediaIndex
+            fullImageLoader.hide(0, true, closeCb)
+        }
+        else if (videoLoader.item)
+            videoLoader.item.closeMedia(0, closeCb)
+        else
+            closeCb()
     }
 
     function confirmDelete() {

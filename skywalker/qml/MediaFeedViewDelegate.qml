@@ -88,6 +88,7 @@ Rectangle {
     property var videoItem: postOrRecordVideo ? videoLoader.item : null
     property var imageItem: postOrRecordImages.length > 0 ? imageLoader.item : null
     property bool zooming: imageItem ? imageItem.zooming : false
+    readonly property int currentMediaIndex: imageItem ? imageItem.currentIndex : 0
 
     signal closed
     signal imageLoaded

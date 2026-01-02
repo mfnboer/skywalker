@@ -85,11 +85,14 @@ GridView {
 
         onActivateSwipe: (imgIndex, previewImg) => {
             let item = mediaTilesView
-            root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex) => {
-                if (item)
+            root.viewMediaFeed(model, index, imgIndex, previewImg, (newIndex, mediaIndex, closeCb) => {
+                if (item) {
                     item.goToIndex(newIndex)
-                else
+                    item.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                }
+                else {
                     console.warn("NO MEDIA TILES VIEW")
+                }
             }, userDid)
         }
     }
