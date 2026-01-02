@@ -61,5 +61,7 @@ RoundedFrame {
         thumbImageViewList: [img]
         isAnimatedImage: true
         animatedImageAlt: title
+        onStarted: frame.visible = false
+        onFinished: frame.visible = true
     }
 }

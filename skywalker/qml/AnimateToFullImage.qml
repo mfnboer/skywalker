@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 Item {
     required property var thumbImage
+    required property point thumbImageOrig
     required property string imageAlt
     property bool swipeMode: false
     property bool thumbImageVisible: true
@@ -10,6 +11,7 @@ Item {
     property int headerHeight: 0
     property int footerHeight: 0
 
+    signal started
     signal done(var img)
     signal reverseDone()
 
@@ -33,7 +35,7 @@ Item {
             clip: true
 
             Image {
-                property point orig: thumbImage.parent.mapToItem(root.contentItem, thumbImage.x, thumbImage.y)
+                property point orig: thumbImageOrig
                 property int relX: orig.x
                 property int relY: orig.y
 
@@ -49,7 +51,6 @@ Item {
                     console.debug("Zoom image status:", status)
 
                     if (status == Image.Ready) {
-                        thumbImage.setVisible(false)
                         zoomAnimation.start()
                     } else if (status == Image.Error) {
                         // Make sure the animation always gets started
@@ -94,6 +95,20 @@ Item {
         duration: 200
         easing.type: Easing.InOutQuad
 
+        onStarted: {
+            animator.started()
+            setCurrentPage()
+            setThumbImage()
+
+            if (zoomImage.item) {
+                setZoom()
+                zoomImage.item.visible = true
+            }
+
+            thumbImage.setVisible(false)
+            root.enablePopupShield(true, from)
+        }
+
         onStopped: {
             root.enablePopupShield(false)
 
@@ -106,7 +121,9 @@ Item {
             thumbImage.setVisible(thumbImageVisible)
         }
 
-        onZoomChanged: {
+        onZoomChanged: setZoom()
+
+        function setZoom() {
             const newX = orig.x - (orig.x - left) * zoom
             const newY = orig.y - (orig.y - top) * zoom
             zoomImage.item.img.setRelPos(newX, newY)
@@ -115,24 +132,24 @@ Item {
             root.enablePopupShield(true, zoom)
         }
 
-        function run() {
-            setCurrentPage()
-            orig = thumbImage.parent.mapToItem(root.contentItem, thumbImage.x, thumbImage.y)
+        function setThumbImage() {
+            orig = thumbImageOrig
             origWidth = thumbImage.width
             origHeight = thumbImage.height
             origImplicitWidth = thumbImage.implicitWidth
             origImplicitHeight = thumbImage.implicitHeight
+        }
+
+        function run() {
             zoomImage.active = true
         }
 
         function reverseRun() {
-            setCurrentPage()
-            root.enablePopupShield(true, 1.0)
-            zoomImage.item.visible = true
-            thumbImage.setVisible(false)
             from = 1.0
             to = 0.0
-            start()
+
+            if (zoomImage.item.img.status !== Image.Loading)
+                start()
         }
     }
 

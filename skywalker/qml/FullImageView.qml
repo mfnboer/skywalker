@@ -11,7 +11,7 @@ SkyPage {
     property bool showControls: true
     readonly property bool noSideBar: true
 
-    signal closed
+    signal closed(int visibleImageIndex)
     signal saveImage(string sourceUrl)
     signal shareImage(string sourceUrl)
 
@@ -123,7 +123,7 @@ SkyPage {
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
         visible: showControls
-        onClicked: page.closed()
+        onClicked: page.closed(view.currentIndex)
     }
 
     SvgButton {
@@ -177,7 +177,7 @@ SkyPage {
     }
 
     function cancel() {
-        closed()
+        closed(view.currentIndex)
     }
 
     Component.onDestruction: {

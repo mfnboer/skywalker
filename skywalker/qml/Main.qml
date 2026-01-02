@@ -1942,11 +1942,13 @@ ApplicationWindow {
                 imageIndex: currentIndex,
                 previewImage: previewImage
         })
-        view.onClosed.connect(() => {
-            popStack(null, StackView.Immediate)
+        view.onClosed.connect((imgIndex) => {
+            const closeFunc = () => root.popStack(null, StackView.Immediate)
 
             if (closeCb)
-                closeCb()
+                closeCb(imgIndex, closeFunc)
+            else
+                closeFunc()
         })
         view.onSaveImage.connect((sourceUrl) => { savePhoto(sourceUrl) })
         view.onShareImage.connect((sourceUrl) => { sharePhotoToApp(sourceUrl) })

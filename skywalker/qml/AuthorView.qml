@@ -199,10 +199,8 @@ SkyPage {
                         author: page.author
                         showWarnedMedia: page.showWarnedMedia
                         onClicked:  {
-                            if (authorAvatar) {
+                            if (authorAvatar)
                                 fullImageLoader.show(0)
-                                avatarImg.visible = false
-                            }
                         }
                     }
                 }
@@ -211,6 +209,7 @@ SkyPage {
                     id: fullImageLoader
                     thumbImageViewList: [avatarImg.getImage()]
                     images: [author.imageView]
+                    onStarted: avatarImg.visible = false
                     onFinished: avatarImg.visible = true
                 }
             }
