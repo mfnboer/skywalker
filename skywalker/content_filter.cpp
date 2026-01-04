@@ -572,6 +572,15 @@ void ContentFilter::removeContentGroups(const QString& did)
     removeLabelIdsFromSettings(did);
 }
 
+void ContentFilter::saveAllNewLabelIdsToSettings() const
+{
+    qDebug() << "Save all new labels IDs";
+    const auto newLabelerMap = getLabelerDidsWithNewLabels();
+
+    for (const auto& [labelerDid, _] : newLabelerMap)
+        saveLabelIdsToSettings(labelerDid);
+}
+
 void ContentFilter::saveLabelIdsToSettings(const QString& labelerDid) const
 {
     qDebug() << "Save label ids:" << labelerDid;

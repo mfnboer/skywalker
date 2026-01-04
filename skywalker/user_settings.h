@@ -388,6 +388,9 @@ public:
     void resetNextNotificationId();
     int getNextNotificationId();
 
+    Q_INVOKABLE void setNewLabelNotifications(const QString& did, bool enable);
+    Q_INVOKABLE bool getNewLabelNotifications(const QString& did) const;
+
     Q_INVOKABLE void setNotificationsWifiOnly(bool enable);
     Q_INVOKABLE bool getNotificationsWifiOnly() const;
 

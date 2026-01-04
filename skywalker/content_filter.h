@@ -103,6 +103,7 @@ public:
     void addContentGroups(const QString& did, const std::vector<ContentGroup>& contentGroups);
     void removeContentGroups(const QString& did);
 
+    void saveAllNewLabelIdsToSettings() const;
     Q_INVOKABLE void saveLabelIdsToSettings(const QString& labelerDid) const;
     void removeLabelIdsFromSettings(const QString &labelerDid) const;
     std::unordered_set<QString> getNewLabelIds(const QString& labelerDid) const;

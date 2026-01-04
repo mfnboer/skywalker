@@ -804,8 +804,16 @@ void Skywalker::loadLabelSettings()
                 removeLabelerSubscriptions(remainingDids);
             }
 
-            const int notificationCount = mNotificationListModel.addNewLabelsNotifications(labelerProfiles);
-            mSessionManager.setUnreadExtraCount(mUserDid, notificationCount);
+            if (mUserSettings.getNewLabelNotifications(mUserDid))
+            {
+                const int notificationCount = mNotificationListModel.addNewLabelsNotifications(labelerProfiles);
+                mSessionManager.setUnreadExtraCount(mUserDid, notificationCount);
+            }
+            else
+            {
+                mContentFilter.saveAllNewLabelIdsToSettings();
+            }
+
             loadMutedReposts();
         },
         [this](const QString& error, const QString& msg){

@@ -1453,6 +1453,16 @@ int UserSettings::getNextNotificationId()
     return id;
 }
 
+void UserSettings::setNewLabelNotifications(const QString& did, bool enable)
+{
+    mSettings.setValue(key(did, "newLabelNotifications"), enable);
+}
+
+bool UserSettings::getNewLabelNotifications(const QString& did) const
+{
+    return mSettings.value(key(did, "newLabelNotifications"), true).toBool();
+}
+
 void UserSettings::setNotificationsWifiOnly(bool enable)
 {
     mSettings.setValue("notificationsWifiOnly", enable);

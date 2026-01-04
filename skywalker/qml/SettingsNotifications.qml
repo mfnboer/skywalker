@@ -257,16 +257,41 @@ ColumnLayout {
             notificationPref: notificationPrefs.subscribedPost
         }
 
+        Item {}
+
         AccessibleText {
-            Layout.topMargin: 10
-            Layout.columnSpan: 2
             Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
             textFormat: Text.RichText
             text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">Show subscriptions</a>`)
             onLinkActivated: {
                 let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_ACTIVITY_SUBSCRIPTIONS, "")
                 root.viewAuthorList(modelId, qsTr("Subscribed accounts"), "", false, true)
+            }
+        }
+
+
+        AccessibleText {
+            Layout.topMargin: 10
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("New labels")
+        }
+
+        RowLayout {
+            Layout.topMargin: 10
+            Layout.fillWidth: true
+            spacing: -1
+
+            SkyRadioButton {
+                Layout.fillWidth: true
+                text: qsTr("In-app")
+                checked: userSettings.getNewLabelNotifications(userDid)
+                onCheckedChanged: userSettings.setNewLabelNotifications(userDid, checked)
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                text: qsTr("Off")
+                checked: !userSettings.getNewLabelNotifications(userDid)
             }
         }
     }
