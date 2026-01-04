@@ -10,7 +10,9 @@ ThumbImageView {
     property bool tileMode: false
     property bool noCrop: false
 
-    width: tileMode ? maxWidth : Math.min(image.width, maxWidth)
+    // NOTE: image.width and image.height express the aspect ratio, not the real size
+    // width:  tileMode ? maxWidth : Math.min(image.width, maxWidth)
+    width: maxWidth
     height: (!exceedsMaxHeight && !tileMode) ? idealHeight : maxHeight
     fillMode: ((!exceedsMaxHeight && !tileMode) || noCrop) ? Image.PreserveAspectFit : Image.PreserveAspectCrop
     imageView: image

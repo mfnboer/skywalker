@@ -32,10 +32,11 @@ Item {
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
         width: 50
+        height: 11
         fillMode: Image.PreserveAspectFit
         source: "/images/via_tenor_logo_blue.svg"
         asynchronous: true
-        visible: gifUtils.isTenorLink(view.uri) && gifImage.status === Image.Ready
+        visible: gifUtils.isTenorLink(view.uri)
     }
     Image {
         id: giphyAttribution
@@ -43,10 +44,11 @@ Item {
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
         width: 50
+        height: 11
         fillMode: Image.PreserveAspectFit
         source: "/images/giphy_logo.png"
         asynchronous: true
-        visible: gifUtils.isGiphyLink(view.uri) && gifImage.status === Image.Ready
+        visible: gifUtils.isGiphyLink(view.uri)
     }
 
     GifUtils {
