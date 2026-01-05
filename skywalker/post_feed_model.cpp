@@ -104,6 +104,16 @@ bool PostFeedModel::feedAcceptsInteractions() const
     return false;
 }
 
+void PostFeedModel::setIsHomeFeed(bool isHomeFeed)
+{
+    mIsHomeFeed = isHomeFeed;
+
+    if (mIsHomeFeed)
+        mPostFeedReplay = std::make_unique<PostFeedReplay>();
+    else
+        mPostFeedReplay = nullptr;
+}
+
 QString PostFeedModel::getPreferencesFeedKey() const
 {
     static const QString HOME_KEY = HOME_FEED;
@@ -171,7 +181,12 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
         return 0;
     }
 
-    const int gapId = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), 0);
+    auto rawPage = feed;
+    const auto [gapId, fullOverlap] = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), 0);
+
+    if (mPostFeedReplay && !fullOverlap)
+        mPostFeedReplay->prepend(rawPage, gapId > 0);
+
     return gapId;
 }
 
@@ -194,7 +209,9 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
         return 0;
     }
 
-    Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
+    const auto& gapPost = mFeed[gapIndex];
+    Q_ASSERT(gapPost.getGapId() == gapId);
+    const QString gapCursor = gapPost.getGapCursor();
 
     // Remove gap place holder
     beginRemoveRows({}, gapIndex, gapIndex);
@@ -205,7 +222,18 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     qDebug() << "Removed place holder post:" << gapIndex;
     logIndices();
 
-    return insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex, gapId);
+    auto rawPage = feed;
+    const auto [newGapId, fullOverlap] = insertFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed), gapIndex, gapId);
+
+    if (mPostFeedReplay)
+    {
+        if (fullOverlap)
+            mPostFeedReplay->closeGap(gapCursor);
+        else
+            mPostFeedReplay->gapFill(rawPage, gapCursor, gapId > 0);
+    }
+
+    return newGapId;
 }
 
 void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId)
@@ -273,7 +301,7 @@ void PostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
         model->setEndOfFeed(endOfFeed);
 }
 
-int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
+std::tuple<int, bool> PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
     qDebug() << "Insert feed:" << feed->mFeed.size() << "index:" << insertIndex << "fillGap:" << fillGapId;
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
@@ -285,7 +313,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         if (fillGapId > 0)
             gapFillFilteredPostModels(*page, 0, fillGapId);
 
-        return 0;
+        return { 0, true };
     }
 
     const auto [overlapStart, overlapDiscardedPost] = findOverlapStart(*page, insertIndex);
@@ -323,7 +351,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         mLastInsertedRowIndex = (int)lastInsertIndex;
         qDebug() << "Full feed inserted, new size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
         logIndices();
-        return gapId;
+        return { gapId, false };
     }
 
     if (*overlapStart == 0)
@@ -336,7 +364,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
             gapFillFilteredPostModels(emptyPage, 0, fillGapId);
         }
 
-        return 0;
+        return { 0, true };
     }
 
     const auto overlapEnd = findOverlapEnd(*page, insertIndex);
@@ -353,7 +381,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     mLastInsertedRowIndex = insertIndex + *overlapStart - 1;
     qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size()<< "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     logIndices();
-    return 0;
+    return { 0, false };
 }
 
 void PostFeedModel::clear()
@@ -368,6 +396,9 @@ void PostFeedModel::clear()
         mGapIdIndexMap.clear();
         endRemoveRows();
     }
+
+    if (mPostFeedReplay)
+        mPostFeedReplay->clear();
 
     qDebug() << "All posts removed";
 }
@@ -389,6 +420,10 @@ void PostFeedModel::reset()
 void PostFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
     qDebug() << "Add raw posts:" << feed->mFeed.size();
+
+    if (mPostFeedReplay)
+        mPostFeedReplay->append(feed);
+
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
     addPage(std::move(page));
 }
@@ -471,6 +506,7 @@ void PostFeedModel::removeTailPosts(int size)
         return;
     }
 
+    const QString removeCursor = removeIndexCursorIt->second;
     const size_t removeCount = mFeed.size() - removeIndex;
     removeTailFromFilteredPostModels(removeCount);
 
@@ -489,6 +525,9 @@ void PostFeedModel::removeTailPosts(int size)
     setEndOfFeed(false);
     setEndOfFeedFilteredPostModels(false);
     endRemoveRows();
+
+    if (mPostFeedReplay)
+        mPostFeedReplay->removeTail(removeCursor);
 
     qDebug() << "Removed tail rows:" << size << "new size:" << mFeed.size();
     logIndices();
@@ -513,6 +552,7 @@ void PostFeedModel::removeHeadPosts(int size)
     }
 
     const auto removeEndIndexCursorIt = mIndexCursorMap.upper_bound(removeEndIndex);
+    const QString removeCursor = removeEndIndexCursorIt->second;
     const int removeSize = removeEndIndex + 1;
     removeHeadFromFilteredPostModels(removeSize);
 
@@ -531,6 +571,9 @@ void PostFeedModel::removeHeadPosts(int size)
 
     addToIndices(-removeSize, removeSize);
     endRemoveRows();
+
+    if (mPostFeedReplay)
+        mPostFeedReplay->removeHead(removeCursor);
 
     qDebug() << "Removed head rows, new size:" << mFeed.size();
     logIndices();

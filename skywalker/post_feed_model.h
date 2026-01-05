@@ -7,6 +7,7 @@
 #include "follows_activity_store.h"
 #include "generator_view.h"
 #include "interaction_sender.h"
+#include "post_feed_replay.h"
 #include "post_filter.h"
 #include <atproto/lib/user_preferences.h>
 #include <map>
@@ -58,7 +59,7 @@ public:
     QString getFeedUri() const;
     QEnums::FeedType getFeedType() const;
     bool feedAcceptsInteractions() const;
-    void setIsHomeFeed(bool isHomeFeed) { mIsHomeFeed = isHomeFeed; }
+    void setIsHomeFeed(bool isHomeFeed);
     bool isHomeFeed() const { return mIsHomeFeed; }
     QString getPreferencesFeedKey() const;
 
@@ -104,7 +105,6 @@ public:
 
     void removeTailPosts(int size);
     void removeHeadPosts(int size);
-    void removePosts(int startIndex, int size);
 
     QString getLastCursor() const;
     const Post* getGapPlaceHolder(int gapId) const;
@@ -181,6 +181,7 @@ private:
     void createInteractionSender(ATProto::Client::SharedPtr bsky);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId = 0);
     void addPage(Page::Ptr page);
+    void removePosts(int startIndex, int size);
 
     void addPageToFilteredPostModels(const Page& page, int pageSize);
     void prependPageToFilteredPostModels(const Page& page, int pageSize);
@@ -212,8 +213,8 @@ private:
     Page::Ptr createPageFilteredPosts(const std::deque<Post>& posts, const ContentFilterStats::Details& hideDetails);
     bool mustHideFilteredPost(const Post& post, const ContentFilterStats::Details& hideDetails) const;
 
-    // Returns gap id if insertion created a gap in the feed.
-    int insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
+    // Returns gap id if insertion created a gap in the feed, and full overlap indication
+    std::tuple<int, bool> insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId = 0);
 
     // Returns an index in the page feed and a boolean indicating if there was an overlap on discarded posts.
     std::tuple<std::optional<size_t>, bool> findOverlapStart(const Page& page, size_t feedIndex) const;
@@ -249,6 +250,7 @@ private:
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
     InteractionSender::Ptr mInteractionSender;
+    PostFeedReplay::Ptr mPostFeedReplay;
 };
 
 }

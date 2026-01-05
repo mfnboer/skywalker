@@ -632,6 +632,8 @@ qt_add_qml_module(libskywalker
         SOURCES following.cpp
         QML_FILES qml/ContentLabelRepeater.qml
         QML_FILES qml/SkyMouseArea.qml
+        SOURCES post_feed_replay.h
+        SOURCES post_feed_replay.cpp
 )
 
 if (NOT ANDROID)
