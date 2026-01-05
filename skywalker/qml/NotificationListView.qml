@@ -14,6 +14,10 @@ SkyPage {
 
     id: page
 
+    onCover: {
+        swipeView.cover()
+    }
+
     header: SimpleHeader {
         text: sideBarTitle
         visible: !root.showSideBar
@@ -254,6 +258,11 @@ SkyPage {
                     running: nonActiveUserList.model && nonActiveUserList.model.getFeedInProgress
                 }
             }
+        }
+
+        function cover() {
+            if (currentItem)
+                currentItem.cover()
         }
     }
 
