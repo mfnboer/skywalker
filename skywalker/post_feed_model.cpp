@@ -1729,4 +1729,15 @@ void PostFeedModel::logIndices() const
         qDebug() << "Gap:" << gapId << "Index:" << index;
 }
 
+void PostFeedModel::saveReplay() const
+{
+    if (!mPostFeedReplay)
+    {
+        qWarning() << "Cannot save replay:" << mFeedName;
+        return;
+    }
+
+    mPostFeedReplay->save(mUserDid, mFeedName);
+}
+
 }

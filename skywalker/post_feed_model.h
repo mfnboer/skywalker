@@ -148,6 +148,8 @@ public:
     Q_INVOKABLE void reportOnScreen(const QString& postUri);
     Q_INVOKABLE void reportOffScreen(const QString& postUri, const QString& feedContext);
 
+    void saveReplay() const;
+
 signals:
     void languageFilterConfiguredChanged();
     void languageFilterEnabledChanged();

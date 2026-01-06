@@ -12,6 +12,7 @@
 #include "list_cache.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
+#include "post_feed_replay.h"
 #include "post_thread_cache.h"
 #include "search_utils.h"
 #include "shared_image_provider.h"
@@ -864,17 +865,42 @@ void Skywalker::syncTimeline(int maxPages)
         return;
     }
 
-    // Instant restore does not work well if there are no newer posts saved
-    // then the restore points. Timline must still be loaded then, and ListView
-    // positioning is when entries get prepended before the timeline that was saved.
-    // if (restoreSyncTimelineState())
-    // {
-    //     finishTimelineSync(mSyncPostIndex);
-    //     return;
-    // }
+    const auto cid = mUserSettings.getSyncCid(mUserDid);
+    const bool loadStarted = PostFeedReplay::load(mUserDid, mTimelineModel.getFeedName(),
+        [this, maxPages](PostFeedReplay::SharedPtr replayData){
+            syncTimelineContinue(maxPages, replayData);
+        });
+
+    if (!loadStarted)
+        syncTimelineContinue(maxPages, nullptr);
+}
+
+void Skywalker::syncTimelineContinue(int maxPages, PostFeedReplay::SharedPtr replayData)
+{
+    const auto timestamp = mUserSettings.getSyncTimestamp(mUserDid);
+    const auto cid = mUserSettings.getSyncCid(mUserDid);
+
+    if (replayData)
+    {
+        replayData->replay(mTimelineModel);
+        const auto index = mTimelineModel.findTimestamp(timestamp, cid);
+
+        // TODO: only when index is > 50 ??
+        if (index >= 0)
+        {
+            const auto& post = mTimelineModel.getPost(index);
+            qDebug() << post.getTimelineTimestamp() << post.getText();
+            finishTimelineSync(index);
+            updateTimeline(20, 100);
+            return;
+        }
+        else
+        {
+            qWarning() << "Cannot find timestamp:" << timestamp << "cid:" << cid;
+        }
+    }
 
     emit timelineSyncStart(maxPages, timestamp);
-    const auto cid = mUserSettings.getSyncCid(mUserDid);
     syncTimeline(timestamp, cid, maxPages);
 }
 
@@ -923,7 +949,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
+    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor), true,
         [this, tillTimestamp, cid, maxPages, cursor](auto feed){
             const auto newCursor = processSyncPage(std::move(feed), mTimelineModel, tillTimestamp, cid, maxPages, cursor);
 
@@ -1160,7 +1186,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(limit, Utils::makeOptionalString(cursor),
+    mBsky->getTimeline(limit, Utils::makeOptionalString(cursor), true,
        [this, maxPages, minEntries, cursor](auto feed){
             setGetTimelineInProgress(false);
             int addedPosts = 0;
@@ -1210,7 +1236,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const updateTi
     setAutoUpdateTimelineInProgress(true);
     setGetTimelineInProgress(true);
 
-    mBsky->getTimeline(pageSize, {},
+    mBsky->getTimeline(pageSize, {}, true,
         [this, autoGapFill, cb](auto feed){
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
@@ -1278,7 +1304,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
     qDebug() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur,
+    mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur, true,
         [this, gapId, autoGapFill, userInitiated, cb](auto feed){
             mTimelineModel.clearLastInsertedRowIndex();
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
@@ -4201,6 +4227,7 @@ void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)
     mUserSettings.saveSyncTimestamp(mUserDid, post.getTimelineTimestamp());
     mUserSettings.saveSyncCid(mUserDid, post.getCid());
     mUserSettings.saveSyncOffsetY(mUserDid, offsetY);
+    mTimelineModel.saveReplay();
 }
 
 void Skywalker::saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY)
