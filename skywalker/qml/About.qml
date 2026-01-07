@@ -30,7 +30,7 @@ SkyPage {
             anchors.horizontalCenter: parent.horizontalCenter
             padding: 10
             color: "white"
-            text: qsTr("Version") + ": " + skywalker.VERSION
+            text: qsTr("Version") + ": " + skywalker.VERSION + " (Qt6.10.1 - test0)"
         }
         AccessibleText {
             id: author
