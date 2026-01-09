@@ -92,6 +92,8 @@ Rectangle {
     property bool threadBarVisible: !swipeMode
     readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
             (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
+    readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser
+    readonly property int minGridHeight: noPostRendering ? 30 : 90
     readonly property int gridColumns: threadBarVisible ? 2 : 1
     readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0
     readonly property int contentLeftMargin: threadBarVisible ? 0 : margin
@@ -113,7 +115,7 @@ Rectangle {
     // HACK
     // Setting the default size to 300 if the grid is not sized yet, seems to fix
     // positioning issued with viewPositionAtIndex
-    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > 30 ? grid.height : 300) + extraFooterHeight
+    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > minGridHeight ? grid.height : 300) + extraFooterHeight
     color: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     border.width: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? 1 : 0
     border.color: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? guiSettings.borderHighLightColor : guiSettings.borderColor
@@ -458,6 +460,7 @@ Rectangle {
                     filteredContentLabel: postEntry.filteredPostContentLabel
                 }
             }
+
             Loader {
                 width: parent.width
                 active: !threadBarVisible && (!unrollThread || postEntry.index == 0)

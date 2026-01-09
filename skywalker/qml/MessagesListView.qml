@@ -42,7 +42,7 @@ SkyPage {
         width: parent.width
         height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.padding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
-        cacheBuffer: Screen.height * 2
+        cacheBuffer: Screen.height * 6
         boundsMovement: Flickable.StopAtBounds
         clip: true
 
@@ -550,11 +550,13 @@ SkyPage {
     }
 
     function doMoveToMessage(index) {
-        const firstVisibleIndex = messagesView.getFirstVisibleIndex()
-        const lastVisibleIndex = messagesView.getLastVisibleIndex()
+        let firstVisibleIndex = messagesView.getFirstVisibleIndex()
+        let lastVisibleIndex = messagesView.getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", messagesView.count)
         messagesView.positionViewAtIndex(Math.max(index, 0), ListView.End)
 
+        firstVisibleIndex = messagesView.getFirstVisibleIndex()
+        lastVisibleIndex = messagesView.getLastVisibleIndex()
         return (lastVisibleIndex >= index && firstVisibleIndex <= index)
     }
 

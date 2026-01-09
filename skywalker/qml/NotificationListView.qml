@@ -134,10 +134,13 @@ SkyPage {
             }
 
             function doMoveToNotification(index) {
-                const firstVisibleIndex = getFirstVisibleIndex()
-                const lastVisibleIndex = getLastVisibleIndex()
+                let firstVisibleIndex = getFirstVisibleIndex()
+                let lastVisibleIndex = getLastVisibleIndex()
                 console.debug("Move to notification:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
                 positionViewAtIndex(index, ListView.Center)
+
+                firstVisibleIndex = getFirstVisibleIndex()
+                lastVisibleIndex = getLastVisibleIndex()
                 return (firstVisibleIndex <= index && lastVisibleIndex >= index)
             }
         }
@@ -195,10 +198,13 @@ SkyPage {
             }
 
             function doMoveToMention(index) {
-                const firstVisibleIndex = getFirstVisibleIndex()
-                const lastVisibleIndex = getLastVisibleIndex()
+                let firstVisibleIndex = getFirstVisibleIndex()
+                let lastVisibleIndex = getLastVisibleIndex()
                 console.debug("Move to mention:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
                 positionViewAtIndex(index, ListView.Center)
+
+                firstVisibleIndex = getFirstVisibleIndex()
+                lastVisibleIndex = getLastVisibleIndex()
                 return (firstVisibleIndex <= index && lastVisibleIndex >= index)
             }
         }

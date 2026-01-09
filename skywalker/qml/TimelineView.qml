@@ -171,10 +171,15 @@ SkyListView {
     }
 
     function doMoveToPost(index) {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
+        let firstVisibleIndex = getFirstVisibleIndex()
+        let lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "contentHeight", contentHeight)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
+
+        firstVisibleIndex = getFirstVisibleIndex()
+        lastVisibleIndex = getLastVisibleIndex()
+        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
+
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateUnreadPosts(firstVisibleIndex)
         resetHeaderPosition()
@@ -235,6 +240,10 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (start <= newLastVisibleIndex)
+            newLastVisibleIndex += (end - start + 1)
+
         calibrateUnreadPosts()
 
         if (start === 0)
@@ -248,13 +257,10 @@ SkyListView {
 
         // When all posts are removed because of a refresh, then count is zero, but
         // first and list visible index are still non-zero
-        if (start <= lastVisibleIndex && count > lastVisibleIndex) {
-            newLastVisibleIndex = lastVisibleIndex + (end - start + 1)
+        if (start <= lastVisibleIndex && count > lastVisibleIndex && newLastVisibleIndex < 0) {
+            newLastVisibleIndex = lastVisibleIndex
             newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
             console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
-        }
-        else {
-            newLastVisibleIndex = -1
         }
     }
 
@@ -263,6 +269,9 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (end < newLastVisibleIndex)
+            newLastVisibleIndex -= (end - start + 1)
     }
 
     function rowsAboutToBeRemovedHandler(parent, start, end) {
@@ -270,13 +279,10 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows to be removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
-        if (end < lastVisibleIndex) {
-            newLastVisibleIndex = lastVisibleIndex - (end - start + 1)
+        if (end < lastVisibleIndex && newLastVisibleIndex < 0) {
+            newLastVisibleIndex = lastVisibleIndex
             newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
             console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
-        }
-        else {
-            newLastVisibleIndex = -1
         }
     }
 

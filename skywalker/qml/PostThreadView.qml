@@ -220,10 +220,13 @@ SkyListView {
     }
 
     function sync(index) {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
+        let firstVisibleIndex = getFirstVisibleIndex()
+        let lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
         positionViewAtIndex(index, ListView.Center)
+
+        firstVisibleIndex = getFirstVisibleIndex()
+        lastVisibleIndex = getLastVisibleIndex()
         return (firstVisibleIndex <= index && lastVisibleIndex >= index)
     }
 

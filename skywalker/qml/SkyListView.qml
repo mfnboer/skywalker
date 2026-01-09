@@ -72,6 +72,7 @@ ListView {
         }
     }
 
+    // Is time still needed now that we have better cache buffers?
     Timer {
         property int listIndex
         property int moveAttempt
@@ -175,7 +176,7 @@ ListView {
     }
 
     function setAnchorItem(firstIndex, lastIndex) {
-        const index = firstIndex >= 0 ? firstIndex : lastIndex
+        const index = lastIndex >= 0 ? lastIndex : firstIndex
 
         if (index < 0)
             return

@@ -313,10 +313,14 @@ SkyListView {
     }
 
     function doMoveToPost(index) {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
+        let firstVisibleIndex = getFirstVisibleIndex()
+        let lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", model.feedName, "index:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
+
+        firstVisibleIndex = getFirstVisibleIndex()
+        lastVisibleIndex = getLastVisibleIndex()
+
         updateUnreadPosts()
         resetHeaderPosition()
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
