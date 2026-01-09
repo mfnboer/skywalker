@@ -373,6 +373,7 @@ class DetailedProfile : public Profile
     Q_GADGET
     Q_PROPERTY(QString website READ getWebsite FINAL)
     Q_PROPERTY(QString banner READ getBanner FINAL)
+    Q_PROPERTY(ImageView bannerView READ getBannerView FINAL)
     Q_PROPERTY(int followersCount READ getFollowersCount FINAL)
     Q_PROPERTY(int followsCount READ getFollowsCount FINAL)
     Q_PROPERTY(int postsCount READ getPostsCount FINAL)
@@ -385,6 +386,7 @@ public:
 
     QString getWebsite() const;
     QString getBanner() const;
+    ImageView getBannerView() const;
     int getFollowersCount() const;
     int getFollowsCount() const;
     int getPostsCount() const;

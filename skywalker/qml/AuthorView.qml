@@ -142,9 +142,22 @@ SkyPage {
                     anchors.top: parent.top
                     width: parent.width
                     source: authorBanner
+                    sourceSize.width: width * Screen.devicePixelRatio
+                    sourceSize.height: height * Screen.devicePixelRatio
                     fillMode: Image.PreserveAspectFit
                     indicateLoading: false
                     visible: authorBanner && contentVisible() && status === Image.Ready
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: fullBannerLoader.show(0)
+                    }
+
+                    FullImageViewLoader {
+                        id: fullBannerLoader
+                        thumbImageViewList: [bannerImg]
+                        images: [author.bannerView]
+                    }
                 }
 
                 Rectangle {

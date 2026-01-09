@@ -146,6 +146,7 @@ Item {
             origHeight = thumbImage.height
             origImplicitWidth = thumbImage.implicitWidth
             origImplicitHeight = thumbImage.implicitHeight
+            console.debug("MICHEL:", origWidth, origHeight, origImplicitWidth, origImplicitHeight)
         }
 
         function run() {

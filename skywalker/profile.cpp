@@ -833,6 +833,11 @@ QString DetailedProfile::getBanner() const
     return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : "";
 }
 
+ImageView DetailedProfile::getBannerView() const
+{
+    return ImageView(getBanner(), "");
+}
+
 int DetailedProfile::getFollowersCount() const
 {
     return mProfileDetailedView ? mProfileDetailedView->mFollowersCount : 0;
