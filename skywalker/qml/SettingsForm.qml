@@ -10,6 +10,7 @@ SkyPage {
     property bool allVisible: true
     property bool onlyChatVisible: false
     property bool onlyNotificationVisible: false
+    property bool onlyPostThreadVisible: false
     readonly property string sideBarTitle: qsTr("Settings")
     readonly property SvgImage sideBarSvg: SvgOutline.settings
 
@@ -115,7 +116,7 @@ SkyPage {
             anchors.top: notificationsLoader.bottom
             width: parent.width
             height: visible ? undefined : 0
-            visible: allVisible
+            visible: allVisible || onlyPostThreadVisible
         }
     }
 

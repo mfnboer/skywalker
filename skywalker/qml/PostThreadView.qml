@@ -10,6 +10,8 @@ SkyListView {
     readonly property bool isUnrolledThread: model?.unrollThread
     readonly property string sideBarTitle: isUnrolledThread ? qsTr("Unrolled thread") : qsTr("Post thread")
     readonly property SvgImage sideBarSvg: isUnrolledThread ? SvgOutline.thread : SvgOutline.chat
+    readonly property SvgImage sideBarButtonSvg: SvgOutline.moreVert
+    readonly property string sideBarButtonName: qsTr("options")
 
     signal closed
 
@@ -25,6 +27,15 @@ SkyListView {
         userDid: view.userDid
         headerVisible: !root.showSideBar
         onBack: view.closed()
+
+        SvgPlainButton {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            svg: sideBarButtonSvg
+            accessibleName: sideBarButtonName
+            visible: !root.showSideBar
+            onClicked: sideBarButtonClicked()
+        }
 
         Rectangle {
             id: restrictionRect
@@ -176,9 +187,35 @@ SkyListView {
         inProgress: skywalker.getPostThreadInProgress
     }
 
+    Item {
+        anchors.right: parent.right
+
+        SkyMenu {
+            id: moreMenu
+
+            CloseMenuItem {
+                text: qsTr("<b>Options</b>")
+                Accessible.name: qsTr("close options menu")
+            }
+            AccessibleMenuItem {
+                text: qsTr("Settings")
+                svg: SvgOutline.settings
+                onTriggered: root.editPostThreadSettings(() => {
+                        const userSettings = skywalker.getUserSettings()
+                        const replyOrder = userSettings.getThreadReplyOrder(userDid)
+                        model.setReplyOrder(replyOrder)
+                    })
+            }
+        }
+    }
+
     Utils {
         id: utils
         skywalker: view.skywalker
+    }
+
+    function sideBarButtonClicked() {
+        moreMenu.open()
     }
 
     function getReplyToAuthor() {

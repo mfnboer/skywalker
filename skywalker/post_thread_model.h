@@ -26,6 +26,8 @@ public:
                              HashtagIndex& hashtags,
                              QObject* parent = nullptr);
 
+    Q_INVOKABLE void setReplyOrder(QEnums::ReplyOrder replyOrder);
+
     // Returns index of the entry post
     int setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
 
@@ -95,6 +97,9 @@ private:
     bool olderLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
                        ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                        ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+    bool mostLikesLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
@@ -110,6 +115,7 @@ private:
     QEnums::PostThreadType mPostThreadType;
     std::optional<Post> mFirstPostFromUnrolledThread;
     QEnums::ReplyOrder mReplyOrder = QEnums::REPLY_ORDER_SMART;
+    ATProto::AppBskyFeed::PostThread::SharedPtr mRawPostThread;
 };
 
 }

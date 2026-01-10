@@ -25,6 +25,19 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThre
     mReplyOrder(replyOrder)
 {}
 
+void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
+{
+    qDebug() << "Set reply order:" << replyOrder;
+
+    if (mReplyOrder == replyOrder)
+        return;
+
+    mReplyOrder = replyOrder;
+
+    if (mRawPostThread)
+        setPostThread(mRawPostThread);
+}
+
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
 {
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
@@ -32,6 +45,8 @@ void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, con
 
 int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
+    mRawPostThread = thread;
+
     if (!mFeed.empty())
         clear();
 
@@ -500,6 +515,8 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                 return olderLessThan(viewPost, lhsPost, rhsPost);
             case QEnums::REPLY_ORDER_NEWEST_FIRST:
                 return newerLessThan(viewPost, lhsPost, rhsPost);
+            case QEnums::REPLY_ORDER_MOST_LIKES_FIRST:
+                return mostLikesLessThan(viewPost, lhsPost, rhsPost);
             }
 
             qWarning() << "Unknown reply order:" << mReplyOrder;
@@ -586,6 +603,20 @@ bool PostThreadModel::olderLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
                                     ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
 {
     return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+}
+
+bool PostThreadModel::mostLikesLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+{
+    if (mOnlyEntryAuthorPosts)
+        return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+
+    if (lhsReply->mLikeCount != rhsReply->mLikeCount)
+        return lhsReply->mLikeCount > rhsReply->mLikeCount;
+
+    // New before old
+    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
 }
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore)

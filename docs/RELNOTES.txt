@@ -3,6 +3,7 @@ next
 * Improve image open/close animation
 * Tap on profile banner to see it full screen
 * Setting to disable new labels notification
+* Setting to sort replies in post thread on likes
 * Bug fixes
 
 4.24
