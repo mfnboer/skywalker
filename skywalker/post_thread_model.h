@@ -97,7 +97,7 @@ private:
     bool olderLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
                        ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                        ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
-    bool mostLikesLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+    bool mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
                        ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                        ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);

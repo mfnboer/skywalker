@@ -507,6 +507,13 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             if (lhsHidden != rhsHidden)
                 return lhsHidden < rhsHidden;
 
+            // When we unroll a thread we filter out all posts from the same author.
+            // If the author made multiple replies on a post, then we want the oldest,
+            // assuming that the thread was posted in one go, the oldest is most likely
+            // the thread continuation.
+            if (mUnrollThread)
+                return olderLessThan(viewPost, lhsPost, rhsPost);
+
             switch (mReplyOrder)
             {
             case QEnums::REPLY_ORDER_SMART:
@@ -515,8 +522,8 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                 return olderLessThan(viewPost, lhsPost, rhsPost);
             case QEnums::REPLY_ORDER_NEWEST_FIRST:
                 return newerLessThan(viewPost, lhsPost, rhsPost);
-            case QEnums::REPLY_ORDER_MOST_LIKES_FIRST:
-                return mostLikesLessThan(viewPost, lhsPost, rhsPost);
+            case QEnums::REPLY_ORDER_POPULARITY:
+                return mostPopularLessThan(viewPost, lhsPost, rhsPost);
             }
 
             qWarning() << "Unknown reply order:" << mReplyOrder;
@@ -572,13 +579,6 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPo
         return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
     }
 
-    // When we unroll a thread we filter out all posts from the same author.
-    // If the author made multiple replies on a post, then we want the oldest,
-    // assuming that the thread was posted in one go, the oldest is most likely
-    // the thread continuation.
-    if (mOnlyEntryAuthorPosts)
-        return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
-
     // New before old
     return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
 }
@@ -587,13 +587,6 @@ bool PostThreadModel::newerLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
                                     ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                                     ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
 {
-    // When we unroll a thread we filter out all posts from the same author.
-    // If the author made multiple replies on a post, then we want the oldest,
-    // assuming that the thread was posted in one go, the oldest is most likely
-    // the thread continuation.
-    if (mOnlyEntryAuthorPosts)
-        return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
-
     // New before old
     return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
 }
@@ -605,15 +598,20 @@ bool PostThreadModel::olderLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
     return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
 }
 
-bool PostThreadModel::mostLikesLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+static int calcPopularity(const ATProto::AppBskyFeed::PostView& post)
+{
+    return post.mLikeCount + post.mReplyCount + post.mRepostCount + post.mQuoteCount;
+}
+
+bool PostThreadModel::mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
                        ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                        ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
 {
-    if (mOnlyEntryAuthorPosts)
-        return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+    const int lhsPopularity = calcPopularity(*lhsReply);
+    const int rhsPopularity = calcPopularity(*rhsReply);
 
-    if (lhsReply->mLikeCount != rhsReply->mLikeCount)
-        return lhsReply->mLikeCount > rhsReply->mLikeCount;
+    if (lhsPopularity != rhsPopularity)
+        return lhsPopularity > rhsPopularity;
 
     // New before old
     return lhsReply->mIndexedAt > rhsReply->mIndexedAt;

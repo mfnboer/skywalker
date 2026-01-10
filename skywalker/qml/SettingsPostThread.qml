@@ -51,11 +51,11 @@ ColumnLayout {
     SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
-        checked: userSettings.getThreadReplyOrder(userDid) === QEnums.REPLY_ORDER_MOST_LIKES_FIRST
-        text: qsTr("Most liked reply first")
+        checked: userSettings.getThreadReplyOrder(userDid) === QEnums.REPLY_ORDER_POPULARITY
+        text: qsTr("Most popular reply first")
         onCheckedChanged: {
             if (checked)
-                userSettings.setThreadReplyOrder(userDid, QEnums.REPLY_ORDER_MOST_LIKES_FIRST)
+                userSettings.setThreadReplyOrder(userDid, QEnums.REPLY_ORDER_POPULARITY)
         }
     }
 }
