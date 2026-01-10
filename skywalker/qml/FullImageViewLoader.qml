@@ -9,6 +9,7 @@ Loader {
     property int imageIndex: 0
     property bool swipeMode: false
     property bool reverse: false
+    property bool noHeader: false
     property var animationStartCb
     property var videoView
     property bool isAnimatedImage: false
@@ -30,6 +31,7 @@ Loader {
         imageAlt: isAnimatedImage ? animatedImageAlt : images[imageIndex].alt
         swipeMode: fullImageLoader.swipeMode
         reverse: fullImageLoader.reverse
+        noHeader: fullImageLoader.noHeader
 
         onStarted: {
             fullImageLoader.started()

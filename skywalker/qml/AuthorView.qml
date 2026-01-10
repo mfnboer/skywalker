@@ -141,10 +141,9 @@ SkyPage {
                     id: bannerImg
                     anchors.top: parent.top
                     width: parent.width
+                    height: parent.width / 3
                     source: authorBanner
-                    sourceSize.width: width * Screen.devicePixelRatio
-                    sourceSize.height: height * Screen.devicePixelRatio
-                    fillMode: Image.PreserveAspectFit
+                    fillMode: Image.PreserveAspectCrop
                     indicateLoading: false
                     visible: authorBanner && contentVisible() && status === Image.Ready
 
@@ -157,6 +156,7 @@ SkyPage {
                         id: fullBannerLoader
                         thumbImageViewList: [bannerImg]
                         images: [author.bannerView]
+                        noHeader: true
                     }
                 }
 
@@ -222,6 +222,7 @@ SkyPage {
                     id: fullImageLoader
                     thumbImageViewList: [avatarImg.getImage()]
                     images: [author.imageView]
+                    noHeader: true
                     onStarted: avatarImg.visible = false
                     onFinished: avatarImg.visible = true
                 }

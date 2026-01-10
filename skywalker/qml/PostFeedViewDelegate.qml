@@ -92,7 +92,7 @@ Rectangle {
     property bool threadBarVisible: !swipeMode
     readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
             (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
-    readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser
+    readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser || postHiddenPosts || postFoldedType === QEnums.FOLDED_POST_FIRST
     readonly property int minGridHeight: noPostRendering ? 30 : 90
     readonly property int gridColumns: threadBarVisible ? 2 : 1
     readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0

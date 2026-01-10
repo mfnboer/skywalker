@@ -7,6 +7,7 @@ Item {
     required property string imageAlt
     property bool swipeMode: false
     property bool reverse: false
+    property bool noHeader: false
     property bool thumbImageVisible: true
     property var currentPage
     property int headerHeight: 0
@@ -146,7 +147,6 @@ Item {
             origHeight = thumbImage.height
             origImplicitWidth = thumbImage.implicitWidth
             origImplicitHeight = thumbImage.implicitHeight
-            console.debug("MICHEL:", origWidth, origHeight, origImplicitWidth, origImplicitHeight)
         }
 
         function run() {
@@ -198,7 +198,7 @@ Item {
     }
 
     function setHeaderHeight() {
-        if (typeof currentPage.getHeaderHeight == 'function')
+        if (!noHeader && typeof currentPage.getHeaderHeight == 'function')
             headerHeight = currentPage.getHeaderHeight()
         else
             headerHeight = 0
