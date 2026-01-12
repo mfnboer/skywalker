@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources>
-    <color name="splash">#0387c7</color>
-    <style name="splashScreenTheme" parent="Theme.SplashScreen.IconBackground">
-        <item name="android:windowSplashScreenBackground">@color/splash</item>
-        <item name="android:windowSplashScreenIconBackgroundColor">@color/splash</item>
-    </style>
-</resources>
