@@ -19,7 +19,7 @@
         android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
         android:fullBackupOnly="true"
-        android:icon="@drawable/icon">
+        android:icon="@mipmap/icon">
         <activity
             android:name="com.gmail.mfnboer.SkywalkerActivity"
             android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
