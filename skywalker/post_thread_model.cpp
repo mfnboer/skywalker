@@ -507,12 +507,34 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             if (lhsHidden != rhsHidden)
                 return lhsHidden < rhsHidden;
 
+            // Non-pin before pin
+            const bool lhsPin = isPinPost(*lhsPost);
+            const bool rhsPin = isPinPost(*rhsPost);
+
+            if (lhsPin != rhsPin)
+                return lhsPin < rhsPin;
+
             // When we unroll a thread we filter out all posts from the same author.
             // If the author made multiple replies on a post, then we want the oldest,
             // assuming that the thread was posted in one go, the oldest is most likely
             // the thread continuation.
             if (mUnrollThread)
                 return olderLessThan(viewPost, lhsPost, rhsPost);
+
+            const auto& lhsAuthor = lhsPost->mAuthor;
+            const auto& rhsAuthor = rhsPost->mAuthor;
+
+            // In all sortings, keep the replies from the author first as those are most likely
+            // forming a thread.
+            if (lhsAuthor->mDid != rhsAuthor->mDid)
+            {
+                // Author before others
+                if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                    return true;
+
+                if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                    return false;
+            }
 
             switch (mReplyOrder)
             {
@@ -532,35 +554,21 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
 }
 
 // Sort replies in this order:
-// 1. Reply from author
+// 1. Reply from author (already done above for all orders)
 // 2. Your replies
 // 3. Replies from following
 // 4. Replies from other
 // 5. Hidden replies (previous steps only for non-hidden replies)
 // In each group, new before old.
-bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
                                     ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                                     ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
 {
-    // Non-pin before pin
-    const bool lhsPin = isPinPost(*lhsReply);
-    const bool rhsPin = isPinPost(*rhsReply);
-
-    if (lhsPin != rhsPin)
-        return lhsPin < rhsPin;
-
     const auto& lhsAuthor = lhsReply->mAuthor;
     const auto& rhsAuthor = rhsReply->mAuthor;
 
     if (lhsAuthor->mDid != rhsAuthor->mDid)
     {
-        // Author before others
-        if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
-            return true;
-
-        if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
-            return false;
-
         // User before others
         if (lhsAuthor->mDid == mUserDid)
             return true;
