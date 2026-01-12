@@ -568,6 +568,7 @@ SkyPage {
 
                 LinkCatcher {
                     userDid: page.userDid
+                    author: page.author
                 }
             }
 

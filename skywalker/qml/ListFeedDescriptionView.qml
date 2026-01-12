@@ -223,6 +223,7 @@ SkyPage {
 
             LinkCatcher {
                 containingText: list.description
+                author: list.creator
             }
         }
     }

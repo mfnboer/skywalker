@@ -4,6 +4,7 @@ import skywalker
 
 SkyMenu {
     property string hashtag: ""
+    property string handle
     property bool isMuted: false
     property bool isPinned: false
     property var skywalker: root.getSkywalker()
@@ -12,13 +13,16 @@ SkyMenu {
     property string postAuthorUser // empty, "me", handle
     property string postMentionsUser // empty, "me", handle
     property date postSince
+    property bool postSetSince: false
     property date postUntil
+    property bool postSetUntil: false
     property string postLanguage
     property date nullDate
 
     signal done
 
     id: hashtagMenu
+    menuWidth: 250
 
     onAboutToShow: {
         isMuted = skywalker.mutedWords.containsEntry(hashtag)
@@ -30,8 +34,22 @@ SkyMenu {
     }
 
     CloseMenuItem {
-        text: qsTr("<b>Hashtags</b>")
+        text: qsTr(`<b>${hashtag}</b>`)
         Accessible.name: qsTr("close hashtag options menu")
+    }
+
+    AccessibleMenuItem {
+        text: qsTr("Posts")
+        svg: SvgOutline.chat
+        onTriggered: root.viewSearchView(hashtag)
+        visible: Boolean(handle)
+    }
+
+    AccessibleMenuItem {
+        text: qsTr("Posts from user")
+        svg: SvgOutline.user
+        onTriggered: root.viewSearchView(hashtag, handle)
+        visible: Boolean(handle)
     }
 
     AccessibleMenuItem {
@@ -93,8 +111,9 @@ SkyMenu {
         root.pushStack(focusPage)
     }
 
-    function show(hashtag) {
+    function show(hashtag, handle = "") {
         hashtagMenu.hashtag = hashtag
+        hashtagMenu.handle = handle
         open()
     }
 }

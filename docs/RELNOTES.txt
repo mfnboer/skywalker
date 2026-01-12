@@ -1,5 +1,6 @@
 next
 ====
+* Option to search posts from user in hashtag (long press) menu
 * Improve image open/close animation
 * Tap on profile banner to see it full screen
 * Setting to disable new labels notification

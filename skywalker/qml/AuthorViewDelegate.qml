@@ -165,6 +165,7 @@ Rectangle {
 
             LinkCatcher {
                 userDid: authorRect.userDid
+                author: authorRect.author
             }
         }
 

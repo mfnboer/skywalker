@@ -13,6 +13,8 @@ Rectangle {
     required property bool sameTimeAsNext
     required property bool sameDateAsPrevious
     required property bool endOfList
+    property Skywalker skywalker: root.getSkywalker()
+    readonly property basicprofile author: senderIsUser ? skywalker.user : convo.getMember(message.senderDid).basicProfile
     property int maxTextWidth: viewWidth - 80
     property int maxTextLines: 1000
     readonly property int margin: 10
@@ -106,6 +108,7 @@ Rectangle {
             LinkCatcher {
                 z: parent.z - 1
                 containingText: message.text
+                author: view.author
                 onLongPress: moreMenu.open()
             }
         }

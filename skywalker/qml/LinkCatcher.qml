@@ -5,6 +5,7 @@ import skywalker
 SkyMouseArea {
     property string userDid
     property string containingText
+    property basicprofile author
 
     signal longPress
     signal unrollThread
@@ -52,7 +53,7 @@ SkyMouseArea {
 
         onStatusChanged: {
             if (status == Loader.Ready)
-                item.show(hashtag)
+                item.show(hashtag, author.handle)
         }
 
         function activate(hashtag) {

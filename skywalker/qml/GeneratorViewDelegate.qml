@@ -194,6 +194,7 @@ Rectangle {
 
             LinkCatcher {
                 containingText: feed.description
+                author: feed.creator
             }
         }
 

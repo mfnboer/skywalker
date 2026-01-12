@@ -75,6 +75,7 @@ Column {
             z: parent.z - 1
             containingText: postPlainText
             userDid: postBody.userDid
+            author: postBody.postAuthor
 
             onUnrollThread: postBody.unrollThread()
         }

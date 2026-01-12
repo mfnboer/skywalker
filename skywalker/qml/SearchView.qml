@@ -182,7 +182,9 @@ SkyPage {
             postAuthorUser: page.postAuthorUser
             postMentionsUser: page.postMentionsUser
             postSince: page.postSince
+            postSetSince: page.postSetSince
             postUntil: page.postUntil
+            postSetUntil: page.postSetUntil
             postLanguage: page.postLanguage
         }
     }
