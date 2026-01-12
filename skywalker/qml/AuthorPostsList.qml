@@ -47,15 +47,17 @@ SkyListView {
         swipeMode: [QEnums.AUTHOR_FEED_FILTER_VIDEO, QEnums.AUTHOR_FEED_FILTER_MEDIA].includes(feedFilter)
 
         onActivateSwipe: (imgIndex, previewImg) => {
-            if (swipeMode)
+            if (swipeMode) {
+                const postsList = authorPostsList
                 root.viewMediaFeed(model, index, imgIndex, previewImg,
-                                   (newIndex, mediaIndex, closeCb) => {
-                                       authorPostsList.positionViewAtIndex(newIndex, ListView.Beginning)
-                                       authorPostsList.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
-                                   },
-                                   userDid)
-            else
+                    (newIndex, mediaIndex, closeCb) => {
+                        postsList.positionViewAtIndex(newIndex, ListView.Beginning)
+                        postsList.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                    },
+                    userDid)
+            } else {
                 console.warn("This is not a media feed")
+            }
         }
     }
 

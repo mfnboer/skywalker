@@ -65,7 +65,7 @@ SkyListView {
                              let view = timelineView
                              root.viewMediaFeed(model, index, imgIndex, previewImg,
                                                 (newIndex, mediaIndex, closeCb) => {
-                                                    moveToPost(newIndex)
+                                                    view.moveToPost(newIndex)
                                                     view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
                                                 })
                          }
