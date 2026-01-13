@@ -38,6 +38,11 @@ void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
         setPostThread(mRawPostThread);
 }
 
+ QEnums::ReplyOrder PostThreadModel::getReplyOrder()
+ {
+     return mReplyOrder;
+ }
+
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
 {
     mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);

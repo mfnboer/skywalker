@@ -26,6 +26,7 @@ public:
                              HashtagIndex& hashtags,
                              QObject* parent = nullptr);
 
+    Q_INVOKABLE QEnums::ReplyOrder getReplyOrder();
     Q_INVOKABLE void setReplyOrder(QEnums::ReplyOrder replyOrder);
 
     // Returns index of the entry post
