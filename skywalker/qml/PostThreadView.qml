@@ -28,13 +28,33 @@ SkyListView {
         headerVisible: !root.showSideBar
         onBack: view.closed()
 
+        property alias replyOrderSvg: replyOrderButton.svg
+
         SvgPlainButton {
             anchors.right: parent.right
             anchors.top: parent.top
+
+            id: sideBarButton
             svg: sideBarButtonSvg
             accessibleName: sideBarButtonName
             visible: !root.showSideBar
             onClicked: sideBarButtonClicked()
+        }
+
+        SvgPlainButton {
+            anchors.top: parent.top
+            anchors.right: sideBarButton.left
+
+            id: replyOrderButton
+            iconColor: guiSettings.headerTextColor
+            svg: guiSettings.getReplyOrderSvg(model.getReplyOrder())
+            accessibleName: qsTr("reply order")
+            onClicked: orderMenuLoader.open()
+
+            SkyMenuLoader {
+                id: orderMenuLoader
+                sourceComponent: orderMenuComponent
+            }
         }
 
         Rectangle {
@@ -188,8 +208,8 @@ SkyListView {
     }
 
     Item {
+        id: moreMenuItem
         anchors.right: parent.right
-
         SkyMenu {
             id: moreMenu
 
@@ -201,10 +221,47 @@ SkyListView {
                 text: qsTr("Settings")
                 svg: SvgOutline.settings
                 onTriggered: root.editPostThreadSettings(() => {
-                        const userSettings = skywalker.getUserSettings()
-                        const replyOrder = userSettings.getThreadReplyOrder(userDid)
-                        model.setReplyOrder(replyOrder)
-                    })
+                    const userSettings = skywalker.getUserSettings()
+                    const replyOrder = userSettings.getThreadReplyOrder(userDid)
+                    model.setReplyOrder(replyOrder)
+                })
+            }
+        }
+    }
+
+    Component {
+        id: orderMenuComponent
+
+        SkyMenu {
+            id: orderMenu
+
+            CloseMenuItem {
+                text: qsTr("<b>Sort Replies</b>")
+                Accessible.name: qsTr("close sort replies menu")
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Smart")
+                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_SMART)
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_SMART)
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Oldest reply first")
+                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_OLDEST_FIRST)
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_OLDEST_FIRST)
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Newest reply first")
+                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_NEWEST_FIRST)
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_NEWEST_FIRST)
+            }
+
+            AccessibleMenuItem {
+                text: qsTr("Most popular first")
+                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_POPULARITY)
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_POPULARITY)
             }
         }
     }
@@ -280,6 +337,14 @@ SkyListView {
         }
     }
 
+    function setReplySortOrder(replyOrder) {
+        // Not updating user settings right now. RedReader model better?
+        // const userSettings = skywalker.getUserSettings()
+        // userSettings.setThreadReplyOrder(userDid, replyOrder)
+        model.setReplyOrder(replyOrder)
+        headerItem.replyOrderSvg = guiSettings.getReplyOrderSvg(replyOrder)
+    }
+
     Component.onDestruction: {
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         skywalker.removePostThreadModel(modelId)
@@ -295,3 +360,4 @@ SkyListView {
             moveToIndex(postEntryIndex, sync)
     }
 }
+
