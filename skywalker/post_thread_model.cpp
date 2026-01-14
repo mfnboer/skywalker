@@ -9,6 +9,7 @@ namespace Skywalker {
 
 PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                                  QEnums::ReplyOrder replyOrder,
+                                 bool threadFirst,
                                  const QString& userDid,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
@@ -22,7 +23,8 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThre
     mUnrollThread(postThreadType == QEnums::POST_THREAD_UNROLLED),
     mOnlyEntryAuthorPosts(postThreadType == QEnums::POST_THREAD_UNROLLED || postThreadType == QEnums::POST_THREAD_ENTRY_AUTHOR_POSTS),
     mPostThreadType(postThreadType),
-    mReplyOrder(replyOrder)
+    mReplyOrder(replyOrder),
+    mThreadFirst(threadFirst)
 {}
 
 void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
@@ -41,6 +43,22 @@ void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
  QEnums::ReplyOrder PostThreadModel::getReplyOrder()
  {
      return mReplyOrder;
+ }
+
+ bool PostThreadModel::getReplyOrderThreadFirst()
+ {
+     return mThreadFirst;
+ }
+
+ void PostThreadModel::setReplyOrderThreadFirst(bool threadFirst)
+ {
+     if (mThreadFirst == threadFirst)
+         return;
+
+     mThreadFirst = threadFirst;
+
+     if (mRawPostThread)
+        setPostThread(mRawPostThread);
  }
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
@@ -529,16 +547,18 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             const auto& lhsAuthor = lhsPost->mAuthor;
             const auto& rhsAuthor = rhsPost->mAuthor;
 
-            // In all sortings, keep the replies from the author first as those are most likely
-            // forming a thread.
-            if (lhsAuthor->mDid != rhsAuthor->mDid)
-            {
-                // Author before others
-                if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
-                    return true;
+            // When sorting the thread first, keep the replies from the author first as
+            // those are most likely forming a thread.
+            if (mThreadFirst || mReplyOrder == QEnums::REPLY_ORDER_SMART) {
+                if (lhsAuthor->mDid != rhsAuthor->mDid)
+                {
+                    // Author before others
+                    if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                        return true;
 
-                if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
-                    return false;
+                    if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                        return false;
+                }
             }
 
             switch (mReplyOrder)
@@ -587,9 +607,7 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
         // Following before non-following
         if (lhsFollowing != rhsFollowing)
             return lhsFollowing;
-
-        // New before old
-        return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+        // Else fallthrough for new before old
     }
 
     // New before old

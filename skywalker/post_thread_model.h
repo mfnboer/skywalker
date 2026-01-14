@@ -19,6 +19,7 @@ public:
 
     explicit PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                              QEnums::ReplyOrder replyOrder,
+                             bool threadFirst,
                              const QString& userDid,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
@@ -28,6 +29,9 @@ public:
 
     Q_INVOKABLE QEnums::ReplyOrder getReplyOrder();
     Q_INVOKABLE void setReplyOrder(QEnums::ReplyOrder replyOrder);
+
+    Q_INVOKABLE bool getReplyOrderThreadFirst();
+    Q_INVOKABLE void setReplyOrderThreadFirst(bool threadFirst);
 
     // Returns index of the entry post
     int setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
@@ -116,6 +120,7 @@ private:
     QEnums::PostThreadType mPostThreadType;
     std::optional<Post> mFirstPostFromUnrolledThread;
     QEnums::ReplyOrder mReplyOrder = QEnums::REPLY_ORDER_SMART;
+    bool mThreadFirst = true;
     ATProto::AppBskyFeed::PostThread::SharedPtr mRawPostThread;
 };
 

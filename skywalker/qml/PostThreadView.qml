@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 SkyListView {
@@ -28,26 +29,14 @@ SkyListView {
         headerVisible: !root.showSideBar
         onBack: view.closed()
 
-        property alias replyOrderSvg: replyOrderButton.svg
-
         SvgPlainButton {
+            anchors.top: parent.top
             anchors.right: parent.right
-            anchors.top: parent.top
-
-            id: sideBarButton
-            svg: sideBarButtonSvg
-            accessibleName: sideBarButtonName
-            visible: !root.showSideBar
-            onClicked: sideBarButtonClicked()
-        }
-
-        SvgPlainButton {
-            anchors.top: parent.top
-            anchors.right: sideBarButton.left
 
             id: replyOrderButton
             iconColor: guiSettings.headerTextColor
-            svg: guiSettings.getReplyOrderSvg(model.getReplyOrder())
+            // TODO temp icon. Replace with generic "sort" icon
+            svg: SvgOutline.sortByAlpha
             accessibleName: qsTr("reply order")
             onClicked: orderMenuLoader.open()
 
@@ -222,7 +211,7 @@ SkyListView {
                 svg: SvgOutline.settings
                 onTriggered: root.editPostThreadSettings(() => {
                     const userSettings = skywalker.getUserSettings()
-                    const replyOrder = userSettings.getThreadReplyOrder(userDid)
+                    const replyOrder = userSettings.getReplyOrder(userDid)
                     model.setReplyOrder(replyOrder)
                 })
             }
@@ -235,33 +224,59 @@ SkyListView {
         SkyMenu {
             id: orderMenu
 
+            ButtonGroup { id: radioGroup }
+
             CloseMenuItem {
                 text: qsTr("<b>Sort Replies</b>")
                 Accessible.name: qsTr("close sort replies menu")
             }
 
-            AccessibleMenuItem {
+            SkyRadioMenuItem {
                 text: qsTr("Smart")
-                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_SMART)
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_SMART)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_SMART
             }
 
-            AccessibleMenuItem {
+            SkyRadioMenuItem {
                 text: qsTr("Oldest reply first")
-                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_OLDEST_FIRST)
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_OLDEST_FIRST)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_OLDEST_FIRST
             }
 
-            AccessibleMenuItem {
+            SkyRadioMenuItem {
                 text: qsTr("Newest reply first")
-                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_NEWEST_FIRST)
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_NEWEST_FIRST)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_NEWEST_FIRST
             }
 
-            AccessibleMenuItem {
+            SkyRadioMenuItem {
                 text: qsTr("Most popular first")
-                svg: guiSettings.getReplyOrderSvg(QEnums.REPLY_ORDER_POPULARITY)
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_POPULARITY)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_POPULARITY
+            }
+
+            MenuSeparator {}
+
+            AccessibleMenuItem {
+                text: qsTr("Sort Thread First")
+                onToggled: setThreadFirst()
+                checkable: true
+                checked: model.getReplyOrderThreadFirst()
+            }
+
+            MenuSeparator {}
+
+            AccessibleMenuItem {
+                text: qsTr("Save As Default")
+                onTriggered: saveReplySorting()
             }
         }
     }
@@ -338,11 +353,17 @@ SkyListView {
     }
 
     function setReplySortOrder(replyOrder) {
-        // Not updating user settings right now. RedReader model better?
-        // const userSettings = skywalker.getUserSettings()
-        // userSettings.setThreadReplyOrder(userDid, replyOrder)
         model.setReplyOrder(replyOrder)
-        headerItem.replyOrderSvg = guiSettings.getReplyOrderSvg(replyOrder)
+    }
+
+    function setThreadFirst() {
+        // Just flip the thread order property when toggled.
+        model.setReplyOrderThreadFirst(!model.getReplyOrderThreadFirst())
+    }
+
+    function saveReplySorting() {
+        userSettings.setReplyOrder(userDid, model.getReplyOrder())
+        userSettings.setReplyOrderThreadFirst(userDid, model.getReplyOrderThreadFirst())
     }
 
     Component.onDestruction: {

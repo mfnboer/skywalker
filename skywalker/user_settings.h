@@ -416,8 +416,11 @@ public:
     Q_INVOKABLE bool getAssembleThreads(const QString& did) const;
     Q_INVOKABLE void setAssembleThreads(const QString& did, bool assemble);
 
-    Q_INVOKABLE QEnums::ReplyOrder getThreadReplyOrder(const QString& did) const;
-    Q_INVOKABLE void setThreadReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder);
+    Q_INVOKABLE QEnums::ReplyOrder getReplyOrder(const QString& did) const;
+    Q_INVOKABLE void setReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder);
+
+    Q_INVOKABLE bool getReplyOrderThreadFirst(const QString& did) const;
+    Q_INVOKABLE void setReplyOrderThreadFirst(const QString& did, bool threadFirst);
 
     Q_INVOKABLE bool getRewindToLastSeenPost(const QString& did) const;
     Q_INVOKABLE void setRewindToLastSeenPost(const QString& did, bool rewind);

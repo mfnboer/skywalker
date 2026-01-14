@@ -413,20 +413,6 @@ Item {
         }
     }
 
-    function getReplyOrderSvg(replyOrder) {
-        switch (replyOrder) {
-        // TODO add real icons
-        case QEnums.REPLY_ORDER_SMART:
-             return SvgOutline.star
-        case QEnums.REPLY_ORDER_OLDEST_FIRST:
-             return SvgOutline.thumbDown
-        case QEnums.REPLY_ORDER_NEWEST_FIRST:
-             return SvgOutline.thumbUp
-        case QEnums.REPLY_ORDER_POPULARITY:
-             return SvgOutline.add
-        }
-    }
-
     function threadStartColor(color) {
         return color
     }
