@@ -3,9 +3,9 @@
 #pragma once
 #include "enums.h"
 #include "grapheme_info.h"
-#include <QQuickTextDocument>
-#include <qqmlintegration.h>
 #include <QObject>
+#include <QQmlEngine>
+#include <QQuickTextDocument>
 
 namespace Skywalker {
 

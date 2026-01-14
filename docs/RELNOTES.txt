@@ -5,6 +5,7 @@ next
 * Tap on profile banner to see it full screen
 * Setting to disable new labels notification
 * Setting to sort replies in post thread on popularity
+* Backup/restore for local settings
 * Bug fixes
 
 4.24

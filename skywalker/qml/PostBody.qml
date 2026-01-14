@@ -5,6 +5,7 @@ import skywalker
 
 Column {
     property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property int margin: 10
     required property basicprofile postAuthor
     required property string postText
@@ -141,7 +142,7 @@ Column {
                     font.italic: true
                     text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">@${postContentLabeler.handle}</a>`)
                     visible: !postContentLabeler.isNull()
-                    onLinkActivated: root.getSkywalker().getDetailedProfile(postContentLabeler.did)
+                    onLinkActivated: skywalker.getDetailedProfile(postContentLabeler.did)
                 }
                 AccessibleText {
                     topPadding: 20
@@ -200,7 +201,7 @@ Column {
                     font.italic: true
                     text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">@${postContentLabeler.handle}</a>`)
                     visible: !postContentLabeler.isNull()
-                    onLinkActivated: root.getSkywalker().getDetailedProfile(postContentLabeler.did)
+                    onLinkActivated: skywalker.getDetailedProfile(postContentLabeler.did)
                 }
             }
         }
@@ -209,9 +210,9 @@ Column {
     // Languages
     Loader {
         anchors.right: parent.right
-        active: postLanguageLabels.length > 0 && mustShowLangauges() && postVisible()
+        active: postLanguageLabels.length > 0 && mustShowLanguages() && postVisible()
         sourceComponent: LanguageLabels {
-            parentWidth: parent.width
+            parentWidth: postBody.width
             languageLabels: postLanguageLabels
         }
     }
@@ -377,7 +378,7 @@ Column {
     }
 
     function getPostFontSize() {
-        if (!root.getSkywalker().getUserSettings().giantEmojis)
+        if (!skywalker.getUserSettings().giantEmojis)
             return guiSettings.scaledFont(1)
 
         return onlyEmojisPost() ?
@@ -395,8 +396,8 @@ Column {
         return UnicodeFonts.onlyEmojis(postPlainText)
     }
 
-    function mustShowLangauges() {
-        return root.getSkywalker().getUserSettings().getShowLanguageTags()
+    function mustShowLanguages() {
+        return skywalker.getUserSettings().getShowLanguageTags()
     }
 
     Component {

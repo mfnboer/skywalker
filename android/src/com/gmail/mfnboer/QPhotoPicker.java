@@ -186,7 +186,7 @@ public class QPhotoPicker extends AppCompatActivity {
         String mimeType = context.getContentResolver().getType(uri);
 
         Log.d(LOGTAG, "Selected URI: " + uri + " mimetype: " + mimeType);
-        int fd = FileUtils.openContentUri(uri);
+        int fd = FileUtils.openContentUri(uri, "r");
         emitPhotoPicked(fd, mimeType, last);
     }
 }

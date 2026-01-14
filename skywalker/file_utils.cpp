@@ -4,6 +4,7 @@
 #include "temp_file_holder.h"
 #include <QDir>
 #include <QStandardPaths>
+#include <QUrl>
 
 #ifdef Q_OS_ANDROID
 #include "android_utils.h"
@@ -17,9 +18,9 @@ constexpr char const* APP_DATA_SUB_DIR = "skywalker";
 
 }
 
-namespace Skywalker::FileUtils {
+namespace Skywalker {
 
-bool checkReadMediaPermission()
+bool FileUtils::checkReadMediaPermission()
 {
 #if defined(Q_OS_ANDROID)
     static const QString READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
@@ -39,7 +40,7 @@ bool checkReadMediaPermission()
 #endif
 }
 
-bool checkWriteMediaPermission()
+bool FileUtils::checkWriteMediaPermission()
 {
 #if defined(Q_OS_ANDROID)
     static const QString WRITE_EXTERNAL_STORAGE = "android.permission.WRITE_EXTERNAL_STORAGE";
@@ -52,7 +53,7 @@ bool checkWriteMediaPermission()
     return true;
 }
 
-bool isPhotoPickerAvailable()
+bool FileUtils::isPhotoPickerAvailable()
 {
 #if defined(Q_OS_ANDROID)
     bool available = QJniObject::callStaticMethod<bool>(
@@ -67,7 +68,7 @@ bool isPhotoPickerAvailable()
 #endif
 }
 
-QString getAppDataPath(const QString& subDir)
+QString FileUtils::getAppDataPath(const QString& subDir)
 {
 #if defined(Q_OS_ANDROID)
     QJniObject jsSubDir = QJniObject::fromString(QString("%1/%2").arg(APP_DATA_SUB_DIR, subDir));
@@ -98,7 +99,7 @@ QString getAppDataPath(const QString& subDir)
 #endif
 }
 
-QString getPicturesPath()
+QString FileUtils::getPicturesPath()
 {
 #if defined(Q_OS_ANDROID)
     auto pathObj = QJniObject::callStaticMethod<jstring>("com/gmail/mfnboer/FileUtils",
@@ -117,7 +118,7 @@ QString getPicturesPath()
 #endif
 }
 
-QString getPicturesPath(const QString& subDir)
+QString FileUtils::getPicturesPath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
 #if defined(Q_OS_ANDROID)
@@ -149,7 +150,7 @@ QString getPicturesPath(const QString& subDir)
     return picPath;
 }
 
-QString getMoviesPath()
+QString FileUtils::getMoviesPath()
 {
 #if defined(Q_OS_ANDROID)
     auto pathObj = QJniObject::callStaticMethod<jstring>("com/gmail/mfnboer/FileUtils",
@@ -168,7 +169,7 @@ QString getMoviesPath()
 #endif
 }
 
-QString getCachePath(const QString& subDir)
+QString FileUtils::getCachePath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
 #if defined(Q_OS_ANDROID)
@@ -202,32 +203,101 @@ QString getCachePath(const QString& subDir)
 #endif
 }
 
-int openContentUri(const QString& contentUri)
+static QString fileModeToString(FileUtils::FileMode mode)
+{
+    switch (mode)
+    {
+    case FileUtils::FileMode::READ_ONLY:
+        return "r";
+    case FileUtils::FileMode::WRITE_ONLY:
+        return "wt";
+    }
+
+    qWarning() << "Unknown file mode:" << (int)mode;
+    return "r";
+}
+
+int FileUtils::openContentUri(const QString& contentUri, FileMode mode)
 {
 #if defined(Q_OS_ANDROID)
     QJniObject uri = QJniObject::fromString(contentUri);
+    QJniObject jMode = QJniObject::fromString(fileModeToString(mode));
 
     int fd = QJniObject::callStaticMethod<int>(
         "com/gmail/mfnboer/FileUtils",
         "openContentUriString",
-        "(Ljava/lang/String;)I",
-        uri.object<jstring>());
+        "(Ljava/lang/String;Ljava/lang/String;)I",
+        uri.object<jstring>(),
+        jMode.object<jstring>());
 
     return fd;
 #else
-    qWarning() << "Cannot handle content-URI:" << contentUri;
+    qWarning() << "Cannot handle content-URI:" << contentUri << "mode:" << (int)mode << fileModeToString(mode);
     return -1;
 #endif
 }
 
-QString resolveContentUriToFile(const QString &contentUriString) {
+bool FileUtils::deleteContentUri(const QString& contentUri)
+{
+#if defined(Q_OS_ANDROID)
+    QJniObject uri = QJniObject::fromString(contentUri);
+    bool deleted = QJniObject::callStaticMethod<bool>(
+        "com/gmail/mfnboer/FileUtils",
+        "deleteContentUriString",
+        "(Ljava/lang/String;)Z",
+        uri.object<jstring>());
+
+    return deleted;
+#else
+    qWarning() << "Cannot handle content-URI:" << contentUri;
+    return false;
+#endif
+}
+
+std::unique_ptr<QFile> FileUtils::openFile(const QUrl& fileUri, FileMode mode)
+{
+#if defined(Q_OS_ANDROID)
+    int fd = openContentUri(fileUri.toString(), mode);
+
+    if (fd < 0)
+    {
+        qWarning() << "Invalid file descriptor";
+        return nullptr;
+    }
+
+    auto file = std::make_unique<QFile>();
+    const auto openMode = mode == FileMode::WRITE_ONLY ? QIODevice::WriteOnly : QIODevice::ReadOnly;
+
+    if (!file->open(fd, openMode, QFile::FileHandleFlag::AutoCloseHandle))
+    {
+        qWarning() << "Cannot create file:" << fileUri;
+        return nullptr;
+    }
+
+    return file;
+#else
+    const QString fileName = fileUri.toLocalFile();
+    auto file = std::make_unique<QFile>(fileName);
+    const auto openMode = mode == FileMode::WRITE_ONLY ? QIODevice::WriteOnly : QIODevice::ReadOnly;
+
+    if (!file->open(openMode))
+    {
+        qWarning() << "Cannot create file:" << fileName;
+        return nullptr;
+    }
+
+    return file;
+#endif
+}
+
+QString FileUtils::resolveContentUriToFileName(const QString &contentUriString) {
 #ifdef Q_OS_ANDROID
     QJniObject uri = QJniObject::fromString(contentUriString);
 
     // Call the Java method
     QJniObject result = QJniObject::callStaticObjectMethod(
         "com/gmail/mfnboer/FileUtils",
-        "resolveContentUriToFile",
+        "resolveContentUriToFileName",
         "(Ljava/lang/String;)Ljava/lang/String;",
         uri.object<jstring>());
 
@@ -244,7 +314,7 @@ QString resolveContentUriToFile(const QString &contentUriString) {
 #endif
 }
 
-std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension, bool cache)
+std::unique_ptr<QTemporaryFile> FileUtils::makeTempFile(const QString& fileExtension, bool cache)
 {
     const QString nameTemplate = TempFileHolder::getNameTemplate(fileExtension, cache);
     auto tmpFile = std::make_unique<QTemporaryFile>(nameTemplate);
@@ -259,7 +329,7 @@ std::unique_ptr<QTemporaryFile> makeTempFile(const QString& fileExtension, bool 
     return tmpFile;
 }
 
-std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QString& fileExtension)
+std::unique_ptr<QTemporaryFile> FileUtils::createTempFile(const QString& fileUri, const QString& fileExtension)
 {
     qDebug() << "Create temp file for:" << fileUri << "ext:" << fileExtension;
 
@@ -274,7 +344,7 @@ std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QSt
     return createTempFile(file, fileExtension);
 }
 
-std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtension)
+std::unique_ptr<QTemporaryFile> FileUtils::createTempFile(int fd, const QString& fileExtension)
 {
     QFile file;
 
@@ -288,7 +358,7 @@ std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtens
     return createTempFile(file, fileExtension);
 }
 
-std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileExtension)
+std::unique_ptr<QTemporaryFile> FileUtils::createTempFile(QFile& file, const QString& fileExtension)
 {
     qDebug() << "Create temp file, input size:" << file.size();
 
@@ -321,12 +391,12 @@ std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileE
     return tmpFile;
 }
 
-QString createDateTimeName(QDateTime timestamp)
+QString FileUtils::createDateTimeName(QDateTime timestamp)
 {
     return timestamp.toString("yyyyMMddhhmmss");
 }
 
-void scanMediaFile(const QString& fileName)
+void FileUtils::scanMediaFile(const QString& fileName)
 {
 #if defined(Q_OS_ANDROID)
     auto jsFileName = QJniObject::fromString(fileName);

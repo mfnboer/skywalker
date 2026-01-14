@@ -632,6 +632,7 @@ qt_add_qml_module(libskywalker
         SOURCES following.cpp
         QML_FILES qml/ContentLabelRepeater.qml
         QML_FILES qml/SkyMouseArea.qml
+        QML_FILES qml/BackupFileDialog.qml
 )
 
 if (NOT ANDROID)

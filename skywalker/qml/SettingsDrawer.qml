@@ -22,6 +22,8 @@ SkyDrawer {
     signal inviteCodes()
     signal bookmarks()
     signal activeFollows()
+    signal backup()
+    signal restore()
     signal signOut()
     signal about()
     signal buyCoffee()
@@ -179,17 +181,54 @@ SkyDrawer {
             }
 
             SkyMenuItem {
-                id: switchAccountItem
                 icon: SvgOutline.group
-                text: qsTr("Switch Account")
-                onClicked: switchAccount()
+                text: qsTr("Accounts")
+                onClicked: accountsMenu.open()
+
+                SkyMenu {
+                    id: accountsMenu
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Accounts</b>")
+                        Accessible.name: qsTr("close accounts menu")
+                    }
+                    AccessibleMenuItem {
+                        svg: SvgOutline.group
+                        text: qsTr("Switch Account")
+                        onTriggered: switchAccount()
+                    }
+                    AccessibleMenuItem {
+                        svg: SvgOutline.signOut
+                        text: qsTr("Sign Out")
+                        onTriggered: signOut()
+                    }
+                }
             }
 
             SkyMenuItem {
-                id: signOutItem
-                icon: SvgOutline.signOut
-                text: qsTr("Sign Out")
-                onClicked: signOut()
+                id: backupItem
+                icon: SvgOutline.save
+                text: qsTr("Backup")
+                onClicked: backupMenu.open()
+
+                SkyMenu {
+                    id: backupMenu
+
+                    CloseMenuItem {
+                        text: qsTr("<b>Backup</b>")
+                        Accessible.name: qsTr("close backup menu")
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Backup settings")
+                        svg: SvgOutline.upload
+                        onTriggered: backup()
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Restore settings")
+                        svg: SvgOutline.download
+                        onTriggered: restore()
+                    }
+                }
             }
 
             SkyMenuItem {

@@ -369,6 +369,9 @@ void PostFeedModel::clear()
         endRemoveRows();
     }
 
+    clearLastInsertedRowIndex();
+    mFeedHideReplies.reset();
+    mFeedHideFollowing.reset();
     qDebug() << "All posts removed";
 }
 

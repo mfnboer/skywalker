@@ -3,6 +3,7 @@
 #include "user_settings.h"
 #include "activity_status.h"
 #include "definitions.h"
+#include "file_utils.h"
 #include "font_downloader.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
@@ -18,6 +19,18 @@ using namespace std::chrono_literals;
 
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
 static constexpr double DEFAULT_FONT_SCALE = 1.0;
+
+static constexpr char const* VALUE_TYPE_NULL = "Null";
+static constexpr char const* VALUE_TYPE_DATE = "Date";
+static constexpr char const* VALUE_TYPE_DATE_TIME = "DateTime";
+static constexpr char const* VALUE_TYPE_BOOL = "Bool";
+static constexpr char const* VALUE_TYPE_INT = "Int";
+static constexpr char const* VALUE_TYPE_DOUBLE = "Double";
+static constexpr char const* VALUE_TYPE_STRING = "String";
+static constexpr char const* VALUE_TYPE_STRING_LIST = "StringList";
+static constexpr char const* VALUE_TYPE_JSON_DOCUMENT = "JsonDocument";
+static constexpr char const* VALUE_TYPE_JSON_ARRAY = "JsonArray";
+static constexpr char const* VALUE_TYPE_JSON_OBJECT = "JsonObject";
 
 QEnums::DisplayMode UserSettings::sActiveDisplayMode(QEnums::DISPLAY_MODE_LIGHT);
 QString UserSettings::sDefaultBackgroundColor("white");
@@ -121,6 +134,205 @@ void UserSettings::reset()
     mAssembleThreads.reset();
 
     setActiveUserDid({});
+}
+
+template<typename T>
+static QJsonObject valueToJson(const QString& type, const T& value)
+{
+    QJsonObject json;
+    json.insert("$type", type);
+    json.insert("value", value);
+    return json;
+}
+
+QJsonObject UserSettings::toJson() const
+{
+    QJsonObject json;
+    const QStringList keys = mSettings.allKeys();
+
+    for (const QString& key : keys)
+    {
+        qDebug() << "Key:" << key;
+
+        if (key.endsWith("/password") ||
+            key.endsWith("/rememberPassword") ||
+            key.endsWith("/access") ||
+            key == "activeUser")
+        {
+            continue;
+        }
+
+        const QVariant value = mSettings.value(key);
+
+        if (value.isNull() || !value.isValid())
+            json[key] = valueToJson(VALUE_TYPE_NULL, QString(""));
+        else if (value.userType() == QMetaType::QDate)
+            json[key] = valueToJson(VALUE_TYPE_DATE, value.toDate().toString(Qt::ISODate));
+        else if (value.userType() == QMetaType::QDateTime)
+            json[key] = valueToJson(VALUE_TYPE_DATE_TIME, value.toDateTime().toString(Qt::ISODateWithMs));
+        else if (value.userType() == QMetaType::Bool)
+            json[key] = valueToJson(VALUE_TYPE_BOOL, value.toBool());
+        else if (value.userType() == QMetaType::Int)
+            json[key] = valueToJson(VALUE_TYPE_INT, value.toInt());
+        else if (value.userType() == QMetaType::Double)
+            json[key] = valueToJson(VALUE_TYPE_DOUBLE, value.toDouble());
+        else if (value.userType() == QMetaType::QString)
+            json[key] = valueToJson(VALUE_TYPE_STRING, value.toString());
+        else if (value.canConvert<QStringList>())
+            json[key] = valueToJson(VALUE_TYPE_STRING_LIST, QJsonArray::fromStringList(value.toStringList()));
+        else if (value.canConvert<QJsonDocument>())
+            json[key] = valueToJson(VALUE_TYPE_JSON_DOCUMENT, value.toJsonDocument().array());
+        else if (value.canConvert<QJsonArray>())
+            json[key] = valueToJson(VALUE_TYPE_JSON_ARRAY, value.toJsonArray());
+        else if (value.canConvert<QJsonObject>())
+            json[key] = valueToJson(VALUE_TYPE_JSON_OBJECT, value.toJsonObject());
+        else
+            qWarning() << "Cannot convert key:" << key << "value:" << value << "type:" << value.userType();
+    }
+
+    return json;
+}
+
+void UserSettings::fromJson(const QJsonObject& json)
+{
+    const ATProto::XJsonObject xjson(json);
+    const QStringList keys = json.keys();
+
+    for (const QString& key : keys)
+    {
+        qDebug() << "Key:" << key;
+        const QJsonObject value = xjson.getRequiredJsonObject(key);
+        const ATProto::XJsonObject xjsonValue(value);
+        const QString type = xjsonValue.getRequiredString("$type");
+
+        if (type == VALUE_TYPE_NULL)
+            mSettings.remove(key);
+        else if (type == VALUE_TYPE_DATE_TIME)
+            mSettings.setValue(key, xjsonValue.getRequiredDateTime("value"));
+        else if (type == VALUE_TYPE_DATE)
+            mSettings.setValue(key, xjsonValue.getRequiredDate("value"));
+        else if (type == VALUE_TYPE_BOOL)
+            mSettings.setValue(key, xjsonValue.getRequiredBool("value"));
+        else if (type == VALUE_TYPE_INT)
+            mSettings.setValue(key, xjsonValue.getRequiredInt("value"));
+        else if (type == VALUE_TYPE_DOUBLE)
+            mSettings.setValue(key, xjsonValue.getRequiredDouble("value"));
+        else if (type == VALUE_TYPE_STRING)
+            mSettings.setValue(key, xjsonValue.getRequiredString("value"));
+        else if (type == VALUE_TYPE_STRING_LIST)
+        {
+            const auto strings = xjsonValue.getRequiredStringVector("value");
+            const QStringList stringList(strings.begin(), strings.end());
+            mSettings.setValue(key, stringList);
+        }
+        else if (type == VALUE_TYPE_JSON_DOCUMENT)
+        {
+            const auto array = xjsonValue.getRequiredArray("value");
+            const QJsonDocument jsonDoc(array);
+            mSettings.setValue(key, jsonDoc);
+        }
+        else if (type == VALUE_TYPE_JSON_ARRAY)
+            mSettings.setValue(key, xjsonValue.getRequiredArray("value"));
+        else if (type == VALUE_TYPE_JSON_OBJECT)
+            mSettings.setValue(key, xjsonValue.getRequiredJsonObject("value"));
+        else
+            qWarning() << "Unknown type:" << type << "key:" << key << "value:" << json[key];
+    }
+}
+
+QString UserSettings::save(const QUrl& fileUri) const
+{
+    auto file = FileUtils::openFile(fileUri, FileUtils::FileMode::WRITE_ONLY);
+
+    if (!file)
+    {
+        qWarning() << "Cannot create file:" << fileUri;
+        return tr("Cannot create settings file");
+    }
+
+    const auto json = QJsonDocument(toJson());
+    const QByteArray data = json.toJson(QJsonDocument::Compact);
+
+    if (file->write(data) == -1)
+    {
+        qWarning() << "Failed to write:" << fileUri;
+        return tr("Failed to save settings");
+    }
+
+    file->close();
+    qDebug() << "Saved settings to:" << fileUri;
+    return {};
+}
+
+QString UserSettings::load(const QUrl& fileUri)
+{
+    auto file = FileUtils::openFile(fileUri, FileUtils::FileMode::READ_ONLY);
+
+    if (!file)
+    {
+        qWarning() << "Cannot open file:" << fileUri;
+        return tr("Cannot open settings file");
+    }
+
+    const QByteArray data = file->readAll();
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+
+    if (jsonDoc.isNull())
+    {
+        qWarning() << "Not valid JSON:" << fileUri;
+        return tr("Cannot read settings file");
+    }
+
+    QJsonObject json = jsonDoc.object();
+
+    if (json.isEmpty())
+    {
+        qWarning() << "JSON object is missing:" << fileUri;
+        return tr("Not a valid settings file: JSON object missing");
+    }
+
+    try {
+        fromJson(json);
+    } catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "Invalid JSON:" << e.msg();
+        return tr("Not a valid settings file: %1").arg(e.msg());
+    }
+
+    qDebug() << "Loaded settings from:" << fileUri;
+
+    emit contentLanguageFilterChanged();
+    emit backgroundColorChanged();
+    emit textColorChanged();
+    emit accentColorChanged();
+    emit linkColorChanged();
+    emit threadStyleChanged();
+    emit threadColorChanged();
+    emit fontScaleChanged();
+    emit favoritesBarPositionChanged();
+    emit giantEmojisChanged();
+    emit songlinkEnabledChanged();
+    emit wrapLabelsChanged();
+    emit showFollowsStatusChanged();
+    emit showFollowsActiveStatusChanged();
+    emit showFeedbackButtonsChanged();
+    emit sideBarTypeChanged();
+    emit gifAutoPlayChanged();
+    emit videoSoundChanged();
+    emit videoAutoPlayChanged();
+    emit videoAutoLoadChanged();
+    emit videoLoopPlayChanged();
+    emit videoQualityChanged();
+    emit videoStreamingEnabledChanged();
+    emit scriptRecognitionChanged();
+    emit showTrendingTopicsChanged();
+    emit showSuggestedFeedsChanged();
+    emit showSuggestedUsersChanged();
+    emit showSuggestedStarterPacksChanged();
+    emit blocksWithExpiryChanged();
+    emit mutesWithExpiryChanged();
+    emit notificationsForAllAccountsChanged();
+
+    return {};
 }
 
 void UserSettings::setActiveDisplayMode(QEnums::DisplayMode mode)

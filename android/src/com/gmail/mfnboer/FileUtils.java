@@ -15,7 +15,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
-import android.provider.MediaStore;
+import android.provider.DocumentsContract;
 import android.util.Log;
 
 public class FileUtils {
@@ -33,7 +33,7 @@ public class FileUtils {
         return path.getAbsolutePath();
     }
 
-    public static String resolveContentUriToFile(String uriString) {
+    public static String resolveContentUriToFileName(String uriString) {
         Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
@@ -42,11 +42,11 @@ public class FileUtils {
         }
 
         Uri uri = Uri.parse(uriString);
-        String[] projection = {MediaStore.Images.Media.DATA};
+        String[] projection = {"_display_name"};
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
-            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            int columnIndex = cursor.getColumnIndexOrThrow("_display_name");
             String filePath = cursor.getString(columnIndex);
             cursor.close();
             return filePath;
@@ -55,7 +55,7 @@ public class FileUtils {
         return null;
     }
 
-    public static int openContentUri(Uri contentUri) {
+    public static int openContentUri(Uri contentUri, String mode) {
         Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
@@ -63,12 +63,11 @@ public class FileUtils {
             return -1;
         }
 
-
         ContentResolver resolver = context.getContentResolver();
         ParcelFileDescriptor fileDescriptor;
 
         try {
-            fileDescriptor = resolver.openFileDescriptor(contentUri, "r");
+            fileDescriptor = resolver.openFileDescriptor(contentUri, mode);
         } catch (FileNotFoundException e) {
             Log.w(LOGTAG, e.getMessage());
             return -1;
@@ -80,9 +79,38 @@ public class FileUtils {
         return fd;
     }
 
-    public static int openContentUriString(String uriString) {
+    public static boolean deleteContentUri(Uri contentUri) {
+        Context context = SkywalkerApplication.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context to open content: " + contentUri);
+            return false;
+        }
+
+        ContentResolver resolver = context.getContentResolver();
+
+        try {
+            boolean deleted = DocumentsContract.deleteDocument(resolver, contentUri);
+
+            if (!deleted)
+                Log.w(LOGTAG, "Failed to delete: " + contentUri);
+
+            return deleted;
+        } catch (FileNotFoundException e) {
+            Log.w(LOGTAG, e.getMessage());
+        }
+
+        return false;
+    }
+
+    public static int openContentUriString(String uriString, String mode) {
         Uri uri = Uri.parse(uriString);
-        return openContentUri(uri);
+        return openContentUri(uri, mode);
+    }
+
+    public static boolean deleteContentUriString(String uriString) {
+        Uri uri = Uri.parse(uriString);
+        return deleteContentUri(uri);
     }
 
     public static String getPicturesPath() {

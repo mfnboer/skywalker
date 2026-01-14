@@ -1,5 +1,7 @@
+import QtCore
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Window
 import skywalker
@@ -914,6 +916,16 @@ ApplicationWindow {
             close()
         }
 
+        onBackup: {
+            backupFileDialog.backup()
+            close()
+        }
+
+        onRestore: {
+            backupFileDialog.restore()
+            close()
+        }
+
         onAbout: {
             showAbout()
             close()
@@ -928,6 +940,10 @@ ApplicationWindow {
             user = skywalker.getUser()
             open()
         }
+    }
+
+    BackupFileDialog {
+        id: backupFileDialog
     }
 
     SwitchUserDrawer {
@@ -1430,7 +1446,7 @@ ApplicationWindow {
                         setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
     }
 
-    function signOutCurrentUser() {
+    function  signOutCurrentUser() {
         skywalker.stopTimelineAutoUpdate()
         getTimelineView().stopSync()
         getFavoritesSwipeView().reset()

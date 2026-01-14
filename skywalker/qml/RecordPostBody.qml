@@ -211,7 +211,7 @@ Column {
         anchors.right: parent.right
         active: postLanguageLabels.length > 0 && mustShowLangauges() && postVisible()
         sourceComponent: LanguageLabels {
-            parentWidth: parent.width
+            parentWidth: postBody.width
             languageLabels: postLanguageLabels
         }
     }

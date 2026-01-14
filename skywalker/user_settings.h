@@ -91,6 +91,10 @@ class UserSettings : public QObject,
 
 public:
     void reset();
+    QJsonObject toJson() const;
+    void fromJson(const QJsonObject& json);
+    Q_INVOKABLE QString save(const QUrl& fileUri) const;
+    Q_INVOKABLE QString load(const QUrl& fileUri);
 
     Q_INVOKABLE  static int getActiveOnlineIntervalMins();
 
@@ -490,6 +494,12 @@ signals:
     void serviceChatChanged(QString did);
     void serviceVideoHostChanged(QString did);
     void serviceVideoDidChanged(QString did);
+    void feedHideRepliesChanged(QString did, QString feedUri);
+    void feedHideFollowingChanged(QString did, QString feedUri);
+
+    // NOTE: these signals are also emited on restore of settings.
+    // This signals trigger a settings change (QML ELEMENT property) that must be picked up immediately.
+    // When you add a new signal, add emit to UserSettings::load
     void contentLanguageFilterChanged();
     void backgroundColorChanged();
     void textColorChanged();
@@ -520,8 +530,6 @@ signals:
     void showSuggestedStarterPacksChanged();
     void blocksWithExpiryChanged();
     void mutesWithExpiryChanged();
-    void feedHideRepliesChanged(QString did, QString feedUri);
-    void feedHideFollowingChanged(QString did, QString feedUri);
     void notificationsForAllAccountsChanged();
 
 private:
