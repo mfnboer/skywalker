@@ -263,6 +263,14 @@ SkyListView {
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_POPULARITY
             }
 
+            SkyRadioMenuItem {
+                text: qsTr("Controversial first")
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_CONTROVERSIAL)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_CONTROVERSIAL
+            }
+
             MenuSeparator {}
 
             AccessibleMenuItem {

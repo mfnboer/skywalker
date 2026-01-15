@@ -571,6 +571,8 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                 return newerLessThan(viewPost, lhsPost, rhsPost);
             case QEnums::REPLY_ORDER_POPULARITY:
                 return mostPopularLessThan(viewPost, lhsPost, rhsPost);
+            case QEnums::REPLY_ORDER_CONTROVERSIAL:
+                return controversialLessThan(viewPost, lhsPost, rhsPost);
             }
 
             qWarning() << "Unknown reply order:" << mReplyOrder;
@@ -631,18 +633,43 @@ bool PostThreadModel::olderLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
 
 static int calcPopularity(const ATProto::AppBskyFeed::PostView& post)
 {
-    return post.mLikeCount + post.mReplyCount + post.mRepostCount + post.mQuoteCount;
+    return post.mLikeCount + post.mRepostCount;
 }
 
 bool PostThreadModel::mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                          ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                                          ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
 {
     const int lhsPopularity = calcPopularity(*lhsReply);
     const int rhsPopularity = calcPopularity(*rhsReply);
 
     if (lhsPopularity != rhsPopularity)
         return lhsPopularity > rhsPopularity;
+
+    // New before old
+    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+}
+
+static double calcControversy(const ATProto::AppBskyFeed::PostView& post)
+{
+    const int negative = post.mReplyCount + post.mQuoteCount;
+    int positive = post.mLikeCount + post.mRepostCount;
+    // Can't divide by zero
+    if (positive == 0)
+        positive = 1;
+
+    return negative / positive;
+}
+
+bool PostThreadModel::controversialLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+                                            ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                                            ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+{
+    const double lhsControvery= calcControversy(*lhsReply);
+    const double rhsControvery = calcControversy(*rhsReply);
+
+    if (lhsControvery != rhsControvery)
+        return lhsControvery > rhsControvery;
 
     // New before old
     return lhsReply->mIndexedAt > rhsReply->mIndexedAt;

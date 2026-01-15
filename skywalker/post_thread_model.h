@@ -103,8 +103,11 @@ private:
                        ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
                        ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
     bool mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                             ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                             ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+    bool controversialLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                               ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
+                               ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
