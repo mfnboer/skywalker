@@ -549,7 +549,8 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
 
             // When sorting the thread first, keep the replies from the author first as
             // those are most likely forming a thread.
-            if (mThreadFirst || mReplyOrder == QEnums::REPLY_ORDER_SMART) {
+            if (mThreadFirst || mReplyOrder == QEnums::REPLY_ORDER_SMART)
+            {
                 if (lhsAuthor->mDid != rhsAuthor->mDid)
                 {
                     // Author before others
