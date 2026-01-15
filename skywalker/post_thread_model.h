@@ -105,9 +105,9 @@ private:
     bool mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
                              const ATProto::AppBskyFeed::PostView& lhsReply,
                              const ATProto::AppBskyFeed::PostView& rhsReply) const;
-    bool controversialLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                               const ATProto::AppBskyFeed::PostView& lhsReply,
-                               const ATProto::AppBskyFeed::PostView& rhsReply) const;
+    bool engagementLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                            const ATProto::AppBskyFeed::PostView& lhsReply,
+                            const ATProto::AppBskyFeed::PostView& rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);

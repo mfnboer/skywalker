@@ -572,8 +572,8 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                 return newerLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_POPULARITY:
                 return mostPopularLessThan(viewPost, *lhsPost, *rhsPost);
-            case QEnums::REPLY_ORDER_CONTROVERSIAL:
-                return controversialLessThan(viewPost, *lhsPost, *rhsPost);
+            case QEnums::REPLY_ORDER_ENGAGEMENT:
+                return engagementLessThan(viewPost, *lhsPost, *rhsPost);
             }
 
             qWarning() << "Unknown reply order:" << mReplyOrder;
@@ -651,23 +651,17 @@ bool PostThreadModel::mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
     return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
-static double calcControversy(const ATProto::AppBskyFeed::PostView& post)
+static double calcEngagement(const ATProto::AppBskyFeed::PostView& post)
 {
-    const int negative = post.mReplyCount + post.mQuoteCount;
-    int positive = post.mLikeCount + post.mRepostCount;
-    // Can't divide by zero
-    if (positive == 0)
-        positive = 1;
-
-    return negative / positive;
+    return post.mReplyCount + post.mQuoteCount;
 }
 
-bool PostThreadModel::controversialLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                            const ATProto::AppBskyFeed::PostView& lhsReply,
-                                            const ATProto::AppBskyFeed::PostView& rhsReply) const
+bool PostThreadModel::engagementLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+                                         const ATProto::AppBskyFeed::PostView& lhsReply,
+                                         const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const double lhsControvery= calcControversy(lhsReply);
-    const double rhsControvery = calcControversy(rhsReply);
+    const double lhsControvery= calcEngagement(lhsReply);
+    const double rhsControvery = calcEngagement(rhsReply);
 
     if (lhsControvery != rhsControvery)
         return lhsControvery > rhsControvery;
