@@ -186,21 +186,9 @@ Rectangle {
 
             onClicked: viewMenuLoader.open()
 
-            Loader {
+            SkyMenuLoader {
                 id: viewMenuLoader
-                active: false
                 sourceComponent: viewMenuComponent
-                onStatusChanged: {
-                    if (status == Component.Ready)
-                        item.open()
-                }
-
-                function open() {
-                    if (!active)
-                        active = true
-                    else
-                        item.open()
-                }
             }
         }
 
@@ -274,22 +262,9 @@ Rectangle {
 
                 onClicked: viewMenuLoaderSideBar.open()
 
-                Loader {
+                SkyMenuLoader {
                     id: viewMenuLoaderSideBar
-                    active: false
                     sourceComponent: viewMenuComponent
-
-                    onStatusChanged: {
-                        if (status == Component.Ready)
-                            item.open()
-                    }
-
-                    function open() {
-                        if (!active)
-                            active = true
-                        else
-                            item.open()
-                    }
                 }
             }
 
