@@ -94,20 +94,20 @@ private:
     void clear();
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
     bool smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                       const ATProto::AppBskyFeed::PostView& lhsReply,
+                       const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool newerLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                       const ATProto::AppBskyFeed::PostView& lhsReply,
+                       const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool olderLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                       const ATProto::AppBskyFeed::PostView& lhsReply,
+                       const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                             ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                             ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                             const ATProto::AppBskyFeed::PostView& lhsReply,
+                             const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool controversialLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                               ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                               ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                               const ATProto::AppBskyFeed::PostView& lhsReply,
+                               const ATProto::AppBskyFeed::PostView& rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);

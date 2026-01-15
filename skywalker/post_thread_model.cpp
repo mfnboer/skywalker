@@ -542,7 +542,7 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             // assuming that the thread was posted in one go, the oldest is most likely
             // the thread continuation.
             if (mUnrollThread)
-                return olderLessThan(viewPost, lhsPost, rhsPost);
+                return olderLessThan(viewPost, *lhsPost, *rhsPost);
 
             const auto& lhsAuthor = lhsPost->mAuthor;
             const auto& rhsAuthor = rhsPost->mAuthor;
@@ -564,19 +564,19 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             switch (mReplyOrder)
             {
             case QEnums::REPLY_ORDER_SMART:
-                return smartLessThan(viewPost, lhsPost, rhsPost);
+                return smartLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_OLDEST_FIRST:
-                return olderLessThan(viewPost, lhsPost, rhsPost);
+                return olderLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_NEWEST_FIRST:
-                return newerLessThan(viewPost, lhsPost, rhsPost);
+                return newerLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_POPULARITY:
-                return mostPopularLessThan(viewPost, lhsPost, rhsPost);
+                return mostPopularLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_CONTROVERSIAL:
-                return controversialLessThan(viewPost, lhsPost, rhsPost);
+                return controversialLessThan(viewPost, *lhsPost, *rhsPost);
             }
 
             qWarning() << "Unknown reply order:" << mReplyOrder;
-            return smartLessThan(viewPost, lhsPost, rhsPost);
+            return smartLessThan(viewPost, *lhsPost, *rhsPost);
         });
 }
 
@@ -588,11 +588,11 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
 // 5. Hidden replies (previous steps only for non-hidden replies)
 // In each group, new before old.
 bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                    const ATProto::AppBskyFeed::PostView& lhsReply,
+                                    const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const auto& lhsAuthor = lhsReply->mAuthor;
-    const auto& rhsAuthor = rhsReply->mAuthor;
+    const auto& lhsAuthor = lhsReply.mAuthor;
+    const auto& rhsAuthor = rhsReply.mAuthor;
 
     if (lhsAuthor->mDid != rhsAuthor->mDid)
     {
@@ -613,22 +613,22 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
     }
 
     // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
 bool PostThreadModel::newerLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                    const ATProto::AppBskyFeed::PostView& lhsReply,
+                                    const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
     // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
 bool PostThreadModel::olderLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                    const ATProto::AppBskyFeed::PostView& lhsReply,
+                                    const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt < rhsReply.mIndexedAt;
 }
 
 static int calcPopularity(const ATProto::AppBskyFeed::PostView& post)
@@ -637,17 +637,17 @@ static int calcPopularity(const ATProto::AppBskyFeed::PostView& post)
 }
 
 bool PostThreadModel::mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                          ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                          ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                          const ATProto::AppBskyFeed::PostView& lhsReply,
+                                          const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const int lhsPopularity = calcPopularity(*lhsReply);
-    const int rhsPopularity = calcPopularity(*rhsReply);
+    const int lhsPopularity = calcPopularity(lhsReply);
+    const int rhsPopularity = calcPopularity(rhsReply);
 
     if (lhsPopularity != rhsPopularity)
         return lhsPopularity > rhsPopularity;
 
     // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
 static double calcControversy(const ATProto::AppBskyFeed::PostView& post)
@@ -662,17 +662,17 @@ static double calcControversy(const ATProto::AppBskyFeed::PostView& post)
 }
 
 bool PostThreadModel::controversialLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                            ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                            ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                            const ATProto::AppBskyFeed::PostView& lhsReply,
+                                            const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const double lhsControvery= calcControversy(*lhsReply);
-    const double rhsControvery = calcControversy(*rhsReply);
+    const double lhsControvery= calcControversy(lhsReply);
+    const double rhsControvery = calcControversy(rhsReply);
 
     if (lhsControvery != rhsControvery)
         return lhsControvery > rhsControvery;
 
     // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore)
