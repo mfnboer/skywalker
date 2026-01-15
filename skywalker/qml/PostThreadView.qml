@@ -275,7 +275,7 @@ SkyListView {
 
             AccessibleMenuItem {
                 text: qsTr("Sort Thread First")
-                onToggled: setThreadFirst()
+                onToggled: flipThreadFirst()
                 checkable: true
                 checked: model.getReplyOrderThreadFirst()
             }
@@ -364,8 +364,7 @@ SkyListView {
         model.setReplyOrder(replyOrder)
     }
 
-    function setThreadFirst() {
-        // Just flip the thread order property when toggled.
+    function flipThreadFirst() {
         model.setReplyOrderThreadFirst(!model.getReplyOrderThreadFirst())
     }
 
