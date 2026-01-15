@@ -167,9 +167,23 @@ QJsonObject UserSettings::toJson() const
         if (value.isNull() || !value.isValid())
             json[key] = valueToJson(VALUE_TYPE_NULL, QString(""));
         else if (value.userType() == QMetaType::QDate)
-            json[key] = valueToJson(VALUE_TYPE_DATE, value.toDate().toString(Qt::ISODate));
+        {
+            const QDate date = value.toDate();
+
+            if (date.isValid())
+                json[key] = valueToJson(VALUE_TYPE_DATE, date.toString(Qt::ISODate));
+            else
+                json[key] = valueToJson(VALUE_TYPE_NULL, QString(""));
+        }
         else if (value.userType() == QMetaType::QDateTime)
-            json[key] = valueToJson(VALUE_TYPE_DATE_TIME, value.toDateTime().toString(Qt::ISODateWithMs));
+        {
+            const QDateTime dateTime = value.toDateTime();
+
+            if (dateTime.isValid())
+                json[key] = valueToJson(VALUE_TYPE_DATE_TIME, dateTime.toString(Qt::ISODateWithMs));
+            else
+                json[key] = valueToJson(VALUE_TYPE_NULL, QString(""));
+        }
         else if (value.userType() == QMetaType::Bool)
             json[key] = valueToJson(VALUE_TYPE_BOOL, value.toBool());
         else if (value.userType() == QMetaType::Int)

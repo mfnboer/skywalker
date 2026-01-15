@@ -4353,6 +4353,7 @@ void Skywalker::resumeApp()
     if (mUserDid.isEmpty())
     {
         qDebug() << "No user active";
+        emit appResumed();
         return;
     }
 

@@ -24,6 +24,7 @@ SkyDrawer {
     signal activeFollows()
     signal backup()
     signal restore()
+    signal backupHelp()
     signal signOut()
     signal about()
     signal buyCoffee()
@@ -227,6 +228,11 @@ SkyDrawer {
                         text: qsTr("Restore settings")
                         svg: SvgOutline.download
                         onTriggered: restore()
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Help")
+                        svg: SvgOutline.help
+                        onTriggered: backupHelp()
                     }
                 }
             }

@@ -926,6 +926,8 @@ ApplicationWindow {
             close()
         }
 
+        onBackupHelp: backupFileDialog.help()
+
         onAbout: {
             showAbout()
             close()
