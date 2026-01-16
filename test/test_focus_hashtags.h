@@ -76,13 +76,54 @@ private slots:
             << QColor{"blue"}
             << std::set<QString>{ "hello", "moon", "order", "world" };
 
-
         QTest::newRow("normalization")
             << std::vector<TestFocus>{ {{"Hello"}, "blue"} }
             << "#HELLO #world"
             << true
             << QColor{"blue"}
             << std::set<QString>{ "hello" };
+
+        QTest::newRow("one focus cashtag 1")
+            << std::vector<TestFocus>{ {{"$hello"}, "blue"} }
+            << "$hello $world"
+            << true
+            << QColor{"blue"}
+            << std::set<QString>{ "$hello" };
+
+        QTest::newRow("one focus cashtag 2")
+            << std::vector<TestFocus>{ {{"$world"}, "blue"} }
+            << "$hello $world"
+            << true
+            << QColor{"blue"}
+            << std::set<QString>{ "$world" };
+
+        QTest::newRow("one focus cashtag no match")
+            << std::vector<TestFocus>{ {{"$bye"}, "blue"} }
+            << "$hello $world"
+            << false
+            << QColor{}
+            << std::set<QString>{};
+
+        QTest::newRow("multi focus cashtag")
+            << std::vector<TestFocus>{ {{"$world"}, "blue"}, {{"$hello"}, "yellow"} }
+            << "$hello $world"
+            << true
+            << QColor{"yellow"}
+            << std::set<QString>{ "$hello", "$world" };
+
+        QTest::newRow("multi cashtag entry 1")
+            << std::vector<TestFocus>{ {{"$hello", "$moon"}, "blue"} }
+            << "$hello $world"
+            << true
+            << QColor{"blue"}
+            << std::set<QString>{ "$hello", "$moon" };
+
+        QTest::newRow("multi cashtag entry 2")
+            << std::vector<TestFocus>{ {{"$hello", "$moon"}, "blue"}, {{"$world", "$order"}, "red"} }
+            << "$hello $world"
+            << true
+            << QColor{"blue"}
+            << std::set<QString>{ "$hello", "$moon", "$order", "$world" };
     }
 
     void matchPost()
@@ -114,7 +155,8 @@ private slots:
         else
             QVERIFY(!focusHashtags.highlightColor(post).isValid());
 
-        QCOMPARE(focusHashtags.getNormalizedMatchHashtags(post), matchedTags);
+        const auto normalizedMatchedTags = focusHashtags.getNormalizedMatchHashtags(post);
+        QCOMPARE(normalizedMatchedTags, matchedTags);
     }
 
     void addEntry()

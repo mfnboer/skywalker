@@ -21,6 +21,22 @@ const std::unordered_set<QString>& NormalizedWordIndex::getUniqueHashtags() cons
     return mHashtags;
 }
 
+const std::unordered_set<QString>& NormalizedWordIndex::getUniqueCashtags() const
+{
+    if (mCashtags.empty())
+    {
+        const auto& cashtagList = getCashtags();
+
+        for (const auto& tag : cashtagList)
+        {
+            const auto normalizedTag = SearchUtils::normalizeText(tag);
+            const_cast<NormalizedWordIndex*>(this)->mCashtags.insert(normalizedTag);
+        }
+    }
+
+    return mCashtags;
+}
+
 const std::vector<QString>& NormalizedWordIndex::getUniqueDomains() const
 {
     if (mDomains.empty())

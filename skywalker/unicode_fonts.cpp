@@ -360,6 +360,16 @@ bool UnicodeFonts::isHashtag(const QString& text)
     return ATProto::RichTextMaster::isHashtag(text);
 }
 
+bool UnicodeFonts::isCashtag(const QString& text)
+{
+    return ATProto::RichTextMaster::isCashtag(text);
+}
+
+bool UnicodeFonts::isHashCashtag(const QString& text)
+{
+    return text.startsWith('#') && isCashtag(text.sliced(1));
+}
+
 QString UnicodeFonts::getEmojiFontFamily()
 {
     return FontDownloader::getEmojiFontFamily();

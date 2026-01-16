@@ -257,6 +257,9 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
     static const QString FROM_ME = "from:me";
     static const auto FROM_ME_SIZE = FROM_ME.length();
 
+    if (UnicodeFonts::isCashtag(text))
+        return "#" + text;
+
     const auto index = text.indexOf(FROM_ME);
 
     if (index == -1)

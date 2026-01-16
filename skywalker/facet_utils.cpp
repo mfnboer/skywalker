@@ -46,6 +46,7 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
     int preeditCursor = cursor + preeditText.length();
     bool editMentionFound = false;
     bool editTagFound = false;
+    bool editCashtagFound = false;
     bool webLinkFound = false;
     bool postLinkFound = false;
     bool feedLinkFound = false;
@@ -148,9 +149,18 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
         case ATProto::RichTextMaster::ParsedMatch::Type::TAG:
             if (facet.mStartIndex < preeditCursor && preeditCursor <= facet.mEndIndex)
             {
-                mEditTagIndex = facet.mStartIndex + 1;
-                setEditTag(facet.mMatch.sliced(1)); // strip #-symbol
-                editTagFound = true;
+                if (facet.mMatch.startsWith('#'))
+                {
+                    mEditTagIndex = facet.mStartIndex + 1;
+                    setEditTag(facet.mMatch.sliced(1)); // strip #-symbol
+                    editTagFound = true;
+                }
+                else if (facet.mMatch.startsWith('$'))
+                {
+                    mEditCashtagIndex = facet.mStartIndex + 1;
+                    setEditCashtag(facet.mMatch.sliced(1)); // strip $-symbol
+                    editCashtagFound = true;
+                }
             }
             break;
         case ATProto::RichTextMaster::ParsedMatch::Type::UNKNOWN:
@@ -169,6 +179,9 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
 
     if (!editTagFound)
         setEditTag({});
+
+    if (!editCashtagFound)
+        setEditCashtag({});
 
     if (!webLinkFound)
         setFirstWebLink({});
@@ -572,6 +585,15 @@ void FacetUtils::setEditTag(const QString& tag)
 
     mEditTag = tag;
     emit editTagChanged();
+}
+
+void FacetUtils::setEditCashtag(const QString& tag)
+{
+    if (tag == mEditCashtag)
+        return;
+
+    mEditCashtag = tag;
+    emit editCashtagChanged();
 }
 
 void FacetUtils::setFirstWebLink(const QString& link)
