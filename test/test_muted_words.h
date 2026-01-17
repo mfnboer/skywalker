@@ -109,9 +109,14 @@ private slots:
             << "The #sky is blue."
             << true;
 
-        QTest::newRow("cashtag match")
+        QTest::newRow("cashtag match 1")
             << std::vector<QString>{"$sky"}
             << "The $SKY is blue."
+            << true;
+
+        QTest::newRow("cashtag match 2")
+            << std::vector<QString>{"$SKY"}
+            << "The $sky is blue."
             << true;
 
         QTest::newRow("cashtag no match")

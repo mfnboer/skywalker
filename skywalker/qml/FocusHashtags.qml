@@ -41,7 +41,7 @@ ListView {
                 anchors.right: parent.right
                 svg: SvgOutline.add
                 onClicked: addHashtagEntry()
-                accessibleName: qsTr(`add hashtag for focus`)
+                accessibleName: qsTr(`add hashtag or cashtag for focus`)
                 visible: view.count < skywalker.focusHashtags.maxSize
             }
         }
@@ -158,9 +158,11 @@ ListView {
 
 
     function deleteHashtagEntry(entry) {
+        const tag = guiSettings.getTagDisplay(entry.hashtags[0])
+
         guiSettings.askYesNoQuestion(
                     view,
-                    qsTr(`Do you really want to delete: #${entry.hashtags[0]} ?`),
+                    qsTr(`Do you really want to delete: ${tag} ?`),
                     () => skywalker.focusHashtags.removeEntry(entry.id))
     }
 

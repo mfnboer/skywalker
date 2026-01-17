@@ -314,16 +314,20 @@ Item {
         }
     }
 
+    function getTagDisplay(tag) {
+        return !tag.startsWith("$") ? '#' + tag : tag
+    }
+
     function getFocusHashtagEntryText(entry) {
         let text = ""
 
         for (let i = 0; i < entry.hashtags.length; ++i) {
-            const tag = entry.hashtags[i]
+            const tag = getTagDisplay(entry.hashtags[i])
 
             if (i > 0)
                 text += ' '
 
-            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">#${tag}</a>`
+            text += `<a href="${tag}" style="color: ${guiSettings.linkColor}; text-decoration: none">${tag}</a>`
         }
 
         console.debug("TEXT:", text)

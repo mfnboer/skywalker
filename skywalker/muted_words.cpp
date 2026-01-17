@@ -182,7 +182,7 @@ void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, cons
     if (entry.isHashtag())
         addWordToIndex(&entry, mHashTagIndex);
     else if (entry.isCashtag())
-        addRawWordToIndex(&entry, mCashTagIndex);
+        addWordToIndex(SearchUtils::normalizeText(entry.mRaw), &entry, mCashTagIndex);
     else if (entry.isDomain())
         addWordToIndex(&entry, mDomainIndex);
     else if (entry.mNormalizedWords.size() == 1)
@@ -210,7 +210,7 @@ void MutedWords::removeEntry(const QString& word)
     if (entry.isHashtag())
         removeWordFromIndex(&entry, mHashTagIndex);
     else if (entry.isCashtag())
-        removeRawWordFromIndex(&entry, mCashTagIndex);
+        removeWordFromIndex(SearchUtils::normalizeText(entry.mRaw), &entry, mCashTagIndex);
     else if (entry.isDomain())
         removeWordFromIndex(&entry, mDomainIndex);
     else if (entry.mNormalizedWords.size() == 1)
@@ -237,10 +237,10 @@ void MutedWords::addWordToIndex(const Entry* entry, WordIndexType& wordIndex)
     wordIndex[word].insert(entry);
 }
 
-void MutedWords::addRawWordToIndex(const Entry* entry, WordIndexType& wordIndex)
+void MutedWords::addWordToIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex)
 {
     Q_ASSERT(entry);
-    wordIndex[entry->mRaw].insert(entry);
+    wordIndex[word].insert(entry);
 }
 
 void MutedWords::removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex)
@@ -255,14 +255,14 @@ void MutedWords::removeWordFromIndex(const Entry* entry, WordIndexType& wordInde
         wordIndex.erase(word);
 }
 
-void MutedWords::removeRawWordFromIndex(const Entry* entry, WordIndexType& wordIndex)
+void MutedWords::removeWordFromIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex)
 {
     Q_ASSERT(entry);
-    auto& indexEntry = wordIndex[entry->mRaw];
+    auto& indexEntry = wordIndex[word];
     indexEntry.erase(entry);
 
     if (indexEntry.empty())
-        wordIndex.erase(entry->mRaw);
+        wordIndex.erase(word);
 }
 
 bool MutedWords::mustSkip(const Entry& entry, const BasicProfile& author, QDateTime now) const
@@ -368,6 +368,7 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchCashtag(const NormalizedWor
 
     for (const auto& [word, entries] : mCashTagIndex)
     {
+        qDebug() << "CASH TAG:" << word;
         Q_ASSERT(entries.size() == 1);
         const auto* entry = *entries.begin();
 

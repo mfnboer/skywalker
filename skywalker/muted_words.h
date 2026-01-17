@@ -108,9 +108,9 @@ private:
     using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;
 
     void addWordToIndex(const Entry* entry, WordIndexType& wordIndex);
-    void addRawWordToIndex(const Entry* entry, WordIndexType& wordIndex);
+    void addWordToIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex);
     void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
-    void removeRawWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
+    void removeWordFromIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex);
     bool preAdd(const Entry& entry);
     bool mustSkip(const Entry& entry, const BasicProfile& author, QDateTime now) const;
     std::pair<bool, const IMatchEntry*> matchDomain(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
