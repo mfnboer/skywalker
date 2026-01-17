@@ -29,10 +29,13 @@ SkyMouseArea {
 
     onPressAndHold: (mouse) => {
         const link = parent.linkAt(mouse.x, mouse.y)
+        console.debug("LINK:", link)
 
         if (link) {
             if (UnicodeFonts.isHashtag(link))
                 hashtagContextMenuLoader.activate(link)
+            else if (UnicodeFonts.isHashCashtag(link))
+                hashtagContextMenuLoader.activate(link.slice(1)) // Strip #-symbol
             else
                 longPress()
         }
@@ -42,7 +45,7 @@ SkyMouseArea {
     }
 
     Loader {
-        property string hashtag: ""
+        property string hashtag: "" // or cashtag starting with $
 
         id: hashtagContextMenuLoader
         active: false

@@ -163,7 +163,7 @@ QString FilteredContentPostFeedModel::highlightMutedWords(const Post& post, cons
 
     const WordsHighlighter wordsHighlighter;
     return wordsHighlighter.highlight(text, mutedWordEntry.getValue(), mHighlightColor,
-                                      mutedWordEntry.isHashtag());
+                                      mutedWordEntry.isHashtag() || mutedWordEntry.isCashtag());
 }
 
 bool FilteredContentPostFeedModel::highlightMutedWordsImages(const Post& post, QList<ImageView>& images) const

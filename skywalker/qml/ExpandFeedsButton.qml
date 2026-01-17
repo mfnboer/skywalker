@@ -96,7 +96,7 @@ SvgButton {
                     case QEnums.FAVORITE_LIST:
                         return SvgFilled.list
                     case QEnums.FAVORITE_SEARCH:
-                        return modelData.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+                        return guiSettings.searchFeedDefaultAvatar(modelData.searchFeed)
                     }
 
                     return SvgOutline.feed

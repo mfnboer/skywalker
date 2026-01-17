@@ -4,6 +4,7 @@ import skywalker
 SvgButton {
     required property bool messagesActive
     required property bool hashtagSearch
+    required property bool cashtagSearch
     property var searchView
     property var authorView
     property var postThreadView
@@ -37,6 +38,9 @@ SvgButton {
         if (hashtagSearch)
             return SvgOutline.hashtag
 
+        if (cashtagSearch)
+            return SvgOutline.cashtag
+
         return SvgOutline.chat
     }
 
@@ -50,7 +54,7 @@ SvgButton {
         else if (postThreadView) {
             postThreadView.reply()
         }
-        else if (hashtagSearch && searchView) {
+        else if ((hashtagSearch || cashtagSearch) && searchView) {
             root.composePost("\n" + searchView.getSearchText())
         }
         else {

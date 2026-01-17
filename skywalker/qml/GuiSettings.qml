@@ -348,10 +348,19 @@ Item {
         case QEnums.FAVORITE_LIST:
             return SvgFilled.list
         case QEnums.FAVORITE_SEARCH:
-            return favorite.searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+            return searchFeedDefaultAvatar(favorite.searchFeed)
         }
 
         return SvgOutline.feed
+    }
+
+    function searchFeedDefaultAvatar(searchFeed) : SvgImage  {
+        if (searchFeed.isHashtag())
+            return SvgOutline.hashtag
+        else if (searchFeed.isCashtag())
+            return SvgOutline.cashtag
+
+        return SvgOutline.search
     }
 
     function contentVisible(author, userDid = "")

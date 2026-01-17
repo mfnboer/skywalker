@@ -14,6 +14,7 @@ class WordsHighlighter : public QObject
 public:
     explicit WordsHighlighter(QObject* parent = nullptr);
 
+    // NOTE: isHashtag indicates hashtag or cashtag
     QString highlight(const QString& text, const QString& words, const QString& color, bool isHashtag) const;
 
 private:

@@ -87,8 +87,8 @@ ListView {
                         id: hashtagMenu
 
                         CloseMenuItem {
-                            text: qsTr("<b>Hashtag</b>")
-                            Accessible.name: qsTr("close hashtag menu")
+                            text: qsTr(`<b>${hashtagMenu.selectedTag}</b>`)
+                            Accessible.name: qsTr("close menu")
                         }
                         AccessibleMenuItem {
                             text: qsTr("Edit")
