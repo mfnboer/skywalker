@@ -1866,7 +1866,8 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
             setGetPostThreadInProgress(false);
 
             auto model = std::make_unique<PostThreadModel>(uri, postThreadType,
-                mUserSettings.getThreadReplyOrder(mUserDid),
+                mUserSettings.getReplyOrder(mUserDid),
+                mUserSettings.getReplyOrderThreadFirst(mUserDid),
                 mUserDid, mMutedReposts, mContentFilter,
                 mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
@@ -1906,7 +1907,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);
-            qDebug() << "getPostThread FAILED:" << error << " - " << msg;           
+            qDebug() << "getPostThread FAILED:" << error << " - " << msg;
             emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -2024,7 +2025,8 @@ int Skywalker::createPostThreadModel(const QString& uri, QEnums::PostThreadType 
 {
     qDebug() << "Create post thread model:" << uri << "type:" << (int)type;
     auto model = std::make_unique<PostThreadModel>(
-        uri, type, mUserSettings.getThreadReplyOrder(mUserDid),
+        uri, type, mUserSettings.getReplyOrder(mUserDid),
+        mUserSettings.getReplyOrderThreadFirst(mUserDid),
         mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);

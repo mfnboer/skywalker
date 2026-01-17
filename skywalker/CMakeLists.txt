@@ -633,6 +633,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ContentLabelRepeater.qml
         QML_FILES qml/SkyMouseArea.qml
         QML_FILES qml/BackupFileDialog.qml
+        QML_FILES qml/SkyMenuLoader.qml
 )
 
 if (NOT ANDROID)

@@ -21,41 +21,41 @@ ColumnLayout {
     SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
-        checked: userSettings.getThreadReplyOrder(userDid) === QEnums.REPLY_ORDER_SMART
+        checked: userSettings.getReplyOrder(userDid) === QEnums.REPLY_ORDER_SMART
         text: qsTr("Smart")
         onCheckedChanged: {
             if (checked)
-                userSettings.setThreadReplyOrder(userDid, QEnums.REPLY_ORDER_SMART)
+                userSettings.setReplyOrder(userDid, QEnums.REPLY_ORDER_SMART)
         }
     }
     SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
-        checked: userSettings.getThreadReplyOrder(userDid) === QEnums.REPLY_ORDER_OLDEST_FIRST
+        checked: userSettings.getReplyOrder(userDid) === QEnums.REPLY_ORDER_OLDEST_FIRST
         text: qsTr("Oldest reply first")
         onCheckedChanged: {
             if (checked)
-                userSettings.setThreadReplyOrder(userDid, QEnums.REPLY_ORDER_OLDEST_FIRST)
+                userSettings.setReplyOrder(userDid, QEnums.REPLY_ORDER_OLDEST_FIRST)
         }
     }
     SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
-        checked: userSettings.getThreadReplyOrder(userDid) === QEnums.REPLY_ORDER_NEWEST_FIRST
+        checked: userSettings.getReplyOrder(userDid) === QEnums.REPLY_ORDER_NEWEST_FIRST
         text: qsTr("Newest reply first")
         onCheckedChanged: {
             if (checked)
-                userSettings.setThreadReplyOrder(userDid, QEnums.REPLY_ORDER_NEWEST_FIRST)
+                userSettings.setReplyOrder(userDid, QEnums.REPLY_ORDER_NEWEST_FIRST)
         }
     }
     SkyRoundRadioButton {
         Layout.leftMargin: 10
         padding: 0
-        checked: userSettings.getThreadReplyOrder(userDid) === QEnums.REPLY_ORDER_POPULARITY
+        checked: userSettings.getReplyOrder(userDid) === QEnums.REPLY_ORDER_POPULARITY
         text: qsTr("Most popular reply first")
         onCheckedChanged: {
             if (checked)
-                userSettings.setThreadReplyOrder(userDid, QEnums.REPLY_ORDER_POPULARITY)
+                userSettings.setReplyOrder(userDid, QEnums.REPLY_ORDER_POPULARITY)
         }
     }
 }
