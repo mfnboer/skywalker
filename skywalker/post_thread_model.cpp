@@ -583,12 +583,11 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
 
 // Sort replies in this order:
 // 1. Reply from author (already done above for all orders)
-// 2. Your replies
-// 3. Replies from following
-// 4. Replies from other
-// 5. Hidden replies (previous steps only for non-hidden replies)
-// In each group, new before old.
-bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+// 2. Your replies, new before old.
+// 3. Replies from following, new before old.
+// 4. Replies from other, by popular
+// 5. Hidden replies (previous steps only for non-hidden replies), new before old.
+bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
                                     const ATProto::AppBskyFeed::PostView& lhsReply,
                                     const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
@@ -613,8 +612,8 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
         // Else fallthrough for new before old
     }
 
-    // New before old
-    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
+    // finally by popular
+    return mostPopularLessThan(viewPost, lhsReply, rhsReply);
 }
 
 bool PostThreadModel::newerLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
