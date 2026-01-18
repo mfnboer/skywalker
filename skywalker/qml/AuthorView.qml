@@ -23,6 +23,7 @@ SkyPage {
     property string authorWebsite
     property string authorAvatar
     property string authorBanner
+    property actorstatusview authorStatus: author.actorStatus
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
     property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     property string following: author.viewer.following
@@ -211,6 +212,7 @@ SkyPage {
                         userDid: page.userDid
                         author: page.author
                         showWarnedMedia: page.showWarnedMedia
+                        authorIsLive: authorStatus.isActive // To update immediately when status changes
                         onClicked:  {
                             if (authorAvatar)
                                 fullImageLoader.show(0)
@@ -356,6 +358,12 @@ SkyPage {
                                 visible: UnicodeFonts.hasEmoji(authorDescription)
                                 onTriggered: root.showEmojiNamesList(authorDescription)
                             }
+                            AccessibleMenuItem {
+                                text: qsTr("Go live")
+                                svg: SvgOutline.wifi
+                                visible: page.isUser(author)
+                                onTriggered: profileUtils.retrieveStatus()
+                            }
                         }
                     }
                 }
@@ -436,7 +444,7 @@ SkyPage {
             }
 
             AuthorNameAndStatusMultiLine {
-                topPadding: author.actorStatus.isActive ? 10 : 0
+                topPadding: authorStatus.isActive ? 10 : 0
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 userDid: page.userDid
                 author: page.author
@@ -500,25 +508,23 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 height: visible ? liveView.y + liveView.height : 0
                 color: "transparent"
-                visible: author.actorStatus.isActive && !author.actorStatus.externalView.isNull() && contentVisible()
+                visible: authorStatus.isActive && !authorStatus.externalView.isNull() && contentVisible()
 
-                LinkCardView {
+                LiveCardView {
                     id: liveView
                     y: 10
                     width: parent.width
-                    uri: author.actorStatus.externalView.uri
-                    title: author.actorStatus.externalView.title
-                    description: author.actorStatus.externalView.description
-                    thumbUrl: author.actorStatus.externalView.thumbUrl
+                    uri: authorStatus.externalView.uri
+                    title: authorStatus.externalView.title
+                    description: authorStatus.externalView.description
+                    thumbUrl: authorStatus.externalView.thumbUrl
                     contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
                     contentWarning: ""
                     contentLabeler: accessibilityUtils.nullAuthor
-                    isLiveExternal: true
+                    liveExpiresAt: authorStatus.expiresAt
 
-                    LiveLabel {
-                        x: 10
-                        y: 10
-                    }
+                    onClose: deleteLiveStatus()
+                    onEdit: profileUtils.retrieveStatus()
                 }
             }
 
@@ -1423,6 +1429,9 @@ SkyPage {
     }
 
     ProfileUtils {
+        property bool retrievingStatus: false
+        property bool updatingStatus: false
+
         id: profileUtils
         skywalker: page.skywalker // qmllint disable missing-type
 
@@ -1454,6 +1463,52 @@ SkyPage {
         onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
 
         onBasicProfileOk: (profile) => contentLabeler = profile
+
+        onUpdateStatusOk: (statusView) => {
+            updatingStatus = false
+            authorStatus = statusView
+            skywalker.updateUserStatus(statusView)
+            skywalker.showStatusMessage(qsTr("Live status updated"), QEnums.STATUS_LEVEL_INFO)
+        }
+
+        onUpdateStatusFailed: (error) => {
+            updatingStatus = false
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onDeleteStatusOk: {
+            updatingStatus = false
+            authorStatus = getNullStatus()
+            skywalker.updateUserStatus(authorStatus)
+        }
+
+        onDeleteStatusFailed: (error) => {
+            updatingStatus = false
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        }
+
+        onGetStatusOk: (uri, durationMinutes) => {
+            retrievingStatus = false
+            goLive(uri, durationMinutes)
+        }
+
+        function retrieveStatus() {
+            if (retrievingStatus)
+                return
+
+            retrievingStatus = true
+            getStatus(author.did)
+        }
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: profileUtils.retrievingStatus
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: profileUtils.updatingStatus
     }
 
     NotificationUtils {
@@ -1510,6 +1565,42 @@ SkyPage {
 
     function setFirstAppearance(appearanceDate) {
         firstAppearanceDate = appearanceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+    }
+
+    function goLive(uri, durationMinutes) {
+        if (profileUtils.updatingStatus)
+            return
+
+        let component = guiSettings.createComponent("GoLive.qml")
+        let dialog = component.createObject(page, { uri: uri, duration: durationMinutes })
+
+        dialog.onAccepted.connect(() => {
+            const card = dialog.getLinkCard()
+            const durationMinutes = dialog.getDuration()
+
+            if (card) {
+                console.debug("Live link card:", card)
+                profileUtils.updatingStatus = true
+                profileUtils.updateStatus(author.did, card.link, card.title, card.description, card.thumb, durationMinutes)
+            }
+            dialog.destroy()
+        })
+
+        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.open()
+    }
+
+    function deleteLiveStatus() {
+        if (profileUtils.updatingStatus)
+            return
+
+        guiSettings.askYesNoQuestion(
+                    page,
+                    qsTr("Do you really want to delete your live status?"),
+                    () => {
+                        profileUtils.updatingStatus = true
+                        profileUtils.deleteStatus(author.did)
+                    })
     }
 
     function editAuthor(author) {

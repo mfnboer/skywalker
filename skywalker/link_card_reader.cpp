@@ -11,6 +11,8 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 // Store cookies for this session only. No permanent storage!
 class CookieJar : public QNetworkCookieJar
 {
@@ -247,6 +249,16 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     qDebug() << "img url:" << imgUrlString;
     const auto& url = reply->request().url();
+
+    // HACK: for some reason Twitch does not give the linkcard for a channel on the first call
+    // NOTE: that a delay (500ms) is needed. Immediate retry does not work.
+    qDebug() << "MICHEL:" << mRetry << mCookieSaveControl << url.host() << card->getTitle().toLower();
+    if (!mRetry && url.host().endsWith("twitch.tv") && card->getTitle().toLower() == "twitch")
+    {
+        qDebug() << "Retry Twitch:" << url.toString();
+        QTimer::singleShot(500ms, this, [this, url]{ getLinkCard(url.toString(), true, mCookieSaveControl); });
+        return;
+    }
 
     // Washington post wraps the IMG url in a PHP query like this:
     // https://www.washingtonpost.com/wp-apps/imrs.php?src=https://<img-url>&w=1440

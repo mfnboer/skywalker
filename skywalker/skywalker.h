@@ -132,6 +132,7 @@ public:
     // If avatar is a "image://", then the profile takes ownership of the image
     Q_INVOKABLE void updateUserProfile(const QString& displayName, const QString& description,
                                        const QString& avatar, const QString& pronouns);
+    Q_INVOKABLE void updateUserStatus(const ActorStatusView& status);
 
     Q_INVOKABLE void clearAuthorFeed(int id);
 

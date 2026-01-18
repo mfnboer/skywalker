@@ -2,10 +2,14 @@
 // License: GPLv3
 #include "profile_utils.h"
 #include "author_cache.h"
+#include "image_reader.h"
 #include "photo_picker.h"
 #include "skywalker.h"
+#include <atproto/lib/lexicon/app_bsky_embed.h>
 
 namespace Skywalker {
+
+using namespace std::chrono_literals;
 
 ProfileUtils::ProfileUtils(QObject* parent) :
     WrappedSkywalker(parent),
@@ -55,6 +59,14 @@ ATProto::PostMaster* ProfileUtils::postMaster()
     }
 
     return mPostMaster.get();
+}
+
+ImageReader* ProfileUtils::imageReader()
+{
+    if (!mImageReader)
+        mImageReader = std::make_unique<ImageReader>(this);
+
+    return mImageReader.get();
 }
 
 void ProfileUtils::getBasicProfile(const QString& did)
@@ -385,6 +397,174 @@ void ProfileUtils::clearPinnedPost(const QString& did, const QString& cid)
             qDebug() << "Clear pinned post failed:" << error << " - " << msg;
             emit clearPinnedPostFailed(msg);
         });
+}
+
+void ProfileUtils::updateStatus(const QString& did, const QString& uri, const QString& title,
+                  const QString& description, const QString& thumb, int durationMinutes)
+{
+    qDebug() << "Update status:" << did << "uri:" << uri << "title:" << title << "thumb:" << thumb << "duration:" << durationMinutes;
+
+    if (thumb.isEmpty())
+    {
+        continueUpdateStatus(did, uri, title, description, nullptr, "", durationMinutes);
+        return;
+    }
+
+    imageReader()->getImage(thumb,
+        [this, presence=getPresence(), did, uri, title, description, thumb, durationMinutes](auto image){
+            if (presence)
+                continueUpdateStatus(did, uri, title, description, image, thumb, durationMinutes);
+        },
+        [this, presence=getPresence(), did, uri, title, description, durationMinutes](const QString& error){
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to load image:" << error;
+            // Update status without image anyway. Sometimes card information at sites
+            // have broken image links.
+            continueUpdateStatus(did, uri, title, description, nullptr, "", durationMinutes);
+        });
+}
+
+void ProfileUtils::continueUpdateStatus(const QString& did, const QString& uri, const QString& title,
+                          const QString& description, QImage thumb, const QString& thumbUri, int durationMinutes)
+{
+    Q_ASSERT(!thumb.isNull());
+    QByteArray blob;
+    const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, thumb, thumbUri);
+
+    if (blob.isEmpty())
+    {
+        qWarning() << "Failed to create blob";
+        continueUpdateStatus(did, uri, title, description, nullptr, "", durationMinutes);
+        return;
+    }
+
+    if (!bskyClient())
+        return;
+
+    bskyClient()->uploadBlob(blob, mimeType,
+        [this, presence=getPresence(), did, uri, title, description, thumbUri, durationMinutes](auto blob){
+            if (!presence)
+                return;
+
+            if (!postMaster())
+                return;
+
+            continueUpdateStatus(did, uri, title, description, blob, thumbUri, durationMinutes);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Upload blob failed:" << error << " - " << msg;
+            emit updateStatusFailed(msg);
+        });
+}
+
+void ProfileUtils::continueUpdateStatus(const QString& did, const QString& uri, const QString& title,
+                          const QString& description, ATProto::Blob::SharedPtr thumb, const QString& thumbUri, int durationMinutes)
+{
+    if (!profileMaster())
+        return;
+
+    auto external = std::make_shared<ATProto::AppBskyEmbed::External>();
+    external->mExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalExternal>();
+    external->mExternal->mUri = uri;
+    external->mExternal->mTitle = title;
+    external->mExternal->mDescription = description;
+    external->mExternal->mThumb = thumb;
+
+    ATProto::AppBskyActor::Status status;
+    status.mStatus = ATProto::AppBskyActor::ActorStatus::LIVE;
+    status.mEmbed = external;
+    status.mDurationMinutes = durationMinutes;
+    status.mCreatedAt = QDateTime::currentDateTimeUtc();
+
+    profileMaster()->updateStatus(did, status,
+        [this, presence=getPresence(), uri, title, description, thumbUri, durationMinutes](){
+            if (!presence)
+                return;
+
+            auto externalViewExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalViewExternal>();
+            externalViewExternal->mUri = uri;
+            externalViewExternal->mTitle = title;
+            externalViewExternal->mDescription = description;
+
+            if (!thumbUri.isEmpty())
+                externalViewExternal->mThumb = thumbUri;
+
+            auto externalView = std::make_shared<ATProto::AppBskyEmbed::ExternalView>();
+            externalView->mExternal = externalViewExternal;
+            auto statusView = std::make_shared<ATProto::AppBskyActor::StatusView>();
+            statusView->mStatus = ATProto::AppBskyActor::ActorStatus::LIVE;
+            statusView->mEmbed = externalView;
+            statusView->mExpiresAt = QDateTime::currentDateTimeUtc() + durationMinutes * 1min;
+
+            emit updateStatusOk(ActorStatusView{*statusView});
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Update status failed:" << error << " - " << msg;
+            emit updateStatusFailed(msg);
+        });
+}
+
+void ProfileUtils::deleteStatus(const QString& did)
+{
+    if (!profileMaster())
+        return;
+
+    profileMaster()->deleteStatus(did,
+        [this, presence=getPresence()](){
+            if (!presence)
+                return;
+
+            emit deleteStatusOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Delete status failed:" << error << " - " << msg;
+            emit deleteStatusFailed(msg);
+        });
+}
+
+void ProfileUtils::getStatus(const QString& did)
+{
+    if (!profileMaster())
+        return;
+
+    profileMaster()->getStatus(did,
+        [this, presence=getPresence()](ATProto::AppBskyActor::Status::SharedPtr status){
+            if (!presence)
+                return;
+
+            QString uri;
+
+            if (status->mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed))
+            {
+                auto external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed);
+                uri = external->mExternal->mUri;
+            }
+
+            emit getStatusOk(uri, status->mDurationMinutes.value_or(60));
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Get status failed:" << error << " - " << msg;
+            emit getStatusOk("", 60);
+        });
+}
+
+ActorStatusView ProfileUtils::getNullStatus()
+{
+    return ActorStatusView{};
 }
 
 }

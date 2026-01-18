@@ -80,8 +80,9 @@ bool ActorStatusView::isActive() const
     if (!mSet)
         return false;
 
+    // NOTE: the official app does not show live status when there is no expiration.
     if (!mExpiresAt.isValid())
-        return true;
+        return false;
 
     if (!mIsActive)
         return false;
@@ -691,6 +692,14 @@ void BasicProfile::setAvatarUrl(const QString& avatarUrl)
     {
         mPrivate->mAvatarSource = nullptr;
     }
+}
+
+void BasicProfile::setActorStatus(const ActorStatusView& status)
+{
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
+
+    mPrivate->mActorStatus = status;
 }
 
 bool BasicProfile::isFixedLabeler() const

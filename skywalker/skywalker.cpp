@@ -2324,6 +2324,17 @@ void Skywalker::updateUserProfile(const QString& displayName, const QString& des
     emit userChanged();
 }
 
+void Skywalker::updateUserStatus(const ActorStatusView& status)
+{
+    mUserProfile.setActorStatus(status);
+    AuthorCache::instance().setUser(mUserProfile);
+
+    makeLocalModelChange(
+        [this](LocalProfileChanges* model){ model->updateProfile(mUserProfile); });
+
+    emit userChanged();
+}
+
 void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
 {
     Q_ASSERT(mBsky);

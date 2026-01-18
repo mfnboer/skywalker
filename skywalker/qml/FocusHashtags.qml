@@ -168,7 +168,7 @@ ListView {
 
     function addHashtagEntry() {
         let component = guiSettings.createComponent("AddFocusHashtag.qml")
-        let dialog = component.createObject(view);
+        let dialog = component.createObject(view)
 
         dialog.onAccepted.connect(() => {
             const tag = dialog.getText()
