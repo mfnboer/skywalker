@@ -560,6 +560,11 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
                     if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
                         return false;
                 }
+                else if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                {
+                    // The oldest reply from the author is most likely the thread continuation
+                    return olderLessThan(viewPost, *lhsPost, *rhsPost);
+                }
             }
 
             switch (mReplyOrder)
@@ -609,7 +614,6 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPo
         // Following before non-following
         if (lhsFollowing != rhsFollowing)
             return lhsFollowing;
-        // Else fallthrough for new before old
     }
 
     // finally by popular
