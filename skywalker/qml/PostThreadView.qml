@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 SkyListView {
@@ -29,12 +30,20 @@ SkyListView {
         onBack: view.closed()
 
         SvgPlainButton {
-            anchors.right: parent.right
             anchors.top: parent.top
-            svg: sideBarButtonSvg
-            accessibleName: sideBarButtonName
-            visible: !root.showSideBar
-            onClicked: sideBarButtonClicked()
+            anchors.right: parent.right
+
+            id: replyOrderButton
+            iconColor: guiSettings.headerTextColor
+            // TODO temp icon. Replace with generic "sort" icon
+            svg: SvgOutline.sortByAlpha
+            accessibleName: qsTr("reply order")
+            onClicked: orderMenuLoader.open()
+
+            SkyMenuLoader {
+                id: orderMenuLoader
+                sourceComponent: orderMenuComponent
+            }
         }
 
         Rectangle {
@@ -188,8 +197,8 @@ SkyListView {
     }
 
     Item {
+        id: moreMenuItem
         anchors.right: parent.right
-
         SkyMenu {
             id: moreMenu
 
@@ -201,10 +210,81 @@ SkyListView {
                 text: qsTr("Settings")
                 svg: SvgOutline.settings
                 onTriggered: root.editPostThreadSettings(() => {
-                        const userSettings = skywalker.getUserSettings()
-                        const replyOrder = userSettings.getThreadReplyOrder(userDid)
-                        model.setReplyOrder(replyOrder)
-                    })
+                    const userSettings = skywalker.getUserSettings()
+                    const replyOrder = userSettings.getReplyOrder(userDid)
+                    model.setReplyOrder(replyOrder)
+                })
+            }
+        }
+    }
+
+    Component {
+        id: orderMenuComponent
+
+        SkyMenu {
+            id: orderMenu
+
+            ButtonGroup { id: radioGroup }
+
+            CloseMenuItem {
+                text: qsTr("<b>Sort Replies</b>")
+                Accessible.name: qsTr("close sort replies menu")
+            }
+
+            SkyRadioMenuItem {
+                text: qsTr("Smart")
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_SMART)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_SMART
+            }
+
+            SkyRadioMenuItem {
+                text: qsTr("Oldest reply first")
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_OLDEST_FIRST)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_OLDEST_FIRST
+            }
+
+            SkyRadioMenuItem {
+                text: qsTr("Newest reply first")
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_NEWEST_FIRST)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_NEWEST_FIRST
+            }
+
+            SkyRadioMenuItem {
+                text: qsTr("Most popular first")
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_POPULARITY)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_POPULARITY
+            }
+
+            SkyRadioMenuItem {
+                text: qsTr("Most engagement")
+                onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_ENGAGEMENT)
+                checkable: true
+                ButtonGroup.group: radioGroup
+                checked: model.getReplyOrder() === QEnums.REPLY_ORDER_ENGAGEMENT
+            }
+
+            MenuSeparator {}
+
+            AccessibleMenuItem {
+                text: qsTr("Sort Thread First")
+                onToggled: flipThreadFirst()
+                checkable: true
+                checked: model.getReplyOrderThreadFirst()
+            }
+
+            MenuSeparator {}
+
+            AccessibleMenuItem {
+                text: qsTr("Save As Default")
+                onTriggered: saveReplySorting()
             }
         }
     }
@@ -280,6 +360,19 @@ SkyListView {
         }
     }
 
+    function setReplySortOrder(replyOrder) {
+        model.setReplyOrder(replyOrder)
+    }
+
+    function flipThreadFirst() {
+        model.setReplyOrderThreadFirst(!model.getReplyOrderThreadFirst())
+    }
+
+    function saveReplySorting() {
+        userSettings.setReplyOrder(userDid, model.getReplyOrder())
+        userSettings.setReplyOrderThreadFirst(userDid, model.getReplyOrderThreadFirst())
+    }
+
     Component.onDestruction: {
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         skywalker.removePostThreadModel(modelId)
@@ -295,3 +388,4 @@ SkyListView {
             moveToIndex(postEntryIndex, sync)
     }
 }
+

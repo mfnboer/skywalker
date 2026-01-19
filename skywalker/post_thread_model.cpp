@@ -9,6 +9,7 @@ namespace Skywalker {
 
 PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                                  QEnums::ReplyOrder replyOrder,
+                                 bool threadFirst,
                                  const QString& userDid,
                                  const IProfileStore& mutedReposts,
                                  const ContentFilter& contentFilter,
@@ -22,7 +23,8 @@ PostThreadModel::PostThreadModel(const QString& threadEntryUri, QEnums::PostThre
     mUnrollThread(postThreadType == QEnums::POST_THREAD_UNROLLED),
     mOnlyEntryAuthorPosts(postThreadType == QEnums::POST_THREAD_UNROLLED || postThreadType == QEnums::POST_THREAD_ENTRY_AUTHOR_POSTS),
     mPostThreadType(postThreadType),
-    mReplyOrder(replyOrder)
+    mReplyOrder(replyOrder),
+    mThreadFirst(threadFirst)
 {}
 
 void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
@@ -37,6 +39,27 @@ void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
     if (mRawPostThread)
         setPostThread(mRawPostThread);
 }
+
+ QEnums::ReplyOrder PostThreadModel::getReplyOrder()
+ {
+     return mReplyOrder;
+ }
+
+ bool PostThreadModel::getReplyOrderThreadFirst()
+ {
+     return mThreadFirst;
+ }
+
+ void PostThreadModel::setReplyOrderThreadFirst(bool threadFirst)
+ {
+     if (mThreadFirst == threadFirst)
+         return;
+
+     mThreadFirst = threadFirst;
+
+     if (mRawPostThread)
+        setPostThread(mRawPostThread);
+ }
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
 {
@@ -519,53 +542,57 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             // assuming that the thread was posted in one go, the oldest is most likely
             // the thread continuation.
             if (mUnrollThread)
-                return olderLessThan(viewPost, lhsPost, rhsPost);
+                return olderLessThan(viewPost, *lhsPost, *rhsPost);
 
             const auto& lhsAuthor = lhsPost->mAuthor;
             const auto& rhsAuthor = rhsPost->mAuthor;
 
-            // In all sortings, keep the replies from the author first as those are most likely
-            // forming a thread.
-            if (lhsAuthor->mDid != rhsAuthor->mDid)
+            // When sorting the thread first, keep the replies from the author first as
+            // those are most likely forming a thread.
+            if (mThreadFirst || mReplyOrder == QEnums::REPLY_ORDER_SMART)
             {
-                // Author before others
-                if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
-                    return true;
+                if (lhsAuthor->mDid != rhsAuthor->mDid)
+                {
+                    // Author before others
+                    if (lhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                        return true;
 
-                if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
-                    return false;
+                    if (rhsAuthor->mDid == viewPost->mPost->mAuthor->mDid)
+                        return false;
+                }
             }
 
             switch (mReplyOrder)
             {
             case QEnums::REPLY_ORDER_SMART:
-                return smartLessThan(viewPost, lhsPost, rhsPost);
+                return smartLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_OLDEST_FIRST:
-                return olderLessThan(viewPost, lhsPost, rhsPost);
+                return olderLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_NEWEST_FIRST:
-                return newerLessThan(viewPost, lhsPost, rhsPost);
+                return newerLessThan(viewPost, *lhsPost, *rhsPost);
             case QEnums::REPLY_ORDER_POPULARITY:
-                return mostPopularLessThan(viewPost, lhsPost, rhsPost);
+                return mostPopularLessThan(viewPost, *lhsPost, *rhsPost);
+            case QEnums::REPLY_ORDER_ENGAGEMENT:
+                return engagementLessThan(viewPost, *lhsPost, *rhsPost);
             }
 
             qWarning() << "Unknown reply order:" << mReplyOrder;
-            return smartLessThan(viewPost, lhsPost, rhsPost);
+            return smartLessThan(viewPost, *lhsPost, *rhsPost);
         });
 }
 
 // Sort replies in this order:
 // 1. Reply from author (already done above for all orders)
-// 2. Your replies
-// 3. Replies from following
-// 4. Replies from other
-// 5. Hidden replies (previous steps only for non-hidden replies)
-// In each group, new before old.
-bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+// 2. Your replies, new before old.
+// 3. Replies from following, new before old.
+// 4. Replies from other, by popular
+// 5. Hidden replies (previous steps only for non-hidden replies), new before old.
+bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                                    const ATProto::AppBskyFeed::PostView& lhsReply,
+                                    const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const auto& lhsAuthor = lhsReply->mAuthor;
-    const auto& rhsAuthor = rhsReply->mAuthor;
+    const auto& lhsAuthor = lhsReply.mAuthor;
+    const auto& rhsAuthor = rhsReply.mAuthor;
 
     if (lhsAuthor->mDid != rhsAuthor->mDid)
     {
@@ -582,47 +609,64 @@ bool PostThreadModel::smartLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
         // Following before non-following
         if (lhsFollowing != rhsFollowing)
             return lhsFollowing;
-
-        // New before old
-        return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+        // Else fallthrough for new before old
     }
 
-    // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    // finally by popular
+    return mostPopularLessThan(viewPost, lhsReply, rhsReply);
 }
 
 bool PostThreadModel::newerLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                    const ATProto::AppBskyFeed::PostView& lhsReply,
+                                    const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
     // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
 bool PostThreadModel::olderLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                                    ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                    const ATProto::AppBskyFeed::PostView& lhsReply,
+                                    const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    return lhsReply->mIndexedAt < rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt < rhsReply.mIndexedAt;
 }
 
 static int calcPopularity(const ATProto::AppBskyFeed::PostView& post)
 {
-    return post.mLikeCount + post.mReplyCount + post.mRepostCount + post.mQuoteCount;
+    return post.mLikeCount + post.mRepostCount;
 }
 
 bool PostThreadModel::mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const
+                                          const ATProto::AppBskyFeed::PostView& lhsReply,
+                                          const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const int lhsPopularity = calcPopularity(*lhsReply);
-    const int rhsPopularity = calcPopularity(*rhsReply);
+    const int lhsPopularity = calcPopularity(lhsReply);
+    const int rhsPopularity = calcPopularity(rhsReply);
 
     if (lhsPopularity != rhsPopularity)
         return lhsPopularity > rhsPopularity;
 
     // New before old
-    return lhsReply->mIndexedAt > rhsReply->mIndexedAt;
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
+}
+
+static double calcEngagement(const ATProto::AppBskyFeed::PostView& post)
+{
+    return post.mReplyCount + post.mQuoteCount;
+}
+
+bool PostThreadModel::engagementLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
+                                         const ATProto::AppBskyFeed::PostView& lhsReply,
+                                         const ATProto::AppBskyFeed::PostView& rhsReply) const
+{
+    const double lhsControvery= calcEngagement(lhsReply);
+    const double rhsControvery = calcEngagement(rhsReply);
+
+    if (lhsControvery != rhsControvery)
+        return lhsControvery > rhsControvery;
+
+    // New before old
+    return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
 PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore)

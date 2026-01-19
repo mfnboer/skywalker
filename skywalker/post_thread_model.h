@@ -19,6 +19,7 @@ public:
 
     explicit PostThreadModel(const QString& threadEntryUri, QEnums::PostThreadType postThreadType,
                              QEnums::ReplyOrder replyOrder,
+                             bool threadFirst,
                              const QString& userDid,
                              const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
@@ -26,7 +27,11 @@ public:
                              HashtagIndex& hashtags,
                              QObject* parent = nullptr);
 
+    Q_INVOKABLE QEnums::ReplyOrder getReplyOrder();
     Q_INVOKABLE void setReplyOrder(QEnums::ReplyOrder replyOrder);
+
+    Q_INVOKABLE bool getReplyOrderThreadFirst();
+    Q_INVOKABLE void setReplyOrderThreadFirst(bool threadFirst);
 
     // Returns index of the entry post
     int setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread);
@@ -89,17 +94,20 @@ private:
     void clear();
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
     bool smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                       const ATProto::AppBskyFeed::PostView& lhsReply,
+                       const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool newerLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                       const ATProto::AppBskyFeed::PostView& lhsReply,
+                       const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool olderLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                       const ATProto::AppBskyFeed::PostView& lhsReply,
+                       const ATProto::AppBskyFeed::PostView& rhsReply) const;
     bool mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
-                       ATProto::AppBskyFeed::PostView::SharedPtr lhsReply,
-                       ATProto::AppBskyFeed::PostView::SharedPtr rhsReply) const;
+                             const ATProto::AppBskyFeed::PostView& lhsReply,
+                             const ATProto::AppBskyFeed::PostView& rhsReply) const;
+    bool engagementLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
+                            const ATProto::AppBskyFeed::PostView& lhsReply,
+                            const ATProto::AppBskyFeed::PostView& rhsReply) const;
     Page::Ptr createPage(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread, bool addMore);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
@@ -115,6 +123,7 @@ private:
     QEnums::PostThreadType mPostThreadType;
     std::optional<Post> mFirstPostFromUnrolledThread;
     QEnums::ReplyOrder mReplyOrder = QEnums::REPLY_ORDER_SMART;
+    bool mThreadFirst = true;
     ATProto::AppBskyFeed::PostThread::SharedPtr mRawPostThread;
 };
 

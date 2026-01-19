@@ -1783,9 +1783,9 @@ void UserSettings::setAssembleThreads(const QString& did, bool assemble)
     mAssembleThreads = assemble;
 }
 
-QEnums::ReplyOrder UserSettings::getThreadReplyOrder(const QString& did) const
+QEnums::ReplyOrder UserSettings::getReplyOrder(const QString& did) const
 {
-    const int replyOrder = mSettings.value(key(did, "threadReplyOrder"), int(QEnums::REPLY_ORDER_SMART)).toInt();
+    const int replyOrder = mSettings.value(key(did, "replyOrder"), int(QEnums::REPLY_ORDER_SMART)).toInt();
 
     if (replyOrder < 0 || replyOrder > QEnums::REPLY_ORDER_LAST)
         return QEnums::REPLY_ORDER_SMART;
@@ -1793,9 +1793,19 @@ QEnums::ReplyOrder UserSettings::getThreadReplyOrder(const QString& did) const
     return QEnums::ReplyOrder(replyOrder);
 }
 
-void UserSettings::setThreadReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder)
+void UserSettings::setReplyOrder(const QString& did, QEnums::ReplyOrder replyOrder)
 {
-    mSettings.setValue(key(did, "threadReplyOrder"), int(replyOrder));
+    mSettings.setValue(key(did, "replyOrder"), int(replyOrder));
+}
+
+bool UserSettings::getReplyOrderThreadFirst(const QString& did) const
+{
+    return mSettings.value(key(did, "replyOrderThreadFirst"), true).toBool();
+}
+
+void UserSettings::setReplyOrderThreadFirst(const QString& did, bool threadFirst)
+{
+    mSettings.setValue(key(did, "replyOrderThreadFirst"), threadFirst);
 }
 
 bool UserSettings::getRewindToLastSeenPost(const QString& did) const
