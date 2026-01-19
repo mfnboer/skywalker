@@ -338,26 +338,13 @@ SkyPage {
                 text: qsTr("Website")
             }
 
-            // TODO: use SkyWebLinkInput
-            SkyTextInput {
+            SkyWebLinkInput {
                 id: websiteField
                 Layout.fillWidth: true
                 parentFlick: flick
                 padding: 5
                 initialText: authorWebsite
                 placeholderText: qsTr("Your website")
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
-                valid: isValid()
-
-                function getLink() {
-                    return linkUtils.getLinkWithScheme(displayText)
-                }
-
-                function isValid() {
-                    const link = getLink()
-                    return !Boolean(link) || linkUtils.isWebLink(link)
-                }
             }
         }
     }
@@ -399,11 +386,6 @@ SkyPage {
         onUpdateProfileProgress: (msg) => editProfilePage.updateProfileProgress(msg)
         onUpdateProfileFailed: (error) => editProfilePage.updatProfileFailed(error)
         onUpdateProfileOk: () => editProfilePage.updateProfileDone()
-    }
-
-    LinkUtils {
-        id: linkUtils
-        skywalker: editProfilePage.skywalker
     }
 
     VirtualKeyboardHandler {
