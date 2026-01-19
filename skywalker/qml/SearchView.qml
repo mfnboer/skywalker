@@ -12,6 +12,7 @@ SkyPage {
     property var timeline
     property bool isTyping: false
     property bool isHashtagSearch: false
+    property bool isCashtagSearch: false
     property bool isPostSearch: true
     property string postAuthorUser // empty, "me", handle
     property string postMentionsUser // empty, "me", handle
@@ -52,10 +53,14 @@ SkyPage {
             if (text.length > 0) {
                 if (UnicodeFonts.isHashtag(text)) {
                     page.isHashtagSearch = true
+                    page.isCashtagSearch = false
                     hashtagTypeaheadSearchTimer.start()
-                }
-                else {
+                } else if (UnicodeFonts.isCashtag(text)) {
                     page.isHashtagSearch = false
+                    page.isCashtagSearch = true
+                } else {
+                    page.isHashtagSearch = false
+                    page.isCashtagSearch = false
                     authorTypeaheadSearchTimer.start()
                 }
             } else {
@@ -64,6 +69,7 @@ SkyPage {
                 searchUtils.authorTypeaheadList = []
                 searchUtils.hashtagTypeaheadList = []
                 page.isHashtagSearch = false
+                page.isCashtagSearch = false
                 page.header.forceFocus()
             }
         }
@@ -99,7 +105,7 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         model: searchUtils.authorTypeaheadList
-        visible: page.isTyping && currentText && !page.isHashtagSearch
+        visible: page.isTyping && currentText && !page.isHashtagSearch && !page.isCashtagSearch
 
         onAuthorClicked: (profile) => {
             searchUtils.addLastSearchedProfile(profile)
@@ -172,8 +178,8 @@ SkyPage {
         width: height
         height: 30
         svg: SvgOutline.menu
-        accessibleName: qsTr("hashtag options")
-        visible: isHashtagSearch
+        accessibleName: qsTr("tag options")
+        visible: isHashtagSearch || isCashtagSearch
 
         onClicked: moreMenu.show(page.getSearchText())
 

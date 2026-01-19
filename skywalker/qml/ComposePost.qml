@@ -2009,7 +2009,7 @@ SkyPage {
 
             if (cursorPosition >= 0)
                 postText.cursorPosition = cursorPosition
-            else if (!postText.text.startsWith("\n#")) // hashtag post
+            else if (!postText.text.startsWith("\n#") && !postText.text.startsWith("\n$")) // hashtag/cashtag post
                 postText.cursorPosition = postText.text.length
 
             if (Boolean(page.initialVideo)) {

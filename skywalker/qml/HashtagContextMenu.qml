@@ -3,7 +3,8 @@ import QtQuick.Controls
 import skywalker
 
 SkyMenu {
-    property string hashtag: ""
+    property string hashtag: "" // or cashtag starting with $
+    readonly property bool isCashtag: hashtag.startsWith("$")
     property string handle
     property bool isMuted: false
     property bool isPinned: false
@@ -35,7 +36,7 @@ SkyMenu {
 
     CloseMenuItem {
         text: qsTr(`<b>${hashtag}</b>`)
-        Accessible.name: qsTr("close hashtag options menu")
+        Accessible.name: qsTr("close menu")
     }
 
     AccessibleMenuItem {
@@ -53,19 +54,26 @@ SkyMenu {
     }
 
     AccessibleMenuItem {
-        text: qsTr("Focus hashtag")
+        text: hashtagMenu.isCashtag ? qsTr("Focus cashtag") : qsTr("Focus hashtag")
         svg: SvgOutline.hashtag
         onTriggered: focusHashtag(hashtag)
     }
 
     AccessibleMenuItem {
-        text: hashtagMenu.isMuted ? qsTr("Unmute hashtag") : qsTr("Mute hashtag")
+        text: getText()
         svg: hashtagMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute
         onTriggered: {
             if (hashtagMenu.isMuted)
                 unmuteWord(hashtag)
             else
                 muteWord(hashtag)
+        }
+
+        function getText() {
+            if (hashtagMenu.isCashtag)
+                return hashtagMenu.isMuted ? qsTr("Unmute cashtag") : qsTr("Mute cashtag")
+            else
+                return hashtagMenu.isMuted ? qsTr("Unmute hashtag") : qsTr("Mute hashtag")
         }
     }
 
@@ -107,7 +115,8 @@ SkyMenu {
         let focusPage = component.createObject(root)
         let p = root
         focusPage.onClosed.connect(() => { p.popStack() }) // qmllint disable missing-property
-        skywalker.focusHashtags.addEntry(hashtag.slice(1)) // strip #-symbol
+        const entry = isCashtag ? hashtag : hashtag.slice(1) // strip #-symbol
+        skywalker.focusHashtags.addEntry(entry)
         root.pushStack(focusPage)
     }
 

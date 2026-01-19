@@ -21,6 +21,11 @@ bool SearchFeed::isHashtag() const
     return UnicodeFonts::isHashtag(mSearchQuery);
 }
 
+bool SearchFeed::isCashtag() const
+{
+    return UnicodeFonts::isCashtag(mSearchQuery);
+}
+
 bool SearchFeed::equals(const SearchFeed& other) const
 {
     return mSearchQuery == other.mSearchQuery &&

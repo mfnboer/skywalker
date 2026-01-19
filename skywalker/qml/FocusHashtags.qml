@@ -41,7 +41,7 @@ ListView {
                 anchors.right: parent.right
                 svg: SvgOutline.add
                 onClicked: addHashtagEntry()
-                accessibleName: qsTr(`add hashtag for focus`)
+                accessibleName: qsTr(`add hashtag or cashtag for focus`)
                 visible: view.count < skywalker.focusHashtags.maxSize
             }
         }
@@ -87,8 +87,8 @@ ListView {
                         id: hashtagMenu
 
                         CloseMenuItem {
-                            text: qsTr("<b>Hashtag</b>")
-                            Accessible.name: qsTr("close hashtag menu")
+                            text: qsTr(`<b>${hashtagMenu.selectedTag}</b>`)
+                            Accessible.name: qsTr("close menu")
                         }
                         AccessibleMenuItem {
                             text: qsTr("Edit")
@@ -158,15 +158,17 @@ ListView {
 
 
     function deleteHashtagEntry(entry) {
+        const tag = guiSettings.getTagDisplay(entry.hashtags[0])
+
         guiSettings.askYesNoQuestion(
                     view,
-                    qsTr(`Do you really want to delete: #${entry.hashtags[0]} ?`),
+                    qsTr(`Do you really want to delete: ${tag} ?`),
                     () => skywalker.focusHashtags.removeEntry(entry.id))
     }
 
     function addHashtagEntry() {
         let component = guiSettings.createComponent("AddFocusHashtag.qml")
-        let dialog = component.createObject(view);
+        let dialog = component.createObject(view)
 
         dialog.onAccepted.connect(() => {
             const tag = dialog.getText()

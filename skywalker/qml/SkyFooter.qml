@@ -57,6 +57,7 @@ Rectangle {
             FooterPostButton {
                 messagesActive: isMessagesActive()
                 hashtagSearch: isHashtagSearch()
+                cashtagSearch: isCashtagSearch()
                 searchView: footer.searchView
 
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -91,6 +92,13 @@ Rectangle {
             return false
 
         return searchView.isHashtagSearch
+    }
+
+    function isCashtagSearch() {
+        if (!isSearchActive())
+            return false
+
+        return searchView.isCashtagSearch
     }
 
     function getHomeSpeech() {

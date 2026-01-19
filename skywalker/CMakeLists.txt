@@ -634,6 +634,10 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyMouseArea.qml
         QML_FILES qml/BackupFileDialog.qml
         QML_FILES qml/SkyMenuLoader.qml
+        QML_FILES qml/GoLive.qml
+        QML_FILES qml/SkyWebLinkInput.qml
+        QML_FILES qml/LiveCardView.qml
+        QML_FILES qml/SkyTumbler.qml
 )
 
 if (NOT ANDROID)

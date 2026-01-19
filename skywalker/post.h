@@ -167,6 +167,8 @@ public:
 
     QStringList getMentionDids() const;
     std::vector<QString> getHashtags() const override;
+    std::vector<QString> getCashtags() const override;
+    std::vector<QString> getAllTags() const override;
     std::vector<QString> getWebLinks() const override;
 
     bool isPinned() const { return mPinned; }

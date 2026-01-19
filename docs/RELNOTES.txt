@@ -1,5 +1,7 @@
 next
-====
+=b===
+* Support for cash tags
+* Support to go live
 * Option to search posts from user in hashtag (long press) menu
 * Improve image open/close animation
 * Tap on profile banner to see it full screen

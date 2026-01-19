@@ -21,13 +21,18 @@ Dialog {
         width: parent.width
         svgIcon: SvgOutline.hashtag
         initialText: focusHashtag
-        placeholderText: qsTr("Hashtag for focus")
+        placeholderText: qsTr("Hashtag or cashtag")
         validator: RegularExpressionValidator { regularExpression: /[^ ]+/ }
         enabled: true
 
         onDisplayTextChanged: {
-            page.isTyping = true
-            hashtagTypeaheadSearchTimer.start()
+            if (!displayText.startsWith("$")) {
+                page.isTyping = true
+                hashtagTypeaheadSearchTimer.start()
+            } else {
+                page.isTyping = false
+                hashtagTypeaheadSearchTimer.stop()
+            }
         }
 
         onEditingFinished: {

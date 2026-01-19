@@ -32,6 +32,7 @@ public:
 
     Q_INVOKABLE bool isNull() const { return mSearchQuery.isEmpty(); }
     Q_INVOKABLE bool isHashtag() const;
+    Q_INVOKABLE bool isCashtag() const;
     Q_INVOKABLE bool equals(const SearchFeed& other) const;
 
     const QString& getName() const { return mSearchQuery; }

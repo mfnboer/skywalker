@@ -104,6 +104,41 @@ private slots:
             << "The #️⃣sky is blue."
             << false;
 
+        QTest::newRow("hashtag text match")
+            << std::vector<QString>{"sky"}
+            << "The #sky is blue."
+            << true;
+
+        QTest::newRow("cashtag match 1")
+            << std::vector<QString>{"$sky"}
+            << "The $SKY is blue."
+            << true;
+
+        QTest::newRow("cashtag match 2")
+            << std::vector<QString>{"$SKY"}
+            << "The $sky is blue."
+            << true;
+
+        QTest::newRow("cashtag no match")
+            << std::vector<QString>{"$sky"}
+            << "The sky is blue."
+            << false;
+
+        QTest::newRow("cashtag mutiple facet tags 1")
+            << std::vector<QString>{"$sky", "$blue"}
+            << "Hello blue $sky $walk"
+            << true;
+
+        QTest::newRow("cashtag mutiple facet tags 2")
+            << std::vector<QString>{"$blue", "$walk"}
+            << "Hello blue $sky $walk"
+            << true;
+
+        QTest::newRow("cashtag text match")
+            << std::vector<QString>{"sky"}
+            << "The $SKY is blue."
+            << true;
+
         QTest::newRow("partial link")
             << std::vector<QString>{"thereforeiam.eu"}
             << "Test www.thereforeiam.eu link match."

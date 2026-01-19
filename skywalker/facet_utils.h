@@ -16,6 +16,7 @@ class FacetUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(QString textWithoutLinks READ getTextWithoutLinks WRITE setTextWithoutLinks NOTIFY textWithoutLinksChanged FINAL)
     Q_PROPERTY(QString editMention READ getEditMention WRITE setEditMention NOTIFY editMentionChanged FINAL)
     Q_PROPERTY(QString editTag READ getEditTag WRITE setEditTag NOTIFY editTagChanged FINAL)
+    Q_PROPERTY(QString editCashtag READ getEditCashtag WRITE setEditCashtag NOTIFY editCashtagChanged FINAL)
     Q_PROPERTY(QString firstWebLink READ getFirstWebLink WRITE setFirstWebLink NOTIFY firstWebLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstWebLink READ isCursorInFirstWebLink WRITE setCursorInFirstWebLink NOTIFY cursorInFirstWebLinkChanged FINAL)
     Q_PROPERTY(QString firstPostLink READ getFirstPostLink WRITE setFirstPostLink NOTIFY firstPostLinkChanged FINAL)
@@ -58,6 +59,7 @@ public:
 
     Q_INVOKABLE int getEditMentionIndex() const { return mEditMentionIndex; }
     Q_INVOKABLE int getEditTagIndex() const { return mEditTagIndex; }
+    Q_INVOKABLE int getEditCashtagIndex() const { return mEditCashtagIndex; }
     Q_INVOKABLE int getLinkShorteningReduction() const { return mLinkShorteningReduction; }
 
     const QString& getTextWithoutLinks() const { return mTextWithoutLinks; }
@@ -66,6 +68,8 @@ public:
     void setEditMention(const QString& mention);
     const QString& getEditTag() const { return mEditTag; }
     void setEditTag(const QString& tag);
+    const QString& getEditCashtag() const { return mEditCashtag; }
+    void setEditCashtag(const QString& tag);
     const QString& getFirstWebLink() const { return mFirstWebLink; }
     void setFirstWebLink(const QString& link);
     void setFirstWebLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
@@ -103,6 +107,7 @@ signals:
     void textWithoutLinksChanged();
     void editMentionChanged();
     void editTagChanged();
+    void editCashtagChanged();
     void firstWebLinkChanged();
     void cursorInFirstWebLinkChanged();
     void firstPostLinkChanged();
@@ -130,6 +135,8 @@ private:
     int mEditMentionIndex = 0;
     QString mEditTag; // Tag currently being edited (without #-symbol)
     int mEditTagIndex = 0;
+    QString mEditCashtag; // Cashtag currently being edited (without $-symbol)
+    int mEditCashtagIndex = 0;
     QString mFirstPostLink; // HTTPS link to a post
     bool mCursorInFirstPostLink = false;
     QString mFirstFeedLink; // HTTPS link to feed generator

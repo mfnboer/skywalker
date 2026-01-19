@@ -60,6 +60,7 @@ void MutedWords::clear()
     mSingleWordIndex.clear();
     mFirstWordIndex.clear();
     mHashTagIndex.clear();
+    mCashTagIndex.clear();
     mDomainIndex.clear();
 
     emit entriesChanged();
@@ -74,8 +75,13 @@ static QString cleanRawWord(const QString& word)
     const auto& words = SearchUtils::getWords(word);
     QString cleanedWord;
 
-    if (UnicodeFonts::isHashtag(word) && words.size() == 1)
-        cleanedWord += '#';
+    if (words.size() == 1)
+    {
+        if (UnicodeFonts::isHashtag(word))
+            cleanedWord += '#';
+        else if (UnicodeFonts::isCashtag(word))
+            cleanedWord += '$';
+    }
 
     for (int i = 0; i < (int)words.size(); ++i)
     {
@@ -93,7 +99,7 @@ bool MutedWords::preAdd(const Entry& entry)
     if (entry.wordCount() != 1)
         return true;
 
-    if (UnicodeFonts::isHashtag(entry.mRaw))
+    if (UnicodeFonts::isHashtag(entry.mRaw) || UnicodeFonts::isCashtag(entry.mRaw))
     {
         if (containsEntry(entry.mRaw.sliced(1)))
         {
@@ -108,6 +114,13 @@ bool MutedWords::preAdd(const Entry& entry)
         {
             qDebug() << "Hashtag already muted for:" << entry.mRaw;
             removeEntry(hashtag);
+        }
+
+        const QString cashtag = QString("$%1").arg(entry.mRaw);
+        if (containsEntry(cashtag))
+        {
+            qDebug() << "Cashtag already muted for:" << entry.mRaw;
+            removeEntry(cashtag);
         }
     }
 
@@ -168,6 +181,8 @@ void MutedWords::addEntry(const QString& word, const QJsonObject& bskyJson, cons
 
     if (entry.isHashtag())
         addWordToIndex(&entry, mHashTagIndex);
+    else if (entry.isCashtag())
+        addWordToIndex(SearchUtils::normalizeText(entry.mRaw), &entry, mCashTagIndex);
     else if (entry.isDomain())
         addWordToIndex(&entry, mDomainIndex);
     else if (entry.mNormalizedWords.size() == 1)
@@ -194,6 +209,8 @@ void MutedWords::removeEntry(const QString& word)
 
     if (entry.isHashtag())
         removeWordFromIndex(&entry, mHashTagIndex);
+    else if (entry.isCashtag())
+        removeWordFromIndex(SearchUtils::normalizeText(entry.mRaw), &entry, mCashTagIndex);
     else if (entry.isDomain())
         removeWordFromIndex(&entry, mDomainIndex);
     else if (entry.mNormalizedWords.size() == 1)
@@ -220,11 +237,27 @@ void MutedWords::addWordToIndex(const Entry* entry, WordIndexType& wordIndex)
     wordIndex[word].insert(entry);
 }
 
+void MutedWords::addWordToIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex)
+{
+    Q_ASSERT(entry);
+    wordIndex[word].insert(entry);
+}
+
 void MutedWords::removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex)
 {
     Q_ASSERT(entry);
     Q_ASSERT(entry->mNormalizedWords.size() > 0);
     const QString& word = entry->mNormalizedWords[0];
+    auto& indexEntry = wordIndex[word];
+    indexEntry.erase(entry);
+
+    if (indexEntry.empty())
+        wordIndex.erase(word);
+}
+
+void MutedWords::removeWordFromIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex)
+{
+    Q_ASSERT(entry);
     auto& indexEntry = wordIndex[word];
     indexEntry.erase(entry);
 
@@ -262,6 +295,9 @@ std::pair<bool, const IMatchEntry*> MutedWords::match(const NormalizedWordIndex&
         return match;
 
     if (auto match = matchHashtag(post, now, author); match.first)
+        return match;
+
+    if (auto match = matchCashtag(post, now, author); match.first)
         return match;
 
     return matchWords(post, now, author);
@@ -316,6 +352,29 @@ std::pair<bool, const IMatchEntry*> MutedWords::matchHashtag(const NormalizedWor
         if (!mustSkip(*entry, author, now) && postHashtags.count(word))
         {
             qDebug() << "Match on hashtag:" << word;
+            return { true, entry };
+        }
+    }
+
+    return { false, nullptr };
+}
+
+std::pair<bool, const IMatchEntry*> MutedWords::matchCashtag(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const
+{
+    if (mCashTagIndex.empty())
+        return { false, nullptr };
+
+    const auto& postCashtags = post.getUniqueCashtags();
+
+    for (const auto& [word, entries] : mCashTagIndex)
+    {
+        qDebug() << "CASH TAG:" << word;
+        Q_ASSERT(entries.size() == 1);
+        const auto* entry = *entries.begin();
+
+        if (!mustSkip(*entry, author, now) && postCashtags.count(word))
+        {
+            qDebug() << "Match on cashtag:" << word;
             return { true, entry };
         }
     }
@@ -443,9 +502,18 @@ void MutedWords::load(const ATProto::UserPreferences& userPrefs)
 
         if  (matchTag && !matchContent)
         {
-            addEntry(QString("#%1").arg(mutedWord.mValue), mutedWord.mJson, unknownTargets,
-                     (QEnums::ActorTarget)mutedWord.mActorTarget,
-                     mutedWord.mExpiresAt.value_or(QDateTime{}));
+            if (mutedWord.mValue.startsWith('$'))
+            {
+                addEntry(mutedWord.mValue, mutedWord.mJson, unknownTargets,
+                         (QEnums::ActorTarget)mutedWord.mActorTarget,
+                         mutedWord.mExpiresAt.value_or(QDateTime{}));
+            }
+            else
+            {
+                addEntry(QString("#%1").arg(mutedWord.mValue), mutedWord.mJson, unknownTargets,
+                         (QEnums::ActorTarget)mutedWord.mActorTarget,
+                         mutedWord.mExpiresAt.value_or(QDateTime{}));
+            }
         }
         else
         {
@@ -488,6 +556,11 @@ void MutedWords::save(ATProto::UserPreferences& userPrefs)
         if (UnicodeFonts::isHashtag(entry.mRaw))
         {
             mutedWord.mValue = entry.mRaw.sliced(1);
+            mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::TAG));
+        }
+        else if (UnicodeFonts::isCashtag(entry.mRaw))
+        {
+            mutedWord.mValue = entry.mRaw;
             mutedWord.mTargets.push_back(makeTarget(ATProto::AppBskyActor::MutedWordTarget::TAG));
         }
         else

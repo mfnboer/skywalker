@@ -65,4 +65,19 @@ FileDialog {
         fileMode = FileDialog.OpenFile
         open()
     }
+
+    function help() {
+        guiSettings.notice(root, qsTr(
+            "Your configured accounts and some of their settings are stored locally on your " +
+            "device. When you uninstall Skywalker you may lose these. You can backup these " +
+            "settings to a file and restore them again, e.g. after a re-install or on another " +
+            "device. Note that <b>all</b> your accounts (if you have multple) will be backed up, " +
+            "not just the currently active one.<br><br>" +
+            "To backup you have to enter a file name, e.g. 'skywalker', and the settings will be " +
+            "saved to a file called 'skywalker.json'. Or you can select a previous backup file " +
+            "and that file will be overwritten with the current settings.<br><br>" +
+            "To restore you select a backup file. You will be signed out from Skwalker and the " +
+            "backup will be restored."
+        ))
+    }
 }

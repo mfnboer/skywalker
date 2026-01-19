@@ -307,6 +307,8 @@ public:
     // If avatarUrl is a "image://", then the profile takes ownership of the image
     void setAvatarUrl(const QString& avatarUrl);
 
+    void setActorStatus(const ActorStatusView& status);
+
     Q_INVOKABLE bool isFixedLabeler() const;
     Q_INVOKABLE bool canSendDirectMessage() const;
     Q_INVOKABLE bool allowsActivitySubscriptions() const;

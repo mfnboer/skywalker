@@ -414,6 +414,7 @@ Pane {
 
         messagesActive: sideBar.messagesActive
         hashtagSearch: sideBar.searchActive && rootItem instanceof SearchView && rootItem.isHashtagSearch
+        cashtagSearch: sideBar.searchActive && rootItem instanceof SearchView && rootItem.isCashtagSearch
         searchView: rootItem instanceof SearchView ? rootItem : null
         authorView: rootItem instanceof AuthorView ? rootItem : null
         postThreadView: rootItem instanceof PostThreadView ? rootItem : null

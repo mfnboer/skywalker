@@ -22,16 +22,20 @@ public:
     virtual VideoView::Ptr getVideoView() const = 0;
     virtual ExternalView::Ptr getExternalView() const = 0;
     virtual std::vector<QString> getHashtags() const = 0;
+    virtual std::vector<QString> getCashtags() const = 0;
+    virtual std::vector<QString> getAllTags() const = 0;
     virtual BasicProfile getAuthor() const = 0;
     virtual std::vector<QString> getWebLinks() const = 0;
 
     const std::unordered_set<QString>& getUniqueHashtags() const;
+    const std::unordered_set<QString>& getUniqueCashtags() const;
     const std::vector<QString>& getUniqueDomains() const;
     const std::vector<QString>& getNormalizedWords() const;
     const std::unordered_map<QString, std::vector<int>>& getUniqueNormalizedWords() const;
 
 private:
     std::unordered_set<QString> mHashtags; // normalized
+    std::unordered_set<QString> mCashtags; // normalized
     std::vector<QString> mDomains; // unique, normalized
     std::vector<QString> mNormalizedWords;
 

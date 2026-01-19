@@ -18,6 +18,7 @@ Item {
     readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
     readonly property bool isActive: activityStatus ? activityStatus.active : false
     property bool showFollowingStatus: true
+    property bool authorIsLive: author.actorStatus.isActive
 
     signal clicked
     signal pressAndHold
@@ -62,7 +63,7 @@ Item {
     }
     Loader {
         id: liveLoader
-        active: author.actorStatus.isActive
+        active: authorIsLive
 
         sourceComponent: Rectangle {
             id: liveRect

@@ -42,6 +42,8 @@ public:
     VideoView::Ptr getVideoView() const override { return {}; }
     ExternalView::Ptr getExternalView() const override { return {}; }
     std::vector<QString> getHashtags() const override { return {}; }
+    std::vector<QString> getCashtags() const override { return {}; }
+    std::vector<QString> getAllTags() const override { return {}; }
     std::vector<QString> getWebLinks() const override { return {}; }
     BasicProfile getAuthor() const override { return {}; }
 

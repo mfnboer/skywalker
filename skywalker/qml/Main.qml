@@ -926,6 +926,8 @@ ApplicationWindow {
             close()
         }
 
+        onBackupHelp: backupFileDialog.help()
+
         onAbout: {
             showAbout()
             close()
@@ -1273,6 +1275,9 @@ ApplicationWindow {
         } else if (UnicodeFonts.isHashtag(link)) {
             console.debug("#-TAG:", link)
             viewSearchView(link)
+        } else if (UnicodeFonts.isHashCashtag(link)) {
+            console.debug("#$-TAG:", link)
+            viewSearchView(link.slice(1))
         } else {
             getLinkUtils(openByDid).openLink(link, containingText)
         }

@@ -58,6 +58,7 @@ TextEdit {
     onCursorRectangleChanged: {
         let editMentionY = facetUtils.editMentionCursorY
         let editTagY = facetUtils.editTagCursorY
+        let editCashtagY = facetUtils.editCashtagCursorY
         let cursorY = cursorRectangle.y
 
         if (facetUtils.editMention.length > 0 && editMentionY !== cursorY)
@@ -65,6 +66,9 @@ TextEdit {
 
         if (facetUtils.editTag.length > 0 && editTagY !== cursorY)
             facetUtils.editTag = ""
+
+        if (facetUtils.editCashtag.length > 0 && editCashtagY !== cursorY)
+            facetUtils.editCashtag = ""
 
         ensureVisible(cursorRectangle)
     }
@@ -346,6 +350,7 @@ TextEdit {
     FacetUtils {
         property double editMentionCursorY: 0
         property double editTagCursorY: 0
+        property double editCashtagCursorY: 0
 
         id: facetUtils
         skywalker: parentPage.skywalker
@@ -357,9 +362,14 @@ TextEdit {
         }
 
         onEditTagChanged: {
-            console.debug(editTag)
+            console.debug("Hashtag:", editTag)
             editTagCursorY = editText.cursorRectangle.y
             hashtagTypeaheadSearchTimer.start()
+        }
+
+        onEditCashtagChanged: {
+            console.debug("Cashtag:", editCashtag)
+            editCashtagCursorY = editText.cursorRectangle.y
         }
 
         onTextWithoutLinksChanged: editText.textWithoutLinks = textWithoutLinks;

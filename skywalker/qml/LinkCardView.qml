@@ -17,6 +17,7 @@ RoundCornerMask {
     property int columnHeight: externalColumn.height
     property bool showSonglinkWidget: false
     property bool isLiveExternal: false
+    property date liveExpiresAt
 
     id: card
     height: columnHeight
@@ -35,6 +36,11 @@ RoundCornerMask {
             contentWarning: card.contentWarning
             contentLabeler: card.contentLabeler
             imageUrl: card.thumbUrl
+        }
+        Item {
+            width: parent.width
+            height: visible ? 30 : 0
+            visible: isLiveExternal & !card.thumbUrl
         }
         Loader {
             active: filter.imageVisible() && Boolean(card.thumbUrl)
@@ -99,6 +105,16 @@ RoundCornerMask {
         SonglinkWidget {
             showWidget: showSonglinkWidget
             uri: card.uri
+        }
+
+        Loader {
+            anchors.horizontalCenter: parent.horizontalCenter
+            active: isLiveExternal && !isNaN(liveExpiresAt.getTime())
+
+            sourceComponent: AccessibleText {
+                font.italic: true
+                text: qsTr(`Till ${guiSettings.expiresIndication(liveExpiresAt)}`)
+            }
         }
 
         Loader {

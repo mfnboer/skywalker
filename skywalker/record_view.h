@@ -92,6 +92,8 @@ public:
     QString getReplyRootAuthorDid() const;
     const LanguageList& getLanguages() const;
     std::vector<QString> getHashtags() const override;
+    std::vector<QString> getCashtags() const override;
+    std::vector<QString> getAllTags() const override;
     std::vector<QString> getWebLinks() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mPrivate->mContentVisibility; }
     const QString& getContentWarning() const { return mPrivate->mContentWarning; }

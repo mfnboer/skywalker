@@ -22,7 +22,7 @@ Dialog {
         width: parent.width
         svgIcon: SvgOutline.mutedWords
         initialText: editWord
-        placeholderText: qsTr("Word, phrase or hashtag to mute")
+        placeholderText: qsTr("Word, phrase, hashtag, cashtag")
         enabled: true
 
         onDisplayTextChanged: {

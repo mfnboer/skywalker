@@ -34,7 +34,7 @@ SkyListView {
 
     header: PostFeedHeader {
         feedName: searchFeed.name
-        defaultSvg: searchFeed.isHashtag() ? SvgOutline.hashtag : SvgOutline.search
+        defaultSvg: guiSettings.searchFeedDefaultAvatar(searchFeed)
         feedAvatar: ""
         contentMode: initialContentMode
         showAsHome: feedView.showAsHome
@@ -185,8 +185,8 @@ SkyListView {
         id: optionsMenu
 
         CloseMenuItem {
-            text: qsTr("<b>Hashtag</b>")
-            Accessible.name: qsTr("close hashtag options menu")
+            text: `<b>${searchFeed.name}</b>`
+            Accessible.name: qsTr("close menu")
         }
 
         AccessibleMenuItem {

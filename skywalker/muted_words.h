@@ -37,6 +37,7 @@ public:
     QDateTime getExpiresAt() const { return mExpiresAt; }
     bool isDomain() const { return mIsDomain; }
     bool isHashtag() const { return UnicodeFonts::isHashtag(mValue); }
+    bool isCashtag() const { return UnicodeFonts::isCashtag(mValue); }
 
     bool operator<(const MutedWordEntry& rhs) const { return mValue.localeAwareCompare(rhs.mValue) < 0; }
 
@@ -101,17 +102,21 @@ private:
 
         size_t wordCount() const { return mNormalizedWords.size(); }
         bool isHashtag() const { return wordCount() == 1 && UnicodeFonts::isHashtag(mRaw); }
+        bool isCashtag() const { return wordCount() == 1 && UnicodeFonts::isCashtag(mRaw); }
         bool isDomain() const;
     };
 
     using WordIndexType = std::unordered_map<QString, std::set<const Entry*>>;
 
     void addWordToIndex(const Entry* entry, WordIndexType& wordIndex);
+    void addWordToIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex);
     void removeWordFromIndex(const Entry* entry, WordIndexType& wordIndex);
+    void removeWordFromIndex(const QString& word, const Entry* entry, WordIndexType& wordIndex);
     bool preAdd(const Entry& entry);
     bool mustSkip(const Entry& entry, const BasicProfile& author, QDateTime now) const;
     std::pair<bool, const IMatchEntry*> matchDomain(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
     std::pair<bool, const IMatchEntry*> matchHashtag(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
+    std::pair<bool, const IMatchEntry*> matchCashtag(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
     std::pair<bool, const IMatchEntry*> matchWords(const NormalizedWordIndex& post, QDateTime now, const BasicProfile& author) const;
 
     std::set<Entry> mEntries;
@@ -123,6 +128,7 @@ private:
     WordIndexType mFirstWordIndex;
 
     WordIndexType mHashTagIndex;
+    WordIndexType mCashTagIndex;
     WordIndexType mDomainIndex;
 
     bool mDirty = false;

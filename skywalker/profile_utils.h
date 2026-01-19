@@ -10,6 +10,8 @@
 
 namespace Skywalker {
 
+class ImageReader;
+
 class ProfileUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
@@ -36,6 +38,11 @@ public:
     Q_INVOKABLE void getFirstAppearance(const QString& did);
     Q_INVOKABLE void setPinnedPost(const QString& did, const QString& uri, const QString& cid);
     Q_INVOKABLE void clearPinnedPost(const QString& did, const QString& cid);
+    Q_INVOKABLE void updateStatus(const QString& did, const QString& uri, const QString& title,
+                                  const QString& description, const QString& thumb, int durationMinutes);
+    Q_INVOKABLE void deleteStatus(const QString& did);
+    Q_INVOKABLE void getStatus(const QString& did);
+    Q_INVOKABLE ActorStatusView getNullStatus();
 
 signals:
     void basicProfileOk(BasicProfile profile);
@@ -55,6 +62,11 @@ signals:
     void setPinnedPostFailed(QString error);
     void clearPinnedPostOk();
     void clearPinnedPostFailed(QString error);
+    void updateStatusOk(ActorStatusView view);
+    void updateStatusFailed(QString error);
+    void deleteStatusOk();
+    void deleteStatusFailed(QString error);
+    void getStatusOk(QString uri, int durationMinutes);
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
@@ -66,12 +78,18 @@ private:
                                ATProto::Blob::SharedPtr bannerBlob, bool updateBanner,
                                const QString& pronouns, const QString& website);
     void continueSetPinnedPost(const QString& did, const QString& uri, const QString& cid);
+    void continueUpdateStatus(const QString& did, const QString& uri, const QString& title,
+                              const QString& description, QImage thumb, const QString& thumbUri, int durationMinutes);
+    void continueUpdateStatus(const QString& did, const QString& uri, const QString& title,
+                              const QString& description, ATProto::Blob::SharedPtr thumb, const QString& thumbUri, int durationMinutes);
 
     ATProto::ProfileMaster* profileMaster();
     ATProto::PostMaster* postMaster();
+    ImageReader* imageReader();
 
     std::unique_ptr<ATProto::ProfileMaster> mProfileMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
+    std::unique_ptr<ImageReader> mImageReader;
     std::unordered_map<QString, ATProto::Blob::SharedPtr> mDidAvatarBlobMap;
 };
 

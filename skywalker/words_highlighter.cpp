@@ -27,7 +27,7 @@ static QString htmlReplace(const QString& html, const QString& oldWord, const QS
         matches.push_back({ match.capturedStart(), match.capturedLength() });
     }
 
-    QString pattern = oldWord.startsWith('#') ?
+    QString pattern = oldWord.startsWith('#') || oldWord.startsWith('$') ?
         QString("%1\\b").arg(QRegularExpression::escape(oldWord)) :
         QString("\\b%1\\b").arg(QRegularExpression::escape(oldWord));
 
@@ -133,8 +133,12 @@ QString WordsHighlighter::highlight(const QString& text, const QString& words, c
     qDebug() << "text:" << text << "words:" << words;
 
     QString hightlightedText = text;
-    const auto normalizedWords = isHashtag ? std::vector<QString>{words} : normalizeWords(SearchUtils::getWords(words));
-    const auto textNormalizedWordsMap = isHashtag ? getNormalizedHashtagsMap(text) : getNormalizedWordsMap(text);
+    const auto normalizedWords = isHashtag ?
+            std::vector<QString>{SearchUtils::normalizeText(words)} :
+            normalizeWords(SearchUtils::getWords(words));
+    const auto textNormalizedWordsMap = isHashtag ?
+            getNormalizedHashtagsMap(text) :
+            getNormalizedWordsMap(text);
 
     for (const auto& word : normalizedWords)
     {

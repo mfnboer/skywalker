@@ -226,9 +226,9 @@ void FocusHashtags::removeHashtagFromEntry(FocusHashtagEntry* entry, const QStri
 
 std::pair<bool, const IMatchEntry*> FocusHashtags::match(const NormalizedWordIndex& post) const
 {
-    const std::vector<QString> hashtags = post.getHashtags();
+    const std::vector<QString> tags = post.getAllTags();
 
-    for (const auto& tag : hashtags)
+    for (const auto& tag : tags)
     {
         const QString normalizedTag = SearchUtils::normalizeText(tag);
 
@@ -241,9 +241,9 @@ std::pair<bool, const IMatchEntry*> FocusHashtags::match(const NormalizedWordInd
 
 QColor FocusHashtags::highlightColor(const NormalizedWordIndex& post) const
 {
-    const std::vector<QString> hashtags = post.getHashtags();
+    const std::vector<QString> tags = post.getAllTags();
 
-    for (const auto& tag : hashtags)
+    for (const auto& tag : tags)
     {
         const QString normalizedTag = SearchUtils::normalizeText(tag);
         auto it = mAllHashtags.find(normalizedTag);
@@ -266,9 +266,9 @@ QColor FocusHashtags::highlightColor(const NormalizedWordIndex& post) const
 FocusHashtagEntryList FocusHashtags::getMatchEntries(const NormalizedWordIndex& post) const
 {
     std::unordered_set<FocusHashtagEntry*> matchEntries;
-    const std::vector<QString> hashtags = post.getHashtags();
+    const std::vector<QString> tags = post.getAllTags();
 
-    for (const auto& tag : hashtags)
+    for (const auto& tag : tags)
     {
         const QString normalizedTag = SearchUtils::normalizeText(tag);
         auto it = mAllHashtags.find(normalizedTag);
@@ -286,7 +286,7 @@ FocusHashtagEntryList FocusHashtags::getMatchEntries(const NormalizedWordIndex& 
 std::set<QString> FocusHashtags::getNormalizedMatchHashtags(const NormalizedWordIndex& post) const
 {
     std::set<QString> matchHashtags;
-    FocusHashtagEntryList entries = getMatchEntries(post);
+    const FocusHashtagEntryList entries = getMatchEntries(post);
 
     for (auto* entry : entries)
     {

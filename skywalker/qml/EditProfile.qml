@@ -338,6 +338,7 @@ SkyPage {
                 text: qsTr("Website")
             }
 
+            // TODO: use SkyWebLinkInput
             SkyTextInput {
                 id: websiteField
                 Layout.fillWidth: true

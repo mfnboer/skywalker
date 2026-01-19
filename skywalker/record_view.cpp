@@ -489,7 +489,52 @@ std::vector<QString> RecordView::getHashtags() const
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
-    return ATProto::RichTextMaster::getFacetTags(*recordValue);
+    const auto tags = ATProto::RichTextMaster::getFacetTags(*recordValue);
+    std::vector<QString> hashtags;
+    hashtags.reserve(tags.size());
+
+    for (const auto& tag : tags)
+    {
+        if (!tag.startsWith('$'))
+            hashtags.push_back(tag);
+    }
+
+    return hashtags;
+}
+
+std::vector<QString> RecordView::getCashtags() const
+{
+    if (!mPrivate->mRecord)
+        return {};
+
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
+    const auto tags = ATProto::RichTextMaster::getFacetTags(*recordValue);
+    std::vector<QString> cashtags;
+    cashtags.reserve(tags.size());
+
+    for (const auto& tag : tags)
+    {
+        if (tag.startsWith('$'))
+            cashtags.push_back(tag);
+    }
+
+    return cashtags;
+}
+
+std::vector<QString> RecordView::getAllTags() const
+{
+    if (!mPrivate->mRecord)
+        return {};
+
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
+    const auto tags = ATProto::RichTextMaster::getFacetTags(*recordValue);
+    return tags;
 }
 
 std::vector<QString> RecordView::getWebLinks() const
