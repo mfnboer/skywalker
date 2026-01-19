@@ -8,7 +8,7 @@ SkyListView {
     required property int modelId
     readonly property int hideReason: model.getHideReason()
     readonly property string sideBarTitle: model.feedName
-    readonly property string sideBarSubTitle: qEnums.hideReasonToString(hideReason)
+    readonly property string sideBarSubTitle: QEnums.hideReasonToString(hideReason)
     readonly property SvgImage sideBarSvg: SvgOutline.hideVisibility
 
     signal closed
@@ -40,10 +40,6 @@ SkyListView {
         svg: SvgOutline.hideVisibility
         text: qsTr("No filtered posts")
         list: postFeedView
-    }
-
-    QEnums {
-        id: qEnums
     }
 
     function forceDestroy() {

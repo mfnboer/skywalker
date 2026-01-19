@@ -6,15 +6,11 @@ SkyRadioMenuItem {
     property var skywalker: root.getSkywalker()
     property var userSettings: skywalker.getUserSettings()
 
-    text: qEnums.scriptToString(script)
+    text: QEnums.scriptToString(script)
     checked: userSettings.scriptRecognition === script
 
     onToggled: {
         if (checked)
             userSettings.scriptRecognition = script
-    }
-
-    QEnums {
-        id: qEnums
     }
 }

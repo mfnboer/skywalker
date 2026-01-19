@@ -11,8 +11,8 @@ SkyListView {
     readonly property bool isUnrolledThread: model?.unrollThread
     readonly property string sideBarTitle: isUnrolledThread ? qsTr("Unrolled thread") : qsTr("Post thread")
     readonly property SvgImage sideBarSvg: isUnrolledThread ? SvgOutline.thread : SvgOutline.chat
-    readonly property SvgImage sideBarButtonSvg: SvgOutline.moreVert
-    readonly property string sideBarButtonName: qsTr("options")
+    readonly property SvgImage sideBarButtonSvg: SvgOutline.sort
+    readonly property string sideBarButtonName: qsTr("reply order")
 
     signal closed
 
@@ -32,18 +32,14 @@ SkyListView {
         SvgPlainButton {
             anchors.top: parent.top
             anchors.right: parent.right
+            anchors.rightMargin: parent.usedRightMargin + 10
 
             id: replyOrderButton
             iconColor: guiSettings.headerTextColor
-            // TODO temp icon. Replace with generic "sort" icon
-            svg: SvgOutline.sortByAlpha
-            accessibleName: qsTr("reply order")
-            onClicked: orderMenuLoader.open()
-
-            SkyMenuLoader {
-                id: orderMenuLoader
-                sourceComponent: orderMenuComponent
-            }
+            svg: sideBarButtonSvg
+            accessibleName: sideBarButtonName
+            visible: !root.showSideBar
+            onClicked: sideBarButtonClicked()
         }
 
         Rectangle {
@@ -196,26 +192,11 @@ SkyListView {
         inProgress: skywalker.getPostThreadInProgress
     }
 
-    Item {
-        id: moreMenuItem
+    SkyMenuLoader {
+        id: orderMenuLoader
+        anchors.top: parent.top
         anchors.right: parent.right
-        SkyMenu {
-            id: moreMenu
-
-            CloseMenuItem {
-                text: qsTr("<b>Options</b>")
-                Accessible.name: qsTr("close options menu")
-            }
-            AccessibleMenuItem {
-                text: qsTr("Settings")
-                svg: SvgOutline.settings
-                onTriggered: root.editPostThreadSettings(() => {
-                    const userSettings = skywalker.getUserSettings()
-                    const replyOrder = userSettings.getReplyOrder(userDid)
-                    model.setReplyOrder(replyOrder)
-                })
-            }
-        }
+        sourceComponent: orderMenuComponent
     }
 
     Component {
@@ -295,7 +276,7 @@ SkyListView {
     }
 
     function sideBarButtonClicked() {
-        moreMenu.open()
+        orderMenuLoader.open()
     }
 
     function getReplyToAuthor() {
@@ -341,9 +322,6 @@ SkyListView {
         let lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
         positionViewAtIndex(index, ListView.Center)
-
-        firstVisibleIndex = getFirstVisibleIndex()
-        lastVisibleIndex = getLastVisibleIndex()
         return (firstVisibleIndex <= index && lastVisibleIndex >= index)
     }
 
@@ -369,8 +347,10 @@ SkyListView {
     }
 
     function saveReplySorting() {
-        userSettings.setReplyOrder(userDid, model.getReplyOrder())
+        const replyOrder = model.getReplyOrder()
+        userSettings.setReplyOrder(userDid, replyOrder)
         userSettings.setReplyOrderThreadFirst(userDid, model.getReplyOrderThreadFirst())
+        skywalker.showStatusMessage(qsTr(`Set as default reply order: ${QEnums.replyOrderToString(replyOrder)}`), QEnums.STATUS_LEVEL_INFO)
     }
 
     Component.onDestruction: {

@@ -111,7 +111,7 @@ SkyPage {
                 x: parent.width - width
                 y: parent.height - height
                 height: 34
-                text: qsTr(`Extract text (${(qEnums.scriptToString(userSettings.scriptRecognition))})`)
+                text: qsTr(`Extract text (${(QEnums.scriptToString(userSettings.scriptRecognition))})`)
                 enabled: altText.text.length === 0 && !imageUtils.extractingText && !imageUtils.installing
                 onClicked: imageUtils.installModule(userSettings.scriptRecognition)
             }
@@ -134,7 +134,7 @@ SkyPage {
         id: imageUtils
 
         onInstallModuleProgress: (script, progressPercentage) => { // qmllint disable signal-handler-parameters
-            skywalker.showStatusMessage(qsTr(`Installing ${(qEnums.scriptToString(script))} recognition: ${progressPercentage}%`), QEnums.STATUS_LEVEL_INFO, 30)
+            skywalker.showStatusMessage(qsTr(`Installing ${(QEnums.scriptToString(script))} recognition: ${progressPercentage}%`), QEnums.STATUS_LEVEL_INFO, 30)
         }
 
         onInstallModuleOk: (script) => { // qmllint disable signal-handler-parameters
@@ -143,7 +143,7 @@ SkyPage {
         }
 
         onInstallModuleFailed: (script, error) => { // qmllint disable signal-handler-parameters
-            skywalker.showStatusMessage(qsTr(`Failed to install module for ${(qEnums.scriptToString(script))} text recognition: ${error}`), QEnums.STATUS_LEVEL_INFO)
+            skywalker.showStatusMessage(qsTr(`Failed to install module for ${(QEnums.scriptToString(script))} text recognition: ${error}`), QEnums.STATUS_LEVEL_INFO)
         }
 
         onExtractTextOk: (source, extractedText) => {
@@ -159,10 +159,6 @@ SkyPage {
         onExtractTextFailed: (source, error) => {
             skywalker.showStatusMessage(qsTr(`Failed to extract text: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
-    }
-
-    QEnums {
-        id: qEnums
     }
 
     VirtualKeyboardHandler {

@@ -528,7 +528,7 @@ Rectangle {
                             rightPadding: 10
                             anchors.verticalCenter: parent.verticalCenter
                             elide: Text.ElideRight
-                            text: qEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
+                            text: QEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
                         }
                     }
                 }
@@ -1063,10 +1063,6 @@ Rectangle {
 
     AccessibilityUtils {
         id: accessibilityUtils
-    }
-
-    QEnums {
-        id: qEnums
     }
 
     function confirmDelete() {

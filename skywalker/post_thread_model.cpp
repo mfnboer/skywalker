@@ -650,7 +650,7 @@ bool PostThreadModel::mostPopularLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
     return lhsReply.mIndexedAt > rhsReply.mIndexedAt;
 }
 
-static double calcEngagement(const ATProto::AppBskyFeed::PostView& post)
+static int calcEngagement(const ATProto::AppBskyFeed::PostView& post)
 {
     return post.mReplyCount + post.mQuoteCount;
 }
@@ -659,11 +659,11 @@ bool PostThreadModel::engagementLessThan(ATProto::AppBskyFeed::ThreadViewPost*,
                                          const ATProto::AppBskyFeed::PostView& lhsReply,
                                          const ATProto::AppBskyFeed::PostView& rhsReply) const
 {
-    const double lhsControvery= calcEngagement(lhsReply);
-    const double rhsControvery = calcEngagement(rhsReply);
+    const int lhsEngagement = calcEngagement(lhsReply);
+    const int rhsEngagement = calcEngagement(rhsReply);
 
-    if (lhsControvery != rhsControvery)
-        return lhsControvery > rhsControvery;
+    if (lhsEngagement != rhsEngagement)
+        return lhsEngagement > rhsEngagement;
 
     // New before old
     return lhsReply.mIndexedAt > rhsReply.mIndexedAt;

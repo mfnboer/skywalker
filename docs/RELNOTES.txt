@@ -1,12 +1,12 @@
 next
 =b===
+* Settings to sort replies in post thread on popularity or engagement
 * Support for cash tags
 * Support to go live
 * Option to search posts from user in hashtag (long press) menu
 * Improve image open/close animation
 * Tap on profile banner to see it full screen
 * Setting to disable new labels notification
-* Setting to sort replies in post thread on popularity
 * Backup/restore for local settings
 * Bug fixes
 

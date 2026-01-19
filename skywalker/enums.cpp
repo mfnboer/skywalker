@@ -109,4 +109,17 @@ QString QEnums::hideReasonToString(HideReasonType reason)
     return ATProto::enumToString(reason, mapping);
 }
 
+QString QEnums::replyOrderToString(ReplyOrder replyOrder)
+{
+    static const std::unordered_map<ReplyOrder, QString> mapping = {
+        { REPLY_ORDER_SMART, tr("smart") },
+        { REPLY_ORDER_OLDEST_FIRST, tr("oldest first") },
+        { REPLY_ORDER_NEWEST_FIRST, tr("newest first") },
+        { REPLY_ORDER_POPULARITY, tr("popularity") },
+        { REPLY_ORDER_ENGAGEMENT, tr("engagement") }
+    };
+
+    return ATProto::enumToString(replyOrder, mapping);
+}
+
 }

@@ -17,6 +17,7 @@ class QEnums : public QObject
 {
     Q_OBJECT
     QML_ELEMENT
+    QML_SINGLETON
 
 public:
     enum DisplayMode
@@ -569,6 +570,7 @@ public:
         REPLY_ORDER_LAST = REPLY_ORDER_ENGAGEMENT
     };
     Q_ENUM(ReplyOrder)
+    Q_INVOKABLE static QString replyOrderToString(ReplyOrder replyOrder);
 };
 
 }
