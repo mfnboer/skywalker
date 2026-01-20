@@ -2295,16 +2295,6 @@ ApplicationWindow {
         pushStack(form)
     }
 
-    function editPostThreadSettings(closedCb = () => {}) {
-        let component = guiSettings.createComponent("SettingsForm.qml")
-        let form = component.createObject(root, { allVisible: false, onlyPostThreadVisible: true })
-        form.onClosed.connect(() => {
-            popStack()
-            closedCb()
-        })
-        pushStack(form)
-    }
-
     function editContentFilterSettings() {
         let component = guiSettings.createComponent("ContentFilterSettings.qml")
         let contentGroupListModel = skywalker.getGlobalContentGroupListModel()

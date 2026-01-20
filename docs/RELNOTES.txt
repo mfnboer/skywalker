@@ -1,13 +1,13 @@
-next
-=b===
+4.25
+=====
 * Settings to sort replies in post thread on popularity or engagement
+* Option to search posts from user in hashtag (long press) menu
 * Support for cash tags
 * Support to go live
-* Option to search posts from user in hashtag (long press) menu
+* Backup/restore for local settings
+* Setting to disable new labels notification
 * Improve image open/close animation
 * Tap on profile banner to see it full screen
-* Setting to disable new labels notification
-* Backup/restore for local settings
 * Bug fixes
 
 4.24

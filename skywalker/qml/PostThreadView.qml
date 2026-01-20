@@ -348,9 +348,12 @@ SkyListView {
 
     function saveReplySorting() {
         const replyOrder = model.getReplyOrder()
+        const threadFirst = model.getReplyOrderThreadFirst()
         userSettings.setReplyOrder(userDid, replyOrder)
-        userSettings.setReplyOrderThreadFirst(userDid, model.getReplyOrderThreadFirst())
-        skywalker.showStatusMessage(qsTr(`Set as default reply order: ${QEnums.replyOrderToString(replyOrder)}`), QEnums.STATUS_LEVEL_INFO)
+        userSettings.setReplyOrderThreadFirst(userDid, threadFirst)
+        const order = QEnums.replyOrderToString(replyOrder)
+        const threadOrder = threadFirst ? ", " + qsTr("thread first") : ""
+        skywalker.showStatusMessage(qsTr(`Set as default reply order: ${order}${threadOrder}`), QEnums.STATUS_LEVEL_INFO)
     }
 
     Component.onDestruction: {

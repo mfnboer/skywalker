@@ -610,7 +610,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyTreeView.qml
         QML_FILES qml/SkySplitView.qml
         QML_FILES qml/SkyDrawer.qml
-        QML_FILES qml/SettingsPostThread.qml
+        QML_FILES
         QML_FILES qml/SelectList.qml
         QML_FILES qml/SkyTabListButton.qml
         SOURCES report_category.h
