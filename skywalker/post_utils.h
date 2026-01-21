@@ -23,9 +23,12 @@ namespace Skywalker {
 class PostUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
+    Q_PROPERTY(int MAX_POST_GRAPHEMES MEMBER MAX_POST_GRAPHEMES CONSTANT)
     QML_ELEMENT
 
 public:
+    static constexpr int MAX_POST_GRAPHEMES = ATProto::AppBskyFeed::Record::Post::MAX_TEXT_GRAPHEMES;
+
     explicit PostUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE static PostFeedContext makePostFeedContext(

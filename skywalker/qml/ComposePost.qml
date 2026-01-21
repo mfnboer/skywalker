@@ -16,7 +16,7 @@ SkyPage {
 
     property bool largeEditor: false
     readonly property int maxLanguageIdentificationLength: 200
-    readonly property int maxPostLength: largeEditor ? 15000 : 300
+    readonly property int maxPostLength: largeEditor ? 15000 : postUtils.MAX_POST_GRAPHEMES
     property int threadCountOffset: 0
     readonly property int maxThreadPosts: 50
     readonly property int minPostSplitLineLength: 30
