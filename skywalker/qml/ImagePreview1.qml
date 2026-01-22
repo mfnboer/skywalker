@@ -101,7 +101,7 @@ Item {
         if (img.item.width - img.item.paintedWidth <= 2)
             return img.item.width
 
-        return img.item.paintedWidth
+        return Math.ceil(img.item.paintedWidth)
     }
 
     function getImageMaskHeight() {
@@ -111,7 +111,7 @@ Item {
         if (img.item.height - img.item.paintedHeight <= 2)
             return img.item.height
 
-        return img.item.paintedHeight
+        return Math.ceil(img.item.paintedHeight)
     }
 
     function closeMedia(mediaIndex, closeCb) {
