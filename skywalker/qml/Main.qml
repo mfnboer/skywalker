@@ -1187,6 +1187,12 @@ ApplicationWindow {
         skywalker: skywalker
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        z: 200
+        running: graphUtils.blockBusy || graphUtils.muteBusy
+    }
+
     M3U8Reader {
         id: m3u8Reader
         videoQuality: skywalker.getUserSettings().videoQuality

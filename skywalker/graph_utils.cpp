@@ -120,13 +120,20 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
 
 void GraphUtils::block(const QString& did, QDateTime expiresAt)
 {
+    if (mBlockBusy)
+        return;
+
     if (!graphMaster())
         return;
+
+    setBlockBusy(true);
 
     graphMaster()->block(did,
         [this, presence=getPresence(), did, expiresAt](const auto& blockingUri, const auto&){
             if (!presence)
                 return;
+
+            setBlockBusy(false);
 
             mSkywalker->makeLocalModelChange(
                 [did, blockingUri](LocalAuthorModelChanges* model){
@@ -156,6 +163,7 @@ void GraphUtils::block(const QString& did, QDateTime expiresAt)
                 return;
 
             qDebug() << "Block failed:" << error << " - " << msg;
+            setBlockBusy(false);
             emit blockFailed(msg);
         });
 }
@@ -169,7 +177,7 @@ void GraphUtils::unblock(const QString& blockingUri)
 
     if (!atUri.isValid())
     {
-        qWarning() << "Invalid blockin URI:" << blockingUri;
+        qWarning() << "Invalid blocking URI:" << blockingUri;
         auto* settings = mSkywalker->getUserSettings();
 
         if (settings->removeBlockWithExpiry(mSkywalker->getUserDid(), blockingUri))
@@ -210,13 +218,20 @@ void GraphUtils::unblock(const QString& blockingUri)
 
 void GraphUtils::unblock(const QString& did, const QString& blockingUri)
 {
+    if (mBlockBusy)
+        return;
+
     if (!graphMaster())
         return;
+
+    setBlockBusy(true);
 
     graphMaster()->undo(blockingUri,
         [this, presence=getPresence(), did, blockingUri]{
             if (!presence)
                 return;
+
+            setBlockBusy(false);
 
             mSkywalker->makeLocalModelChange(
                 [did](LocalAuthorModelChanges* model){
@@ -245,19 +260,36 @@ void GraphUtils::unblock(const QString& did, const QString& blockingUri)
                 return;
 
             qDebug() << "Unblock failed:" << error << " - " << msg;
+            setBlockBusy(false);
             emit unblockFailed(msg);
         });
 }
 
+void GraphUtils::setBlockBusy(bool busy)
+{
+    if (mBlockBusy != busy)
+    {
+        mBlockBusy = busy;
+        emit blockBusyChanged();
+    }
+}
+
 void GraphUtils::mute(const QString& did, QDateTime expiresAt)
 {
+    if (mMuteBusy)
+        return;
+
     if (!bskyClient())
         return;
+
+    setMuteBusy(true);
 
     bskyClient()->muteActor(did,
         [this, presence=getPresence(), did, expiresAt]{
             if (!presence)
                 return;
+
+            setMuteBusy(false);
 
             mSkywalker->makeLocalModelChange(
                 [did](LocalAuthorModelChanges* model){
@@ -277,19 +309,27 @@ void GraphUtils::mute(const QString& did, QDateTime expiresAt)
                 return;
 
             qDebug() << "Mute failed failed:" << error << " - " << msg;
+            setMuteBusy(false);
             emit muteFailed(msg);
         });
 }
 
 void GraphUtils::unmute(const QString& did)
 {
+    if (mMuteBusy)
+        return;
+
     if (!bskyClient())
         return;
+
+    setMuteBusy(true);
 
     bskyClient()->unmuteActor(did,
         [this, presence=getPresence(), did]{
             if (!presence)
                 return;
+
+            setMuteBusy(false);
 
             mSkywalker->makeLocalModelChange(
                 [did](LocalAuthorModelChanges* model){
@@ -310,8 +350,18 @@ void GraphUtils::unmute(const QString& did)
                 return;
 
             qDebug() << "Unmute failed failed:" << error << " - " << msg;
+            setMuteBusy(false);
             emit unmuteFailed(msg);
         });
+}
+
+void GraphUtils::setMuteBusy(bool busy)
+{
+    if (mMuteBusy != busy)
+    {
+        mMuteBusy = busy;
+        emit muteBusyChanged();
+    }
 }
 
 void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& name,

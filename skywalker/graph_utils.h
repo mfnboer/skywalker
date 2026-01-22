@@ -15,6 +15,8 @@ namespace Skywalker {
 class GraphUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
+    Q_PROPERTY(bool blockBusy READ isBlockBusy NOTIFY blockBusyChanged FINAL)
+    Q_PROPERTY(bool muteBusy READ isMuteBusy NOTIFY muteBusyChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -22,11 +24,17 @@ public:
 
     Q_INVOKABLE void follow(const BasicProfile& profile);
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
+
     Q_INVOKABLE void block(const QString& did, QDateTime expiresAt = QDateTime{});
     void unblock(const QString& blockingUri);
     Q_INVOKABLE void unblock(const QString& did, const QString& blockingUri);
+    bool isBlockBusy() const { return mBlockBusy; }
+    void setBlockBusy(bool busy);
+
     Q_INVOKABLE void mute(const QString& did, QDateTime expiresAt = QDateTime{});
     Q_INVOKABLE void unmute(const QString& did);
+    bool isMuteBusy() const { return mMuteBusy; }
+    void setMuteBusy(bool busy);
 
     // avatarImgSource must be a 'file://' or 'image://' reference.
     Q_INVOKABLE void createList(const QEnums::ListPurpose purpose, const QString& name,
@@ -76,10 +84,12 @@ signals:
     void blockFailed(QString error);
     void unblockOk();
     void unblockFailed(QString error);
+    void blockBusyChanged();
     void muteOk(QDateTime expiresAt);
     void muteFailed(QString error);
     void unmuteOk();
     void unmuteFailed(QString error);
+    void muteBusyChanged();
     void createListProgress(QString msg);
     void createListOk(QString uri, QString cid);
     void createListFailed(QString error);
@@ -127,6 +137,8 @@ private:
     ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;
     QTimer mExpiryCheckTimer;
+    bool mBlockBusy = false;
+    bool mMuteBusy = false;
 };
 
 }

@@ -1428,6 +1428,11 @@ SkyPage {
         onUnmuteRepostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: graphUtils.blockBusy || graphUtils.muteBusy
+    }
+
     ProfileUtils {
         property bool retrievingStatus: false
         property bool updatingStatus: false
