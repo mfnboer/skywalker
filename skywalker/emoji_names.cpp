@@ -4052,6 +4052,7 @@ const std::unordered_map<QString, QString> EmojiNames::EMOJI_NAMES_MAP = {
     {"☃️", "snowman"},
     {"☃", "snowman"},
     {"⛄", "snowman without snow"},
+    {"⛄️", "snowman without snow"}, // added +0xfe0f
     {"☄️", "comet"},
     {"☄", "comet"},
     {"🔥", "fire"},

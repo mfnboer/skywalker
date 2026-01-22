@@ -230,15 +230,24 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
         return 1.0;
 
     const QUrl url(link);
-    qDebug() << "Host:" << url.host() << "Path:" << url.path();
+    const QString host = url.host();
+    const QString path = url.path();
+    qDebug() << "Host:" << host << "Path:" << path;
 
-    if (url.host().endsWith("instagram.com"))
+    if (host.endsWith("instagram.com"))
         return 1.0;
 
-    if (url.host().endsWith("tiktok.com"))
+    // The leading slash is from the URL path, not the part of the user name.
+    static const QRegularExpression MASTODON_USER_NAME{ R"(\/@[a-zA-Z0-9_]+([a-zA-Z0-9_.-]+[a-zA-Z0-9_]+)?)" };
+    auto match = MASTODON_USER_NAME.match(path);
+
+    if (match.hasMatch())
+        return 1.0;
+
+    if (host.endsWith("tiktok.com"))
         return 1000.0 / 690.0;
 
-    if (url.host().endsWith("youtube.com") && url.path().startsWith("/shorts"))
+    if (host.endsWith("youtube.com") && path.startsWith("/shorts"))
         return 16.0 / 9.0;
 
     return 720.0 / 1280.0;
