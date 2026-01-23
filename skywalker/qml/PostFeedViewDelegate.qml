@@ -17,6 +17,8 @@ Rectangle {
     required property string postText
     required property string postPlainText
     required property list<language> postLanguages
+    required property string postIdentifiedLanguage
+    required property string postTranslatedText
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
     required property basicprofile postRepostedByAuthor
@@ -541,6 +543,7 @@ Rectangle {
                 postAuthor: author
                 postText: postEntry.postText
                 postPlainText: postEntry.postPlainText
+                postTranslatedText: postEntry.postTranslatedText
                 postHasUnknownEmbed: postEntry.postHasUnknownEmbed
                 postUnknownEmbedType: postEntry.postUnknownEmbedType
                 postImages: postEntry.postImages
@@ -749,6 +752,7 @@ Rectangle {
                     onCopyPostText: skywalker.copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                     onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author, userDid)
                     onTranslatePost: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                    onInlineTranslatePost: model.translate(index)
                     onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
                     onPin: root.pinPost(postUri, postCid, userDid)
                     onUnpin: root.unpinPost(postCid, userDid)

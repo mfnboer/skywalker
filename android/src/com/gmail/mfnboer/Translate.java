@@ -15,6 +15,7 @@ import android.util.Log;
 
 import java.util.List;
 
+// Launche Google Translate for outside app translation
 public class Translate {
     private static final String LOGTAG = "Translate";
     private static final String GOOGLE_TRANSLATE_PACKAGE_NAME = "com.google.android.apps.translate";

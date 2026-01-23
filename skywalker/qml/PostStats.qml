@@ -55,6 +55,7 @@ Item {
     signal copyPostText()
     signal reportPost()
     signal translatePost()
+    signal inlineTranslatePost()
     signal detachQuote(string uri, bool detach)
     signal pin()
     signal unpin()
@@ -161,6 +162,12 @@ Item {
                     text: qsTr("Translate")
                     svg: SvgOutline.googleTranslate
                     onTriggered: translatePost()
+                }
+
+                AccessibleMenuItem {
+                    text: qsTr("Translate inline")
+                    svg: SvgOutline.googleTranslate
+                    onTriggered: inlineTranslatePost()
                 }
 
                 AccessibleMenuItem {

@@ -108,9 +108,20 @@ LanguageUtils::LanguageUtils(QObject* parent) :
     }
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();
+
     connect(&jniCallbackListener, &JNICallbackListener::languageIdentified, this,
         [this](QString languageCode, int requestId){
             emit languageIdentified(languageCode, requestId);
+        });
+
+    connect(&jniCallbackListener, &JNICallbackListener::translation, this,
+        [this](QString text, int requestId){
+            emit translation(text, requestId);
+        });
+
+    connect(&jniCallbackListener, &JNICallbackListener::translationError, this,
+        [this](QString text, int requestId){
+            emit translationError(text, requestId);
         });
 }
 
@@ -262,7 +273,7 @@ void LanguageUtils::setDefaultLanguageNoticeSeen(bool seen)
 }
 
 
-int LanguageUtils::identifyLanguage(QString text)
+int LanguageUtils::identifyLanguage(const QString& text) const
 {
     if (text.length() < MIN_LANGUAGE_IDENTIFICATION_LENGTH)
         return -1;
@@ -284,6 +295,33 @@ int LanguageUtils::identifyLanguage(QString text)
     return requestId;
 #else
     qDebug() << "Language identification not supported:" << text;
+    return -1;
+#endif
+}
+
+int LanguageUtils::translate(const QString& text, const QString& fromLangCode, const QString& toLangCode) const
+{
+#if defined(Q_OS_ANDROID)
+    auto jsText  = QJniObject::fromString(text);
+    auto jsFromLangCode = QJniObject::fromString(fromLangCode);
+    auto jsToLangCode = QJniObject::fromString(toLangCode);
+    const int requestId = sNextRequestId++;
+
+    // Make sure the caller gets the requestId before the translation is done
+    QTimer::singleShot(0, this, [jsText, jsFromLangCode, jsToLangCode, requestId]{
+        QJniObject::callStaticMethod<void>(
+            "com/gmail/mfnboer/SkyTranslator",
+            "translate",
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V",
+            jsText,
+            jsFromLangCode,
+            jsToLangCode,
+            (jint)requestId);
+        });
+
+    return requestId;
+#else
+    qDebug() << "Translation not supported:" << text;
     return -1;
 #endif
 }

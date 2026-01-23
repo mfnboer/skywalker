@@ -12,6 +12,7 @@
 #include "list_cache.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
+#include "post_language_cache.h"
 #include "post_thread_cache.h"
 #include "search_utils.h"
 #include "shared_image_provider.h"
@@ -99,6 +100,7 @@ Skywalker::Skywalker(QObject* parent) :
 
     AuthorCache::instance().setSkywalker(this);
     ListCache::instance().setSkywalker(this);
+    PostLanguageCache::instance().setSkywalker(this);
     PostThreadCache::instance().setSkywalker(this);
     OffLineMessageChecker::createNotificationChannels();
 

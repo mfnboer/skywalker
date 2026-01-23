@@ -45,6 +45,8 @@ public:
         PostText, // Formatted
         PostPlainText,
         PostLanguages,
+        PostIdentifiedLangue,
+        PostTranslatedText, // Formatted
         PostIndexedDateTime,
         PostIndexedSecondsAgo,
         PostRepostedByAuthor,
@@ -122,7 +124,8 @@ public:
                           const IProfileStore& mutedReposts,
                           const IListStore& feedHide,
                           const IContentFilter& contentFilter,
-                          const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
+                          const IMatchWords& mutedWords,
+                          const FocusHashtags& focusHashtags,
                           HashtagIndex& hashtags,
                           QObject* parent = nullptr);
 
@@ -145,6 +148,7 @@ public:
 
     const Post& getPost(int index) const;
     Q_INVOKABLE void unfoldPosts(int startIndex);
+    Q_INVOKABLE void translate(int index, const QString& langCode = {}) const;
 
     // Get the timestamp of the last post in the feed
     QDateTime lastTimestamp() const;
@@ -243,6 +247,9 @@ private:
     void identifyThreadPost(const Post& post);
 
     void postIsThreadChanged(const QString& postUri);
+    void postIdentifiedLanguageChanged(const QString& postUri);
+    void postTranslatedTextChanged(const QString& postUri);
+    void postAndRecordChanged(const QString& postUri, Role role);
     void authorAdded(const QString& did);
     void labelerAdded(const QString& did);
     void listAdded(const QString& uri);

@@ -164,6 +164,8 @@ public:
 
     const LanguageList& getLanguages() const;
     bool hasLanguage() const;
+    QString identifyLanguage(bool autoIdentify) const;
+    QString translateTo(const QString& languageCode, bool autoTranslate) const;
 
     QStringList getMentionDids() const;
     std::vector<QString> getHashtags() const override;

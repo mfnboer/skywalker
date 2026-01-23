@@ -30,6 +30,8 @@ public:
     void handleExtractTextOk(const QString& imgSource, const QString& text);
     void handleExtractTextFailed(const QString& imgSource, const QString& error);
     void handleLanguageIdentified(const QString& languageCode, int requestId);
+    void handleTranslation(const QString& text, int requestId);
+    void handleTranslationError(const QString& error, int requestId);
     void handleSharedTextReceived(const QString& sharedText);
     void handleSharedImageReceived(const QString& contentUri, const QString& text);
     void handleSharedVideoReceived(const QString& contentUri, const QString& text);
@@ -53,6 +55,8 @@ signals:
     void extractTextOk(QString imgSource, QString text);
     void extractTextFailed(QString imgSource, QString error);
     void languageIdentified(QString languageCode, int requestId);
+    void translation(QString text, int requestId);
+    void translationError(QString error, int requestId);
     void sharedTextReceived(QString sharedText);
     void sharedImageReceived(QString contentUri, QString text);
     void sharedVideoReceived(QString contentUri, QString text);

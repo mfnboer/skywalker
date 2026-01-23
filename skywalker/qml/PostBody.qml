@@ -21,6 +21,7 @@ Column {
     required property basicprofile postContentLabeler
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
+    property string postTranslatedText
     required property bool postIsThread
     required property bool postIsThreadReply
     property var postVideo // videoView
@@ -67,7 +68,7 @@ Column {
         color: guiSettings.textColor
         font.pointSize: getPostFontSize()
         plainText: displayText
-        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
+        bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed || postTranslatedText ? 5 : 0
         visible: postVisible() && displayText
 
         Accessible.ignored: true
@@ -87,6 +88,35 @@ Column {
             radius: 5
             color: postHighlightColor
             opacity: guiSettings.focusHighlightOpacity
+        }
+    }
+
+    Loader {
+        width: parent.width
+        active: postVisible() && postTranslatedText
+        sourceComponent: SkyCleanedText {
+            width: parent.width
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            initialShowMaxLineCount: Math.min(maxTextLines, initialShowMaxTextLines)
+            maximumLineCount: maxTextLines
+            ellipsisBackgroundColor: postBody.bodyBackgroundColor
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            color: guiSettings.textColor
+            font.italic: true
+            font.pointSize: getPostFontSize()
+            plainText: postTranslatedText
+            topPadding: 5
+            bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
+
+            Rectangle {
+                anchors.fill: parent
+                z: parent.z - 2
+                radius: 5
+                color: postHighlightColor
+                opacity: guiSettings.focusHighlightOpacity
+            }
         }
     }
 

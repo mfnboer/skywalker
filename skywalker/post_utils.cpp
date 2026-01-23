@@ -1548,7 +1548,7 @@ void PostUtils::handleLanguageIdentified(const QString& languageCode, int reques
     const int index = mLanguageIdentificationRequestIdIndexMap[requestId];
     removeIndexLanguageIdentificationRequestId(index, requestId);
 
-    if (!languageCode.isEmpty() && languageCode != "und")
+    if (!languageCode.isEmpty() && languageCode != Language::UNDEFINED_CODE)
     {
         if (LanguageUtils::existsShortCode(languageCode))
             emit languageIdentified(languageCode, index);

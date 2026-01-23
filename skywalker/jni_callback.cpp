@@ -142,6 +142,24 @@ void _handleLanguageIdentified(JNIEnv* env, jobject, jstring jsLanguageCode, jin
         instance->handleLanguageIdentified(languageCode, (int)requestId);
 }
 
+void _handleTranslation(JNIEnv* env, jobject, jstring jsText, jint requestId)
+{
+    QString text = jsText ? env->GetStringUTFChars(jsText, nullptr) : QString();
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleTranslation(text, (int)requestId);
+}
+
+void _handleTranslationError(JNIEnv* env, jobject, jstring jsError, jint requestId)
+{
+    QString error = jsError ? env->GetStringUTFChars(jsError, nullptr) : QString();
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleTranslationError(error, (int)requestId);
+}
+
 void _handleSharedTextReceived(JNIEnv* env, jobject, jstring jsSharedText)
 {
     QString sharedText = jsSharedText ? env->GetStringUTFChars(jsSharedText, nullptr) : QString();
@@ -286,6 +304,12 @@ JNICallbackListener::JNICallbackListener() : QObject()
     };
     jni.registerNativeMethods("com/gmail/mfnboer/LanguageDetection", languageDetectorCallbacks, 1);
 
+    const JNINativeMethod translatorCallbacks[] = {
+        {"emitTranslation", "(Ljava/lang/String;I)V", reinterpret_cast<void *>(_handleTranslation) },
+        {"emitTranslationError", "(Ljava/lang/String;I)V", reinterpret_cast<void *>(_handleTranslationError) }
+    };
+    jni.registerNativeMethods("com/gmail/mfnboer/SkyTranslator", translatorCallbacks, 2);
+
     const JNINativeMethod virtualKeyboardListenerCallbacks[] = {
         {"emitKeyboardHeightChanged", "(I)V", reinterpret_cast<void *>(_handleKeyboardHeightChanged) }
     };
@@ -367,6 +391,16 @@ void JNICallbackListener::handleExtractTextFailed(const QString& imgSource, cons
 void JNICallbackListener::handleLanguageIdentified(const QString& languageCode, int requestId)
 {
     emit languageIdentified(languageCode, requestId);
+}
+
+void JNICallbackListener::handleTranslation(const QString& text, int requestId)
+{
+    emit translation(text, requestId);
+}
+
+void JNICallbackListener::handleTranslationError(const QString& error, int requestId)
+{
+    emit translationError(error, requestId);
 }
 
 void JNICallbackListener::handleSharedTextReceived(const QString& sharedText)
