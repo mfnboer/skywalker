@@ -3,6 +3,7 @@
 #include "post_utils.h"
 #include "file_utils.h"
 #include "jni_callback.h"
+#include "language_utils.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "skywalker.h"
@@ -13,10 +14,6 @@
 #include <QMimeType>
 
 namespace Skywalker {
-
-static constexpr int MIN_LANGUAGE_IDENTIFICATION_LENGTH = 20;
-
-int PostUtils::sNextRequestId = 1;
 
 PostUtils::PostUtils(QObject* parent) :
     WrappedSkywalker(parent),
@@ -34,12 +31,12 @@ PostUtils::PostUtils(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::photoPickCanceled,
         this, [this]{ cancelPhotoPicking(); });
 
-    connect(&jniCallbackListener, &JNICallbackListener::languageIdentified,
-            this, [this](QString languageCode, int requestId){ handleLanguageIdentified(languageCode, requestId); });
-
     connect(this, &WrappedSkywalker::skywalkerChanged, this, [this]{
         if (!mSkywalker)
             return;
+
+        if (mSkywalker && mLanguageUtils)
+            mLanguageUtils->setSkywalker(mSkywalker);
 
         connect(mSkywalker, &Skywalker::bskyClientDeleted, this,
             [this]{
@@ -78,6 +75,22 @@ ImageReader* PostUtils::imageReader()
         mImageReader = std::make_unique<ImageReader>(mNetwork, this);
 
     return mImageReader.get();
+}
+
+LanguageUtils* PostUtils::languageUtils()
+{
+    if (!mLanguageUtils)
+    {
+        mLanguageUtils = std::make_unique<LanguageUtils>(this);
+        mLanguageUtils->setSkywalker(mSkywalker);
+
+        connect(languageUtils(), &LanguageUtils::languageIdentified, this,
+            [this](QString languageCode, int requestId){
+                handleLanguageIdentified(languageCode, requestId);
+            });
+    }
+
+    return mLanguageUtils.get();
 }
 
 bool PostUtils::isPostUri(const QString& uri)
@@ -1405,26 +1418,12 @@ void PostUtils::savePostInteractionSettings(bool allowMention, bool allowFollowe
 
 void PostUtils::identifyLanguage(QString text, int index)
 {
-    if (text.length() < MIN_LANGUAGE_IDENTIFICATION_LENGTH)
+    const int requestId = languageUtils()->identifyLanguage(text);
+
+    if (requestId < 0)
         return;
 
-#if defined(Q_OS_ANDROID)
-    auto jsText  = QJniObject::fromString(text);
-    const int requestId = sNextRequestId++;
     addIndexLanguageIdentificationRequestId(index, requestId);
-    const QStringList excludeLanguages = mSkywalker->getUserSettings()->getExcludeDetectLanguages(mSkywalker->getUserDid());
-    auto jsExcludeLanguages = QJniObject::fromString(excludeLanguages.join(','));
-
-    QJniObject::callStaticMethod<void>(
-        "com/gmail/mfnboer/LanguageDetection",
-        "detectLanguage",
-        "(Ljava/lang/String;Ljava/lang/String;I)V",
-        jsText,
-        jsExcludeLanguages,
-        (jint)requestId);
-#else
-    qDebug() << "Language identification not supported:" << index << text;
-#endif
 }
 
 void PostUtils::shareMedia(int fd, const QString& mimeType, bool last)
@@ -1560,12 +1559,14 @@ void PostUtils::handleLanguageIdentified(const QString& languageCode, int reques
 
 void PostUtils::addIndexLanguageIdentificationRequestId(int index, int requestId)
 {
+    Q_ASSERT(requestId >= 0);
     mIndexLanguageIdentificationRequestIdMap[index] = requestId;
     mLanguageIdentificationRequestIdIndexMap[requestId] = index;
 }
 
 void PostUtils::removeIndexLanguageIdentificationRequestId(int index, int requestId)
 {
+    Q_ASSERT(requestId >= 0);
     mIndexLanguageIdentificationRequestIdMap.erase(index);
     mLanguageIdentificationRequestIdIndexMap.erase(requestId);
 }

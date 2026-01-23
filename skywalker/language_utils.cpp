@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "language_utils.h"
+#include "jni_callback.h"
 #include "skywalker.h"
 #include <QInputMethod>
 #include <QLocale>
@@ -11,6 +12,9 @@ namespace Skywalker {
 
 static constexpr char const* DEFAULT_LANGUAGE = "en";
 static constexpr int MAX_USED_LANGUAGES = 5;
+static constexpr int MIN_LANGUAGE_IDENTIFICATION_LENGTH = 20;
+
+int LanguageUtils::sNextRequestId = 1;
 
 Language::Language(const QString& code, const QString& nativeName) :
     mCode(code),
@@ -102,6 +106,12 @@ LanguageUtils::LanguageUtils(QObject* parent) :
             emit defaultPostLanguageChanged();
         });
     }
+
+    auto& jniCallbackListener = JNICallbackListener::getInstance();
+    connect(&jniCallbackListener, &JNICallbackListener::languageIdentified, this,
+        [this](QString languageCode, int requestId){
+            emit languageIdentified(languageCode, requestId);
+        });
 }
 
 QString LanguageUtils::getDefaultPostLanguage() const
@@ -249,6 +259,33 @@ void LanguageUtils::setDefaultLanguageNoticeSeen(bool seen)
     Q_ASSERT(mSkywalker);
     auto* settings = mSkywalker->getUserSettings();
     settings->setDefautlLanguageNoticeSeen(seen);
+}
+
+
+int LanguageUtils::identifyLanguage(QString text)
+{
+    if (text.length() < MIN_LANGUAGE_IDENTIFICATION_LENGTH)
+        return -1;
+
+#if defined(Q_OS_ANDROID)
+    auto jsText  = QJniObject::fromString(text);
+    const int requestId = sNextRequestId++;
+    const QStringList excludeLanguages = mSkywalker->getUserSettings()->getExcludeDetectLanguages(mSkywalker->getUserDid());
+    auto jsExcludeLanguages = QJniObject::fromString(excludeLanguages.join(','));
+
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/LanguageDetection",
+        "detectLanguage",
+        "(Ljava/lang/String;Ljava/lang/String;I)V",
+        jsText,
+        jsExcludeLanguages,
+        (jint)requestId);
+
+    return requestId;
+#else
+    qDebug() << "Language identification not supported:" << text;
+    return -1;
+#endif
 }
 
 Language LanguageUtils::getLanguage(const QString& shortCode) const

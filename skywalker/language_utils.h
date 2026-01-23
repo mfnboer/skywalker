@@ -66,10 +66,13 @@ public:
     Q_INVOKABLE bool getDefaultLanguageNoticeSeen() const;
     Q_INVOKABLE void setDefaultLanguageNoticeSeen(bool seen);
 
+    int identifyLanguage(QString text);
+
 signals:
     void defaultPostLanguageChanged();
     void defaultPostLanguageSetChanged();
     void usedPostLanguagesChanged();
+    void languageIdentified(QString languageCode, int requestId);
 
 private:
     static void initLanguages();
@@ -77,6 +80,7 @@ private:
 
     static LanguageList sLanguages;
     static std::unordered_map<QString, QString> sLanguageShortCodeToNameMap;
+    static int sNextRequestId;
 };
 
 }

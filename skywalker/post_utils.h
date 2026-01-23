@@ -20,6 +20,8 @@
 
 namespace Skywalker {
 
+class LanguageUtils;
+
 class PostUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
@@ -190,16 +192,17 @@ private:
     void addIndexLanguageIdentificationRequestId(int index, int requestId);
     void removeIndexLanguageIdentificationRequestId(int index, int requestId);
 
-    QNetworkAccessManager* mNetwork;
     ATProto::PostMaster* postMaster();
     ImageReader* imageReader();
+    LanguageUtils* languageUtils();
+
+    QNetworkAccessManager* mNetwork;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     std::unique_ptr<ImageReader> mImageReader;
     bool mPickingPhoto = false;
+    std::unique_ptr<LanguageUtils> mLanguageUtils;
     std::unordered_map<int, int> mIndexLanguageIdentificationRequestIdMap;
     std::unordered_map<int, int> mLanguageIdentificationRequestIdIndexMap;
-
-    static int sNextRequestId;
 };
 
 }
