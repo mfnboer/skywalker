@@ -176,6 +176,8 @@ private:
         void setThreadgates();
         void foldThreads();
         void foldPosts(int startIndex, int endIndex);
+        void reverseThreads();
+        void reversePosts(int startIndex, int endIndex);
     };
 
     void createInteractionSender(ATProto::Client::SharedPtr bsky);

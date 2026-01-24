@@ -78,6 +78,7 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide.setSkywalker(this);
     mContentFilterPolicies.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
+    mTimelineModel.setReverseFeed(true); // TODO
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
 

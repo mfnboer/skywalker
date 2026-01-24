@@ -129,6 +129,8 @@ public:
     void setModelId(int modelId) { mModelId = modelId; }
     int getModelId() const { return mModelId; }
 
+    void setReverseFeed(bool reverse) { mReverseFeed = reverse; }
+
     void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
     void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }
 
@@ -177,6 +179,12 @@ signals:
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
+    void beginRemoveRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex);
+    void beginInsertRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex);
+
+    int toPhysicalIndex(int visibleIndex) const;
+    int toVisibleIndex(int physicalIndex, std::optional<int> feedSize = {}) const;
+
     void clearFeed();
     void deletePost(int index);
     void storeCid(const QString& cid);
@@ -218,6 +226,7 @@ protected:
 
     using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;
+    bool mReverseFeed = false;
 
     const QString& mUserDid;
     const IProfileStore& mMutedReposts;

@@ -76,6 +76,25 @@ void AbstractPostFeedModel::clearOverrideLinkColor()
     changeData({ int(Role::PostText) });
 }
 
+int AbstractPostFeedModel::toPhysicalIndex(int visibleIndex) const
+{
+    if (!mReverseFeed)
+        return visibleIndex;
+
+    return mFeed.size() - 1 - visibleIndex;
+}
+
+int AbstractPostFeedModel::toVisibleIndex(int physicalIndex, std::optional<int> feedSize) const
+{
+    if (!mReverseFeed)
+        return physicalIndex;
+
+    if (!feedSize)
+        feedSize = mFeed.size();
+
+    return *feedSize - 1 - physicalIndex;
+}
+
 void AbstractPostFeedModel::clearFeed()
 {
     mFeed.clear();
@@ -89,7 +108,7 @@ void AbstractPostFeedModel::clearFeed()
 
 void AbstractPostFeedModel::deletePost(int index)
 {
-    mFeed.erase(mFeed.begin() + index);
+    mFeed.erase(mFeed.begin() + toPhysicalIndex(index));
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -232,7 +251,7 @@ const Post& AbstractPostFeedModel::getPost(int index) const
         return NULL_POST;
     }
 
-    return mFeed.at(index);
+    return mFeed.at(toPhysicalIndex(index));
 }
 
 void AbstractPostFeedModel::unfoldPosts(int startIndex)
@@ -245,7 +264,8 @@ void AbstractPostFeedModel::unfoldPosts(int startIndex)
         return;
     }
 
-    for (int i = startIndex; i < (int)mFeed.size(); ++i)
+    // TODO: works only in reverse if post threads are reverted
+    for (int i = toPhysicalIndex(startIndex); i < (int)mFeed.size(); ++i)
     {
         auto& post = mFeed[i];
 
@@ -260,7 +280,10 @@ void AbstractPostFeedModel::unfoldPosts(int startIndex)
 
 QDateTime AbstractPostFeedModel::lastTimestamp() const
 {
-    return !mFeed.empty() ? mFeed.back().getTimelineTimestamp() : QDateTime();
+    if (mFeed.empty())
+        return {};
+
+    return mFeed.back().getTimelineTimestamp();
 }
 
 int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
@@ -299,7 +322,7 @@ int AbstractPostFeedModel::findPost(const QString& cid) const
         const Post& post = mFeed[i];
 
         if (post.getCid() == cid)
-            return i;
+            return toVisibleIndex(i);
     }
 
     return -1;
@@ -310,7 +333,7 @@ QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int index) const
     if (index < 0 || index >= (int)mFeed.size())
         return {};
 
-    return mFeed[index].getTimelineTimestamp();
+    return mFeed[toPhysicalIndex(index)].getTimelineTimestamp();
 }
 
 QString AbstractPostFeedModel::getPostCid(int index) const
@@ -318,7 +341,7 @@ QString AbstractPostFeedModel::getPostCid(int index) const
     if (index < 0 || index >= (int)mFeed.size())
         return {};
 
-    return mFeed[index].getCid();
+    return mFeed[toPhysicalIndex(index)].getCid();
 }
 
 void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
@@ -359,7 +382,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= (int)mFeed.size())
         return {};
 
-    const auto& post = mFeed[index.row()];
+    const int physicalIndex = toPhysicalIndex(index.row());
+    const auto& post = mFeed[physicalIndex];
     const auto* change = getLocalChange(post.getCid());
 
     switch (Role(role))
@@ -854,6 +878,28 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
     };
 
     return roles;
+}
+
+void AbstractPostFeedModel::beginRemoveRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex)
+{
+    if (!mReverseFeed)
+        beginRemoveRows({}, firstPhysicalIndex, lastPhysicalIndex);
+    else
+        beginRemoveRows({}, toVisibleIndex(lastPhysicalIndex), toVisibleIndex(firstPhysicalIndex));
+}
+
+void AbstractPostFeedModel::beginInsertRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex)
+{
+    if (!mReverseFeed)
+    {
+        beginInsertRows({}, firstPhysicalIndex, lastPhysicalIndex);
+    }
+    else
+    {
+        const int newFeedSize = mFeed.size() + (lastPhysicalIndex - firstPhysicalIndex) + 1;
+        beginInsertRows({}, toVisibleIndex(lastPhysicalIndex, newFeedSize),
+                        toVisibleIndex(firstPhysicalIndex, newFeedSize));
+    }
 }
 
 void AbstractPostFeedModel::postIndexedSecondsAgoChanged()
