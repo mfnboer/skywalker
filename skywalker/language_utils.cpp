@@ -273,13 +273,16 @@ int LanguageUtils::identifyLanguage(QString text)
     const QStringList excludeLanguages = mSkywalker->getUserSettings()->getExcludeDetectLanguages(mSkywalker->getUserDid());
     auto jsExcludeLanguages = QJniObject::fromString(excludeLanguages.join(','));
 
-    QJniObject::callStaticMethod<void>(
-        "com/gmail/mfnboer/LanguageDetection",
-        "detectLanguage",
-        "(Ljava/lang/String;Ljava/lang/String;I)V",
-        jsText,
-        jsExcludeLanguages,
-        (jint)requestId);
+    // Async call to guarantee that the caller gets requestId before results from detection.
+    QTimer::singleShot(0, this, [jsText, jsExcludeLanguages, requestId]{
+        QJniObject::callStaticMethod<void>(
+            "com/gmail/mfnboer/LanguageDetection",
+            "detectLanguage",
+            "(Ljava/lang/String;Ljava/lang/String;I)V",
+            jsText,
+            jsExcludeLanguages,
+            (jint)requestId);
+    });
 
     return requestId;
 #else
