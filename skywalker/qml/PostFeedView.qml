@@ -35,6 +35,7 @@ SkyListView {
 
     header: PostFeedHeader {
         userDid: postFeedView.userDid
+        reverseFeed: underlyingModel ? underlyingModel.reverseFeed : false
         feedName: postFeedView.feedName
         feedAvatar: postFeedView.getFeedAvatar()
         defaultSvg: postFeedView.getFeedDefaultAvatar()
@@ -51,6 +52,8 @@ SkyListView {
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeedOptions()
         onViewChanged: (contentMode) => changeView(contentMode)
+
+        onReverseFeedChanged: console.debug("REVERSE FEED HEADER CHAGED:", reverseFeed)
     }
     headerPositioning: ListView.PullBackHeader
 
@@ -396,6 +399,8 @@ SkyListView {
             reverseFeed: model.reverseFeed
 
             onReverseFeedChanged: {
+                userSettings.setFeedReverse(skywalker.getUserDid(), underlyingModel.feedUri, reverseFeed)
+
                 console.debug("Reverse feed changed:", reverseFeed, feedName)
                 const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverseFeed)
                 underlyingModel.reverseFeed = reverseFeed

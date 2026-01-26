@@ -42,6 +42,8 @@ SkyListView {
         onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
 
         onReverseFeedChanged: {
+            userSettings.setReverseTimeline(skywalker.getUserDid(), reverseFeed)
+
             const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverseFeed)
             skywalker.timelineModel.reverseFeed = reverseFeed
             moveToPost(reverseIndex, () => { contentY -= offsetY; resetHeaderPosition() })

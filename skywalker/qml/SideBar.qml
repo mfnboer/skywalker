@@ -50,6 +50,7 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
+                reverseFeed: skywalker.timelineModel.reverseFeed
                 feedName: skywalker.timelineModel.feedName
                 showAsHome: true
                 isHomeFeed: true
@@ -77,6 +78,7 @@ Pane {
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 userDid: postFeedView ? postFeedView.userDid : ""
+                reverseFeed: postFeedView ? postFeedView.headerItem.reverseFeed : false
                 feedName: postFeedView ? postFeedView.headerItem.feedName : ""
                 feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
                 defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
