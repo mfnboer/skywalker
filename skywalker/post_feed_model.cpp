@@ -54,6 +54,13 @@ PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVar
             });
 }
 
+void PostFeedModel::setReverseFeed(bool reverse)
+{
+    qDebug() << "Reverse feed:" << reverse << mModelId << mFeedName;
+    AbstractPostFeedModel::setReverseFeed(reverse);
+    setReverseFeedFilteredPostModels(reverse);
+}
+
 void PostFeedModel::createInteractionSender(ATProto::Client::SharedPtr bsky)
 {
     if (feedAcceptsInteractions() && !getFeedDid().isEmpty())
@@ -265,6 +272,14 @@ void PostFeedModel::clearFilteredPostModels()
 {
     for (auto& model : mFilteredPostFeedModels)
         model->clear();
+}
+
+void PostFeedModel::setReverseFeedFilteredPostModels(bool reverse)
+{
+    qDebug() << "Reverse feed filtered post models:" << reverse << mModelId << mFeedName;
+
+    for (auto& model : mFilteredPostFeedModels)
+        model->setReverseFeed(reverse);
 }
 
 void PostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
@@ -671,6 +686,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
             mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setModelId(mModelId);
+    model->setReverseFeed(mReverseFeed);
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
@@ -1208,7 +1224,7 @@ void PostFeedModel::Page::setThreadgates()
     }
 }
 
-void PostFeedModel::Page::foldThreads()
+void PostFeedModel::Page::postProcessThreads(bool reverseFeed)
 {
     int threadStartIndex = -1;
     int threadEndIndex = -1;
@@ -1225,6 +1241,10 @@ void PostFeedModel::Page::foldThreads()
         case QEnums::POST_LAST_REPLY:
             threadEndIndex = i;
             foldPosts(threadStartIndex, threadEndIndex);
+
+            if (reverseFeed)
+                reversePosts(threadStartIndex, threadEndIndex);
+
             threadStartIndex = -1;
             break;
         case QEnums::POST_REPLY:
@@ -1262,34 +1282,6 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
     }
 }
 
-void PostFeedModel::Page::reverseThreads()
-{
-    qDebug() << "Reverse threads";
-    int threadStartIndex = -1;
-    int threadEndIndex = -1;
-
-    for (int i = 0; i < (int)mFeed.size(); ++i)
-    {
-        auto& post = mFeed[i];
-
-        switch (post.getPostType())
-        {
-        case QEnums::POST_ROOT:
-            threadStartIndex = i;
-            break;
-        case QEnums::POST_LAST_REPLY:
-            threadEndIndex = i;
-            reversePosts(threadStartIndex, threadEndIndex);
-            threadStartIndex = -1;
-            break;
-        case QEnums::POST_REPLY:
-        case QEnums::POST_STANDALONE:
-        case QEnums::POST_THREAD:
-            break;
-        }
-    }
-}
-
 void PostFeedModel::Page::reversePosts(int startIndex, int endIndex)
 {
     qDebug() << "Reverse posts, start:" << startIndex << "end:" << endIndex;
@@ -1306,9 +1298,13 @@ void PostFeedModel::Page::reversePosts(int startIndex, int endIndex)
         return;
     }
 
+    if (mFeed[endIndex].isEndOfFeed())
+    {
+        mFeed[startIndex].setEndOfFeed(true);
+        mFeed[endIndex].setEndOfFeed(false);
+    }
+
     std::reverse(mFeed.begin() + startIndex, mFeed.begin() + endIndex + 1);
-    for (auto it = mFeed.begin() + startIndex; it != mFeed.begin() + endIndex; ++it)
-        qDebug() << it->getIndexedAt() << it->getText();
 }
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
@@ -1475,10 +1471,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     page->setThreadgates();
-    page->foldThreads();
-
-    if (mReverseFeed)
-        page->reverseThreads();
+    page->postProcessThreads(mReverseFeed);
 
     qDebug() << "Created page, size:" << page->mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     return page;

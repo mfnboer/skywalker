@@ -57,7 +57,8 @@ SkyListView {
         headerHeight: postFeedView.headerHeight
         leftMarginWidth: postFeedView.leftMarginWidth
         rightMarginWidth: postFeedView.rightMarginWidth
-        extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
+        extraFooterHeight: extraHeaderFooterLoader.active && !model.reverseFeed ? extraHeaderFooterLoader.height : 0
+        extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0
         feedAcceptsInteractions: postFeedView.acceptsInteractions
         feedDid: postFeedView.feedDid
 
@@ -69,11 +70,16 @@ SkyListView {
         }
 
         Loader {
-            id: extraFooterLoader
-            anchors.bottom: parent.bottom
+            id: extraHeaderFooterLoader
+            y: model.reverseFeed ? 0 : parent.height - height
+            active: model && model.isFilterModel() && isLastPost && !endOfFeed
 
-            active: model.isFilterModel() && index == count - 1 && !endOfFeed
-            sourceComponent: extraFooterComponent
+            sourceComponent: FeedViewLoadMore {
+                userDid: postFeedView.userDid
+                listView: postFeedView
+                textColor: "white"
+                linkColor: guiSettings.linkColorDarkMode
+            }
         }
     }
 
@@ -84,7 +90,12 @@ SkyListView {
         currentIndex = indexAt(0, contentY)
         console.debug("Move:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
 
-        if (currentIndex >= 0 && count - currentIndex < 5) {
+        if (currentIndex < 0)
+            return
+
+        const remaining = model.reverseFeed ? currentIndex : count - currentIndex
+
+        if (remaining < 5) {
             console.debug("Prefetch next page:", postFeedView.model.feedName, "index:", currentIndex, "count:", count)
             model.getFeedNextPage(skywalker)
         }
@@ -108,27 +119,6 @@ SkyListView {
         z: parent.z - 1
         anchors.fill: parent
         color: guiSettings.fullScreenColor
-    }
-
-    Component {
-        id: extraFooterComponent
-
-        Rectangle {
-            width: postFeedView.width
-            height: 150
-            color: "transparent"
-
-            AccessibleText {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                padding: 10
-                textFormat: Text.RichText
-                wrapMode: Text.Wrap
-                color: "white"
-                text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColorDarkMode}; text-decoration: none">Load more</a>`)
-                onLinkActivated: model.getFeedNextPage(skywalker)
-            }
-        }
     }
 
     function cancel() {

@@ -215,7 +215,6 @@ SkyListView {
             SkyRadioMenuItem {
                 text: qsTr("Smart")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_SMART)
-                checkable: true
                 ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_SMART
             }
@@ -223,7 +222,6 @@ SkyListView {
             SkyRadioMenuItem {
                 text: qsTr("Oldest reply first")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_OLDEST_FIRST)
-                checkable: true
                 ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_OLDEST_FIRST
             }
@@ -231,7 +229,6 @@ SkyListView {
             SkyRadioMenuItem {
                 text: qsTr("Newest reply first")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_NEWEST_FIRST)
-                checkable: true
                 ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_NEWEST_FIRST
             }
@@ -239,7 +236,6 @@ SkyListView {
             SkyRadioMenuItem {
                 text: qsTr("Most popular first")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_POPULARITY)
-                checkable: true
                 ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_POPULARITY
             }
@@ -247,7 +243,6 @@ SkyListView {
             SkyRadioMenuItem {
                 text: qsTr("Most engagement")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_ENGAGEMENT)
-                checkable: true
                 ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_ENGAGEMENT
             }

@@ -638,6 +638,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyWebLinkInput.qml
         QML_FILES qml/LiveCardView.qml
         QML_FILES qml/SkyTumbler.qml
+        QML_FILES qml/PostsOrderMenu.qml
+        QML_FILES qml/FeedViewLoadMore.qml
 )
 
 if (NOT ANDROID)

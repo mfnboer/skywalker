@@ -64,6 +64,18 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
             [this](const QString& uri){ listAdded(uri); }, Qt::QueuedConnection);
 }
 
+void AbstractPostFeedModel::setReverseFeed(bool reverse)
+{
+    qDebug() << "Reverse feed:" << reverse << mModelId;
+
+    if (mReverseFeed != reverse)
+    {
+        flipPostsOrder();
+        Q_ASSERT(mReverseFeed == reverse);
+        emit reverseFeedChanged();
+    }
+}
+
 void AbstractPostFeedModel::setOverrideLinkColor(const QString& color)
 {
     mOverrideLinkColor = color;
@@ -106,9 +118,9 @@ void AbstractPostFeedModel::clearFeed()
     clearLocalProfileChanges();
 }
 
-void AbstractPostFeedModel::deletePost(int index)
+void AbstractPostFeedModel::deletePost(int visibleIndex)
 {
-    mFeed.erase(mFeed.begin() + toPhysicalIndex(index));
+    mFeed.erase(mFeed.begin() + toPhysicalIndex(visibleIndex));
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -241,31 +253,30 @@ void AbstractPostFeedModel::identifyThreadPost(const Post& post)
     }
 }
 
-const Post& AbstractPostFeedModel::getPost(int index) const
+const Post& AbstractPostFeedModel::getPost(int visibleIndex) const
 {
     static const Post NULL_POST;
 
-    if (index < 0 || index >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mFeed.size() << "modelId:" << mModelId;
+        qWarning() << "Invalid index:" << visibleIndex << "size:" << mFeed.size() << "modelId:" << mModelId;
         return NULL_POST;
     }
 
-    return mFeed.at(toPhysicalIndex(index));
+    return mFeed.at(toPhysicalIndex(visibleIndex));
 }
 
-void AbstractPostFeedModel::unfoldPosts(int startIndex)
+void AbstractPostFeedModel::unfoldPosts(int startVisibleIndex)
 {
-    qDebug() << "Unfold posts:" << startIndex;
+    qDebug() << "Unfold posts:" << startVisibleIndex;
 
-    if (startIndex < 0 || startIndex >= (int)mFeed.size())
+    if (startVisibleIndex < 0 || startVisibleIndex >= (int)mFeed.size())
     {
-        qWarning() << "Invalid index:" << startIndex << "size:" << mFeed.size();
+        qWarning() << "Invalid index:" << startVisibleIndex << "size:" << mFeed.size();
         return;
     }
 
-    // TODO: works only in reverse if post threads are reverted
-    for (int i = toPhysicalIndex(startIndex); i < (int)mFeed.size(); ++i)
+    for (int i = toPhysicalIndex(startVisibleIndex); i < (int)mFeed.size(); ++i)
     {
         auto& post = mFeed[i];
 
@@ -301,14 +312,14 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
         if (post.getTimelineTimestamp() == timestamp)
         {
             if (!cid.isEmpty() && post.getCid() == cid)
-                return i;
+                return toVisibleIndex(i);
 
             if (foundIndex == 0)
                 foundIndex = i;
         }
         else if (post.getTimelineTimestamp() > timestamp)
         {
-            return foundIndex > 0 ? foundIndex : i;
+            return toVisibleIndex(foundIndex > 0 ? foundIndex : i);
         }
     }
 
@@ -328,20 +339,20 @@ int AbstractPostFeedModel::findPost(const QString& cid) const
     return -1;
 }
 
-QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int index) const
+QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int visibleIndex) const
 {
-    if (index < 0 || index >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
         return {};
 
-    return mFeed[toPhysicalIndex(index)].getTimelineTimestamp();
+    return mFeed[toPhysicalIndex(visibleIndex)].getTimelineTimestamp();
 }
 
-QString AbstractPostFeedModel::getPostCid(int index) const
+QString AbstractPostFeedModel::getPostCid(int visibleIndex) const
 {
-    if (index < 0 || index >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
         return {};
 
-    return mFeed[toPhysicalIndex(index)].getCid();
+    return mFeed[toPhysicalIndex(visibleIndex)].getCid();
 }
 
 void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
@@ -1163,6 +1174,70 @@ ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
     qDebug() << "Feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     auto* model = new ContentFilterStatsModel(mContentFilterStats, mContentFilter, this);
     return model;
+}
+
+// TODO: filtered models
+void AbstractPostFeedModel::flipPostsOrder()
+{
+    qDebug() << "Flip feed order, current reverse:" << mReverseFeed;
+
+    const int endIndex = mFeed.size() - 1;
+    int threadStartIndex = -1;
+    int threadEndIndex = -1;
+
+    for (int i = 0; i <= endIndex; ++i)
+    {
+        auto& post = mReverseFeed ? mFeed[endIndex - i] : mFeed[i];
+
+        switch (post.getPostType())
+        {
+        case QEnums::POST_ROOT:
+            threadStartIndex = i;
+            break;
+        case QEnums::POST_LAST_REPLY:
+            threadEndIndex = i;
+
+            if (mReverseFeed)
+                reversePosts(endIndex - threadEndIndex, endIndex - threadStartIndex);
+            else
+                reversePosts(threadStartIndex, threadEndIndex);
+
+            threadStartIndex = -1;
+            break;
+        case QEnums::POST_REPLY:
+        case QEnums::POST_STANDALONE:
+        case QEnums::POST_THREAD:
+            break;
+        }
+    }
+
+    mReverseFeed = !mReverseFeed;
+    changeData({});
+}
+
+void AbstractPostFeedModel::reversePosts(int startPhysicalIndex, int endPhysicalIndex)
+{
+    qDebug() << "Reverse posts, start:" << startPhysicalIndex << "end:" << endPhysicalIndex;
+
+    if (startPhysicalIndex < 0 || endPhysicalIndex < 0 || startPhysicalIndex > endPhysicalIndex)
+    {
+        qWarning() << "Invalid thread:" << startPhysicalIndex << endPhysicalIndex;
+        return;
+    }
+
+    if (endPhysicalIndex >= (int)mFeed.size())
+    {
+        qWarning() << "Thread out of range:" << startPhysicalIndex << endPhysicalIndex << "size:" << mFeed.size();
+        return;
+    }
+
+    if (mFeed[endPhysicalIndex].isEndOfFeed())
+    {
+        mFeed[startPhysicalIndex].setEndOfFeed(true);
+        mFeed[endPhysicalIndex].setEndOfFeed(false);
+    }
+
+    std::reverse(mFeed.begin() + startPhysicalIndex, mFeed.begin() + endPhysicalIndex + 1);
 }
 
 }

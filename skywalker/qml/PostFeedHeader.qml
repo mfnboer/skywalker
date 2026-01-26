@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property bool reverseFeed: false
     required property string feedName
     property SvgImage defaultSvg: SvgFilled.feed
     property string feedAvatar
@@ -111,6 +112,11 @@ Rectangle {
                     text: qsTr("Filtered posts")
                     svg: SvgOutline.hideVisibility
                     onTriggered: filterStatistics()
+                }
+
+                PostsOrderMenu {
+                    reverseFeed: header.reverseFeed
+                    onReverseFeedChanged: header.reverseFeed = reverseFeed
                 }
             }
         }

@@ -68,9 +68,11 @@ SkyListView {
         Loader {
             id: extraFooterLoader
             anchors.bottom: parent.bottom
-
             active: model && model.isFilterModel() && index === count - 1 && !endOfFeed
-            sourceComponent: extraFooterComponent
+
+            sourceComponent: FeedViewLoadMore {
+                listView: feedView
+            }
         }
     }
 
@@ -82,9 +84,14 @@ SkyListView {
     onContentMoved: updateOnMovement()
 
     function updateOnMovement() {
-        const lastVisibleIndex = getLastVisibleIndex()
+        if (!model)
+            return
 
-        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && Boolean(model) && !model.getFeedInProgress) {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
+
+        if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !model.getFeedInProgress) {
             console.debug("Get next feed page")
             model.getFeedNextPage(skywalker)
         }
@@ -111,26 +118,6 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: feedView.model.getFeedInProgress
-    }
-
-    Component {
-        id: extraFooterComponent
-
-        Rectangle {
-            width: feedView.width
-            height: 150
-            color: "transparent"
-
-            AccessibleText {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                padding: 10
-                textFormat: Text.RichText
-                wrapMode: Text.Wrap
-                text: qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`)
-                onLinkActivated: model.getFeedNextPage(skywalker)
-            }
-        }
     }
 
     Loader {

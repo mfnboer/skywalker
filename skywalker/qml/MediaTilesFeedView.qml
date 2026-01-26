@@ -13,6 +13,7 @@ GridView {
     property bool showAsHome: false
     property var enclosingView // used on AuthorView
     property int unreadPosts: 0
+    property int newFirstVisibleIndex: -1
     readonly property bool feedLoading: model ? model.getFeedInProgress : false
 
     property int headerHeight: 0
@@ -73,8 +74,15 @@ GridView {
 
     header: Rectangle {
         width: parent.width
-        height: headerHeight
+        height: headerHeight + (endOfReverseFeedLoader.active ? endOfReverseFeedLoader.height : 0)
         color: guiSettings.backgroundColor
+
+        Loader {
+            id: endOfReverseFeedLoader
+            y: headerHeight
+            active: model && model.reverseFeed && count > 0
+            sourceComponent: (model && model.endOfFeed) ? endOfFeedComponent : loadMoreComponent
+        }
     }
 
     delegate: MediaTilesFeedViewDelegate {
@@ -97,10 +105,33 @@ GridView {
         }
     }
 
-    footer: (model && model.endOfFeed) ? endOfFeedComponent : loadMoreComponent
+    footer: Rectangle {
+        width: parent.width
+        height: endOfFeedLoader.active ? endOfFeedLoader.height : 0
+        color: guiSettings.backgroundColor
+
+        Loader {
+            id: endOfFeedLoader
+            active: model && (!model.reverseFeed || count === 0)
+            sourceComponent: (model && model.endOfFeed) ? endOfFeedComponent : loadMoreComponent
+        }
+    }
 
     onCountChanged: {
+        Qt.callLater(calibrateOnCountChanged)
+    }
+
+    function calibrateOnCountChanged() {
+        const firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+        console.debug("Calibration, tiles count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
         updateUnreadPosts()
+
+        if (newFirstVisibleIndex >= 0)
+            goToIndex(newFirstVisibleIndex)
+
+        newFirstVisibleIndex = -1
     }
 
     onMovementEnded: {
@@ -122,10 +153,15 @@ GridView {
     }
 
     function updateOnMovement() {
-        const lastVisibleIndex = getBottomRightVisibleIndex()
+        if (!model)
+            return
 
-        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD * 2 && Boolean(model) && !feedLoading) {
-            console.debug("Get next tiles feed page")
+        const firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
+
+        if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD * 2 && !feedLoading) {
+            console.debug("Get next tiles feed page:", model.feedName, "remain:", remaining)
             model.getFeedNextPage(skywalker)
         }
 
@@ -133,17 +169,19 @@ GridView {
     }
 
     FlickableRefresher {
+        reverseFeed: model.reverseFeed
         inProgress: feedLoading
         verticalOvershoot: mediaTilesView.verticalOvershoot
-        topOvershootFun: () => model.getFeed(skywalker)
-        bottomOvershootFun: () => model.getFeedNextPage(skywalker)
-        topText: qsTr("Pull down to refresh feed")
+        topOvershootFun: reverseFeed ? () => model.getFeedNextPage(skywalker) : () => model.getFeed(skywalker)
+        bottomOvershootFun: reverseFeed ? () => model.getFeed(skywalker) : () => model.getFeedNextPage(skywalker)
+        topText: reverseFeed ? qsTr("Pull up to refresh feed") : qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
         ignoreFooter: true
     }
 
     EmptyListIndication {
         id: emptyListIndication
+        y: headerHeight
         svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
         list: mediaTilesView
@@ -180,7 +218,7 @@ GridView {
             AccessibleText {
                 id: loadMoreText
                 width: parent.width
-                anchors.top: footerMargin.bottom
+                y: model.reverseFeed ? parent.height - height - 30 : footerMargin.height
                 horizontalAlignment: Text.AlignHCenter
                 padding: 10
                 textFormat: Text.RichText
@@ -212,15 +250,35 @@ GridView {
         }
     }
 
-    function updateUnreadPosts() {
-        const firstIndex = getTopLeftVisibleIndex()
+    Timer {
+        id: reverseSyncTimer
+        interval: 100
+        onTriggered: {
+            goToIndex(count - 1)
+        }
+    }
 
-        if (firstIndex >= 0)
-            mediaTilesView.unreadPosts = firstIndex
+    function updateUnreadPosts() {
+        if (model.reverseFeed) {
+            const lastIndex = getBottomRightVisibleIndex()
+
+            if (lastIndex >= 0)
+                mediaTilesView.unreadPosts = count - lastIndex - 1
+
+        } else {
+            const firstIndex = getTopLeftVisibleIndex()
+
+            if (firstIndex >= 0)
+                mediaTilesView.unreadPosts = firstIndex
+        }
     }
 
     function moveToHome() {
-        positionViewAtBeginning()
+        if (model.reverseFeed)
+            positionViewAtEnd()
+        else
+            positionViewAtBeginning()
+
         updateUnreadPosts()
     }
 
@@ -235,11 +293,12 @@ GridView {
     }
 
     function getTopLeftVisibleIndex() {
-        return indexAt(1, contentY)
+        return indexAt(1, contentY + (headerItem ? headerItem.height : 0))
     }
 
     function getTopRightVisibleIndex() {
-        return indexAt(width - 1, contentY)
+        const index = indexAt(width - 1, contentY + (headerItem ? headerItem.height : 0))
+        return (index < 0 && count > 0) ? count - 1 : index
     }
 
     function getBottomLeftVisibleIndex() {
@@ -247,7 +306,8 @@ GridView {
     }
 
     function getBottomRightVisibleIndex() {
-        return indexAt(width - 1, contentY + height - 1)
+        const index = indexAt(width - 1, contentY + height - 1)
+        return (index < 0 && count > 0) ? count - 1 : index
     }
 
     function getFirstNonNullIndex() {
@@ -257,6 +317,13 @@ GridView {
         }
 
         return 0
+    }
+
+    function calcReverseVisibleIndex(toReverseFeed) {
+        const index = getBottomRightVisibleIndex()
+        console.debug("Bottom right index:", index)
+        const reverseIndex = count - index - 1
+        return reverseIndex
     }
 
     function cover() {
@@ -270,9 +337,53 @@ GridView {
         }
     }
 
+    function rowsInsertedHandler(parent, start, end) {
+        let firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+        console.debug("Calibration, tiles inserted:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (start <= newFirstVisibleIndex)
+            newFirstVisibleIndex += (end - start + 1)
+
+        updateUnreadPosts()
+
+        if (model.reverseFeed && (end - start + 1 === count || count === 0))
+            reverseSyncTimer.start()
+    }
+
+    function rowsAboutToBeInsertedHandler(parent, start, end) {
+        let firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+        console.debug("Calibration, tiles to be inserted:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        // When all posts are removed because of a refresh, then count is zero, but
+        // first and list visible index are still non-zero
+        if (start <= lastVisibleIndex && count > lastVisibleIndex && newFirstVisibleIndex < 0) {
+            newFirstVisibleIndex = firstVisibleIndex
+            console.debug("New first visible tile index:", newFirstVisibleIndex)
+        }
+    }
+
+    function reverseFeedHandler() {
+        console.debug("Reverse feed tiles changed:", model.reverseFeed, model.feedName)
+        const reverseIndex = calcReverseVisibleIndex(model.reverseFeed)
+        console.debug("Reverse index:", reverseIndex)
+        goToIndex(reverseIndex)
+    }
+
+    Component.onDestruction: {
+        model.onRowsInserted.disconnect(rowsInsertedHandler)
+        model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+        model.onReverseFeedChanged.disconnect(reverseFeedHandler)
+    }
+
     Component.onCompleted: {
         prevOriginY = originY
         startY = originY - contentY
         virtualFooterStartY = originY - contentY
+
+        model.onRowsInserted.connect(rowsInsertedHandler)
+        model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
+        model.onReverseFeedChanged.connect(reverseFeedHandler)
     }
 }

@@ -21,6 +21,16 @@ class ContentFilterStatsModel;
 class FocusHashtags;
 class IListStore;
 
+// Note on indexes.
+// The feed posts are stored in mFeed in the natural feed order, e.g. new to old.
+// The index in mFeed is the physical index.
+// If the user reverses the feed view order, then mFeed stays *mostly*, the same. Only
+// assembled post threads are reversed.
+// The index into the the view (ListView) in the UI is the visible index.
+// When the view order and then natural feed order are the same, then the visible index is
+// the same is the physical index.
+// When the view order is reversed, then visible index COUNT-1 is physical index 0 and v.v.
+
 class AbstractPostFeedModel : public QAbstractListModel,
                               public BaseListModel,
                               public LocalPostModelChanges,
@@ -29,6 +39,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_MOC_INCLUDE("content_filter_stats_model.h")
 
     Q_OBJECT
+    Q_PROPERTY(bool reverseFeed READ isReverseFeed WRITE setReverseFeed NOTIFY reverseFeedChanged FINAL)
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
@@ -129,7 +140,8 @@ public:
     void setModelId(int modelId) { mModelId = modelId; }
     int getModelId() const { return mModelId; }
 
-    void setReverseFeed(bool reverse) { mReverseFeed = reverse; }
+    virtual void setReverseFeed(bool reverse);
+    bool isReverseFeed() const { return mReverseFeed; }
 
     void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
     void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }
@@ -139,28 +151,29 @@ public:
 
     Q_INVOKABLE void reset();
 
+    // NOTE: QModelIndex is a visible index, i.e. an index in the ListView in the UI
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     virtual bool isEndOfFeed() const { return mEndOfFeed; }
     virtual void setEndOfFeed(bool endOfFeed);
 
-    const Post& getPost(int index) const;
-    Q_INVOKABLE void unfoldPosts(int startIndex);
+    const Post& getPost(int visibleIndex) const;
+    Q_INVOKABLE void unfoldPosts(int startVisibleIndex);
 
     // Get the timestamp of the last post in the feed
     QDateTime lastTimestamp() const;
 
-    // Returns the index of the last post >= timestamp, 0 if no such post exists
+    // Returns the visible index of the last post >= timestamp, 0 if no such post exists
     // If  there are multiple posts with the same timestamp, then pick the one with
     // matching cid.
     Q_INVOKABLE int findTimestamp(QDateTime timestamp, const QString& cid) const;
 
-    // Returns index of post, or -1 if post not found.
+    // Returns visible index of post, or -1 if post not found.
     int findPost(const QString& cid) const;
 
-    Q_INVOKABLE QDateTime getPostTimelineTimestamp(int index) const;
-    Q_INVOKABLE QString getPostCid(int index) const;
+    Q_INVOKABLE QDateTime getPostTimelineTimestamp(int visibleIndex) const;
+    Q_INVOKABLE QString getPostCid(int visibleIndex) const;
 
     virtual void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
@@ -173,6 +186,7 @@ public:
     Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
 
 signals:
+    void reverseFeedChanged();
     void endOfFeedChanged();
     void getFeedInProgressChanged();
     void feedErrorChanged();
@@ -186,7 +200,7 @@ protected:
     int toVisibleIndex(int physicalIndex, std::optional<int> feedSize = {}) const;
 
     void clearFeed();
-    void deletePost(int index);
+    void deletePost(int visibleIndex);
     void storeCid(const QString& cid);
     void removeStoredCid(const QString& cid);
     void cleanupStoredCids();
@@ -259,6 +273,9 @@ private:
     BasicProfile getContentLabeler(QEnums::ContentVisibility visibility,
                                    const ContentLabelList& labels,
                                    int labelIndex) const;
+
+    void flipPostsOrder();
+    void reversePosts(int startPhysicalIndex, int endPhysicalIndex);
 
     std::unordered_set<QString> mStoredCids;
     std::queue<QString> mStoredCidQueue;
