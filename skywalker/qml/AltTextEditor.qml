@@ -83,27 +83,20 @@ SkyPage {
 
                     ScriptRecognitionMenuItem {
                         script: QEnums.SCRIPT_LATIN
-                        ButtonGroup.group: scriptButtonGroup
                     }
                     ScriptRecognitionMenuItem {
                         script: QEnums.SCRIPT_CHINESE
-                        ButtonGroup.group: scriptButtonGroup
                     }
                     ScriptRecognitionMenuItem {
                         script: QEnums.SCRIPT_DEVANAGARI
-                        ButtonGroup.group: scriptButtonGroup
                     }
                     ScriptRecognitionMenuItem {
                         script: QEnums.SCRIPT_JAPANESE
-                        ButtonGroup.group: scriptButtonGroup
                     }
                     ScriptRecognitionMenuItem {
                         script: QEnums.SCRIPT_KOREAN
-                        ButtonGroup.group: scriptButtonGroup
                     }
                 }
-
-                ButtonGroup { id: scriptButtonGroup }
             }
 
             SkyButton {

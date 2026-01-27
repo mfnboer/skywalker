@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 
 SkyMenu {
     required property bool reverseFeed
@@ -13,12 +14,12 @@ SkyMenu {
     SkyRadioMenuItem {
         text: qsTr("New to old")
         checked: !reverseFeed
-        onTriggered: reverseFeed = !reverseFeed
+        onTriggered: reverseFeed = false
     }
 
     SkyRadioMenuItem {
         text: qsTr("Old to new")
         checked: reverseFeed
-        onTriggered: reverseFeed = !reverseFeed
+        onTriggered: reverseFeed = true
     }
 }

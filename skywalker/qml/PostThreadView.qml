@@ -205,8 +205,6 @@ SkyListView {
         SkyMenu {
             id: orderMenu
 
-            ButtonGroup { id: radioGroup }
-
             CloseMenuItem {
                 text: qsTr("<b>Sort Replies</b>")
                 Accessible.name: qsTr("close sort replies menu")
@@ -215,35 +213,30 @@ SkyListView {
             SkyRadioMenuItem {
                 text: qsTr("Smart")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_SMART)
-                ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_SMART
             }
 
             SkyRadioMenuItem {
                 text: qsTr("Oldest reply first")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_OLDEST_FIRST)
-                ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_OLDEST_FIRST
             }
 
             SkyRadioMenuItem {
                 text: qsTr("Newest reply first")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_NEWEST_FIRST)
-                ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_NEWEST_FIRST
             }
 
             SkyRadioMenuItem {
                 text: qsTr("Most popular first")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_POPULARITY)
-                ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_POPULARITY
             }
 
             SkyRadioMenuItem {
                 text: qsTr("Most engagement")
                 onTriggered: setReplySortOrder(QEnums.REPLY_ORDER_ENGAGEMENT)
-                ButtonGroup.group: radioGroup
                 checked: model.getReplyOrder() === QEnums.REPLY_ORDER_ENGAGEMENT
             }
 

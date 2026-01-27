@@ -1,6 +1,7 @@
 import QtQuick
 
 AccessibleMenuItem {
+    autoExclusive: true
     checkable: true
 
     Component.onCompleted: {
