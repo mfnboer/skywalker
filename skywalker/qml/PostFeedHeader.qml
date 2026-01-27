@@ -165,7 +165,6 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
                 skywalker: header.skywalker
-                reverseFeed: header.reverseFeed
                 Layout.alignment: Qt.AlignLeft
                 visible: showAsHome
             }

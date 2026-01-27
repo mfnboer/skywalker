@@ -8,7 +8,8 @@ SkyListView {
     required property int modelId
     property bool showAsHome: false
     property bool showFavorites: false
-    property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : feedUnreadPosts
+    readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : feedUnreadPosts
+    readonly property bool reverseFeed: model ? model.reverseFeed : false
     property int feedUnreadPosts: 0
     property bool inSync: true
     property int newLastVisibleIndex: -1

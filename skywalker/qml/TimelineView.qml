@@ -8,6 +8,7 @@ SkyListView {
     property bool inSync: false
     property bool isView: false
     property int unreadPosts: 0
+    readonly property bool reverseFeed: skywalker.timelineModel.reverseFeed
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
     property var userSettings: skywalker.getUserSettings()

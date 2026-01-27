@@ -15,6 +15,7 @@ SkyListView {
     required property searchfeed searchFeed
     property bool showAsHome: false
     property int unreadPosts: 0
+    readonly property bool reverseFeed: false
     property var userSettings: skywalker.getUserSettings()
     readonly property int favoritesY: getFavoritesY()
     readonly property int extraFooterMargin: 0

@@ -13,6 +13,7 @@ GridView {
     property bool showAsHome: false
     property var enclosingView // used on AuthorView
     property int unreadPosts: 0
+    readonly property bool reverseFeed: model ? model.reverseFeed : false
     property int newFirstVisibleIndex: -1
     readonly property bool feedLoading: model ? model.getFeedInProgress : false
 

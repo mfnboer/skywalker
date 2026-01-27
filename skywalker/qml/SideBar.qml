@@ -283,7 +283,7 @@ Pane {
                 SkyFooterButton {
                     Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                     Layout.preferredWidth: Layout.preferredHeight
-                    svg: homeActive ? SvgFilled.home : SvgOutline.home
+                    svg: homeActive ? (timeline && timeline.reverseFeed ? SvgFilled.homeUnderlined : SvgFilled.home) : SvgOutline.home
                     counter: homeActive && timeline ? timeline.unreadPosts : 0
                     counterBackgroundColor: guiSettings.sideBarColor
                     counterBorderColor: guiSettings.sideBarColor

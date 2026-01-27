@@ -1,4 +1,5 @@
 import QtQuick
+import skywalker
 
 Rectangle {
     required property int counter
@@ -22,5 +23,4 @@ Rectangle {
         color: counterColor
         text: counter
     }
-
 }

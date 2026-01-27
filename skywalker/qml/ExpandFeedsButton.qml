@@ -7,11 +7,10 @@ import skywalker
 SvgButton {
     required property var skywalker
     property list<favoritefeedview> favorites: skywalker.favoriteFeeds.userOrderedPinnedFeeds
-    property bool reverseFeed: false
 
     iconColor: guiSettings.headerTextColor
     Material.background: "transparent"
-    svg: reverseFeed ? SvgOutline.expandMoreUp : SvgOutline.expandMore
+    svg: SvgOutline.expandMore
     accessibleName: qsTr("select other feed")
     onClicked: feedsMenu.open()
 

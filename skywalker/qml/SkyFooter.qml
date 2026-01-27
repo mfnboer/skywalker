@@ -33,7 +33,7 @@ Rectangle {
         SkyFooterButton {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            svg: isHomeActive() ? SvgFilled.home : SvgOutline.home
+            svg: isHomeActive() ? (timeline && timeline.reverseFeed ? SvgFilled.homeUnderlined : SvgFilled.home) : SvgOutline.home
             counter: isHomeActive() && timeline ? timeline.unreadPosts : 0
             counterBackgroundColor: guiSettings.backgroundColor
             counterTextColor: guiSettings.textColor
