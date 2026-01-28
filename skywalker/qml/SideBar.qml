@@ -50,6 +50,7 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
+                reverseFeed: skywalker.timelineModel.reverseFeed
                 feedName: skywalker.timelineModel.feedName
                 showAsHome: true
                 isHomeFeed: true
@@ -77,6 +78,7 @@ Pane {
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
                 userDid: postFeedView ? postFeedView.userDid : ""
+                reverseFeed: postFeedView ? postFeedView.headerItem.reverseFeed : false
                 feedName: postFeedView ? postFeedView.headerItem.feedName : ""
                 feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
                 defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
@@ -132,10 +134,13 @@ Pane {
                 feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
                 defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
                 feedAvatar: ""
+                contentMode: searchFeedView ? searchFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: searchFeedView ? searchFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
                 showAsHome: searchFeedView ? searchFeedView.showAsHome : false
                 showLanguageFilter: searchFeedView ? searchFeedView.headerItem.showLanguageFilter : false
                 filteredLanguages: searchFeedView ? searchFeedView.headerItem.filteredLanguages : []
                 showPostWithMissingLanguage: false
+                showViewOptions: true
                 isSideBar: true
                 visible: Boolean(searchFeedView)
 
@@ -281,7 +286,7 @@ Pane {
                 SkyFooterButton {
                     Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                     Layout.preferredWidth: Layout.preferredHeight
-                    svg: homeActive ? SvgFilled.home : SvgOutline.home
+                    svg: homeActive ? (timeline && timeline.reverseFeed ? SvgFilled.homeUnderlined : SvgFilled.home) : SvgOutline.home
                     counter: homeActive && timeline ? timeline.unreadPosts : 0
                     counterBackgroundColor: guiSettings.sideBarColor
                     counterBorderColor: guiSettings.sideBarColor

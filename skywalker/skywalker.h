@@ -49,7 +49,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TIMELINE_NEXT_PAGE_THRESHOLD MEMBER TIMELINE_NEXT_PAGE_THRESHOLD CONSTANT)
     Q_PROPERTY(int QUOTE_CHAIN_PAGE_SIZE MEMBER QUOTE_CHAIN_PAGE_SIZE CONSTANT)
-    Q_PROPERTY(const PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
+    Q_PROPERTY(PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* mentionListModel READ getMentionListModel CONSTANT FINAL)
     Q_PROPERTY(Chat* chat READ getChat CONSTANT FINAL)
@@ -237,7 +237,7 @@ public:
     void removeFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
                                const QString& postUri);
 
-    const PostFeedModel* getTimelineModel() const { return &mTimelineModel; }
+    PostFeedModel* getTimelineModel() { return &mTimelineModel; }
     NotificationListModel* getNotificationListModel() { return &mNotificationListModel; }
     NotificationListModel* getMentionListModel() { return &mMentionListModel; }
     Chat* getChat();

@@ -754,6 +754,24 @@ bool UserSettings::mustSyncFeed(const QString& did, const QString& feedUri) cons
     return feedUris.contains(feedUri);
 }
 
+void UserSettings::setFeedReverse(const QString& did, const QString& feedUri, bool reverse)
+{
+    if (reverse)
+        mSettings.setValue(uriKey(did, "feedReverse", feedUri), reverse);
+    else
+        mSettings.remove(uriKey(did, "feedReverse", feedUri));
+}
+
+bool UserSettings::getFeedReverse(const QString& did, const QString& feedUri) const
+{
+    return mSettings.value(uriKey(did, "feedReverse", feedUri), false).toBool();
+}
+
+QStringList UserSettings::getFeedReverseUris(const QString& did) const
+{
+    return getFeedViewUris(did, "feedReverse");
+}
+
 void UserSettings::setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode)
 {
     if (mode != QEnums::CONTENT_MODE_UNSPECIFIED)
@@ -1816,6 +1834,16 @@ bool UserSettings::getRewindToLastSeenPost(const QString& did) const
 void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
 {
     mSettings.setValue(key(did, "rewindToLastSeenPost"), rewind);
+}
+
+bool UserSettings::getReverseTimeline(const QString& did) const
+{
+    return mSettings.value(key(did, "reverseTimeline"), false).toBool();
+}
+
+void UserSettings::setReverseTimeline(const QString& did, bool reverse)
+{
+    mSettings.setValue(key(did, "reverseTimeline"), reverse);
 }
 
 QStringList UserSettings::getRecentGifs(const QString& did) const

@@ -71,6 +71,7 @@ Rectangle {
     required property bool postIsPinned
     required property bool postLocallyDeleted
     required property bool endOfFeed
+    readonly property bool isLastPost: ListView.view.model.reverseFeed ? index === 0 : index === ListView.view.count - 1
     property int startImageIndex: -1
     property int startImageWidth: -1
     property var postOrRecordVideo: postVideo ? postVideo : postRecordWithMedia?.video
@@ -81,6 +82,7 @@ Rectangle {
     property int footerHeight: 0
     property int leftMarginWidth: 0
     property int rightMarginWidth: 0
+    property int extraHeaderHeight: 0
     property int extraFooterHeight: 0
 
     property bool onScreen: ListView.isCurrentItem
@@ -95,7 +97,7 @@ Rectangle {
 
     id: videoPage
     width: root.width
-    height: root.height + (endOfFeed ? root.height : 0) + extraFooterHeight
+    height: root.height + (endOfFeed ? root.height : 0) + extraHeaderHeight + extraFooterHeight
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
@@ -124,6 +126,7 @@ Rectangle {
         property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
 
         id: mediaRect
+        y: extraHeaderHeight
         width: root.width
         height: root.height
         color: "transparent"

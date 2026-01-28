@@ -44,6 +44,8 @@ QVariant FilteredPostBaseModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= (int)mFeed.size())
         return {};
 
+    // NOTE: when adding logic here using the index, you must convert to a physical index.
+
     switch (Role(role))
     {
     case Role::PostType:

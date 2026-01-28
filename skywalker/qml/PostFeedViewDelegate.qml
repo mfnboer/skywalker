@@ -82,12 +82,14 @@ Rectangle {
     required property string filteredPostHideDetail
     required property contentlabel filteredPostContentLabel
     required property bool endOfFeed
+    readonly property bool isLastPost: ListView.view.model.reverseFeed ? index === 0 : index === ListView.view.count - 1
     property bool showRecord: true
     property bool unrollThread: false
     property var postThreadModel // provided when thread is unrolled
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property bool swipeMode: false
+    property int extraHeaderHeight: 0
     property int extraFooterHeight: 0
     property bool threadBarVisible: !swipeMode
     readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
@@ -115,7 +117,7 @@ Rectangle {
     // HACK
     // Setting the default size to 300 if the grid is not sized yet, seems to fix
     // positioning issued with viewPositionAtIndex
-    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > minGridHeight ? grid.height : 300) + extraFooterHeight
+    height: postFoldedType === QEnums.FOLDED_POST_SUBSEQUENT ? 0 : (grid.height > minGridHeight ? grid.height : 300) + extraHeaderHeight + extraFooterHeight
     color: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     border.width: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? 1 : 0
     border.color: ((postThreadType & QEnums.THREAD_ENTRY) && !unrollThread) ? guiSettings.borderHighLightColor : guiSettings.borderColor
@@ -173,6 +175,7 @@ Rectangle {
 
     GridLayout {
         id: grid
+        y: extraHeaderHeight
         columns: gridColumns
         width: parent.width
         rowSpacing: 0

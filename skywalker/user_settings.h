@@ -197,6 +197,10 @@ public:
     const std::unordered_set<QString>& getSyncFeeds(const QString& did) const;
     Q_INVOKABLE bool mustSyncFeed(const QString& did, const QString& feedUri) const;
 
+    Q_INVOKABLE void setFeedReverse(const QString& did, const QString& feedUri, bool reverse);
+    Q_INVOKABLE bool getFeedReverse(const QString& did, const QString& feedUri) const;
+    QStringList getFeedReverseUris(const QString& did) const;
+
     Q_INVOKABLE void setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode);
     Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
     QStringList getFeedViewModeUris(const QString& did) const;
@@ -424,6 +428,9 @@ public:
 
     Q_INVOKABLE bool getRewindToLastSeenPost(const QString& did) const;
     Q_INVOKABLE void setRewindToLastSeenPost(const QString& did, bool rewind);
+
+    Q_INVOKABLE bool getReverseTimeline(const QString& did) const;
+    Q_INVOKABLE void setReverseTimeline(const QString& did, bool reverse);
 
     QStringList getRecentGifs(const QString& did) const; // Returns list of GIF id's
     void setRecentGifs(const QString& did, const QStringList& gifIds);

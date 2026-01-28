@@ -163,6 +163,16 @@ ListView {
         return 0
     }
 
+    // Calculate the visible and offset index for the current visible items when the list
+    // gets reversed.
+    function calcReverseVisibleIndexAndOffsetY(toReverseFeed) {
+        const mid = (getFirstVisibleIndex() + getLastVisibleIndex()) / 2
+        const midIndex = toReverseFeed ? Math.floor(mid) : Math.ceil(mid)
+        const offsetY = calcVisibleOffsetY(midIndex)
+        const reverseIndex = count - midIndex - 1
+        return [reverseIndex, offsetY]
+    }
+
     // Calculate offset from bottom of visible section.
     // A positive offset means that the item is partly scrolled down the bottom.
     function calcVisibleOffsetY(index) {

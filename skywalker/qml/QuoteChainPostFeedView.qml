@@ -68,9 +68,11 @@ SkyListView {
     }
 
     onMovementEnded: {
+        const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
+        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
 
-        if (count - lastVisibleIndex < skywalker.QUOTE_CHAIN_PAGE_SIZE - 2 && !model.getFeedInProgress) {
+        if (remaining < skywalker.QUOTE_CHAIN_PAGE_SIZE - 2 && !model.getFeedInProgress) {
             console.debug("Get next feed page")
             skywalker.getQuoteChainNextPage(modelId)
         }

@@ -51,6 +51,8 @@ public:
                            ATProto::Client::SharedPtr bsky,
                            QObject* parent = nullptr);
 
+    void setReverseFeed(bool reverse) override;
+
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
     const QString& getFeedName() const { return mFeedName; }
@@ -174,8 +176,9 @@ private:
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef, ContentFilterStats& contentFilterStats);
         void collectThreadgate(const Post& post);
         void setThreadgates();
-        void foldThreads();
+        void postProcessThreads(bool reverseFeed);
         void foldPosts(int startIndex, int endIndex);
+        void reversePosts(int startIndex, int endIndex);
     };
 
     void createInteractionSender(ATProto::Client::SharedPtr bsky);
@@ -188,6 +191,7 @@ private:
     void removeHeadFromFilteredPostModels(size_t headSize);
     void removeTailFromFilteredPostModels(size_t tailSize);
     void clearFilteredPostModels();
+    void setReverseFeedFilteredPostModels(bool reverse);
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);

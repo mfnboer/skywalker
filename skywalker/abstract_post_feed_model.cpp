@@ -64,6 +64,18 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
             [this](const QString& uri){ listAdded(uri); }, Qt::QueuedConnection);
 }
 
+void AbstractPostFeedModel::setReverseFeed(bool reverse)
+{
+    qDebug() << "Reverse feed:" << reverse << mModelId;
+
+    if (mReverseFeed != reverse)
+    {
+        flipPostsOrder();
+        Q_ASSERT(mReverseFeed == reverse);
+        emit reverseFeedChanged();
+    }
+}
+
 void AbstractPostFeedModel::setOverrideLinkColor(const QString& color)
 {
     mOverrideLinkColor = color;
@@ -74,6 +86,25 @@ void AbstractPostFeedModel::clearOverrideLinkColor()
 {
     mOverrideLinkColor.clear();
     changeData({ int(Role::PostText) });
+}
+
+int AbstractPostFeedModel::toPhysicalIndex(int visibleIndex) const
+{
+    if (!mReverseFeed)
+        return visibleIndex;
+
+    return mFeed.size() - 1 - visibleIndex;
+}
+
+int AbstractPostFeedModel::toVisibleIndex(int physicalIndex, std::optional<int> feedSize) const
+{
+    if (!mReverseFeed)
+        return physicalIndex;
+
+    if (!feedSize)
+        feedSize = mFeed.size();
+
+    return *feedSize - 1 - physicalIndex;
 }
 
 void AbstractPostFeedModel::clearFeed()
@@ -87,9 +118,9 @@ void AbstractPostFeedModel::clearFeed()
     clearLocalProfileChanges();
 }
 
-void AbstractPostFeedModel::deletePost(int index)
+void AbstractPostFeedModel::deletePost(int visibleIndex)
 {
-    mFeed.erase(mFeed.begin() + index);
+    mFeed.erase(mFeed.begin() + toPhysicalIndex(visibleIndex));
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -222,30 +253,30 @@ void AbstractPostFeedModel::identifyThreadPost(const Post& post)
     }
 }
 
-const Post& AbstractPostFeedModel::getPost(int index) const
+const Post& AbstractPostFeedModel::getPost(int visibleIndex) const
 {
     static const Post NULL_POST;
 
-    if (index < 0 || index >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mFeed.size() << "modelId:" << mModelId;
+        qWarning() << "Invalid index:" << visibleIndex << "size:" << mFeed.size() << "modelId:" << mModelId;
         return NULL_POST;
     }
 
-    return mFeed.at(index);
+    return mFeed.at(toPhysicalIndex(visibleIndex));
 }
 
-void AbstractPostFeedModel::unfoldPosts(int startIndex)
+void AbstractPostFeedModel::unfoldPosts(int startVisibleIndex)
 {
-    qDebug() << "Unfold posts:" << startIndex;
+    qDebug() << "Unfold posts:" << startVisibleIndex;
 
-    if (startIndex < 0 || startIndex >= (int)mFeed.size())
+    if (startVisibleIndex < 0 || startVisibleIndex >= (int)mFeed.size())
     {
-        qWarning() << "Invalid index:" << startIndex << "size:" << mFeed.size();
+        qWarning() << "Invalid index:" << startVisibleIndex << "size:" << mFeed.size();
         return;
     }
 
-    for (int i = startIndex; i < (int)mFeed.size(); ++i)
+    for (int i = toPhysicalIndex(startVisibleIndex); i < (int)mFeed.size(); ++i)
     {
         auto& post = mFeed[i];
 
@@ -260,7 +291,10 @@ void AbstractPostFeedModel::unfoldPosts(int startIndex)
 
 QDateTime AbstractPostFeedModel::lastTimestamp() const
 {
-    return !mFeed.empty() ? mFeed.back().getTimelineTimestamp() : QDateTime();
+    if (mFeed.empty())
+        return {};
+
+    return mFeed.back().getTimelineTimestamp();
 }
 
 int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
@@ -278,14 +312,14 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
         if (post.getTimelineTimestamp() == timestamp)
         {
             if (!cid.isEmpty() && post.getCid() == cid)
-                return i;
+                return toVisibleIndex(i);
 
             if (foundIndex == 0)
                 foundIndex = i;
         }
         else if (post.getTimelineTimestamp() > timestamp)
         {
-            return foundIndex > 0 ? foundIndex : i;
+            return toVisibleIndex(foundIndex > 0 ? foundIndex : i);
         }
     }
 
@@ -299,26 +333,26 @@ int AbstractPostFeedModel::findPost(const QString& cid) const
         const Post& post = mFeed[i];
 
         if (post.getCid() == cid)
-            return i;
+            return toVisibleIndex(i);
     }
 
     return -1;
 }
 
-QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int index) const
+QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int visibleIndex) const
 {
-    if (index < 0 || index >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
         return {};
 
-    return mFeed[index].getTimelineTimestamp();
+    return mFeed[toPhysicalIndex(visibleIndex)].getTimelineTimestamp();
 }
 
-QString AbstractPostFeedModel::getPostCid(int index) const
+QString AbstractPostFeedModel::getPostCid(int visibleIndex) const
 {
-    if (index < 0 || index >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
         return {};
 
-    return mFeed[index].getCid();
+    return mFeed[toPhysicalIndex(visibleIndex)].getCid();
 }
 
 void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
@@ -359,7 +393,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= (int)mFeed.size())
         return {};
 
-    const auto& post = mFeed[index.row()];
+    const int physicalIndex = toPhysicalIndex(index.row());
+    const auto& post = mFeed[physicalIndex];
     const auto* change = getLocalChange(post.getCid());
 
     switch (Role(role))
@@ -856,6 +891,28 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
     return roles;
 }
 
+void AbstractPostFeedModel::beginRemoveRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex)
+{
+    if (!mReverseFeed)
+        beginRemoveRows({}, firstPhysicalIndex, lastPhysicalIndex);
+    else
+        beginRemoveRows({}, toVisibleIndex(lastPhysicalIndex), toVisibleIndex(firstPhysicalIndex));
+}
+
+void AbstractPostFeedModel::beginInsertRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex)
+{
+    if (!mReverseFeed)
+    {
+        beginInsertRows({}, firstPhysicalIndex, lastPhysicalIndex);
+    }
+    else
+    {
+        const int newFeedSize = mFeed.size() + (lastPhysicalIndex - firstPhysicalIndex) + 1;
+        beginInsertRows({}, toVisibleIndex(lastPhysicalIndex, newFeedSize),
+                        toVisibleIndex(firstPhysicalIndex, newFeedSize));
+    }
+}
+
 void AbstractPostFeedModel::postIndexedSecondsAgoChanged()
 {
     changeData({ int(Role::PostIndexedSecondsAgo) });
@@ -1117,6 +1174,70 @@ ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
     qDebug() << "Feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     auto* model = new ContentFilterStatsModel(mContentFilterStats, mContentFilter, this);
     return model;
+}
+
+// TODO: filtered models
+void AbstractPostFeedModel::flipPostsOrder()
+{
+    qDebug() << "Flip feed order, current reverse:" << mReverseFeed;
+
+    const int endIndex = mFeed.size() - 1;
+    int threadStartIndex = -1;
+    int threadEndIndex = -1;
+
+    for (int i = 0; i <= endIndex; ++i)
+    {
+        auto& post = mReverseFeed ? mFeed[endIndex - i] : mFeed[i];
+
+        switch (post.getPostType())
+        {
+        case QEnums::POST_ROOT:
+            threadStartIndex = i;
+            break;
+        case QEnums::POST_LAST_REPLY:
+            threadEndIndex = i;
+
+            if (mReverseFeed)
+                reversePosts(endIndex - threadEndIndex, endIndex - threadStartIndex);
+            else
+                reversePosts(threadStartIndex, threadEndIndex);
+
+            threadStartIndex = -1;
+            break;
+        case QEnums::POST_REPLY:
+        case QEnums::POST_STANDALONE:
+        case QEnums::POST_THREAD:
+            break;
+        }
+    }
+
+    mReverseFeed = !mReverseFeed;
+    changeData({});
+}
+
+void AbstractPostFeedModel::reversePosts(int startPhysicalIndex, int endPhysicalIndex)
+{
+    qDebug() << "Reverse posts, start:" << startPhysicalIndex << "end:" << endPhysicalIndex;
+
+    if (startPhysicalIndex < 0 || endPhysicalIndex < 0 || startPhysicalIndex > endPhysicalIndex)
+    {
+        qWarning() << "Invalid thread:" << startPhysicalIndex << endPhysicalIndex;
+        return;
+    }
+
+    if (endPhysicalIndex >= (int)mFeed.size())
+    {
+        qWarning() << "Thread out of range:" << startPhysicalIndex << endPhysicalIndex << "size:" << mFeed.size();
+        return;
+    }
+
+    if (mFeed[endPhysicalIndex].isEndOfFeed())
+    {
+        mFeed[startPhysicalIndex].setEndOfFeed(true);
+        mFeed[endPhysicalIndex].setEndOfFeed(false);
+    }
+
+    std::reverse(mFeed.begin() + startPhysicalIndex, mFeed.begin() + endPhysicalIndex + 1);
 }
 
 }

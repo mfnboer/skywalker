@@ -1,5 +1,6 @@
 next
 ====
+* Option to reverse order of posts in your timeline
 * bug fixes
 
 4.25

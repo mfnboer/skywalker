@@ -7,8 +7,9 @@ import skywalker
 SkyPage {
     required property var skywalker
     property int footerHeight: root.footer.height
-    property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
-    property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
+    readonly property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
+    readonly property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
+    readonly property bool reverseFeed: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.reverseFeed : false
     property int margin: 10
     property var userSettings: skywalker.getUserSettings()
     readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefined') ? currentViewItem.favoritesY : 0

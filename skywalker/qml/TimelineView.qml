@@ -8,6 +8,7 @@ SkyListView {
     property bool inSync: false
     property bool isView: false
     property int unreadPosts: 0
+    readonly property bool reverseFeed: skywalker.timelineModel.reverseFeed
     property int newLastVisibleIndex: -1
     property int newLastVisibleOffsetY: 0
     property var userSettings: skywalker.getUserSettings()
@@ -25,6 +26,7 @@ SkyListView {
     Accessible.name: model ? model.feedName : ""
 
     header: PostFeedHeader {
+        reverseFeed: skywalker.timelineModel.reverseFeed
         feedName: skywalker.timelineModel.feedName
         showAsHome: true
         isHomeFeed: true
@@ -39,36 +41,42 @@ SkyListView {
         onAddMediaView: page.showMediaView()
         onAddVideoView: page.showVideoView()
         onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
+
+        onReverseFeedChanged: {
+            userSettings.setReverseTimeline(skywalker.getUserDid(), reverseFeed)
+
+            const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverseFeed)
+            skywalker.timelineModel.reverseFeed = reverseFeed
+            moveToPost(reverseIndex, () => { contentY -= offsetY; resetHeaderPosition() })
+        }
     }
     headerPositioning: ListView.PullBackHeader
-
-    footer: AccessibleText {
-        width: timelineView.width
-        horizontalAlignment: Text.AlignHCenter
-        leftPadding: 10
-        rightPadding: 10
-        topPadding: count > 0 ? 10 : emptyListIndication.height + 10
-        bottomPadding: 50
-        textFormat: Text.RichText
-        wrapMode: Text.Wrap
-        text: (isView && model) ? qsTr(`${guiSettings.getFilteredPostsFooterText(model)}<br><a href="load" style="color: ${guiSettings.linkColor}; text-decoration: none">Load more</a>`) : ""
-        visible: model ? !model.endOfFeed && !Boolean(model.error) : false
-        onLinkActivated: skywalker.getTimelineNextPage()
-    }
 
     delegate: PostFeedViewDelegate {
         width: timelineView.width
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
+        extraFooterHeight: extraHeaderFooterLoader.active && !model.reverseFeed ? extraHeaderFooterLoader.height : 0
+        extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0
 
         onUnfoldPosts: model.unfoldPosts(index)
         onActivateSwipe: (imgIndex, previewImg) => {
-                             let view = timelineView
-                             root.viewMediaFeed(model, index, imgIndex, previewImg,
-                                                (newIndex, mediaIndex, closeCb) => {
-                                                    view.moveToPost(newIndex)
-                                                    view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
-                                                })
-                         }
+            let view = timelineView
+            root.viewMediaFeed(model, index, imgIndex, previewImg,
+                (newIndex, mediaIndex, closeCb) => {
+                    view.moveToPost(newIndex)
+                    view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                })
+        }
+
+        Loader {
+            id: extraHeaderFooterLoader
+            y: model.reverseFeed ? 0 : parent.height - height
+            active: isView && model && model.isFilterModel() && isLastPost && !endOfFeed
+
+            sourceComponent: FeedViewLoadMore {
+                listView: timelineView
+            }
+        }
     }
 
     onCountChanged: {
@@ -88,7 +96,7 @@ SkyListView {
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
-        updateUnreadPosts(firstVisibleIndex)
+        updateUnreadPosts()
 
         if (newLastVisibleIndex >= 0)
             resumeTimeline(newLastVisibleIndex, newLastVisibleOffsetY)
@@ -120,23 +128,29 @@ SkyListView {
 
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
+        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
 
-        if (count - lastVisibleIndex < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !skywalker.getTimelineInProgress) {
+        if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !skywalker.getTimelineInProgress) {
             console.debug("Get next timeline page")
-            skywalker.getTimelineNextPage()
+            //skywalker.getTimelineNextPage()
         }
 
         if (firstVisibleIndex >= 0)
-            updateUnreadPosts(firstVisibleIndex)
+            updateUnreadPosts()
     }
 
     FlickableRefresher {
+        reverseFeed: model.reverseFeed
         inProgress: skywalker.getTimelineInProgress
-        topOvershootFun: () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE)
-        bottomOvershootFun: () => skywalker.getTimelineNextPage()
-        scrollToTopFun: () => moveToPost(0)
+        topOvershootFun: reverseFeed ?
+                             () => skywalker.getTimelineNextPage() :
+                             () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE)
+        bottomOvershootFun: reverseFeed ?
+                                () => skywalker.updateTimeline(2, skywalker.TIMELINE_PREPEND_PAGE_SIZE) :
+                                () => skywalker.getTimelineNextPage()
+        scrollToTopFun: reverseFeed ? () => moveToPost(0) : () => moveToEnd()
         enabled: timelineView.inSync
-        topText: qsTr("Pull down to refresh timeline")
+        topText: reverseFeed ? qsTr("Pull up to refresh timeline") : qsTr("Pull down to refresh timeline")
         enableScrollToTop: false
     }
 
@@ -155,6 +169,21 @@ SkyListView {
         Accessible.role: Accessible.ProgressBar
     }
 
+    Loader {
+        anchors.top: emptyListIndication.bottom
+        active: isView && model && count === 0 && !model.endOfFeed && !Boolean(model.error)
+
+        sourceComponent: FeedViewLoadMore {
+            listView: timelineView
+        }
+    }
+
+    Timer {
+        id: reverseSyncTimer
+        interval: 100
+        onTriggered: setInSync(count - 1)
+    }
+
     function getFavoritesY() {
         switch (userSettings.favoritesBarPosition) {
         case QEnums.FAVORITES_BAR_POSITION_TOP:
@@ -166,8 +195,15 @@ SkyListView {
         return 0
     }
 
-    function updateUnreadPosts(firstIndex) {
-        timelineView.unreadPosts = Math.max(firstIndex, 0)
+    function updateUnreadPosts(unread = -1) {
+        if (unread < 0) {
+            if (model.reverseFeed)
+                unread = count - getLastVisibleIndex() - 1
+            else
+                unread = getFirstVisibleIndex()
+        }
+
+        timelineView.unreadPosts = Math.max(unread, 0)
     }
 
     function doMoveToPost(index) {
@@ -175,13 +211,8 @@ SkyListView {
         let lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "contentHeight", contentHeight)
         positionViewAtIndex(Math.max(index, 0), ListView.End)
-
-        firstVisibleIndex = getFirstVisibleIndex()
-        lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex)
-
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
-        updateUnreadPosts(firstVisibleIndex)
+        updateUnreadPosts()
         resetHeaderPosition()
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
@@ -191,12 +222,17 @@ SkyListView {
     }
 
     function moveToHome() {
-        positionViewAtBeginning()
-        setAnchorItem(0, 0)
+        if (model.reverseFeed)
+            positionViewAtEnd()
+        else
+            positionViewAtBeginning()
+
+        const homeIndex = model.reverseFeed ? count - 1 : 0
+        setAnchorItem(homeIndex, homeIndex)
         updateUnreadPosts(0)
 
         if (!isView) {
-            skywalker.timelineMovementEnded(0, 0, 0)
+            skywalker.timelineMovementEnded(homeIndex, homeIndex, 0)
             skywalker.getTimeline(100)
         }
     }
@@ -204,11 +240,6 @@ SkyListView {
     function moveToEnd(afterMoveCb = () => {}) {
         console.debug("Move to end:", count - 1)
         moveToPost(count - 1, afterMoveCb)
-    }
-
-    function calibrateUnreadPosts() {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        updateUnreadPosts(firstVisibleIndex)
     }
 
     function resumeTimeline(index, offsetY = 0) {
@@ -244,10 +275,17 @@ SkyListView {
         if (start <= newLastVisibleIndex)
             newLastVisibleIndex += (end - start + 1)
 
-        calibrateUnreadPosts()
+        updateUnreadPosts()
 
         if (start === 0)
             newPosts()
+
+        if (model.reverseFeed && end - start + 1 === count) {
+            stopSync()
+
+            // Delay the move to give the ListView time to stabilize
+            reverseSyncTimer.start()
+        }
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
@@ -265,7 +303,7 @@ SkyListView {
     }
 
     function rowsRemovedHandler(parent, start, end) {
-        calibrateUnreadPosts()
+        updateUnreadPosts()
         let firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
         console.debug("Calibration, rows removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
@@ -320,8 +358,5 @@ SkyListView {
 
     Component.onCompleted: {
         console.debug("Timeline cacheBuffer:", cacheBuffer)
-
-        if (!isView)
-            footer = null
     }
 }

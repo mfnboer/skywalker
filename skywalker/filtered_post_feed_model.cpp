@@ -31,7 +31,7 @@ void FilteredPostFeedModel::clear()
 {
     if (!mFeed.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mFeed.size() - 1);
         clearFeed();
         mGapIdIndexMap.clear();
         endRemoveRows();
@@ -103,7 +103,7 @@ void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, size_t numPosts, 
     Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
 
     // Remove gap place holder
-    beginRemoveRows({}, gapIndex, gapIndex);
+    beginRemoveRowsPhysical(gapIndex, gapIndex);
     mFeed.erase(mFeed.begin() + gapIndex);
     addToIndices(-1, gapIndex);
     endRemoveRows();
@@ -117,7 +117,7 @@ void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, size_t numPosts, 
         return;
     }
 
-    beginInsertRows({}, gapIndex, gapIndex + page->mFeed.size() - 1);
+    beginInsertRowsPhysical(gapIndex, gapIndex + page->mFeed.size() - 1);
     insertPage(mFeed.begin() + gapIndex, *page);
     endInsertRows();
 }
@@ -308,7 +308,7 @@ void FilteredPostFeedModel::addPage(Page::Ptr page)
 
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
+    beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
     insertPage(mFeed.end(), *page);
     endInsertRows();
 
@@ -323,7 +323,7 @@ void FilteredPostFeedModel::prependPage(Page::Ptr page)
         return;
     }
 
-    beginInsertRows({}, 0, page->mFeed.size() - 1);
+    beginInsertRowsPhysical(0, page->mFeed.size() - 1);
     insertPage(mFeed.begin(), *page);
     endInsertRows();
 
@@ -343,7 +343,7 @@ void FilteredPostFeedModel::removePosts(size_t startIndex, size_t count)
 
     const size_t endIndex = startIndex + count - 1;
 
-    beginRemoveRows({}, startIndex, endIndex);
+    beginRemoveRowsPhysical(startIndex, endIndex);
 
     for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
     {

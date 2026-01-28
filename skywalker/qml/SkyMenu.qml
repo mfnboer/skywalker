@@ -9,6 +9,8 @@ Menu {
     topMargin:  guiSettings.headerMargin
     bottomMargin: guiSettings.footerMargin
 
+    delegate: AccessibleMenuItem {}
+
     onAboutToShow: {
         background.color = guiSettings.menuColor
         root.enablePopupShield(true)

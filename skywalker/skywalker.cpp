@@ -78,6 +78,7 @@ Skywalker::Skywalker(QObject* parent) :
     mTimelineHide.setSkywalker(this);
     mContentFilterPolicies.setSkywalker(this);
     mTimelineModel.setIsHomeFeed(true);
+
     connect(mChat.get(), &Chat::settingsFailed, this, [this](QString error){ showStatusMessage(error, QEnums::STATUS_LEVEL_ERROR); });
     connect(&mTimelineUpdateTimer, &QTimer::timeout, this, [this]{ updateTimeline(5, TIMELINE_PREPEND_PAGE_SIZE); });
 
@@ -854,6 +855,7 @@ void Skywalker::dataMigration()
 
 void Skywalker::syncTimeline(int maxPages)
 {
+    mTimelineModel.setReverseFeed(mUserSettings.getReverseTimeline(mUserDid));
     const auto timestamp = mUserSettings.getSyncTimestamp(mUserDid);
 
     if (!timestamp.isValid() || !mUserSettings.getRewindToLastSeenPost(mUserDid))
@@ -1815,15 +1817,18 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
     if (mSignOutInProgress)
         return;
 
-    if (lastVisibleIndex > -1)
-        saveSyncTimestamp(lastVisibleIndex, lastVisibleOffsetY);
+    if (firstVisibleIndex < 0 || lastVisibleIndex < 0)
+        return;
+
+    saveSyncTimestamp(lastVisibleIndex, lastVisibleOffsetY);
 
     const int maxTailSize = mTimelineModel.hasFilters() ? PostFeedModel::MAX_TIMELINE_SIZE * 0.6 : TIMELINE_DELETE_SIZE * 2;
+    const int remainsSize = mTimelineModel.isReverseFeed() ? firstVisibleIndex : mTimelineModel.rowCount() - lastVisibleIndex;
 
-    if (lastVisibleIndex > -1 && mTimelineModel.rowCount() - lastVisibleIndex > maxTailSize)
-        mTimelineModel.removeTailPosts(mTimelineModel.rowCount() - lastVisibleIndex - (maxTailSize - TIMELINE_DELETE_SIZE));
+    if (remainsSize > maxTailSize)
+        mTimelineModel.removeTailPosts(remainsSize - (maxTailSize - TIMELINE_DELETE_SIZE));
 
-    if (lastVisibleIndex > mTimelineModel.rowCount() - TIMELINE_NEXT_PAGE_THRESHOLD && !mGetTimelineInProgress)
+    if (remainsSize < TIMELINE_NEXT_PAGE_THRESHOLD && !mGetTimelineInProgress)
         getTimelineNextPage();
 }
 
@@ -2889,6 +2894,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
             mBsky, this);
     model->enableLanguageFilter(true);
+    model->setReverseFeed(mUserSettings.getFeedReverse(mUserDid, generatorView.getUri()));
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }
@@ -2902,6 +2908,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
     model->enableLanguageFilter(true);
+    model->setReverseFeed(mUserSettings.getFeedReverse(mUserDid, listView.getUri()));
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }

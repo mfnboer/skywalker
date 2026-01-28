@@ -54,6 +54,13 @@ PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVar
             });
 }
 
+void PostFeedModel::setReverseFeed(bool reverse)
+{
+    qDebug() << "Reverse feed:" << reverse << mModelId << mFeedName;
+    AbstractPostFeedModel::setReverseFeed(reverse);
+    setReverseFeedFilteredPostModels(reverse);
+}
+
 void PostFeedModel::createInteractionSender(ATProto::Client::SharedPtr bsky)
 {
     if (feedAcceptsInteractions() && !getFeedDid().isEmpty())
@@ -197,7 +204,7 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
 
     // Remove gap place holder
-    beginRemoveRows({}, gapIndex, gapIndex);
+    beginRemoveRowsPhysical(gapIndex, gapIndex);
     mFeed.erase(mFeed.begin() + gapIndex);
     addToIndices(-1, gapIndex);
     endRemoveRows();
@@ -267,6 +274,14 @@ void PostFeedModel::clearFilteredPostModels()
         model->clear();
 }
 
+void PostFeedModel::setReverseFeedFilteredPostModels(bool reverse)
+{
+    qDebug() << "Reverse feed filtered post models:" << reverse << mModelId << mFeedName;
+
+    for (auto& model : mFilteredPostFeedModels)
+        model->setReverseFeed(reverse);
+}
+
 void PostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
 {
     for (auto& model : mFilteredPostFeedModels)
@@ -303,7 +318,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
 
-        beginInsertRows({}, insertIndex, lastInsertIndex);
+        beginInsertRowsPhysical(insertIndex, lastInsertIndex);
         insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
         addToIndices(page->mFeed.size(), insertIndex);
 
@@ -341,7 +356,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
 
     const auto overlapEnd = findOverlapEnd(*page, insertIndex);
 
-    beginInsertRows({}, insertIndex, insertIndex + *overlapStart - 1);
+    beginInsertRowsPhysical(insertIndex, insertIndex + *overlapStart - 1);
     insertPage(mFeed.begin() + insertIndex, *page, *overlapStart, fillGapId);
     addToIndices(*overlapStart, insertIndex);
 
@@ -362,7 +377,7 @@ void PostFeedModel::clear()
 
     if (!mFeed.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mFeed.size() - 1);
         clearFeed();
         mIndexCursorMap.clear();
         mGapIdIndexMap.clear();
@@ -416,7 +431,7 @@ void PostFeedModel::addPage(Page::Ptr page)
     {
         const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
-        beginInsertRows({}, mFeed.size(), newRowCount - 1);
+        beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
         insertPage(mFeed.end(), *page, page->mFeed.size());
         endInsertRows();
 
@@ -477,7 +492,7 @@ void PostFeedModel::removeTailPosts(int size)
     const size_t removeCount = mFeed.size() - removeIndex;
     removeTailFromFilteredPostModels(removeCount);
 
-    beginRemoveRows({}, removeIndex, mFeed.size() - 1);
+    beginRemoveRowsPhysical(removeIndex, mFeed.size() - 1);
     removePosts(removeIndex, removeCount);
     mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
 
@@ -519,7 +534,7 @@ void PostFeedModel::removeHeadPosts(int size)
     const int removeSize = removeEndIndex + 1;
     removeHeadFromFilteredPostModels(removeSize);
 
-    beginRemoveRows({}, 0, removeEndIndex);
+    beginRemoveRowsPhysical(0, removeEndIndex);
     removePosts(0, removeSize);
     Q_ASSERT(!mFeed.front().isGap());
     mIndexCursorMap.erase(mIndexCursorMap.begin(), removeEndIndexCursorIt);
@@ -671,6 +686,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
             mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setModelId(mModelId);
+    model->setReverseFeed(mReverseFeed);
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
@@ -1208,7 +1224,7 @@ void PostFeedModel::Page::setThreadgates()
     }
 }
 
-void PostFeedModel::Page::foldThreads()
+void PostFeedModel::Page::postProcessThreads(bool reverseFeed)
 {
     int threadStartIndex = -1;
     int threadEndIndex = -1;
@@ -1225,6 +1241,10 @@ void PostFeedModel::Page::foldThreads()
         case QEnums::POST_LAST_REPLY:
             threadEndIndex = i;
             foldPosts(threadStartIndex, threadEndIndex);
+
+            if (reverseFeed)
+                reversePosts(threadStartIndex, threadEndIndex);
+
             threadStartIndex = -1;
             break;
         case QEnums::POST_REPLY:
@@ -1260,6 +1280,31 @@ void PostFeedModel::Page::foldPosts(int startIndex, int endIndex)
     {
         mFeed[i].setFoldedPostType(QEnums::FOLDED_POST_SUBSEQUENT);
     }
+}
+
+void PostFeedModel::Page::reversePosts(int startIndex, int endIndex)
+{
+    qDebug() << "Reverse posts, start:" << startIndex << "end:" << endIndex;
+
+    if (startIndex < 0 || endIndex < 0 || startIndex > endIndex)
+    {
+        qWarning() << "Invalid thread:" << startIndex << endIndex;
+        return;
+    }
+
+    if (endIndex >= (int)mFeed.size())
+    {
+        qWarning() << "Thread out of range:" << startIndex << endIndex << "size:" << mFeed.size();
+        return;
+    }
+
+    if (mFeed[endIndex].isEndOfFeed())
+    {
+        mFeed[startIndex].setEndOfFeed(true);
+        mFeed[endIndex].setEndOfFeed(false);
+    }
+
+    std::reverse(mFeed.begin() + startIndex, mFeed.begin() + endIndex + 1);
 }
 
 PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
@@ -1426,7 +1471,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     page->setThreadgates();
-    page->foldThreads();
+    page->postProcessThreads(mReverseFeed);
 
     qDebug() << "Created page, size:" << page->mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     return page;

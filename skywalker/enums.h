@@ -47,7 +47,7 @@ public:
         UI_PAGE_SEARCH,
         UI_PAGE_MESSAGES
     };
-    Q_ENUM(UiPage);
+    Q_ENUM(UiPage)
 
     enum PostType
     {
