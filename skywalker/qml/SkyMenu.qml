@@ -9,7 +9,9 @@ Menu {
     topMargin:  guiSettings.headerMargin
     bottomMargin: guiSettings.footerMargin
 
-    delegate: AccessibleMenuItem {}
+    delegate: AccessibleMenuItem {
+        width: undefined
+    }
 
     onAboutToShow: {
         background.color = guiSettings.menuColor
