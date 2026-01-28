@@ -134,10 +134,13 @@ Pane {
                 feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
                 defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
                 feedAvatar: ""
+                contentMode: searchFeedView ? searchFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: searchFeedView ? searchFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
                 showAsHome: searchFeedView ? searchFeedView.showAsHome : false
                 showLanguageFilter: searchFeedView ? searchFeedView.headerItem.showLanguageFilter : false
                 filteredLanguages: searchFeedView ? searchFeedView.headerItem.filteredLanguages : []
                 showPostWithMissingLanguage: false
+                showViewOptions: true
                 isSideBar: true
                 visible: Boolean(searchFeedView)
 
