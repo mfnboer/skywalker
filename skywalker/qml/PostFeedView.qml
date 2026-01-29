@@ -2,18 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-SkyListView {
+PostListView {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
     property bool showAsHome: false
     property bool showFavorites: false
-    readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : feedUnreadPosts
+    readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property bool reverseFeed: model ? model.reverseFeed : false
-    property int feedUnreadPosts: 0
-    property bool inSync: true
-    property int newLastVisibleIndex: -1
-    property int newLastVisibleOffsetY: 0
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
     property var userSettings: skywalker.getUserSettings()
@@ -31,6 +27,10 @@ SkyListView {
     model: skywalker.getPostFeedModel(modelId)
     cacheBuffer: Screen.height * 3
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
+    inSync: true
+    reverseSyncFun: () => { moveToIndex(count - 1, doMoveToPost); finishSync() }
+    resyncFun: () => setInSync(modelId, newLastVisibleIndex, newLastVisibleOffsetY)
+    resetHeaderFun: () => postFeedView.resetHeaderPosition()
 
     Accessible.name: feedName
 
@@ -88,31 +88,6 @@ SkyListView {
         }
     }
 
-    onCountChanged: {
-        console.debug("Count changed:", count, feedName)
-
-        if (!inSync) {
-            newLastVisibleIndex = -1
-            return
-        }
-
-        // Calling later allows the new list elements to render (if they are visible)
-        Qt.callLater(calibrateOnCountChanged)
-    }
-
-    function calibrateOnCountChanged() {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        updateFeedUnreadPosts()
-
-        if (newLastVisibleIndex >= 0)
-            setInSync(modelId, newLastVisibleIndex, newLastVisibleOffsetY)
-
-        newLastVisibleIndex = -1
-    }
-
     onMovementEnded: {
         if (!inSync)
             return
@@ -156,7 +131,7 @@ SkyListView {
             model.getFeedNextPage(skywalker)
         }
 
-        updateFeedUnreadPosts()
+        updateUnreadPosts()
     }
 
     FlickableRefresher {
@@ -458,15 +433,6 @@ SkyListView {
         }
     }
 
-    Timer {
-        id: reverseSyncTimer
-        interval: 100
-        onTriggered: {
-            moveToIndex(count - 1, doMoveToPost)
-            finishSync()
-        }
-    }
-
     function getFavoritesY() {
         if (mediaTilesLoader.item)
             return mediaTilesLoader.item.favoritesY
@@ -608,21 +574,6 @@ SkyListView {
         connectModelHandlers()
     }
 
-    function updateFeedUnreadPosts() {
-        if (model.reverseFeed) {
-            const lastIndex = getLastVisibleIndex()
-
-            if (lastIndex >= 0)
-                postFeedView.feedUnreadPosts = count - lastIndex - 1
-
-        } else {
-            const firstIndex = getFirstVisibleIndex()
-
-            if (firstIndex >= 0)
-                postFeedView.feedUnreadPosts = firstIndex
-        }
-    }
-
     function moveToHome() {
         console.debug("Move to home:", feedName)
 
@@ -640,7 +591,7 @@ SkyListView {
         if (modelId != -1)
             skywalker.feedMovementEnded(modelId, homeIndex, 0)
 
-        updateFeedUnreadPosts()
+        updateUnreadPosts()
     }
 
     function atStart() {
@@ -657,21 +608,10 @@ SkyListView {
             privateResetHeaderPosition()
     }
 
-    function doMoveToPost(index) {
-        let firstVisibleIndex = getFirstVisibleIndex()
-        let lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to:", model.feedName, "index:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
-        positionViewAtIndex(Math.max(index, 0), ListView.End)
-        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
-        updateFeedUnreadPosts()
-        resetHeaderPosition()
-        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
-    }
-
     function finishSync() {
-        inSync = true
+        syncDone()
         rewindStatus.isFirstRewind = false
-        updateFeedUnreadPosts()
+        updateUnreadPosts()
         resetHeaderPosition()
     }
 
@@ -729,87 +669,6 @@ SkyListView {
         rewindStatus.updateRewindProgress(pages, timestamp)
     }
 
-    // TODO: code is almost a duplicate from TimelineVew.qml
-    function rowsInsertedHandler(parent, start, end) {
-        if (!inSync)
-            return
-
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows inserted:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        if (start <= newLastVisibleIndex)
-            newLastVisibleIndex += (end - start + 1)
-
-        updateFeedUnreadPosts()
-
-        if (model.reverseFeed && (end - start + 1 === count || count === 0)) {
-            inSync = false
-
-            // Delay the move to give the ListView time to stabilize
-            reverseSyncTimer.start()
-        }
-    }
-
-    function rowsAboutToBeInsertedHandler(parent, start, end) {
-        if (!inSync)
-            return
-
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows to be inserted:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        // When all posts are removed because of a refresh, then count is zero, but
-        // first and list visible index are still non-zero
-        if (start <= lastVisibleIndex && count > lastVisibleIndex && newLastVisibleIndex < 0) {
-            newLastVisibleIndex = lastVisibleIndex
-            newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
-            console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
-        }
-    }
-
-    function rowsRemovedHandler(parent, start, end) {
-        if (!inSync)
-            return
-
-        updateFeedUnreadPosts()
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows removed:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        if (end < newLastVisibleIndex)
-            newLastVisibleIndex -= (end - start + 1)
-    }
-
-    function rowsAboutToBeRemovedHandler(parent, start, end) {
-        if (!inSync)
-            return
-
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows to be removed:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        if (end < lastVisibleIndex && newLastVisibleIndex < 0) {
-            newLastVisibleIndex = lastVisibleIndex
-            newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
-            console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
-        }
-    }
-
-    function disonnectModelHandlers() {
-        model.onRowsInserted.disconnect(rowsInsertedHandler)
-        model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
-        model.onRowsRemoved.disconnect(rowsRemovedHandler)
-        model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
-    }
-
-    function connectModelHandlers() {
-        model.onRowsInserted.connect(rowsInsertedHandler)
-        model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
-        model.onRowsRemoved.connect(rowsRemovedHandler)
-        model.onRowsAboutToBeRemoved.connect(rowsAboutToBeRemovedHandler)
-    }
-
     function forceDestroy() {
         if (modelId !== -1) {
             skywalker.removePostFeedModel(modelId)
@@ -824,8 +683,6 @@ SkyListView {
         skywalker.onFeedSyncOk.disconnect(setInSync)
         skywalker.onFeedSyncFailed.disconnect(syncToHome)
 
-        disonnectModelHandlers()
-
         if (modelId !== -1)
             skywalker.removePostFeedModel(modelId)
     }
@@ -835,8 +692,6 @@ SkyListView {
         skywalker.onFeedSyncProgress.connect(handleSyncProgress)
         skywalker.onFeedSyncOk.connect(setInSync)
         skywalker.onFeedSyncFailed.connect(syncToHome)
-
-        connectModelHandlers()
 
         const viewMode = userSettings.getFeedViewMode(skywalker.getUserDid(), model.feedUri)
 

@@ -2,23 +2,20 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-SkyListView {
+PostListView {
     required property var skywalker
     property int headerMargin: 0
-    property bool inSync: false
     property bool isView: false
-    property int unreadPosts: 0
+    readonly property int unreadPosts: listUnreadPosts
     readonly property bool reverseFeed: skywalker.timelineModel.reverseFeed
-    property int newLastVisibleIndex: -1
-    property int newLastVisibleOffsetY: 0
     property var userSettings: skywalker.getUserSettings()
     readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
     readonly property int favoritesY : getFavoritesY()
 
-    signal newPosts
-
     id: timelineView
     width: parent.width
+    reverseSyncFun: () => setInSync(count - 1)
+    resyncFun: () => resumeTimeline(newLastVisibleIndex, newLastVisibleOffsetY)
     model: skywalker.timelineModel
     cacheBuffer: Screen.height * 3
     virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
@@ -79,31 +76,6 @@ SkyListView {
         }
     }
 
-    onCountChanged: {
-        console.debug((model ? model.feedName : "no feed yet"), count)
-
-        if (!inSync) {
-            newLastVisibleIndex = -1
-            return
-        }
-
-        // Calling later allows the new list elements to render (if they are visible)
-        Qt.callLater(calibrateOnCountChanged)
-    }
-
-    function calibrateOnCountChanged() {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, count changed:", model.feedName, count, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        updateUnreadPosts()
-
-        if (newLastVisibleIndex >= 0)
-            resumeTimeline(newLastVisibleIndex, newLastVisibleOffsetY)
-
-        newLastVisibleIndex = -1
-    }
-
     onMovementEnded: {
         if (!inSync)
             return
@@ -132,7 +104,7 @@ SkyListView {
 
         if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !skywalker.getTimelineInProgress) {
             console.debug("Get next timeline page")
-            //skywalker.getTimelineNextPage()
+            skywalker.getTimelineNextPage()
         }
 
         if (firstVisibleIndex >= 0)
@@ -195,28 +167,6 @@ SkyListView {
         return 0
     }
 
-    function updateUnreadPosts(unread = -1) {
-        if (unread < 0) {
-            if (model.reverseFeed)
-                unread = count - getLastVisibleIndex() - 1
-            else
-                unread = getFirstVisibleIndex()
-        }
-
-        timelineView.unreadPosts = Math.max(unread, 0)
-    }
-
-    function doMoveToPost(index) {
-        let firstVisibleIndex = getFirstVisibleIndex()
-        let lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "contentHeight", contentHeight)
-        positionViewAtIndex(Math.max(index, 0), ListView.End)
-        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
-        updateUnreadPosts()
-        resetHeaderPosition()
-        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
-    }
-
     function moveToPost(index, afterMoveCb = () => {}) {
         moveToIndex(index, doMoveToPost, afterMoveCb)
     }
@@ -267,63 +217,6 @@ SkyListView {
         setInSync(index, offsetY)
     }
 
-    function rowsInsertedHandler(parent, start, end) {
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        if (start <= newLastVisibleIndex)
-            newLastVisibleIndex += (end - start + 1)
-
-        updateUnreadPosts()
-
-        if (start === 0)
-            newPosts()
-
-        if (model.reverseFeed && end - start + 1 === count) {
-            stopSync()
-
-            // Delay the move to give the ListView time to stabilize
-            reverseSyncTimer.start()
-        }
-    }
-
-    function rowsAboutToBeInsertedHandler(parent, start, end) {
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows to be inserted, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        // When all posts are removed because of a refresh, then count is zero, but
-        // first and list visible index are still non-zero
-        if (start <= lastVisibleIndex && count > lastVisibleIndex && newLastVisibleIndex < 0) {
-            newLastVisibleIndex = lastVisibleIndex
-            newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
-            console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
-        }
-    }
-
-    function rowsRemovedHandler(parent, start, end) {
-        updateUnreadPosts()
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        if (end < newLastVisibleIndex)
-            newLastVisibleIndex -= (end - start + 1)
-    }
-
-    function rowsAboutToBeRemovedHandler(parent, start, end) {
-        let firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Calibration, rows to be removed, start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
-
-        if (end < lastVisibleIndex && newLastVisibleIndex < 0) {
-            newLastVisibleIndex = lastVisibleIndex
-            newLastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
-            console.debug("New last visible index:", newLastVisibleIndex, "offsetY:", newLastVisibleOffsetY)
-        }
-    }
-
     function setInSync(index, offsetY = 0) {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
@@ -331,32 +224,5 @@ SkyListView {
             moveToPost(index, () => { contentY -= offsetY; resetHeaderPosition(); syncDone() })
         else
             moveToEnd(syncDone)
-    }
-
-    function syncDone() {
-        console.debug("Sync done")
-        inSync = true
-        model.onRowsInserted.connect(rowsInsertedHandler)
-        model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
-        model.onRowsRemoved.connect(rowsRemovedHandler)
-        model.onRowsAboutToBeRemoved.connect(rowsAboutToBeRemovedHandler)
-    }
-
-    function stopSync() {
-        console.debug("Stop sync")
-        inSync = false
-        model.onRowsInserted.disconnect(rowsInsertedHandler)
-        model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
-        model.onRowsRemoved.disconnect(rowsRemovedHandler)
-        model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
-    }
-
-    Component.onDestruction: {
-        if (model)
-            stopSync()
-    }
-
-    Component.onCompleted: {
-        console.debug("Timeline cacheBuffer:", cacheBuffer)
     }
 }
