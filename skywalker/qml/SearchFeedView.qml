@@ -10,26 +10,21 @@ import atproto.lib
 // position to will be already created if we are close, and the next positioning call will be
 // accurate. If not, then exisiting items will be destroyed. Positioning will be off again,
 // and so on.
-SkyListView {
-    required property var skywalker
+PostListView {
     required property searchfeed searchFeed
-    property bool showAsHome: false
-    property int unreadPosts: 0
+    readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property bool reverseFeed: false
-    property var userSettings: skywalker.getUserSettings()
-    readonly property int favoritesY: getFavoritesY()
     readonly property int extraFooterMargin: 0
-
-    readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
-    property int initialContentMode: QEnums.CONTENT_MODE_UNSPECIFIED
 
     signal closed
 
     id: feedView
     width: parent.width
     model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
-    cacheBuffer: Screen.height * 3
-    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
+    inSync: true
+    reverseSyncFun: () => { moveToIndex(count - 1, doMoveToPost); finishSync() }
+    resyncFun: () => setInSync(newLastVisibleIndex, newLastVisibleOffsetY)
+    syncFun: (index, offsetY) => setInSync(index, offsetY)
 
     Accessible.name: searchFeed.name
 
@@ -77,28 +72,7 @@ SkyListView {
         }
     }
 
-    onCountChanged: {
-        updateUnreadPosts()
-    }
-
     onMovementEnded: updateOnMovement()
-    onContentMoved: updateOnMovement()
-
-    function updateOnMovement() {
-        if (!model)
-            return
-
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
-
-        if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !model.getFeedInProgress) {
-            console.debug("Get next feed page")
-            model.getFeedNextPage(skywalker)
-        }
-
-        updateUnreadPosts()
-    }
 
     FlickableRefresher {
         inProgress: feedView.model.getFeedInProgress
@@ -119,43 +93,6 @@ SkyListView {
         id: busyIndicator
         anchors.centerIn: parent
         running: feedView.model.getFeedInProgress
-    }
-
-    Loader {
-        id: mediaTilesLoader
-        active: false
-
-        sourceComponent: MediaTilesFeedView {
-            property int favoritesY: getFavoritesY()
-
-            clip: true
-            width: feedView.width
-            height: feedView.height - (feedView.footerItem && feedView.footerItem.visible ? feedView.footerItem.height : 0)
-            headerHeight: feedView.headerItem ? feedView.headerItem.height : 0
-            skywalker: feedView.skywalker
-            showAsHome: feedView.showAsHome
-            model: feedView.model
-            virtualFooterHeight: feedView.virtualFooterHeight
-
-            // HACK: grid view does not have a pullback header
-            Loader {
-                id: headerLoader
-                y: headerY
-                width: parent.width
-                sourceComponent: feedView.header
-            }
-
-            function getFavoritesY() {
-                switch (userSettings.favoritesBarPosition) {
-                case QEnums.FAVORITES_BAR_POSITION_TOP:
-                    return headerLoader.item ? headerLoader.item.favoritesY + headerY : headerY
-                case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
-                    return virtualFooterY
-                }
-
-                return 0
-            }
-        }
     }
 
     SearchUtils {
@@ -204,86 +141,6 @@ SkyListView {
         optionsMenu.open()
     }
 
-    function getFavoritesY() {
-        if (mediaTilesLoader.item)
-            return mediaTilesLoader.item.favoritesY
-
-        switch (userSettings.favoritesBarPosition) {
-        case QEnums.FAVORITES_BAR_POSITION_TOP:
-            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
-        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
-            return virtualFooterY
-        }
-
-        return 0
-    }
-
-    function changeView(contentMode) {
-        let oldModel = model
-        const lastVisibleIndex = mediaTilesLoader.item ? mediaTilesLoader.item.getTopRightVisibleIndex() : getLastVisibleIndex()
-        const timestamp = model.getPostTimelineTimestamp(lastVisibleIndex)
-        const cid = model.getPostCid(lastVisibleIndex)
-        const lastVisibleOffsetY = mediaTilesLoader.item ? 0 : calcVisibleOffsetY(lastVisibleIndex)
-
-        // When a tiles view is shown the header gets duplicated. Make sure the content values
-        // between these headers is synced.
-        headerItem.contentMode = contentMode
-        initialContentMode = contentMode
-
-        switch (contentMode) {
-        case QEnums.CONTENT_MODE_UNSPECIFIED:
-            setModel(model.getUnderlyingModel())
-            break
-        case QEnums.CONTENT_MODE_VIDEO:
-        case QEnums.CONTENT_MODE_VIDEO_TILES:
-            setModel(model.getUnderlyingModel().addVideoFilter())
-            break
-        case QEnums.CONTENT_MODE_MEDIA:
-        case QEnums.CONTENT_MODE_MEDIA_TILES:
-            setModel(model.getUnderlyingModel().addMediaFilter())
-            break
-        default:
-            console.warn("Unknown content mode:", contentMode)
-            return
-        }
-
-        if (oldModel.isFilterModel())
-            oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
-
-        if (skywalker.favoriteFeeds.isPinnedSearch(searchFeed.name)) {
-            userSettings.setSearchFeedViewMode(skywalker.getUserDid(), searchFeed.name, contentMode)
-        }
-
-        mediaTilesLoader.active = [QEnums.CONTENT_MODE_MEDIA_TILES, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode)
-
-        if (lastVisibleIndex > -1) {
-            const newIndex = model.findTimestamp(timestamp, cid)
-            setInSync(newIndex, lastVisibleOffsetY)
-
-            if (mediaTilesLoader.item) {
-                mediaTilesLoader.item.goToIndex(newIndex)
-            }
-        }
-    }
-
-    function setModel(newModel) {
-        // Resetting the model before changing is needed since Qt6.10.1
-        // Without resetting, the code will crash
-        if (model)
-            model.reset()
-
-        model = newModel
-    }
-
-    function updateUnreadPosts() {
-        const firstIndex = getFirstVisibleIndex()
-        feedView.unreadPosts = Math.max(firstIndex, 0)
-    }
-
-    function atStart() {
-        return atYBeginning
-    }
-
     function moveToHome() {
         positionViewAtBeginning()
 
@@ -293,34 +150,19 @@ SkyListView {
         updateUnreadPosts()
     }
 
-    function resetHeaderPosition() {
-        if (mediaTilesLoader.item)
-            mediaTilesLoader.item.resetHeaderPosition()
-        else
-            privateResetHeaderPosition()
-    }
-
-    function doMoveToPost(index) {
-        let firstVisibleIndex = getFirstVisibleIndex()
-        let lastVisibleIndex = getLastVisibleIndex()
-        console.debug("Move to:", model.feedName, "index:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count)
-        positionViewAtIndex(Math.max(index, 0), ListView.End)
-
-        firstVisibleIndex = getFirstVisibleIndex()
-        lastVisibleIndex = getLastVisibleIndex()
-
-        updateUnreadPosts()
-        resetHeaderPosition()
-        return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
-    }
-
     function finishSync() {
+        syncDone()
         updateUnreadPosts()
         resetHeaderPosition()
     }
 
     function setInSync(index, offsetY = 0) {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
+
+        if (mediaTilesLoader.active) {
+            console.debug("Media tiles loader active, don't sync:", model.feedName)
+            return
+        }
 
         if (index === 0 && offsetY === 0) {
             moveToHome()
@@ -333,11 +175,6 @@ SkyListView {
             positionViewAtEnd()
             finishSync()
         }
-    }
-
-    function syncToHome() {
-        finishSync()
-        moveToHome()
     }
 
     function search() {

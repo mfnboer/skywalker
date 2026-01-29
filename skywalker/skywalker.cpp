@@ -918,7 +918,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
     Q_ASSERT(tillTimestamp.isValid());
     qInfo() << "Sync timeline:" << tillTimestamp << "max pages:" << maxPages;
 
-    if (mGetTimelineInProgress)
+    if (isGetTimelineInProgress())
     {
         qInfo() << "Get timeline still in progress";
         return;
@@ -1149,7 +1149,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline:" << cursor;
 
-    if (mGetTimelineInProgress)
+    if (isGetTimelineInProgress())
     {
         qDebug() << "Get timeline still in progress";
         return;
@@ -1197,7 +1197,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const updateTi
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline prepend, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
 
-    if (mGetTimelineInProgress)
+    if (isGetTimelineInProgress())
     {
         qDebug() << "Get timeline still in progress";
         return;
@@ -1257,7 +1257,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
     Q_ASSERT(mBsky);
     qDebug() << "Get timeline for gap:" << gapId << "autoGapFill" << autoGapFill;
 
-    if (mGetTimelineInProgress)
+    if (isGetTimelineInProgress())
     {
         qDebug() << "Get timeline still in progress";
         return;
@@ -1777,8 +1777,13 @@ void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
 
 void Skywalker::setGetTimelineInProgress(bool inProgress)
 {
-    mGetTimelineInProgress = inProgress;
+    mTimelineModel.setGetFeedInProgress(inProgress);
     emit getTimeLineInProgressChanged();
+}
+
+bool Skywalker::isGetTimelineInProgress() const
+{
+    return mTimelineModel.isGetFeedInProgress();
 }
 
 void Skywalker::setGetPostThreadInProgress(bool inProgress)
@@ -1828,7 +1833,7 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
     if (remainsSize > maxTailSize)
         mTimelineModel.removeTailPosts(remainsSize - (maxTailSize - TIMELINE_DELETE_SIZE));
 
-    if (remainsSize < TIMELINE_NEXT_PAGE_THRESHOLD && !mGetTimelineInProgress)
+    if (remainsSize < TIMELINE_NEXT_PAGE_THRESHOLD && !isGetTimelineInProgress())
         getTimelineNextPage();
 }
 

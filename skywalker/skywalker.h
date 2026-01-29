@@ -247,7 +247,7 @@ public:
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
-    bool isGetTimelineInProgress() const override { return mGetTimelineInProgress; }
+    bool isGetTimelineInProgress() const override;
     void setGetPostThreadInProgress(bool inProgress);
     bool isGetPostThreadInProgress() const { return mGetPostThreadInProgress; }
     void incGetDetailedProfileInProgress();
@@ -417,7 +417,6 @@ private:
     GraphUtils mGraphUtils;
 
     bool mAutoUpdateTimelineInProgress = false;
-    bool mGetTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
     bool mSignOutInProgress = false;
 

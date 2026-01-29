@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.26
 ====
 * Option to reverse order of posts in your timeline

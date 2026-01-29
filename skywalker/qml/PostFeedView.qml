@@ -3,21 +3,12 @@ import QtQuick.Controls
 import skywalker
 
 PostListView {
-    property string userDid
-    property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
-    property bool showAsHome: false
     property bool showFavorites: false
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property bool reverseFeed: model ? model.reverseFeed : false
-    readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
-    property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-    property var userSettings: skywalker.getUserSettings()
-    readonly property int favoritesY: getFavoritesY()
     readonly property int extraFooterMargin: 0
     readonly property string feedName: underlyingModel ? underlyingModel.feedName : ""
-    readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
-    readonly property string feedDid: underlyingModel ? underlyingModel.feedDid : ""
 
 
     signal closed
@@ -25,12 +16,12 @@ PostListView {
     id: postFeedView
     width: parent.width
     model: skywalker.getPostFeedModel(modelId)
-    cacheBuffer: Screen.height * 3
-    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
     inSync: true
+    acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
     reverseSyncFun: () => { moveToIndex(count - 1, doMoveToPost); finishSync() }
     resyncFun: () => setInSync(modelId, newLastVisibleIndex, newLastVisibleOffsetY)
-    resetHeaderFun: () => postFeedView.resetHeaderPosition()
+    syncFun: (index, offsetY) => setInSync(modelId, index, offsetY)
+    feedDid: underlyingModel ? underlyingModel.feedDid : ""
 
     Accessible.name: feedName
 
@@ -104,36 +95,6 @@ PostListView {
         updateOnMovement()
     }
 
-    onContentMoved: updateOnMovement()
-
-    onCovered: {
-        if (mediaTilesLoader.item)
-            mediaTilesLoader.item.cover()
-    }
-
-    function updateOnMovement() {
-        if (!inSync)
-            return
-
-        if (!model)
-            return
-
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-
-        if (firstVisibleIndex < 0 || lastVisibleIndex < 0)
-            return
-
-        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
-
-        if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !model.getFeedInProgress) {
-            console.debug("Get next feed page:", model.feedName, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "remain:", remaining)
-            model.getFeedNextPage(skywalker)
-        }
-
-        updateUnreadPosts()
-    }
-
     FlickableRefresher {
         reverseFeed: model.reverseFeed
         inProgress: Boolean(model) && model.getFeedInProgress
@@ -166,45 +127,6 @@ PostListView {
         sourceComponent: FeedViewLoadMore {
             userDid: postFeedView.userDid
             listView: postFeedView
-        }
-    }
-
-    Loader {
-        id: mediaTilesLoader
-        active: false
-
-        sourceComponent: MediaTilesFeedView {
-            property int favoritesY: getFavoritesY()
-
-            clip: true
-            width: postFeedView.width
-            height: postFeedView.height - (postFeedView.footerItem && postFeedView.footerItem.visible ? postFeedView.footerItem.height : 0)
-            headerHeight: postFeedView.headerItem ? postFeedView.headerItem.height : 0
-            skywalker: postFeedView.skywalker
-            acceptsInteractions: postFeedView.acceptsInteractions
-            feedDid: postFeedView.feedDid
-            showAsHome: postFeedView.showAsHome
-            model: postFeedView.model
-            virtualFooterHeight: postFeedView.virtualFooterHeight
-
-            // HACK: grid view does not have a pullback header
-            Loader {
-                id: headerLoader
-                y: headerY
-                width: parent.width
-                sourceComponent: postFeedView.header
-            }
-
-            function getFavoritesY() {
-                switch (userSettings.favoritesBarPosition) {
-                case QEnums.FAVORITES_BAR_POSITION_TOP:
-                    return headerLoader.item ? headerLoader.item.favoritesY + headerY : headerY
-                case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
-                    return virtualFooterY
-                }
-
-                return 0
-            }
         }
     }
 
@@ -433,20 +355,6 @@ PostListView {
         }
     }
 
-    function getFavoritesY() {
-        if (mediaTilesLoader.item)
-            return mediaTilesLoader.item.favoritesY
-
-        switch (userSettings.favoritesBarPosition) {
-        case QEnums.FAVORITES_BAR_POSITION_TOP:
-            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
-        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
-            return virtualFooterY
-        }
-
-        return 0
-    }
-
     function getFeedDefaultAvatar() {
         if (!underlyingModel)
             return SvgFilled.feed
@@ -513,67 +421,6 @@ PostListView {
         }
     }
 
-    function changeView(contentMode) {
-        console.debug("Change view:", contentMode, feedName)
-
-        let oldModel = model
-        const lastVisibleIndex = mediaTilesLoader.item ? mediaTilesLoader.item.getTopRightVisibleIndex() : getLastVisibleIndex()
-        const timestamp = model.getPostTimelineTimestamp(lastVisibleIndex)
-        const cid = model.getPostCid(lastVisibleIndex)
-        const lastVisibleOffsetY = mediaTilesLoader.item ? 0 : calcVisibleOffsetY(lastVisibleIndex)
-
-        // When a tiles view is shown the header gets duplicated. Make sure the content values
-        // between these headers is synced.
-        headerItem.contentMode = contentMode
-        initialContentMode = contentMode
-
-        switch (contentMode) {
-        case QEnums.CONTENT_MODE_UNSPECIFIED:
-            setModel(model.getUnderlyingModel())
-            break
-        case QEnums.CONTENT_MODE_VIDEO:
-        case QEnums.CONTENT_MODE_VIDEO_TILES:
-            setModel(model.getUnderlyingModel().addVideoFilter())
-            break
-        case QEnums.CONTENT_MODE_MEDIA:
-        case QEnums.CONTENT_MODE_MEDIA_TILES:
-            setModel(model.getUnderlyingModel().addMediaFilter())
-            break
-        default:
-            console.warn("Unknown content mode:", contentMode)
-            return
-        }
-
-        if (oldModel.isFilterModel())
-            oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
-
-        if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri)) {
-            userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
-        }
-
-        mediaTilesLoader.active = [QEnums.CONTENT_MODE_MEDIA_TILES, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode)
-
-        if (lastVisibleIndex > -1) {
-            const newIndex = model.findTimestamp(timestamp, cid)
-            setInSync(modelId, newIndex, lastVisibleOffsetY)
-
-            if (mediaTilesLoader.item) {
-                mediaTilesLoader.item.goToIndex(newIndex)
-            }
-        }
-    }
-
-    function setModel(newModel) {
-        // Resetting the model before changing is needed since Qt6.10.1
-        // Without resetting, the code will crash
-        if (model)
-            model.reset()
-
-        disonnectModelHandlers()
-        model = newModel
-        connectModelHandlers()
-    }
-
     function moveToHome() {
         console.debug("Move to home:", feedName)
 
@@ -592,20 +439,6 @@ PostListView {
             skywalker.feedMovementEnded(modelId, homeIndex, 0)
 
         updateUnreadPosts()
-    }
-
-    function atStart() {
-        if (mediaTilesLoader.item)
-            return mediaTilesLoader.item.atYBeginning
-        else
-            return atYBeginning
-    }
-
-    function resetHeaderPosition() {
-        if (mediaTilesLoader.item)
-            mediaTilesLoader.item.resetHeaderPosition()
-        else
-            privateResetHeaderPosition()
     }
 
     function finishSync() {

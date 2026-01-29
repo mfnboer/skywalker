@@ -3,22 +3,17 @@ import QtQuick.Controls
 import skywalker
 
 PostListView {
-    required property var skywalker
     property int headerMargin: 0
     property bool isView: false
     readonly property int unreadPosts: listUnreadPosts
     readonly property bool reverseFeed: skywalker.timelineModel.reverseFeed
-    property var userSettings: skywalker.getUserSettings()
     readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
-    readonly property int favoritesY : getFavoritesY()
 
     id: timelineView
     width: parent.width
     reverseSyncFun: () => setInSync(count - 1)
     resyncFun: () => resumeTimeline(newLastVisibleIndex, newLastVisibleOffsetY)
     model: skywalker.timelineModel
-    cacheBuffer: Screen.height * 3
-    virtualFooterHeight: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? guiSettings.tabBarHeight : 0
 
     Accessible.name: model ? model.feedName : ""
 
@@ -92,25 +87,6 @@ PostListView {
         updateOnMovement()
     }
 
-    onContentMoved: updateOnMovement()
-
-    function updateOnMovement() {
-        if (!inSync)
-            return
-
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        const remaining = model.reverseFeed ? firstVisibleIndex : count - lastVisibleIndex
-
-        if (remaining < skywalker.TIMELINE_NEXT_PAGE_THRESHOLD && !skywalker.getTimelineInProgress) {
-            console.debug("Get next timeline page")
-            skywalker.getTimelineNextPage()
-        }
-
-        if (firstVisibleIndex >= 0)
-            updateUnreadPosts()
-    }
-
     FlickableRefresher {
         reverseFeed: model.reverseFeed
         inProgress: skywalker.getTimelineInProgress
@@ -154,17 +130,6 @@ PostListView {
         id: reverseSyncTimer
         interval: 100
         onTriggered: setInSync(count - 1)
-    }
-
-    function getFavoritesY() {
-        switch (userSettings.favoritesBarPosition) {
-        case QEnums.FAVORITES_BAR_POSITION_TOP:
-            return headerItem ? headerItem.favoritesY - (contentY - headerItem.y) : 0
-        case QEnums.FAVORITES_BAR_POSITION_BOTTOM:
-            return virtualFooterY
-        }
-
-        return 0
     }
 
     function moveToPost(index, afterMoveCb = () => {}) {
