@@ -399,12 +399,12 @@ SkyListView {
         PostsOrderMenu {
             reverseFeed: model.reverseFeed
 
-            onReverseFeedChanged: {
-                userSettings.setFeedReverse(skywalker.getUserDid(), underlyingModel.feedUri, reverseFeed)
+            onNewReverseFeed: (reverse) => {
+                userSettings.setFeedReverse(skywalker.getUserDid(), underlyingModel.feedUri, reverse)
 
-                console.debug("Reverse feed changed:", reverseFeed, feedName)
-                const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverseFeed)
-                underlyingModel.reverseFeed = reverseFeed
+                console.debug("Reverse feed changed:", reverse, feedName)
+                const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
+                underlyingModel.reverseFeed = reverse
                 setInSync(modelId, reverseIndex, offsetY)
             }
         }

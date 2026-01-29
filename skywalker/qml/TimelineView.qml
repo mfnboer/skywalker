@@ -42,11 +42,11 @@ SkyListView {
         onAddVideoView: page.showVideoView()
         onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
 
-        onReverseFeedChanged: {
-            userSettings.setReverseTimeline(skywalker.getUserDid(), reverseFeed)
+        onNewReverseFeed: (reverse) => {
+            userSettings.setReverseTimeline(skywalker.getUserDid(), reverse)
 
-            const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverseFeed)
-            skywalker.timelineModel.reverseFeed = reverseFeed
+            const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
+            skywalker.timelineModel.reverseFeed = reverse
             moveToPost(reverseIndex, () => { contentY -= offsetY; resetHeaderPosition() })
         }
     }

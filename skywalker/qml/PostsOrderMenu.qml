@@ -4,6 +4,8 @@ import QtQuick.Controls
 SkyMenu {
     required property bool reverseFeed
 
+    signal newReverseFeed(bool reverse)
+
     title: qsTr("Posts order")
 
     CloseMenuItem {
@@ -14,12 +16,12 @@ SkyMenu {
     SkyRadioMenuItem {
         text: qsTr("New to old")
         checked: !reverseFeed
-        onTriggered: reverseFeed = false
+        onTriggered: newReverseFeed(false)
     }
 
     SkyRadioMenuItem {
         text: qsTr("Old to new")
         checked: reverseFeed
-        onTriggered: reverseFeed = true
+        onTriggered: newReverseFeed(true)
     }
 }
