@@ -641,6 +641,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/PostsOrderMenu.qml
         QML_FILES qml/FeedViewLoadMore.qml
         QML_FILES qml/PostListView.qml
+        QML_FILES qml/FeedOptionsMenu.qml
+        QML_FILES qml/ListFeedOptionsMenu.qml
 )
 
 if (NOT ANDROID)
