@@ -13,6 +13,7 @@ WrappedSkywalker::WrappedSkywalker(QObject* parent) :
 void WrappedSkywalker::setSkywalker(Skywalker* skywalker)
 {
     Q_ASSERT(skywalker);
+    qDebug() << "Set skywalker";
 
     if (skywalker != mSkywalker)
     {

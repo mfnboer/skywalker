@@ -15,6 +15,7 @@ SkyListView {
     property var reverseSyncFun: () => {}
     property var resyncFun: () => {}
     property var syncFun: (index, offset) => {}
+    readonly property bool reverseFeed: model ? model.reverseFeed : false
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
     readonly property var mediaTilesLoader: mediaTilesViewLoader
@@ -208,13 +209,24 @@ SkyListView {
         if (oldModel.isFilterModel())
             oldModel.getUnderlyingModel().deleteFilteredPostFeedModel(oldModel)
 
-        if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri)) {
-            userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
+        switch (underlyingModel.feedType) {
+            case QEnums.FEED_GENERATOR:
+            case QEnums.FEED_LIST:
+                if (skywalker.favoriteFeeds.isPinnedFeed(underlyingModel.feedUri))
+                    userSettings.setFeedViewMode(skywalker.getUserDid(), underlyingModel.feedUri, contentMode)
+
+                break
+            case QEnums.FEED_SEARCH:
+                if (skywalker.favoriteFeeds.isPinnedSearch(searchFeed.name))
+                    userSettings.setSearchFeedViewMode(skywalker.getUserDid(), underlyingModel.feedName, contentMode)
+
+                break
         }
 
         mediaTilesLoader.active = [QEnums.CONTENT_MODE_MEDIA_TILES, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode)
 
         if (lastVisibleIndex > -1) {
+            // TODO: what if feed is not chronological
             const newIndex = model.findTimestamp(timestamp, cid)
             syncFun(newIndex, lastVisibleOffsetY)
 
@@ -323,6 +335,9 @@ SkyListView {
     }
 
     function disonnectModelHandlers() {
+        if (!model)
+            return
+
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
         model.onRowsRemoved.disconnect(rowsRemovedHandler)
@@ -330,6 +345,9 @@ SkyListView {
     }
 
     function connectModelHandlers() {
+        if (!model)
+            return
+
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
         model.onRowsRemoved.connect(rowsRemovedHandler)

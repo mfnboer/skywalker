@@ -14,7 +14,7 @@ Rectangle {
     color: "transparent"
 
     AccessibleText {
-        y: listView.model.reverseFeed && listView.count > 0 ? parent.height - height : 0
+        y: listView.model && listView.model.reverseFeed && listView.count > 0 ? parent.height - height : 0
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
         padding: 10

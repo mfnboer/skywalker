@@ -772,6 +772,26 @@ QStringList UserSettings::getFeedReverseUris(const QString& did) const
     return getFeedViewUris(did, "feedReverse");
 }
 
+void UserSettings::setSearchFeedReverse(const QString& did, const QString& searchQuery, bool reverse)
+{
+    qDebug() << "Set search feed reverse:" << reverse << searchQuery;
+
+    if (reverse)
+        mSettings.setValue(key(did, "searchFeedReverse", searchQuery), reverse);
+    else
+        mSettings.remove(key(did, "searchFeedReverse", searchQuery));
+}
+
+bool UserSettings::getSearchFeedReverse(const QString& did, const QString& searchQuery) const
+{
+    return mSettings.value(key(did, "searchFeedReverse", searchQuery), false).toBool();
+}
+
+QStringList UserSettings::getSearchFeedReverseUris(const QString& did) const
+{
+    return getSearchFeedViewSearchQueries(did, "searchFeedReverse");
+}
+
 void UserSettings::setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode)
 {
     if (mode != QEnums::CONTENT_MODE_UNSPECIFIED)

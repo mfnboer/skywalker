@@ -963,6 +963,10 @@ void FavoriteFeeds::cleanupSettings()
     removeNonPinnedFeeds(settings.getFeedReverseUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedReverse(userDid, uri, false); });
 
+    qDebug() << "Cleanup search feed reverse settings";
+    removeNonPinnedSearches(settings.getSearchFeedReverseUris(userDid),
+        [&settings, &userDid](const QString& query){ settings.setSearchFeedReverse(userDid, query, false); });
+
     qDebug() << "Cleanup feed view mode settings";
     removeNonPinnedFeeds(settings.getFeedViewModeUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedViewMode(userDid, uri, QEnums::CONTENT_MODE_UNSPECIFIED); });

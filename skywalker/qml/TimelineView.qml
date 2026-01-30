@@ -6,7 +6,6 @@ PostListView {
     property int headerMargin: 0
     property bool isView: false
     readonly property int unreadPosts: listUnreadPosts
-    readonly property bool reverseFeed: skywalker.timelineModel.reverseFeed
     readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
 
     id: timelineView

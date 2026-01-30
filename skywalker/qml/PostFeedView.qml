@@ -6,7 +6,6 @@ PostListView {
     required property int modelId
     property bool showFavorites: false
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
-    readonly property bool reverseFeed: model ? model.reverseFeed : false
     readonly property int extraFooterMargin: 0
     readonly property string feedName: underlyingModel ? underlyingModel.feedName : ""
 
@@ -96,8 +95,8 @@ PostListView {
     }
 
     FlickableRefresher {
-        reverseFeed: model.reverseFeed
-        inProgress: Boolean(model) && model.getFeedInProgress
+        reverseFeed: model && model.reverseFeed
+        inProgress: model && model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
         topOvershootFun: reverseFeed ? () => model.getFeedNextPage(skywalker) : () => model.getFeed(skywalker)
         bottomOvershootFun: reverseFeed ? () => model.getFeed(skywalker) : () => model.getFeedNextPage(skywalker)
@@ -118,12 +117,12 @@ PostListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: Boolean(model) && model.getFeedInProgress
+        running: model && model.getFeedInProgress
     }
 
     Loader {
         anchors.top: emptyListIndication.bottom
-        active: Boolean(model) && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
+        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
         sourceComponent: FeedViewLoadMore {
             userDid: postFeedView.userDid
             listView: postFeedView
@@ -163,6 +162,7 @@ PostListView {
         feed: underlyingModel?.getGeneratorView()
 
         onShowFeed: postFeedView.showFeed()
+        onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
     }
 
     ListFeedOptionsMenu {
@@ -172,15 +172,16 @@ PostListView {
         list: underlyingModel?.getListView()
 
         onShowFeed: postFeedView.showFeed()
+        onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
+    }
 
-        onNewReverseFeed: (reverse) => {
-            userSettings.setFeedReverse(skywalker.getUserDid(), underlyingModel.feedUri, reverse)
+    function changeReverseFeed(reverse) {
+        userSettings.setFeedReverse(skywalker.getUserDid(), underlyingModel.feedUri, reverse)
 
-            console.debug("Reverse feed changed:", reverse, feedName)
-            const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
-            underlyingModel.reverseFeed = reverse
-            setInSync(modelId, reverseIndex, offsetY)
-        }
+        console.debug("Reverse feed changed:", reverse, feedName)
+        const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
+        underlyingModel.reverseFeed = reverse
+        setInSync(modelId, reverseIndex, offsetY)
     }
 
     function getFeedDefaultAvatar() {

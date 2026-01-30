@@ -13,14 +13,12 @@ import atproto.lib
 PostListView {
     required property searchfeed searchFeed
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
-    readonly property bool reverseFeed: false
     readonly property int extraFooterMargin: 0
 
     signal closed
 
     id: feedView
     width: parent.width
-    model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
     inSync: true
     reverseSyncFun: () => { moveToIndex(count - 1, doMoveToPost); finishSync() }
     resyncFun: () => setInSync(newLastVisibleIndex, newLastVisibleOffsetY)
@@ -50,21 +48,22 @@ PostListView {
     delegate: PostFeedViewDelegate {
         width: feedView.width
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
-        extraFooterHeight: extraFooterLoader.active ? extraFooterLoader.height : 0
+        extraFooterHeight: extraHeaderFooterLoader.active && !model.reverseFeed ? extraHeaderFooterLoader.height : 0
+        extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0
 
         onActivateSwipe: (imgIndex, previewImg) => {
             let view = feedView
             root.viewMediaFeed(model, index, imgIndex, previewImg,
-                               (newIndex, mediaIndex, closeCb) => {
-                                   view.positionViewAtIndex(newIndex, ListView.Beginning)
-                                   view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
-                               })
+                (newIndex, mediaIndex, closeCb) => {
+                    view.positionViewAtIndex(newIndex, ListView.Beginning)
+                    view.itemAtIndex(newIndex).closeMedia(mediaIndex, closeCb)
+                })
         }
 
         Loader {
-            id: extraFooterLoader
-            anchors.bottom: parent.bottom
-            active: model && model.isFilterModel() && index === count - 1 && !endOfFeed
+            id: extraHeaderFooterLoader
+            y: model.reverseFeed ? 0 : parent.height - height
+            active: model && model.isFilterModel() && isLastPost && !endOfFeed
 
             sourceComponent: FeedViewLoadMore {
                 listView: feedView
@@ -72,27 +71,48 @@ PostListView {
         }
     }
 
-    onMovementEnded: updateOnMovement()
+    onMovementEnded: {
+        if (!inSync)
+            return
+
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        setAnchorItem(firstVisibleIndex, lastVisibleIndex)
+        updateOnMovement()
+    }
 
     FlickableRefresher {
-        inProgress: feedView.model.getFeedInProgress
-        topOvershootFun: () => feedView.search()
-        bottomOvershootFun: () => feedView.getNextPage()
-        topText: qsTr("Pull down to refresh feed")
+        reverseFeed: model && model.reverseFeed
+        inProgress: model && model.getFeedInProgress
+        topOvershootFun: reverseFeed ? feedView.getNextPage() : () => feedView.search()
+        bottomOvershootFun: () => reverseFeed ? () => feedView.search() : feedView.getNextPage()
+        topText: reverseFeed ? qsTr("Pull up to refresh feed") : qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }
 
     EmptyListIndication {
+        id: emptyListIndication
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
         text: qsTr("Feed is empty")
         list: feedView
+
+        onRetry: feedView.search()
     }
 
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: feedView.model.getFeedInProgress
+        running: model && feedView.model.getFeedInProgress
+    }
+
+    Loader {
+        anchors.top: emptyListIndication.bottom
+        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
+        sourceComponent: FeedViewLoadMore {
+            listView: feedView
+        }
     }
 
     SearchUtils {
@@ -106,35 +126,22 @@ PostListView {
         }
     }
 
-    SkyMenu {
+    FeedOptionsMenu {
         id: optionsMenu
+        postFeedModel: underlyingModel
+        feed: searchFeed
 
-        CloseMenuItem {
-            text: `<b>${searchFeed.name}</b>`
-            Accessible.name: qsTr("close menu")
-        }
+        onShowFeed: root.viewSearchViewFeed(searchFeed)
+        onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
+    }
 
-        AccessibleMenuItem {
-            text: qsTr("Search")
-            svg: SvgOutline.search
-            onTriggered: root.viewSearchViewFeed(searchFeed)
-        }
+    function changeReverseFeed(reverse) {
+        userSettings.setSearchFeedReverse(skywalker.getUserDid(), searchFeed.name, reverse)
 
-        AccessibleMenuItem {
-            text: qsTr("Remove favorite")
-            svg: SvgFilled.star
-            svgColor: guiSettings.favoriteColor
-            onTriggered: {
-                skywalker.favoriteFeeds.pinSearch(searchFeed, false)
-                skywalker.saveFavoriteFeeds()
-            }
-        }
-
-        AccessibleMenuItem {
-            text: qsTr("Filtered posts")
-            svg: SvgOutline.hideVisibility
-            onTriggered: root.viewContentFilterStats(underlyingModel)
-        }
+        console.debug("Reverse feed changed:", reverse, searchFeed.name)
+        const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
+        underlyingModel.reverseFeed = reverse
+        setInSync(reverseIndex, offsetY)
     }
 
     function showOptionsMenu() {
@@ -142,7 +149,15 @@ PostListView {
     }
 
     function moveToHome() {
-        positionViewAtBeginning()
+        console.debug("Move to home:", model.feedName)
+
+        if (model.reverseFeed)
+            positionViewAtEnd()
+        else
+            positionViewAtBeginning()
+
+        const homeIndex = model.reverseFeed ? count - 1 : 0
+        setAnchorItem(homeIndex, homeIndex)
 
         if (mediaTilesLoader.item)
             mediaTilesLoader.item.moveToHome()
@@ -164,7 +179,9 @@ PostListView {
             return
         }
 
-        if (index === 0 && offsetY === 0) {
+        const homeIndex = model.reverseFeed ? count - 1 : 0
+
+        if (index === homeIndex && offsetY === 0) {
             moveToHome()
             finishSync()
         }
@@ -172,7 +189,11 @@ PostListView {
             moveToIndex(index, doMoveToPost, () => { contentY -= offsetY; finishSync() })
         }
         else {
-            positionViewAtEnd()
+            if (reverseFeed)
+                positionViewAtBeginning()
+            else
+                positionViewAtEnd()
+
             finishSync()
         }
     }
@@ -200,9 +221,13 @@ PostListView {
     }
 
     Component.onCompleted: {
-        let m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
+        console.debug("Search feed view:", searchFeed.name)
+        // Model set here. Setting it right away causes getSearchPostFeedModel crash with an
+        // assert as the skywalker property is not set yet.
+        const m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
         m.onFirstPage.connect(() => { search() })
         m.onNextPage.connect(() => { getNextPage() })
+        setModel(m)
 
         const viewMode = userSettings.getSearchFeedViewMode(skywalker.getUserDid(), searchFeed.name)
 

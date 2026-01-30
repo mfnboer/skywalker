@@ -323,7 +323,7 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
         }
     }
 
-    return 0;
+    return foundIndex;
 }
 
 int AbstractPostFeedModel::findPost(const QString& cid) const

@@ -100,7 +100,13 @@ QString PostFeedModel::getFeedUri() const
 
 QEnums::FeedType PostFeedModel::getFeedType() const
 {
-    return !mListView.isNull() ? QEnums::FEED_LIST : QEnums::FEED_GENERATOR;
+    if (!mListView.isNull())
+        return QEnums::FEED_LIST;
+
+    if (!mGeneratorView.isNull())
+        return QEnums::FEED_GENERATOR;
+
+    return QEnums::FEED_GENERIC;
 }
 
 bool PostFeedModel::feedAcceptsInteractions() const

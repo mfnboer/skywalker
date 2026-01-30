@@ -107,6 +107,7 @@ std::vector<QString> SearchUtils::getWords(const QString& text)
 SearchUtils::SearchUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {
+    qDebug() << "Create SearchUtils";
 }
 
 SearchUtils::~SearchUtils()

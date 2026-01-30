@@ -123,7 +123,6 @@ SwipeView {
         id: favoriteSearchComp
 
         SearchFeedView {
-            skywalker: view.skywalker
             searchFeed: modelData.searchFeed
             showAsHome: true
 

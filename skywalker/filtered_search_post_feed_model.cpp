@@ -31,7 +31,7 @@ void FilteredSearchPostFeedModel::clear()
 {
     if (!mFeed.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mFeed.size() - 1);
         clearFeed();
         endRemoveRows();
     }
@@ -102,7 +102,7 @@ void FilteredSearchPostFeedModel::addPage(Page::Ptr page)
 
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
+    beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
     auto posts = page->mFeed | std::views::transform([](const Post* p){ return *p; });
     mFeed.insert(mFeed.end(), posts.begin(), posts.end());
     endInsertRows();

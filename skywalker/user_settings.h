@@ -201,6 +201,10 @@ public:
     Q_INVOKABLE bool getFeedReverse(const QString& did, const QString& feedUri) const;
     QStringList getFeedReverseUris(const QString& did) const;
 
+    Q_INVOKABLE void setSearchFeedReverse(const QString& did, const QString& searchQuery, bool reverse);
+    Q_INVOKABLE bool getSearchFeedReverse(const QString& did, const QString& searchQuery) const;
+    QStringList getSearchFeedReverseUris(const QString& did) const;
+
     Q_INVOKABLE void setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode);
     Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
     QStringList getFeedViewModeUris(const QString& did) const;

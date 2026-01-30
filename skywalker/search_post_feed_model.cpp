@@ -19,13 +19,20 @@ SearchPostFeedModel::SearchPostFeedModel(const QString& feedName, const QString&
 {
 }
 
+void SearchPostFeedModel::setReverseFeed(bool reverse)
+{
+    qDebug() << "Reverse feed:" << reverse << mModelId << mFeedName;
+    AbstractPostFeedModel::setReverseFeed(reverse);
+    setReverseFeedFilteredPostModels(reverse);
+}
+
 void SearchPostFeedModel::clear()
 {
     clearFilteredPostModels();
 
     if (!mFeed.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mFeed.size() - 1);
         clearFeed();
         endRemoveRows();
     }
@@ -97,7 +104,7 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
 
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
+    beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
     mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
 
     if (mCursorNextPage.isEmpty())
@@ -240,6 +247,14 @@ void SearchPostFeedModel::clearFilteredPostModels()
         model->clear();
 }
 
+void SearchPostFeedModel::setReverseFeedFilteredPostModels(bool reverse)
+{
+    qDebug() << "Reverse feed filtered post models:" << reverse << mModelId << mFeedName;
+
+    for (auto& model : mFilteredPostFeedModels)
+        model->setReverseFeed(reverse);
+}
+
 void SearchPostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
 {
     for (auto& model : mFilteredPostFeedModels)
@@ -255,6 +270,7 @@ FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPost
         mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setModelId(mModelId);
+    model->setReverseFeed(mReverseFeed);
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());

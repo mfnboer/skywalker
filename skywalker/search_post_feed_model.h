@@ -13,8 +13,10 @@ class SearchPostFeedModel : public AbstractPostFeedModel
     Q_OBJECT
     Q_PROPERTY(QList<FilteredSearchPostFeedModel*> filteredPostFeedModels READ getFilteredPostFeedModels NOTIFY filteredPostFeedModelsChanged FINAL)
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
+    Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
     Q_PROPERTY(QString feedDid READ getFeedDid CONSTANT FINAL)
     Q_PROPERTY(bool feedAcceptsInteractions READ feedAcceptsInteractions CONSTANT FINAL)
+    Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
 
 public:
     using Ptr = std::unique_ptr<SearchPostFeedModel>;
@@ -26,11 +28,15 @@ public:
                         HashtagIndex& hashtags,
                         QObject* parent = nullptr);
 
+    void setReverseFeed(bool reverse) override;
+
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
     const QString& getFeedName() const { return mFeedName; }
+    QEnums::FeedType getFeedType() const { return QEnums::FEED_SEARCH; }
     QString getFeedDid() const { return ""; }
     bool feedAcceptsInteractions() const { return false; }
+    QEnums::ContentMode getContentMode() const { return QEnums::CONTENT_MODE_UNSPECIFIED; }
 
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
@@ -70,6 +76,7 @@ private:
     Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
     void addPageToFilteredPostModels(const Page& page, int pageSize);
     void clearFilteredPostModels();
+    void setReverseFeedFilteredPostModels(bool reverse);
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
     FilteredSearchPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
     FilteredSearchPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);

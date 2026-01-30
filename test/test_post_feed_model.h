@@ -432,13 +432,16 @@ private slots:
         QCOMPARE(index, 2);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE, "cidX");
-        QCOMPARE(index, 0);
+        QCOMPARE(index, 2);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE, "");
-        QCOMPARE(index, 0);
+        QCOMPARE(index, 2);
 
         index = mPostFeedModel->findTimestamp(TEST_DATE - 4s, "cid5");
         QCOMPARE(index, 4);
+
+        index = mPostFeedModel->findTimestamp(TEST_DATE + 1s, "cidY");
+        QCOMPARE(index, 0);
     }
 
 private:

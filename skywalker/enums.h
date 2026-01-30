@@ -450,9 +450,11 @@ public:
 
     enum FeedType
     {
+        FEED_GENERIC,
         FEED_GENERATOR,
         FEED_LIST,
-        FEED_AUTHOR
+        FEED_AUTHOR,
+        FEED_SEARCH
     };
     Q_ENUM(FeedType)
 
