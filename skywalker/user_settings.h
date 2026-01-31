@@ -87,6 +87,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(bool showSuggestedStarterPacks READ getShowSuggestedStarterPacks WRITE setShowSuggestedStarterPacks NOTIFY showSuggestedStarterPacksChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
+    Q_PROPERTY(QEnums::FeedOrder globalFeedOrder READ getGlobalFeedOrder WRITE setGlobalFeedOrder NOTIFY globalFeedOrderChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -204,6 +205,9 @@ public:
     Q_INVOKABLE void setSearchFeedReverse(const QString& did, const QString& searchQuery, bool reverse);
     Q_INVOKABLE bool getSearchFeedReverse(const QString& did, const QString& searchQuery) const;
     QStringList getSearchFeedReverseUris(const QString& did) const;
+
+    void setGlobalFeedOrder(QEnums::FeedOrder feedOrder);
+    QEnums::FeedOrder getGlobalFeedOrder() const;
 
     Q_INVOKABLE void setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode);
     Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
@@ -545,6 +549,7 @@ signals:
     void blocksWithExpiryChanged();
     void mutesWithExpiryChanged();
     void notificationsForAllAccountsChanged();
+    void globalFeedOrderChanged();
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;

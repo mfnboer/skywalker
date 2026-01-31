@@ -4,6 +4,7 @@ import skywalker
 SkyMenu {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSetting: skywalker.getUserSettings()
     required property var postFeedModel
     required property var feed
     property bool feedHideFollowing: false
@@ -49,6 +50,7 @@ SkyMenu {
 
     PostsOrderMenu {
         reverseFeed: model.reverseFeed
+        globalFeedOrder: userSettings.globalFeedOrder
         onNewReverseFeed: (reverse) => feedOptionsMenu.newReverseFeed(reverse)
     }
 

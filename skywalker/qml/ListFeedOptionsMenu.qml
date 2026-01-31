@@ -91,6 +91,7 @@ SkyMenu {
 
     PostsOrderMenu {
         reverseFeed: model.reverseFeed
+        globalFeedOrder: userSettings.globalFeedOrder
         onNewReverseFeed: (reverse) => listFeedOptionsMenu.newReverseFeed(reverse)
     }
 

@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSettings: skywalker.getUserSettings()
     property bool reverseFeed: false
     required property string feedName
     property SvgImage defaultSvg: SvgFilled.feed
@@ -134,6 +135,7 @@ Rectangle {
 
                         PostsOrderMenu {
                             reverseFeed: header.reverseFeed
+                            globalFeedOrder: userSettings.globalFeedOrder
                             onNewReverseFeed: (reverse) => header.newReverseFeed(reverse)
                         }
                     }

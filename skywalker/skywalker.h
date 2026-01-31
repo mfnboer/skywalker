@@ -381,6 +381,7 @@ private:
     void updateServiceChat(const QString& did);
     void updateServiceVideoHost(const QString& did);
     void updateServiceVideoDid(const QString& did);
+    void updateGlobalFeedOrder();
     ATProto::PostMaster* postMaster();
 
     template<typename ModelType>

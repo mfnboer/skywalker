@@ -573,6 +573,16 @@ public:
     };
     Q_ENUM(ReplyOrder)
     Q_INVOKABLE static QString replyOrderToString(ReplyOrder replyOrder);
+
+    enum FeedOrder
+    {
+        FEED_ORDER_PER_FEED,
+        FEED_ORDER_NEW_TO_OLD,
+        FEED_ORDER_OLD_TO_NEW,
+
+        FEED_ORDER_LAST = FEED_ORDER_OLD_TO_NEW
+    };
+    Q_ENUM(FeedOrder)
 };
 
 }

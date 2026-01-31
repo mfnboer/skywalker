@@ -345,6 +345,7 @@ QString UserSettings::load(const QUrl& fileUri)
     emit blocksWithExpiryChanged();
     emit mutesWithExpiryChanged();
     emit notificationsForAllAccountsChanged();
+    emit globalFeedOrderChanged();
 
     return {};
 }
@@ -764,7 +765,12 @@ void UserSettings::setFeedReverse(const QString& did, const QString& feedUri, bo
 
 bool UserSettings::getFeedReverse(const QString& did, const QString& feedUri) const
 {
-    return mSettings.value(uriKey(did, "feedReverse", feedUri), false).toBool();
+    const auto order = getGlobalFeedOrder();
+
+    if (order == QEnums::FEED_ORDER_PER_FEED)
+        return mSettings.value(uriKey(did, "feedReverse", feedUri), false).toBool();
+
+    return order == QEnums::FEED_ORDER_OLD_TO_NEW;
 }
 
 QStringList UserSettings::getFeedReverseUris(const QString& did) const
@@ -784,12 +790,40 @@ void UserSettings::setSearchFeedReverse(const QString& did, const QString& searc
 
 bool UserSettings::getSearchFeedReverse(const QString& did, const QString& searchQuery) const
 {
-    return mSettings.value(key(did, "searchFeedReverse", searchQuery), false).toBool();
+    const auto order = getGlobalFeedOrder();
+
+    if (order == QEnums::FEED_ORDER_PER_FEED)
+        return mSettings.value(key(did, "searchFeedReverse", searchQuery), false).toBool();
+
+    return order == QEnums::FEED_ORDER_OLD_TO_NEW;
 }
 
 QStringList UserSettings::getSearchFeedReverseUris(const QString& did) const
 {
     return getSearchFeedViewSearchQueries(did, "searchFeedReverse");
+}
+
+void UserSettings::setGlobalFeedOrder(QEnums::FeedOrder feedOrder)
+{
+    if (getGlobalFeedOrder() == feedOrder)
+        return;
+
+    if (feedOrder != QEnums::FEED_ORDER_PER_FEED)
+        mSettings.setValue("globalFeedOrder", (int)feedOrder);
+    else
+        mSettings.remove("globalFeedOrder");
+
+    emit globalFeedOrderChanged();
+}
+
+QEnums::FeedOrder UserSettings::getGlobalFeedOrder() const
+{
+    const int order = mSettings.value("globalFeedOrder", (int)QEnums::FEED_ORDER_PER_FEED).toInt();
+
+    if (order < 0 || order > QEnums::FEED_ORDER_LAST)
+        return QEnums::FEED_ORDER_PER_FEED;
+
+    return QEnums::FeedOrder(order);
 }
 
 void UserSettings::setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode)
@@ -1858,7 +1892,12 @@ void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
 
 bool UserSettings::getReverseTimeline(const QString& did) const
 {
-    return mSettings.value(key(did, "reverseTimeline"), false).toBool();
+    const auto order = getGlobalFeedOrder();
+
+    if (order == QEnums::FEED_ORDER_PER_FEED)
+        return mSettings.value(key(did, "reverseTimeline"), false).toBool();
+
+    return order == QEnums::FEED_ORDER_OLD_TO_NEW;
 }
 
 void UserSettings::setReverseTimeline(const QString& did, bool reverse)

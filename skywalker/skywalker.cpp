@@ -94,6 +94,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
+    connect(&mUserSettings, &UserSettings::globalFeedOrderChanged, this, &Skywalker::updateGlobalFeedOrder);
 
     connect(&mContentFilterPolicies, &ListStore::listRemoved, this,
             [this](const QString& uri){ mUserSettings.removeContentLabelPrefList(mUserDid, uri); });
@@ -173,6 +174,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
+    connect(&mUserSettings, &UserSettings::globalFeedOrderChanged, this, &Skywalker::updateGlobalFeedOrder);
 
     // The author and post caches are global. When multiple sessions are used
     // this will be mostly fine. The profiles and post content is good. Only
@@ -4490,6 +4492,23 @@ void Skywalker::updateServiceVideoDid(const QString& did)
 {
     if (mBsky && mBsky->getSessionDid() == did)
         mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+}
+
+void Skywalker::updateGlobalFeedOrder()
+{
+    mTimelineModel.setReverseFeed(mUserSettings.getReverseTimeline(mUserDid));
+
+    for (auto& [_,model] : mPostFeedModels.items())
+    {
+        const QString uri = model->getFeedUri();
+        model->setReverseFeed(mUserSettings.getFeedReverse(mUserDid, uri));
+    }
+
+    for (auto& [_,model] : mSearchPostFeedModels.items())
+    {
+        const QString name = model->getFeedName();
+        model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, name));
+    }
 }
 
 ATProto::PostMaster* Skywalker::postMaster()
