@@ -38,4 +38,9 @@ void LocalFeedModelChanges::hideFollowing(const QString&, bool)
     hideFollowingChanged();
 }
 
+void LocalFeedModelChanges::syncFeed(const QString&, bool)
+{
+    syncFeedChanged();
+}
+
 }

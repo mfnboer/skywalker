@@ -50,6 +50,8 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
         const Profile* profileChange = getProfileChange(creator.getDid());
         return QVariant::fromValue(profileChange ? *profileChange : creator);
     }
+    case Role::FeedSync:
+        return mUserSettings.mustSyncFeed(mUserDid, feed.getUri());
     case Role::FeedSaved:
         return mFavoriteFeeds.isSavedFeed(feed.getUri());
     case Role::FeedPinned:
@@ -155,6 +157,7 @@ QHash<int, QByteArray> FeedListModel::roleNames() const
         { int(Role::FeedLikeTransient), "feedLikeTransient" },
         { int(Role::FeedHideFollowing), "feedHideFollowing" },
         { int(Role::FeedCreator), "feedCreator" },
+        { int(Role::FeedSync), "feedSync" },
         { int(Role::FeedSaved), "feedSaved" },
         { int(Role::FeedPinned), "feedPinned" },
         { int(Role::EndOfFeed), "endOfFeed" }
@@ -181,6 +184,11 @@ void FeedListModel::likeTransientChanged()
 void FeedListModel::hideFollowingChanged()
 {
     changeData({ int(Role::FeedHideFollowing) });
+}
+
+void FeedListModel::syncFeedChanged()
+{
+    changeData({ int(Role::FeedSync) });
 }
 
 void FeedListModel::profileChanged()

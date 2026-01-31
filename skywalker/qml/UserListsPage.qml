@@ -126,6 +126,7 @@ SkyPage {
                 width: page.width
 
                 onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+                onSyncFeed: (feed, sync) => feedUtils.syncFeed(feed.uri, sync)
             }
 
             FlickableRefresher {}

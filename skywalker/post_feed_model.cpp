@@ -628,7 +628,7 @@ void PostFeedModel::getFeed(IFeedPager* pager)
     Q_ASSERT(mModelId > -1);
 
     if (!mGeneratorView.isNull())
-        pager->getFeed(mModelId);
+        pager->syncFeed(mModelId);
     else if (!mListView.isNull())
         pager->syncListFeed(mModelId);
     else

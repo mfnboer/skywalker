@@ -13,6 +13,7 @@ SkyPage {
     property bool isSavedFeed: skywalker.favoriteFeeds.isSavedFeed(feed.uri)
     property bool isPinnedFeed: skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
     property bool feedHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
+    property bool feedSync: skywalker.getUserSettings().mustSyncFeed(skywalker.getUserDid(), feed.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property bool showWarnedMedia: false
     property bool isVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
@@ -27,6 +28,9 @@ SkyPage {
 
     onIsPinnedFeedChanged: {
         if (!isPinnedFeed) {
+            if (feedSync)
+                syncFeed(false)
+
             if (feedHideFollowing)
                 hideFollowing(false)
         }
@@ -213,6 +217,21 @@ SkyPage {
                         onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)
                     }
                 }
+                AccessibleMenuItem {
+                    text: qsTr("Rewind on startup")
+                    checkable: true
+                    checked: feedSync
+                    onToggled: {
+                        feedUtils.syncFeed(feed.uri, checked)
+                        feedSync = checked
+                    }
+
+                    SkyMouseArea {
+                        anchors.fill: parent
+                        enabled: !isPinnedFeed
+                        onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite lists."), QEnums.STATUS_LEVEL_INFO, 10)
+                    }
+                }
             }
         }
 
@@ -221,6 +240,7 @@ SkyPage {
             Layout.fillWidth: true
             topPadding: 5
             hideFollowing: feedHideFollowing
+            sync: feedSync
         }
 
         Rectangle {
@@ -334,6 +354,11 @@ SkyPage {
             feedUtils.undoLike(likeUri, cid)
         else
             feedUtils.like(uri, cid)
+    }
+
+    function syncFeed(sync) {
+        feedUtils.syncFeed(feed.uri, sync)
+        feedSync = sync
     }
 
     function hideFollowing(hide) {

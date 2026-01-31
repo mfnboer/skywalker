@@ -105,6 +105,7 @@ public:
     Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const updateTimelineCb& cb = {}) override;
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
     Q_INVOKABLE void syncListFeed(int modelId, int maxPages = 20) override;
+    Q_INVOKABLE void syncFeed(int modelId, int maxPages = 20) override;
     Q_INVOKABLE void feedMovementEnded(int modelId, int lastVisibleIndex, int lastVisibleOffsetY);
 
     // IFeedPager
@@ -351,6 +352,7 @@ private:
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();
     void syncListFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
+    void syncFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
     void finishFeedSync(int modelId, int index);
     void finishFeedSyncFailed(int modelId);
     void updatePostIndexedSecondsAgo();

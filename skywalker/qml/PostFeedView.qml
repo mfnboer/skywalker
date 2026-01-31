@@ -282,7 +282,9 @@ PostListView {
             return
 
         if (mediaTilesLoader.active) {
-            console.debug("Media tiles loader active, don't sync:", model.feedName)
+            console.debug("Media tiles loader active, sync:", model.feedName)
+            mediaTilesLoader.item.setInSync(index)
+            finishSync()
             return
         }
 
@@ -321,13 +323,16 @@ PostListView {
         console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
         rewindStatus.startRewind(maxPages, timestamp)
         inSync = false
+
+        if (mediaTilesLoader.item)
+            mediaTilesLoader.item.stopSync()
     }
 
     function handleSyncProgress(id, pages, timestamp) {
         if (id !== modelId)
             return
 
-        console.debug("Sync proress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
+        console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
         rewindStatus.updateRewindProgress(pages, timestamp)
     }
 

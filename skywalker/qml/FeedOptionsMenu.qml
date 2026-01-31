@@ -8,6 +8,7 @@ SkyMenu {
     required property var postFeedModel
     required property var feed
     property bool feedHideFollowing: false
+    property bool feedSync: false
 
     signal showFeed
     signal newReverseFeed(bool reverse)
@@ -65,9 +66,21 @@ SkyMenu {
             feedOptionsMenu.feedHideFollowing = !checked
         }
     }
+    AccessibleMenuItem {
+        text: qsTr("Rewind on startup")
+        checkable: true
+        checked: feedOptionsMenu.feedSync
+        visible: postFeedModel.feedType === QEnums.FEED_GENERATOR
+        onToggled: {
+            const fu = root.getFeedUtils(userDid)
+            fu.syncFeed(feedOptionsMenu.feed.uri, checked)
+            feedOptionsMenu.feedSync = checked
+        }
+    }
 
     function show() {
         feedHideFollowing = skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
+        feedSync = userSettings.mustSyncFeed(skywalker.getUserDid(), feed.uri)
         open()
     }
 }

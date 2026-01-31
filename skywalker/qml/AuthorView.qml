@@ -1111,6 +1111,7 @@ SkyPage {
                         userDid: page.userDid
 
                         onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+                        onSyncFeed: (feed, sync) => feedUtils.syncFeed(feed.uri, sync)
                     }
 
                     FlickableRefresher {

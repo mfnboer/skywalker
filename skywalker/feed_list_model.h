@@ -31,6 +31,7 @@ public:
         FeedLikeUri,
         FeedLikeTransient,
         FeedHideFollowing,
+        FeedSync,
         FeedSaved,
         FeedPinned,
         EndOfFeed
@@ -69,6 +70,7 @@ protected:
     virtual void likeUriChanged() override;
     virtual void likeTransientChanged() override;
     virtual void hideFollowingChanged() override;
+    virtual void syncFeedChanged() override;
 
     // LocalProfileChanges
     virtual void profileChanged() override;

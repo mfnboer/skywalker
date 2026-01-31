@@ -420,6 +420,7 @@ SkyPage {
             delegate: GeneratorViewDelegate {
                 width: feedListView.width
                 onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+                onSyncFeed: (feed, sync) => feedUtils.syncFeed(feed.uri, sync)
             }
 
             SwipeView.onIsCurrentItemChanged: {
@@ -662,6 +663,7 @@ SkyPage {
                     width: suggestedUsersView.width
                     endOfFeed: false
                     onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
+                    onSyncFeed: (feed, sync) => feedUtils.syncFeed(feed.uri, sync)
                 }
 
                 EmptyListIndication {

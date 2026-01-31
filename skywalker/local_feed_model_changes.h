@@ -31,12 +31,14 @@ public:
     void updateLikeUri(const QString& cid, const QString& likeUri);
     void updateLikeTransient(const QString& cid, bool transient);
     void hideFollowing(const QString& uri, bool hide);
+    void syncFeed(const QString& uri, bool sync);
 
 protected:
     virtual void likeCountChanged() = 0;
     virtual void likeUriChanged() = 0;
     virtual void likeTransientChanged() = 0;
-     virtual void hideFollowingChanged() = 0;
+    virtual void hideFollowingChanged() = 0;
+    virtual void syncFeedChanged() = 0;
 
 private:
     // CID to change

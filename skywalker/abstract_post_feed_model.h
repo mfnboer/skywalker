@@ -138,7 +138,7 @@ public:
                           QObject* parent = nullptr);
 
     void setModelId(int modelId) { mModelId = modelId; }
-    int getModelId() const { return mModelId; }
+    Q_INVOKABLE int getModelId() const { return mModelId; }
 
     virtual void setReverseFeed(bool reverse);
     bool isReverseFeed() const { return mReverseFeed; }

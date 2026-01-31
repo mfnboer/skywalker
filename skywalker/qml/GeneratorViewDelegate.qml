@@ -16,11 +16,13 @@ Rectangle {
     required property bool feedSaved
     required property bool feedPinned
     required property bool feedHideFollowing
+    required property bool feedSync
     required property bool endOfFeed
     property bool showFeed: feedVisible()
     property int maxTextLines: 1000
 
     signal hideFollowing(generatorview feed, bool hide)
+    signal syncFeed(generatorview feed, bool sync)
 
     id: generatorView
     height: grid.height
@@ -28,6 +30,9 @@ Rectangle {
 
     onFeedPinnedChanged: {
         if (!feedPinned) {
+            if (feedSync)
+                syncFeed(feed, false)
+
             if (feedHideFollowing)
                 hideFollowing(feed, false)
         }
@@ -114,6 +119,7 @@ Rectangle {
             FeedViewerState {
                 topPadding: 5
                 hideFollowing: feedHideFollowing
+                sync: feedSync
             }
         }
 
@@ -267,6 +273,18 @@ Rectangle {
                             anchors.fill: parent
                             enabled: !feedPinned
                             onClicked: skywalker.showStatusMessage(qsTr("Show following can only be disabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)
+                        }
+                    }
+                    AccessibleMenuItem {
+                        text: qsTr("Rewind on startup")
+                        checkable: true
+                        checked: feedSync
+                        onToggled: syncFeed(feed, checked)
+
+                        SkyMouseArea {
+                            anchors.fill: parent
+                            enabled: !feedPinned
+                            onClicked: skywalker.showStatusMessage(qsTr("Rewinding can only be enabled for favorite feeds."), QEnums.STATUS_LEVEL_INFO, 10)
                         }
                     }
                 }

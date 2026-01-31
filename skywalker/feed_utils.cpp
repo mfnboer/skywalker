@@ -116,6 +116,22 @@ void FeedUtils::undoLike(const QString& likeUri, const QString& cid)
         });
 }
 
+void FeedUtils::syncFeed(const QString& feedUri, bool sync)
+{
+    Q_ASSERT(mSkywalker);
+    auto* settings = mSkywalker->getUserSettings();
+
+    if (sync)
+        settings->addSyncFeed(mSkywalker->getUserDid(), feedUri);
+    else
+        settings->removeSyncFeed(mSkywalker->getUserDid(), feedUri);
+
+    mSkywalker->makeLocalModelChange(
+        [feedUri, sync](LocalFeedModelChanges* model){
+            model->syncFeed(feedUri, sync);
+        });
+}
+
 void FeedUtils::hideFollowing(const QString& feedUri, bool hide)
 {
     Q_ASSERT(mSkywalker);

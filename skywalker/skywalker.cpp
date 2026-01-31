@@ -914,6 +914,39 @@ void Skywalker::syncListFeed(int modelId, int maxPages)
     syncListFeed(modelId, timestamp, cid, maxPages);
 }
 
+void Skywalker::syncFeed(int modelId, int maxPages)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    if (model->getFeedType() != QEnums::FEED_GENERATOR)
+        return;
+
+    if (!mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
+    {
+        getFeed(modelId);
+        return;
+    }
+
+    const auto timestamp = mUserSettings.getFeedSyncTimestamp(mUserDid, model->getFeedUri());
+    qDebug() << "Sync feed:" << model->getFeedUri() << timestamp;
+
+    if (!timestamp.isValid())
+    {
+        qDebug() << "Do not rewind timeline";
+        getFeed(modelId);
+        return;
+    }
+
+    const auto cid = mUserSettings.getFeedSyncCid(mUserDid, model->getFeedUri());
+    syncFeed(modelId, timestamp, cid, maxPages);
+}
+
 void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -1084,7 +1117,7 @@ void Skywalker::syncListFeed(int modelId, QDateTime tillTimestamp, const QString
 
     if (model->isGetFeedInProgress())
     {
-        qInfo() << "Get feed still in progress";
+        qDebug() << "Get feed still in progress";
         return;
     }
 
@@ -1110,6 +1143,68 @@ void Skywalker::syncListFeed(int modelId, QDateTime tillTimestamp, const QString
 
             if (!newCursor.isEmpty())
                 syncListFeed(modelId, tillTimestamp, cid, maxPages - 1, newCursor);
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qWarning() << "Sync list feed FAILED:" << error << " - " << msg;
+
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+
+            finishFeedSyncFailed(modelId);
+    });
+}
+
+void Skywalker::syncFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    Q_ASSERT(tillTimestamp.isValid());
+    qInfo() << "Sync feed:" << tillTimestamp << "max pages:" << maxPages;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const QString& feedUri = model->getGeneratorView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    model->setGetFeedInProgress(true);
+
+    if (cursor.isEmpty())
+        emit feedSyncStart(modelId, maxPages, tillTimestamp);
+
+    mBsky->getFeed(feedUri, TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor), langs,
+        [this, modelId, tillTimestamp, cid, maxPages, cursor](auto feed){
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            model->setGetFeedInProgress(false);
+            const auto newCursor = processSyncPage(std::move(feed), *model, tillTimestamp, cid, maxPages, cursor);
+
+            if (!newCursor.isEmpty())
+                syncFeed(modelId, tillTimestamp, cid, maxPages - 1, newCursor);
         },
         [this, modelId](const QString& error, const QString& msg){
             qWarning() << "Sync feed FAILED:" << error << " - " << msg;
@@ -1849,7 +1944,7 @@ void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVis
         return;
     }
 
-    if (model->getFeedType() != QEnums::FEED_LIST)
+    if (model->getFeedType() != QEnums::FEED_LIST && model->getFeedType() != QEnums::FEED_GENERATOR)
         return;
 
     if (mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
@@ -4241,9 +4336,9 @@ void Skywalker::saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int o
     }
 
     const auto feedUri = model.getFeedUri();
-    qDebug() << "Save feed sync:" << model.getFeedName() << "index:" << postIndex << "offsetY:" << offsetY;
-
     const auto& post = model.getPost(postIndex);
+    qDebug() << "Save feed sync:" << model.getFeedName() << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
+
     mUserSettings.saveFeedSyncTimestamp(mUserDid, feedUri, post.getTimelineTimestamp());
     mUserSettings.saveFeedSyncCid(mUserDid, feedUri, post.getCid());
     mUserSettings.saveFeedSyncOffsetY(mUserDid, feedUri, offsetY);

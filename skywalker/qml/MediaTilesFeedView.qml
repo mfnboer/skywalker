@@ -29,6 +29,7 @@ GridView {
     readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
 
     property int prevContentY: 0
+    property bool inSync: true
 
     signal contentMoved
 
@@ -119,6 +120,11 @@ GridView {
     }
 
     onCountChanged: {
+        if (!inSync) {
+            newFirstVisibleIndex = -1
+            return
+        }
+
         Qt.callLater(calibrateOnCountChanged)
     }
 
@@ -142,6 +148,15 @@ GridView {
         if (virtualFooterHeight !== 0)
             moveVirtualFooter()
 
+        if (!inSync)
+            return
+
+        const firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+
+        if (firstVisibleIndex !== -1 && model)
+            skywalker.feedMovementEnded(model.getModelId(), firstVisibleIndex, 0)
+
         updateOnMovement()
     }
 
@@ -154,6 +169,9 @@ GridView {
     }
 
     function updateOnMovement() {
+        if (!inSync)
+            return
+
         if (!model)
             return
 
@@ -256,6 +274,7 @@ GridView {
         interval: 100
         onTriggered: {
             goToIndex(count - 1)
+            syncDone()
         }
     }
 
@@ -286,8 +305,9 @@ GridView {
     function goToIndex(index) {
         const topLeft = getTopLeftVisibleIndex()
         const bottomRight = getBottomRightVisibleIndex()
+        console.debug("Go to tile:", model.feedName, "index:", index, "first:", topLeft, "last:", bottomRight)
 
-        if (index < topLeft || index > bottomRight)
+        if (topLeft < 0 || bottomRight < 0 || index < topLeft || index > bottomRight)
             positionViewAtIndex(index, GridView.Beginning)
 
         updateUnreadPosts()
@@ -339,6 +359,9 @@ GridView {
     }
 
     function rowsInsertedHandler(parent, start, end) {
+        if (!inSync)
+            return
+
         let firstVisibleIndex = getTopLeftVisibleIndex()
         const lastVisibleIndex = getBottomRightVisibleIndex()
         console.debug("Calibration, tiles inserted:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
@@ -349,20 +372,75 @@ GridView {
         updateUnreadPosts()
 
         if (model.reverseFeed && (end - start + 1 === count || count === 0))
+        {
+            stopSync()
             reverseSyncTimer.start()
+        }
     }
 
     function rowsAboutToBeInsertedHandler(parent, start, end) {
+        if (!inSync)
+            return
+
         let firstVisibleIndex = getTopLeftVisibleIndex()
         const lastVisibleIndex = getBottomRightVisibleIndex()
         console.debug("Calibration, tiles to be inserted:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
 
         // When all posts are removed because of a refresh, then count is zero, but
         // first and list visible index are still non-zero
-        if (start <= lastVisibleIndex && count > lastVisibleIndex && newFirstVisibleIndex < 0) {
+        if (start <= firstVisibleIndex && count > firstVisibleIndex && newFirstVisibleIndex < 0) {
             newFirstVisibleIndex = firstVisibleIndex
             console.debug("New first visible tile index:", newFirstVisibleIndex)
         }
+    }
+
+    function rowsRemovedHandler(parent, start, end) {
+        if (!inSync)
+            return
+
+        updateUnreadPosts()
+        let firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+        console.debug("Calibration, tiles removed:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (start <= firstVisibleIndex && newFirstVisibleIndex < 0)
+            newFirstVisibleIndex -= (end - start + 1)
+    }
+
+    function rowsAboutToBeRemovedHandler(parent, start, end) {
+        if (!inSync)
+            return
+
+        let firstVisibleIndex = getTopLeftVisibleIndex()
+        const lastVisibleIndex = getBottomRightVisibleIndex()
+        console.debug("Calibration, tiles to be removed:", model.feedName, "start:", start, "end:", end, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY, "originY", originY, "contentHeight", contentHeight)
+
+        if (start <= firstVisibleIndex && newFirstVisibleIndex < 0) {
+            newFirstVisibleIndex = firstVisibleIndex
+            console.debug("New first visible index:", newFirstVisibleIndex, "offsetY:", newLastVisibleOffsetY)
+        }
+    }
+
+    function setInSync(index) {
+        console.debug("Sync tiles:", model.feedName, "index:", index, "count:", count)
+        const homeIndex = model.reverseFeed ? count - 1 : 0
+
+        if (index === homeIndex || index < 0)
+            moveToHome()
+        else
+            goToIndex(index)
+
+        syncDone()
+    }
+
+    function stopSync() {
+        console.debug("Stop sync tiles:", model.feedName)
+        inSync = false
+    }
+
+    function syncDone() {
+        console.debug("Sync done tiles:", model.feedName)
+        inSync = true
     }
 
     function reverseFeedHandler() {
@@ -375,6 +453,8 @@ GridView {
     Component.onDestruction: {
         model.onRowsInserted.disconnect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.disconnect(rowsAboutToBeInsertedHandler)
+        model.onRowsRemoved.disconnect(rowsRemovedHandler)
+        model.onRowsAboutToBeRemoved.disconnect(rowsAboutToBeRemovedHandler)
         model.onReverseFeedChanged.disconnect(reverseFeedHandler)
     }
 
@@ -385,6 +465,8 @@ GridView {
 
         model.onRowsInserted.connect(rowsInsertedHandler)
         model.onRowsAboutToBeInserted.connect(rowsAboutToBeInsertedHandler)
+        model.onRowsRemoved.connect(rowsRemovedHandler)
+        model.onRowsAboutToBeRemoved.connect(rowsAboutToBeRemovedHandler)
         model.onReverseFeedChanged.connect(reverseFeedHandler)
     }
 }

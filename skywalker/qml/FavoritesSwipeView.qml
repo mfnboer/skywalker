@@ -90,7 +90,7 @@ SwipeView {
             }
 
             function refreshFeed() {
-                skywalker.getFeed(modelId)
+                skywalker.syncFeed(modelId)
             }
 
             Component.onCompleted: refreshFeed()
