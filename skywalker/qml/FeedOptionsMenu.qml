@@ -14,6 +14,7 @@ SkyMenu {
     signal newReverseFeed(bool reverse)
 
     id: feedOptionsMenu
+    menuWidth: 270
 
     CloseMenuItem {
         text: qsTr(`<b>${feed.name}</b>`)

@@ -19,7 +19,7 @@ MenuItem {
 
         Text {
             y: (parent.height - height) / 2
-            width: parent.width - icon.width
+            width: parent.width - icon.width - leftPadding - rightPadding - 10
             leftPadding: parent.indicatorPadding
             rightPadding: 10
             text: control.text

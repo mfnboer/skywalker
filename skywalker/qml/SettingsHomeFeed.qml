@@ -51,7 +51,7 @@ ColumnLayout {
     HeaderText {
         Layout.topMargin: 10
         Layout.bottomMargin: 10
-        text: qsTr("Generlal feed preferences")
+        text: qsTr("General feed preferences")
     }
 
     AccessibleCheckBox {

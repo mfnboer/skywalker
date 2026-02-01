@@ -226,7 +226,6 @@ SkyListView {
         mediaTilesLoader.active = [QEnums.CONTENT_MODE_MEDIA_TILES, QEnums.CONTENT_MODE_VIDEO_TILES].includes(contentMode)
 
         if (lastVisibleIndex > -1) {
-            // TODO: what if feed is not chronological
             const newIndex = model.findTimestamp(timestamp, cid)
             syncFun(newIndex, lastVisibleOffsetY)
 

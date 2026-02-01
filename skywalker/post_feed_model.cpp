@@ -12,7 +12,7 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-static constexpr auto MAX_CHRONO_DEVIATION_DT = 10s;
+static constexpr auto MAX_CHRONO_DEVIATION_DT = 30s;
 
 PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                              const QString& userDid,

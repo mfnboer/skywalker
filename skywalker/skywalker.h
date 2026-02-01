@@ -348,7 +348,7 @@ private:
     void setQuoteChainInModel(int modelId, std::deque<Post> quoteChain);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
-    QString processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
+    QString processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor, bool chronoCheck = false);
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();
     void syncListFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});

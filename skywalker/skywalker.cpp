@@ -976,7 +976,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
         );
 }
 
-QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
+QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor, bool chronoCheck)
 {
     if (cursor.isEmpty())
         model.setFeed(std::move(feed));
@@ -987,6 +987,12 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         setGetTimelineInProgress(false);
     else
         model.setGetFeedInProgress(false);
+
+    // We only do a chrono check on feeds that are not guaranteed to be chronological.
+    // Timeline and list feeds should be chronological. There can be minor deviations, but
+    // the do not seem to break the syncrhonization in a major way.
+    if (chronoCheck && !model.isChronological())
+        return {};
 
     const auto lastTimestamp = model.lastTimestamp();
 
@@ -1201,7 +1207,22 @@ void Skywalker::syncFeed(int modelId, QDateTime tillTimestamp, const QString& ci
             }
 
             model->setGetFeedInProgress(false);
-            const auto newCursor = processSyncPage(std::move(feed), *model, tillTimestamp, cid, maxPages, cursor);
+            const auto newCursor = processSyncPage(std::move(feed), *model, tillTimestamp, cid, maxPages, cursor, true);
+
+            if (!model->isChronological())
+            {
+                const QString& feedName = model->getFeedName();
+                qWarning() << feedName << "cannot sync, not chronological";
+
+                // Disable sync'ing. Non-chronological feeds cannot be rewound reliably.
+                mUserSettings.removeSyncFeed(mUserDid, model->getGeneratorView().getUri());
+
+                finishFeedSyncFailed(model->getModelId());
+
+                emit statusMessage(mUserDid,
+                    tr("Failed to rewind feed '%1'. Feed is not chronological.").arg(feedName),
+                    QEnums::STATUS_LEVEL_ERROR);
+            }
 
             if (!newCursor.isEmpty())
                 syncFeed(modelId, tillTimestamp, cid, maxPages - 1, newCursor);

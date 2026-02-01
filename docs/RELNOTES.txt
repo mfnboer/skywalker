@@ -1,7 +1,8 @@
 next
 ====
 * Option to reverse order of posts available for all feeds
-& Global option to reverse the order of all feeds
+* Global option to reverse the order of all feeds
+* Option to rewind feed at startup for all chronological feeds
 * Bug fixes
 
 4.26

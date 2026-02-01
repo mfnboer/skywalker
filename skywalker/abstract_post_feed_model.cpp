@@ -113,8 +113,8 @@ void AbstractPostFeedModel::clearFeed()
     mStoredCids.clear();
     mStoredCidQueue = {};
     mContentFilterStats.clear();
-    mChronological = true;
     setEndOfFeed(false);
+    setChronological(true);
     clearLocalChanges();
     clearLocalProfileChanges();
 }
@@ -1191,7 +1191,6 @@ ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
     return model;
 }
 
-// TODO: filtered models
 void AbstractPostFeedModel::flipPostsOrder()
 {
     qDebug() << "Flip feed order, current reverse:" << mReverseFeed;
