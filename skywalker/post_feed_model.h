@@ -170,6 +170,7 @@ private:
         std::unordered_map<QString, int> mParentIndexMap;
         std::unordered_map<QString, ATProto::AppBskyFeed::ThreadgateView::SharedPtr> mRootUriToThreadgate;
         QDateTime mOldestDiscaredTimestamp;
+        bool mChronological = true;
 
         void addPost(const Post& post, bool isParent = false);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
@@ -177,6 +178,8 @@ private:
         void collectThreadgate(const Post& post);
         void setThreadgates();
         void postProcessThreads(bool reverseFeed);
+        void chronoCheck();
+        QDateTime firstTimestamp() const;
         void foldPosts(int startIndex, int endIndex);
         void reversePosts(int startIndex, int endIndex);
     };
@@ -184,6 +187,7 @@ private:
     void createInteractionSender(ATProto::Client::SharedPtr bsky);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize, int fillGapId = 0);
     void addPage(Page::Ptr page);
+    void chronoCheckAddPage(Page& page);
 
     void addPageToFilteredPostModels(const Page& page, int pageSize);
     void prependPageToFilteredPostModels(const Page& page, int pageSize);

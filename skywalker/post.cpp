@@ -276,6 +276,9 @@ QDateTime Post::getIndexedAt() const
 
 QDateTime Post::getTimelineTimestamp() const
 {
+    if (!mTimelineTimestamp.isNull())
+        return mTimelineTimestamp;
+
     if (!mReplyRefTimestamp.isNull())
         return mReplyRefTimestamp;
 

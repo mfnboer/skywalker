@@ -43,6 +43,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
+    Q_PROPERTY(bool chronological READ isChronological NOTIFY chronologicalChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -185,11 +186,14 @@ public:
     bool isFilteredPostFeed() const { return mPostHideInfoMap; }
     Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
 
+    bool isChronological() const { return mChronological; }
+
 signals:
     void reverseFeedChanged();
     void endOfFeedChanged();
     void getFeedInProgressChanged();
     void feedErrorChanged();
+    void chronologicalChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -206,6 +210,7 @@ protected:
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
     void preprocess(const Post& post);
+    void setChronological(bool chronological);
 
     virtual std::pair<QEnums::HideReasonType, ContentFilterStats::Details> mustHideContent(const Post& post) const;
 
@@ -284,6 +289,7 @@ private:
     bool mEndOfFeed = false;
     bool mGetFeedInProgress = false;
     QString mFeedError;
+    bool mChronological = true;
 };
 
 }

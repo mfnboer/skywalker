@@ -58,6 +58,7 @@ public:
     QDateTime getRepostTimestamp() const;
 
     void setReplyRefTimestamp(const QDateTime& timestamp) { mReplyRefTimestamp = timestamp; }
+    void setTimelineTimestamp(const QDateTime& timestamp) { mTimelineTimestamp = timestamp; }
 
     void setOverrideText(const QString& text) { mOverrideText = text; }
     void setOverrideFormattedText(const QString& formattedText) { mOverrideFormattedText = formattedText; }
@@ -213,6 +214,11 @@ private:
 
     // Timestamp to keep reply references in time sequence for the timeline
     QDateTime mReplyRefTimestamp;
+
+    // Timestamp can be several ms off to fit in the chronological order.
+    // We correct for those.
+    // For reposts the deviation can be several seconds.
+    QDateTime mTimelineTimestamp;
 
     // For posts not having all parent informations, the reply-to-author may
     // inferred from through other posts.

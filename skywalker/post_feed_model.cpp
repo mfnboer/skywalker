@@ -12,6 +12,8 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
+static constexpr auto MAX_CHRONO_DEVIATION_DT = 10s;
+
 PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                              const QString& userDid,
                              const IProfileStore& mutedReposts,
@@ -297,7 +299,14 @@ void PostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
 int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int insertIndex, int fillGapId)
 {
     qDebug() << "Insert feed:" << feed->mFeed.size() << "index:" << insertIndex << "fillGap:" << fillGapId;
+
+    if (!isChronological())
+        qWarning() << mFeedName << "Feed is not chronological";
+
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
+
+    if (!page->mChronological)
+        qWarning() << mFeedName << "Page is not chronological";
 
     if (page->mFeed.empty())
     {
@@ -431,10 +440,52 @@ void PostFeedModel::addQuoteChain(std::deque<Post> feed)
     addPage(std::move(page));
 }
 
+void PostFeedModel::chronoCheckAddPage(Page& page)
+{
+    if (!isChronological())
+        return;
+
+    if (!page.mChronological)
+    {
+        qDebug() << mFeedName << "Feed is not chronological, adding non-chronological page";
+        setChronological(false);
+        return;
+    }
+
+    const auto pageFirstTimestamp = page.firstTimestamp();
+    const auto feedLastTimestamp = lastTimestamp();
+
+    if (pageFirstTimestamp.isNull() || feedLastTimestamp.isNull() || pageFirstTimestamp <= feedLastTimestamp)
+        return;
+
+    const auto dt = pageFirstTimestamp - feedLastTimestamp;
+
+    if (dt >= MAX_CHRONO_DEVIATION_DT)
+    {
+        qDebug() << mFeedName << "Feed is not chronologicial, pageFirst:" << pageFirstTimestamp << "feedLast:" << feedLastTimestamp << "dt:" << dt;
+        setChronological(false);
+        return;
+    }
+
+    for (auto& post : page.mFeed)
+    {
+        if (post.isPlaceHolder())
+            continue;
+
+
+        if (post.getTimelineTimestamp() <= feedLastTimestamp)
+            break;
+
+        qDebug()<< mFeedName << "not chronological, change timestamp, dt:" <<  post.getTimelineTimestamp() - feedLastTimestamp;
+        post.setTimelineTimestamp(pageFirstTimestamp);
+    }
+}
+
 void PostFeedModel::addPage(Page::Ptr page)
 {
     if (!page->mFeed.empty())
     {
+        chronoCheckAddPage(*page);
         const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
         beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
@@ -1230,6 +1281,57 @@ void PostFeedModel::Page::setThreadgates()
     }
 }
 
+void PostFeedModel::Page::chronoCheck()
+{
+    QDateTime prevTimestamp;
+    Post* prevPost = nullptr;
+
+    for (auto& post : mFeed)
+    {
+        if (post.isPlaceHolder())
+            continue;
+
+        const auto timestamp = post.getTimelineTimestamp();
+
+        if (!prevTimestamp.isNull() && timestamp > prevTimestamp)
+        {
+            const auto dt = timestamp - prevTimestamp;
+            qDebug() << "Not chronological prev:" << prevTimestamp << "post:" << timestamp << "dt:" << dt;
+            qDebug() << "Not chronological prev:" << prevPost->isRepost() << prevPost->getText();
+            qDebug() << "Not chronological post:" << post.isRepost() << post.getText();
+
+            if (dt < MAX_CHRONO_DEVIATION_DT)
+            {
+                qDebug() << "Not chronological, change timestamp, dt:" << dt;
+                post.setTimelineTimestamp(prevTimestamp);
+            }
+            else
+            {
+                mChronological = false;
+                return;
+            }
+        }
+
+        prevTimestamp = timestamp;
+        prevPost = &post;
+    }
+
+    mChronological = true;
+}
+
+QDateTime PostFeedModel::Page::firstTimestamp() const
+{
+    auto it = mFeed.begin();
+
+    while (it != mFeed.end() && it->isPlaceHolder())
+        ++it;
+
+    if (it == mFeed.end())
+        return {};
+
+    return it->getTimelineTimestamp();
+}
+
 void PostFeedModel::Page::postProcessThreads(bool reverseFeed)
 {
     int threadStartIndex = -1;
@@ -1477,6 +1579,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     }
 
     page->setThreadgates();
+    page->chronoCheck();
     page->postProcessThreads(mReverseFeed);
 
     qDebug() << "Created page, size:" << page->mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
@@ -1514,6 +1617,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
             page->mFeed.back().setEndOfFeed(true);
     }
 
+    page->chronoCheck();
     return page;
 }
 
@@ -1533,6 +1637,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPageQuoteChain(TimelineFeed&& feed
             page->mFeed.back().setEndOfFeed(true);
     }
 
+    page->chronoCheck();
     return page;
 }
 
@@ -1564,6 +1669,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(
         page->mFeed.back().setEndOfFeed(true);
 
     qDebug() << "Created page, size:" << page->mFeed.size();
+    page->chronoCheck();
     return page;
 }
 

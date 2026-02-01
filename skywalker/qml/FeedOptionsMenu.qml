@@ -70,7 +70,7 @@ SkyMenu {
         text: qsTr("Rewind on startup")
         checkable: true
         checked: feedOptionsMenu.feedSync
-        visible: postFeedModel.feedType === QEnums.FEED_GENERATOR
+        visible: postFeedModel.feedType === QEnums.FEED_GENERATOR && postFeedModel.chronological
         onToggled: {
             const fu = root.getFeedUtils(userDid)
             fu.syncFeed(feedOptionsMenu.feed.uri, checked)

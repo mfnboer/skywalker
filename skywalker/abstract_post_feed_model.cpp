@@ -113,6 +113,7 @@ void AbstractPostFeedModel::clearFeed()
     mStoredCids.clear();
     mStoredCidQueue = {};
     mContentFilterStats.clear();
+    mChronological = true;
     setEndOfFeed(false);
     clearLocalChanges();
     clearLocalProfileChanges();
@@ -230,6 +231,15 @@ void AbstractPostFeedModel::preprocess(const Post& post)
     identifyThreadPost(post);
 }
 
+void AbstractPostFeedModel::setChronological(bool chronological)
+{
+    if (mChronological != chronological)
+    {
+        mChronological = chronological;
+        emit chronologicalChanged();
+    }
+}
+
 void AbstractPostFeedModel::indexHashtags(const Post& post)
 {
     const auto hashtags = post.getHashtags();
@@ -291,10 +301,15 @@ void AbstractPostFeedModel::unfoldPosts(int startVisibleIndex)
 
 QDateTime AbstractPostFeedModel::lastTimestamp() const
 {
-    if (mFeed.empty())
+    auto it = mFeed.rbegin();
+
+    while (it != mFeed.rend() && it->isPlaceHolder())
+        --it;
+
+    if (it == mFeed.rend())
         return {};
 
-    return mFeed.back().getTimelineTimestamp();
+    return it->getTimelineTimestamp();
 }
 
 int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid) const
@@ -310,14 +325,14 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
             continue;
 
         if (post.getTimelineTimestamp() == timestamp)
-        {
-            if (!cid.isEmpty() && post.getCid() == cid)
+        {       
+            if (cid.isEmpty() || post.getCid() == cid)
                 return toVisibleIndex(i);
 
             if (foundIndex == 0)
                 foundIndex = i;
         }
-        else if (post.getTimelineTimestamp() > timestamp)
+        else if (post.getTimelineTimestamp() > timestamp && mChronological)
         {
             return toVisibleIndex(foundIndex > 0 ? foundIndex : i);
         }
