@@ -27,6 +27,11 @@ QVariant FilteredPostFeedModel::getUnderlyingModel()
     return QVariant::fromValue(mUnderlyingModel);
 }
 
+QEnums::FeedType FilteredPostFeedModel::getFeedType() const
+{
+    return mUnderlyingModel->getFeedType();
+}
+
 void FilteredPostFeedModel::clear()
 {
     if (!mFeed.empty())

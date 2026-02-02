@@ -72,7 +72,6 @@ ListView {
         }
     }
 
-    // Is time still needed now that we have better cache buffers?
     Timer {
         property int listIndex
         property int moveAttempt

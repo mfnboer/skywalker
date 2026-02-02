@@ -38,6 +38,7 @@ public:
     Q_INVOKABLE void removeModels();
     Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20, bool canChatOnly = false);
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
+
     Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder,
                                  const QString& author = "", const QString& mentions = "",
                                  const QDateTime& since = {}, bool setSince = false,
@@ -50,10 +51,21 @@ public:
                                             const QDateTime& until = {}, bool setUntil = false,
                                             const QString& language = {},
                                             int maxPages = 10, int minEntries = 10);
+
+    Q_INVOKABLE void syncFeed(const QString& searchQuery, bool sync);
+    Q_INVOKABLE void syncSearchPosts(const QString& text,
+                                     const QString& author = "", const QString& mentions = "",
+                                     const QDateTime& since = {}, bool setSince = false,
+                                     const QDateTime& until = {}, bool setUntil = false,
+                                     const QString& language = {},
+                                     int maxPages = 10);
+
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);
+
     Q_INVOKABLE void getSuggestedActors(const QString& cursor = {});
     Q_INVOKABLE void getNextPageSuggestedActors();
+
     Q_INVOKABLE void getSuggestedFollows(const QString& user);
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
@@ -93,6 +105,10 @@ signals:
     void lastSearchedProfilesChanged();
     void trendingTopicsListModelChanged();
     void overrideAdultVisibilityChanged();
+    void feedSyncStart(int pages, QDateTime rewindTimestamp);
+    void feedSyncProgress(int pages, QDateTime timestamp);
+    void feedSyncOk(int index, int offsetY);
+    void feedSyncFailed();
 
 private:
     void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasic::List& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
@@ -100,6 +116,14 @@ private:
     QString preProcessSearchText(const QString& text) const;
     TrendingTopicListModel& createTrendingTopicsListModel();
     QStringList getLastProfileSearches() const;
+    void syncSearchPosts(const QString& text,
+                         const QString& author, const QString& mentions,
+                         const QDateTime& since, bool setSince,
+                         const QDateTime& until, bool setUntil,
+                         const QString& language,
+                         QDateTime tillTimestamp, const QString& cid,
+                         int maxPages = 10, const QString& cursor = {});
+    QString processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
 
     BasicProfileList mAuthorTypeaheadList;
     QStringList mHashtagTypeaheadList;

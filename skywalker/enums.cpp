@@ -122,4 +122,17 @@ QString QEnums::replyOrderToString(ReplyOrder replyOrder)
     return ATProto::enumToString(replyOrder, mapping);
 }
 
+QEnums::ContentMode QEnums::contentModeToFilterMode(ContentMode contentMode)
+{
+    switch (contentMode)
+    {
+    case CONTENT_MODE_MEDIA_TILES:
+        return CONTENT_MODE_MEDIA;
+    case CONTENT_MODE_VIDEO_TILES:
+        return CONTENT_MODE_VIDEO;
+    default:
+        return contentMode;
+    }
+}
+
 }

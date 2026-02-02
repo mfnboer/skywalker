@@ -106,7 +106,8 @@ public:
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
     Q_INVOKABLE void syncListFeed(int modelId, int maxPages = 20) override;
     Q_INVOKABLE void syncFeed(int modelId, int maxPages = 20) override;
-    Q_INVOKABLE void feedMovementEnded(int modelId, int lastVisibleIndex, int lastVisibleOffsetY);
+    Q_INVOKABLE void feedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
+    Q_INVOKABLE void searchFeedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
 
     // IFeedPager
     // Repeating default values here for calls from QML
@@ -362,7 +363,8 @@ private:
     ATProto::ProfileMaster& getProfileMaster();
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
     void saveSyncTimestamp(int postIndex, int offsetY);
-    void saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY);
+    void saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& feedUri, int postIndex, int offsetY);
+    void saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchQuery, int postIndex, int offsetY);
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();

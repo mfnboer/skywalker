@@ -13,6 +13,7 @@ static constexpr int MAX_LAST_SEARCHES = 25;
 static constexpr int MAX_LAST_PROFILE_SEARCHES = 10;
 static constexpr int MAX_TRENDING_TOPICS = 10;
 static constexpr int MAX_SUGGESTIONS = 10;
+static constexpr int SYNC_PAGE_SIZE = 100;
 static constexpr char const* USER_ME = "me";
 
 std::vector<QString> SearchUtils::combineSingleCharsToWords(const std::vector<QString>& words)
@@ -378,6 +379,213 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
 
     searchPosts(text, sortOrder, author, mentions, since, setSince, until, setUntil,
                 language, maxPages, minEntries, cursor);
+}
+
+void SearchUtils::syncFeed(const QString& searchQuery, bool sync)
+{
+    Q_ASSERT(mSkywalker);
+    auto* userSettings = mSkywalker->getUserSettings();
+    const auto userDid = mSkywalker->getUserDid();
+
+    if (sync)
+        userSettings->addSyncSearchFeed(mSkywalker->getUserDid(), searchQuery);
+    else
+        userSettings->removeSyncSearchFeed(mSkywalker->getUserDid(), searchQuery);
+}
+
+void SearchUtils::syncSearchPosts(const QString& text, const QString& author,
+                                  const QString& mentions, const QDateTime& since, bool setSince,
+                                  const QDateTime& until, bool setUntil, const QString& language,
+                                  int maxPages)
+{
+    Q_ASSERT(mSkywalker);
+
+    if (text.isEmpty())
+        return;
+
+    const auto model = getSearchPostFeedModel(ATProto::AppBskyFeed::SearchSortOrder::LATEST, text);
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const auto* userSettings = mSkywalker->getUserSettings();
+    const auto userDid = mSkywalker->getUserDid();
+
+    if (!userSettings->mustSyncSearchFeed(userDid, text))
+    {
+        searchPosts(text, ATProto::AppBskyFeed::SearchSortOrder::LATEST, author, mentions,
+                    since, setSince, until, setUntil, language, maxPages);
+        return;
+    }
+
+    const auto timestamp = userSettings->getSearchFeedSyncTimestamp(userDid, text);
+    qDebug() << "Sync search posts:" << text << timestamp;
+
+    if (!timestamp.isValid())
+    {
+        qDebug() << "Do not rewind";
+        searchPosts(text, ATProto::AppBskyFeed::SearchSortOrder::LATEST, author, mentions,
+                    since, setSince, until, setUntil, language, maxPages);
+        return;
+    }
+
+    const auto cid = userSettings->getSearchFeedSyncCid(userDid, text);
+    syncSearchPosts(text, author, mentions, since, setSince, until, setUntil, language,
+                    timestamp, cid, maxPages);
+}
+
+void SearchUtils::syncSearchPosts(const QString& text,
+                                  const QString& author, const QString& mentions,
+                                  const QDateTime& since, bool setSince,
+                                  const QDateTime& until, bool setUntil,
+                                  const QString& language,
+                                  QDateTime tillTimestamp, const QString& cid,
+                                  int maxPages, const QString& cursor)
+{
+    Q_ASSERT(mSkywalker);
+    qDebug() << "Sync search posts:" << text << "till:" << tillTimestamp << "cid:" << cid << "maxPages:" << maxPages << "cursor:" << cursor;
+    const auto model = getSearchPostFeedModel(ATProto::AppBskyFeed::SearchSortOrder::LATEST, text);
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    model->setGetFeedInProgress(true);
+
+    if (cursor.isEmpty())
+        emit feedSyncStart(maxPages, tillTimestamp);
+
+    // TODO: duplicate code
+    const auto searchText = preProcessSearchText(text);
+    const auto authorId = (author == USER_ME) ? mSkywalker->getUserDid() : author;
+    const auto mentionsId = (mentions == USER_ME) ? mSkywalker->getUserDid() : mentions;
+    const std::optional<QDateTime> sinceParam = setSince ? std::optional<QDateTime>{since.toUTC()} : std::optional<QDateTime>{};
+    const std::optional<QDateTime> untilParam = setUntil ? std::optional<QDateTime>{until.toUTC()} : std::optional<QDateTime>{};
+
+    bskyClient()->searchPosts(text, SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
+        ATProto::AppBskyFeed::SearchSortOrder::LATEST, Utils::makeOptionalString(authorId),
+        Utils::makeOptionalString(mentionsId), sinceParam, untilParam,
+        Utils::makeOptionalString(language),
+        [this, presence=getPresence(), text, author, mentions, since, setSince, until, setUntil, language, tillTimestamp, cid, maxPages, cursor](auto feed){
+            if (!presence)
+                return;
+
+            auto model = getSearchPostFeedModel(ATProto::AppBskyFeed::SearchSortOrder::LATEST, text);
+            model->setGetFeedInProgress(false);
+            const auto newCursor = processSyncPage(feed, *model, tillTimestamp, cid, maxPages, cursor);
+
+            if (!model->isChronological())
+            {
+                qWarning() << "Cannot sync:" << text;
+                auto* userSettings = mSkywalker->getUserSettings();
+                const auto userDid = mSkywalker->getUserDid();
+
+                // Disable sync'ing. Non-chronological feeds cannot be rewound reliably.
+                userSettings->removeSyncSearchFeed(userDid, text);
+
+                emit feedSyncFailed();
+
+                mSkywalker->showStatusMessage(
+                    tr("Failed to rewind feed ''%1'. Feed is not chronological.").arg(text),
+                    QEnums::STATUS_LEVEL_ERROR);
+
+                return;
+            }
+
+            if (!newCursor.isEmpty())
+                syncSearchPosts(text, author, mentions, since, setSince, until, setUntil, language,
+                                tillTimestamp, cid, maxPages - 1, newCursor);
+        },
+        [this, presence=getPresence(), text](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Sync feed FAILED:" << error << " - " << msg;
+            auto model = getSearchPostFeedModel(ATProto::AppBskyFeed::SearchSortOrder::LATEST, text);
+            model->setGetFeedInProgress(false);
+            emit feedSyncFailed();
+        });
+}
+
+QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
+{
+    if (cursor.isEmpty())
+        model.setFeed(std::move(feed));
+    else
+        model.addFeed(std::move(feed));
+
+    if (!model.isChronological())
+        return {};
+
+    const QString& searchQuery = model.getFeedName();
+    const auto* userSettings = mSkywalker->getUserSettings();
+    const auto userDid = mSkywalker->getUserDid();
+    const auto contentMode = userSettings->getSearchFeedViewMode(userDid, searchQuery);
+    AbstractPostFeedModel& viewModel = model.getViewModel(contentMode);
+
+    const auto lastTimestamp = viewModel.lastTimestamp();
+
+    if (lastTimestamp.isNull())
+    {
+        qWarning() << "Feed is empty";
+        emit feedSyncFailed();
+        return {};
+    }
+
+    if (lastTimestamp < tillTimestamp)
+    {
+        const auto index = viewModel.findTimestamp(tillTimestamp, cid);
+        qDebug() << "Feed synced, last timestamp:" << lastTimestamp << "index:"
+                 << index << "feed size:" << viewModel.rowCount()
+                 << "pages left:" << maxPages;
+
+        Q_ASSERT(index >= 0);
+        const auto& post = viewModel.getPost(index);
+        qDebug() << post.getTimelineTimestamp() << post.getText();
+
+        const int offsetY = userSettings->getSearchFeedSyncOffsetY(userDid, searchQuery);
+        emit feedSyncOk(index, offsetY);
+
+        return {};
+    }
+
+    if (maxPages == 1)
+    {
+        qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+        emit feedSyncOk(viewModel.rowCount() -1, 0);
+
+        mSkywalker->showStatusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
+            tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
+
+        return {};
+    }
+
+    const QString& newCursor = model.getCursorNextPage();
+
+    if (newCursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        emit feedSyncOk(viewModel.rowCount() -1, 0);
+        return {};
+    }
+
+    if (newCursor == cursor)
+    {
+        qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
+        qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+        emit feedSyncOk(viewModel.rowCount() -1, 0);
+        return {};
+    }
+
+    qDebug() << "Last timestamp:" << lastTimestamp;
+    emit feedSyncProgress(maxPages - 1, lastTimestamp);
+
+    return newCursor;
 }
 
 void SearchUtils::searchActors(const QString& text, const QString& cursor)

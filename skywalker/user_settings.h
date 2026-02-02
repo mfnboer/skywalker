@@ -187,16 +187,30 @@ public:
     void saveFeedSyncTimestamp(const QString& did, const QString& feedUri, QDateTime timestamp);
     QDateTime getFeedSyncTimestamp(const QString& did, const QString& feedUri) const;
 
+    void saveSearchFeedSyncTimestamp(const QString& did, const QString& searchQuery, QDateTime timestamp);
+    QDateTime getSearchFeedSyncTimestamp(const QString& did, const QString& searchQuery) const;
+
     void saveFeedSyncCid(const QString& did, const QString& feedUri, const QString& cid);
     QString getFeedSyncCid(const QString& did, const QString& feedUri) const;
 
+    void saveSearchFeedSyncCid(const QString& did, const QString& searchQuery, const QString& cid);
+    QString getSearchFeedSyncCid(const QString& did, const QString& searchQuery) const;
+
     void saveFeedSyncOffsetY(const QString& did, const QString& feedUri, int offsetY);
     int getFeedSyncOffsetY(const QString& did, const QString& feedUri) const;
+
+    void saveSearchFeedSyncOffsetY(const QString& did, const QString& searchQuery, int offsetY);
+    int getSearchFeedSyncOffsetY(const QString& did, const QString& searchQuery) const;
 
     void addSyncFeed(const QString& did, const QString& feedUri);
     void removeSyncFeed(const QString& did, const QString& feedUri);
     const std::unordered_set<QString>& getSyncFeeds(const QString& did) const;
     Q_INVOKABLE bool mustSyncFeed(const QString& did, const QString& feedUri) const;
+
+    void addSyncSearchFeed(const QString& did, const QString& searchQuery);
+    void removeSyncSearchFeed(const QString& did, const QString& searchQuery);
+    const std::unordered_set<QString>& getSyncSearchFeeds(const QString& searchQuery) const;
+    Q_INVOKABLE bool mustSyncSearchFeed(const QString& did, const QString& searchQuery) const;
 
     Q_INVOKABLE void setFeedReverse(const QString& did, const QString& feedUri, bool reverse);
     Q_INVOKABLE bool getFeedReverse(const QString& did, const QString& feedUri) const;
@@ -210,11 +224,11 @@ public:
     QEnums::FeedOrder getGlobalFeedOrder() const;
 
     Q_INVOKABLE void setFeedViewMode(const QString& did, const QString& feedUri, QEnums::ContentMode mode);
-    Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri);
+    Q_INVOKABLE QEnums::ContentMode getFeedViewMode(const QString& did, const QString& feedUri) const;
     QStringList getFeedViewModeUris(const QString& did) const;
 
     Q_INVOKABLE void setSearchFeedViewMode(const QString& did, const QString& searchQuery, QEnums::ContentMode mode);
-    Q_INVOKABLE QEnums::ContentMode getSearchFeedViewMode(const QString& did, const QString& searchQuery);
+    Q_INVOKABLE QEnums::ContentMode getSearchFeedViewMode(const QString& did, const QString& searchQuery) const;
     QStringList getSearchFeedViewModeSearchQueries(const QString& did) const;
 
     Q_INVOKABLE void setFeedHideReplies(const QString& did, const QString& feedUri, bool hide);
@@ -569,6 +583,7 @@ private:
     QSettings mSettings;
     PasswordEncryption mEncryption;
     std::optional<std::unordered_set<QString>> mSyncFeeds;
+    std::optional<std::unordered_set<QString>> mSyncSearchFeeds;
     std::unique_ptr<UriWithExpirySet> mBlocksWithExpiry;
     std::unique_ptr<UriWithExpirySet> mMutesWithExpiry;
 

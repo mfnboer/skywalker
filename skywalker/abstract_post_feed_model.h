@@ -17,6 +17,8 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 class ContentFilterStatsModel;
 class FocusHashtags;
 class IListStore;
@@ -48,6 +50,10 @@ class AbstractPostFeedModel : public QAbstractListModel,
 
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
+
+    // I have seen that posts in chronological feeds like timeline and list feeds are not
+    // always strictly chronological. I have seen deviations up to 40s.
+    static constexpr auto MAX_CHRONO_DEVIATION_DT = 50s;
 
     enum class Role {
         UserDid = Qt::UserRole + 1,
@@ -144,6 +150,9 @@ public:
     virtual void setReverseFeed(bool reverse);
     bool isReverseFeed() const { return mReverseFeed; }
 
+    virtual void setChronological(bool chronological);
+    bool isChronological() const { return mChronological; }
+
     void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
     void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }
 
@@ -186,8 +195,6 @@ public:
     bool isFilteredPostFeed() const { return mPostHideInfoMap; }
     Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
 
-    bool isChronological() const { return mChronological; }
-
 signals:
     void reverseFeedChanged();
     void endOfFeedChanged();
@@ -196,6 +203,18 @@ signals:
     void chronologicalChanged();
 
 protected:
+    using TimelineFeed = std::deque<Post>;
+
+    struct AbstractPage
+    {
+        TimelineFeed mFeed;
+        bool mChronological = true;
+
+        void pushPost(const Post& post);
+        void chronoCheck();
+        QDateTime firstTimestamp() const;
+    };
+
     QHash<int, QByteArray> roleNames() const override;
     void beginRemoveRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex);
     void beginInsertRowsPhysical(int firstPhysicalIndex, int lastPhysicalIndex);
@@ -210,7 +229,6 @@ protected:
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
     void preprocess(const Post& post);
-    void setChronological(bool chronological);
 
     virtual std::pair<QEnums::HideReasonType, ContentFilterStats::Details> mustHideContent(const Post& post) const;
 
@@ -243,7 +261,6 @@ protected:
 
     void changeData(const QList<int>& roles) override;
 
-    using TimelineFeed = std::deque<Post>;
     TimelineFeed mFeed;
     bool mReverseFeed = false;
 

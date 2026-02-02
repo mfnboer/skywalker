@@ -12,6 +12,7 @@ class PostFeedModel;
 class FilteredPostFeedModel : public FilteredPostBaseModel
 {
     Q_OBJECT
+    Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
 
 public:
     using Ptr = std::unique_ptr<FilteredPostFeedModel>;
@@ -27,6 +28,7 @@ public:
                                    QObject* parent = nullptr);
 
     Q_INVOKABLE QVariant getUnderlyingModel();
+    QEnums::FeedType getFeedType() const;
 
     void clear();
     void setPosts(const TimelineFeed& posts, size_t numPosts);

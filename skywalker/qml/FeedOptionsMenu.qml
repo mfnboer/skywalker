@@ -12,6 +12,7 @@ SkyMenu {
 
     signal showFeed
     signal newReverseFeed(bool reverse)
+    signal enableSyncSearchFeed(bool enbable)
 
     id: feedOptionsMenu
     menuWidth: 270
@@ -67,21 +68,34 @@ SkyMenu {
             feedOptionsMenu.feedHideFollowing = !checked
         }
     }
+
     AccessibleMenuItem {
         text: qsTr("Rewind on startup")
         checkable: true
         checked: feedOptionsMenu.feedSync
-        visible: postFeedModel.feedType === QEnums.FEED_GENERATOR && postFeedModel.chronological
+        visible: postFeedModel.chronological
         onToggled: {
-            const fu = root.getFeedUtils(userDid)
-            fu.syncFeed(feedOptionsMenu.feed.uri, checked)
+            if (postFeedModel.feedType === QEnums.FEED_GENERATOR) {
+                const fu = root.getFeedUtils(userDid)
+                fu.syncFeed(feedOptionsMenu.feed.uri, checked)
+            }
+            else
+            {
+                enableSyncSearchFeed(checked)
+            }
+
             feedOptionsMenu.feedSync = checked
         }
     }
 
     function show() {
-        feedHideFollowing = skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
-        feedSync = userSettings.mustSyncFeed(skywalker.getUserDid(), feed.uri)
+        if (postFeedModel.feedType === QEnums.FEED_GENERATOR) {
+            feedHideFollowing = skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
+            feedSync = userSettings.mustSyncFeed(skywalker.getUserDid(), feed.uri)
+        } else {
+            feedSync = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), feed.searchQuery)
+        }
+
         open()
     }
 }

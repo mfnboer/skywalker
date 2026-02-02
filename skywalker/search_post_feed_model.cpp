@@ -26,6 +26,13 @@ void SearchPostFeedModel::setReverseFeed(bool reverse)
     setReverseFeedFilteredPostModels(reverse);
 }
 
+void SearchPostFeedModel::setChronological(bool chronological)
+{
+    qDebug() << "Set chronological:" << chronological << mModelId << mFeedName;
+    AbstractPostFeedModel::setChronological(chronological);
+    setChronologicalFilteredPostModels(chronological);
+}
+
 void SearchPostFeedModel::clear()
 {
     clearFilteredPostModels();
@@ -118,11 +125,6 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
     return page->mFeed.size();
 }
 
-void SearchPostFeedModel::Page::addPost(const Post& post)
-{
-    mFeed.push_back(post);
-}
-
 FilteredSearchPostFeedModel* SearchPostFeedModel::addVideoFilter()
 {
     auto filter = std::make_unique<VideoPostFilter>();
@@ -178,6 +180,33 @@ QList<FilteredSearchPostFeedModel*> SearchPostFeedModel::getFilteredPostFeedMode
     return QList<FilteredSearchPostFeedModel*>(models.begin(), models.end());
 }
 
+FilteredSearchPostFeedModel* SearchPostFeedModel::getFilteredPostFeedModel(QEnums::ContentMode contentMode) const
+{
+    auto filterMode = QEnums::contentModeToFilterMode(contentMode);
+
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        if (model->getContentMode() == filterMode)
+            return model.get();
+    }
+
+    return nullptr;
+}
+
+AbstractPostFeedModel& SearchPostFeedModel::getViewModel(QEnums::ContentMode contentMode)
+{
+    if (contentMode == getContentMode())
+        return *this;
+
+    auto* model = getFilteredPostFeedModel(contentMode);
+
+    if (model)
+        return *model;
+
+    qDebug() << "No filter model for content mode:" << contentMode;
+    return *this;
+}
+
 void SearchPostFeedModel::refreshAllData()
 {
     AbstractPostFeedModel::refreshAllData();
@@ -222,14 +251,16 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
             }
 
             preprocess(post);
-            page->addPost(post);
+            page->pushPost(post);
         }
         else
         {
             qWarning() << "Unsupported post record type:" << int(feedEntry->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mRawRecordType));
+            page->pushPost(Post::createNotSupported(feedEntry->mRawRecordType));
         }
     }
+
+    page->chronoCheck();
 
     qDebug() << "Created page:" << page->mFeed.size() << "posts";
     return page;
@@ -261,6 +292,12 @@ void SearchPostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
         model->setEndOfFeed(endOfFeed);
 }
 
+void SearchPostFeedModel::setChronologicalFilteredPostModels(bool chronological)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        model->setChronological(chronological);
+}
+
 FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
 {
     Q_ASSERT(postFilter);
@@ -271,6 +308,7 @@ FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPost
 
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
+    model->setChronological(isChronological());
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());

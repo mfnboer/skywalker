@@ -994,7 +994,20 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
     if (chronoCheck && !model.isChronological())
         return {};
 
-    const auto lastTimestamp = model.lastTimestamp();
+    AbstractPostFeedModel* viewModel = nullptr;
+
+    if (model.isHomeFeed())
+    {
+        viewModel = &model;
+    }
+    else
+    {
+        const auto contentMode = mUserSettings.getSearchFeedViewMode(mUserDid, model.getFeedUri());
+        viewModel = &model.getViewModel(contentMode);
+    }
+
+    Q_ASSERT(viewModel);
+    const auto lastTimestamp = viewModel->lastTimestamp();
 
     if (lastTimestamp.isNull())
     {
@@ -1010,13 +1023,13 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (lastTimestamp < tillTimestamp)
     {
-        const auto index = model.findTimestamp(tillTimestamp, cid);
+        const auto index = viewModel->findTimestamp(tillTimestamp, cid);
         qDebug() << "Feed synced, last timestamp:" << lastTimestamp << "index:"
-                 << index << ",feed size:" << model.rowCount()
-                 << ",pages left:" << maxPages;
+                 << index << "feed size:" << viewModel->rowCount()
+                 << "pages left:" << maxPages;
 
         Q_ASSERT(index >= 0);
-        const auto& post = model.getPost(index);
+        const auto& post = viewModel->getPost(index);
         qDebug() << post.getTimelineTimestamp() << post.getText();
 
         if (model.isHomeFeed())
@@ -1034,7 +1047,7 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         if (model.isHomeFeed())
             finishTimelineSync(model.rowCount() - 1);
         else
-            finishFeedSync(model.getModelId(), model.rowCount() - 1);
+            finishFeedSync(model.getModelId(), viewModel->rowCount() - 1);
 
         emit statusMessage(mUserDid, tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
                                tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
@@ -1051,7 +1064,7 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         if (model.isHomeFeed())
             finishTimelineSync(mTimelineModel.rowCount() - 1);
         else {
-            finishFeedSync(model.getModelId(), model.rowCount() - 1);
+            finishFeedSync(model.getModelId(), viewModel->rowCount() - 1);
         }
 
         return {};
@@ -1065,12 +1078,12 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         if (model.isHomeFeed())
             finishTimelineSync(mTimelineModel.rowCount() - 1);
         else
-            finishFeedSync(model.getModelId(), model.rowCount() - 1);
+            finishFeedSync(model.getModelId(), viewModel->rowCount() - 1);
 
         return {};
     }
 
-    qInfo() << "Last timestamp:" << lastTimestamp;
+    qDebug() << "Last timestamp:" << lastTimestamp;
 
     if (model.isHomeFeed())
         emit timelineSyncProgress(maxPages - 1, lastTimestamp);
@@ -1222,6 +1235,8 @@ void Skywalker::syncFeed(int modelId, QDateTime tillTimestamp, const QString& ci
                 emit statusMessage(mUserDid,
                     tr("Failed to rewind feed '%1'. Feed is not chronological.").arg(feedName),
                     QEnums::STATUS_LEVEL_ERROR);
+
+                return;
             }
 
             if (!newCursor.isEmpty())
@@ -1955,7 +1970,7 @@ void Skywalker::timelineMovementEnded(int firstVisibleIndex, int lastVisibleInde
         getTimelineNextPage();
 }
 
-void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVisibleOffsetY)
+void Skywalker::feedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY)
 {
     auto* model = getPostFeedModel(modelId);
 
@@ -1969,7 +1984,29 @@ void Skywalker::feedMovementEnded(int modelId, int lastVisibleIndex, int lastVis
         return;
 
     if (mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
-        saveFeedSyncTimestamp(*model, lastVisibleIndex, lastVisibleOffsetY);
+    {
+        const QString feedUri = model->getFeedUri();
+        AbstractPostFeedModel& viewModel = model->getViewModel(contentMode);
+        saveFeedSyncTimestamp(viewModel, feedUri, lastVisibleIndex, lastVisibleOffsetY);
+    }
+}
+
+void Skywalker::searchFeedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY)
+{
+    auto* model = getSearchPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "No model:" << modelId;
+        return;
+    }
+
+    if (mUserSettings.mustSyncSearchFeed(mUserDid, model->getFeedName()))
+    {
+        const QString& searchQuery = model->getFeedName();
+        AbstractPostFeedModel& viewModel = model->getViewModel(contentMode);
+        saveSearchFeedSyncTimestamp(viewModel, searchQuery, lastVisibleIndex, lastVisibleOffsetY);
+    }
 }
 
 void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThreadType)
@@ -4348,21 +4385,36 @@ void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)
     mUserSettings.saveSyncOffsetY(mUserDid, offsetY);
 }
 
-void Skywalker::saveFeedSyncTimestamp(PostFeedModel& model, int postIndex, int offsetY)
+void Skywalker::saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& feedUri, int postIndex, int offsetY)
 {
     if (postIndex < 0 || postIndex >= model.rowCount())
     {
-        qWarning() << "Invalid index:" << postIndex << "size:" << model.rowCount() << model.getFeedName();
+        qWarning() << "Invalid index:" << postIndex << "size:" << model.rowCount() << feedUri;
         return;
     }
 
-    const auto feedUri = model.getFeedUri();
     const auto& post = model.getPost(postIndex);
-    qDebug() << "Save feed sync:" << model.getFeedName() << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
+    qDebug() << "Save feed sync:" << feedUri << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
 
     mUserSettings.saveFeedSyncTimestamp(mUserDid, feedUri, post.getTimelineTimestamp());
     mUserSettings.saveFeedSyncCid(mUserDid, feedUri, post.getCid());
     mUserSettings.saveFeedSyncOffsetY(mUserDid, feedUri, offsetY);
+}
+
+void Skywalker::saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchQuery, int postIndex, int offsetY)
+{
+    if (postIndex < 0 || postIndex >= model.rowCount())
+    {
+        qWarning() << "Invalid index:" << postIndex << "size:" << model.rowCount() << searchQuery;
+        return;
+    }
+
+    const Post& post = model.getPost(postIndex);
+    qDebug() << "Save feed sync:" << searchQuery << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
+
+    mUserSettings.saveSearchFeedSyncTimestamp(mUserDid, searchQuery, post.getTimelineTimestamp());
+    mUserSettings.saveSearchFeedSyncCid(mUserDid, searchQuery, post.getCid());
+    mUserSettings.saveSearchFeedSyncOffsetY(mUserDid, searchQuery, offsetY);
 }
 
 Chat* Skywalker::getChat()

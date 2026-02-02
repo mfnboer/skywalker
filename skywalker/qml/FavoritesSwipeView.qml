@@ -131,7 +131,7 @@ SwipeView {
             }
 
             function refreshFeed() {
-                search()
+                syncSearch()
             }
         }
     }

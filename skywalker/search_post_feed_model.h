@@ -29,6 +29,7 @@ public:
                         QObject* parent = nullptr);
 
     void setReverseFeed(bool reverse) override;
+    void setChronological(bool chronological) override;
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
@@ -54,6 +55,8 @@ public:
     Q_INVOKABLE FilteredSearchPostFeedModel* addMediaFilter();
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);
     QList<FilteredSearchPostFeedModel*> getFilteredPostFeedModels() const;
+    FilteredSearchPostFeedModel* getFilteredPostFeedModel(QEnums::ContentMode contentMode) const;
+    AbstractPostFeedModel& getViewModel(QEnums::ContentMode contentMode);
 
     void refreshAllData() override;
     void refreshAllFilteredModels();
@@ -66,17 +69,16 @@ signals:
     void nextPage();
 
 private:
-    struct Page
+    struct Page : public AbstractPage
     {
         using Ptr = std::unique_ptr<Page>;
-        TimelineFeed mFeed;
-        void addPost(const Post& post);
     };
 
     Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
     void addPageToFilteredPostModels(const Page& page, int pageSize);
     void clearFilteredPostModels();
     void setReverseFeedFilteredPostModels(bool reverse);
+    void setChronologicalFilteredPostModels(bool chronological);
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
     FilteredSearchPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
     FilteredSearchPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);

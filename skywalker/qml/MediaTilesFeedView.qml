@@ -155,7 +155,12 @@ GridView {
         const lastVisibleIndex = getBottomRightVisibleIndex()
 
         if (firstVisibleIndex !== -1 && model)
-            skywalker.feedMovementEnded(model.getModelId(), firstVisibleIndex, 0)
+        {
+            if (model.feedType === QEnums.FEED_SEARCH)
+                skywalker.searchFeedMovementEnded(model.getModelId(), model.contentMode, firstVisibleIndex, 0)
+            else
+                skywalker.feedMovementEnded(model.getModelId(), model.contentMode, firstVisibleIndex, 0)
+        }
 
         updateOnMovement()
     }
@@ -278,6 +283,55 @@ GridView {
         }
     }
 
+    // TODO: duplicate code
+    Timer {
+        property int listIndex
+        property int moveAttempt
+        property var callback
+        property var afterMoveCallback: () =>{}
+
+        id: moveToIndexTimer
+        interval: 200
+        onTriggered: {
+            if (!callback(listIndex)) { // qmllint disable use-proper-function
+                if (moveAttempt < 5) {
+                    moveAttempt = moveAttempt + 1
+                    start()
+                }
+                else {
+                    console.debug("No exact move, no more attempts")
+                    afterMoveCallback()
+                    afterMoveCallback = () =>{}
+                }
+            }
+            else {
+                afterMoveCallback()
+                afterMoveCallback = () =>{}
+            }
+        }
+
+        function go(index, callbackFunc, afterMoveCb = () =>{}) {
+            if (running) {
+                console.debug("New move to tile:", index, "previous still running:", listIndex)
+                afterMoveCallback()
+                stop()
+            }
+
+            if (!callbackFunc(index)) {
+                // HACK: doing it again after a short interval makes the positioning work.
+                // After the first time the positioning can be off.
+                listIndex = index
+                moveAttempt = 2
+                callback = callbackFunc
+                afterMoveCallback = afterMoveCb
+                start()
+            }
+            else {
+                afterMoveCb()
+            }
+        }
+    }
+
     function updateUnreadPosts() {
         if (model.reverseFeed) {
             const lastIndex = getBottomRightVisibleIndex()
@@ -293,13 +347,27 @@ GridView {
         }
     }
 
-    function moveToHome() {
-        if (model.reverseFeed)
-            positionViewAtEnd()
-        else
-            positionViewAtBeginning()
+    function moveToIndex(index, callbackFunc, afterMoveCb = () => {}) {
+        moveToIndexTimer.go(index, callbackFunc, afterMoveCb)
+    }
 
+    function doMoveToPost(index) {
+        let firstVisibleIndex = getTopLeftVisibleIndex()
+        let lastVisibleIndex = getBottomRightVisibleIndex()
+        console.debug("Move to tile:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "contentY:", contentY)
+        positionViewAtIndex(Math.max(index, 0), GridView.Beginning)
         updateUnreadPosts()
+        resetHeaderPosition()
+        return (firstVisibleIndex <= index && index <= lastVisibleIndex)
+    }
+
+    function moveToHome() {
+        if (model.reverseFeed) {
+            goToIndex(count - 1)
+        } else {
+            positionViewAtBeginning()
+            updateUnreadPosts()
+        }
     }
 
     function goToIndex(index) {
@@ -308,17 +376,15 @@ GridView {
         console.debug("Go to tile:", model.feedName, "index:", index, "first:", topLeft, "last:", bottomRight)
 
         if (topLeft < 0 || bottomRight < 0 || index < topLeft || index > bottomRight)
-            positionViewAtIndex(index, GridView.Beginning)
-
-        updateUnreadPosts()
+            moveToIndex(index, doMoveToPost)
     }
 
     function getTopLeftVisibleIndex() {
-        return indexAt(1, contentY + (headerItem ? headerItem.height : 0))
+        return indexAt(1, contentY)
     }
 
     function getTopRightVisibleIndex() {
-        const index = indexAt(width - 1, contentY + (headerItem ? headerItem.height : 0))
+        const index = indexAt(width - 1, contentY)
         return (index < 0 && count > 0) ? count - 1 : index
     }
 

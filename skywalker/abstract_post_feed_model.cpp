@@ -12,8 +12,6 @@
 
 namespace Skywalker {
 
-using namespace std::chrono_literals;
-
 const QString AbstractPostFeedModel::NULL_STRING;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
@@ -304,7 +302,7 @@ QDateTime AbstractPostFeedModel::lastTimestamp() const
     auto it = mFeed.rbegin();
 
     while (it != mFeed.rend() && it->isPlaceHolder())
-        --it;
+        ++it;
 
     if (it == mFeed.rend())
         return {};
@@ -338,7 +336,7 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
         }
     }
 
-    return foundIndex;
+    return toVisibleIndex(foundIndex);
 }
 
 int AbstractPostFeedModel::findPost(const QString& cid) const
@@ -1252,6 +1250,63 @@ void AbstractPostFeedModel::reversePosts(int startPhysicalIndex, int endPhysical
     }
 
     std::reverse(mFeed.begin() + startPhysicalIndex, mFeed.begin() + endPhysicalIndex + 1);
+}
+
+
+void AbstractPostFeedModel::AbstractPage::pushPost(const Post& post)
+{
+    mFeed.push_back(post);
+}
+
+void AbstractPostFeedModel::AbstractPage::chronoCheck()
+{
+    QDateTime prevTimestamp;
+    Post* prevPost = nullptr;
+
+    for (auto& post : mFeed)
+    {
+        if (post.isPlaceHolder())
+            continue;
+
+        const auto timestamp = post.getTimelineTimestamp();
+
+        if (!prevTimestamp.isNull() && timestamp > prevTimestamp)
+        {
+            const auto dt = timestamp - prevTimestamp;
+            qDebug() << "Not chronological prev:" << prevTimestamp << "post:" << timestamp << "dt:" << dt;
+            qDebug() << "Not chronological prev:" << prevPost->isRepost() << prevPost->getText();
+            qDebug() << "Not chronological post:" << post.isRepost() << post.getText();
+
+            if (dt < MAX_CHRONO_DEVIATION_DT)
+            {
+                qDebug() << "Not chronological, change timestamp, dt:" << dt;
+                post.setTimelineTimestamp(prevTimestamp);
+            }
+            else
+            {
+                mChronological = false;
+                return;
+            }
+        }
+
+        prevTimestamp = timestamp;
+        prevPost = &post;
+    }
+
+    mChronological = true;
+}
+
+QDateTime AbstractPostFeedModel::AbstractPage::firstTimestamp() const
+{
+    auto it = mFeed.begin();
+
+    while (it != mFeed.end() && it->isPlaceHolder())
+        ++it;
+
+    if (it == mFeed.end())
+        return {};
+
+    return it->getTimelineTimestamp();
 }
 
 }

@@ -122,6 +122,7 @@ QString UserSettings::labelPolicyKey(const QString& did, QString listUri, const 
 void UserSettings::reset()
 {
     mSyncFeeds.reset();
+    mSyncSearchFeeds.reset();
     mBlocksWithExpiry = nullptr;
     mMutesWithExpiry = nullptr;
 
@@ -699,6 +700,16 @@ QDateTime UserSettings::getFeedSyncTimestamp(const QString& did, const QString& 
     return mSettings.value(uriKey(did, "syncFeedTimestamp", feedUri)).toDateTime();
 }
 
+void UserSettings::saveSearchFeedSyncTimestamp(const QString& did, const QString& searchQuery, QDateTime timestamp)
+{
+    mSettings.setValue(uriKey(did, "syncSearchFeedTimestamp", searchQuery), timestamp);
+}
+
+QDateTime UserSettings::getSearchFeedSyncTimestamp(const QString& did, const QString& searchQuery) const
+{
+    return mSettings.value(uriKey(did, "syncSearchFeedTimestamp", searchQuery)).toDateTime();
+}
+
 void UserSettings::saveFeedSyncCid(const QString& did, const QString& feedUri, const QString& cid)
 {
     mSettings.setValue(uriKey(did, "syncFeedCid", feedUri), cid);
@@ -709,6 +720,16 @@ QString UserSettings::getFeedSyncCid(const QString& did, const QString& feedUri)
     return mSettings.value(uriKey(did, "syncFeedCid", feedUri)).toString();
 }
 
+void UserSettings::saveSearchFeedSyncCid(const QString& did, const QString& searchQuery, const QString& cid)
+{
+    mSettings.setValue(uriKey(did, "syncSearchFeedCid", searchQuery), cid);
+}
+
+QString UserSettings::getSearchFeedSyncCid(const QString& did, const QString& searchQuery) const
+{
+    return mSettings.value(uriKey(did, "syncSearchFeedCid", searchQuery)).toString();
+}
+
 void UserSettings::saveFeedSyncOffsetY(const QString& did, const QString& feedUri, int offsetY)
 {
     mSettings.setValue(uriKey(did, "syncFeedOffsetY", feedUri), offsetY);
@@ -717,6 +738,16 @@ void UserSettings::saveFeedSyncOffsetY(const QString& did, const QString& feedUr
 int UserSettings::getFeedSyncOffsetY(const QString& did, const QString& feedUri) const
 {
     return mSettings.value(uriKey(did, "syncFeedOffsetY", feedUri), 0).toInt();
+}
+
+void UserSettings::saveSearchFeedSyncOffsetY(const QString& did, const QString& searchQuery, int offsetY)
+{
+    mSettings.setValue(uriKey(did, "syncSearchFeedOffsetY", searchQuery), offsetY);
+}
+
+int UserSettings::getSearchFeedSyncOffsetY(const QString& did, const QString& searchQuery) const
+{
+    return mSettings.value(uriKey(did, "syncSearchFeedOffsetY", searchQuery), 0).toInt();
 }
 
 void UserSettings::addSyncFeed(const QString& did, const QString& feedUri)
@@ -753,6 +784,42 @@ bool UserSettings::mustSyncFeed(const QString& did, const QString& feedUri) cons
 {
     const auto& feedUris = getSyncFeeds(did);
     return feedUris.contains(feedUri);
+}
+
+void UserSettings::addSyncSearchFeed(const QString& did, const QString& searchQuery)
+{
+    getSyncSearchFeeds(did);
+    mSyncSearchFeeds->insert(searchQuery);
+    const QStringList queries(mSyncSearchFeeds->begin(), mSyncSearchFeeds->end());
+    mSettings.setValue(key(did, "syncSearchFeeds"), queries);
+}
+
+void UserSettings::removeSyncSearchFeed(const QString& did, const QString& searchQuery)
+{
+    getSyncSearchFeeds(did);
+    mSyncSearchFeeds->erase(searchQuery);
+    const QStringList queries(mSyncSearchFeeds->begin(), mSyncSearchFeeds->end());
+    mSettings.setValue(key(did, "syncSearchFeeds"), queries);
+
+    mSettings.remove(uriKey(did, "syncSearchFeedTimestamp", searchQuery));
+    mSettings.remove(uriKey(did, "syncSearchFeedCid", searchQuery));
+    mSettings.remove(uriKey(did, "syncSearchFeedOffsetY", searchQuery));
+}
+
+const std::unordered_set<QString>& UserSettings::getSyncSearchFeeds(const QString& did) const
+{
+    if (mSyncSearchFeeds)
+        return *mSyncSearchFeeds;
+
+    QStringList feeds = mSettings.value(key(did, "syncSearchFeeds")).toStringList();
+    const_cast<UserSettings*>(this)->mSyncSearchFeeds = std::unordered_set<QString>(feeds.begin(), feeds.end());
+    return *mSyncSearchFeeds;
+}
+
+bool UserSettings::mustSyncSearchFeed(const QString& did, const QString& searchQuery) const
+{
+    const auto& queries = getSyncSearchFeeds(did);
+    return queries.contains(searchQuery);
 }
 
 void UserSettings::setFeedReverse(const QString& did, const QString& feedUri, bool reverse)
@@ -845,7 +912,7 @@ static QEnums::ContentMode intToContentMode(int mode)
     return QEnums::ContentMode(mode);
 }
 
-QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QString& feedUri)
+QEnums::ContentMode UserSettings::getFeedViewMode(const QString& did, const QString& feedUri) const
 {
     const int mode = mSettings.value(uriKey(did, "feedViewMode", feedUri), (int)QEnums::CONTENT_MODE_UNSPECIFIED).toInt();
     return intToContentMode(mode);
@@ -879,7 +946,7 @@ void UserSettings::setSearchFeedViewMode(const QString& did, const QString& sear
         mSettings.remove(key(did, "searchFeedViewMode", searchQuery));
 }
 
-QEnums::ContentMode UserSettings::getSearchFeedViewMode(const QString& did, const QString& searchQuery)
+QEnums::ContentMode UserSettings::getSearchFeedViewMode(const QString& did, const QString& searchQuery) const
 {
     if (!isValidKeyPart(searchQuery))
         return QEnums::CONTENT_MODE_UNSPECIFIED;

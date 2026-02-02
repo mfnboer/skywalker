@@ -438,6 +438,7 @@ public:
         CONTENT_MODE_LAST = CONTENT_MODE_VIDEO_TILES
     };
     Q_ENUM(ContentMode)
+    static ContentMode contentModeToFilterMode(ContentMode contentMode);
 
     enum InsetsSide
     {

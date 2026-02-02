@@ -52,6 +52,7 @@ public:
                            QObject* parent = nullptr);
 
     void setReverseFeed(bool reverse) override;
+    void setChronological(bool chronological) override;
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
@@ -133,6 +134,8 @@ public:
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     Q_INVOKABLE void reorderFilteredPostFeedModels(const QList<FilteredPostFeedModel*>& models);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
+    FilteredPostFeedModel* getFilteredPostFeedModel(QEnums::ContentMode contentMode) const;
+    AbstractPostFeedModel& getViewModel(QEnums::ContentMode contentMode);
     Q_INVOKABLE void addFilteredPostFeedModelsFromSettings();
 
     void refreshAllData() override;
@@ -161,25 +164,21 @@ signals:
     void filteredPostFeedModelUpdated(int index);
 
 private:
-    struct Page
+    struct Page : public AbstractPage
     {
         using Ptr = std::unique_ptr<Page>;
-        TimelineFeed mFeed;
         QString mCursorNextPage;
         std::unordered_set<QString> mAddedCids;
         std::unordered_map<QString, int> mParentIndexMap;
         std::unordered_map<QString, ATProto::AppBskyFeed::ThreadgateView::SharedPtr> mRootUriToThreadgate;
         QDateTime mOldestDiscaredTimestamp;
-        bool mChronological = true;
 
-        void addPost(const Post& post, bool isParent = false);
+        void addPost(const Post& post, bool isParent);
         bool cidAdded(const QString& cid) const { return mAddedCids.count(cid); }
         bool tryAddToExistingThread(const Post& post, const PostReplyRef& replyRef, ContentFilterStats& contentFilterStats);
         void collectThreadgate(const Post& post);
         void setThreadgates();
         void postProcessThreads(bool reverseFeed);
-        void chronoCheck();
-        QDateTime firstTimestamp() const;
         void foldPosts(int startIndex, int endIndex);
         void reversePosts(int startIndex, int endIndex);
     };
@@ -196,6 +195,7 @@ private:
     void removeTailFromFilteredPostModels(size_t tailSize);
     void clearFilteredPostModels();
     void setReverseFeedFilteredPostModels(bool reverse);
+    void setChronologicalFilteredPostModels(bool chronological);
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
 
     FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);

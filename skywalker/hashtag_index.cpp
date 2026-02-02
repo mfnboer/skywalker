@@ -32,7 +32,6 @@ void HashtagIndex::clear()
 
 void HashtagIndex::insert(const QString& hashtag)
 {
-    qDebug() << "Insert hashtag:" << hashtag;
     auto* entry = new Entry(this, hashtag);
     const QString normalized = entry->getNormalized();
     mCache.insert(hashtag, entry);
@@ -92,7 +91,6 @@ void HashtagIndex::addToIndex(const QString& hashtag, const QString& normalized)
 
 void HashtagIndex::removeFromIndex(const QString& hashtag, const QString& normalized)
 {
-    qDebug() << "Remove hashtag:" << hashtag;
     auto& hashtags = mIndex[normalized];
     hashtags.erase(hashtag);
 

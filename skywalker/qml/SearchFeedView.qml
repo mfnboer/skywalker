@@ -12,6 +12,7 @@ import atproto.lib
 // and so on.
 PostListView {
     required property searchfeed searchFeed
+    property bool pinnedFeed: false
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property int extraFooterMargin: 0
 
@@ -21,7 +22,7 @@ PostListView {
     width: parent.width
     inSync: true
     reverseSyncFun: () => { moveToIndex(count - 1, doMoveToPost); finishSync() }
-    resyncFun: () => setInSync(newLastVisibleIndex, newLastVisibleOffsetY)
+    resyncFun: () => setInSync(newLastVisibleIndex, newLastVisibleOffsetY, true)
     syncFun: (index, offsetY) => setInSync(index, offsetY)
 
     Accessible.name: searchFeed.name
@@ -78,6 +79,11 @@ PostListView {
         const firstVisibleIndex = getFirstVisibleIndex()
         const lastVisibleIndex = getLastVisibleIndex()
 
+        if (lastVisibleIndex !== -1 && model) {
+            const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
+            skywalker.searchFeedMovementEnded(model.getModelId(), model.contentMode, lastVisibleIndex, lastVisibleOffsetY)
+        }
+
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
         updateOnMovement()
     }
@@ -85,8 +91,8 @@ PostListView {
     FlickableRefresher {
         reverseFeed: model && model.reverseFeed
         inProgress: model && model.getFeedInProgress
-        topOvershootFun: reverseFeed ? feedView.getNextPage() : () => feedView.search()
-        bottomOvershootFun: () => reverseFeed ? () => feedView.search() : feedView.getNextPage()
+        topOvershootFun: reverseFeed ? feedView.getNextPage() : () => feedView.syncSearch()
+        bottomOvershootFun: () => reverseFeed ? () => feedView.syncSearch() : feedView.getNextPage()
         topText: reverseFeed ? qsTr("Pull up to refresh feed") : qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }
@@ -98,7 +104,7 @@ PostListView {
         text: qsTr("Feed is empty")
         list: feedView
 
-        onRetry: feedView.search()
+        onRetry: feedView.syncSearch()
     }
 
     BusyIndicator {
@@ -112,6 +118,33 @@ PostListView {
         active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
         sourceComponent: FeedViewLoadMore {
             listView: feedView
+        }
+    }
+
+    // TODO: duplicate code
+    Rectangle {
+        y: headerItem ? headerItem.height : 0
+        width: parent.width
+        height: parent.height - (headerItem ? headerItem.height : 0) - (footerItem && footerItem.visible ? footerItem.height : 0)
+        color: guiSettings.backgroundColor
+        visible: !inSync && (rewindStatus.rewindPagesLoaded > 0 || rewindStatus.isFirstRewind)
+
+        Column {
+            width: parent.width - 20
+            anchors.centerIn: parent
+
+            AccessibleText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                font.pointSize: guiSettings.scaledFont(2)
+                text: qsTr("Rewinding feed")
+            }
+
+            RewindStatus {
+                property bool isFirstRewind: true
+
+                id: rewindStatus
+                width: parent.width
+            }
         }
     }
 
@@ -133,6 +166,7 @@ PostListView {
 
         onShowFeed: root.viewSearchViewFeed(searchFeed)
         onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
+        onEnableSyncSearchFeed: (enable) => searchUtils.syncFeed(searchFeed.searchQuery, enable)
     }
 
     function changeReverseFeed(reverse) {
@@ -145,14 +179,14 @@ PostListView {
     }
 
     function showOptionsMenu() {
-        optionsMenu.open()
+        optionsMenu.show()
     }
 
     function moveToHome() {
         console.debug("Move to home:", model.feedName)
 
         if (model.reverseFeed)
-            positionViewAtEnd()
+            moveToIndex(count - 1, doMoveToPost)
         else
             positionViewAtBeginning()
 
@@ -162,20 +196,28 @@ PostListView {
         if (mediaTilesLoader.item)
             mediaTilesLoader.item.moveToHome()
 
+        skywalker.searchFeedMovementEnded(model.getModelId(), model.contentMode, homeIndex, 0)
+
         updateUnreadPosts()
     }
 
     function finishSync() {
         syncDone()
+        rewindStatus.isFirstRewind = false
         updateUnreadPosts()
         resetHeaderPosition()
     }
 
-    function setInSync(index, offsetY = 0) {
+    function setInSync(index, offsetY = 0, resync = false) {
         console.debug("Sync:", model.feedName, "index:", index, "count:", count, "offsetY:", offsetY)
 
         if (mediaTilesLoader.active) {
-            console.debug("Media tiles loader active, don't sync:", model.feedName)
+            console.debug("Media tiles loader active, sync:", model.feedName)
+
+            if (!resync)
+                mediaTilesLoader.item.setInSync(index)
+
+            finishSync()
             return
         }
 
@@ -192,19 +234,39 @@ PostListView {
             if (reverseFeed)
                 positionViewAtBeginning()
             else
-                positionViewAtEnd()
+                moveToIndex(count - 1, doMoveToPost)
 
             finishSync()
         }
     }
 
-    function search() {
-        searchUtils.searchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,
-                                searchFeed.authorHandle, searchFeed.mentionHandle,
-                                searchFeed.since, !isNaN(searchFeed.since.getTime()),
-                                searchFeed.until, !isNaN(searchFeed.until.getTime()),
-                                searchFeed.language)
+    function syncToHome() {
+        moveToHome()
+        finishSync()
     }
+
+    function handleSyncStart(maxPages, timestamp) {
+        console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
+        rewindStatus.startRewind(maxPages, timestamp)
+        inSync = false
+
+        if (mediaTilesLoader.item)
+            mediaTilesLoader.item.stopSync()
+    }
+
+    function handleSyncProgress(pages, timestamp) {
+        console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
+        rewindStatus.updateRewindProgress(pages, timestamp)
+    }
+
+    // TODO: remove
+    // function search() {
+    //     searchUtils.searchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,
+    //                             searchFeed.authorHandle, searchFeed.mentionHandle,
+    //                             searchFeed.since, !isNaN(searchFeed.since.getTime()),
+    //                             searchFeed.until, !isNaN(searchFeed.until.getTime()),
+    //                             searchFeed.language)
+    // }
 
     function getNextPage() {
         searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,
@@ -214,7 +276,20 @@ PostListView {
                                 searchFeed.language)
     }
 
+    function syncSearch() {
+        searchUtils.syncSearchPosts(searchFeed.searchQuery,
+                                    searchFeed.authorHandle, searchFeed.mentionHandle,
+                                    searchFeed.since, !isNaN(searchFeed.since.getTime()),
+                                    searchFeed.until, !isNaN(searchFeed.until.getTime()),
+                                    searchFeed.language)
+    }
+
     function forceDestroy() {
+        searchUtils.onFeedSyncStart.disconnect(handleSyncStart)
+        searchUtils.onFeedSyncProgress.disconnect(handleSyncProgress)
+        searchUtils.onFeedSyncOk.disconnect(setInSync)
+        searchUtils.onFeedSyncFailed.disconnect(syncToHome)
+
         searchUtils.clearAllSearchResults()
         searchUtils.removeModels()
         destroy()
@@ -225,9 +300,14 @@ PostListView {
         // Model set here. Setting it right away causes getSearchPostFeedModel crash with an
         // assert as the skywalker property is not set yet.
         const m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
-        m.onFirstPage.connect(() => { search() })
+        m.onFirstPage.connect(() => { syncSearch() })
         m.onNextPage.connect(() => { getNextPage() })
         setModel(m)
+
+        searchUtils.onFeedSyncStart.connect(handleSyncStart)
+        searchUtils.onFeedSyncProgress.connect(handleSyncProgress)
+        searchUtils.onFeedSyncOk.connect(setInSync)
+        searchUtils.onFeedSyncFailed.connect(syncToHome)
 
         const viewMode = userSettings.getSearchFeedViewMode(skywalker.getUserDid(), searchFeed.name)
 
@@ -236,6 +316,6 @@ PostListView {
             changeView(viewMode)
         }
 
-        search()
+        syncSearch()
     }
 }

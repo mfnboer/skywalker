@@ -12,8 +12,6 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
-static constexpr auto MAX_CHRONO_DEVIATION_DT = 30s;
-
 PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                              const QString& userDid,
                              const IProfileStore& mutedReposts,
@@ -61,6 +59,13 @@ void PostFeedModel::setReverseFeed(bool reverse)
     qDebug() << "Reverse feed:" << reverse << mModelId << mFeedName;
     AbstractPostFeedModel::setReverseFeed(reverse);
     setReverseFeedFilteredPostModels(reverse);
+}
+
+void PostFeedModel::setChronological(bool chronological)
+{
+    qDebug() << "Set chronological:" << chronological << mModelId << mFeedName;
+    AbstractPostFeedModel::setChronological(chronological);
+    setChronologicalFilteredPostModels(chronological);
 }
 
 void PostFeedModel::createInteractionSender(ATProto::Client::SharedPtr bsky)
@@ -288,6 +293,14 @@ void PostFeedModel::setReverseFeedFilteredPostModels(bool reverse)
 
     for (auto& model : mFilteredPostFeedModels)
         model->setReverseFeed(reverse);
+}
+
+void PostFeedModel::setChronologicalFilteredPostModels(bool chronological)
+{
+    qDebug() << "Set chronological filtered post models:" << chronological << mModelId << mFeedName;
+
+    for (auto& model : mFilteredPostFeedModels)
+        model->setChronological(chronological);
 }
 
 void PostFeedModel::setEndOfFeedFilteredPostModels(bool endOfFeed)
@@ -744,6 +757,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
 
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
+    model->setChronological(isChronological());
     model->setPosts(mFeed, mFeed.size());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
@@ -866,6 +880,33 @@ QList<FilteredPostFeedModel*> PostFeedModel::getFilteredPostFeedModels() const
     return QList<FilteredPostFeedModel*>(models.begin(), models.end());
 }
 
+FilteredPostFeedModel* PostFeedModel::getFilteredPostFeedModel(QEnums::ContentMode contentMode) const
+{
+    auto filterMode = QEnums::contentModeToFilterMode(contentMode);
+
+    for (auto& model : mFilteredPostFeedModels)
+    {
+        if (model->getContentMode() == filterMode)
+            return model.get();
+    }
+
+    return nullptr;
+}
+
+AbstractPostFeedModel& PostFeedModel::getViewModel(QEnums::ContentMode contentMode)
+{
+    if (contentMode == getContentMode())
+        return *this;
+
+    auto* model = getFilteredPostFeedModel(contentMode);
+
+    if (model)
+        return *model;
+
+    qDebug() << "No filter model for content mode:" << contentMode;
+    return *this;
+}
+
 void PostFeedModel::addFilteredPostFeedModelsFromSettings()
 {
     const auto json = mUserSettings.getTimelineViews(mUserDid);
@@ -982,7 +1023,7 @@ void PostFeedModel::reportOffScreen(const QString& postUri, const QString& feedC
 
 void PostFeedModel::Page::addPost(const Post& post, bool isParent)
 {
-    mFeed.push_back(post);
+    pushPost(post);
     const auto& cid = post.getCid();
 
     if (!cid.isEmpty())
@@ -1281,57 +1322,6 @@ void PostFeedModel::Page::setThreadgates()
     }
 }
 
-void PostFeedModel::Page::chronoCheck()
-{
-    QDateTime prevTimestamp;
-    Post* prevPost = nullptr;
-
-    for (auto& post : mFeed)
-    {
-        if (post.isPlaceHolder())
-            continue;
-
-        const auto timestamp = post.getTimelineTimestamp();
-
-        if (!prevTimestamp.isNull() && timestamp > prevTimestamp)
-        {
-            const auto dt = timestamp - prevTimestamp;
-            qDebug() << "Not chronological prev:" << prevTimestamp << "post:" << timestamp << "dt:" << dt;
-            qDebug() << "Not chronological prev:" << prevPost->isRepost() << prevPost->getText();
-            qDebug() << "Not chronological post:" << post.isRepost() << post.getText();
-
-            if (dt < MAX_CHRONO_DEVIATION_DT)
-            {
-                qDebug() << "Not chronological, change timestamp, dt:" << dt;
-                post.setTimelineTimestamp(prevTimestamp);
-            }
-            else
-            {
-                mChronological = false;
-                return;
-            }
-        }
-
-        prevTimestamp = timestamp;
-        prevPost = &post;
-    }
-
-    mChronological = true;
-}
-
-QDateTime PostFeedModel::Page::firstTimestamp() const
-{
-    auto it = mFeed.begin();
-
-    while (it != mFeed.end() && it->isPlaceHolder())
-        ++it;
-
-    if (it == mFeed.end())
-        return {};
-
-    return it->getTimelineTimestamp();
-}
-
 void PostFeedModel::Page::postProcessThreads(bool reverseFeed)
 {
     int threadStartIndex = -1;
@@ -1498,7 +1488,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                     if (auto reason = mustHideContent(replyRef->mRoot); reason.first == QEnums::HIDE_REASON_NONE)
                     {
                         preprocess(replyRef->mRoot);
-                        page->addPost(replyRef->mRoot);
+                        page->addPost(replyRef->mRoot, false);
                         page->mFeed.back().setPostType(QEnums::POST_ROOT);
                         rootAdded = true;
                     }
@@ -1559,12 +1549,12 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             }
 
             preprocess(post);
-            page->addPost(post);
+            page->addPost(post, false);
         }
         else
         {
             qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType));
+            page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType), false);
         }
     }
 
@@ -1598,12 +1588,12 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
         {
             Post post(feedEntry);
             preprocess(post);
-            page->addPost(post);
+            page->addPost(post, false);
         }
         else
         {
             qWarning() << "Unsupported post record type:" << int(feedEntry->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mRawRecordType));
+            page->addPost(Post::createNotSupported(feedEntry->mRawRecordType), false);
         }
     }
 
@@ -1661,7 +1651,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPageFilteredPosts(
         if (!mustHideFilteredPost(post, hideDetails))
         {
             preprocess(post);
-            page->addPost(post);
+            page->addPost(post, false);
         }
     }
 
