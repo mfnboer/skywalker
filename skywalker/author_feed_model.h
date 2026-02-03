@@ -28,7 +28,7 @@ public:
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE AuthorFeedModel* getUnderlyingModel() { return this; }
-    QString getFeedName() const;
+    QString getFeedName() const override;
     QEnums::FeedType getFeedType() const { return QEnums::FEED_AUTHOR; }
     QString getFeedDid() const { return ""; }
     bool feedAcceptsInteractions() const { return false; }

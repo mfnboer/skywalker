@@ -29,6 +29,7 @@ public:
 
     Q_INVOKABLE QVariant getUnderlyingModel();
     QEnums::FeedType getFeedType() const;
+    QString getFeedName() const override;
 
     void clear();
     void setPosts(const TimelineFeed& posts, size_t numPosts);

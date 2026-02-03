@@ -23,6 +23,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(BasicProfileList lastSearchedProfiles READ getLastSearchedProfiles WRITE setLastSearchedProfiles NOTIFY lastSearchedProfilesChanged FINAL)
     Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
     Q_PROPERTY(QEnums::ContentVisibility overrideAdultVisibility READ getOverrideAdultVisibility WRITE setOverrideAdultVisibility NOTIFY overrideAdultVisibilityChanged FINAL)
+    Q_PROPERTY(int searchPageSize READ getSearchPageSize WRITE setSearchPageSize NOTIFY searchPageSizeChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -98,6 +99,8 @@ public:
     TrendingTopicListModel* getTrendingTopicsListModel() { return mTrendingTopicsListModel.get(); }
     QEnums::ContentVisibility getOverrideAdultVisibility() const { return mOVerrideAdultVisibility; }
     void setOverrideAdultVisibility(QEnums::ContentVisibility visibility);
+    int getSearchPageSize() const { return mSearchPageSize.value_or(0); }
+    void setSearchPageSize(int pageSize);
 
 signals:
     void authorTypeaheadListChanged();
@@ -105,6 +108,7 @@ signals:
     void lastSearchedProfilesChanged();
     void trendingTopicsListModelChanged();
     void overrideAdultVisibilityChanged();
+    void searchPageSizeChanged();
     void feedSyncStart(int pages, QDateTime rewindTimestamp);
     void feedSyncProgress(int pages, QDateTime timestamp);
     void feedSyncOk(int index, int offsetY);
@@ -138,6 +142,7 @@ private:
     CanChatProfileMatcher mCanChatProfileMatcher;
     TrendingTopicListModel::Ptr mTrendingTopicsListModel;
     QEnums::ContentVisibility mOVerrideAdultVisibility = QEnums::CONTENT_VISIBILITY_SHOW;
+    std::optional<int> mSearchPageSize;
 };
 
 }

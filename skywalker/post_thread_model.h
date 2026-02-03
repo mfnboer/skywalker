@@ -27,6 +27,7 @@ public:
                              HashtagIndex& hashtags,
                              QObject* parent = nullptr);
 
+    QString getFeedName() const override { return "Post thread"; }
     Q_INVOKABLE QEnums::ReplyOrder getReplyOrder();
     Q_INVOKABLE void setReplyOrder(QEnums::ReplyOrder replyOrder);
 

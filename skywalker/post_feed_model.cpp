@@ -735,19 +735,19 @@ FilteredPostFeedModel* PostFeedModel::addFocusHashtagFilter(FocusHashtagEntry* f
     return addFilteredPostFeedModel(std::move(filter));
 }
 
-FilteredPostFeedModel* PostFeedModel::addVideoFilter()
+FilteredPostFeedModel* PostFeedModel::addVideoFilter(int rowSize)
 {
     auto filter = std::make_unique<VideoPostFilter>();
-    return addFilteredPostFeedModel(std::move(filter));
+    return addFilteredPostFeedModel(std::move(filter), rowSize);
 }
 
-FilteredPostFeedModel* PostFeedModel::addMediaFilter()
+FilteredPostFeedModel* PostFeedModel::addMediaFilter(int rowSize)
 {
     auto filter = std::make_unique<MediaPostFilter>();
-    return addFilteredPostFeedModel(std::move(filter));
+    return addFilteredPostFeedModel(std::move(filter), rowSize);
 }
 
-FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
+FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter, int rowSize)
 {
     Q_ASSERT(postFilter);
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
@@ -755,6 +755,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
             std::move(postFilter), this, mUserDid, mMutedReposts, mContentFilter,
             mMutedWords, mFocusHashtags, mHashtags, this);
 
+    model->setRowSize(rowSize);
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
     model->setChronological(isChronological());

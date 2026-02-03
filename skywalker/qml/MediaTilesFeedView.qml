@@ -8,7 +8,7 @@ GridView {
     property Skywalker skywalker: root.getSkywalker(userDid)
     property bool acceptsInteractions: false
     property string feedDid: ""
-    readonly property int columns: 3
+    readonly property int columns: skywalker.TILE_VIEW_ROW_SIZE
     readonly property int spacing: 2
     property bool showAsHome: false
     property var enclosingView // used on AuthorView

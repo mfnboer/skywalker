@@ -194,12 +194,16 @@ SkyListView {
             setModel(model.getUnderlyingModel())
             break
         case QEnums.CONTENT_MODE_VIDEO:
-        case QEnums.CONTENT_MODE_VIDEO_TILES:
             setModel(model.getUnderlyingModel().addVideoFilter())
             break
+        case QEnums.CONTENT_MODE_VIDEO_TILES:
+            setModel(model.getUnderlyingModel().addVideoFilter(skywalker.TILE_VIEW_ROW_SIZE))
+            break
         case QEnums.CONTENT_MODE_MEDIA:
-        case QEnums.CONTENT_MODE_MEDIA_TILES:
             setModel(model.getUnderlyingModel().addMediaFilter())
+            break
+        case QEnums.CONTENT_MODE_MEDIA_TILES:
+            setModel(model.getUnderlyingModel().addMediaFilter(skywalker.TILE_VIEW_ROW_SIZE))
             break
         default:
             console.warn("Unknown content mode:", contentMode)

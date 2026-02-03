@@ -151,6 +151,7 @@ PostListView {
     SearchUtils {
         id: searchUtils
         skywalker: feedView.skywalker
+        searchPageSize: mediaTilesLoader.active ? 100 : 0
 
         Component.onDestruction: {
             // The destuctor of SearchUtils is called too late by the QML engine
@@ -258,15 +259,6 @@ PostListView {
         console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
         rewindStatus.updateRewindProgress(pages, timestamp)
     }
-
-    // TODO: remove
-    // function search() {
-    //     searchUtils.searchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,
-    //                             searchFeed.authorHandle, searchFeed.mentionHandle,
-    //                             searchFeed.since, !isNaN(searchFeed.since.getTime()),
-    //                             searchFeed.until, !isNaN(searchFeed.until.getTime()),
-    //                             searchFeed.language)
-    // }
 
     function getNextPage() {
         searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,

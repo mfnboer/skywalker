@@ -33,7 +33,7 @@ public:
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
-    const QString& getFeedName() const { return mFeedName; }
+    QString getFeedName() const override { return mFeedName; }
     QEnums::FeedType getFeedType() const { return QEnums::FEED_SEARCH; }
     QString getFeedDid() const { return ""; }
     bool feedAcceptsInteractions() const { return false; }
@@ -51,8 +51,8 @@ public:
 
     const QString& getCursorNextPage() const { return mCursorNextPage; }
 
-    Q_INVOKABLE FilteredSearchPostFeedModel* addVideoFilter();
-    Q_INVOKABLE FilteredSearchPostFeedModel* addMediaFilter();
+    Q_INVOKABLE FilteredSearchPostFeedModel* addVideoFilter(int rowSize = 1);
+    Q_INVOKABLE FilteredSearchPostFeedModel* addMediaFilter(int rowSize = 1);
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);
     QList<FilteredSearchPostFeedModel*> getFilteredPostFeedModels() const;
     FilteredSearchPostFeedModel* getFilteredPostFeedModel(QEnums::ContentMode contentMode) const;
@@ -80,7 +80,7 @@ private:
     void setReverseFeedFilteredPostModels(bool reverse);
     void setChronologicalFilteredPostModels(bool chronological);
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
-    FilteredSearchPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
+    FilteredSearchPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter, int rowSize = 1);
     FilteredSearchPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel);
     int findFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel) const;
 

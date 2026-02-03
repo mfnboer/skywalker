@@ -56,7 +56,7 @@ public:
 
     Q_INVOKABLE bool isFilterModel() const { return false; }
     Q_INVOKABLE PostFeedModel* getUnderlyingModel() { return this; }
-    const QString& getFeedName() const { return mFeedName; }
+    QString getFeedName() const override { return mFeedName; }
     const QString getFeedDid() const;
     QString getFeedUri() const;
     QEnums::FeedType getFeedType() const;
@@ -129,8 +129,8 @@ public:
     Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const BasicProfile& profile);
     Q_INVOKABLE FilteredPostFeedModel* addHashtagFilter(const QString& hashtag);
     Q_INVOKABLE FilteredPostFeedModel* addFocusHashtagFilter(FocusHashtagEntry* focusHashtag);
-    Q_INVOKABLE FilteredPostFeedModel* addVideoFilter();
-    Q_INVOKABLE FilteredPostFeedModel* addMediaFilter();
+    Q_INVOKABLE FilteredPostFeedModel* addVideoFilter(int rowSize = 1);
+    Q_INVOKABLE FilteredPostFeedModel* addMediaFilter(int rowSize = 1);
     Q_INVOKABLE void deleteFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     Q_INVOKABLE void reorderFilteredPostFeedModels(const QList<FilteredPostFeedModel*>& models);
     QList<FilteredPostFeedModel*> getFilteredPostFeedModels() const;
@@ -198,7 +198,7 @@ private:
     void setChronologicalFilteredPostModels(bool chronological);
     void setEndOfFeedFilteredPostModels(bool endOfFeed);
 
-    FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter);
+    FilteredPostFeedModel* addFilteredPostFeedModel(IPostFilter::Ptr postFilter, int rowSize = 1);
     void addFilteredPostFeedModel(FilteredPostFeedModel::Ptr model);
     FilteredPostFeedModel::Ptr removeFilteredPostFeedModel(FilteredPostFeedModel* postFeedModel);
     QJsonObject filteredPostFeedModelsToJson();

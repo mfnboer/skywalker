@@ -49,6 +49,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TIMELINE_NEXT_PAGE_THRESHOLD MEMBER TIMELINE_NEXT_PAGE_THRESHOLD CONSTANT)
     Q_PROPERTY(int QUOTE_CHAIN_PAGE_SIZE MEMBER QUOTE_CHAIN_PAGE_SIZE CONSTANT)
+    Q_PROPERTY(int TILE_VIEW_ROW_SIZE MEMBER TILE_VIEW_ROW_SIZE CONSTANT)
     Q_PROPERTY(PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* notificationListModel READ getNotificationListModel CONSTANT FINAL)
     Q_PROPERTY(NotificationListModel* mentionListModel READ getMentionListModel CONSTANT FINAL)
@@ -75,6 +76,7 @@ public:
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 50;
     static constexpr int TIMELINE_NEXT_PAGE_THRESHOLD = 30; // Get next page when less posts till current end
     static constexpr int QUOTE_CHAIN_PAGE_SIZE = 10;
+    static constexpr int TILE_VIEW_ROW_SIZE = 3;
 
     explicit Skywalker(QObject* parent = nullptr);
     ~Skywalker();

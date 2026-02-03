@@ -214,7 +214,7 @@ Rectangle {
         x: 10
         anchors.bottom: mediaRect.bottom
         width: mediaRect.width - 20
-        visible: mediaItem ? mediaItem.contentFilter.imageVisible() : true
+        visible: mediaItem ? mediaItem.contentFilter.imageVisible() : !postIsPlaceHolder
 
         Loader {
             width: parent.width
@@ -367,7 +367,7 @@ Rectangle {
     SkyMouseArea {
         z: -2
         anchors.fill: parent
-        enabled: !(postThreadType & QEnums.THREAD_ENTRY)
+        enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postIsPlaceHolder
         onClicked: activateSwipe(0, null)
     }
 

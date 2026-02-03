@@ -310,7 +310,7 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder, con
 
     model.setGetFeedInProgress(true);
 
-    bskyClient()->searchPosts(searchText, {}, Utils::makeOptionalString(cursor),
+    bskyClient()->searchPosts(searchText, mSearchPageSize, Utils::makeOptionalString(cursor),
         Utils::makeOptionalString(sortOrder), Utils::makeOptionalString(authorId),
         Utils::makeOptionalString(mentionsId), sinceParam, untilParam,
         Utils::makeOptionalString(language),
@@ -1180,6 +1180,27 @@ void SearchUtils::setOverrideAdultVisibility(QEnums::ContentVisibility visibilit
         mOVerrideAdultVisibility = visibility;
         emit overrideAdultVisibilityChanged();
     }
+}
+
+void SearchUtils::setSearchPageSize(int pageSize)
+{
+    Q_ASSERT(pageSize >= 0);
+
+    if (pageSize < 0)
+    {
+        qWarning() << "Invalid page size:" << pageSize;
+        return;
+    }
+
+    if (pageSize == mSearchPageSize.value_or(0))
+        return;
+
+    if (pageSize == 0)
+        mSearchPageSize.reset();
+    else
+        mSearchPageSize = pageSize;
+
+    emit searchPageSizeChanged();
 }
 
 SearchFeed SearchUtils::createSearchFeed(

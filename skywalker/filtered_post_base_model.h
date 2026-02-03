@@ -27,7 +27,7 @@ public:
                                    QObject* parent = nullptr);
 
     Q_INVOKABLE bool isFilterModel() const { return true; }
-    QString getFeedName() const { return mPostFilter->getName(); }
+    QString getFeedName() const override { return mPostFilter->getName(); }
     QEnums::ContentMode getContentMode() const { return mPostFilter->getContentMode(); }
     QColor getBackgroundColor() const { return mPostFilter->getBackgroundColor(); }
     BasicProfile getProfile() const { return mPostFilter->getAuthor(); }
@@ -37,6 +37,7 @@ public:
     QDateTime getCheckedTillTimestamp() const { return mCheckedTillTimestamp; }
     void setNumPostsChecked(int numPostsChecked);
     int getNumPostsChecked() const { return mNumPostsChecked; }
+    void setRowSize(int rowSize);
 
     QVariant data(const QModelIndex& index, int role) const override;
 
@@ -45,9 +46,16 @@ signals:
     void numPostsCheckedChanged();
 
 protected:
+    void resetRowFillPosts();
+    void addRowFillPosts();
+    void removeRowFillPosts();
+
     IPostFilter::Ptr mPostFilter;
     QDateTime mCheckedTillTimestamp{QDateTime::currentDateTimeUtc()};
     int mNumPostsChecked = 0;
+
+    int mRowSize = 1;
+    int mNumRowFillPosts = 0;
 };
 
 }

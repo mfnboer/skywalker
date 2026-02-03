@@ -47,6 +47,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
     Q_PROPERTY(bool chronological READ isChronological NOTIFY chronologicalChanged FINAL)
     QML_ELEMENT
+    QML_UNCREATABLE("only subclasses can be created")
 
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
@@ -144,6 +145,8 @@ public:
                           HashtagIndex& hashtags,
                           QObject* parent = nullptr);
 
+    virtual ~AbstractPostFeedModel() = default;
+
     void setModelId(int modelId) { mModelId = modelId; }
     Q_INVOKABLE int getModelId() const { return mModelId; }
 
@@ -152,6 +155,8 @@ public:
 
     virtual void setChronological(bool chronological);
     bool isChronological() const { return mChronological; }
+
+    virtual QString getFeedName() const = 0;
 
     void setOverrideAdultVisibility(const QEnums::ContentVisibility visibility) { mOverrideAdultVisibility = visibility; }
     void clearOverrideAdultVisibility() { mOverrideAdultVisibility = {}; }

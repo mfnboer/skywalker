@@ -100,6 +100,7 @@ void FilteredSearchPostFeedModel::addPage(Page::Ptr page)
         return;
     }
 
+    removeRowFillPosts();
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
@@ -107,6 +108,7 @@ void FilteredSearchPostFeedModel::addPage(Page::Ptr page)
     mFeed.insert(mFeed.end(), posts.begin(), posts.end());
     endInsertRows();
 
+    addRowFillPosts();
     qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
 }
 

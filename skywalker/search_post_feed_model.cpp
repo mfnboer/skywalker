@@ -125,16 +125,16 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
     return page->mFeed.size();
 }
 
-FilteredSearchPostFeedModel* SearchPostFeedModel::addVideoFilter()
+FilteredSearchPostFeedModel* SearchPostFeedModel::addVideoFilter(int rowSize)
 {
     auto filter = std::make_unique<VideoPostFilter>();
-    return addFilteredPostFeedModel(std::move(filter));
+    return addFilteredPostFeedModel(std::move(filter), rowSize);
 }
 
-FilteredSearchPostFeedModel* SearchPostFeedModel::addMediaFilter()
+FilteredSearchPostFeedModel* SearchPostFeedModel::addMediaFilter(int rowSize)
 {
     auto filter = std::make_unique<MediaPostFilter>();
-    return addFilteredPostFeedModel(std::move(filter));
+    return addFilteredPostFeedModel(std::move(filter), rowSize);
 }
 
 void SearchPostFeedModel::deleteFilteredPostFeedModel(FilteredSearchPostFeedModel* postFeedModel)
@@ -298,7 +298,7 @@ void SearchPostFeedModel::setChronologicalFilteredPostModels(bool chronological)
         model->setChronological(chronological);
 }
 
-FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter)
+FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr postFilter, int rowSize)
 {
     Q_ASSERT(postFilter);
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
@@ -306,6 +306,7 @@ FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPost
         std::move(postFilter), this, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, mFocusHashtags, mHashtags, this);
 
+    model->setRowSize(rowSize);
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
     model->setChronological(isChronological());

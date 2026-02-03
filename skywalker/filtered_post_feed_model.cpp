@@ -29,7 +29,18 @@ QVariant FilteredPostFeedModel::getUnderlyingModel()
 
 QEnums::FeedType FilteredPostFeedModel::getFeedType() const
 {
-    return mUnderlyingModel->getFeedType();
+    if (mUnderlyingModel)
+        return mUnderlyingModel->getFeedType();
+
+    return QEnums::FEED_GENERIC;
+}
+
+QString FilteredPostFeedModel::getFeedName() const
+{
+    if (mUnderlyingModel)
+        return QString("%1 [%2]").arg(mUnderlyingModel->getFeedName(), FilteredPostBaseModel::getFeedName());
+
+    return FilteredPostBaseModel::getFeedName();
 }
 
 void FilteredPostFeedModel::clear()
@@ -44,6 +55,7 @@ void FilteredPostFeedModel::clear()
 
     setNumPostsChecked(0);
     setCheckedTillTimestamp(QDateTime::currentDateTimeUtc());
+    resetRowFillPosts();
     qDebug() << "All posts removed";
 }
 
@@ -311,12 +323,14 @@ void FilteredPostFeedModel::addPage(Page::Ptr page)
         return;
     }
 
+    removeRowFillPosts();
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
     insertPage(mFeed.end(), *page);
     endInsertRows();
 
+    addRowFillPosts();
     qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
 }
 
@@ -328,10 +342,13 @@ void FilteredPostFeedModel::prependPage(Page::Ptr page)
         return;
     }
 
+    removeRowFillPosts();
+
     beginInsertRowsPhysical(0, page->mFeed.size() - 1);
     insertPage(mFeed.begin(), *page);
     endInsertRows();
 
+    addRowFillPosts();
     qDebug() << "Prepended filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
 }
 

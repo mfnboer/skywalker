@@ -20,6 +20,7 @@ public:
                             QObject* parent = nullptr);
 
     void clear();
+    QString getFeedName() const override { return "bookmarks"; }
     void addBookmarks(const ATProto::AppBskyBookmark::GetBookmarksOutput& output);
     const QString& getCursorNextPage() const { return mCursorNextPage; }
 

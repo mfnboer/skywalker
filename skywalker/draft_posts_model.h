@@ -20,6 +20,7 @@ public:
                     HashtagIndex& hashtags,
                     QObject* parent = nullptr);
 
+    QString getFeedName() const override { return "Draft posts"; }
     Q_INVOKABLE int getMaxDrafts() const;
     Q_INVOKABLE void clear();
     void setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed);
