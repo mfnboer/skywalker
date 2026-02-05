@@ -72,7 +72,7 @@ Item {
         if (!enabled)
             return
 
-        if (topOvershootFun && !list.flicking && verticalOvershoot < (!reverseFeed ? -refreshText.height - 20 : 0))  {
+        if (topOvershootFun && !list.flicking && verticalOvershoot < (!reverseFeed ? -refreshText.height - 30 : 0))  {
             inTopOvershoot = true
         } else if (verticalOvershoot >= 0) {
             if (inTopOvershoot && !inProgress)
@@ -81,7 +81,7 @@ Item {
             inTopOvershoot = false
         }
 
-        if (bottomOvershootFun && !list.flicking && verticalOvershoot > (reverseFeed ? refreshText.height + 20 : 0)) {
+        if (bottomOvershootFun && !list.flicking && verticalOvershoot > (reverseFeed ? refreshText.height + 30 : 0)) {
             inBottomOvershoot = true;
         } else {
             if (inBottomOvershoot && !inProgress)
