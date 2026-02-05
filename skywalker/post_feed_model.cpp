@@ -252,7 +252,7 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
 void PostFeedModel::addPageToFilteredPostModels(const Page& page, int pageSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-        model->addPosts(page.mFeed, pageSize);
+        model->addPosts(page.mFeed, pageSize, page.mCursorNextPage.isEmpty());
 }
 
 void PostFeedModel::prependPageToFilteredPostModels(const Page& page, int pageSize)
@@ -759,7 +759,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
     model->setChronological(isChronological());
-    model->setPosts(mFeed, mFeed.size());
+    model->setPosts(mFeed, mFeed.size(), isEndOfFeed());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
     auto* retval = model.get();

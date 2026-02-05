@@ -89,12 +89,6 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
 
     mCursorNextPage = feed->mCursor.value_or("");
 
-    if (mCursorNextPage.isEmpty())
-    {
-        setEndOfFeed(true);
-        setEndOfFeedFilteredPostModels(true);
-    }
-
     if (page->mFeed.empty())
     {
         qDebug() << "All posts have been filtered from page";
@@ -104,6 +98,9 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
             mFeed.back().setEndOfFeed(true);
             const auto index = createIndex(mFeed.size() - 1, 0);
             emit dataChanged(index, index, { int(Role::EndOfFeed) });
+
+            setEndOfFeed(true);
+            setEndOfFeedFilteredPostModels(true);
         }
 
         return 0;
@@ -120,6 +117,12 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
     endInsertRows();
 
     addPageToFilteredPostModels(*page, page->mFeed.size());
+
+    if (mCursorNextPage.isEmpty())
+    {
+        setEndOfFeed(true);
+        setEndOfFeedFilteredPostModels(true);
+    }
 
     qDebug() << "New feed size:" << mFeed.size();
     return page->mFeed.size();
@@ -269,7 +272,7 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
 void SearchPostFeedModel::addPageToFilteredPostModels(const Page& page, int pageSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-        model->addPosts(page.mFeed, pageSize);
+        model->addPosts(page.mFeed, pageSize, mCursorNextPage.isEmpty());
 }
 
 void SearchPostFeedModel::clearFilteredPostModels()
@@ -310,7 +313,7 @@ FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPost
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
     model->setChronological(isChronological());
-    model->setPosts(mFeed, mFeed.size());
+    model->setPosts(mFeed, mFeed.size(), mCursorNextPage.isEmpty());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
     auto* retval = model.get();

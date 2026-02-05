@@ -31,8 +31,8 @@ public:
     QEnums::FeedType getFeedType() const { return QEnums::FEED_SEARCH; }
 
     void clear();
-    void setPosts(const TimelineFeed& posts, size_t numPosts);
-    void addPosts(const TimelineFeed& posts, size_t numPosts);
+    void setPosts(const TimelineFeed& posts, size_t numPosts, bool isLast);
+    void addPosts(const TimelineFeed& posts, size_t numPosts, bool isLast);
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
@@ -47,7 +47,7 @@ private:
     };
 
     Page::Ptr createPage(const TimelineFeed& posts, int startIndex, size_t numPosts);
-    void addPage(Page::Ptr page);
+    void addPage(Page::Ptr page, bool isLast);
 
     SearchPostFeedModel* mUnderlyingModel = nullptr;
 };

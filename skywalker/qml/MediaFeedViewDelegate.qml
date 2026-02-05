@@ -97,7 +97,7 @@ Rectangle {
 
     id: videoPage
     width: root.width
-    height: root.height + (endOfFeed ? root.height : 0) + extraHeaderHeight + extraFooterHeight
+    height: postIsPlaceHolder ? 0 : (root.height + (endOfFeed ? root.height : 0) + extraHeaderHeight + extraFooterHeight)
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
@@ -123,7 +123,7 @@ Rectangle {
     Rectangle {
         property int bottomMargin: videoItem ? videoItem.playControlsHeight : 0
         property int mediaWidth: videoItem ? videoItem.playControlsWidth : (imageItem ? imageItem.imageWidth : width)
-        property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
+        property bool showDetails: !postIsPlaceHolder && (videoItem ? videoItem.showPlayControls : imageLoader.showDetails)
 
         id: mediaRect
         y: extraHeaderHeight
@@ -564,7 +564,13 @@ Rectangle {
         height: root.height
         active: endOfFeed
 
-        sourceComponent: Rectangle {
+        sourceComponent: endOfFeedComp
+    }
+
+    Component {
+        id: endOfFeedComp
+
+        Rectangle {
             width: mediaRect.width
             height: root.height
             color: "transparent"

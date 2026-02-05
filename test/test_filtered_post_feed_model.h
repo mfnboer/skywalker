@@ -34,19 +34,19 @@ private slots:
 
     void setFeed()
     {
-        mPostFeedModel->setPosts(getTimeline(1, TEST_DATE), 1);
+        mPostFeedModel->setPosts(getTimeline(1, TEST_DATE), 1, false);
         QCOMPARE(mPostFeedModel->rowCount(), 1);
         QCOMPARE(mPostFeedModel->getNumPostsChecked(), 0);
 
-        mPostFeedModel->setPosts(getTimeline(2, TEST_DATE), 2);
+        mPostFeedModel->setPosts(getTimeline(2, TEST_DATE), 2, false);
         QCOMPARE(mPostFeedModel->rowCount(), 2);
         QCOMPARE(mPostFeedModel->getNumPostsChecked(), 0);
 
-        mPostFeedModel->setPosts(getTimeline(2, TEST_DATE), 1);
+        mPostFeedModel->setPosts(getTimeline(2, TEST_DATE), 1, false);
         QCOMPARE(mPostFeedModel->rowCount(), 1);
         QCOMPARE(mPostFeedModel->getNumPostsChecked(), 0);
 
-        mPostFeedModel->setPosts(getTimeline(4, TEST_DATE), 4);
+        mPostFeedModel->setPosts(getTimeline(4, TEST_DATE), 4, false);
         QCOMPARE(mPostFeedModel->rowCount(), 3);
         QCOMPARE(mPostFeedModel->getNumPostsChecked(), 1);
 
@@ -59,7 +59,7 @@ private slots:
 
     void clearFeed()
     {
-        mPostFeedModel->setPosts(getTimeline(1, TEST_DATE), 1);
+        mPostFeedModel->setPosts(getTimeline(1, TEST_DATE), 1, false);
         QCOMPARE(mPostFeedModel->rowCount(), 1);
         mPostFeedModel->clear();
         QCOMPARE(mPostFeedModel->rowCount(), 0);
@@ -67,12 +67,12 @@ private slots:
 
     void addToEmptyFeed()
     {
-        mPostFeedModel->addPosts(getTimeline(1, TEST_DATE), 1);
+        mPostFeedModel->addPosts(getTimeline(1, TEST_DATE), 1, false);
         QCOMPARE(mPostFeedModel->rowCount(), 1);
         QCOMPARE(mPostFeedModel->getNumPostsChecked(), 0);
 
         mPostFeedModel->clear();
-        mPostFeedModel->addPosts(getTimeline(4, TEST_DATE), 4);
+        mPostFeedModel->addPosts(getTimeline(4, TEST_DATE), 4, false);
         QCOMPARE(mPostFeedModel->rowCount(), 3);
         QCOMPARE(mPostFeedModel->getNumPostsChecked(), 1);
     }
@@ -92,7 +92,7 @@ private slots:
     void gapFill()
     {
         mNextPostId = 3;
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5, false);
         QCOMPARE(mPostFeedModel->rowCount(), 4);
 
         mNextPostId = 1;
@@ -123,7 +123,7 @@ private slots:
     void emptyGapFill()
     {
         mNextPostId = 3;
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5, false);
         QCOMPARE(mPostFeedModel->rowCount(), 4);
 
         mNextPostId = 1;
@@ -149,7 +149,7 @@ private slots:
     void gapFillAfterGapMoveDown()
     {
         mNextPostId = 3;
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5, false);
         QCOMPARE(mPostFeedModel->rowCount(), 4);
 
         mNextPostId = 1;
@@ -193,7 +193,7 @@ private slots:
     void gapFillAfterGapMoveUp()
     {
         mNextPostId = 3;
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5, false);
         QCOMPARE(mPostFeedModel->rowCount(), 4);
 
         mNextPostId = 1;
@@ -236,8 +236,8 @@ private slots:
 
     void removeTailPosts()
     {
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5);
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE - 1h), 5);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5, false);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE - 1h), 5, false);
         QCOMPARE(mPostFeedModel->rowCount(), 8);
 
         mPostFeedModel->removeTailPosts(getTimeline(5, TEST_DATE - 1h), 5);
@@ -246,8 +246,8 @@ private slots:
 
     void removeHeadPosts()
     {
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5);
-        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE - 1h), 5);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE), 5, false);
+        mPostFeedModel->addPosts(getTimeline(5, TEST_DATE - 1h), 5, false);
         QCOMPARE(mPostFeedModel->rowCount(), 8);
 
         mPostFeedModel->removeHeadPosts(getTimeline(6, TEST_DATE), 6);

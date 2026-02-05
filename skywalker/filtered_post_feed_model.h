@@ -32,14 +32,12 @@ public:
     QString getFeedName() const override;
 
     void clear();
-    void setPosts(const TimelineFeed& posts, size_t numPosts);
-    void addPosts(const TimelineFeed& posts, size_t numPosts);
+    void setPosts(const TimelineFeed& posts, size_t numPosts, bool isLast);
+    void addPosts(const TimelineFeed& posts, size_t numPosts, bool isLast);
     void prependPosts(const TimelineFeed& posts, size_t numPosts);
     void gapFill(const TimelineFeed& posts, size_t numPosts, int gapId);
     void removeHeadPosts(const TimelineFeed& posts, size_t numPosts);
     void removeTailPosts(const TimelineFeed& posts, size_t numPosts);
-
-    void setEndOfFeed(bool endOfFeed) override;
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
@@ -60,7 +58,7 @@ private:
 
     Page::Ptr createPage(const TimelineFeed& posts, int startIndex, size_t numPosts);
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page);
-    void addPage(Page::Ptr page);
+    void addPage(Page::Ptr page, bool isLast);
     void prependPage(Page::Ptr page);
     void removePosts(size_t startIndex, size_t count);
     void addToIndices(int offset, size_t startAtIndex);

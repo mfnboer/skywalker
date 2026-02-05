@@ -41,14 +41,14 @@ void FilteredSearchPostFeedModel::clear()
     qDebug() << "All posts removed";
 }
 
-void FilteredSearchPostFeedModel::setPosts(const TimelineFeed& posts, size_t numPosts)
+void FilteredSearchPostFeedModel::setPosts(const TimelineFeed& posts, size_t numPosts, bool isLast)
 {
     Q_ASSERT(numPosts <= posts.size());
     clear();
-    addPosts(posts, numPosts);
+    addPosts(posts, numPosts, isLast);
 }
 
-void FilteredSearchPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts)
+void FilteredSearchPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts, bool isLast)
 {
     Q_ASSERT(numPosts <= posts.size());
     qDebug() << "Add posts:" << getFeedName() << "posts:" << numPosts;
@@ -59,7 +59,7 @@ void FilteredSearchPostFeedModel::addPosts(const TimelineFeed& posts, size_t num
     else
         setNumPostsChecked(numPosts - page->mFeed.size());
 
-    addPage(std::move(page));
+    addPage(std::move(page), isLast);
 
     for (const auto& post : posts | std::ranges::views::reverse)
     {
@@ -92,7 +92,7 @@ FilteredSearchPostFeedModel::Page::Ptr FilteredSearchPostFeedModel::createPage(c
     return page;
 }
 
-void FilteredSearchPostFeedModel::addPage(Page::Ptr page)
+void FilteredSearchPostFeedModel::addPage(Page::Ptr page, bool isLast)
 {
     if (page->mFeed.empty())
     {
@@ -100,7 +100,7 @@ void FilteredSearchPostFeedModel::addPage(Page::Ptr page)
         return;
     }
 
-    removeRowFillPosts();
+    fitToRow(page->mFeed, isLast);
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
@@ -108,7 +108,6 @@ void FilteredSearchPostFeedModel::addPage(Page::Ptr page)
     mFeed.insert(mFeed.end(), posts.begin(), posts.end());
     endInsertRows();
 
-    addRowFillPosts();
     qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
 }
 

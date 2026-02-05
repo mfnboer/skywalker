@@ -40,6 +40,8 @@ public:
     int getNumPostsChecked() const { return mNumPostsChecked; }
     void setRowSize(int rowSize);
 
+    void setEndOfFeed(bool endOfFeed) override;
+
     QVariant data(const QModelIndex& index, int role) const override;
 
 signals:
@@ -47,16 +49,16 @@ signals:
     void numPostsCheckedChanged();
 
 protected:
-    void resetRowFillPosts();
-    void addRowFillPosts();
-    void removeRowFillPosts();
+    void resetExcessPosts();
+    void fitToRow(std::vector<const Post*>& pageFeed, bool isLastPage);
 
     IPostFilter::Ptr mPostFilter;
     QDateTime mCheckedTillTimestamp{QDateTime::currentDateTimeUtc()};
     int mNumPostsChecked = 0;
 
     int mRowSize = 1;
-    int mNumRowFillPosts = 0;
+    std::vector<Post> mRowExcessPosts;
+    std::vector<Post> mAddedExcessPosts;
 };
 
 }

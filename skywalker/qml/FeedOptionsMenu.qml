@@ -33,7 +33,11 @@ SkyMenu {
         svg: SvgFilled.star
         svgColor: guiSettings.favoriteColor
         onTriggered: {
-            skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
+            if (postFeedModel.feedType === QEnums.FEED_GENERATOR)
+                skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
+            else
+                skywalker.favoriteFeeds.pinSearch(feedOptionsMenu.feed, false)
+
             skywalker.saveFavoriteFeeds()
         }
     }

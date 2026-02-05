@@ -69,7 +69,7 @@ PostListView {
         Loader {
             id: extraHeaderFooterLoader
             y: model.reverseFeed ? 0 : parent.height - height
-            active: model && model.isFilterModel() && isLastPost && !endOfFeed
+            active: model && model.isFilterModel() && isLastPost && !endOfFeed && !mediaTilesLoader.active
 
             sourceComponent: FeedViewLoadMore {
                 userDid: postFeedView.userDid
@@ -117,12 +117,12 @@ PostListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: model && model.getFeedInProgress
+        running: model && model.getFeedInProgress && !mediaTilesLoader.active
     }
 
     Loader {
         anchors.top: emptyListIndication.bottom
-        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
+        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error) && !mediaTilesLoader.active
         sourceComponent: FeedViewLoadMore {
             userDid: postFeedView.userDid
             listView: postFeedView

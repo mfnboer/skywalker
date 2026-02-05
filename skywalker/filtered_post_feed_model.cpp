@@ -55,18 +55,18 @@ void FilteredPostFeedModel::clear()
 
     setNumPostsChecked(0);
     setCheckedTillTimestamp(QDateTime::currentDateTimeUtc());
-    resetRowFillPosts();
+    resetExcessPosts();
     qDebug() << "All posts removed";
 }
 
-void FilteredPostFeedModel::setPosts(const TimelineFeed& posts, size_t numPosts)
+void FilteredPostFeedModel::setPosts(const TimelineFeed& posts, size_t numPosts, bool isLast)
 {
     Q_ASSERT(numPosts <= posts.size());
     clear();
-    addPosts(posts, numPosts);
+    addPosts(posts, numPosts, isLast);
 }
 
-void FilteredPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts)
+void FilteredPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts, bool isLast)
 {
     Q_ASSERT(numPosts <= posts.size());
     qDebug() << "Add posts:" << getFeedName() << "posts:" << numPosts;
@@ -77,7 +77,7 @@ void FilteredPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts)
     else
         setNumPostsChecked(numPosts - page->mFeed.size());
 
-    addPage(std::move(page));
+    addPage(std::move(page), isLast);
 
     for (const auto& post : posts | std::ranges::views::reverse)
     {
@@ -166,18 +166,6 @@ void FilteredPostFeedModel::removeTailPosts(const TimelineFeed& posts, size_t nu
             setCheckedTillTimestamp(post.getTimelineTimestamp());
             break;
         }
-    }
-}
-
-void FilteredPostFeedModel::setEndOfFeed(bool endOfFeed)
-{
-    AbstractPostFeedModel::setEndOfFeed(endOfFeed);
-
-    if (!mFeed.empty())
-    {
-        mFeed.back().setEndOfFeed(endOfFeed);
-        const auto index = createIndex(mFeed.size() - 1, 0);
-        emit dataChanged(index, index, { int(Role::EndOfFeed) });
     }
 }
 
@@ -315,7 +303,7 @@ void FilteredPostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertI
     }
 }
 
-void FilteredPostFeedModel::addPage(Page::Ptr page)
+void FilteredPostFeedModel::addPage(Page::Ptr page, bool isLast)
 {
     if (page->mFeed.empty())
     {
@@ -323,14 +311,13 @@ void FilteredPostFeedModel::addPage(Page::Ptr page)
         return;
     }
 
-    removeRowFillPosts();
+    fitToRow(page->mFeed, isLast);
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
     insertPage(mFeed.end(), *page);
     endInsertRows();
 
-    addRowFillPosts();
     qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
 }
 
@@ -342,13 +329,10 @@ void FilteredPostFeedModel::prependPage(Page::Ptr page)
         return;
     }
 
-    removeRowFillPosts();
-
     beginInsertRowsPhysical(0, page->mFeed.size() - 1);
     insertPage(mFeed.begin(), *page);
     endInsertRows();
 
-    addRowFillPosts();
     qDebug() << "Prepended filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
 }
 
