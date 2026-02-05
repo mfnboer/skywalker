@@ -11,7 +11,6 @@ namespace Skywalker {
 class AuthorFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
-    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
     Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
     Q_PROPERTY(QString feedDid READ getFeedDid CONSTANT FINAL)
     Q_PROPERTY(bool feedAcceptsInteractions READ feedAcceptsInteractions CONSTANT FINAL)

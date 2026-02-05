@@ -103,7 +103,7 @@ SkyPage {
         }
 
         function addTimelineView(filteredPostFeedModel) {
-            viewBar.addTab(filteredPostFeedModel.feedName,
+            viewBar.addTab(filteredPostFeedModel.filterName,
                            filteredPostFeedModel.backgroundColor,
                            filteredPostFeedModel.profile)
             children[count - 1].setInSync(-1)
@@ -322,7 +322,7 @@ SkyPage {
     function filteredPostFeedModelUpdated(index) {
         console.debug("UPDATED:", index)
         const filter = skywalker.timelineModel.filteredPostFeedModels[index]
-        viewBar.updateTab(index + 1, filter.feedName, filter.backgroundColor, filter.profile)
+        viewBar.updateTab(index + 1, filter.filterName, filter.backgroundColor, filter.profile)
     }
 
     Component.onDestruction: {

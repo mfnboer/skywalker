@@ -1045,9 +1045,9 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
         if (model.isHomeFeed())
-            finishTimelineSync(model.rowCount() - 1);
+            finishTimelineSync(model.lastRowIndex());
         else
-            finishFeedSync(model.getModelId(), viewModel->rowCount() - 1);
+            finishFeedSync(model.getModelId(), viewModel->lastRowIndex());
 
         emit statusMessage(mUserDid, tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
                                tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
@@ -1062,9 +1062,9 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         qDebug() << "Last page reached, no more cursor";
 
         if (model.isHomeFeed())
-            finishTimelineSync(mTimelineModel.rowCount() - 1);
+            finishTimelineSync(mTimelineModel.lastRowIndex());
         else {
-            finishFeedSync(model.getModelId(), viewModel->rowCount() - 1);
+            finishFeedSync(model.getModelId(), viewModel->lastRowIndex());
         }
 
         return {};
@@ -1076,9 +1076,9 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
         if (model.isHomeFeed())
-            finishTimelineSync(mTimelineModel.rowCount() - 1);
+            finishTimelineSync(mTimelineModel.lastRowIndex());
         else
-            finishFeedSync(model.getModelId(), viewModel->rowCount() - 1);
+            finishFeedSync(model.getModelId(), viewModel->lastRowIndex());
 
         return {};
     }

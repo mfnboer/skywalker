@@ -70,74 +70,59 @@ Rectangle {
                 accessibleName: qsTr("more options")
                 visible: showMoreOptions
 
-                onClicked: moreMenuLoader.open()
+                onClicked: moreMenu.open()
 
-                Loader {
-                    id: moreMenuLoader
-                    active: false
+                SkyMenu {
+                    id: moreMenu
+                    menuWidth: 300
 
-                    function open() {
-                        active = true
+                    CloseMenuItem {
+                        text: qsTr("<b>Options</b>")
+                        Accessible.name: qsTr("close options menu")
                     }
 
-                    onStatusChanged: {
-                        if (status == Loader.Ready)
-                            item.open()
+                    AccessibleMenuItem {
+                        text: qsTr("Add user view")
+                        svg: SvgOutline.user
+                        onTriggered: addUserView()
                     }
 
-                    sourceComponent: SkyMenu {
-                        id: moreMenu
-                        menuWidth: 300
-                        onAboutToHide: parent.active = false
+                    AccessibleMenuItem {
+                        text: qsTr("Add hashtag view")
+                        svg: SvgOutline.hashtag
+                        onTriggered: addHashtagView()
+                    }
 
-                        CloseMenuItem {
-                            text: qsTr("<b>Options</b>")
-                            Accessible.name: qsTr("close options menu")
-                        }
+                    AccessibleMenuItem {
+                        id: focusMenuItem
+                        text: qsTr("Add focus hashtag view")
+                        svg: SvgOutline.hashtag
+                        svgColor: guiSettings.favoriteColor
+                        onTriggered: addFocusHashtagView()
+                    }
 
-                        AccessibleMenuItem {
-                            text: qsTr("Add user view")
-                            svg: SvgOutline.user
-                            onTriggered: addUserView()
-                        }
+                    AccessibleMenuItem {
+                        text: qsTr("Add media view")
+                        svg: SvgOutline.image
+                        onTriggered: addMediaView()
+                    }
 
-                        AccessibleMenuItem {
-                            text: qsTr("Add hashtag view")
-                            svg: SvgOutline.hashtag
-                            onTriggered: addHashtagView()
-                        }
+                    AccessibleMenuItem {
+                        text: qsTr("Add video view")
+                        svg: SvgOutline.film
+                        onTriggered: addVideoView()
+                    }
 
-                        AccessibleMenuItem {
-                            id: focusMenuItem
-                            text: qsTr("Add focus hashtag view")
-                            svg: SvgOutline.hashtag
-                            svgColor: guiSettings.favoriteColor
-                            onTriggered: addFocusHashtagView()
-                        }
+                    AccessibleMenuItem {
+                        text: qsTr("Filtered posts")
+                        svg: SvgOutline.hideVisibility
+                        onTriggered: filterStatistics()
+                    }
 
-                        AccessibleMenuItem {
-                            text: qsTr("Add media view")
-                            svg: SvgOutline.image
-                            onTriggered: addMediaView()
-                        }
-
-                        AccessibleMenuItem {
-                            text: qsTr("Add video view")
-                            svg: SvgOutline.film
-                            onTriggered: addVideoView()
-                        }
-
-                        AccessibleMenuItem {
-                            text: qsTr("Filtered posts")
-                            svg: SvgOutline.hideVisibility
-                            onTriggered: filterStatistics()
-                        }
-
-                        PostsOrderMenu {
-                            reverseFeed: header.reverseFeed
-                            globalFeedOrder: userSettings.globalFeedOrder
-                            onNewReverseFeed: (reverse) => header.newReverseFeed(reverse)
-                        }
+                    PostsOrderMenu {
+                        reverseFeed: header.reverseFeed
+                        globalFeedOrder: userSettings.globalFeedOrder
+                        onNewReverseFeed: (reverse) => header.newReverseFeed(reverse)
                     }
                 }
             }

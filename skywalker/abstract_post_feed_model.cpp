@@ -352,6 +352,11 @@ int AbstractPostFeedModel::findPost(const QString& cid) const
     return -1;
 }
 
+int AbstractPostFeedModel::lastRowIndex() const
+{
+    return mFeed.empty() ? -1 : toVisibleIndex(mFeed.size() - 1);
+}
+
 QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int visibleIndex) const
 {
     if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())

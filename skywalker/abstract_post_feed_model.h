@@ -41,6 +41,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_MOC_INCLUDE("content_filter_stats_model.h")
 
     Q_OBJECT
+    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
     Q_PROPERTY(bool reverseFeed READ isReverseFeed WRITE setReverseFeed NOTIFY reverseFeedChanged FINAL)
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
@@ -186,6 +187,8 @@ public:
 
     // Returns visible index of post, or -1 if post not found.
     int findPost(const QString& cid) const;
+
+    int lastRowIndex() const;
 
     Q_INVOKABLE QDateTime getPostTimelineTimestamp(int visibleIndex) const;
     Q_INVOKABLE QString getPostCid(int visibleIndex) const;

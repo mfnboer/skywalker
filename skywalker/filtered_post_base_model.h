@@ -9,8 +9,8 @@ namespace Skywalker {
 class FilteredPostBaseModel : public AbstractPostFeedModel
 {
     Q_OBJECT
-    Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
+    Q_PROPERTY(QString filterName READ getFilterName CONSTANT FINAL)
     Q_PROPERTY(QColor backgroundColor READ getBackgroundColor CONSTANT FINAL)
     Q_PROPERTY(BasicProfile profile READ getProfile CONSTANT FINAL)
     Q_PROPERTY(QDateTime checkedTillTimestamp READ getCheckedTillTimestamp NOTIFY checkedTillTimestampChanged FINAL)
@@ -28,6 +28,7 @@ public:
 
     Q_INVOKABLE bool isFilterModel() const { return true; }
     QString getFeedName() const override { return mPostFilter->getName(); }
+    QString getFilterName() const { return mPostFilter->getName(); }
     QEnums::ContentMode getContentMode() const { return mPostFilter->getContentMode(); }
     QColor getBackgroundColor() const { return mPostFilter->getBackgroundColor(); }
     BasicProfile getProfile() const { return mPostFilter->getAuthor(); }

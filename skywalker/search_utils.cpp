@@ -557,7 +557,7 @@ QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::Sh
     if (maxPages == 1)
     {
         qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
-        emit feedSyncOk(viewModel.rowCount() -1, 0);
+        emit feedSyncOk(viewModel.lastRowIndex(), 0);
 
         mSkywalker->showStatusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
             tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
@@ -570,7 +570,7 @@ QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::Sh
     if (newCursor.isEmpty())
     {
         qDebug() << "Last page reached, no more cursor";
-        emit feedSyncOk(viewModel.rowCount() -1, 0);
+        emit feedSyncOk(viewModel.lastRowIndex(), 0);
         return {};
     }
 
@@ -578,7 +578,7 @@ QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::Sh
     {
         qWarning() << "New cursor:" << newCursor << "is same as previous:" << cursor;
         qDebug() << "Failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
-        emit feedSyncOk(viewModel.rowCount() -1, 0);
+        emit feedSyncOk(viewModel.lastRowIndex(), 0);
         return {};
     }
 
