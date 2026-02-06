@@ -305,13 +305,14 @@ void FilteredPostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertI
 
 void FilteredPostFeedModel::addPage(Page::Ptr page, bool isLast)
 {
+    fitToRow(page->mFeed, isLast);
+
     if (page->mFeed.empty())
     {
         qDebug() << "All posts have been filtered:" << getFeedName();
         return;
     }
 
-    fitToRow(page->mFeed, isLast);
     const size_t newRowCount = mFeed.size() + page->mFeed.size();
 
     beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);

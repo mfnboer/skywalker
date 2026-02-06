@@ -93,6 +93,10 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsOutput::Shared
     {
         qDebug() << "All posts have been filtered from page";
 
+        // There may be posts withheld to fill complete rows in a tile views.
+        // These will be added when this is the last page, even if it is empty.
+        addPageToFilteredPostModels(*page, 0);
+
         if (mCursorNextPage.isEmpty() && !mFeed.empty())
         {
             mFeed.back().setEndOfFeed(true);

@@ -1229,7 +1229,7 @@ void AbstractPostFeedModel::flipPostsOrder()
     }
 
     mReverseFeed = !mReverseFeed;
-    changeData({});
+    reset();
 }
 
 void AbstractPostFeedModel::reversePosts(int startPhysicalIndex, int endPhysicalIndex)
