@@ -82,7 +82,8 @@ Rectangle {
     required property string filteredPostHideDetail
     required property contentlabel filteredPostContentLabel
     required property bool endOfFeed
-    readonly property bool isLastPost: ListView.view.model.reverseFeed ? index === 0 : index === ListView.view.count - 1
+    readonly property bool reverseFeed: ListView.view.model.reverseFeed
+    readonly property bool isLastPost: reverseFeed ? index === 0 : index === ListView.view.count - 1
     property bool showRecord: true
     property bool unrollThread: false
     property var postThreadModel // provided when thread is unrolled
@@ -179,6 +180,14 @@ Rectangle {
         columns: gridColumns
         width: parent.width
         rowSpacing: 0
+
+        // End of feed indication
+        Loader {
+            Layout.columnSpan: gridColumns
+            Layout.fillWidth: true
+            active: endOfFeed && reverseFeed
+            sourceComponent: endOfFeedComp
+        }
 
         // BAR
         // Instead of using row spacing, these empty rectangles are used for white space.
@@ -1037,17 +1046,8 @@ Rectangle {
         Loader {
             Layout.columnSpan: gridColumns
             Layout.fillWidth: true
-            active: endOfFeed
-            visible: status == Loader.Ready
-            sourceComponent: AccessibleText {
-                width: parent.width
-                horizontalAlignment: Text.AlignHCenter
-                topPadding: 10
-                bottomPadding: 50
-                elide: Text.ElideRight
-                text: unrollThread ? qsTr("End of thread") : qsTr("End of feed")
-                font.italic: true
-            }
+            active: endOfFeed && !reverseFeed
+            sourceComponent: endOfFeedComp
         }
     }
 
@@ -1063,6 +1063,19 @@ Rectangle {
         }
     }
 
+    Component {
+        id: endOfFeedComp
+
+        AccessibleText {
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            topPadding: 10
+            bottomPadding: reverseFeed ? 10 : 50
+            elide: Text.ElideRight
+            text: unrollThread ? qsTr("End of thread") : qsTr("End of feed")
+            font.italic: true
+        }
+    }
 
     AccessibilityUtils {
         id: accessibilityUtils
