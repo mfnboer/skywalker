@@ -97,7 +97,7 @@ Rectangle {
 
     id: videoPage
     width: root.width
-    height: postIsPlaceHolder ? 0 : (root.height + (endOfFeed ? root.height : 0) + extraHeaderHeight + extraFooterHeight)
+    height: root.height + extraHeaderHeight + extraFooterHeight
     color: guiSettings.fullScreenColor
 
     onOnScreenChanged: {
@@ -123,7 +123,7 @@ Rectangle {
     Rectangle {
         property int bottomMargin: videoItem ? videoItem.playControlsHeight : 0
         property int mediaWidth: videoItem ? videoItem.playControlsWidth : (imageItem ? imageItem.imageWidth : width)
-        property bool showDetails: !postIsPlaceHolder && (videoItem ? videoItem.showPlayControls : imageLoader.showDetails)
+        property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
 
         id: mediaRect
         y: extraHeaderHeight
@@ -271,7 +271,7 @@ Rectangle {
         Material.background: "transparent"
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
-        visible: mediaRect.showDetails
+        visible: mediaRect.showDetails && !postIsPlaceHolder
         onClicked: moreMenu.open()
 
         SkyMenu {
@@ -343,7 +343,7 @@ Rectangle {
         anchors.bottom: mediaRect.bottom
         anchors.bottomMargin: mediaRect.bottomMargin + videoPage.footerHeight
         width: calcColumnWidth()
-        visible: mediaRect.showDetails
+        visible: mediaRect.showDetails && !postIsPlaceHolder
 
         function calcColumnWidth() {
             let w = Math.max(mediaRect.mediaWidth, startImageWidth, 220)
@@ -560,9 +560,8 @@ Rectangle {
 
     Loader {
         x: leftMarginWidth
-        anchors.top: mediaRect.bottom
         height: root.height
-        active: endOfFeed
+        active: postIsPlaceHolder //endOfFeed
 
         sourceComponent: endOfFeedComp
     }

@@ -1194,6 +1194,23 @@ ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
     return model;
 }
 
+void AbstractPostFeedModel::addEndOfFeedPlaceHolder()
+{
+    beginInsertRowsPhysical(mFeed.size(), mFeed.size());
+    mFeed.push_back(Post::createEndOfFeedPlaceHolder());
+    endInsertRows();
+}
+
+void AbstractPostFeedModel::removeEndOfFeedPlaceHolder()
+{
+    if (mFeed.empty() || !mFeed.back().isPlaceHolder() || !mFeed.back().isEndOfFeed())
+        return;
+
+    beginRemoveRowsPhysical(mFeed.size() - 1, mFeed.size() - 1);
+    mFeed.pop_back();
+    endRemoveRows();
+}
+
 void AbstractPostFeedModel::flipPostsOrder()
 {
     qDebug() << "Flip feed order, current reverse:" << mReverseFeed;

@@ -203,6 +203,9 @@ public:
     bool isFilteredPostFeed() const { return mPostHideInfoMap; }
     Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
 
+    Q_INVOKABLE void addEndOfFeedPlaceHolder();
+    Q_INVOKABLE void removeEndOfFeedPlaceHolder();
+
 signals:
     void reverseFeedChanged();
     void endOfFeedChanged();

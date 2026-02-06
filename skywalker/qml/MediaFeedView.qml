@@ -50,6 +50,7 @@ SkyListView {
     }
 
     delegate: MediaFeedViewDelegate {
+        id: mediaFeedEntry
         width: postFeedView.width
         startImageIndex: index == postFeedView.startIndex ? postFeedView.previewIndex : -1
         startImageWidth: (index == postFeedView.startIndex && postFeedView.previewImage) ? postFeedView.previewImage.width : -1
@@ -72,7 +73,7 @@ SkyListView {
         Loader {
             id: extraHeaderFooterLoader
             y: model.reverseFeed ? 0 : parent.height - height
-            active: model && model.isFilterModel() && isLastPost && !endOfFeed
+            active: model && model.isFilterModel() && mediaFeedEntry.isLastPost && !mediaFeedEntry.endOfFeed
 
             sourceComponent: FeedViewLoadMore {
                 userDid: postFeedView.userDid
@@ -142,18 +143,40 @@ SkyListView {
         rightMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
     }
 
+    function endOfFeedHandler() {
+        console.debug("End of feed:", model.endOfFeed, model.feedName)
+
+        if (model.endOfFeed)
+            model.addEndOfFeedPlaceHolder()
+    }
+
     Component.onDestruction: {
         Screen.onPrimaryOrientationChanged.disconnect(orientationHandler) // qmllint disable missing-property
         resetSystemBars()
 
-        if (model)
-            model.clearOverrideLinkColor();
+        if (model) {
+            model.clearOverrideLinkColor()
+
+            if (model.endOfFeed)
+                model.removeEndOfFeedPlaceHolder()
+
+            model.onEndOfFeedChanged.disconnect(endOfFeedHandler)
+        }
     }
 
     Component.onCompleted: {
         Screen.onPrimaryOrientationChanged.connect(orientationHandler) // qmllint disable missing-property
         setSystemBars()
         model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
+
+        if (model.endOfFeed) {
+            model.addEndOfFeedPlaceHolder()
+
+            if (model.reverseFeed)
+                ++startIndex
+        }
+
+        model.onEndOfFeedChanged.connect(endOfFeedHandler)
         positionViewAtIndex(currentIndex, ListView.Beginning)
     }
 }

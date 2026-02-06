@@ -21,6 +21,7 @@ public:
     virtual BasicProfile getAuthor() const { return BasicProfile{}; }
     virtual QEnums::ContentMode getContentMode() const { return QEnums::CONTENT_MODE_UNSPECIFIED; }
     virtual bool mustAddThread() const { return true; }
+    virtual bool mustAddEndOfFeedPlaceHolder() const { return false; }
     virtual bool match(const Post& post) const = 0;
     virtual QJsonObject toJson() const = 0;
 };
@@ -88,6 +89,7 @@ public:
     QString getName() const override;
     QEnums::ContentMode getContentMode() const override { return QEnums::CONTENT_MODE_VIDEO; }
     bool mustAddThread() const override { return false; }
+    bool mustAddEndOfFeedPlaceHolder() const override { return true; }
     bool match(const Post& post) const override;
     QJsonObject toJson() const override;
 };
@@ -102,6 +104,7 @@ public:
     QString getName() const override;
     QEnums::ContentMode getContentMode() const override { return QEnums::CONTENT_MODE_MEDIA; }
     bool mustAddThread() const override { return false; }
+    bool mustAddEndOfFeedPlaceHolder() const override { return true; }
     bool match(const Post& post) const override;
     QJsonObject toJson() const override;
 };

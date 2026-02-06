@@ -60,6 +60,13 @@ Post Post::createNotSupported(const QString& unsupportedType)
     return post;
 }
 
+Post Post::createEndOfFeedPlaceHolder()
+{
+    Post post;
+    post.mEndOfFeed = true;
+    return post;
+}
+
 Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView)
 {
     switch (threadElement.mType)

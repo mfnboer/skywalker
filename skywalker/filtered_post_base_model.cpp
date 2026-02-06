@@ -126,17 +126,17 @@ void FilteredPostBaseModel::fitToRow(std::vector<const Post*>& pageFeed, bool is
         // Instead we fill up with empty (not found) post place holders.
 
         const int fillCount = mRowSize - excess;
-        mAddedExcessPosts.push_back(Post::createNotFound());
+        mAddedExcessPosts.push_back(Post::createEndOfFeedPlaceHolder());
 
         for (int i = 0; i < fillCount; ++i)
             pageFeed.push_back(&mAddedExcessPosts.back());
     }
     else
     {
-        // Keep posts tot be added with the next page.
+        // Keep posts to be added with the next page.
 
-        for (const auto* post : pageFeed)
-            mRowExcessPosts.push_back(*post);
+        for (auto it = pageFeed.end() - excess; it != pageFeed.end(); ++it)
+            mRowExcessPosts.push_back(**it);
 
         pageFeed.erase(pageFeed.end() - excess, pageFeed.end());
     }

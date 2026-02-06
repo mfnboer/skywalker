@@ -30,6 +30,7 @@ public:
     static Post createNotFound(const QString uri = "", const QString cid = "");
     static Post createBlocked(const QString uri = "", const QString cid = "", const BlockedAuthor blockedAuthor = {});
     static Post createNotSupported(const QString& unsupportedType);
+    static Post createEndOfFeedPlaceHolder();
     static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
     static Post fromJson(const QJsonObject& json);
