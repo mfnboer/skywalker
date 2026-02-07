@@ -1143,7 +1143,7 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> PostFeedModel::mu
         }
     }
 
-    if (post.isRepost())
+    if (post.isRepost() && mIsHomeFeed)
     {
         const auto repostedBy = post.getRepostedBy();
 
@@ -1226,7 +1226,7 @@ QEnums::HideReasonType PostFeedModel::mustHideReply(const Post& post, const std:
     if (post.getAuthor().getDid() == mUserDid)
         return QEnums::HIDE_REASON_NONE;
 
-    if (mUserSettings.getHideRepliesInThreadFromUnfollowed(mUserDid))
+    if (mUserSettings.getHideRepliesInThreadFromUnfollowed(mUserDid) && mIsHomeFeed)
     {
         // In case of blocked posts there is no reply ref.
         // Surely someone that blocks you is not a friend of yours.

@@ -300,7 +300,6 @@ GridView {
 
             if (lastIndex >= 0)
                 mediaTilesView.unreadPosts = count - lastIndex - 1
-
         } else {
             const firstIndex = getTopLeftVisibleIndex()
 

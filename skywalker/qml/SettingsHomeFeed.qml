@@ -29,10 +29,31 @@ ColumnLayout {
     }
 
     AccessibleCheckBox {
+        text: qsTr("Replies in threads from followed users only")
+        checked: userSettings.getHideRepliesInThreadFromUnfollowed(userDid)
+        enabled: !userPrefs.hideReplies
+        onCheckedChanged: userSettings.setHideRepliesInThreadFromUnfollowed(userDid, checked)
+    }
+
+    AccessibleCheckBox {
         id: showRepostsSwitch
         text: qsTr("Show reposts")
         checked: !userPrefs.hideReposts
         onCheckedChanged: userPrefs.hideReposts = !checked
+    }
+
+    AccessibleCheckBox {
+        text: qsTr("Show reposted posts from followed users")
+        checked: userSettings.getShowFollowedReposts(userDid)
+        onCheckedChanged: userSettings.setShowFollowedReposts(userDid, checked)
+        enabled: showRepostsSwitch.checked
+    }
+
+    AccessibleCheckBox {
+        text: qsTr("Show self-reposts")
+        checked: userSettings.getShowSelfReposts(userDid)
+        onCheckedChanged: userSettings.setShowSelfReposts(userDid, checked)
+        enabled: showRepostsSwitch.checked
     }
 
     AccessibleCheckBox {
@@ -48,6 +69,7 @@ ColumnLayout {
         onCheckedChanged: userSettings.setRewindToLastSeenPost(userDid, checked)
     }
 
+
     HeaderText {
         Layout.topMargin: 10
         Layout.bottomMargin: 10
@@ -58,26 +80,6 @@ ColumnLayout {
         text: qsTr("Assemble post threads")
         checked: userSettings.getAssembleThreads(userDid)
         onCheckedChanged: userSettings.setAssembleThreads(userDid, checked)
-    }
-
-    AccessibleCheckBox {
-        text: qsTr("Replies in threads from followed users only")
-        checked: userSettings.getHideRepliesInThreadFromUnfollowed(userDid)
-        onCheckedChanged: userSettings.setHideRepliesInThreadFromUnfollowed(userDid, checked)
-    }
-
-    AccessibleCheckBox {
-        text: qsTr("Show reposted posts from followed users")
-        checked: userSettings.getShowFollowedReposts(userDid)
-        onCheckedChanged: userSettings.setShowFollowedReposts(userDid, checked)
-        enabled: showRepostsSwitch.checked
-    }
-
-    AccessibleCheckBox {
-        text: qsTr("Show self-reposts")
-        checked: userSettings.getShowSelfReposts(userDid)
-        onCheckedChanged: userSettings.setShowSelfReposts(userDid, checked)
-        enabled: showRepostsSwitch.checked
     }
 
     AccessibleCheckBox {
