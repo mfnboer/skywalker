@@ -643,6 +643,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/PostListView.qml
         QML_FILES qml/FeedOptionsMenu.qml
         QML_FILES qml/ListFeedOptionsMenu.qml
+        QML_FILES qml/MoveToIndexTimer.qml
 )
 
 if (NOT ANDROID)

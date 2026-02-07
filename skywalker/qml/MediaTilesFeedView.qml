@@ -286,53 +286,12 @@ GridView {
         }
     }
 
-    // TODO: duplicate code
-    Timer {
-        property int listIndex
-        property int moveAttempt
-        property var callback
-        property var afterMoveCallback: () =>{}
-
+    MoveToIndexTimer {
         id: moveToIndexTimer
-        interval: 200
-        onTriggered: {
-            if (!callback(listIndex)) { // qmllint disable use-proper-function
-                if (moveAttempt < 5) {
-                    moveAttempt = moveAttempt + 1
-                    start()
-                }
-                else {
-                    console.debug("No exact move, no more attempts")
-                    afterMoveCallback()
-                    afterMoveCallback = () =>{}
-                }
-            }
-            else {
-                afterMoveCallback()
-                afterMoveCallback = () =>{}
-            }
-        }
+    }
 
-        function go(index, callbackFunc, afterMoveCb = () =>{}) {
-            if (running) {
-                console.debug("New move to tile:", index, "previous still running:", listIndex)
-                afterMoveCallback()
-                stop()
-            }
-
-            if (!callbackFunc(index)) {
-                // HACK: doing it again after a short interval makes the positioning work.
-                // After the first time the positioning can be off.
-                listIndex = index
-                moveAttempt = 2
-                callback = callbackFunc
-                afterMoveCallback = afterMoveCb
-                start()
-            }
-            else {
-                afterMoveCb()
-            }
-        }
+    function moveToIndex(index, callbackFunc, afterMoveCb = () => {}) {
+        moveToIndexTimer.go(index, callbackFunc, afterMoveCb)
     }
 
     function updateUnreadPosts() {
@@ -348,10 +307,6 @@ GridView {
             if (firstIndex >= 0)
                 mediaTilesView.unreadPosts = firstIndex
         }
-    }
-
-    function moveToIndex(index, callbackFunc, afterMoveCb = () => {}) {
-        moveToIndexTimer.go(index, callbackFunc, afterMoveCb)
     }
 
     function doMoveToPost(index) {
