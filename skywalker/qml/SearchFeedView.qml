@@ -91,8 +91,8 @@ PostListView {
     FlickableRefresher {
         reverseFeed: model && model.reverseFeed
         inProgress: model && model.getFeedInProgress
-        topOvershootFun: reverseFeed ? feedView.getNextPage() : () => feedView.syncSearch()
-        bottomOvershootFun: () => reverseFeed ? () => feedView.syncSearch() : feedView.getNextPage()
+        topOvershootFun: reverseFeed ? () => feedView.getNextPage() : () => feedView.syncSearch()
+        bottomOvershootFun: reverseFeed ? () => feedView.syncSearch() : () => feedView.getNextPage()
         topText: reverseFeed ? qsTr("Pull up to refresh feed") : qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }

@@ -210,7 +210,10 @@ Column {
     // Languages
     Loader {
         anchors.right: parent.right
+
+        // NOTE: without an explicit height, the full image animation is off by this height ??
         height: active ? guiSettings.labelHeight + 5 : 0
+
         active: postLanguageLabels.length > 0 && mustShowLanguages() && postVisible()
         sourceComponent: LanguageLabels {
             parentWidth: postBody.width
