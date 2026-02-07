@@ -559,8 +559,8 @@ QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::Sh
         qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
         emit feedSyncOk(viewModel.lastRowIndex(), 0);
 
-        mSkywalker->showStatusMessage(tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
-            tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
+        mSkywalker->showStatusMessage(tr("Maximum rewind size reached.<br>Cannot rewind '%1' till: %2").arg(
+            viewModel.getFeedName(), tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
 
         return {};
     }

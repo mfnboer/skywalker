@@ -122,7 +122,7 @@ PostListView {
 
     Loader {
         anchors.top: emptyListIndication.bottom
-        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error) && !mediaTilesLoader.active
+        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !model.error && !mediaTilesLoader.active
         sourceComponent: FeedViewLoadMore {
             userDid: postFeedView.userDid
             listView: postFeedView

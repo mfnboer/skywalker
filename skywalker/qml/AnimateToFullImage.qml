@@ -94,7 +94,7 @@ Item {
         property: "zoom"
         from: 0.0
         to: 1.0
-        duration: 200
+        duration: 2000
         easing.type: Easing.InOutQuad
 
         onStarted: {
@@ -156,10 +156,13 @@ Item {
         function reverseRun() {
             from = 1.0
             to = 0.0
+            zoom = 1.0
             zoomImage.active = true
 
-            if (zoomImage.item.img.status !== Image.Loading)
+            if (zoomImage.item.img.status !== Image.Loading) {
+                setZoom()
                 start()
+            }
         }
     }
 

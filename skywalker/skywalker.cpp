@@ -1049,8 +1049,8 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
         else
             finishFeedSync(model.getModelId(), viewModel->lastRowIndex());
 
-        emit statusMessage(mUserDid, tr("Maximum rewind size reached.<br>Cannot rewind till: %1").arg(
-                               tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
+        emit statusMessage(mUserDid, tr("Maximum rewind size reached.<br>Cannot rewind '%1' till: %2").arg(
+            viewModel->getFeedName(), tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
 
         return {};
     }

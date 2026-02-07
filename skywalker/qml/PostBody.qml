@@ -210,6 +210,7 @@ Column {
     // Languages
     Loader {
         anchors.right: parent.right
+        height: active ? guiSettings.labelHeight + 5 : 0
         active: postLanguageLabels.length > 0 && mustShowLanguages() && postVisible()
         sourceComponent: LanguageLabels {
             parentWidth: postBody.width

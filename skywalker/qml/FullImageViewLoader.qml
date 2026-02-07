@@ -74,7 +74,7 @@ Loader {
         thumbImageOrigList = []
 
         for (const thumbImage of thumbImageViewList) {
-            const orig = thumbImage.mapToItem(root.contentItem, 0, 0)
+            const orig = thumbImage.mapToItem(null, 0, 0)
             thumbImageOrigList.push(orig)
         }
     }
@@ -97,7 +97,7 @@ Loader {
             closeCb()
 
             // NOTE: this is a bit of hack
-            // Coordinate mapping in initThumImages works only if the full screen view is closed.
+            // Coordinate mapping in initThumbImages works only if the full screen view is closed.
             // Closing the full screen mode earlier causes screen flicker
             fullImageLoader.initThumbImages()
         }

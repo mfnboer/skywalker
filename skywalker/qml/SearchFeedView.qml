@@ -64,7 +64,7 @@ PostListView {
         Loader {
             id: extraHeaderFooterLoader
             y: model.reverseFeed ? 0 : parent.height - height
-            active: model && model.isFilterModel() && isLastPost && !endOfFeed
+            active: model && model.isFilterModel() && isLastPost && !endOfFeed && !mediaTilesLoader.active
 
             sourceComponent: FeedViewLoadMore {
                 listView: feedView
@@ -115,7 +115,7 @@ PostListView {
 
     Loader {
         anchors.top: emptyListIndication.bottom
-        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !Boolean(model.error)
+        active: model && model.isFilterModel() && count === 0 && !model.endOfFeed && !model.error && !mediaTilesLoader.active
         sourceComponent: FeedViewLoadMore {
             listView: feedView
         }
