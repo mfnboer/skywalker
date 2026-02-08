@@ -43,8 +43,6 @@ PostListView {
         onClosed: postFeedView.closed()
         onFeedAvatarClicked: showFeedOptions()
         onViewChanged: (contentMode) => changeView(contentMode)
-
-        onReverseFeedChanged: console.debug("REVERSE FEED HEADER CHAGED:", reverseFeed)
     }
     headerPositioning: ListView.PullBackHeader
 

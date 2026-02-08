@@ -4,6 +4,7 @@ import skywalker
 
 PostListView {
     property int headerMargin: 0
+    property int footerMargin: 0 // Added for 6.10.3
     property bool isView: false
     readonly property int unreadPosts: listUnreadPosts
     readonly property int visibleHeaderHeight: headerItem ? Math.max(headerItem.height - headerMargin - (contentY - headerItem.y), 0) : 0
@@ -42,6 +43,10 @@ PostListView {
         }
     }
     headerPositioning: ListView.PullBackHeader
+
+    footer: Item {
+        height: footerMargin
+    }
 
     delegate: PostFeedViewDelegate {
         width: timelineView.width

@@ -460,7 +460,6 @@ void SearchUtils::syncSearchPosts(const QString& text,
     if (cursor.isEmpty())
         emit feedSyncStart(maxPages, tillTimestamp);
 
-    // TODO: duplicate code
     const auto searchText = preProcessSearchText(text);
     const auto authorId = (author == USER_ME) ? mSkywalker->getUserDid() : author;
     const auto mentionsId = (mentions == USER_ME) ? mSkywalker->getUserDid() : mentions;

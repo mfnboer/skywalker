@@ -33,10 +33,10 @@ ApplicationWindow {
 
     // Added for Qt6.9 to make all the changes for full screen display in Android 15
     // work. Instead of those changes, using the SafeArea option may be nicer.
-    // topPadding: 0
-    // bottomPadding: 0
-    // leftPadding: 0
-    // rightPadding: 0
+    topPadding: 0
+    bottomPadding: 0
+    leftPadding: 0
+    rightPadding: 0
 
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // onFrameSwapped: {
@@ -142,7 +142,7 @@ ApplicationWindow {
     StatusPopup {
         id: statusPopup
         x: rootContent.x
-        y: guiSettings.headerHeight
+        y: guiSettings.headerHeight + guiSettings.headerMargin // 6.10.3 added headerMargin
         width: rootContent.width
     }
 
@@ -182,7 +182,8 @@ ApplicationWindow {
             if (position == TabBar.Header)
                 return guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
 
-            return parent.height - height // TODO: needed in 6.10.2? - footer.height
+            // TODO before 6.10: return parent.height - height
+            return parent.height - height - footer.height
         }
 
         function update() {
@@ -625,7 +626,9 @@ ApplicationWindow {
         anchors.top: parent.top
         anchors.topMargin: fullScreen ? 0 : guiSettings.headerMargin
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? 0 : guiSettings.footerMargin)
+
+        // 6.10.3 Added footer.height + footer.extraFooterMargin
+        anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? root.footer.height + root.footer.extraFooterMargin : guiSettings.footerMargin)
 
         onResizingChanged: {
             if (resizing)

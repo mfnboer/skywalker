@@ -13,7 +13,7 @@ SkyPage {
     property int margin: 10
     property var userSettings: skywalker.getUserSettings()
     readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefined') ? currentViewItem.favoritesY : 0
-    readonly property int extraFooterMargin: viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
+    readonly property int extraFooterMargin: 0 // Before 6.10.3 viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
 
     id: page
 
@@ -38,6 +38,7 @@ SkyPage {
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
             headerMargin: viewBar.visible && viewBar.position == TabBar.Header ? viewBar.height : 0
+            footerMargin: viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
 
             skywalker: page.skywalker
 
@@ -56,6 +57,7 @@ SkyPage {
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
                 headerMargin: viewBar.position == TabBar.Header ? viewBar.height : 0
+                footerMargin: viewBar.position == TabBar.Footer ? viewBar.height : 0
 
                 skywalker: page.skywalker
                 isView: true
@@ -119,7 +121,8 @@ SkyPage {
 
     SkyTabBar {
         id: viewBar
-        y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height // TODO: needed in 6.10.2? - footerHeight
+        // TODO before 6.10: y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height
+        y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height //- footerHeight
         z: guiSettings.headerZLevel
         width: parent.width
         position: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP ? TabBar.Footer : TabBar.Header

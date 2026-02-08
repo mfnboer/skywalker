@@ -1,8 +1,9 @@
-next
+4.27
 ====
 * Option to reverse order of posts available for all feeds
 * Global option to reverse the order of all feeds
 * Option to rewind feed at startup for all chronological feeds
+* Upgraded to Qt6.10.2
 * Bug fixes
 
 4.26
