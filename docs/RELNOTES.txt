@@ -1,3 +1,7 @@
+next
+====
+* Show pronouns when replying or quoting a post
+
 4.27
 ====
 * Option to reverse order of posts available for all feeds

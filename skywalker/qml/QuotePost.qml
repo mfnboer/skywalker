@@ -33,6 +33,7 @@ Column {
             userDid:quoteColumn.userDid
             author: quoteColumn.author
             postIndexedSecondsAgo: (new Date() - postDateTime) / 1000
+            showPronouns: true
         }
 
         SvgButton {

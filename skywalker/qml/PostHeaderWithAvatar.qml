@@ -7,6 +7,7 @@ Column {
     property string userDid
     required property basicprofile author
     required property double postIndexedSecondsAgo
+    property bool showPronouns
     property contentlabel filteredContentLabel
     readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author, author.labels, userDid)
 
@@ -58,10 +59,12 @@ Column {
         }
 
         AccessibleText {
+            readonly property bool displayPronouns: showPronouns && author.pronouns
+
             Layout.fillWidth: true
             bottomPadding: labelsToShow.length > 0 ? 0 : 5
-            elide: Text.ElideRight
-            text: "@" + author.handle
+            elide: displayPronouns ? Text.ElideMiddle : Text.ElideRight
+            text: "@" + author.handle + (displayPronouns ? ` (${author.pronouns})` : "")
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             Accessible.ignored: true
