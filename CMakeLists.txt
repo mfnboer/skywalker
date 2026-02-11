@@ -20,6 +20,7 @@ qt_standard_project_setup()
 
 add_compile_definitions(APP_VERSION="${APP_VERSION}")
 add_compile_definitions(TENOR_API_KEY="$ENV{TENOR_API_KEY}")
+add_compile_definitions(GIPHY_API_KEY="$ENV{GIPHY_API_KEY}")
 
 add_subdirectory(atproto/lib)
 add_subdirectory(skywalker)

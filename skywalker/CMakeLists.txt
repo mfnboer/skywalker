@@ -644,6 +644,13 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/FeedOptionsMenu.qml
         QML_FILES qml/ListFeedOptionsMenu.qml
         QML_FILES qml/MoveToIndexTimer.qml
+        SOURCES giphy.h
+        SOURCES giphy.cpp
+        SOURCES giphy_gif.h
+        SOURCES giphy_gif.cpp
+        SOURCES giphy_image.h
+        SOURCES giphy_image.cpp
+        QML_FILES qml/GiphySearch.qml
 )
 
 if (NOT ANDROID)

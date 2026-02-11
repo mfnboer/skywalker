@@ -16,7 +16,8 @@ SvgTransparentButton {
     function selectGif() {
         if (!tenorSearchView)
         {
-            let component = guiSettings.createComponent("TenorSearch.qml")
+            //let component = guiSettings.createComponent("TenorSearch.qml") TODO
+            let component = guiSettings.createComponent("GiphySearch.qml")
             tenorSearchView = component.createObject(root)
             tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
             tenorSearchView.onSelected.connect((gif) => {
