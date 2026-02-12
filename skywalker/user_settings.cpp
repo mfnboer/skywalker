@@ -2009,6 +2009,16 @@ void UserSettings::setRecentGifs(const QString& did, const QStringList& gifIds)
     mSettings.setValue(key(did, "recentGifs"), list);
 }
 
+QStringList UserSettings::getRecentGiphyGifs(const QString& did) const
+{
+    return mSettings.value(key(did, "recentGiphyGifs")).toStringList();
+}
+
+void UserSettings::setRecentGiphyGifs(const QString& did, const QStringList& gifIds)
+{
+    mSettings.setValue(key(did, "recentGiphyGifs"), gifIds);
+}
+
 QStringList UserSettings::getLastSearches(const QString& did) const
 {
     return mSettings.value(key(did, "lastSearches")).toStringList();

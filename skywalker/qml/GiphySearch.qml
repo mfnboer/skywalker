@@ -27,14 +27,14 @@ SkyPage {
                 page.closed()
         }
 
-        onSearch: (text) => searchTenor(text)
+        onSearch: (text) => searchGiphy(text)
     }
 
     footer: Rectangle {
         width: parent.width
         height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
-        color: guiSettings.backgroundColor
+        color: "black"
 
         Image {
             id: tenorAttribution
@@ -43,7 +43,7 @@ SkyPage {
             width: parent.width - 20
             height: parent.height - 20
             fillMode: Image.PreserveAspectFit
-            source: "/images/PB_tenor_logo_blue_horizontal.svg" // TODO
+            source: "/images/pb_giphy_dark.png"
             asynchronous: true
         }
     }
@@ -202,7 +202,7 @@ SkyPage {
     }
 
 
-    function searchTenor(text) {
+    function searchGiphy(text) {
         giphy.searchGifs(text)
         viewStack.showGifs()
     }
@@ -211,9 +211,11 @@ SkyPage {
         if (category.isRecentCategory) {
             giphy.searchRecentGifs()
             viewStack.showGifs()
-        }
-        else {
-            searchTenor(category.searchTerm)
+        } else if (category.isTrendingCategory) {
+            giphy.searchTrendingGifs()
+            viewStack.showGifs()
+        } else {
+            searchGiphy(category.searchTerm)
         }
     }
 

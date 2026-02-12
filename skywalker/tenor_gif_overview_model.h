@@ -6,6 +6,7 @@
 
 namespace Skywalker {
 
+// Also used for Giphy
 class TenorOverviewModel : public QAbstractListModel
 {
     Q_OBJECT

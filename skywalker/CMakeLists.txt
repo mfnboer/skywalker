@@ -651,6 +651,7 @@ qt_add_qml_module(libskywalker
         SOURCES giphy_image.h
         SOURCES giphy_image.cpp
         QML_FILES qml/GiphySearch.qml
+        QML_FILES qml/GifSearch.qml
 )
 
 if (NOT ANDROID)

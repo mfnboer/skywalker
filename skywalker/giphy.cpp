@@ -9,7 +9,22 @@ namespace Skywalker {
 
 namespace {
 
-constexpr char const* GIPHY_BASE_URL="https://api.giphy.com/v1/gifs/";
+constexpr char const* GIPHY_BASE_URL = "https://api.giphy.com/v1/";
+constexpr char const* FIELDS_FILTER = "id,title,alt_text,id,images.original,images.fixed_height,images.original_still";
+constexpr char const* RATING = "pg";
+constexpr int MAX_RECENT_GIFS = 50;
+
+TenorGif toTenorGif(GiphyGif::SharedPtr giphyGif, const QString& query)
+{
+    TenorGif gif(giphyGif->getId(),
+                 giphyGif->getTitle(),
+                 query,
+                 giphyGif->getOriginal()->getUrl(), giphyGif->getOriginal()->getSize(),
+                 giphyGif->getFixedHeight()->getUrl(), giphyGif->getFixedHeight()->getSize(),
+                 giphyGif->getOriginalStill()->getUrl(), giphyGif->getOriginalStill()->getSize());
+    gif.setIsGiphy(true);
+    return gif;
+}
 
 }
 
@@ -59,13 +74,13 @@ void Giphy::setSearchInProgress(bool inProgress)
 
 void Giphy::getCategories()
 {
-    if (!mCachedCategories.empty())
-    {
-        allCategoriesRetrieved();
-        return;
-    }
+    getRecentCategory();
+    getTrendingCategory();
 
-    QNetworkRequest request(buildUrl("categories", {}));
+    if (!mCachedCategories.empty())
+        return;
+
+    QNetworkRequest request(buildUrl("gifs/categories", {}));
     QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
@@ -86,6 +101,135 @@ void Giphy::getCategories()
     });
 }
 
+void Giphy::addRecentGif(const TenorGif& gif)
+{
+    const QString did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList gifIds = settings->getRecentGiphyGifs(did);
+
+    for (auto it = gifIds.cbegin(); it != gifIds.cend(); ++it)
+    {
+        const auto& recentGifId = *it;
+
+        if (gif.getId() == recentGifId)
+        {
+            gifIds.erase(it);
+            break;
+        }
+    }
+
+    while (gifIds.size() >= MAX_RECENT_GIFS)
+        gifIds.pop_back();
+
+    gifIds.push_front(gif.getId());
+    settings->setRecentGiphyGifs(did, gifIds);
+    setRecentCategory(gif);
+}
+
+void Giphy::searchTrendingGifs(int offset)
+{
+    if (mSearchInProgress)
+    {
+        qWarning() << "Search already in progress";
+        return;
+    }
+
+    if (offset == 0)
+    {
+        mNextOffset.reset();
+        mOverviewModel.clear();
+        mQuery.clear();
+        mTrendingSearch = true;
+    }
+    else
+    {
+        Q_ASSERT(mTrendingSearch);
+    }
+
+    Params params{{"offset", QString::number(offset)},
+                  {"rating", RATING},
+                  {"fields", FIELDS_FILTER}};
+
+    QNetworkRequest request(buildUrl("gifs/trending", params));
+    QNetworkReply* reply = mNetwork->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        searchGifsFinished(reply, "");
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        qWarning() << "Posts SSL error:" <<  reply->request().url();
+    });
+}
+
+void Giphy::searchRecentGifs()
+{
+    if (mSearchInProgress)
+    {
+        qWarning() << "Search already in progress";
+        return;
+    }
+
+    mNextOffset.reset();
+    mOverviewModel.clear();
+    mQuery.clear();
+    mTrendingSearch = false;
+
+    const QStringList gifIdList = getRecentGifs();
+
+    if (gifIdList.empty())
+        return;
+
+    Q_ASSERT(gifIdList.size() <= 100); // maximum allowed by Giphy
+    Params params{{"ids", gifIdList.join(',')}};
+
+    setSearchInProgress(true);
+    QNetworkRequest request(buildUrl("gifs", params));
+    QNetworkReply* reply = mNetwork->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        searchGifsFinished(reply, "");
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setSearchInProgress(false);
+        qWarning() << "Posts SSL error:" <<  reply->request().url();
+    });
+}
+
 void Giphy::searchGifs(const QString& query, int offset)
 {
     if (mSearchInProgress)
@@ -99,18 +243,20 @@ void Giphy::searchGifs(const QString& query, int offset)
         mNextOffset.reset();
         mOverviewModel.clear();
         mQuery = query;
+        mTrendingSearch = false;
     }
     else
     {
         Q_ASSERT(query == mQuery);
     }
 
-    // TODO: rating, field filtering
     Params params{{"q", query},
-                  {"offset", QString::number(offset)}};
+                  {"offset", QString::number(offset)},
+                  {"rating", RATING},
+                  {"fields", FIELDS_FILTER}};
 
     setSearchInProgress(true);
-    QNetworkRequest request(buildUrl("search", params));
+    QNetworkRequest request(buildUrl("gifs/search", params));
     QNetworkReply* reply = mNetwork->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, query]{
@@ -147,14 +293,14 @@ void Giphy::getNextPage()
         return;
     }
 
-    Q_ASSERT(!mQuery.isEmpty());
-    if (mQuery.isEmpty())
-    {
-        qWarning() << "No previous query available";
-        return;
-    }
+    Q_ASSERT(!mQuery.isEmpty() || mTrendingSearch);
 
-    searchGifs(mQuery, *mNextOffset);
+    if (mTrendingSearch)
+        searchTrendingGifs(*mNextOffset);
+    else if (!mQuery.isEmpty())
+        searchGifs(mQuery, *mNextOffset);
+    else
+        qWarning() << "No previous query available";
 }
 
 QUrl Giphy::buildUrl(const QString& endpoint, const Params& params) const
@@ -171,6 +317,168 @@ QUrl Giphy::buildUrl(const QString& endpoint, const Params& params) const
 
     url.setQuery(query);
     return url;
+}
+
+void Giphy::getTrendingCategory()
+{
+    if (mTrendingCategory)
+    {
+        allCategoriesRetrieved();
+        return;
+    }
+
+    Params params{{"limit", "1"},
+                  {"rating", RATING},
+                  {"fields", FIELDS_FILTER}};
+
+    QNetworkRequest request(buildUrl("gifs/trending", params));
+    QNetworkReply* reply = mNetwork->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setTrendingCategory(reply);
+        allCategoriesRetrieved();
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+        allCategoriesRetrieved();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        qWarning() << "Posts SSL error:" <<  reply->request().url();
+        allCategoriesRetrieved();
+    });
+}
+
+void Giphy::setTrendingCategory(QNetworkReply* reply)
+{
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qWarning() << "Get trending category failed:" << reply->request().url() << "error:" <<
+            reply->error() << reply->errorString();
+        return;
+    }
+
+    const auto data = reply->readAll();
+    const QJsonDocument json(QJsonDocument::fromJson(data));
+    const auto jsonObject = json.object();
+    const ATProto::XJsonObject xjson(jsonObject);
+
+    try {
+        const auto results = xjson.getOptionalVector<GiphyGif>("data");
+
+        if (results.empty())
+        {
+            qWarning("Failed to get recent category");
+            return;
+        }
+
+        const auto gif = toTenorGif(results.front(), "");
+        setTrendingCategory(gif);
+    }
+    catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "Invalid JSON:" << e.msg();
+    }
+}
+
+void Giphy::setTrendingCategory(const TenorGif& gif)
+{
+    qDebug() << "Set recent category";
+    mTrendingCategory = TenorCategory(gif.getSmallUrl(), tr("Trending"), false, true);
+}
+
+void Giphy::getRecentCategory()
+{
+    if (mRecentCategory)
+    {
+        allCategoriesRetrieved();
+        return;
+    }
+
+    const QStringList gifIds = getRecentGifs();
+
+    if (gifIds.empty())
+    {
+        allCategoriesRetrieved();
+        return;
+    }
+
+    Params params{{"ids", gifIds.front()}};
+
+    QNetworkRequest request(buildUrl("gifs", params));
+    QNetworkReply* reply = mNetwork->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        setRecentCategory(reply);
+        allCategoriesRetrieved();
+    });
+
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
+        if (!presence)
+            return;
+
+        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+            errCode << reply->errorString();
+        allCategoriesRetrieved();
+    });
+
+    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
+        if (!presence)
+            return;
+
+        qWarning() << "Posts SSL error:" <<  reply->request().url();
+        allCategoriesRetrieved();
+    });
+}
+
+void Giphy::setRecentCategory(QNetworkReply* reply)
+{
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qWarning() << "Get recent category failed:" << reply->request().url() << "error:" <<
+            reply->error() << reply->errorString();
+        return;
+    }
+
+    const auto data = reply->readAll();
+    const QJsonDocument json(QJsonDocument::fromJson(data));
+    const auto jsonObject = json.object();
+    const ATProto::XJsonObject xjson(jsonObject);
+
+    try {
+        const auto results = xjson.getOptionalVector<GiphyGif>("data");
+
+        if (results.empty())
+        {
+            qWarning("Failed to get recent category");
+            return;
+        }
+
+        const auto gif = toTenorGif(results.front(), "");
+        setRecentCategory(gif);
+    }
+    catch (ATProto::InvalidJsonException& e) {
+        qWarning() << "Invalid JSON:" << e.msg();
+    }
+}
+
+void Giphy::setRecentCategory(const TenorGif& gif)
+{
+    qDebug() << "Set recent category";
+    mRecentCategory = TenorCategory(gif.getSmallUrl(), tr("Recently Used"), true);
 }
 
 void Giphy::searchGifsFinished(QNetworkReply* reply, const QString& query)
@@ -190,12 +498,9 @@ void Giphy::searchGifsFinished(QNetworkReply* reply, const QString& query)
     const ATProto::XJsonObject xjson(jsonObject);
 
     try {
-        const auto paginationJson = xjson.getRequiredJsonObject("pagination");
-        const ATProto::XJsonObject paginationXjson(paginationJson);
-        const int resultCount = paginationXjson.getRequiredInt("count");
-        const int offset = paginationXjson.getRequiredInt("offset");
+        auto pagination = xjson.getRequiredObject<Pagination>("pagination");
 
-        if (resultCount == 0)
+        if (pagination->mCount == 0)
         {
             qDebug() << "No more results";
             mNextOffset.reset();
@@ -206,16 +511,11 @@ void Giphy::searchGifsFinished(QNetworkReply* reply, const QString& query)
 
         for (const auto& giphyGif : results)
         {
-            TenorGif gif(giphyGif->getId(),
-                         giphyGif->getDescription(),
-                         query,
-                         giphyGif->getOriginal()->getUrl(), giphyGif->getOriginal()->getSize(),
-                         giphyGif->getFixedHeight()->getUrl(), giphyGif->getFixedHeight()->getSize(),
-                         giphyGif->getOriginalStill()->getUrl(), giphyGif->getOriginalStill()->getSize());
+            const auto gif = toTenorGif(giphyGif, query);
             tenorGifList.append(gif);
         }
 
-        mNextOffset = offset + resultCount;
+        mNextOffset = pagination->mOffset + pagination->mCount;
     }
     catch (ATProto::InvalidJsonException& e) {
         qWarning() << "Invalid JSON:" << e.msg();
@@ -245,6 +545,8 @@ bool Giphy::categoriesFinished(QNetworkReply* reply, TenorCategoryList& category
         qWarning("Data missing");
         return false;
     }
+
+    categoryList.clear();
 
     for (const auto& category : *categories)
     {
@@ -281,10 +583,31 @@ void Giphy::allCategoriesRetrieved()
     if (mRecentCategory)
         categoryList.push_back(*mRecentCategory);
 
+    if (mTrendingCategory)
+        categoryList.push_back(*mTrendingCategory);
+
     for (const auto& category : mCachedCategories)
         categoryList.push_back(category);
 
+    qDebug() << "All categories:" << categoryList.size();
     emit categories(categoryList);
+}
+
+QStringList Giphy::getRecentGifs()
+{
+    const QString did = mSkywalker->getUserDid();
+    auto* settings = mSkywalker->getUserSettings();
+    QStringList gifIds = settings->getRecentGiphyGifs(did);
+    return gifIds;
+}
+
+Giphy::Pagination::SharedPtr Giphy::Pagination::fromJson(const QJsonObject& json)
+{
+    auto pagination = std::make_shared<Pagination>();
+    ATProto::XJsonObject xjson(json);
+    pagination->mOffset = xjson.getRequiredInt("offset");
+    pagination->mCount = xjson.getRequiredInt("count");
+    return pagination;
 }
 
 }

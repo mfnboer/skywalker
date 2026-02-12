@@ -2398,11 +2398,14 @@ SkyPage {
                            labels, postItem.language,
                            postFeedContext)
         } else if (!postItem.gif.isNull()) {
-            tenor.registerShare(postItem.gif)
+            if (!postItem.gif.isGiphy())
+                tenor.registerShare(postItem.gif)
+
+            const attribution = postItem.gif.isGiphy() ? "Powered by Giphy" : "via Tenor"
 
             let gifCard = linkCardReader.makeLinkCard(
                     postItem.gif.getUrlForPosting(),
-                    `${postItem.gif.description} (via Tenor)\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
+                    `${postItem.gif.description} (${attribution})\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
                     qsTr("This GIF has been posted from Skywalker for Android. " +
                          "Get Skywalker from Google Play.") +
                          (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),

@@ -6,6 +6,7 @@
 
 namespace Skywalker {
 
+// Also used for Giphy
 class TenorGif
 {
     Q_GADGET
@@ -55,6 +56,8 @@ public:
     QSize getImageSize() const { return mPrivate->mImageSize; }
     QSize getOverviewSize() const { return mPrivate->mOverviewSize; }
     void setOverviewSize(QSize size) { mPrivate->mOverviewSize = size; }
+    Q_INVOKABLE bool isGiphy() const { return mPrivate->mIsGiphy; }
+    void setIsGiphy(bool isGiphy) { mPrivate->mIsGiphy = isGiphy; }
 
     // Get a URL that is compatible with Bluesky
     Q_INVOKABLE const QString getUrlForPosting() const;
@@ -72,6 +75,7 @@ private:
         QString mImageUrl;
         QSize mImageSize;
         QSize mOverviewSize;
+        bool mIsGiphy = false;
     };
 
     std::shared_ptr<PrivateData> mPrivate;

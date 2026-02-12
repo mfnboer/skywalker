@@ -3,7 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 SvgTransparentButton {
-    property var tenorSearchView: null
+    property var gifSearchView: null
 
     signal selectedGif(tenorgif gif)
 
@@ -14,19 +14,19 @@ SvgTransparentButton {
     onClicked: selectGif()
 
     function selectGif() {
-        if (!tenorSearchView)
+        if (!gifSearchView)
         {
-            //let component = guiSettings.createComponent("TenorSearch.qml") TODO
-            let component = guiSettings.createComponent("GiphySearch.qml")
-            tenorSearchView = component.createObject(root)
-            tenorSearchView.onClosed.connect(() => { root.currentStack().pop() })
-            tenorSearchView.onSelected.connect((gif) => {
+            let component = guiSettings.createComponent("GifSearch.qml")
+            gifSearchView = component.createObject(root)
+            gifSearchView.onClosed.connect(() => { root.currentStack().pop() })
+            gifSearchView.onSelected.connect((gif) => {
                     addGifButton.selectedGif(gif)
                     root.currentStack().pop()
             })
         }
 
-        root.pushStack(tenorSearchView)
+        root.pushStack(gifSearchView)
+        gifSearchView.init()
     }
 }
 
