@@ -20,13 +20,7 @@ SkyPage {
         placeHolderText: qsTr("Search Giphy")
         showBackButton: !root.showSideBar
 
-        onBack: {
-            if (!viewStack.isCategoriesShowing())
-                viewStack.showCategories()
-            else
-                page.closed()
-        }
-
+        onBack: cancel()
         onSearch: (text) => searchGiphy(text)
     }
 
@@ -188,7 +182,8 @@ SkyPage {
 
     Giphy {
         id: giphy
-        width: parent.width
+        // For some reason parent.width gives a wrong width (twice as much ???)
+        width: page.width
         spacing: 4
         skywalker: root.getSkywalker()
 
@@ -217,6 +212,13 @@ SkyPage {
         } else {
             searchGiphy(category.searchTerm)
         }
+    }
+
+    function cancel() {
+        if (!viewStack.isCategoriesShowing())
+            viewStack.showCategories()
+        else
+            page.closed()
     }
 
     Component.onDestruction: {

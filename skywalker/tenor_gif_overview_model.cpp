@@ -11,6 +11,24 @@ TenorOverviewModel::TenorOverviewModel(int maxRowWidth, int spacing, QObject* pa
 {
 }
 
+void TenorOverviewModel::setMaxRowWidth(int width)
+{
+    if (mMaxRowWidth == width)
+        return;
+
+    mMaxRowWidth = width;
+    QTimer::singleShot(0, this, [this]{ refresh(); });
+}
+
+void TenorOverviewModel::setSpacing(int spacing)
+{
+    if (mSpacing == spacing)
+        return;
+
+    mSpacing = spacing;
+    QTimer::singleShot(0, this, [this]{ refresh(); });
+}
+
 void TenorOverviewModel::clear()
 {
     if (mOverview.empty())
@@ -18,11 +36,15 @@ void TenorOverviewModel::clear()
 
     beginRemoveRows({}, 0, mOverview.size() - 1);
     mOverview.clear();
+    mGifs.clear();
     endRemoveRows();
 }
 
 void TenorOverviewModel::addGifs(const TenorGifList& gifs)
 {
+    for (const auto& gif : gifs)
+        mGifs.append(gif.deepCopy());
+
     TenorPreviewRow nextRow(mMaxRowWidth, mSpacing);
 
     if (!mOverview.empty() && !mOverview.back().isFull())
@@ -56,6 +78,16 @@ void TenorOverviewModel::addRow(const TenorPreviewRow& row)
     beginInsertRows({}, mOverview.size(), mOverview.size());
     mOverview.push_back(row);
     endInsertRows();
+}
+
+void TenorOverviewModel::refresh()
+{
+    if (mGifs.empty())
+        return;
+
+    const auto gifs = mGifs;
+    clear();
+    addGifs(gifs);
 }
 
 int TenorOverviewModel::rowCount(const QModelIndex&) const

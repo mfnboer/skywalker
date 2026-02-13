@@ -13,6 +13,8 @@ SkyPage {
     id: page
     clip: true
 
+    onWidthChanged: console.debug("PAGE WIDTH:", width)
+
     Accessible.role: Accessible.Pane
 
     header: SearchHeader {
@@ -20,13 +22,7 @@ SkyPage {
         placeHolderText: qsTr("Search Tenor")
         showBackButton: !root.showSideBar
 
-        onBack: {
-            if (!viewStack.isCategoriesShowing())
-                viewStack.showCategories()
-            else
-                page.closed()
-        }
-
+        onBack: cancel()
         onSearch: (text) => searchTenor(text)
     }
 
@@ -188,7 +184,7 @@ SkyPage {
 
     Tenor {
         id: tenor
-        width: parent.width
+        width: page.width
         spacing: 4
         skywalker: root.getSkywalker()
 
@@ -215,6 +211,13 @@ SkyPage {
         else {
             searchTenor(category.searchTerm)
         }
+    }
+
+    function cancel() {
+        if (!viewStack.isCategoriesShowing())
+            viewStack.showCategories()
+        else
+            page.closed()
     }
 
     Component.onDestruction: {

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
 SkyPage {
@@ -50,5 +51,9 @@ SkyPage {
         const index = swipeView.currentIndex
         swipeView.setCurrentIndex(0)
         swipeView.setCurrentIndex(index)
+    }
+
+    function cancel() {
+        swipeView.currentItem.cancel()
     }
 }

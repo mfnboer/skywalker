@@ -19,4 +19,11 @@ const QString TenorGif::getUrlForPosting() const
     return gifUrl.toString();
 }
 
+TenorGif TenorGif::deepCopy() const
+{
+    TenorGif copy;
+    *copy.mPrivate = *mPrivate;
+    return copy;
+}
+
 }

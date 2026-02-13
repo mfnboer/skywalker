@@ -62,6 +62,8 @@ public:
     // Get a URL that is compatible with Bluesky
     Q_INVOKABLE const QString getUrlForPosting() const;
 
+    TenorGif deepCopy() const;
+
 private:
     struct PrivateData
     {

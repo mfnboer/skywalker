@@ -19,8 +19,8 @@ public:
 
     TenorOverviewModel(int maxRowWidth, int spacing, QObject* parent = nullptr);
 
-    void setMaxRowWidth(int width) { mMaxRowWidth = width; }
-    void setSpacing(int spacing) { mSpacing = spacing; }
+    void setMaxRowWidth(int width);
+    void setSpacing(int spacing);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -33,10 +33,12 @@ protected:
 
 private:
     void addRow(const TenorPreviewRow& row);
+    void refresh();
 
     int mMaxRowWidth;
     int mSpacing;
     std::vector<TenorPreviewRow> mOverview;
+    TenorGifList mGifs;
 };
 
 }
