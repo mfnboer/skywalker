@@ -13,6 +13,9 @@ TenorOverviewModel::TenorOverviewModel(int maxRowWidth, int spacing, QObject* pa
 
 void TenorOverviewModel::setMaxRowWidth(int width)
 {
+    if (width <= 0)
+        return;
+
     if (mMaxRowWidth == width)
         return;
 
