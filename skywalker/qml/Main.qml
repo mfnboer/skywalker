@@ -472,11 +472,12 @@ ApplicationWindow {
                 return
             }
 
-            guiSettings.askConvertGif(
-                rootContent,
-                "file://" + gifTempFileName,
-                () => gifToVideoConverter.start(gifTempFileName, text),
-                () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
+            // guiSettings.askConvertGif(
+            //     rootContent,
+            //     "file://" + gifTempFileName,
+            //     () => gifToVideoConverter.start(gifTempFileName, text),
+            //     () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
+            gifToVideoConverter.start(gifTempFileName, text)
         }
 
         function handleSharedImageReceived(source, text) {
@@ -497,17 +498,17 @@ ApplicationWindow {
             handleSharedVideoReceived(source, text)
         }
 
-        function handleSharedVideoReceived(source, text) {
+        function handleSharedVideoReceived(source, text, isGif = false) {
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
-                item.addSharedVideo(source, text)
+                item.addSharedVideo(source, text, isGif)
             else if (item instanceof PostThreadView)
-                item.videoReply(text, source)
+                item.videoReply(text, source, isGif)
             else if (item instanceof AuthorView)
-                item.mentionVideoPost(text, source)
+                item.mentionVideoPost(text, source, isGif)
             else
-                composeVideoPost(text, source)
+                composeVideoPost(text, source, isGif)
         }
 
         onSharedDmTextReceived: (text) => {
@@ -590,7 +591,7 @@ ApplicationWindow {
         onConversionOk: (videoFileName) => {
             progressDialog.destroy()
             postUtils.dropVideo("file://" + gifFileName)
-            skywalker.handleSharedVideoReceived(`file://${videoFileName}`, postText)
+            skywalker.handleSharedVideoReceived(`file://${videoFileName}`, postText, true)
         }
 
         onConversionFailed: (error) => {
@@ -1499,12 +1500,13 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function composeVideoPost(initialText = "", videoSource = "", postByDid = "") {
+    function composeVideoPost(initialText, videoSource, isGif, postByDid = "") {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 postByDid: postByDid,
                 initialText: initialText,
-                initialVideo: videoSource
+                initialVideo: videoSource,
+                initialVideoIsGif: isGif
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)
@@ -1548,24 +1550,25 @@ ApplicationWindow {
 
     function composeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                               initialText, videoSource, postByDid = "")
+                               initialText, videoSource, isGif, postByDid = "")
     {
         const pu = getPostUtils(postByDid)
         pu.checkPost(replyToUri, replyToCid,
             () => doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                       replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                                      initialText, videoSource, postByDid))
+                                      initialText, videoSource, isGif, postByDid))
     }
 
     function doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                                 initialText, videoSource, postByDid = "")
+                                 initialText, videoSource, isGif, postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 postByDid: postByDid,
                 initialText: initialText,
                 initialVideo: videoSource,
+                initialVideoIsGif: isGif,
                 replyToPostUri: replyToUri,
                 replyToPostCid: replyToCid,
                 replyRootPostUri: replyRootUri,

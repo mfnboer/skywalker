@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "image_view.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
@@ -16,6 +17,7 @@ class VideoView
     Q_PROPERTY(QString alt READ getAlt FINAL)
     Q_PROPERTY(int width READ getWidth FINAL)
     Q_PROPERTY(int height READ getHeight FINAL)
+    Q_PROPERTY(QEnums::VideoPresentation presentation READ getPresentation FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(int startMs READ getStartMs FINAL)
     Q_PROPERTY(int endMs READ getEndMs FINAL)
@@ -28,8 +30,14 @@ public:
 
     VideoView() = default;
     VideoView(const ATProto::AppBskyEmbed::VideoView::SharedPtr& videoView) : mVideoView(videoView) {}
-    VideoView(const QString& playListUrl, const QString& alt, int startMs, int endMs, bool removeAudio, int newHeight) :
-        mPlayListUrl(playListUrl), mAlt(alt), mStartMs(startMs), mEndMs(endMs), mRemoveAudio(removeAudio), mNewHeight(newHeight) {}
+    VideoView(const QString& playListUrl, bool isGif, const QString& alt, int startMs, int endMs, bool removeAudio, int newHeight) :
+        mPlayListUrl(playListUrl),
+        mIsGif(isGif),
+        mAlt(alt),
+        mStartMs(startMs),
+        mEndMs(endMs),
+        mRemoveAudio(removeAudio),
+        mNewHeight(newHeight) {}
 
     Q_INVOKABLE bool isNull() const { return getPlaylistUrl().isEmpty(); }
     QString getThumbUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
@@ -38,6 +46,13 @@ public:
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : 0;  }
     QString getAlt() const { return !mHtmlAlt.isEmpty() ? mHtmlAlt : (mVideoView && mVideoView->mAlt ? *mVideoView->mAlt : mAlt); }
+
+    QEnums::VideoPresentation getPresentation() const
+    {
+        return mVideoView ?
+                   (QEnums::VideoPresentation)mVideoView->mPresentation.value_or(ATProto::AppBskyEmbed::VideoPresentation::DEFAULT) :
+                   (mIsGif ? QEnums::VIDEO_PRESENTATION_GIF : QEnums::VIDEO_PRESENTATION_DEFAULT);
+    }
 
     ImageView getImageView() const {
         ImageView imageView(getThumbUrl(), getAlt(), getWidth(), getHeight());
@@ -65,6 +80,7 @@ public:
 private:
     ATProto::AppBskyEmbed::VideoView::SharedPtr mVideoView;
     QString mPlayListUrl;
+    bool mIsGif = false;
     QString mAlt;
     QString mHtmlAlt;
 

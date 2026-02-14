@@ -26,6 +26,7 @@ Item {
     property int videoStartMs: 0
     property int videoEndMs: 0
     property bool videoRemoveAudio: false
+    property bool videoIsGif: false
 
     // Content warnings
     property bool cwSuggestive: false

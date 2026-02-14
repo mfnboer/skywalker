@@ -11,6 +11,7 @@ SkyPage {
     property string initialText
     property string initialImage
     property string initialVideo: ""
+    property bool initialVideoIsGif: false
     property list<DraftPostData> editPostData: []
     property int margin: 15
 
@@ -372,6 +373,7 @@ SkyPage {
                     property int videoStartMs
                     property int videoEndMs
                     property bool videoRemoveAudio
+                    property bool videoIsGif
 
                     function copyToPostList() {
                         threadPosts.postList[index].text = text
@@ -402,6 +404,7 @@ SkyPage {
                         threadPosts.postList[index].videoStartMs = videoStartMs
                         threadPosts.postList[index].videoEndMs = videoEndMs
                         threadPosts.postList[index].videoRemoveAudio = videoRemoveAudio
+                        threadPosts.postList[index].videoIsGif = videoIsGif
                     }
 
                     function copyFromPostList() {
@@ -436,6 +439,7 @@ SkyPage {
                         videoStartMs = threadPosts.postList[index].videoStartMs
                         videoEndMs = threadPosts.postList[index].videoEndMs
                         videoRemoveAudio = threadPosts.postList[index].videoRemoveAudio
+                        videoIsGif = threadPosts.postList[index].videoIsGif
 
                         // Set text last as it will trigger link extractions which
                         // will check if a link card is already in place.
@@ -735,6 +739,7 @@ SkyPage {
                         property alias endMs: postItem.videoEndMs
                         property alias removeAudio: postItem.videoRemoveAudio
                         property alias newHeight: postItem.videoNewHeight
+                        property alias videoIsGif: postItem.videoIsGif
 
                         id: videoAttachement
                         x: page.margin
@@ -1871,12 +1876,12 @@ SkyPage {
             callbackFailed = (error) => {}
         }
 
-        function transcode(videoSource, newHeight, startMs, endMs, removeAudio, cbOk, cbFailed) {
+        function transcode(videoSource, newHeight, startMs, endMs, removeAudio, isGif, cbOk, cbFailed) {
             callbackOk = cbOk
             callbackFailed = cbFailed
             const fileName = videoSource.slice(7)
             transcodeVideo(fileName, newHeight, startMs, endMs, removeAudio)
-            postProgress(qsTr("Transcoding video"))
+            postProgress(isGif ? qsTr("Transcoding GIF") : qsTr("Transcoding video"))
         }
     }
 
@@ -1888,7 +1893,7 @@ SkyPage {
         onConversionOk: (videoFileName) => {
             progressDialog.destroy()
             page.tmpVideos.push("file://" + videoFileName)
-            editVideo(`file://${videoFileName}`)
+            autoEditGif(`file://${videoFileName}`)
         }
 
         onConversionFailed: (error) => {
@@ -2013,7 +2018,10 @@ SkyPage {
                 postText.cursorPosition = postText.text.length
 
             if (Boolean(page.initialVideo)) {
-                editVideo(page.initialVideo)
+                if (page.initialVideoIsGif)
+                    autoEditGif(page.initialVideo)
+                else
+                    editVideo(page.initialVideo)
             }
             else {
                 postText.ensureVisible(Qt.rect(0, 0, postText.width, postText.height))
@@ -2114,11 +2122,12 @@ SkyPage {
             return
         }
 
-        guiSettings.askConvertGif(
-            page,
-            "file://" + gifFileName,
-            () => gifToVideoConverter.start(gifFileName),
-            () => photoPickedContinued(source, altText))
+        // guiSettings.askConvertGif(
+        //     page,
+        //     "file://" + gifFileName,
+        //     () => gifToVideoConverter.start(gifFileName),
+        //     () => photoPickedContinued(source, altText))
+        gifToVideoConverter.start(gifFileName)
     }
 
     function photoPickedContinued(source, altText = "") {
@@ -2137,8 +2146,8 @@ SkyPage {
         postItem.getPostText().forceActiveFocus()
     }
 
-    function videoPicked(source, altText = "") {
-        console.debug("VIDEO:", source)
+    function videoPicked(source, isGif = false, altText = "") {
+        console.debug("VIDEO:", source, "isGif:", isGif)
 
         if (!canAddVideo()) {
             console.debug("Cannot add video:", source)
@@ -2151,6 +2160,7 @@ SkyPage {
             return
 
         postItem.video = source
+        postItem.videoIsGif = isGif
         postItem.videoAltText = altText
     }
 
@@ -2181,7 +2191,7 @@ SkyPage {
         addSharedText(text)
     }
 
-    function addSharedVideo(source, text) {
+    function addSharedVideo(source, text, isGif) {
         let postItem = currentPostItem()
 
         if (!postItem)
@@ -2194,7 +2204,11 @@ SkyPage {
         }
 
         addSharedText(text)
-        editVideo(source)
+
+        if (isGif)
+            autoEditGif(source)
+        else
+            editVideo(source)
     }
 
     function addReplyToMentions() {
@@ -2421,9 +2435,11 @@ SkyPage {
         } else if (Boolean(postItem.video)) {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
-                        postItem.videoStartMs, postItem.videoEndMs, postItem.videoRemoveAudio,
+                        postItem.videoStartMs, postItem.videoEndMs, postItem.videoRemoveAudio, postItem.videoIsGif,
                         (transcodedVideo, videoWidth, videoHeight) => {
-                            postUtils.postVideo(postText, transcodedVideo, postItem.videoAltText,
+                            postUtils.postVideo(postText, transcodedVideo,
+                                postItem.videoIsGif,
+                                postItem.videoAltText,
                                 videoWidth, videoHeight,
                                 parentUri, parentCid,
                                 rootUri, rootCid,
@@ -2503,7 +2519,7 @@ SkyPage {
                         postItem.embeddedLinks,
                         postItem.images, postItem.altTexts,
                         postItem.memeTopTexts, postItem.memeBottomTexts,
-                        postItem.video, postItem.videoAltText,
+                        postItem.video, postItem.videoIsGif, postItem.videoAltText,
                         postItem.videoStartMs, postItem.videoEndMs, postItem.videoNewHeight,
                         postItem.videoRemoveAudio,
                         replyToPostUri, replyToPostCid,
@@ -2530,7 +2546,7 @@ SkyPage {
                                 threadItem.embeddedLinks,
                                 threadItem.images, threadItem.altTexts,
                                 threadItem.memeTopTexts, threadItem.memeBottomTexts,
-                                threadItem.video, threadItem.videoAltText,
+                                threadItem.video, threadItem.videoIsGif, threadItem.videoAltText,
                                 threadItem.videoStartMs, threadItem.videoEndMs, threadItem.videoNewHeight,
                                 threadItem.videoRemoveAudio,
                                 "", "",
@@ -2598,6 +2614,7 @@ SkyPage {
             if (!draftData.video.isNull())
             {
                 postItem.video = draftData.video.playlistUrl
+                postItem.videoIsGif = draftData.video.presentation === QEnums.VIDEO_PRESENTATION_GIF
                 postItem.videoAltText = draftData.video.alt
                 postItem.videoStartMs = draftData.video.startMs
                 postItem.videoEndMs = draftData.video.endMs
@@ -2970,6 +2987,7 @@ SkyPage {
         videoPage.onVideoEdited.connect((newHeight, startMs, endMs, removeAudio) => {
             const postItem = currentPostItem()
             let altText = ""
+            let isGif = false
 
             if (postItem) {
                 postItem.videoNewHeight = newHeight
@@ -2977,10 +2995,11 @@ SkyPage {
                 postItem.videoEndMs = endMs
                 postItem.videoRemoveAudio = removeAudio
                 altText = postItem.videoAltText
+                isGif = postItem.videoIsGif
             }
 
             page.editingVideo = false
-            page.videoPicked(videoSource, altText)
+            page.videoPicked(videoSource, isGif, altText)
             root.popStack()
             currentPostItem().getPostText().forceActiveFocus()
         })
@@ -2991,6 +3010,19 @@ SkyPage {
         })
         page.editingVideo = true
         root.pushStack(videoPage)
+    }
+
+    function autoEditGif(videoSource) {
+        const postItem = currentPostItem()
+
+        if (postItem) {
+            postItem.videoNewHeight = 0
+            postItem.videoStartMs = 0
+            postItem.videoEndMs = 0
+            postItem.videoRemoveAudio = false
+        }
+
+        page.videoPicked(videoSource, true, "")
     }
 
     function showVideoUploadLimits(limits) {

@@ -1654,9 +1654,9 @@ SkyPage {
         root.composePost(mentionText, imgSource, page.userDid)
     }
 
-    function mentionVideoPost(text = "", videoSource = "") {
+    function mentionVideoPost(text, videoSource, isGif) {
         const mentionText = (page.isUser(author) || author.hasInvalidHandle()) ? text : `@${author.handle} ${text}`
-        root.composeVideoPost(mentionText, videoSource, page.userDid)
+        root.composeVideoPost(mentionText, videoSource, isGif, page.userDid)
     }
 
     function feedOkHandler(modelId) {

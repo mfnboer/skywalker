@@ -61,7 +61,7 @@ DraftPostData* DraftPosts::createDraft(
     const WebLink::List& embeddedLinks,
     const QStringList& imageFileNames, const QStringList& altTexts,
     const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
-    const QString& videoFileName, const QString& videoAltText,
+    const QString& videoFileName, bool videoIsGif, const QString& videoAltText,
     int videoStartMs, int videoEndMs, int videoNewHeight,
     bool videoRemoveAudio,
     const QString& replyToUri, const QString& replyToCid,
@@ -97,7 +97,7 @@ DraftPostData* DraftPosts::createDraft(
 
     if (!videoFileName.isEmpty())
     {
-        const VideoView video(videoFileName, videoAltText, videoStartMs, videoEndMs, videoRemoveAudio, videoNewHeight);
+        const VideoView video(videoFileName, videoIsGif, videoAltText, videoStartMs, videoEndMs, videoRemoveAudio, videoNewHeight);
         draft->setVideo(video);
     }
 
@@ -397,7 +397,8 @@ static void setVideo(DraftPostData* data, const VideoView& videoView)
         return;
 
     const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
-    VideoView video(url.toString(), videoView.getAlt(), videoView.getStartMs(), videoView.getEndMs(),
+    const bool isGif = videoView.getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
+    VideoView video(url.toString(), isGif, videoView.getAlt(), videoView.getStartMs(), videoView.getEndMs(),
                     videoView.getRemoveAudio(), videoView.getNewHeight());
     data->setVideo(video);
     TempFileHolder::instance().put(std::move(tmpFile));
@@ -1374,7 +1375,8 @@ bool DraftPosts::addVideoToPost(ATProto::AppBskyFeed::Record::Post& post,
         return false;
     }
 
-    ATProto::PostMaster::addVideoToPost(post, std::move(blob), -1, -1, video.getAlt());
+    const bool isGif = video.getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
+    ATProto::PostMaster::addVideoToPost(post, std::move(blob), -1, -1, video.getAlt(), isGif);
     return true;
 }
 

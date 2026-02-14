@@ -24,8 +24,10 @@ Column {
     property string videoSource: streamingEnabled ? videoView.playlistUrl : ""
     property string transcodedSource
 
-    property bool autoLoad: (userSettings.videoAutoPlay || userSettings.videoAutoLoad) && !swipeMode || isFullVideoFeedViewMode || streamingEnabled
-    property bool autoPlay: (userSettings.videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
+    readonly property bool isGif: videoView.presentation === QEnums.VIDEO_PRESENTATION_GIF
+    readonly property bool videoAutoPlay: isGif ? userSettings.gifAutoPlay : userSettings.videoAutoPlay
+    property bool autoLoad: (videoAutoPlay || userSettings.videoAutoLoad) && !swipeMode || isFullVideoFeedViewMode || streamingEnabled
+    property bool autoPlay: (videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
     property double playbackRate: 1.0
 
     property int useIfNeededHeight: 0
@@ -192,7 +194,7 @@ Column {
                     backgroundColor: "black"
                     backgroundOpacity: 0.6
                     color: "white"
-                    text: guiSettings.videoDurationToString(videoPlayer.getDuration())
+                    text: isGif ? "GIF" : guiSettings.videoDurationToString(videoPlayer.getDuration())
                     visible: !isFullViewMode && !tileMode && filter.imageVisible()
                 }
             }
@@ -261,7 +263,7 @@ Column {
 
                 id: videoPlayer
                 source: transcodedSource
-                loops: userSettings.videoLoopPlay ? MediaPlayer.Infinite : 1
+                loops: (userSettings.videoLoopPlay || isGif) ? MediaPlayer.Infinite : 1
                 videoOutput: videoOutput
                 audioOutput: audioOutput
                 playbackRate: videoStack.playbackRate
@@ -428,7 +430,7 @@ Column {
         width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getDisplayWidth())
         height: visible ? playPauseButton.height : 0
         color: "transparent"
-        visible: show && videoPlayingOrPaused
+        visible: show && videoPlayingOrPaused && !isGif
 
         Loader {
             anchors.fill: parent
@@ -761,10 +763,19 @@ Column {
     function pause() {
         if (videoPlayer.playing)
         {
-            if (!autoPlay)
-                videoPlayer.pause()
-            else
+            if (!autoPlay) {
+                // Stopping when the video presentation is GIF makes sure, the
+                // Still image with the play-button will be shown. For a GIF the
+                // full video controls are not shown.
+                // A GIF only gets paused when another screen gets on top.
+
+                if (isGif)
+                    videoPlayer.stop()
+                else
+                    videoPlayer.pause()
+            } else {
                 audioOutput.muted = true
+            }
         }
     }
 

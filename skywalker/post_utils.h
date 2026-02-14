@@ -56,7 +56,7 @@ public:
                           const WebLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language,
                           const PostFeedContext& postFeedContext);
-    Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName,
+    Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, bool isGif,
                           const QString& videoAltText, int videoWidth, int videoHeight,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,

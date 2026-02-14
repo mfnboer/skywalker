@@ -24,6 +24,7 @@ struct PostAttachmentVideo
     QString mAltText;
     int mWidth;
     int mHeight;
+    bool mIsGif = false;
 };
 
 using PostAttachment = std::variant<PostAttachmentImages, PostAttachmentLinkCard, PostAttachmentVideo>;

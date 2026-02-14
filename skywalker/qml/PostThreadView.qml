@@ -288,7 +288,7 @@ SkyListView {
                           initialText, imageSource, "", "", userDid)
     }
 
-    function videoReply(initialText, videoSource) {
+    function videoReply(initialText, videoSource, isGif) {
         const postUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostUri)
         const postCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostCid)
         const postText = model.getData(postEntryIndex, AbstractPostFeedModel.PostText)
@@ -302,7 +302,7 @@ SkyListView {
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeVideoReply(postUri, postCid, postText, postIndexedDateTime,
                                author, postReplyRootUri, postReplyRootCid, lang, postMentionDids,
-                               initialText, videoSource, userDid)
+                               initialText, videoSource, isGif, userDid)
     }
 
     function sync(index) {

@@ -53,7 +53,7 @@ VideoThumbnail {
         backgroundColor: "black"
         backgroundOpacity: 0.6
         color: "white"
-        text: guiSettings.videoDurationToString(videoEndMs - videoStartMs)
+        text: videoIsGif ? "GIF" : guiSettings.videoDurationToString(videoEndMs - videoStartMs)
     }
 
 
@@ -61,6 +61,7 @@ VideoThumbnail {
         postUtils.dropVideo(video)
         video = ""
         altText = ""
+        videoIsGif = false
     }
 
     function hasAltText() {
