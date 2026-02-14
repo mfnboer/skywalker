@@ -2411,7 +2411,7 @@ SkyPage {
                            postItem.embeddedLinks,
                            labels, postItem.language,
                            postFeedContext)
-        } else if (!postItem.gif.isNull()) {
+        } else if (!postItem.gif.isNull() && (!postItem.gif.isGiphy() || !postItem.gif.mp4Url)) {
             if (!postItem.gif.isGiphy())
                 tenor.registerShare(postItem.gif)
 
@@ -2432,6 +2432,20 @@ SkyPage {
                            postItem.embeddedLinks,
                            labels, postItem.language,
                            postFeedContext)
+        } else if (!postItem.gif.isNull() && postItem.gif.isGiphy() && postItem.gif.mp4Url) {
+            // Upload Giphy GIF as MP4
+            postUtils.checkVideoLimits(
+                () => postUtils.postVideo(postText, postItem.gif.mp4Url,
+                        true, /* isGif */
+                        postItem.gif.description, /* alt */
+                        postItem.gif.size.width, postItem.gif.size.height,
+                        parentUri, parentCid,
+                        rootUri, rootCid,
+                        qUri, qCid,
+                        postItem.embeddedLinks,
+                        labels, postItem.language,
+                        postFeedContext),
+                (error) => postFailed(error))
         } else if (Boolean(postItem.video)) {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,

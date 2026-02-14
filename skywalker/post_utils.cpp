@@ -712,22 +712,56 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
                              const PostFeedContext& postFeedContext)
 {
     emit postProgress(video.mIsGif ? tr("Uploading GIF") : tr("Uploading video"));
+    std::shared_ptr<QIODevice> ioDevice;
 
-    const QString fileName = video.mFileName.sliced(7);
-    auto file = std::make_shared<QFile>(fileName);
-
-    if (!file->open(QFile::ReadOnly))
+    if (video.mResource.startsWith("file://"))
     {
-        qWarning() << "Could not open video file:" << fileName;
-        emit postFailed(tr("Could not open video file"));
+        qDebug() << "Open video file:" << video.mResource;
+        const QString fileName = video.mResource.sliced(7);
+        auto file = std::make_shared<QFile>(fileName);
+
+        if (!file->open(QFile::ReadOnly))
+        {
+            qWarning() << "Could not open video file:" << fileName;
+            emit postFailed(tr("Could not open video file"));
+            return;
+        }
+
+        ioDevice = file;
+    }
+    else if (video.mResource.startsWith("http"))
+    {
+        qDebug() << "Open video link:" << video.mResource;
+        QUrl url(video.mResource);
+
+        if (!url.isValid())
+        {
+            qWarning() << "Invalid URL:" << video.mResource;
+            emit postFailed(tr("Could not open video link"));
+            return;
+        }
+
+        // Do not auto-delete the reply. It should stay alive during the video upload.
+        mNetwork->setAutoDeleteReplies(false);
+        QNetworkRequest request(url);
+        QNetworkReply* reply = mNetwork->get(request);
+        mNetwork->setAutoDeleteReplies(true);
+        ioDevice = std::shared_ptr<QIODevice>(reply);
+    }
+    else
+    {
+        qWarning() << "Unknown video source:" << video.mResource;
+        emit postFailed(tr("Could not open video"));
         return;
     }
 
     if (!bskyClient())
         return;
 
-    bskyClient()->uploadVideo(file.get(),
-        [this, presence=getPresence(), video, post, postFeedContext, file](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
+    Q_ASSERT(ioDevice);
+
+    bskyClient()->uploadVideo(ioDevice.get(),
+        [this, presence=getPresence(), video, post, postFeedContext, ioDevice](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
             if (!presence)
                 return;
 
@@ -759,7 +793,7 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
                     emit postProgress(msg);
                 });
         },
-        [this, presence=getPresence(), file](const QString& error, const QString& msg){
+        [this, presence=getPresence(), ioDevice](const QString& error, const QString& msg){
             if (!presence)
                 return;
 

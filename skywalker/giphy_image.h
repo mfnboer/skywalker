@@ -18,12 +18,13 @@ public:
     int getHeight() const { return mHeight; }
     QSize getSize() const { return QSize(mWidth, mHeight); }
     const QString& getUrl() const { return mUrl; }
+    QString getMp4Url() const { return mMp4Url.value_or(""); }
 
 private:
     int mWidth;
     int mHeight;
     QString mUrl;
-
+    std::optional<QString> mMp4Url;
 };
 
 }

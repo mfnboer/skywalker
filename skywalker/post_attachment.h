@@ -20,7 +20,7 @@ struct PostAttachmentLinkCard
 
 struct PostAttachmentVideo
 {
-    QString mFileName;
+    QString mResource; // file://name or http-link
     QString mAltText;
     int mWidth;
     int mHeight;

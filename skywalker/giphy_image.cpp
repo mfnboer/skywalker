@@ -12,6 +12,7 @@ GiphyImage::SharedPtr GiphyImage::fromJson(const QJsonObject& json)
     image->mWidth = xjson.getRequiredString("width").toInt();
     image->mHeight = xjson.getRequiredString("height").toInt();
     image->mUrl = xjson.getRequiredString("url");
+    image->mMp4Url = xjson.getOptionalString("mp4");
     return image;
 }
 

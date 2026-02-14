@@ -82,7 +82,7 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: ScrollBar { id: altScrollBar }
-        visible: !view.videoPlayingOrPaused && Boolean(videoView.alt)
+        visible: (!view.videoPlayingOrPaused || view.isGif) && Boolean(videoView.alt)
 
         onHeightChanged: setScrollBarPolicy()
         onContentHeightChanged: setScrollBarPolicy()
