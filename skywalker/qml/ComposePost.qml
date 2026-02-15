@@ -3030,9 +3030,9 @@ SkyPage {
         const postItem = currentPostItem()
 
         if (postItem) {
-            postItem.videoNewHeight = 0
-            postItem.videoStartMs = 0
-            postItem.videoEndMs = 0
+            postItem.videoNewHeight = -1
+            postItem.videoStartMs = -1
+            postItem.videoEndMs = -1
             postItem.videoRemoveAudio = false
         }
 

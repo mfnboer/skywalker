@@ -20,7 +20,12 @@ Column {
     readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
     property var userSettings: root.getSkywalker().getUserSettings()
 
-    property bool streamingEnabled: userSettings.videoStreamingEnabled
+    // HACK:
+    // Short video streams often do not loop well in the media player. GIFs are
+    // often short. Their purpose is too loop. Therefore we do not stream GIF
+    // video's. Instead we download and transcode them to MP4.
+    property bool streamingEnabled: userSettings.videoStreamingEnabled && !isGif
+
     property string videoSource: streamingEnabled ? videoView.playlistUrl : ""
     property string transcodedSource
 
@@ -770,7 +775,7 @@ Column {
                 // A GIF only gets paused when another screen gets on top.
 
                 if (isGif)
-                    videoPlayer.stop()
+                    videoPlayer.stopPlaying()
                 else
                     videoPlayer.pause()
             } else {
