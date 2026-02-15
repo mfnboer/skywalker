@@ -17,8 +17,9 @@ Column {
     property int maxHeight: root.height
     property bool isFullViewMode: false
     readonly property bool isFullVideoFeedViewMode: isFullViewMode && swipeMode
-    readonly property bool isPlaying: videoPlayer.playing || videoPlayer.restarting
+    readonly property bool isPlaying: videoPlayer.playing
     property var userSettings: root.getSkywalker().getUserSettings()
+    readonly property bool isGif: videoView.presentation === QEnums.VIDEO_PRESENTATION_GIF
 
     // HACK:
     // Short video streams often do not loop well in the media player. GIFs are
@@ -29,10 +30,10 @@ Column {
     property string videoSource: streamingEnabled ? videoView.playlistUrl : ""
     property string transcodedSource
 
-    readonly property bool isGif: videoView.presentation === QEnums.VIDEO_PRESENTATION_GIF
     readonly property bool videoAutoPlay: isGif ? userSettings.gifAutoPlay : userSettings.videoAutoPlay
     property bool autoLoad: (videoAutoPlay || userSettings.videoAutoLoad) && !swipeMode || isFullVideoFeedViewMode || streamingEnabled
     property bool autoPlay: (videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
+    property bool loopPlay: userSettings.videoLoopPlay || isGif
     property double playbackRate: 1.0
 
     property int useIfNeededHeight: 0
@@ -40,7 +41,7 @@ Column {
     readonly property int playControlsWidth: playControls.width
     readonly property int playControlsHeight: playControls.height
     readonly property bool showPlayControls: playControls.show
-    readonly property bool videoPlayingOrPaused: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || videoPlayer.restarting
+    readonly property bool videoPlayingOrPaused: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || !videoPlayer.manualStop
 
     // The meta information for video can be wrong.
     // I have seen 2160 x 3840 whereas the video and the thumbnail are 1080 x 1920
@@ -77,7 +78,7 @@ Column {
         // The high light color is visible when the thumbnail image is smaller than the
         // given aspect ratio size.
         color: isFullViewMode ? "transparent" : canvasColor
-        visible: videoPlayer.videoFound || videoPlayer.error == MediaPlayer.NoError
+        visible: videoPlayer.hasVideo || videoPlayer.error == MediaPlayer.NoError
 
         FilteredImageWarning {
             id: filter
@@ -206,6 +207,7 @@ Column {
         }
 
         SvgButton {
+            id: playButton
             x: (parent.width - width) / 2
             y: (parent.height - height) / 2
             width: 50
@@ -213,8 +215,8 @@ Column {
             opacity: 0.5
             accessibleName: qsTr("play video")
             svg: SvgFilled.play
-            visible: filter.imageVisible() && !videoPlayer.playing && !videoPlayer.restarting
-            enabled: videoPlayer.hasVideo || !autoLoad || streamingEnabled
+            visible: filter.imageVisible() && !videoPlayer.playing && videoPlayer.hasVideo
+            enabled: videoPlayer.hasVideo && videoPlayer.error == MediaPlayer.NoError
 
             onClicked: {
                 if (swipeMode && !isFullViewMode) {
@@ -247,11 +249,11 @@ Column {
                     }
                 }
             }
+        }
 
-            BusyIndicator {
-                anchors.fill: parent
-                running: parent.visible && !parent.enabled && (videoPlayer.error == MediaPlayer.NoError || videoPlayer.videoFound)
-            }
+        BusyIndicator {
+            anchors.fill: playButton
+            running: !playButton.enabled
         }
 
         Item {
@@ -261,30 +263,45 @@ Column {
             visible: !swipeMode || isFullViewMode
 
             MediaPlayer {
-                property bool videoFound: false
-                property bool restarting: false
                 property int m3u8DurationMs: 0
                 property var keepScreenOnHandle
+                property bool manualStop: true
 
                 id: videoPlayer
                 source: transcodedSource
-                loops: (userSettings.videoLoopPlay || isGif) ? MediaPlayer.Infinite : 1
+
+                // TODO: video looping is broken for HLS. The first 2-3 seconds get skipped
+                // on subsequent loops
+                // loops: loopPlay ? MediaPlayer.Infinite : 1
+                loops: (loopPlay && !streamingEnabled) ? MediaPlayer.Infinite : 1
+
                 videoOutput: videoOutput
                 audioOutput: audioOutput
                 playbackRate: videoStack.playbackRate
 
-                onHasVideoChanged: {
-                    if (hasVideo)
-                        videoFound = true
-                }
-
                 onPlayingChanged: {
                     if (videoPlayer.playing) {
-                        restartTimer.set(false)
+                        manualStop = false
                         keepScreenOnHandle = displayUtils.keepScreenOn()
-                    }
-                    else {
+                    } else {
                         keepScreenOnHandle.destroy()
+                    }
+                }
+
+                onPlaybackStateChanged: {
+                    if (playbackState != MediaPlayer.StoppedState)
+                        return
+
+                    if (!streamingEnabled)
+                        return
+
+                    // HACK: reload HLS stream to overcome loop/replay bug
+                    source = ""
+                    source = transcodedSource
+
+                    if (loopPlay && !manualStop) {
+                        console.debug("Loop video")
+                        start()
                     }
                 }
 
@@ -321,13 +338,12 @@ Column {
                         setVideoSource()
                     }
 
-                    restartTimer.set(true)
                     play()
                 }
 
                 function stopPlaying() {
+                    manualStop = true
                     stop()
-                    restartTimer.set(false)
                 }
 
                 function isLoading() {
@@ -366,31 +382,11 @@ Column {
             BusyIndicator {
                 anchors.centerIn: parent
                 running: (videoPlayer.playing && videoPlayer.isLoading()) ||
-                         videoPlayer.restarting ||
                          (m3u8Reader.loading && !autoLoad)
             }
             BusyIndicator {
                 anchors.centerIn: parent
                 running: videoUtils.transcoding && !autoLoad
-            }
-
-            Timer {
-                id: restartTimer
-                interval: 5000
-                onTriggered: {
-                    videoPlayer.stop()
-                    videoPlayer.restarting = false
-                    console.warn("Failed to start video:", transcodedSource, videoView.playlistUrl)
-                }
-
-                function set(on) {
-                    videoPlayer.restarting = on
-
-                    if (on)
-                        start()
-                    else
-                        stop()
-                }
             }
         }
 
@@ -646,7 +642,7 @@ Column {
         border.width: 1
         border.color: videoStack.borderColor
         color: "transparent"
-        visible: !videoPlayer.videoFound && videoPlayer.error != MediaPlayer.NoError
+        visible: !videoPlayer.hasVideo && videoPlayer.error != MediaPlayer.NoError
 
         AccessibleText {
             id: errorText
@@ -766,7 +762,7 @@ Column {
     }
 
     function pause() {
-        if (videoPlayer.playing)
+        if (videoPlayer.playing || !videoPlayer.manualStop)
         {
             if (!autoPlay) {
                 // Stopping when the video presentation is GIF makes sure, the

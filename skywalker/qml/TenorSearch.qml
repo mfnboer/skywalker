@@ -13,8 +13,6 @@ SkyPage {
     id: page
     clip: true
 
-    onWidthChanged: console.debug("PAGE WIDTH:", width)
-
     Accessible.role: Accessible.Pane
 
     header: SearchHeader {
