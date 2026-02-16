@@ -605,7 +605,7 @@ ApplicationWindow {
         function start(fileName, text) {
             postText = text
             gifFileName = fileName
-            progressDialog = guiSettings.showProgress(rootContent, qsTr("Converting GIF to Video"), () => doCancel())
+            progressDialog = guiSettings.showProgress(rootContent, qsTr("Processing GIF"), () => doCancel())
             gifToVideoConverter.convert(fileName)
         }
 

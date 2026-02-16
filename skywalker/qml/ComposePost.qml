@@ -1908,7 +1908,7 @@ SkyPage {
         }
 
         function start(gifFileName) {
-            progressDialog = guiSettings.showProgress(page, qsTr("Converting GIF to Video"), () => doCancel())
+            progressDialog = guiSettings.showProgress(page, qsTr("Processing GIF"), () => doCancel())
             gifToVideoConverter.convert(gifFileName)
         }
 
