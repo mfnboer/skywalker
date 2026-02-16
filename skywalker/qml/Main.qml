@@ -729,8 +729,12 @@ ApplicationWindow {
                 prevIndex = currentIndex
                 let currentItem = currentStackItem()
 
-                if (currentItem && typeof currentItem.uncover === 'function')
-                    currentItem.uncover()
+                if (currentItem) {
+                    if (typeof currentItem.uncover === 'function')
+                        currentItem.uncover()
+
+                    currentItem.forceActiveFocus()
+                }
 
                 favoritesTabBar.update()
             }
@@ -2448,8 +2452,12 @@ ApplicationWindow {
         if (stack === currentStack()) {
             let currentItem = currentStackItem()
 
-            if (currentItem && typeof currentItem.uncover === 'function')
-                currentItem.uncover()
+            if (currentItem) {
+                if (typeof currentItem.uncover === 'function')
+                    currentItem.uncover()
+
+                currentItem.forceActiveFocus()
+            }
         }
 
         favoritesTabBar.update()
@@ -2462,6 +2470,11 @@ ApplicationWindow {
             current.cover()
 
         currentStack().pushItem(item, {}, operation)
+
+        // NOTE: forcing acitve focus on the just pushed item seems to fix problems
+        // with losing focus in the ComposePost page.
+        currentStackItem().forceActiveFocus()
+
         favoritesTabBar.update()
     }
 
@@ -2471,6 +2484,11 @@ ApplicationWindow {
 
         while (stack.depth > 1)
             popStack(stack)
+
+        let currentItem = currentStackItem()
+
+        if (currentItem)
+            currentItem.forceActiveFocus()
     }
 
     function mustShowSideBar() {
@@ -2625,6 +2643,16 @@ ApplicationWindow {
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
         skywalker.favoriteFeeds.onInitialized.connect(showLastViewedFeed)
     }
+
+    // DEBUG focus change issues
+    // onActiveFocusItemChanged: {
+    //     console.debug("Focus changed to:", activeFocusItem)
+    //     if (activeFocusItem) {
+    //         console.debug("  objectName:", activeFocusItem.objectName)
+    //         console.debug("  type:", activeFocusItem.toString())
+    //         console.debug("  parent:", activeFocusItem.parent)
+    //     }
+    // }
 
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)

@@ -185,6 +185,7 @@ SkyPage {
             anchors.right: parent.right
             svg: SvgOutline.moreVert
             accessibleName: qsTr("post options")
+            focusPolicy: Qt.NoFocus
             visible: !largeEditor
             onClicked: moreMenu.open()
 
@@ -2004,11 +2005,12 @@ SkyPage {
         }
     }
 
+    // Async cursor positioning
     Timer {
         property int cursorPosition: -1
 
         id: focusTimer
-        interval: 200
+        interval: 10
         onTriggered: {
             let postText = currentPostItem().getPostText()
 
@@ -2176,6 +2178,7 @@ SkyPage {
     }
 
     function addSharedPhoto(source, text) {
+        console.debug("Add shared photo:", source)
         let postItem = currentPostItem()
 
         if (!postItem)
@@ -3081,7 +3084,7 @@ SkyPage {
 
     Component.onCompleted: {
         // Wait a bit for the window to render.
-        // Then make sue the text field is in the visible area.
+        // Then make sure the text field is in the visible area.
         focusTimer.start()
 
         const postInteractionSettings = postUtils.getPostInteractionSettings()
