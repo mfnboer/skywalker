@@ -18,10 +18,10 @@ SkyPage {
         clip: true
 
         AccessibleTabButton {
-            text: qsTr("Tenor")
+            text: qsTr("Giphy")
         }
         AccessibleTabButton {
-            text: qsTr("Giphy")
+            text: qsTr("Tenor")
         }
     }
 
@@ -34,12 +34,12 @@ SkyPage {
 
         onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
 
-        TenorSearch {
+        GiphySearch {
             onClosed: page.closed()
             onSelected: (gif) => page.selected(gif)
         }
 
-        GiphySearch {
+        TenorSearch {
             onClosed: page.closed()
             onSelected: (gif) => page.selected(gif)
         }

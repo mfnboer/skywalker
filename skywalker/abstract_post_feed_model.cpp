@@ -284,9 +284,9 @@ void AbstractPostFeedModel::unfoldPosts(int startVisibleIndex)
         return;
     }
 
-    for (int i = toPhysicalIndex(startVisibleIndex); i < (int)mFeed.size(); ++i)
+    for (int i = startVisibleIndex; i < (int)mFeed.size(); ++i)
     {
-        auto& post = mFeed[i];
+        auto& post = mFeed[toPhysicalIndex(i)];
 
         if (post.getFoldedPostType() == QEnums::FOLDED_POST_NONE)
             break;
