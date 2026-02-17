@@ -8,6 +8,7 @@
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/client.h>
+#include <QUuid>
 
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
 // This will break OffLineMessageChecker. This runs in an Android background process.
@@ -2286,6 +2287,19 @@ void UserSettings::setPinnedSearchFeeds(const QString& did, const SearchFeed::Li
     }
 
     mSettings.setValue(key(did, "pinnedSearchFeeds"), jsonArray);
+}
+
+QString UserSettings::getDeviceId()
+{
+    QString deviceId = mSettings.value("deviceId").toString();
+
+    if (deviceId.isEmpty())
+    {
+        deviceId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        mSettings.setValue("deviceId", deviceId);
+    }
+
+    return deviceId;
 }
 
 void UserSettings::cleanup()

@@ -4,31 +4,11 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
-    readonly property string sideBarTitle: qsTr("Drafts")
-    readonly property string sideBarSubTitle: `${view.count} / ${view.model?.getMaxDrafts()}`
-    readonly property SvgImage sideBarSvg: SvgOutline.chat
-
-    signal closed
     signal selected(int index)
     signal deleted(int index)
 
     id: view
     boundsBehavior: Flickable.StopAtBounds
-
-    header: Item {
-        width: parent.width
-        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
-        z: guiSettings.headerZLevel
-
-        SimpleHeader {
-            id: portraitHeader
-            text: sideBarTitle
-            subTitle: sideBarSubTitle
-            visible: !root.showSideBar
-            onBack: view.closed()
-        }
-    }
-    headerPositioning: ListView.OverlayHeader
 
     delegate: DraftPostViewDelegate {
         required property int index
@@ -37,6 +17,8 @@ SkyListView {
         onSelected: view.selected(index)
         onDeleted: view.deleted(index)
     }
+
+    // TODO: flickable for next page
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0

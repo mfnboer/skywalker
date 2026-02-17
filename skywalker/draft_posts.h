@@ -26,7 +26,7 @@ class DraftPosts : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
-    enum StorageType { STORAGE_FILE, STORAGE_REPO };
+    enum StorageType { STORAGE_FILE, STORAGE_BLUESKY, STORAGE_REPO };
     Q_ENUM(StorageType)
 
     static constexpr int MAX_DRAFTS = 50;
@@ -122,14 +122,31 @@ private:
     ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::ReplyRef::SharedPtr createReplyRef(Draft::Draft& draft) const;
     ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
+    ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const;
     ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
         const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
+    ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyEmbed::Video* video);
+    ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
     ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(
         const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::SharedPtr quote);
+
+    ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri);
+    ATProto::AppBskyFeed::PostView::SharedPtr convertDraftToPostView(const ATProto::AppBskyDraft::DraftView& draftView, const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& recordUri);
+    ATProto::AppBskyFeed::ViewerState::SharedPtr createViewerState(const ATProto::AppBskyDraft::Draft& draft) const;
+    ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(const ATProto::AppBskyFeed::ThreadgateRules& threadgateRules, const QString& recordUri, QDateTime createdAt) const;
+    bool hasEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
+    bool hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
+    ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& deviceId);
+    ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images);
+    ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video);
+    ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external);
+    ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record);
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedVideo& video, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
 
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
     void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
@@ -155,6 +172,9 @@ private:
     void dropVideo(const QString& draftsPath, const QString& baseName);
     void dropDraftPostFiles(const QString& draftsPath, const QString& fileName);
     void dropDraftPost(const QString& fileName);
+
+    // BLUESKY STORAGE
+    void loadBlueskyDrafts();
 
     // PDS REPO STORAGE
     bool writeRecord(const Draft::Draft& draft);

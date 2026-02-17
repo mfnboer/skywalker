@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "draft_posts_model.h"
+#include "author_cache.h"
 #include "draft_posts.h"
 #include "list_store.h"
 #include "meme_maker.h"
@@ -20,11 +21,6 @@ DraftPostsModel::DraftPostsModel(const QString& userDid,
 {
 }
 
-int DraftPostsModel::getMaxDrafts() const
-{
-    return DraftPosts::MAX_DRAFTS;
-}
-
 void DraftPostsModel::clear()
 {
     qDebug() << "Clear feed";
@@ -33,12 +29,12 @@ void DraftPostsModel::clear()
     {
         beginRemoveRows({}, 0, mFeed.size() - 1);
         clearFeed();
-        mRawFeed.clear();
+        std::visit([](auto&& rawFeed){ rawFeed.clear(); }, mRawFeed);
         endRemoveRows();
     }
 }
 
-void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed)
+void DraftPostsModel::setFeed(SkyDrafts feed)
 {
     qDebug() << "Set feed:" << feed.size();
 
@@ -46,18 +42,50 @@ void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed)
         clear();
 
     mRawFeed = std::move(feed);
+    auto& rawFeed = std::get<SkyDrafts>(mRawFeed);
 
-    if (mRawFeed.empty())
+    if (rawFeed.empty())
         return;
 
-    beginInsertRows({}, 0, mRawFeed.size() - 1);
+    beginInsertRows({}, 0, rawFeed.size() - 1);
 
-    for (int i = 0; i < (int)mRawFeed.size(); ++i)
+    for (int i = 0; i < (int)rawFeed.size(); ++i)
     {
-        Post post(mRawFeed[i][0]);
+        Post post(rawFeed[i][0]);
         mFeed.push_back(post);
     }
 
+    if (!mFeed.empty())
+        mFeed.back().setEndOfFeed(true);
+
+    endInsertRows();
+}
+
+void DraftPostsModel::setFeed(BlueskyDrafts feed)
+{
+    qDebug() << "Set feed:" << feed.size();
+
+    if (!mFeed.empty())
+        clear();
+
+    mRawFeed = std::move(feed);
+    auto& rawFeed = std::get<BlueskyDrafts>(mRawFeed);
+
+    if (rawFeed.empty())
+        return;
+
+    beginInsertRows({}, 0, rawFeed.size() - 1);
+
+    for (int i = 0; i < (int)rawFeed.size(); ++i)
+    {
+        const auto& draftView = rawFeed[i];
+        const auto& draftPost = draftView->mDraft->mPosts[0];
+        const auto postView = toPostView(draftPost, draftView);
+        Post post(postView);
+        mFeed.push_back(post);
+    }
+
+    // TODO: more pages
     if (!mFeed.empty())
         mFeed.back().setEndOfFeed(true);
 
@@ -75,7 +103,7 @@ void DraftPostsModel::deleteDraft(int index)
 
     beginRemoveRows({}, index, index);
     deletePost(index);
-    mRawFeed.erase(mRawFeed.begin() + index);
+    std::visit([index](auto&& rawFeed){ rawFeed.erase(rawFeed.begin() + index); }, mRawFeed);
     endRemoveRows();
 
     if (endOfFeed && !mFeed.empty())
@@ -87,11 +115,21 @@ void DraftPostsModel::deleteDraft(int index)
 
 std::vector<Post> DraftPostsModel::getThread(int index) const
 {
-    if (index < 0 || index >= (int)mRawFeed.size())
+    const int feedSize = std::visit([](auto&& rawFeed){ return rawFeed.size(); }, mRawFeed);
+
+    if (index < 0 || index >= feedSize)
         return {};
 
+    if (std::holds_alternative<SkyDrafts>(mRawFeed))
+        return getSkyDraftThread(index);
+
+    return getBlueskyDraftThread(index);
+}
+
+std::vector<Post> DraftPostsModel::getSkyDraftThread(int index) const
+{
     std::vector<Post> thread;
-    const auto& rawThread = mRawFeed[index];
+    const auto& rawThread = std::get<SkyDrafts>(mRawFeed)[index];
 
     for (int i = 0; i < (int)rawThread.size(); ++i)
     {
@@ -101,6 +139,54 @@ std::vector<Post> DraftPostsModel::getThread(int index) const
     }
 
     return thread;
+}
+
+std::vector<Post> DraftPostsModel::getBlueskyDraftThread(int index) const
+{
+    std::vector<Post> thread;
+    const auto& rawThread = std::get<BlueskyDrafts>(mRawFeed)[index];
+
+    for (int i = 0; i < (int)rawThread->mDraft->mPosts.size(); ++i)
+    {
+        const auto& draftPost = rawThread->mDraft->mPosts[i];
+        const auto postView = toPostView(draftPost, rawThread);
+        Post post(postView);
+        thread.push_back(post);
+    }
+
+    return thread;
+}
+
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPostsModel::toPostView(
+    const ATProto::AppBskyDraft::DraftPost::SharedPtr& draftPost,
+    const ATProto::AppBskyDraft::DraftView::SharedPtr& draftView) const
+{
+    auto postView = std::make_shared<ATProto::AppBskyFeed::PostView>();
+    postView->mUri = draftView->mId;
+    auto user = AuthorCache::instance().get(mUserDid);
+    postView->mAuthor = user->getProfileBasicView();
+
+    auto postRecord = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
+    postRecord->mText = draftPost->mText;
+    postRecord->mLabels = draftPost->mLabels;
+    postRecord->mLanguages = draftView->mDraft->mLangs;
+    postRecord->mCreatedAt = draftView->mCreatedAt;
+
+    postView->mRecord = postRecord;
+    postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    postView->mIndexedAt = draftView->mUpdatedAt;
+
+    return postView;
+}
+
+static int getThreadLength(const ATProto::AppBskyFeed::PostFeed& postFeed)
+{
+    return postFeed.size();
+}
+
+static int getThreadLength(const ATProto::AppBskyDraft::DraftView::SharedPtr& draftView)
+{
+    return draftView->mDraft->mPosts.size();
 }
 
 QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
@@ -119,7 +205,7 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
     }
 
     QVariant result = AbstractPostFeedModel::data(index, role);
-    const int threadLength = mRawFeed[index.row()].size();
+    const int threadLength = std::visit([index](auto&& rawFeed){ return getThreadLength(rawFeed[index.row()]); }, mRawFeed);
 
     if (threadLength <= 1)
         return result;

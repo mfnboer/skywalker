@@ -53,7 +53,16 @@ bool DraftPosts::hasDrafts() const
 
 bool DraftPosts::canSaveDraft() const
 {
-    return mDraftPostsModel->rowCount() < MAX_DRAFTS;
+    switch (mStorageType)
+    {
+    case STORAGE_FILE:
+    case STORAGE_REPO:
+        return mDraftPostsModel->rowCount() < MAX_DRAFTS;
+    case STORAGE_BLUESKY:
+        return true;
+    }
+
+    return false;
 }
 
 DraftPostData* DraftPosts::createDraft(
@@ -233,6 +242,8 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
         }
 
         break;
+    case STORAGE_BLUESKY:
+        // TODO
     case STORAGE_REPO:
         qWarning() << "Not supported.";
         break;
@@ -310,6 +321,9 @@ void DraftPosts::loadDraftPosts()
     {
     case STORAGE_FILE:
         loadDraftFeed();
+        break;
+    case STORAGE_BLUESKY:
+        loadBlueskyDrafts();
         break;
     case STORAGE_REPO:
         listRecords();
@@ -576,6 +590,9 @@ void DraftPosts::removeDraftPost(int index)
     {
     case STORAGE_FILE:
         dropDraftPost(recordUri);
+        break;
+    case STORAGE_BLUESKY:
+        // TODO
         break;
     case STORAGE_REPO:
         deleteRecord(recordUri);
@@ -925,19 +942,24 @@ ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(Draft::Draf
 
 ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const
 {
-    if (!post.mLabels)
+    return createContentLabels(post.mLabels, post.mCreatedAt, recordUri);
+}
+
+ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const
+{
+    if (!selfLabels)
         return {};
 
     const QString userDid = mSkywalker->getUserDid();
     ATProto::ComATProtoLabel::Label::List labels;
 
-    for (const auto& selfLabel : post.mLabels->mValues)
+    for (const auto& selfLabel : selfLabels->mValues)
     {
         auto label = std::make_shared<ATProto::ComATProtoLabel::Label>();
         label->mVal = selfLabel->mVal;
         label->mSrc = userDid;
         label->mUri = recordUri;
-        label->mCreatedAt = post.mCreatedAt;
+        label->mCreatedAt = createdAt;
         labels.push_back(std::move(label));
     }
 
@@ -1016,6 +1038,8 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
             imgSource = "file://" + path;
             break;
         }
+        case STORAGE_BLUESKY:
+            break;
         case STORAGE_REPO:
         {
             const QString& cid = image->mImage->mRefLink;
@@ -1024,20 +1048,27 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         }
         }
 
-        const ATProto::XJsonObject xjson(image->mImage->mJson);
-        const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
-        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
-
-        auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
-        imgView->mThumb = imgSource;
-        imgView->mFullSize = imgSource;
-        imgView->mAlt = image->mAlt;
-        imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
-        imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+        auto imgView = createImageView(image->mImage->mJson, imgSource, image->mAlt);
         view->mImages.push_back(std::move(imgView));
     }
 
     return view;
+}
+
+ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr DraftPosts::createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt)
+{
+    const ATProto::XJsonObject xjson(imgJson);
+    const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+    const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
+
+    auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
+    imgView->mThumb = imgSource;
+    imgView->mFullSize = imgSource;
+    imgView->mAlt = alt;
+    imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+    imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+    return imgView;
 }
 
 ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const ATProto::AppBskyEmbed::Video* video)
@@ -1060,12 +1091,20 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
         videoSource = "file://" + path;
         break;
     }
+    case STORAGE_BLUESKY:
+        // TODO
+        break;
     case STORAGE_REPO:
         qWarning() << "REPO storage not supported";
         return nullptr;
     }
 
-    const ATProto::XJsonObject xjson(video->mVideo->mJson);
+    return createVideoView(video->mVideo->mJson, videoSource, video->mAlt);
+}
+
+ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt)
+{
+    const ATProto::XJsonObject xjson(videoJson);
     const int startMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_START_MS_FIELD, 0);
     const int endMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_END_MS_FIELD, 0);
     const bool removeAudio = xjson.getOptionalBool(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, false);
@@ -1073,7 +1112,7 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::VideoView>();
     view->mPlaylist = videoSource;
-    view->mAlt = video->mAlt;
+    view->mAlt = alt;
     view->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, startMs);
     view->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, endMs);
     view->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, removeAudio);
@@ -1179,6 +1218,231 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
         break;
     }
 
+    return view;
+}
+
+ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri)
+{
+    const QString draftDeviceId = draft.mDraft->mDeviceId.value_or("");
+    const QString thisDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+    ATProto::AppBskyFeed::PostFeed postFeed;
+
+    for (const auto& threadPost : draft.mDraft->mPosts)
+    {
+        auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
+        view->mPost = convertDraftToPostView(draft, *threadPost, recordUri);
+
+        if (hasMediaEmbed(*threadPost) && draftDeviceId != thisDeviceId)
+        {
+            // HACK: abusing feed context to show this warning in the drafts overview
+            view->mFeedContext = tr("⚠️ Media stored on %1").arg(draft.mDraft->mDeviceName.value_or(tr("other device")));
+        }
+
+        postFeed.push_back(std::move(view));
+    }
+
+    return postFeed;
+}
+
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(const ATProto::AppBskyDraft::DraftView& draftView, const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& recordUri)
+{
+    auto postView = std::make_shared<ATProto::AppBskyFeed::PostView>();
+    postView->mUri = recordUri;
+    postView->mAuthor = createProfileViewBasic(mSkywalker->getUser());
+    postView->mIndexedAt = draftView.mUpdatedAt;
+    const QString draftDeviceId = draftView.mDraft->mDeviceId.value_or("");
+    postView->mEmbed = createEmbedView(draftPost, draftDeviceId);
+    postView->mLabels = createContentLabels(draftPost.mLabels, draftView.mCreatedAt, recordUri);
+
+    auto postRecord = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
+    postRecord->mText = draftPost.mText;
+    postRecord->mLabels = draftPost.mLabels;
+    postRecord->mLanguages = draftView.mDraft->mLangs;
+    postRecord->mCreatedAt = draftView.mCreatedAt;
+
+    postView->mRecord = postRecord;
+    postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    postView->mThreadgate = createThreadgateView(draftView.mDraft->mThreadgateRules, recordUri, draftView.mCreatedAt);
+    postView->mViewer = createViewerState(*draftView.mDraft);
+
+    return postView;
+}
+
+ATProto::AppBskyFeed::ViewerState::SharedPtr DraftPosts::createViewerState(const ATProto::AppBskyDraft::Draft& draft) const
+{
+    auto viewer = std::make_shared<ATProto::AppBskyFeed::ViewerState>();
+    viewer->mEmbeddingDisabled = draft.mDisableEmbedding;
+    return viewer;
+}
+
+ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView(const ATProto::AppBskyFeed::ThreadgateRules& threadgateRules, const QString& recordUri, QDateTime createdAt) const
+{
+    if (!threadgateRules.mAllowNobody && !threadgateRules.mAllowFollower && !threadgateRules.mAllowFollowing && !threadgateRules.mAllowFollower && threadgateRules.mAllowList.empty())
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyFeed::ThreadgateView>();
+    view->mRecord = std::make_shared<ATProto::AppBskyFeed::Threadgate>();
+    view->mRecord->mRules = threadgateRules;
+    view->mRecord->mPost = recordUri;
+    view->mRecord->mCreatedAt = createdAt;
+
+    for (const auto& list : view->mRecord->mRules.mAllowList)
+    {
+        auto listView = std::make_shared<ATProto::AppBskyGraph::ListViewBasic>();
+        listView->mUri = list->mList;
+        listView->mName = list->mList;
+        view->mLists.push_back(std::move(listView));
+    }
+
+    return view;
+}
+
+bool DraftPosts::hasEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const
+{
+    return !draftPost.mEmbedRecords.empty() ||
+           !draftPost.mEmbedExternals.empty() ||
+           hasMediaEmbed(draftPost);
+}
+
+bool DraftPosts::hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const
+{
+    return !draftPost.mEmbedImages.empty() ||
+           !draftPost.mEmbedVideos.empty();
+}
+
+ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& deviceId)
+{
+    if (!hasEmbed(draftPost))
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
+
+    const QString thisDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+
+    if (!draftPost.mEmbedRecords.empty())
+    {
+        // TODO: nullptr embed
+
+        if (!draftPost.mEmbedImages.empty() && deviceId == thisDeviceId)
+        {
+            view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+            view->mEmbed = createRecordWithMediaView(draftPost.mEmbedImages, *draftPost.mEmbedRecords.front());
+        }
+        else if (!draftPost.mEmbedVideos.empty() && deviceId == thisDeviceId)
+        {
+            view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+            view->mEmbed = createRecordWithMediaView(*draftPost.mEmbedVideos.front(), *draftPost.mEmbedRecords.front());
+        }
+        else
+        {
+            view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+            view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+        }
+    }
+    else if (!draftPost.mEmbedImages.empty() && deviceId == thisDeviceId)
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+        view->mEmbed = createImagesView(draftPost.mEmbedImages);
+    }
+    else if (!draftPost.mEmbedVideos.empty() && deviceId == thisDeviceId)
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+        view->mEmbed = createVideoView(*draftPost.mEmbedVideos.front());
+    }
+    else if (!draftPost.mEmbedExternals.empty())
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
+        view->mEmbed = createExternalView(*draftPost.mEmbedExternals.front());
+    }
+    else
+    {
+        return nullptr;
+    }
+
+    const bool embedSet = std::visit([](auto&& v){ return v != nullptr; }, view->mEmbed);
+
+    if (!embedSet)
+    {
+        qWarning() << "Embed could not be created:" << (int)view->mType;
+        return nullptr;
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images)
+{
+    const auto draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::ImagesView>();
+
+    for (const auto& image : images)
+    {
+        // TODO: check deviceId
+        const QString path = createAbsPath(draftsPath, image->mLocalRef->mPath);
+        const QString imgSource = "file://" + path;
+
+        auto imgView = createImageView(image->mJson, imgSource, image->mAlt.value_or(""));
+        view->mImages.push_back(std::move(imgView));
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video)
+{
+    const auto draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return nullptr;
+
+    // TODO: check deviceId
+    const QString path = createAbsPath(draftsPath, video.mLocalRef->mPath);
+    const QString videoSource = "file://" + path;
+
+    return createVideoView(video.mJson, videoSource, video.mAlt);
+}
+
+ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::ExternalView>();
+    view->mExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalViewExternal>();
+    view->mExternal->mUri = external.mUri;
+    // TODO: title, description, thumb
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    // TODO: get record
+    auto postRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewRecord>();
+    postRecord->mUri = record.mRecord->mUri;
+    postRecord->mCid = record.mRecord->mCid;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
+    view->mRecord = postRecord;
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+    view->mMedia = createImagesView(images);
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedVideo& video, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+    view->mMedia = createVideoView(video);
     return view;
 }
 
@@ -1540,6 +1804,43 @@ void DraftPosts::dropDraftPost(const QString& fileName)
     const QString picsPath = getPictureDraftsPath();
     if (!picsPath.isEmpty())
         dropDraftPostFiles(picsPath, fileName);
+}
+
+void DraftPosts::loadBlueskyDrafts()
+{
+    Q_ASSERT(mStorageType == STORAGE_BLUESKY);
+
+    if (!bskyClient())
+        return;
+
+    if (!mDraftPostsModel)
+        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+
+    bskyClient()->getDrafts({}, {},
+        [this, presence=getPresence()](ATProto::AppBskyDraft::GetDraftsOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            std::vector<ATProto::AppBskyFeed::PostFeed> postThreads;
+
+            for (const auto& draftView : output->mDrafts)
+            {
+                auto postFeed = convertDraftToFeedViewPost(*draftView, draftView->mId);
+                postThreads.push_back(std::move(postFeed));
+            }
+
+            // TODO: resolve records here?
+            mDraftPostsModel->setFeed(std::move(postThreads));
+            emit draftsChanged();
+            emit loadDraftPostsOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get drafts:" << error << "-" << msg;
+            emit loadDraftPostsFailed(msg);
+        });
 }
 
 bool DraftPosts::writeRecord(const Draft::Draft& draft)

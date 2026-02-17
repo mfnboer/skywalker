@@ -521,6 +521,8 @@ public:
     SearchFeed::List getPinnedSearchFeeds(const QString& did) const;
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
+    QString getDeviceId(); // for Bluesky drafts
+
     void sync() { mSettings.sync(); }
     void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }
 

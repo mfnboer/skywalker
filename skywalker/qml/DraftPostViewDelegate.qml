@@ -23,6 +23,7 @@ Rectangle {
     required property string postContentWarning
     required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
+    required property string postFeedContext // HACK: abused for media stored on other device warning
     required property bool endOfFeed
 
     signal selected
@@ -105,6 +106,12 @@ Rectangle {
                 postIsThread: false
                 postIsThreadReply: false
                 isDraft: true
+            }
+
+            AccessibleText {
+                width: parent.width
+                text: postFeedContext
+                visible: Boolean(postFeedContext)
             }
         }
 

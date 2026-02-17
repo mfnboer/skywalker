@@ -1124,7 +1124,7 @@ SkyPage {
         font.pointSize: guiSettings.scaledFont(9/8)
         textFormat: Text.RichText
         text: qsTr(`<a href=\"drafts\" style=\"color: ${guiSettings.linkColor}\">Drafts</a>`)
-        visible: threadPosts.count === 1 && !largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
+        visible: threadPosts.count === 1 && !largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && (draftPosts.hasDrafts || blueskyDraftPosts.hasDrafts)
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -1936,6 +1936,13 @@ SkyPage {
         onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    DraftPosts {
+        id: blueskyDraftPosts
+        skywalker: page.skywalker
+        storageType: DraftPosts.STORAGE_BLUESKY
+
+        onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
 
     LanguageUtils {
         id: languageUtils
@@ -2588,16 +2595,19 @@ SkyPage {
     }
 
     function showDraftPosts() {
-        let component = guiSettings.createComponent("DraftPostsView.qml")
-        let draftsPage = component.createObject(page, { model: draftPosts.getDraftPostsModel() })
+        let component = guiSettings.createComponent("DraftPostsPage.qml")
+        let draftsPage = component.createObject(page, {
+                localDraftsModel: draftPosts.getDraftPostsModel(),
+                blueskyDraftsModel: blueskyDraftPosts.getDraftPostsModel()
+        })
         draftsPage.onClosed.connect(() => root.popStack())
-        draftsPage.onSelected.connect((index) => {
+        draftsPage.onLocalSelected.connect((index) => {
             const draftDataList = draftPosts.getDraftPostData(index)
             setDraftPost(draftDataList)
             draftPosts.removeDraftPost(index)
             root.popStack()
         })
-        draftsPage.onDeleted.connect((index) => draftPosts.removeDraftPost(index))
+        draftsPage.onLocalDeleted.connect((index) => draftPosts.removeDraftPost(index))
 
         root.pushStack(draftsPage)
     }
@@ -3075,6 +3085,7 @@ SkyPage {
             skywalker.removeListListModel(restrictionsListModelId)
 
         draftPosts.removeDraftPostsModel()
+        blueskyDraftPosts.removeDraftPostsModel()
 
         for (const postData of editPostData)
             postData.release()
@@ -3102,6 +3113,7 @@ SkyPage {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
+        blueskyDraftPosts.loadDraftPosts()
 
         if (editPostData.length > 0) {
             setDraftPost(editPostData)
