@@ -332,7 +332,7 @@ void Tenor::setRecentCategory(QNetworkReply* reply)
 
 void Tenor::setRecentCategory(const TenorGif& gif)
 {
-    mRecentCategory = TenorCategory(gif.getSmallUrl(), tr("recently used"), true);
+    mRecentCategory = TenorCategory(gif.getSmallUrl(), tr("Recently Used"), true);
 }
 
 TenorGif Tenor::toTenorGif(const QJsonValue& resultElem, const QString& query) const

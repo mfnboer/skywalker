@@ -46,7 +46,7 @@ public:
         const WebLink::List& embeddedLinks,
         const QStringList& imageFileNames, const QStringList& altTexts,
         const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
-        const QString& videoFileName, const QString& videoAltText,
+        const QString& videoFileName, bool videoIsGif, const QString& videoAltText,
         int videoStartMs, int videoEndMs, int videoNewHeight,
         bool videoRemoveAudio,
         const QString& replyToUri, const QString& replyToCid,

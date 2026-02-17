@@ -262,7 +262,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
          quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
 
-void PostUtils::postVideo(const QString& text, const QString& videoFileName,
+void PostUtils::postVideo(const QString& text, const QString& videoFileName, bool isGif,
                      const QString& videoAltText, int videoWidth, int videoHeight,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
@@ -271,7 +271,7 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName,
                      const QStringList& labels, const QString& language,
                      const PostFeedContext& postFeedContext)
 {
-    const PostAttachmentVideo attachment{ videoFileName, videoAltText, videoWidth, videoHeight };
+    const PostAttachmentVideo attachment{ videoFileName, videoAltText, videoWidth, videoHeight, isGif };
     post(text, attachment, replyToUri, replyToCid, replyRootUri, replyRootCid,
          quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
@@ -711,29 +711,64 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb,
 void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                              const PostFeedContext& postFeedContext)
 {
-    emit postProgress(tr("Uploading video"));
+    emit postProgress(video.mIsGif ? tr("Uploading GIF") : tr("Uploading video"));
+    std::shared_ptr<QIODevice> ioDevice;
 
-    const QString fileName = video.mFileName.sliced(7);
-    auto file = std::make_shared<QFile>(fileName);
-    if (!file->open(QFile::ReadOnly))
+    if (video.mResource.startsWith("file://"))
     {
-        qWarning() << "Could not open video file:" << fileName;
-        emit postFailed(tr("Could not open video file"));
+        qDebug() << "Open video file:" << video.mResource;
+        const QString fileName = video.mResource.sliced(7);
+        auto file = std::make_shared<QFile>(fileName);
+
+        if (!file->open(QFile::ReadOnly))
+        {
+            qWarning() << "Could not open video file:" << fileName;
+            emit postFailed(tr("Could not open video file"));
+            return;
+        }
+
+        ioDevice = file;
+    }
+    else if (video.mResource.startsWith("http"))
+    {
+        qDebug() << "Open video link:" << video.mResource;
+        QUrl url(video.mResource);
+
+        if (!url.isValid())
+        {
+            qWarning() << "Invalid URL:" << video.mResource;
+            emit postFailed(tr("Could not open video link"));
+            return;
+        }
+
+        // Do not auto-delete the reply. It should stay alive during the video upload.
+        mNetwork->setAutoDeleteReplies(false);
+        QNetworkRequest request(url);
+        QNetworkReply* reply = mNetwork->get(request);
+        mNetwork->setAutoDeleteReplies(true);
+        ioDevice = std::shared_ptr<QIODevice>(reply);
+    }
+    else
+    {
+        qWarning() << "Unknown video source:" << video.mResource;
+        emit postFailed(tr("Could not open video"));
         return;
     }
 
     if (!bskyClient())
         return;
 
-    bskyClient()->uploadVideo(file.get(),
-        [this, presence=getPresence(), video, post, postFeedContext, file](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
+    Q_ASSERT(ioDevice);
+
+    bskyClient()->uploadVideo(ioDevice.get(),
+        [this, presence=getPresence(), video, post, postFeedContext, ioDevice](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
             if (!presence)
                 return;
 
             if (!postMaster())
                 return;
 
-            postMaster()->addVideoToPost(post, *output, video.mWidth, video.mHeight, video.mAltText,
+            postMaster()->addVideoToPost(post, *output, video.mWidth, video.mHeight, video.mAltText, video.mIsGif,
                 [this, presence, post, postFeedContext]{
                     if (presence)
                        continuePost(post, postFeedContext);
@@ -745,12 +780,12 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
                     qDebug() << "Post failed:" << error << " - " << msg;
                     emit postFailed(msg);
                 },
-                [this, presence](const QString& status, std::optional<int> progress){
+                [this, presence, video](const QString& status, std::optional<int> progress){
                     if (!presence)
                         return;
 
                     qDebug() << "Status:" << status << "progress:" << progress.value_or(-1);
-                    QString msg(tr("Processing video: %1").arg(status));
+                    QString msg(video.mIsGif ? tr("Processing GIF: %1").arg(status) : tr("Processing video: %1").arg(status));
 
                     if (progress)
                         msg += QString(" %1%").arg(*progress);
@@ -758,7 +793,7 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
                     emit postProgress(msg);
                 });
         },
-        [this, presence=getPresence(), file](const QString& error, const QString& msg){
+        [this, presence=getPresence(), ioDevice](const QString& error, const QString& msg){
             if (!presence)
                 return;
 

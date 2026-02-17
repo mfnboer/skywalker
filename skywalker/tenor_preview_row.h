@@ -5,6 +5,7 @@
 
 namespace Skywalker {
 
+// Also used for Giphy
 class TenorPreviewRow
 {
 public:

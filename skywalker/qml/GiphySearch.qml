@@ -17,18 +17,18 @@ SkyPage {
 
     header: SearchHeader {
         minSearchTextLength: 2
-        placeHolderText: qsTr("Search Tenor")
+        placeHolderText: qsTr("Search Giphy")
         showBackButton: !root.showSideBar
 
         onBack: cancel()
-        onSearch: (text) => searchTenor(text)
+        onSearch: (text) => searchGiphy(text)
     }
 
     footer: Rectangle {
         width: parent.width
         height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
-        color: guiSettings.backgroundColor
+        color: "black"
 
         Image {
             id: tenorAttribution
@@ -37,7 +37,7 @@ SkyPage {
             width: parent.width - 20
             height: parent.height - 20
             fillMode: Image.PreserveAspectFit
-            source: "/images/PB_tenor_logo_blue_horizontal.svg"
+            source: "/images/pb_giphy_dark.png"
             asynchronous: true
         }
     }
@@ -119,8 +119,8 @@ SkyPage {
         ListView {
             id: gifOverview
             width: parent.width
-            model: tenor.overviewModel
-            spacing: tenor.spacing
+            model: giphy.overviewModel
+            spacing: giphy.spacing
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
             maximumFlickVelocity: guiSettings.maxFlickVelocity
@@ -153,7 +153,7 @@ SkyPage {
                         SkyMouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                tenor.addRecentGif(gif)
+                                giphy.addRecentGif(gif)
                                 selected(gif)
                             }
                         }
@@ -162,8 +162,8 @@ SkyPage {
             }
 
             FlickableRefresher {
-                inProgress: tenor.searchInProgress
-                bottomOvershootFun: () => tenor.getNextPage()
+                inProgress: giphy.searchInProgress
+                bottomOvershootFun: () => giphy.getNextPage()
             }
         }
 
@@ -180,8 +180,9 @@ SkyPage {
         }
     }
 
-    Tenor {
-        id: tenor
+    Giphy {
+        id: giphy
+        // For some reason parent.width gives a wrong width (twice as much ???)
         width: page.width
         spacing: 4
         skywalker: root.getSkywalker()
@@ -192,22 +193,24 @@ SkyPage {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: tenor.searchInProgress
+        running: giphy.searchInProgress
     }
 
 
-    function searchTenor(text) {
-        tenor.searchGifs(text)
+    function searchGiphy(text) {
+        giphy.searchGifs(text)
         viewStack.showGifs()
     }
 
     function searchCategory(category) {
         if (category.isRecentCategory) {
-            tenor.searchRecentGifs()
+            giphy.searchRecentGifs()
             viewStack.showGifs()
-        }
-        else {
-            searchTenor(category.searchTerm)
+        } else if (category.isTrendingCategory) {
+            giphy.searchTrendingGifs()
+            viewStack.showGifs()
+        } else {
+            searchGiphy(category.searchTerm)
         }
     }
 
@@ -223,7 +226,7 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        tenor.getCategories()
+        giphy.getCategories()
         page.header.unfocus()
     }
 }

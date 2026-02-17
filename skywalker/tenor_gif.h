@@ -6,6 +6,7 @@
 
 namespace Skywalker {
 
+// Also used for Giphy
 class TenorGif
 {
     Q_GADGET
@@ -18,6 +19,7 @@ class TenorGif
     Q_PROPERTY(QString imageUrl READ getImageUrl CONSTANT FINAL)
     Q_PROPERTY(QSize imageSize READ getImageSize CONSTANT FINAL)
     Q_PROPERTY(QSize overviewSize READ getOverviewSize CONSTANT FINAL)
+    Q_PROPERTY(QString mp4Url READ getMp4Url CONSTANT FINAL)
     QML_VALUE_TYPE(tenorgif)
 
 public:
@@ -32,7 +34,8 @@ public:
             const QString& searchTerm,
             const QString& url, QSize size,
             const QString& smallUrl, QSize smallSize,
-            const QString& imageUrl, QSize imageSize) :
+            const QString& imageUrl, QSize imageSize,
+            const QString& mp4Url = {}) :
         mPrivate{std::make_shared<PrivateData>(
             id,
             description,
@@ -40,7 +43,8 @@ public:
             url, size,
             smallUrl, smallSize,
             imageUrl, imageSize,
-            smallSize)}
+            smallSize,
+            mp4Url)}
     {}
 
     Q_INVOKABLE bool isNull() const { return mPrivate->mUrl.isEmpty(); }
@@ -50,14 +54,19 @@ public:
     const QString& getImageUrl() const { return mPrivate->mImageUrl; }
     const QString& getSearchTerm() const { return mPrivate->mSearchTerm; }
     const QString& getSmallUrl() const { return mPrivate->mSmallUrl; }
+    const QString& getMp4Url() const { return mPrivate->mMp4Url; }
     QSize getSize() const { return mPrivate->mSize; }
     QSize getSmallSize() const { return mPrivate->mSmallSize; }
     QSize getImageSize() const { return mPrivate->mImageSize; }
     QSize getOverviewSize() const { return mPrivate->mOverviewSize; }
     void setOverviewSize(QSize size) { mPrivate->mOverviewSize = size; }
+    Q_INVOKABLE bool isGiphy() const { return mPrivate->mIsGiphy; }
+    void setIsGiphy(bool isGiphy) { mPrivate->mIsGiphy = isGiphy; }
 
     // Get a URL that is compatible with Bluesky
     Q_INVOKABLE const QString getUrlForPosting() const;
+
+    TenorGif deepCopy() const;
 
 private:
     struct PrivateData
@@ -72,6 +81,8 @@ private:
         QString mImageUrl;
         QSize mImageSize;
         QSize mOverviewSize;
+        QString mMp4Url;
+        bool mIsGiphy = false;
     };
 
     std::shared_ptr<PrivateData> mPrivate;

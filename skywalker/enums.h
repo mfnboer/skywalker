@@ -469,6 +469,14 @@ public:
     };
     Q_ENUM(VideoQuality)
 
+    enum VideoPresentation
+    {
+        VIDEO_PRESENTATION_DEFAULT = (int)ATProto::AppBskyEmbed::VideoPresentation::DEFAULT,
+        VIDEO_PRESENTATION_GIF = (int)ATProto::AppBskyEmbed::VideoPresentation::GIF,
+        VIDEO_PRESENTATION_UNKNOWN = (int)ATProto::AppBskyEmbed::VideoPresentation::UNKNOWN
+    };
+    Q_ENUM(VideoPresentation)
+
     enum FavoritesBarPosition
     {
         FAVORITES_BAR_POSITION_TOP,

@@ -20,10 +20,11 @@ struct PostAttachmentLinkCard
 
 struct PostAttachmentVideo
 {
-    QString mFileName;
+    QString mResource; // file://name or http-link
     QString mAltText;
     int mWidth;
     int mHeight;
+    bool mIsGif = false;
 };
 
 using PostAttachment = std::variant<PostAttachmentImages, PostAttachmentLinkCard, PostAttachmentVideo>;

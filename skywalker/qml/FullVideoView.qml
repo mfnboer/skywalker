@@ -82,7 +82,7 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: ScrollBar { id: altScrollBar }
-        visible: !view.videoPlayingOrPaused && Boolean(videoView.alt)
+        visible: (!view.videoPlayingOrPaused || view.isGif) && Boolean(videoView.alt)
 
         onHeightChanged: setScrollBarPolicy()
         onContentHeightChanged: setScrollBarPolicy()
@@ -111,7 +111,7 @@ SkyPage {
         opacity: 0.7
         svg: SvgOutline.arrowBack
         accessibleName: qsTr("go back")
-        visible: !view.isPlaying
+        visible: !view.isPlaying || view.isGif
         onClicked: page.closed()
     }
 
@@ -124,7 +124,7 @@ SkyPage {
         opacity: 0.7
         svg: SvgOutline.moreVert
         accessibleName: qsTr("more options")
-        visible: !view.isPlaying
+        visible: !view.isPlaying || view.isGif
         onClicked: moreMenu.open()
 
         SkyMenu {

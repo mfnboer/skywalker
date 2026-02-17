@@ -472,11 +472,12 @@ ApplicationWindow {
                 return
             }
 
-            guiSettings.askConvertGif(
-                rootContent,
-                "file://" + gifTempFileName,
-                () => gifToVideoConverter.start(gifTempFileName, text),
-                () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
+            // guiSettings.askConvertGif(
+            //     rootContent,
+            //     "file://" + gifTempFileName,
+            //     () => gifToVideoConverter.start(gifTempFileName, text),
+            //     () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
+            gifToVideoConverter.start(gifTempFileName, text)
         }
 
         function handleSharedImageReceived(source, text) {
@@ -497,17 +498,17 @@ ApplicationWindow {
             handleSharedVideoReceived(source, text)
         }
 
-        function handleSharedVideoReceived(source, text) {
+        function handleSharedVideoReceived(source, text, isGif = false) {
             let item = currentStackItem()
 
             if (item instanceof ComposePost)
-                item.addSharedVideo(source, text)
+                item.addSharedVideo(source, text, isGif)
             else if (item instanceof PostThreadView)
-                item.videoReply(text, source)
+                item.videoReply(text, source, isGif)
             else if (item instanceof AuthorView)
-                item.mentionVideoPost(text, source)
+                item.mentionVideoPost(text, source, isGif)
             else
-                composeVideoPost(text, source)
+                composeVideoPost(text, source, isGif)
         }
 
         onSharedDmTextReceived: (text) => {
@@ -590,7 +591,7 @@ ApplicationWindow {
         onConversionOk: (videoFileName) => {
             progressDialog.destroy()
             postUtils.dropVideo("file://" + gifFileName)
-            skywalker.handleSharedVideoReceived(`file://${videoFileName}`, postText)
+            skywalker.handleSharedVideoReceived(`file://${videoFileName}`, postText, true)
         }
 
         onConversionFailed: (error) => {
@@ -604,7 +605,7 @@ ApplicationWindow {
         function start(fileName, text) {
             postText = text
             gifFileName = fileName
-            progressDialog = guiSettings.showProgress(rootContent, qsTr("Converting GIF to Video"), () => doCancel())
+            progressDialog = guiSettings.showProgress(rootContent, qsTr("Processing GIF"), () => doCancel())
             gifToVideoConverter.convert(fileName)
         }
 
@@ -728,8 +729,12 @@ ApplicationWindow {
                 prevIndex = currentIndex
                 let currentItem = currentStackItem()
 
-                if (currentItem && typeof currentItem.uncover === 'function')
-                    currentItem.uncover()
+                if (currentItem) {
+                    if (typeof currentItem.uncover === 'function')
+                        currentItem.uncover()
+
+                    currentItem.forceActiveFocus()
+                }
 
                 favoritesTabBar.update()
             }
@@ -1499,12 +1504,13 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function composeVideoPost(initialText = "", videoSource = "", postByDid = "") {
+    function composeVideoPost(initialText, videoSource, isGif, postByDid = "") {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 postByDid: postByDid,
                 initialText: initialText,
-                initialVideo: videoSource
+                initialVideo: videoSource,
+                initialVideoIsGif: isGif
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)
@@ -1548,24 +1554,25 @@ ApplicationWindow {
 
     function composeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                               initialText, videoSource, postByDid = "")
+                               initialText, videoSource, isGif, postByDid = "")
     {
         const pu = getPostUtils(postByDid)
         pu.checkPost(replyToUri, replyToCid,
             () => doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                       replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                                      initialText, videoSource, postByDid))
+                                      initialText, videoSource, isGif, postByDid))
     }
 
     function doComposeVideoReply(replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                  replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids,
-                                 initialText, videoSource, postByDid = "")
+                                 initialText, videoSource, isGif, postByDid = "")
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
                 postByDid: postByDid,
                 initialText: initialText,
                 initialVideo: videoSource,
+                initialVideoIsGif: isGif,
                 replyToPostUri: replyToUri,
                 replyToPostCid: replyToCid,
                 replyRootPostUri: replyRootUri,
@@ -2445,8 +2452,12 @@ ApplicationWindow {
         if (stack === currentStack()) {
             let currentItem = currentStackItem()
 
-            if (currentItem && typeof currentItem.uncover === 'function')
-                currentItem.uncover()
+            if (currentItem) {
+                if (typeof currentItem.uncover === 'function')
+                    currentItem.uncover()
+
+                currentItem.forceActiveFocus()
+            }
         }
 
         favoritesTabBar.update()
@@ -2459,6 +2470,11 @@ ApplicationWindow {
             current.cover()
 
         currentStack().pushItem(item, {}, operation)
+
+        // NOTE: forcing acitve focus on the just pushed item seems to fix problems
+        // with losing focus in the ComposePost page.
+        currentStackItem().forceActiveFocus()
+
         favoritesTabBar.update()
     }
 
@@ -2468,6 +2484,11 @@ ApplicationWindow {
 
         while (stack.depth > 1)
             popStack(stack)
+
+        let currentItem = currentStackItem()
+
+        if (currentItem)
+            currentItem.forceActiveFocus()
     }
 
     function mustShowSideBar() {
@@ -2622,6 +2643,16 @@ ApplicationWindow {
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
         skywalker.favoriteFeeds.onInitialized.connect(showLastViewedFeed)
     }
+
+    // DEBUG focus change issues
+    // onActiveFocusItemChanged: {
+    //     console.debug("Focus changed to:", activeFocusItem)
+    //     if (activeFocusItem) {
+    //         console.debug("  objectName:", activeFocusItem.objectName)
+    //         console.debug("  type:", activeFocusItem.toString())
+    //         console.debug("  parent:", activeFocusItem.parent)
+    //     }
+    // }
 
     Component.onCompleted: {
         console.debug("DPR:", Screen.devicePixelRatio)

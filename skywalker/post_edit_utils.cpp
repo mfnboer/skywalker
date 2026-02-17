@@ -404,7 +404,8 @@ void PostEditUtils::loadEditPostVideo(DraftPostData* data, int postThreadModelId
 
     auto tmpFile = FileUtils::createTempFile(videoStream, "ts");
     const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
-    VideoView draftVideo(url.toString(), videoView->getAlt(), 0, 0, false, videoView->getHeight());
+    const bool isGif = videoView->getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
+    VideoView draftVideo(url.toString(), isGif, videoView->getAlt(), 0, 0, false, videoView->getHeight());
     data->setVideo(draftVideo);
     TempFileHolder::instance().put(std::move(tmpFile));
 

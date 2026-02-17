@@ -20,6 +20,7 @@ qt_standard_project_setup()
 
 add_compile_definitions(APP_VERSION="${APP_VERSION}")
 add_compile_definitions(TENOR_API_KEY="$ENV{TENOR_API_KEY}")
+add_compile_definitions(GIPHY_API_KEY="$ENV{GIPHY_API_KEY}")
 
 add_subdirectory(atproto/lib)
 add_subdirectory(skywalker)
@@ -58,6 +59,7 @@ qt_add_qml_module(appskywalker
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg
         images/giphy_logo.png
+        images/pb_giphy_dark.png
         images/buycoffee.png
         images/thats_all_folks.png
         images/dont_panic.png
