@@ -65,6 +65,7 @@ public:
 
     Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread = {});
     Q_INVOKABLE void loadDraftPosts();
+    Q_INVOKABLE void loadDraftPostsNextPage();
     Q_INVOKABLE DraftPostsModel* getDraftPostsModel();
     Q_INVOKABLE QList<DraftPostData*> getDraftPostData(int index);
     Q_INVOKABLE void removeDraftPost(int index);
@@ -73,6 +74,7 @@ public:
     StorageType getStorageType() const { return mStorageType; }
     void setStorageType(StorageType storageType);
 
+    void getPostExternal(const Post& post, int index);
     void getPostRecord(const Post& post, int index);
 
     QString dumpDraftFeed();
@@ -177,7 +179,8 @@ private:
     void dropDraftPost(const QString& fileName);
 
     // BLUESKY STORAGE
-    void loadBlueskyDrafts();
+    void loadBlueskyDrafts(const QString& cursor = {});
+    void loadBlueskyDraftsNextPage();
 
     // PDS REPO STORAGE
     bool writeRecord(const Draft::Draft& draft);
@@ -189,7 +192,6 @@ private:
                          const std::function<void()>& continueCb, int imgSeq = 1);
 
     DraftPostsModel::Ptr mDraftPostsModel;
-
     StorageType mStorageType = STORAGE_REPO;
 };
 

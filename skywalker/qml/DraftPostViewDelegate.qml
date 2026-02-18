@@ -110,6 +110,8 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
+                topPadding: 10
+                font.italic: true
                 text: postFeedContext
                 visible: Boolean(postFeedContext)
             }
@@ -141,6 +143,7 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
+            bottomPadding: 50
             elide: Text.ElideRight
             color: guiSettings.textColor
             text: qsTr("End of drafts")

@@ -3,8 +3,8 @@ import QtQuick.Controls
 import skywalker
 
 SkyPage {
-    property var localDraftsModel
-    property var blueskyDraftsModel
+    required property DraftPosts localDraftPosts
+    required property DraftPosts blueskyDraftPosts
     readonly property string sideBarTitle: qsTr("Drafts")
     readonly property SvgImage sideBarSvg: SvgOutline.chat
 
@@ -41,18 +41,19 @@ SkyPage {
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: tabBar.currentIndex
+        clip: true
 
         onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
 
         DraftPostsView {
-            model: localDraftsModel
+            draftPosts: localDraftPosts
 
             onSelected: localSelected
             onDeleted: localDeleted
         }
 
         DraftPostsView {
-            model: blueskyDraftsModel
+            draftPosts: blueskyDraftPosts
             boundsBehavior: Flickable.DragAndOvershootBounds
 
             onSelected: blueskySelected

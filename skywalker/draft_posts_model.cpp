@@ -39,31 +39,35 @@ void DraftPostsModel::clear()
     }
 }
 
-void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed)
+void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed, const QString& cursor)
 {
-    qDebug() << "Set feed:" << feed.size();
+    qDebug() << "Set feed:" << feed.size() << "cursor:" << cursor;
+
+    mCursor = cursor;
 
     if (!mFeed.empty())
         clear();
 
     mRawFeed = std::move(feed);
 
-    if (mRawFeed.empty())
-        return;
-
-    beginInsertRows({}, 0, mRawFeed.size() - 1);
-
-    for (int i = 0; i < (int)mRawFeed.size(); ++i)
+    if (!mRawFeed.empty())
     {
-        Post post(mRawFeed[i][0]);
-        mFeed.push_back(post);
+        beginInsertRows({}, 0, mRawFeed.size() - 1);
+
+        for (int i = 0; i < (int)mRawFeed.size(); ++i)
+        {
+            Post post(mRawFeed[i][0]);
+            mFeed.push_back(post);
+        }
+
+        endInsertRows();
     }
 
-    // TODO: more pages
-    if (!mFeed.empty())
+    if (!mFeed.empty() && mCursor.isEmpty())
+    {
         mFeed.back().setEndOfFeed(true);
-
-    endInsertRows();
+        changeData({ int(Role::EndOfFeed) });
+    }
 }
 
 void DraftPostsModel::deleteDraft(int index)
@@ -116,6 +120,15 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
     {
     case Role::PostImages:
         return QVariant::fromValue(createDraftImages(post));
+    case Role::PostExternal:
+    {
+        auto externalView = post.getExternalView();
+
+        if (externalView && externalView->getTitle().isEmpty() && externalView->getDescription().isEmpty())
+            getPostExternal(index.row());
+
+        break;
+    }
     case Role::PostRecord:
     {
         auto recordView = post.getRecordView();
@@ -136,6 +149,8 @@ QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
             if (!recordView.isNull() && recordView.getNotFound())
                 getPostRecord(index.row());
         }
+
+        break;
     }
     default:
         break;
@@ -214,6 +229,54 @@ QList<ImageView> DraftPostsModel::createDraftImages(const Post& post) const
     return draftViews;
 }
 
+void DraftPostsModel::getPostExternal(int index) const
+{
+    if (!mDraftPosts)
+    {
+        qWarning() << "Draft posts not set";
+        return;
+    }
+
+    const auto& post = mFeed[index];
+
+    if (mGettingPostExternal.contains(post.getUri()))
+        return;
+
+    const_cast<DraftPostsModel*>(this)->mGettingPostExternal.insert(post.getUri());
+    mDraftPosts->getPostExternal(post, index);
+}
+
+void DraftPostsModel::updatePostExternal(const Post& post, int index)
+{
+    qDebug() << "Update external:" << post.getUri() << "index:" << index;
+
+    if (!mGettingPostExternal.contains(post.getUri()))
+    {
+        qWarning() << "External getting not in progress:" << post.getUri();
+        return;
+    }
+
+    mGettingPostExternal.erase(post.getUri());
+
+    if (index < 0 || index >= (int)mFeed.size())
+    {
+        // This may happen if a draft gets delete while getting the external was still in progress
+        qWarning() << "Invalid index:" << index;
+        return;
+    }
+
+    const auto& oldPost = mFeed[index];
+
+    if (oldPost.getUri() != post.getUri())
+    {
+        qWarning() << "Post URI does not match:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    mFeed[index] = post;
+    changeData({ int(Role::PostExternal) });
+}
+
 void DraftPostsModel::getPostRecord(int index) const
 {
     if (!mDraftPosts)
@@ -259,7 +322,7 @@ void DraftPostsModel::updatePostRecord(const Post& post, int index)
     }
 
     mFeed[index] = post;
-    changeData({ int(Role::PostRecord) });
+    changeData({ int(Role::PostRecord), int(Role::PostRecordWithMedia) });
 }
 
 void DraftPostsModel::updatePostRecordFailed(const Post& post, int index)

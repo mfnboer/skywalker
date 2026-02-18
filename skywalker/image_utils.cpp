@@ -234,6 +234,9 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
     const QString path = url.path();
     qDebug() << "Host:" << host << "Path:" << path;
 
+    if (host.endsWith("bsky.app"))
+        return 1.0;
+
     if (host.endsWith("instagram.com"))
         return 1.0;
 

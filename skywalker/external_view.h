@@ -34,6 +34,8 @@ public:
     Q_INVOKABLE bool hasHtmlDescription() const { return !mHtmlDescription.isEmpty(); }
     void setHtmlDescription(const QString& htmlDescription) { mHtmlDescription = htmlDescription; }
 
+    ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr getExternal() const { return mExternal; }
+
 private:
     ATProto::AppBskyEmbed::ExternalViewExternal::SharedPtr mExternal;
     QString mHtmlTitle;

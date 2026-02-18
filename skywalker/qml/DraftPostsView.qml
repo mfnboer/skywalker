@@ -4,10 +4,13 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
+    required property DraftPosts draftPosts
+
     signal selected(int index)
     signal deleted(int index)
 
     id: view
+    model: draftPosts.getDraftPostsModel()
     boundsBehavior: Flickable.StopAtBounds
 
     delegate: DraftPostViewDelegate {
@@ -18,7 +21,12 @@ SkyListView {
         onDeleted: view.deleted(index)
     }
 
-    // TODO: flickable for next page
+    FlickableRefresher {
+        inProgress: model.getFeedInProgress
+        topOvershootFun: () => draftPosts.loadDraftPosts()
+        bottomOvershootFun: () => draftPosts.loadDraftPostsNextPage()
+        topText: qsTr("Pull down to refresh drafts")
+    }
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
@@ -27,4 +35,9 @@ SkyListView {
         list: view
     }
 
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: model.getFeedInProgress
+    }
 }

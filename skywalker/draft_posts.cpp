@@ -5,9 +5,11 @@
 #include "content_filter.h"
 #include "file_utils.h"
 #include "gif_utils.h"
+#include "link_card_reader.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 #include "temp_file_holder.h"
+#include "utils.h"
 #include "lexicon/lexicon.h"
 #include <atproto/lib/xjson.h>
 
@@ -329,6 +331,12 @@ void DraftPosts::loadDraftPosts()
         listRecords();
         break;
     }
+}
+
+void DraftPosts::loadDraftPostsNextPage()
+{
+    if (mStorageType == STORAGE_BLUESKY)
+        loadBlueskyDraftsNextPage();
 }
 
 DraftPostsModel* DraftPosts::getDraftPostsModel()
@@ -1225,6 +1233,11 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATPr
 {
     const QString draftDeviceId = draft.mDraft->mDeviceId.value_or("");
     const QString thisDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+
+    // TODO compare draft device name with this device name, if they are the same but the
+    // deviceId is different, then the draft is stored by another app on this device.
+    const QString draftDeviceName = draft.mDraft->mDeviceName.value_or(tr("other device"));
+
     ATProto::AppBskyFeed::PostFeed postFeed;
 
     for (const auto& threadPost : draft.mDraft->mPosts)
@@ -1232,10 +1245,21 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATPr
         auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
         view->mPost = convertDraftToPostView(draft, *threadPost, recordUri);
 
-        if (hasMediaEmbed(*threadPost) && draftDeviceId != thisDeviceId)
+        if (draftDeviceId != thisDeviceId)
         {
-            // HACK: abusing feed context to show this warning in the drafts overview
-            view->mFeedContext = tr("⚠️ Media stored on %1").arg(draft.mDraft->mDeviceName.value_or(tr("other device")));
+            if (!threadPost->mEmbedImages.empty())
+            {
+                const auto count = threadPost->mEmbedImages.size();
+
+                // HACK: abusing feed context to show this warning in the drafts overview
+                view->mFeedContext = count > 1 ?
+                    tr("⚠️ %1 images stored on %2").arg(count).arg(draftDeviceName) :
+                    tr("⚠️ image stored on %1").arg(draftDeviceName);
+            }
+            else if (!threadPost->mEmbedVideos.empty())
+            {
+                view->mFeedContext = tr("⚠️ video stored on %1").arg(draftDeviceName);
+            }
         }
 
         postFeed.push_back(std::move(view));
@@ -1424,7 +1448,6 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
     if (draftsPath.isEmpty())
         return nullptr;
 
-    // TODO: check deviceId
     const QString path = createAbsPath(draftsPath, video.mLocalRef->mPath);
     const QString videoSource = "file://" + path;
 
@@ -1436,15 +1459,15 @@ ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(co
     auto view = std::make_shared<ATProto::AppBskyEmbed::ExternalView>();
     view->mExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalViewExternal>();
     view->mExternal->mUri = external.mUri;
-    // TODO: title, description, thumb
     return view;
 }
 
 ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record)
 {
+    // TODO: can there be ohter URI's than post-URI's??
+
     // HACK: we create a NotFound record as we do not have the full record view here.
     // In DraftsPostModel, the URI from the NotFound record will be resolved to a post.
-    // TODO: can there be ohter URI's than post-URI's??
     auto postRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewNotFound>();
     postRecord->mUri = record.mRecord->mUri;
 
@@ -1548,7 +1571,7 @@ void DraftPosts::loadDraftFeed()
         }
     }
 
-    mDraftPostsModel->setFeed(std::move(postThreads));
+    mDraftPostsModel->setFeed(std::move(postThreads), {});
     emit draftsChanged();
     emit loadDraftPostsOk();
 }
@@ -1842,7 +1865,7 @@ void DraftPosts::dropDraftPost(const QString& fileName)
         dropDraftPostFiles(picsPath, fileName);
 }
 
-void DraftPosts::loadBlueskyDrafts()
+void DraftPosts::loadBlueskyDrafts(const QString& cursor)
 {
     Q_ASSERT(mStorageType == STORAGE_BLUESKY);
 
@@ -1854,7 +1877,7 @@ void DraftPosts::loadBlueskyDrafts()
 
     mDraftPostsModel->setDraftPosts(this);
 
-    bskyClient()->getDrafts({}, {},
+    bskyClient()->getDrafts({}, Utils::makeOptionalString(cursor),
         [this, presence=getPresence()](ATProto::AppBskyDraft::GetDraftsOutput::SharedPtr output){
             if (!presence)
                 return;
@@ -1867,8 +1890,7 @@ void DraftPosts::loadBlueskyDrafts()
                 postThreads.push_back(std::move(postFeed));
             }
 
-            // TODO: resolve records here?
-            mDraftPostsModel->setFeed(std::move(postThreads));
+            mDraftPostsModel->setFeed(std::move(postThreads), output->mCursor.value_or(""));
             emit draftsChanged();
             emit loadDraftPostsOk();
         },
@@ -1879,6 +1901,53 @@ void DraftPosts::loadBlueskyDrafts()
             qDebug() << "Failed to get drafts:" << error << "-" << msg;
             emit loadDraftPostsFailed(msg);
         });
+}
+
+void DraftPosts::loadBlueskyDraftsNextPage()
+{
+    if (!mDraftPostsModel)
+        return;
+
+    const QString& cursor = mDraftPostsModel->getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed";
+        return;
+    }
+
+    loadBlueskyDrafts(cursor);
+}
+
+void DraftPosts::getPostExternal(const Post& post, int index)
+{
+    qDebug() << "Get post external:" << post.getUri() << "index:" << index;
+
+    auto externalView = post.getExternalView();
+    const QString linkUri = externalView ? externalView->getUri() : "";
+
+    if (linkUri.isEmpty())
+    {
+        qWarning() << "External link missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    auto linkCardReader = std::make_shared<LinkCardReader>(this);
+
+    connect(linkCardReader.get(), &LinkCardReader::linkCard, this,
+        [this, linkCardReader, post, index](LinkCard* card){
+            auto externalView = post.getExternalView();
+            auto external = externalView->getExternal();
+            external->mTitle = card->getTitle();
+            external->mDescription = card->getDescription();
+
+            if (!card->getThumb().isEmpty())
+                external->mThumb = card->getThumb();
+
+            mDraftPostsModel->updatePostExternal(post, index);
+        });
+
+    linkCardReader->getLinkCard(linkUri);
 }
 
 void DraftPosts::getPostRecord(const Post& post, int index)
@@ -2032,7 +2101,7 @@ void DraftPosts::listRecords()
             }
 
             Q_ASSERT(mDraftPostsModel);
-            mDraftPostsModel->setFeed(std::move(postThreads));
+            mDraftPostsModel->setFeed(std::move(postThreads), {});
 
             emit draftsChanged();
             emit loadDraftPostsOk();

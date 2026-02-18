@@ -2597,8 +2597,8 @@ SkyPage {
     function showDraftPosts() {
         let component = guiSettings.createComponent("DraftPostsPage.qml")
         let draftsPage = component.createObject(page, {
-                localDraftsModel: draftPosts.getDraftPostsModel(),
-                blueskyDraftsModel: blueskyDraftPosts.getDraftPostsModel()
+                localDraftPosts: draftPosts,
+                blueskyDraftPosts: blueskyDraftPosts
         })
         draftsPage.onClosed.connect(() => root.popStack())
         draftsPage.onLocalSelected.connect((index) => {
