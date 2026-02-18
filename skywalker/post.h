@@ -39,7 +39,9 @@ public:
     explicit Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost = nullptr);
     explicit Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView);
 
+    ATProto::AppBskyFeed::FeedViewPost::SharedPtr getFeedViewPost() const { return mFeedViewPost; }
     const ATProto::AppBskyFeed::PostView* getPostView() const { return mPost.get(); }
+
     bool isPlaceHolder() const { return !mPost; }
     bool isGap() const { return !mPost && mGapId > 0; }
     bool isEndOfFeed() const { return mEndOfFeed; }

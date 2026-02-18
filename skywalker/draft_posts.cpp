@@ -1321,17 +1321,43 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
 
     if (!draftPost.mEmbedRecords.empty())
     {
-        // TODO: nullptr embed
-
         if (!draftPost.mEmbedImages.empty() && deviceId == thisDeviceId)
         {
-            view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
-            view->mEmbed = createRecordWithMediaView(draftPost.mEmbedImages, *draftPost.mEmbedRecords.front());
+            auto imagesView = createImagesView(draftPost.mEmbedImages);
+
+            if (imagesView)
+            {
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+                view->mEmbed = createRecordWithMediaView(imagesView, *draftPost.mEmbedRecords.front());
+            }
+            else
+            {
+                qWarning() << "Failed to create images view";
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+                view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+            }
         }
         else if (!draftPost.mEmbedVideos.empty() && deviceId == thisDeviceId)
         {
+            auto videoView = createVideoView(*draftPost.mEmbedVideos.front());
+
+            if (videoView)
+            {
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+                view->mEmbed = createRecordWithMediaView(videoView, *draftPost.mEmbedRecords.front());
+            }
+            else
+            {
+                qWarning() << "Failed to create video view";
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+                view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+            }
+        }
+        else if (!draftPost.mEmbedExternals.empty())
+        {
+            auto externalView = createExternalView(*draftPost.mEmbedExternals.front());
             view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
-            view->mEmbed = createRecordWithMediaView(*draftPost.mEmbedVideos.front(), *draftPost.mEmbedRecords.front());
+            view->mEmbed = createRecordWithMediaView(externalView, *draftPost.mEmbedRecords.front());
         }
         else
         {
@@ -1381,7 +1407,6 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
 
     for (const auto& image : images)
     {
-        // TODO: check deviceId
         const QString path = createAbsPath(draftsPath, image->mLocalRef->mPath);
         const QString imgSource = "file://" + path;
 
@@ -1417,32 +1442,43 @@ ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(co
 
 ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record)
 {
-    // TODO: get record
-    auto postRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewRecord>();
+    // HACK: we create a NotFound record as we do not have the full record view here.
+    // In DraftsPostModel, the URI from the NotFound record will be resolved to a post.
+    // TODO: can there be ohter URI's than post-URI's??
+    auto postRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewNotFound>();
     postRecord->mUri = record.mRecord->mUri;
-    postRecord->mCid = record.mRecord->mCid;
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
     view->mRecord = postRecord;
+    view->mRecordType = ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND;
 
     return view;
 }
 
-ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
-{
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{   
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record);
     view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
-    view->mMedia = createImagesView(images);
+    view->mMedia = imagesView;
     return view;
 }
 
-ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedVideo& video, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::VideoView::SharedPtr videoView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
 {
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record);
     view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
-    view->mMedia = createVideoView(video);
+    view->mMedia = videoView;
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::ExternalView::SharedPtr externalView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
+    view->mMedia = externalView;
     return view;
 }
 
@@ -1816,6 +1852,8 @@ void DraftPosts::loadBlueskyDrafts()
     if (!mDraftPostsModel)
         mDraftPostsModel = mSkywalker->createDraftPostsModel();
 
+    mDraftPostsModel->setDraftPosts(this);
+
     bskyClient()->getDrafts({}, {},
         [this, presence=getPresence()](ATProto::AppBskyDraft::GetDraftsOutput::SharedPtr output){
             if (!presence)
@@ -1840,6 +1878,95 @@ void DraftPosts::loadBlueskyDrafts()
 
             qDebug() << "Failed to get drafts:" << error << "-" << msg;
             emit loadDraftPostsFailed(msg);
+        });
+}
+
+void DraftPosts::getPostRecord(const Post& post, int index)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index;
+
+    if (!bskyClient())
+        return;
+
+    auto recordView = post.getRecordViewFromRecordOrRecordWithMedia();
+
+    if (!recordView || recordView->isNull())
+    {
+        qWarning() << "Record view missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    const QString& uri = recordView->getNotFoundUri();
+
+    if (uri.isEmpty())
+    {
+        qWarning() << "Record URI missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    bskyClient()->getPosts({ uri },
+        [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::PostView::List posts){
+            if (!presence)
+                return;
+
+            if (posts.empty())
+                return;
+
+            auto feedViewPost = post.getFeedViewPost();
+
+            if (!feedViewPost)
+            {
+                qWarning() << "Feed view post missing:" << post.getUri() << "index:" << index;
+                return;
+            }
+
+            const auto& recordPost = posts.front();
+            auto quotePost = std::make_shared<Draft::QuotePost>();
+            quotePost->mAuthor = recordPost->mAuthor;
+
+            if (recordPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+                quotePost->mText = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(recordPost->mRecord)->mText;
+            else
+                qWarning() << "Unsupported record type:" << (int)recordPost->mRecordType;
+
+            quotePost->mDateTime = recordPost->mIndexedAt;
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_POST;
+            quote->mRecord = quotePost;
+
+            auto record = std::make_shared<ATProto::AppBskyEmbed::Record>();
+            record->mRecord = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
+            record->mRecord->mUri = recordPost->mUri;
+            record->mRecord->mCid = recordPost->mCid;
+
+            if (feedViewPost->mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW)
+            {
+                auto embed = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(feedViewPost->mPost->mEmbed->mEmbed);
+                embed->mRecord = createRecordView(record.get(), quote);
+            }
+            else
+            {
+                feedViewPost->mPost->mEmbed = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
+                feedViewPost->mPost->mEmbed->mEmbed = createRecordView(record.get(), quote);
+                feedViewPost->mPost->mEmbed->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+            }
+
+            const Post newPost(feedViewPost);
+            mDraftPostsModel->updatePostRecord(newPost, index);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get post record:" << error << "-" << msg;
+
+            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
+            {
+                qDebug() << "Record has been deleted:" << post.getUri() << "index:" << index;
+                return;
+            }
+
+            mDraftPostsModel->updatePostRecordFailed(post, index);
         });
 }
 

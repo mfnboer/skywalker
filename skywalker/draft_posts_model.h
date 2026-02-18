@@ -6,6 +6,8 @@
 
 namespace Skywalker {
 
+class DraftPosts;
+
 class DraftPostsModel : public AbstractPostFeedModel
 {
     Q_OBJECT
@@ -22,28 +24,27 @@ public:
                     HashtagIndex& hashtags,
                     QObject* parent = nullptr);
 
+    void setDraftPosts(DraftPosts* draftPosts);
     QString getFeedName() const override { return "Draft posts"; }
     Q_INVOKABLE void clear();
-    void setFeed(SkyDrafts feed);
-    void setFeed(BlueskyDrafts feed);
+    void setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed);
     void deleteDraft(int index);
     std::vector<Post> getThread(int index) const;
 
     QVariant data(const QModelIndex& index, int role) const override;
 
+    void updatePostRecord(const Post& post, int index);
+    void updatePostRecordFailed(const Post& post, int index);
+
 private:
-    using RawDrafts = std::variant<SkyDrafts, BlueskyDrafts>;
-
     QList<ImageView> createDraftImages(const Post& post) const;
-    std::vector<Post> getSkyDraftThread(int index) const;
-    std::vector<Post> getBlueskyDraftThread(int index) const;
-    ATProto::AppBskyFeed::PostView::SharedPtr toPostView(
-        const ATProto::AppBskyDraft::DraftPost::SharedPtr& draftPost,
-        const ATProto::AppBskyDraft::DraftView::SharedPtr& draftView) const;
+    void getPostRecord(int index) const;
 
-    RawDrafts mRawFeed;
+    std::vector<ATProto::AppBskyFeed::PostFeed> mRawFeed;
     std::unordered_map<QString, QList<ImageView>> mPostUriDraftImagesMap;
     std::vector<SharedImageSource::Ptr> mMemeSources;
+    DraftPosts* mDraftPosts = nullptr;
+    std::unordered_set<QString> mGettingPostRecord;
 };
 
 }

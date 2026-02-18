@@ -103,6 +103,7 @@ public:
     bool isThreadReply() const;
 
     bool getNotFound() const { return mPrivate->mNotFound; }
+    const QString& getNotFoundUri() const { return mPrivate->mNotFoundUri; }
     bool getBlocked() const { return mPrivate->mBlocked; }
     const BlockedAuthor& getBlockedAuthor() const { return mPrivate->mBlockedAuthor; }
     bool getDetached() const { return mPrivate->mDetached; }
@@ -144,6 +145,7 @@ private:
         ATProto::AppBskyLabeler::LabelerView::SharedPtr mLabeler;
         ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
         bool mNotFound = false;
+        QString mNotFoundUri;
         bool mBlocked = false;
         BlockedAuthor mBlockedAuthor;
         bool mDetached = false;

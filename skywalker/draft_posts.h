@@ -73,6 +73,8 @@ public:
     StorageType getStorageType() const { return mStorageType; }
     void setStorageType(StorageType storageType);
 
+    void getPostRecord(const Post& post, int index);
+
     QString dumpDraftFeed();
 
 signals:
@@ -145,8 +147,9 @@ private:
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external);
     ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record);
-    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
-    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyDraft::DraftEmbedVideo& video, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::VideoView::SharedPtr videoView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::ExternalView::SharedPtr externalView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
 
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
     void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
