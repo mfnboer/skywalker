@@ -46,6 +46,7 @@ SkyPage {
         onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
 
         DraftPostsView {
+            id: localDraftsView
             draftPosts: localDraftPosts
 
             onSelected: (index) => localSelected(index)
@@ -53,11 +54,19 @@ SkyPage {
         }
 
         DraftPostsView {
+            id: blueskyDraftsView
             draftPosts: blueskyDraftPosts
             boundsBehavior: Flickable.DragAndOvershootBounds
 
             onSelected: (index) => blueskySelected(index)
             onDeleted: (index) => blueskyDeleted(index)
+        }
+    }
+
+    Component.onCompleted: {
+        if (localDraftsView.count === 0 && blueskyDraftsView.count > 0) {
+            tabBar.setCurrentIndex(1)
+            swipeView.setCurrentIndex(1)
         }
     }
 }
