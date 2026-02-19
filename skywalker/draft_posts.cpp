@@ -342,7 +342,10 @@ void DraftPosts::loadDraftPostsNextPage()
 DraftPostsModel* DraftPosts::getDraftPostsModel()
 {
     if (!mDraftPostsModel)
+    {
         mDraftPostsModel = mSkywalker->createDraftPostsModel();
+        mDraftPostsModel->setDraftPosts(this);
+    }
 
     return mDraftPostsModel.get();
 }
@@ -1152,7 +1155,7 @@ ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(
 ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
     const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const
 {
-    if (!record || !quote)
+    if (!quote)
         return nullptr;
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
@@ -1161,6 +1164,14 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
     {
     case Draft::Quote::RecordType::QUOTE_POST:
     {
+        Q_ASSERT(record);
+
+        if (!record)
+        {
+            qWarning() << "Need record for a quote";
+            return nullptr;
+        }
+
         auto& quotePost = std::get<Draft::QuotePost::SharedPtr>(quote->mRecord);
         auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
         post->mText = quotePost->mText;
@@ -1185,6 +1196,14 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
     case Draft::Quote::RecordType::QUOTE_LIST:
         view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(quote->mRecord));
+        break;
+    case Draft::Quote::RecordType::QUOTE_LABELER:
+        view->mRecordType = ATProto::RecordType::APP_BSKY_LABELER_VIEW;
+        view->mRecord = std::move(std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(quote->mRecord));
+        break;
+    case Draft::Quote::RecordType::QUOTE_STARTER_PACK:
+        view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_STARTER_PACK_VIEW_BASIC;
+        view->mRecord = std::move(std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(quote->mRecord));
         break;
     default:
         qWarning() << "Unknown record type" << (int)quote->mRecordType;
@@ -1546,8 +1565,7 @@ void DraftPosts::loadDraftFeed()
     if (draftsPath.isEmpty())
         return;
 
-    if (!mDraftPostsModel)
-        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+    getDraftPostsModel();
 
     const auto fileList = getDraftPostFiles(draftsPath);
     std::vector<ATProto::AppBskyFeed::PostFeed> postThreads;
@@ -1872,10 +1890,7 @@ void DraftPosts::loadBlueskyDrafts(const QString& cursor)
     if (!bskyClient())
         return;
 
-    if (!mDraftPostsModel)
-        mDraftPostsModel = mSkywalker->createDraftPostsModel();
-
-    mDraftPostsModel->setDraftPosts(this);
+    getDraftPostsModel();
 
     bskyClient()->getDrafts({}, Utils::makeOptionalString(cursor),
         [this, presence=getPresence()](ATProto::AppBskyDraft::GetDraftsOutput::SharedPtr output){
@@ -1973,21 +1988,75 @@ void DraftPosts::getPostRecord(const Post& post, int index)
         return;
     }
 
-    bskyClient()->getPosts({ uri },
+    const ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Record URI not valid:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST)
+        getPostRecordPost(post, index, uri);
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_GENERATOR)
+        getPostRecordFeed(post, index, uri);
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_GRAPH_LIST)
+        getPostRecordList(post, index, uri);
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_GRAPH_STARTERPACK)
+        getPostRecordStarterPack(post, index, uri);
+    else
+        qWarning() << "Record uri not supported:" << uri;
+}
+
+void DraftPosts::updatePostRecord(const Post& post, int index, const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const
+{
+    auto feedViewPost = post.getFeedViewPost();
+    Q_ASSERT(feedViewPost);
+
+    if (!feedViewPost)
+    {
+        qWarning() << "Feed view post missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    if (feedViewPost->mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW)
+    {
+        auto embed = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(feedViewPost->mPost->mEmbed->mEmbed);
+        embed->mRecord = createRecordView(record, quote);
+    }
+    else
+    {
+        feedViewPost->mPost->mEmbed = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
+        feedViewPost->mPost->mEmbed->mEmbed = createRecordView(record, quote);
+        feedViewPost->mPost->mEmbed->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+    }
+
+    const Post newPost(feedViewPost);
+    mDraftPostsModel->updatePostRecord(newPost, index);
+}
+
+void DraftPosts::failUpdatePostRecord(const Post& post, int index, const QString& error)
+{
+    if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
+    {
+        qDebug() << "Record has been deleted:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    mDraftPostsModel->updatePostRecordFailed(post, index);
+}
+
+void DraftPosts::getPostRecordPost(const Post& post, int index, const QString& postUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "post:" << postUri;
+
+    bskyClient()->getPosts({ postUri },
         [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::PostView::List posts){
             if (!presence)
                 return;
 
             if (posts.empty())
                 return;
-
-            auto feedViewPost = post.getFeedViewPost();
-
-            if (!feedViewPost)
-            {
-                qWarning() << "Feed view post missing:" << post.getUri() << "index:" << index;
-                return;
-            }
 
             const auto& recordPost = posts.front();
             auto quotePost = std::make_shared<Draft::QuotePost>();
@@ -2008,34 +2077,87 @@ void DraftPosts::getPostRecord(const Post& post, int index)
             record->mRecord->mUri = recordPost->mUri;
             record->mRecord->mCid = recordPost->mCid;
 
-            if (feedViewPost->mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW)
-            {
-                auto embed = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(feedViewPost->mPost->mEmbed->mEmbed);
-                embed->mRecord = createRecordView(record.get(), quote);
-            }
-            else
-            {
-                feedViewPost->mPost->mEmbed = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
-                feedViewPost->mPost->mEmbed->mEmbed = createRecordView(record.get(), quote);
-                feedViewPost->mPost->mEmbed->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
-            }
-
-            const Post newPost(feedViewPost);
-            mDraftPostsModel->updatePostRecord(newPost, index);
+            updatePostRecord(post, index, record.get(), quote);
         },
         [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
             if (!presence)
                 return;
 
             qDebug() << "Failed to get post record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
 
-            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
-            {
-                qDebug() << "Record has been deleted:" << post.getUri() << "index:" << index;
+void DraftPosts::getPostRecordFeed(const Post& post, int index, const QString& feedUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "feed:" << feedUri;
+
+    bskyClient()->getFeedGenerator(feedUri,
+        [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::GetFeedGeneratorOutput::SharedPtr output){
+            if (!presence)
                 return;
-            }
 
-            mDraftPostsModel->updatePostRecordFailed(post, index);
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_FEED;
+            quote->mRecord = output->mView;
+
+            updatePostRecord(post, index, nullptr, quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get feed record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
+
+void DraftPosts::getPostRecordList(const Post& post, int index, const QString& listUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "list:" << listUri;
+
+    bskyClient()->getList(listUri, 1, {},
+        [this, presence=getPresence(), post, index](ATProto::AppBskyGraph::GetListOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_LIST;
+            quote->mRecord = output->mList;
+
+            updatePostRecord(post, index, nullptr, quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get list record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
+
+void DraftPosts::getPostRecordStarterPack(const Post& post, int index, const QString& starterPackUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "starterPack:" << starterPackUri;
+
+    bskyClient()->getStarterPack(starterPackUri,
+        [this, presence=getPresence(), post, index](ATProto::AppBskyGraph::StarterPackView::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto starterPackViewBasic = ATProto::GraphMaster::createStarterPackViewBasic(output);
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_STARTER_PACK;
+            quote->mRecord = starterPackViewBasic;
+
+            updatePostRecord(post, index, nullptr, quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get list record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
         });
 }
 
@@ -2074,8 +2196,7 @@ void DraftPosts::listRecords()
     if (!bskyClient())
         return;
 
-    if (!mDraftPostsModel)
-        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+    getDraftPostsModel();
 
     const QString& repo = mSkywalker->getUserDid();
 

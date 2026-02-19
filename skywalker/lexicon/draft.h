@@ -41,6 +41,7 @@ struct Quote
         QUOTE_FEED,
         QUOTE_LIST,
         QUOTE_LABELER,
+        QUOTE_STARTER_PACK,
         UNKNOWN
     };
 
@@ -51,7 +52,8 @@ struct Quote
     std::variant<QuotePost::SharedPtr,
                  ATProto::AppBskyFeed::GeneratorView::SharedPtr,
                  ATProto::AppBskyGraph::ListView::SharedPtr,
-                 ATProto::AppBskyLabeler::LabelerView::SharedPtr> mRecord;
+                 ATProto::AppBskyLabeler::LabelerView::SharedPtr,
+                 ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr> mRecord;
 
     QJsonObject toJson() const;
 

@@ -182,6 +182,14 @@ private:
     void loadBlueskyDrafts(const QString& cursor = {});
     void loadBlueskyDraftsNextPage();
 
+    void updatePostRecord(const Post& post, int index, const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
+    void failUpdatePostRecord(const Post& post, int index, const QString& error);
+
+    void getPostRecordPost(const Post& post, int index, const QString& postUri);
+    void getPostRecordFeed(const Post& post, int index, const QString& feedUri);
+    void getPostRecordList(const Post& post, int index, const QString& listUri);
+    void getPostRecordStarterPack(const Post& post, int index, const QString& starterPackUri);
+
     // PDS REPO STORAGE
     bool writeRecord(const Draft::Draft& draft);
     void listRecords();

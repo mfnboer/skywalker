@@ -48,16 +48,16 @@ SkyPage {
         DraftPostsView {
             draftPosts: localDraftPosts
 
-            onSelected: localSelected
-            onDeleted: localDeleted
+            onSelected: (index) => localSelected(index)
+            onDeleted: (index) => localDeleted(index)
         }
 
         DraftPostsView {
             draftPosts: blueskyDraftPosts
             boundsBehavior: Flickable.DragAndOvershootBounds
 
-            onSelected: blueskySelected
-            onDeleted: blueskyDeleted
+            onSelected: (index) => blueskySelected(index)
+            onDeleted: (index) => blueskyDeleted(index)
         }
     }
 }

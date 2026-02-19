@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "image_utils.h"
 #include "jni_callback.h"
+#include "link_utils.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "songlink.h"
@@ -226,6 +227,9 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
 {
     qDebug() << "Link:" << link;
 
+    if (LinkUtils::isFeedLink(link) || LinkUtils::isListLink(link))
+        return 1.0;
+
     if (Songlink::isMusicLink(link))
         return 1.0;
 
@@ -233,9 +237,6 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
     const QString host = url.host();
     const QString path = url.path();
     qDebug() << "Host:" << host << "Path:" << path;
-
-    if (host.endsWith("bsky.app"))
-        return 1.0;
 
     if (host.endsWith("instagram.com"))
         return 1.0;
