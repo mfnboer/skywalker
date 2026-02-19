@@ -1942,6 +1942,7 @@ SkyPage {
         storageType: DraftPosts.STORAGE_BLUESKY
 
         onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onDeleteDraftFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to delete draft: ${error}`), QEnums.STATUS_LEVEL_ERROR)
     }
 
     LanguageUtils {
@@ -2607,9 +2608,32 @@ SkyPage {
             draftPosts.removeDraftPost(index)
             root.popStack()
         })
+        draftsPage.onBlueskySelected.connect((index) => {
+            const mediaWarning = blueskyDraftPosts.getMediaStorageWarning(index)
+
+            if (mediaWarning) {
+                guiSettings.noticeOkCancel(
+                    draftsPage,
+                    qsTr(`You will lose: ${mediaWarning}`),
+                    () => {
+                        openBlueskyDraft(index)
+                        root.popStack()
+                    })
+            } else {
+                openBlueskyDraft(index)
+                root.popStack()
+            }
+        })
         draftsPage.onLocalDeleted.connect((index) => draftPosts.removeDraftPost(index))
+        draftsPage.onBlueskyDeleted.connect((index) => blueskyDraftPosts.removeDraftPost(index))
 
         root.pushStack(draftsPage)
+    }
+
+    function openBlueskyDraft(index) {
+        const draftDataList = blueskyDraftPosts.getDraftPostData(index)
+        setDraftPost(draftDataList)
+        blueskyDraftPosts.removeDraftPost(index)
     }
 
     function addAnniversaryCard() {

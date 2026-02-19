@@ -69,6 +69,7 @@ public:
     Q_INVOKABLE DraftPostsModel* getDraftPostsModel();
     Q_INVOKABLE QList<DraftPostData*> getDraftPostData(int index);
     Q_INVOKABLE void removeDraftPost(int index);
+    Q_INVOKABLE QString getMediaStorageWarning(int index);
     Q_INVOKABLE void removeDraftPostsModel();
 
     StorageType getStorageType() const { return mStorageType; }
@@ -85,6 +86,7 @@ signals:
     void uploadingImage(int seq);
     void loadDraftPostsOk();
     void loadDraftPostsFailed(QString error);
+    void deleteDraftFailed(QString error);
     void draftsChanged();
     void storageTypeChanged();
 
@@ -138,6 +140,7 @@ private:
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(
         const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::SharedPtr quote);
 
+    QString checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, int embedImagesCount, int embedVideoCount) const;
     ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri);
     ATProto::AppBskyFeed::PostView::SharedPtr convertDraftToPostView(const ATProto::AppBskyDraft::DraftView& draftView, const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& recordUri);
     ATProto::AppBskyFeed::ViewerState::SharedPtr createViewerState(const ATProto::AppBskyDraft::Draft& draft) const;
@@ -181,6 +184,7 @@ private:
     // BLUESKY STORAGE
     void loadBlueskyDrafts(const QString& cursor = {});
     void loadBlueskyDraftsNextPage();
+    void deleteBlueskyDraft(const QString& draftId, int index);
 
     void updatePostRecord(const Post& post, int index, const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
     void failUpdatePostRecord(const Post& post, int index, const QString& error);

@@ -564,6 +564,8 @@ void DraftPosts::setDraftPost(DraftPostData* data, const Post& post)
 
 QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
 {
+    getDraftPostsModel();
+
     if (index < 0 || index >= mDraftPostsModel->rowCount())
     {
         qWarning() << "Invalid index:" << index << "count:" << mDraftPostsModel->rowCount();
@@ -585,6 +587,8 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
 
 void DraftPosts::removeDraftPost(int index)
 {
+    getDraftPostsModel();
+
     if (index < 0 || index >= mDraftPostsModel->rowCount())
     {
         qWarning() << "Invalid index:" << index << "count:" << mDraftPostsModel->rowCount();
@@ -593,7 +597,9 @@ void DraftPosts::removeDraftPost(int index)
 
     const Post& post = mDraftPostsModel->getPost(index);
 
-    // NOTE: with file storage, the record-uri is the file name;
+    // NOTE:
+    // With file storage, the record-uri is the file name
+    // With Bluesky storage, the record-uri is the draft ID
     const QString& recordUri = post.getUri();
     qDebug() << "Remove draft post:" << index << "uri:" << recordUri;
 
@@ -601,16 +607,22 @@ void DraftPosts::removeDraftPost(int index)
     {
     case STORAGE_FILE:
         dropDraftPost(recordUri);
+        mDraftPostsModel->deleteDraft(index);
         break;
     case STORAGE_BLUESKY:
-        // TODO
+        deleteBlueskyDraft(recordUri, index);
         break;
     case STORAGE_REPO:
         deleteRecord(recordUri);
+        mDraftPostsModel->deleteDraft(index);
         break;
     }
+}
 
-    mDraftPostsModel->deleteDraft(index);
+QString DraftPosts::getMediaStorageWarning(int index)
+{
+    getDraftPostsModel();
+    return mDraftPostsModel->getStoredMediaWarning(index);
 }
 
 void DraftPosts::removeDraftPostsModel()
@@ -1248,40 +1260,59 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
     return view;
 }
 
-ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri)
+QString DraftPosts::checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, int embedImagesCount, int embedVideoCount) const
 {
+    if (embedImagesCount + embedVideoCount == 0)
+        return {};
+
     const QString draftDeviceId = draft.mDraft->mDeviceId.value_or("");
     const QString thisDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+
+    if (draftDeviceId == thisDeviceId)
+        return {};
+
+    QString warning;
 
     // TODO compare draft device name with this device name, if they are the same but the
     // deviceId is different, then the draft is stored by another app on this device.
     const QString draftDeviceName = draft.mDraft->mDeviceName.value_or(tr("other device"));
 
+    const QString imageWord = embedImagesCount == 1 ? tr("image") : tr("images");
+    const QString videoWord = embedVideoCount == 1 ? tr("video") : tr("videos");
+
+    // HACK: abusing feed context to show this warning in the drafts overview
+    if (embedVideoCount == 0)
+        warning = tr("%1 %2 stored on %3").arg(embedImagesCount).arg(imageWord, draftDeviceName);
+    else if (embedImagesCount == 0)
+        warning = tr("%1 %2 stored on %3").arg(embedVideoCount).arg(videoWord, draftDeviceName);
+    else
+        warning = tr("%1 %2 and %3 %4 on %5").arg(embedImagesCount).arg(imageWord).arg(embedVideoCount).arg(videoWord, draftDeviceName);
+
+    return warning;
+}
+
+ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri)
+{
     ATProto::AppBskyFeed::PostFeed postFeed;
+    int embedImagesCount = 0;
+    int embedVideoCount = 0;
 
     for (const auto& threadPost : draft.mDraft->mPosts)
     {
         auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
         view->mPost = convertDraftToPostView(draft, *threadPost, recordUri);
-
-        if (draftDeviceId != thisDeviceId)
-        {
-            if (!threadPost->mEmbedImages.empty())
-            {
-                const auto count = threadPost->mEmbedImages.size();
-
-                // HACK: abusing feed context to show this warning in the drafts overview
-                view->mFeedContext = count > 1 ?
-                    tr("⚠️ %1 images stored on %2").arg(count).arg(draftDeviceName) :
-                    tr("⚠️ image stored on %1").arg(draftDeviceName);
-            }
-            else if (!threadPost->mEmbedVideos.empty())
-            {
-                view->mFeedContext = tr("⚠️ video stored on %1").arg(draftDeviceName);
-            }
-        }
-
+        embedImagesCount += threadPost->mEmbedImages.size();
+        embedVideoCount += threadPost->mEmbedVideos.size();
         postFeed.push_back(std::move(view));
+    }
+
+    const QString mediaWarning = checkMediaStorage(draft, embedImagesCount, embedVideoCount);
+
+    if (!mediaWarning.isEmpty())
+    {
+        // HACK: abusing feed context to show this warning in the drafts overview
+        auto& view = postFeed.front();
+        view->mFeedContext = mediaWarning;
     }
 
     return postFeed;
@@ -1892,15 +1923,25 @@ void DraftPosts::loadBlueskyDrafts(const QString& cursor)
 
     getDraftPostsModel();
 
+    if (mDraftPostsModel->isGetFeedInProgress())
+    {
+        qDebug() << "Already in progress";
+        return;
+    }
+
+    mDraftPostsModel->setGetFeedInProgress(true);
+
     bskyClient()->getDrafts({}, Utils::makeOptionalString(cursor),
         [this, presence=getPresence()](ATProto::AppBskyDraft::GetDraftsOutput::SharedPtr output){
             if (!presence)
                 return;
 
+            mDraftPostsModel->setGetFeedInProgress(false);
             std::vector<ATProto::AppBskyFeed::PostFeed> postThreads;
 
             for (const auto& draftView : output->mDrafts)
             {
+                // NOTE: we store the draft ID as post URI
                 auto postFeed = convertDraftToFeedViewPost(*draftView, draftView->mId);
                 postThreads.push_back(std::move(postFeed));
             }
@@ -1914,6 +1955,7 @@ void DraftPosts::loadBlueskyDrafts(const QString& cursor)
                 return;
 
             qDebug() << "Failed to get drafts:" << error << "-" << msg;
+            mDraftPostsModel->setGetFeedInProgress(false);
             emit loadDraftPostsFailed(msg);
         });
 }
@@ -1932,6 +1974,30 @@ void DraftPosts::loadBlueskyDraftsNextPage()
     }
 
     loadBlueskyDrafts(cursor);
+}
+
+void DraftPosts::deleteBlueskyDraft(const QString& draftId, int index)
+{
+    Q_ASSERT(mStorageType == STORAGE_BLUESKY);
+    qDebug() << "Delete draft:" << draftId;
+
+    if (!bskyClient())
+        return;
+
+    getDraftPostsModel();
+
+    bskyClient()->deleteDraft(draftId,
+        [this, presence=getPresence(), index]{
+            if (presence)
+                mDraftPostsModel->deleteDraft(index);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to delete draft:" << error << "-" << msg;
+            emit deleteDraftFailed(msg);
+        });
 }
 
 void DraftPosts::getPostExternal(const Post& post, int index)

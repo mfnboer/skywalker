@@ -109,6 +109,17 @@ std::vector<Post> DraftPostsModel::getThread(int index) const
     return thread;
 }
 
+QString DraftPostsModel::getStoredMediaWarning(int index) const
+{
+    if (index < 0 || index >= (int)mFeed.size())
+        return {};
+
+    const auto& post = mFeed[index];
+
+    // NOTE: feedContext is abused to store the media storage warning
+    return post.getFeedContext();
+}
+
 QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
 {
     if (index.row() < 0 || index.row() >= (int)mFeed.size())

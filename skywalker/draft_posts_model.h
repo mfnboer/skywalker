@@ -30,6 +30,7 @@ public:
     void setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed, const QString& cursor);
     void deleteDraft(int index);
     std::vector<Post> getThread(int index) const;
+    QString getStoredMediaWarning(int index) const;
     const QString& getCursor() const { return mCursor; }
 
     QVariant data(const QModelIndex& index, int role) const override;

@@ -112,7 +112,7 @@ Rectangle {
                 width: parent.width
                 topPadding: 10
                 font.italic: true
-                text: postFeedContext
+                text: `⚠️ ${postFeedContext}`
                 visible: Boolean(postFeedContext)
             }
         }
