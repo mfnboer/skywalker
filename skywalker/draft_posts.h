@@ -103,6 +103,7 @@ private:
     QString createDraftImageFileName(const QString& baseName, int seq) const;
     QString createDraftVideoFileName(const QString& baseName) const;
     QString getBaseNameFromPostFileName(const QString& fileName) const;
+    QString getBaseNameFromMediaFullFileName(const QString& fileUrl) const;
 
     static ATProto::AppBskyActor::ProfileViewBasic::SharedPtr createProfileViewBasic(const BasicProfile& author);
     static ATProto::AppBskyActor::ProfileView::SharedPtr createProfileView(const Profile& author);
@@ -198,6 +199,8 @@ private:
     ATProto::ComATProtoLabel::SelfLabels::SharedPtr createSelfLabels(const DraftPostData* draftPost) const;
     ATProto::AppBskyFeed::ThreadgateRules createThreadgateRules(const DraftPostData* draftPost) const;
     void deleteBlueskyDraft(const QString& draftId, int index);
+    void deleteMediaFiles(int index);
+    QString getMediaBaseName(const std::vector<Post>& thread) const;
 
     void updatePostRecord(const Post& post, int index, const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
     void failUpdatePostRecord(const Post& post, int index, const QString& error);

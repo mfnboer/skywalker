@@ -691,6 +691,30 @@ QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
     return parts[0];
 }
 
+QString DraftPosts::getBaseNameFromMediaFullFileName(const QString& fileUrl) const
+{
+    if (!fileUrl.startsWith("file://"))
+    {
+        qWarning() << "Not a file URL:" << fileUrl;
+        return {};
+    }
+
+    const QFileInfo fileInfo(fileUrl.sliced(7));
+    const QString base = fileInfo.baseName();
+
+    // Example base: SWI1_20251226131809-0
+    auto parts = base.split('_');
+    if (parts.size() != 2)
+        return {};
+
+    parts = parts[1].split('-');
+    if (parts.size() != 2)
+        return {};
+
+    qDebug() << "Base name from:" << fileUrl << "=" << parts[0];
+    return parts[0];
+}
+
 ATProto::AppBskyActor::ProfileViewBasic::SharedPtr DraftPosts::createProfileViewBasic(const BasicProfile& author)
 {
     if (author.isNull())
@@ -1112,8 +1136,8 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
         break;
     }
     case STORAGE_BLUESKY:
-        // TODO
-        break;
+        qWarning() << "Bluesky not expected";
+        return nullptr;
     case STORAGE_REPO:
         qWarning() << "REPO storage not supported";
         return nullptr;
@@ -1331,6 +1355,12 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(con
     postRecord->mLanguages = draftView.mDraft->mLangs;
     postRecord->mCreatedAt = draftView.mCreatedAt;
 
+    ATProto::XJsonObject xjson(draftPost.mJson);
+    std::optional<QJsonObject> embeddedLinks = xjson.getOptionalJsonObject(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD);
+
+    if (embeddedLinks)
+        postRecord->mJson.insert(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD, *embeddedLinks);
+
     postView->mRecord = postRecord;
     postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
     postView->mThreadgate = createThreadgateView(draftView.mDraft->mThreadgateRules, recordUri, draftView.mCreatedAt);
@@ -1511,8 +1541,6 @@ ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(co
 
 ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record)
 {
-    // TODO: can there be ohter URI's than post-URI's??
-
     // HACK: we create a NotFound record as we do not have the full record view here.
     // In DraftsPostModel, the URI from the NotFound record will be resolved to a post.
     auto postRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewNotFound>();
@@ -1896,6 +1924,7 @@ void DraftPosts::dropDraftPostFiles(const QString& draftsPath, const QString& fi
 
 void DraftPosts::dropDraftPostFilesByBaseName(const QString& draftsPath, const QString& baseName)
 {
+    qDebug() << "Remove post files:" << draftsPath << "baseName:" << baseName;
     QDir dir(draftsPath);
     const QString filePattern = QString("*%1*").arg(baseName);
     const auto files = dir.entryList({filePattern});
@@ -2100,6 +2129,12 @@ ATProto::AppBskyDraft::DraftPost::SharedPtr DraftPosts::createBlueskyDraftPost(c
     post->mEmbedExternals = createDraftEmbedExternals(draftPost);
     post->mEmbedRecords = createDraftEmbedRecords(draftPost);
 
+    if (!draftPost->embeddedLinks().empty())
+    {
+        auto links = createEmbeddedLinks(draftPost->embeddedLinks());
+        post->mJson.insert(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD, links->toJson());
+    }
+
     return post;
 }
 
@@ -2178,6 +2213,12 @@ ATProto::AppBskyDraft::DraftEmbedVideo::List DraftPosts::createDraftEmbedVideos(
 
     embedVideo->mLocalRef = std::make_shared<ATProto::AppBskyDraft::DraftEmbedLocalRef>();
     embedVideo->mLocalRef->mPath = blob->mRefLink;
+
+    embedVideo->mJson = embedVideo->toJson();
+    embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, video.getStartMs());
+    embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, video.getEndMs());
+    embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, video.getRemoveAudio());
+    embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, video.getNewHeight());
 
     // TODO: video presentation
     // const bool isGif = video.getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
@@ -2280,7 +2321,10 @@ void DraftPosts::deleteBlueskyDraft(const QString& draftId, int index)
     bskyClient()->deleteDraft(draftId,
         [this, presence=getPresence(), index]{
             if (presence)
+            {
+                deleteMediaFiles(index);
                 mDraftPostsModel->deleteDraft(index);
+            }
         },
         [this, presence=getPresence()](const QString& error, const QString& msg) {
             if (!presence)
@@ -2289,6 +2333,71 @@ void DraftPosts::deleteBlueskyDraft(const QString& draftId, int index)
             qDebug() << "Failed to delete draft:" << error << "-" << msg;
             emit deleteDraftFailed(msg);
         });
+}
+
+void DraftPosts::deleteMediaFiles(int index)
+{
+    const std::vector<Post> thread = mDraftPostsModel->getThread(index);
+    const QString baseName = getMediaBaseName(thread);
+
+    if (baseName.isEmpty())
+        return;
+
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        qWarning() << "No pictures drafts path";
+        return;
+    }
+
+    dropDraftPostFilesByBaseName(draftsPath, baseName);
+}
+
+QString DraftPosts::getMediaBaseName(const std::vector<Post>& thread) const
+{
+    for (const auto& post : thread)
+    {
+        auto images = post.getImages();
+
+        if (images.empty())
+        {
+            const RecordWithMediaView::Ptr& record = post.getRecordWithMediaView();
+
+            if (record)
+                images = record->getImages();
+        }
+
+        if (!images.empty())
+        {
+            const QString& url = images.front().getFullSizeUrl();
+            const QString baseName = getBaseNameFromMediaFullFileName(url);
+
+            if (!baseName.isEmpty())
+                return baseName;
+        }
+
+        VideoView::Ptr video = post.getVideoView();
+
+        if (!video)
+        {
+            const RecordWithMediaView::Ptr& record = post.getRecordWithMediaView();
+
+            if (record)
+                video = record->getVideoView();
+        }
+
+        if (video)
+        {
+            const QString& url = video->getPlaylistUrl();
+            const QString baseName = getBaseNameFromMediaFullFileName(url);
+
+            if (!baseName.isEmpty())
+                return baseName;
+        }
+    }
+
+    return {};
 }
 
 void DraftPosts::getPostExternal(const Post& post, int index)
