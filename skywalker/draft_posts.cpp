@@ -19,6 +19,7 @@ namespace {
 
 constexpr char const* DRAFT_POSTS_DIR = "sw-draft-posts";
 constexpr char const* DRAFT_PICTURES_DIR = "SkywalkerDrafts";
+constexpr char const* DRAFT_BSKY_PICTURES_DIR = "SkywalkerBskyDrafts";
 
 QString createAbsPath(const QString& draftsPath, const QString& fileName)
 {
@@ -154,8 +155,22 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
 {
     qDebug() << "Save draft post:" << draftPost->text();
 
+    switch (mStorageType)
+    {
+    case STORAGE_FILE:
+    case STORAGE_REPO:
+        return saveFileDraftPost(draftPost, draftThread);
+    case STORAGE_BLUESKY:
+        return saveBlueskyDraftPost(draftPost, draftThread);
+    }
+
+    Q_ASSERT(false);
+    return false;
+}
+
+bool DraftPosts::saveFileDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread)
+{
     QString draftsPath;
-    QString picDraftsPath;
 
     if (mStorageType == STORAGE_FILE)
     {
@@ -166,21 +181,9 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
             emit saveDraftPostFailed(tr("Cannot create app data path"));
             return false;
         }
-
-        if (!draftPost->images().isEmpty() || !draftPost->video().isNull())
-        {
-            picDraftsPath = getPictureDraftsPath();
-
-            if (picDraftsPath.isEmpty())
-            {
-                emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
-                return false;
-            }
-        }
     }
 
     const QString dateTime = FileUtils::createDateTimeName(draftPost->indexedAt());
-
     auto draft = std::make_shared<Draft::Draft>();
     draft->mPost = createPost(draftPost, createPicBaseName(dateTime, 0));
 
@@ -230,22 +233,15 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
     case STORAGE_FILE:
         if (!save(*draft, draftsPath, dateTime))
         {
-            dropImages(picDraftsPath, createPicBaseName(dateTime, 0), draftPost->images().size());
-            dropVideo(picDraftsPath, createPicBaseName(dateTime, 0));
-
-            for (int i = 0; i < draftThread.size(); ++i)
-            {
-                const auto* draftThreadPost = draftThread[i];
-                dropImages(picDraftsPath, createPicBaseName(dateTime, i + 1), draftThreadPost->images().size());
-                dropVideo(picDraftsPath, createPicBaseName(dateTime, i + 1));
-            }
-
+            dropDraftMedia(draftPost, draftThread, dateTime);
             return false;
         }
 
         break;
     case STORAGE_BLUESKY:
-        // TODO
+        Q_ASSERT(false);
+        qWarning() << "Bluesky not expected.";
+        return false;
     case STORAGE_REPO:
         qWarning() << "Not supported.";
         break;
@@ -654,11 +650,12 @@ QString DraftPosts::getDraftsPath() const
 
 QString DraftPosts::getPictureDraftsPath() const
 {
-    const QString draftsPath = FileUtils::getPicturesPath(DRAFT_PICTURES_DIR);
+    const QString path = mStorageType == STORAGE_BLUESKY ? DRAFT_BSKY_PICTURES_DIR : DRAFT_PICTURES_DIR;
+    const QString draftsPath = FileUtils::getPicturesPath(path);
 
     if (draftsPath.isEmpty())
     {
-        qWarning() << "Failed to get path:" << DRAFT_PICTURES_DIR;
+        qWarning() << "Failed to get path:" << path;
         return {};
     }
 
@@ -1756,7 +1753,7 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
                                                const QString& memeTopText, const QString& memeBottomText,
                                                const QString& draftsPath, const QString& baseName, int seq)
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
+    Q_ASSERT(mStorageType == STORAGE_FILE || mStorageType == STORAGE_BLUESKY);
     qDebug() << "Save image:" << seq << imgName << "path:" << draftsPath << "base:" << baseName;
     QImage img = PhotoPicker::loadImage(imgName);
 
@@ -1774,6 +1771,7 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
     if (!FileUtils::checkWriteMediaPermission())
     {
         qWarning() << "No permission to write media:" << fileName;
+        emit saveDraftPostFailed(tr("Failed to save image #%1: %2").arg(seq + 1).arg(fileName));
         return { nullptr, QSize{} };
     }
 
@@ -1798,12 +1796,13 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
         const QString& videoName, int videoStartMs, int videoEndMs, bool videoRemoveAudio,
         int videoNewHeight, const QString& draftsPath, const QString& baseName)
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
+    Q_ASSERT(mStorageType == STORAGE_FILE || mStorageType == STORAGE_BLUESKY);
     qDebug() << "Save video:" << videoName << "path:" << draftsPath << "base:" << baseName;
 
     if (!videoName.startsWith("file://"))
     {
         qWarning() << "Invalid video:" << videoName;
+        emit saveDraftPostFailed(tr("Could not load video: %1").arg(videoName));
         return nullptr;
     }
 
@@ -1815,6 +1814,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     if (!FileUtils::checkWriteMediaPermission())
     {
         qWarning() << "No permission to write media:" << absDraftFileName;
+        emit saveDraftPostFailed(tr("Failed to save video: %1").arg(absDraftFileName));
         return nullptr;
     }
 
@@ -1823,6 +1823,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     if (!fromFile.open(QFile::ReadOnly))
     {
         qWarning() << "Cannot open file:" << videoFileName << fromFile.errorString();
+        emit saveDraftPostFailed(tr("Could not load video: %1").arg(videoFileName));
         return nullptr;
     }
 
@@ -1831,6 +1832,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     if (!toFile.open(QFile::WriteOnly))
     {
         qWarning() << "Cannot create file:" << absDraftFileName << toFile.errorString();
+        emit saveDraftPostFailed(tr("Failed to save video: %1").arg(absDraftFileName));
         return nullptr;
     }
 
@@ -1855,14 +1857,14 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
 
 void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count) const
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
+    Q_ASSERT(mStorageType == STORAGE_FILE || mStorageType == STORAGE_BLUESKY);
     for (int j = 0; j < count; ++j)
         dropImage(draftsPath, baseName, j);
 }
 
 void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq) const
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
+    Q_ASSERT(mStorageType == STORAGE_FILE || mStorageType == STORAGE_BLUESKY);
     const QString imgFileName = createDraftImageFileName(baseName, seq);
     const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Drop draft image:" << fileName;
@@ -1871,7 +1873,7 @@ void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, i
 
 void DraftPosts::dropVideo(const QString& draftsPath, const QString& baseName)
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
+    Q_ASSERT(mStorageType == STORAGE_FILE || mStorageType == STORAGE_BLUESKY);
     const QString videoFileName = createDraftVideoFileName(baseName);
     const QString fileName = createAbsPath(draftsPath, videoFileName);
     qDebug() << "Drop draft video:" << fileName;
@@ -1889,6 +1891,11 @@ void DraftPosts::dropDraftPostFiles(const QString& draftsPath, const QString& fi
         return;
     }
 
+    dropDraftPostFilesByBaseName(draftsPath, fileName);
+}
+
+void DraftPosts::dropDraftPostFilesByBaseName(const QString& draftsPath, const QString& baseName)
+{
     QDir dir(draftsPath);
     const QString filePattern = QString("*%1*").arg(baseName);
     const auto files = dir.entryList({filePattern});
@@ -1974,6 +1981,290 @@ void DraftPosts::loadBlueskyDraftsNextPage()
     }
 
     loadBlueskyDrafts(cursor);
+}
+
+bool DraftPosts::saveBlueskyDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread)
+{
+    Q_ASSERT(mStorageType == STORAGE_BLUESKY);
+    qDebug() << "Save Bluesky draft";
+
+    if (!bskyClient())
+        return false;
+
+    const QString dateTime = FileUtils::createDateTimeName(draftPost->indexedAt());
+    auto draft = createBlueskyDraft(draftPost, draftThread, dateTime);
+
+    if (!draft)
+    {
+        dropDraftMedia(draftPost, draftThread, dateTime);
+        return false;
+    }
+
+    bskyClient()->createDraft(draft,
+        [this, presence=getPresence()](ATProto::AppBskyDraft::CreateDraftOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            qDebug() << "Saved draft:" << output->mId;
+            emit saveDraftPostOk();
+        },
+        [this, presence=getPresence(), draftPost, draftThread, dateTime](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to save draft:" << error << "-" << msg;
+            dropDraftMedia(draftPost, draftThread, dateTime);
+            emit saveDraftPostFailed(msg);
+        });
+
+    return true;
+}
+
+ATProto::AppBskyDraft::Draft::SharedPtr DraftPosts::createBlueskyDraft(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName)
+{
+    auto draft = std::make_shared<ATProto::AppBskyDraft::Draft>();
+    draft->mDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+    // TODO: device name
+    draft->mDeviceName = "TEST DEVICE";
+
+    draft->mPosts.reserve(draftThread.size() + 1);
+    const auto& post = createBlueskyDraftPost(draftPost, baseName, 0);
+
+    if (!post)
+        return nullptr;
+
+    draft->mPosts.push_back(post);
+
+    for (int i = 0; i < draftThread.size(); ++i)
+    {
+        const auto* draftThreadPost = draftThread[i];
+        const auto& threadPost = createBlueskyDraftPost(draftThreadPost, baseName, i + 1);
+
+        if (!threadPost)
+            return nullptr;
+
+        draft->mPosts.push_back(threadPost);
+    }
+
+    if (!draftPost->language().isEmpty())
+        draft->mLangs.push_back(draftPost->language());
+
+    draft->mDisableEmbedding = draftPost->embeddingDisabled();
+    draft->mThreadgateRules = createThreadgateRules(draftPost);
+
+    return draft;
+}
+
+void DraftPosts::dropDraftMedia(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName)
+{
+    const QString picDraftsPath = getPictureDraftsPath();
+
+    if (picDraftsPath.isEmpty())
+        return;
+
+    dropImages(picDraftsPath, createPicBaseName(baseName, 0), draftPost->images().size());
+    dropVideo(picDraftsPath, createPicBaseName(baseName, 0));
+
+    for (int i = 0; i < draftThread.size(); ++i)
+    {
+        const auto* draftThreadPost = draftThread[i];
+        dropImages(picDraftsPath, createPicBaseName(baseName, i + 1), draftThreadPost->images().size());
+        dropVideo(picDraftsPath, createPicBaseName(baseName, i + 1));
+    }
+}
+
+ATProto::AppBskyDraft::DraftPost::SharedPtr DraftPosts::createBlueskyDraftPost(const DraftPostData* draftPost, const QString& baseName, int threadIndex)
+{
+    auto post = std::make_shared<ATProto::AppBskyDraft::DraftPost>();
+    post->mText = draftPost->text();
+    post->mLabels = createSelfLabels(draftPost);
+
+    if (!draftPost->images().empty())
+    {
+        const auto imageBaseName = createPicBaseName(baseName, threadIndex);
+        post->mEmbedImages = createDraftEmbedImages(draftPost, imageBaseName);
+
+        if (post->mEmbedImages.empty())
+            return {};
+    }
+
+    if (!draftPost->video().isNull())
+    {
+        const auto videoBaseName = createPicBaseName(baseName, threadIndex);
+        post->mEmbedVideos = createDraftEmbedVideos(draftPost, videoBaseName);
+
+        if (post->mEmbedVideos.empty())
+            return {};
+    }
+
+    post->mEmbedExternals = createDraftEmbedExternals(draftPost);
+    post->mEmbedRecords = createDraftEmbedRecords(draftPost);
+
+    return post;
+}
+
+ATProto::AppBskyDraft::DraftEmbedImage::List DraftPosts::createDraftEmbedImages(const DraftPostData* draftPost, const QString& baseName)
+{
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
+        return {};
+    }
+
+    ATProto::AppBskyDraft::DraftEmbedImage::List embedImageList;
+    const auto images = draftPost->images();
+    embedImageList.reserve(images.size());
+
+    for (int i = 0; i < images.size(); ++i)
+    {
+        const QString& imgName = images[i].getFullSizeUrl();
+        const QString& memeTopText = images[i].getMemeTopText();
+        const QString& memeBottomText = images[i].getMemeBottomText();
+        auto [blob, imgSize] = saveImage(imgName, memeTopText, memeBottomText, draftsPath, baseName, i);
+
+        if (!blob)
+        {
+            dropImages(draftsPath, baseName, i);
+            return {};
+        }
+
+        auto embedImage = std::make_shared<ATProto::AppBskyDraft::DraftEmbedImage>();
+        const QString& altText = images[i].getAlt();
+
+        if (!altText.isEmpty())
+            embedImage->mAlt = altText;
+
+        embedImage->mLocalRef = std::make_shared<ATProto::AppBskyDraft::DraftEmbedLocalRef>();
+        embedImage->mLocalRef->mPath = blob->mRefLink;
+
+        embedImage->mJson = embedImage->toJson();
+        embedImage->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+        embedImage->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+        embedImageList.push_back(embedImage);
+    }
+
+    return embedImageList;
+}
+
+ATProto::AppBskyDraft::DraftEmbedVideo::List DraftPosts::createDraftEmbedVideos(const DraftPostData* draftPost, const QString& baseName)
+{
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
+        return {};
+    }
+
+    const auto video = draftPost->video();
+    Q_ASSERT(!video.isNull());
+    auto blob = saveVideo(video.getPlaylistUrl(), video.getStartMs(), video.getEndMs(),
+                          video.getRemoveAudio(), video.getNewHeight(), draftsPath, baseName);
+
+    if (!blob)
+    {
+        dropVideo(draftsPath, baseName);
+        return {};
+    }
+
+    auto embedVideo = std::make_shared<ATProto::AppBskyDraft::DraftEmbedVideo>();
+    const QString& altText = video.getAlt();
+
+    if (!altText.isEmpty())
+        embedVideo->mAlt = altText;
+
+    embedVideo->mLocalRef = std::make_shared<ATProto::AppBskyDraft::DraftEmbedLocalRef>();
+    embedVideo->mLocalRef->mPath = blob->mRefLink;
+
+    // TODO: video presentation
+    // const bool isGif = video.getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
+
+    return { embedVideo };
+}
+
+ATProto::AppBskyDraft::DraftEmbedExternal::List DraftPosts::createDraftEmbedExternals(const DraftPostData* draftPost)
+{
+    if (draftPost->externalLink().isEmpty())
+        return {};
+
+    auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
+    embedExternal->mUri = draftPost->externalLink();
+    return { embedExternal };
+}
+
+ATProto::ComATProtoLabel::SelfLabels::SharedPtr DraftPosts::createSelfLabels(const DraftPostData* draftPost) const
+{
+    if (draftPost->labels().empty())
+        return nullptr;
+
+    auto selfLabels = std::make_shared<ATProto::ComATProtoLabel::SelfLabels>();
+
+    for (const auto& label : draftPost->labels())
+    {
+        auto selfLabel = std::make_shared<ATProto::ComATProtoLabel::SelfLabel>();
+        selfLabel->mVal = label;
+        selfLabels->mValues.push_back(selfLabel);
+    }
+
+    return selfLabels;
+}
+
+ATProto::AppBskyDraft::DraftEmbedRecord::List DraftPosts::createDraftEmbedRecords(const DraftPostData* draftPost)
+{
+    auto embedRecord = std::make_shared<ATProto::AppBskyDraft::DraftEmbedRecord>();
+    embedRecord->mRecord = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
+
+    if (!draftPost->quoteUri().isEmpty())
+    {
+        embedRecord->mRecord->mUri = draftPost->quoteUri();
+        embedRecord->mRecord->mCid = draftPost->quoteCid();
+        return { embedRecord };
+    }
+
+    const auto quoteFeed = draftPost->quoteFeed();
+
+    if (!quoteFeed.isNull())
+    {
+        embedRecord->mRecord->mUri = quoteFeed.getUri();
+        embedRecord->mRecord->mCid = quoteFeed.getCid();
+        return { embedRecord };
+    }
+
+    const auto quoteList = draftPost->quoteList();
+
+    if (!quoteList.isNull())
+    {
+        embedRecord->mRecord->mUri = quoteList.getUri();
+        embedRecord->mRecord->mCid = quoteList.getCid();
+        return { embedRecord };
+    }
+
+    return {};
+}
+
+ATProto::AppBskyFeed::ThreadgateRules DraftPosts::createThreadgateRules(const DraftPostData* draftPost) const
+{
+    ATProto::AppBskyFeed::ThreadgateRules rules;
+
+    if (!draftPost->restrictReplies())
+        return rules;
+
+    rules.mAllowMention = draftPost->allowMention();
+    rules.mAllowFollower = draftPost->allowFollower();
+    rules.mAllowFollowing = draftPost->allowFollowing();
+
+    for (const auto& list : draftPost->allowLists())
+    {
+        auto listRule = std::make_shared<ATProto::AppBskyFeed::ThreadgateListRule>();
+        listRule->mList = list;
+        rules.mAllowList.push_back(listRule);
+    }
+
+    rules.mAllowNobody = !rules.mAllowMention && !rules.mAllowFollower && !rules.mAllowFollowing && rules.mAllowList.empty();
+    return rules;
 }
 
 void DraftPosts::deleteBlueskyDraft(const QString& draftId, int index)

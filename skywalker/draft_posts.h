@@ -159,10 +159,13 @@ private:
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
     void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
 
+    void dropDraftMedia(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName);
+
     // FILE STORAGE
     void loadDraftFeed();
     QStringList getDraftPostFiles(const QString& draftsPath) const;
     Draft::Draft::SharedPtr loadDraft(const QString& fileName, const QString& draftsPath) const;
+    bool saveFileDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread);
     bool save(const Draft::Draft& draft, const QString& draftsPath, const QString& baseName);
     bool addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
                          const QList<ImageView>& images,
@@ -179,11 +182,21 @@ private:
     void dropImage(const QString& draftsPath, const QString& baseName, int seq) const;
     void dropVideo(const QString& draftsPath, const QString& baseName);
     void dropDraftPostFiles(const QString& draftsPath, const QString& fileName);
+    void dropDraftPostFilesByBaseName(const QString& draftsPath, const QString& baseName);
     void dropDraftPost(const QString& fileName);
 
     // BLUESKY STORAGE
     void loadBlueskyDrafts(const QString& cursor = {});
     void loadBlueskyDraftsNextPage();
+    bool saveBlueskyDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread);
+    ATProto::AppBskyDraft::Draft::SharedPtr createBlueskyDraft(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName);
+    ATProto::AppBskyDraft::DraftPost::SharedPtr createBlueskyDraftPost(const DraftPostData* draftPost, const QString& baseName, int threadIndex);
+    ATProto::AppBskyDraft::DraftEmbedImage::List createDraftEmbedImages(const DraftPostData* draftPost, const QString& baseName);
+    ATProto::AppBskyDraft::DraftEmbedVideo::List createDraftEmbedVideos(const DraftPostData* draftPost, const QString& baseName);
+    ATProto::AppBskyDraft::DraftEmbedExternal::List createDraftEmbedExternals(const DraftPostData* draftPost);
+    ATProto::AppBskyDraft::DraftEmbedRecord::List createDraftEmbedRecords(const DraftPostData* draftPost);
+    ATProto::ComATProtoLabel::SelfLabels::SharedPtr createSelfLabels(const DraftPostData* draftPost) const;
+    ATProto::AppBskyFeed::ThreadgateRules createThreadgateRules(const DraftPostData* draftPost) const;
     void deleteBlueskyDraft(const QString& draftId, int index);
 
     void updatePostRecord(const Post& post, int index, const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;

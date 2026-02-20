@@ -1941,8 +1941,14 @@ SkyPage {
         skywalker: page.skywalker
         storageType: DraftPosts.STORAGE_BLUESKY
 
+        onSaveDraftPostOk: {
+            skywalker.showStatusMessage(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
+            page.closed()
+        }
+
+        onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onDeleteDraftFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to delete draft: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        onDeleteDraftFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     LanguageUtils {
@@ -2319,7 +2325,7 @@ SkyPage {
                     qsTr("Do you want to to discard your post?"),
                     () => page.closed())
         }
-        else if (draftPosts.canSaveDraft()) {
+        else if (draftPosts.canSaveDraft()) { // TODO option to choose local or bsky
             guiSettings.askDiscardSaveQuestion(
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
@@ -2590,7 +2596,9 @@ SkyPage {
             languageUtils.addUsedPostLanguage(threadItem.language)
         }
 
-        draftPosts.saveDraftPost(draft, draftItemList)
+        // TODO: local vs bluesky
+        blueskyDraftPosts.saveDraftPost(draft, draftItemList)
+
         postUtils.cacheTags(postItem.text)
         languageUtils.addUsedPostLanguage(postItem.language)
     }
