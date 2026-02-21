@@ -863,7 +863,7 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Dra
 {
     ATProto::AppBskyFeed::PostFeed postFeed;
     auto feedView = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
-    feedView->mReply = createReplyRef(draft);
+    feedView->mReply = createReplyRef(draft.mReplyToPost, draft.mPost->mReply);
     feedView->mPost = convertDraftToPostView(draft, recordUri);
     postFeed.push_back(std::move(feedView));
 
@@ -920,72 +920,6 @@ ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView
     }
 
     return view;
-}
-
-ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createReplyToPost(const Draft::Draft& draft) const
-{
-    if (!draft.mReplyToPost)
-        return nullptr;
-
-    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
-    post->mText = draft.mReplyToPost->mText;
-    post->mCreatedAt = draft.mReplyToPost->mDateTime;
-    return post;
-}
-
-ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertReplyToPostView(Draft::Draft& draft) const
-{
-    if (!draft.mReplyToPost)
-        return nullptr;
-
-    Q_ASSERT(draft.mPost->mReply);
-    Q_ASSERT(draft.mPost->mReply->mParent);
-
-    if (!draft.mPost->mReply || !draft.mPost->mReply->mParent)
-    {
-        qWarning() << "Reply parent information missing from draft for reply:" << draft.mReplyToPost->mText;
-        return nullptr;
-    }
-
-    auto view = std::make_shared<ATProto::AppBskyFeed::PostView>();
-    view->mUri = draft.mPost->mReply->mParent->mUri;
-    view->mCid = draft.mPost->mReply->mParent->mCid;
-    view->mAuthor = std::move(draft.mReplyToPost->mAuthor);
-    view->mRecord = createReplyToPost(draft);
-    view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
-    view->mIndexedAt = draft.mReplyToPost->mDateTime;
-    return view;
-}
-
-ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(Draft::Draft& draft) const
-{
-    if (!draft.mReplyToPost)
-        return nullptr;
-
-    Q_ASSERT(draft.mPost->mReply);
-    Q_ASSERT(draft.mPost->mReply->mRoot);
-
-    if (!draft.mPost->mReply || !draft.mPost->mReply->mRoot)
-    {
-        qWarning() << "Reply root information missing from draft for reply:" << draft.mReplyToPost->mText;
-        return nullptr;
-    }
-
-    auto replyRef = std::make_shared<ATProto::AppBskyFeed::ReplyRef>();
-
-    replyRef->mParent = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
-    replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
-    replyRef->mParent->mPost = convertReplyToPostView(draft);
-
-    // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
-    // does not need it.
-    replyRef->mRoot = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
-    replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
-    auto notFound = std::make_shared<ATProto::AppBskyFeed::NotFoundPost>();
-    notFound->mUri = draft.mPost->mReply->mRoot->mUri;
-    replyRef->mRoot->mPost = std::move(notFound);
-
-    return replyRef;
 }
 
 ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const
@@ -1327,6 +1261,12 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATPr
     {
         auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
         view->mPost = convertDraftToPostView(draft, *threadPost, recordUri);
+
+        ATProto::XJsonObject xjson(draft.mDraft->mJson);
+        auto replyTo = xjson.getOptionalObject<Draft::ReplyToPost>(Lexicon::DRAFT_REPPLY_TO);
+        auto postRecord = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(view->mPost->mRecord);
+        view->mReply = createReplyRef(replyTo, postRecord->mReply);
+
         embedImagesCount += threadPost->mEmbedImages.size();
         embedVideoCount += threadPost->mEmbedVideos.size();
         postFeed.push_back(std::move(view));
@@ -1342,6 +1282,67 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATPr
     }
 
     return postFeed;
+}
+
+ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const
+{
+    if (!replyToPost || !postReplyRef)
+        return nullptr;
+
+    Q_ASSERT(postReplyRef->mRoot);
+
+    if (!postReplyRef->mRoot)
+    {
+        qWarning() << "Reply root information missing from draft for reply:" << replyToPost->mText;
+        return nullptr;
+    }
+
+    auto replyRef = std::make_shared<ATProto::AppBskyFeed::ReplyRef>();
+    replyRef->mParent = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
+    replyRef->mParent->mPost = convertReplyToPostView(replyToPost, postReplyRef);
+
+    // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
+    // does not need it.
+    replyRef->mRoot = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
+    auto notFound = std::make_shared<ATProto::AppBskyFeed::NotFoundPost>();
+    notFound->mUri = postReplyRef->mRoot->mUri;
+    replyRef->mRoot->mPost = std::move(notFound);
+
+    return replyRef;
+}
+
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertReplyToPostView(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const
+{
+    if (!replyToPost)
+        return nullptr;
+
+    Q_ASSERT(postReplyRef);
+    Q_ASSERT(postReplyRef->mParent);
+
+    if (!postReplyRef || !postReplyRef->mParent)
+    {
+        qWarning() << "Reply parent information missing from draft for reply:" << replyToPost->mText;
+        return nullptr;
+    }
+
+    auto view = std::make_shared<ATProto::AppBskyFeed::PostView>();
+    view->mUri = postReplyRef->mParent->mUri;
+    view->mCid = postReplyRef->mParent->mCid;
+    view->mAuthor = std::move(replyToPost->mAuthor);
+    view->mRecord = createReplyToPost(replyToPost);
+    view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    view->mIndexedAt = replyToPost->mDateTime;
+    return view;
+}
+
+ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createReplyToPost(const Draft::ReplyToPost::SharedPtr& replyToPost) const
+{
+    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
+    post->mText = replyToPost->mText;
+    post->mCreatedAt = replyToPost->mDateTime;
+    return post;
 }
 
 ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(const ATProto::AppBskyDraft::DraftView& draftView, const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& recordUri)
@@ -1361,6 +1362,7 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(con
     postRecord->mCreatedAt = draftView.mCreatedAt;
 
     ATProto::XJsonObject xjson(draftPost.mJson);
+    postRecord->mReply = xjson.getOptionalObject<ATProto::AppBskyFeed::PostReplyRef>(Lexicon::DRAFT_REPPLY_REF);
     std::optional<QJsonObject> embeddedLinks = xjson.getOptionalJsonObject(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD);
 
     if (embeddedLinks)
@@ -2076,6 +2078,13 @@ ATProto::AppBskyDraft::Draft::SharedPtr DraftPosts::createBlueskyDraft(const Dra
 
     draft->mPosts.push_back(post);
 
+    Draft::ReplyToPost::SharedPtr replyToPost = createReplyToPost(
+        draftPost->replyToUri(), draftPost->replyToAuthor(),
+        draftPost->replyToText(), draftPost->replyToDateTime());
+
+    if (replyToPost)
+        draft->mJson.insert(Lexicon::DRAFT_REPPLY_TO, replyToPost->toJson());
+
     for (int i = 0; i < draftThread.size(); ++i)
     {
         const auto* draftThreadPost = draftThread[i];
@@ -2119,6 +2128,13 @@ ATProto::AppBskyDraft::DraftPost::SharedPtr DraftPosts::createBlueskyDraftPost(c
     auto post = std::make_shared<ATProto::AppBskyDraft::DraftPost>();
     post->mText = draftPost->text();
     post->mLabels = createSelfLabels(draftPost);
+
+    ATProto::AppBskyFeed::PostReplyRef::SharedPtr replyRef = ATProto::PostMaster::createReplyRef(
+        draftPost->replyToUri(), draftPost->replyToCid(),
+        draftPost->replyRootUri(), draftPost->replyRootCid());
+
+    if (replyRef)
+        post->mJson.insert(Lexicon::DRAFT_REPPLY_REF, replyRef->toJson());
 
     if (!draftPost->images().empty())
     {

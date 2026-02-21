@@ -17,5 +17,7 @@ constexpr char const* DRAFT_VIDEO_END_MS_FIELD = "eu.thereforeiam.skywalker.vide
 constexpr char const* DRAFT_VIDEO_REMOVE_AUDIO_FIELD = "eu.thereforeiam.skywalker.videoRemoveAudio";
 constexpr char const* DRAFT_VIDEO_NEW_HEIGHT_FIELD = "eu.thereforeiam.skywalker.videoNewHeight";
 constexpr char const* DRAFT_VIDEO_PRESENTATION = "eu.thereforeiam.skywalker.videoPresentation";
+constexpr char const* DRAFT_REPPLY_TO = "eu.thereforeiam.skywalker.draftReplyTo";
+constexpr char const* DRAFT_REPPLY_REF = "eu.thereforeiam.skywalker.replyRef";
 
 }

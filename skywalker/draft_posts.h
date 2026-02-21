@@ -135,9 +135,6 @@ private:
     ATProto::AppBskyFeed::PostView::SharedPtr convertDraftToPostView(Draft::Draft& draft, const QString& recordUri);
     ATProto::AppBskyFeed::ViewerState::SharedPtr createViewerState(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(Draft::Draft& draft) const;
-    ATProto::AppBskyFeed::Record::Post::SharedPtr createReplyToPost(const Draft::Draft& draft) const;
-    ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(Draft::Draft& draft) const;
-    ATProto::AppBskyFeed::ReplyRef::SharedPtr createReplyRef(Draft::Draft& draft) const;
     ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
     ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const;
     ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
@@ -153,6 +150,9 @@ private:
 
     QString checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, int embedImagesCount, int embedVideoCount) const;
     ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri);
+    ATProto::AppBskyFeed::ReplyRef::SharedPtr createReplyRef(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const;
+    ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const;
+    ATProto::AppBskyFeed::Record::Post::SharedPtr createReplyToPost(const Draft::ReplyToPost::SharedPtr& replyToPost) const;
     ATProto::AppBskyFeed::PostView::SharedPtr convertDraftToPostView(const ATProto::AppBskyDraft::DraftView& draftView, const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& recordUri);
     ATProto::AppBskyFeed::ViewerState::SharedPtr createViewerState(const ATProto::AppBskyDraft::Draft& draft) const;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(const ATProto::AppBskyFeed::ThreadgateRules& threadgateRules, const QString& recordUri, QDateTime createdAt) const;
