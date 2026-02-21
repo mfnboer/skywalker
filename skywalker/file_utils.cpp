@@ -3,6 +3,7 @@
 #include "file_utils.h"
 #include "temp_file_holder.h"
 #include <QDir>
+#include <QHostInfo>
 #include <QStandardPaths>
 #include <QUrl>
 
@@ -407,6 +408,29 @@ void FileUtils::scanMediaFile(const QString& fileName)
 #else
     qDebug() << "No need to scan media:" << fileName;
 #endif
+}
+
+QString FileUtils::getDeviceName()
+{
+    QString deviceName;
+#if defined(Q_OS_ANDROID)
+    auto nameObj = QJniObject::callStaticMethod<jstring>(
+        "com/gmail/mfnboer/FileUtils",
+        "getDeviceName",
+        "()Ljava/lang/String;");
+
+    if (!nameObj.isValid())
+    {
+        qWarning() << "Invalid name object.";
+        return {};
+    }
+
+    return nameObj.toString();
+#else
+    deviceName = QHostInfo::localHostName();
+#endif
+    qDebug() << "Device name:" << deviceName;
+    return deviceName;
 }
 
 }

@@ -1299,20 +1299,20 @@ QString DraftPosts::checkMediaStorage(const ATProto::AppBskyDraft::DraftView& dr
 
     QString warning;
 
-    // TODO compare draft device name with this device name, if they are the same but the
-    // deviceId is different, then the draft is stored by another app on this device.
     const QString draftDeviceName = draft.mDraft->mDeviceName.value_or(tr("other device"));
+    const QString thisDeviceName = FileUtils::getDeviceName();
+    const QString otherDeviceName = draftDeviceName == thisDeviceName ? tr("%1 (other app)").arg(draftDeviceName) : draftDeviceName;
 
     const QString imageWord = embedImagesCount == 1 ? tr("image") : tr("images");
     const QString videoWord = embedVideoCount == 1 ? tr("video") : tr("videos");
 
     // HACK: abusing feed context to show this warning in the drafts overview
     if (embedVideoCount == 0)
-        warning = tr("%1 %2 stored on %3").arg(embedImagesCount).arg(imageWord, draftDeviceName);
+        warning = tr("%1 %2 stored on %3").arg(embedImagesCount).arg(imageWord, otherDeviceName);
     else if (embedImagesCount == 0)
-        warning = tr("%1 %2 stored on %3").arg(embedVideoCount).arg(videoWord, draftDeviceName);
+        warning = tr("%1 %2 stored on %3").arg(embedVideoCount).arg(videoWord, otherDeviceName);
     else
-        warning = tr("%1 %2 and %3 %4 on %5").arg(embedImagesCount).arg(imageWord).arg(embedVideoCount).arg(videoWord, draftDeviceName);
+        warning = tr("%1 %2 and %3 %4 on %5").arg(embedImagesCount).arg(imageWord).arg(embedVideoCount).arg(videoWord, otherDeviceName);
 
     return warning;
 }
@@ -2065,8 +2065,8 @@ ATProto::AppBskyDraft::Draft::SharedPtr DraftPosts::createBlueskyDraft(const Dra
 {
     auto draft = std::make_shared<ATProto::AppBskyDraft::Draft>();
     draft->mDeviceId = mSkywalker->getUserSettings()->getDeviceId();
-    // TODO: device name
-    draft->mDeviceName = "TEST DEVICE";
+    const QString deviceName = FileUtils::getDeviceName();
+    draft->mDeviceName = QString("%1 (%2)").arg(deviceName, Skywalker::APP_NAME);
 
     draft->mPosts.reserve(draftThread.size() + 1);
     const auto& post = createBlueskyDraftPost(draftPost, baseName, 0);

@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
+import android.provider.Settings;
 import android.util.Log;
 
 public class FileUtils {
@@ -169,5 +170,17 @@ public class FileUtils {
                     }
                 }
             );
+    }
+
+    public static String getDeviceName() {
+        Context context = SkywalkerApplication.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context to get device name");
+            return "";
+        }
+
+        ContentResolver resolver = context.getContentResolver();
+        return Settings.Global.getString(resolver, Settings.Global.DEVICE_NAME)
     }
 }
