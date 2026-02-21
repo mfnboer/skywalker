@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "draft_posts.h"
 #include "enums.h"
 #include "password_encryption.h"
 #include "profile.h"
@@ -522,6 +523,9 @@ public:
     void setPinnedSearchFeeds(const QString& did, const SearchFeed::List& searchFeeds);
 
     QString getDeviceId(); // for Bluesky drafts
+
+    Q_INVOKABLE DraftPosts::StorageType getDraftStorageType() const;
+    Q_INVOKABLE void setDraftStorageType(DraftPosts::StorageType storageType);
 
     void sync() { mSettings.sync(); }
     void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }

@@ -2,10 +2,10 @@
 // License: GPLv3
 #pragma once
 #include "draft_post_data.h"
-#include "draft_posts_model.h"
 #include "generator_view.h"
 #include "link_card.h"
 #include "list_view.h"
+#include "post.h"
 #include "presence.h"
 #include "profile.h"
 #include "tenor_gif.h"
@@ -18,18 +18,28 @@
 
 namespace Skywalker {
 
+class DraftPostsModel;
+
 class DraftPosts : public WrappedSkywalker, public Presence
 {
+    Q_MOC_INCLUDE("draft_posts_model.h")
+
     Q_OBJECT
     Q_PROPERTY(bool hasDrafts READ hasDrafts NOTIFY draftsChanged FINAL)
     Q_PROPERTY(StorageType storageType READ getStorageType WRITE setStorageType NOTIFY storageTypeChanged FINAL)
     QML_ELEMENT
 
 public:
-    enum StorageType { STORAGE_FILE, STORAGE_BLUESKY, STORAGE_REPO };
+    enum StorageType {
+        STORAGE_FILE = 0,
+        STORAGE_BLUESKY,
+        STORAGE_REPO,
+
+        STORAGE_LAST = STORAGE_REPO
+    };
     Q_ENUM(StorageType)
 
-    static constexpr int MAX_DRAFTS = 50;
+    static constexpr int MAX_DRAFTS = 100;
 
     static void setReplyRestrictions(DraftPostData* data, const Post& post);
     static void setDraftPost(DraftPostData* data, const Post& post);
@@ -103,7 +113,7 @@ private:
     QString createDraftImageFileName(const QString& baseName, int seq) const;
     QString createDraftVideoFileName(const QString& baseName) const;
     QString getBaseNameFromPostFileName(const QString& fileName) const;
-    QString getBaseNameFromMediaFullFileName(const QString& fileUrl) const;
+    QString getBaseNameFromMediaFullFileUrl(const QString& fileUrl) const;
 
     static ATProto::AppBskyActor::ProfileViewBasic::SharedPtr createProfileViewBasic(const BasicProfile& author);
     static ATProto::AppBskyActor::ProfileView::SharedPtr createProfileView(const Profile& author);
@@ -135,7 +145,7 @@ private:
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
     ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyEmbed::Video* video);
-    ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt);
+    ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt, const std::optional<ATProto::AppBskyEmbed::VideoPresentation>& presentation);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
     ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const;
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(
@@ -157,6 +167,7 @@ private:
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::VideoView::SharedPtr videoView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::ExternalView::SharedPtr externalView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
 
+    QUrl getGifUrl(const TenorGif& gif) const;
     void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
     void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
 
@@ -219,7 +230,7 @@ private:
                          const QList<ImageView>& images,
                          const std::function<void()>& continueCb, int imgSeq = 1);
 
-    DraftPostsModel::Ptr mDraftPostsModel;
+    std::unique_ptr<DraftPostsModel> mDraftPostsModel;
     StorageType mStorageType = STORAGE_REPO;
 };
 

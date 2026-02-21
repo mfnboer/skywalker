@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "draft_posts.h"
+#include "draft_posts_model.h"
 #include "atproto_image_provider.h"
 #include "content_filter.h"
 #include "file_utils.h"
@@ -428,11 +429,12 @@ static void setVideo(DraftPostData* data, const VideoView& videoView)
 static void setExternal(DraftPostData* data, const ExternalView* externalView)
 {
     GifUtils gifUtils;
+    const QString link = externalView->getUri();
 
-    if (gifUtils.isTenorLink(externalView->getUri()))
+    if (gifUtils.isTenorLink(link) || gifUtils.isGiphyLink(link))
     {
         // NOTE: in addGifToPost several gif properties are packed into the URI as query params
-        const QUrl uri(externalView->getUri());
+        const QUrl uri(link);
         const QUrlQuery query(uri.query());
         const QString smallUrl = query.queryItemValue("smallUrl");
         const int smallWidth = query.queryItemValue("smallWidth").toInt();
@@ -452,11 +454,13 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
                      uri.toString(QUrl::RemoveQuery), QSize(gifWidth, gifHeight),
                      smallUrl, QSize(smallWidth, smallHeight),
                      externalView->getThumbUrl(), QSize(1, 1));
+        gif.setIsGiphy(gifUtils.isGiphyLink(link));
         qDebug() << "GIF uri:" << uri << "url:" << gif.getUrl() << "size:" << gif.getSize() << "small:" << gif.getSmallUrl() << "size:" << gif.getSmallSize() << "image:" << gif.getImageUrl();
         data->setGif(gif);
     }
-    else {
-        data->setExternalLink(externalView->getUri());
+    else
+    {
+        data->setExternalLink(link);
     }
 }
 
@@ -691,7 +695,7 @@ QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
     return parts[0];
 }
 
-QString DraftPosts::getBaseNameFromMediaFullFileName(const QString& fileUrl) const
+QString DraftPosts::getBaseNameFromMediaFullFileUrl(const QString& fileUrl) const
 {
     if (!fileUrl.startsWith("file://"))
     {
@@ -1143,10 +1147,10 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
         return nullptr;
     }
 
-    return createVideoView(video->mVideo->mJson, videoSource, video->mAlt);
+    return createVideoView(video->mVideo->mJson, videoSource, video->mAlt, video->mPresentation);
 }
 
-ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt)
+ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt, const std::optional<ATProto::AppBskyEmbed::VideoPresentation>& presentation)
 {
     const ATProto::XJsonObject xjson(videoJson);
     const int startMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_START_MS_FIELD, 0);
@@ -1157,6 +1161,7 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const QJ
     auto view = std::make_shared<ATProto::AppBskyEmbed::VideoView>();
     view->mPlaylist = videoSource;
     view->mAlt = alt;
+    view->mPresentation = presentation;
     view->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, startMs);
     view->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, endMs);
     view->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, removeAudio);
@@ -1528,7 +1533,14 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
     const QString path = createAbsPath(draftsPath, video.mLocalRef->mPath);
     const QString videoSource = "file://" + path;
 
-    return createVideoView(video.mJson, videoSource, video.mAlt);
+    ATProto::XJsonObject xjson(video.mJson);
+    std::optional<QString> rawPresentation = xjson.getOptionalString(Lexicon::DRAFT_VIDEO_PRESENTATION);
+    std::optional<ATProto::AppBskyEmbed::VideoPresentation> presentation;
+
+    if (rawPresentation)
+        presentation = ATProto::AppBskyEmbed::stringToVideoPresentation(*rawPresentation);
+
+    return createVideoView(video.mJson, videoSource, video.mAlt, presentation);
 }
 
 ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external)
@@ -2220,20 +2232,34 @@ ATProto::AppBskyDraft::DraftEmbedVideo::List DraftPosts::createDraftEmbedVideos(
     embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, video.getRemoveAudio());
     embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, video.getNewHeight());
 
-    // TODO: video presentation
-    // const bool isGif = video.getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
+    const auto presentation = video.getPresentation();
+
+    if (presentation != QEnums::VIDEO_PRESENTATION_DEFAULT && presentation != QEnums::VIDEO_PRESENTATION_UNKNOWN)
+    {
+        const QString rawPresentation = ATProto::AppBskyEmbed::videoPresentationToString((ATProto::AppBskyEmbed::VideoPresentation)presentation, "");
+        embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_PRESENTATION, rawPresentation);
+    }
 
     return { embedVideo };
 }
 
 ATProto::AppBskyDraft::DraftEmbedExternal::List DraftPosts::createDraftEmbedExternals(const DraftPostData* draftPost)
-{
-    if (draftPost->externalLink().isEmpty())
-        return {};
+{   
+    if (!draftPost->gif().isNull())
+    {
+        auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
+        const QUrl gifUrl = getGifUrl(draftPost->gif());
+        embedExternal->mUri = gifUrl.toString();
+        return { embedExternal };
+    }
+    else if (!draftPost->externalLink().isEmpty())
+    {
+        auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
+        embedExternal->mUri = draftPost->externalLink();
+        return { embedExternal };
+    }
 
-    auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
-    embedExternal->mUri = draftPost->externalLink();
-    return { embedExternal };
+    return {};
 }
 
 ATProto::ComATProtoLabel::SelfLabels::SharedPtr DraftPosts::createSelfLabels(const DraftPostData* draftPost) const
@@ -2371,7 +2397,7 @@ QString DraftPosts::getMediaBaseName(const std::vector<Post>& thread) const
         if (!images.empty())
         {
             const QString& url = images.front().getFullSizeUrl();
-            const QString baseName = getBaseNameFromMediaFullFileName(url);
+            const QString baseName = getBaseNameFromMediaFullFileUrl(url);
 
             if (!baseName.isEmpty())
                 return baseName;
@@ -2390,7 +2416,7 @@ QString DraftPosts::getMediaBaseName(const std::vector<Post>& thread) const
         if (video)
         {
             const QString& url = video->getPlaylistUrl();
-            const QString baseName = getBaseNameFromMediaFullFileName(url);
+            const QString baseName = getBaseNameFromMediaFullFileUrl(url);
 
             if (!baseName.isEmpty())
                 return baseName;
@@ -2758,7 +2784,7 @@ bool DraftPosts::uploadImage(const QString& imageName, const UploadImageSuccessC
     return true;
 }
 
-void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
+QUrl DraftPosts::getGifUrl(const TenorGif& gif) const
 {
     // Pack all gif properties into the URI.
     QUrlQuery query{
@@ -2772,6 +2798,12 @@ void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const Te
     QUrl gifUrl(gif.getUrl());
     gifUrl.setQuery(query);
 
+    return gifUrl;
+}
+
+void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
+{
+    const QUrl gifUrl = getGifUrl(gif);
     ATProto::PostMaster::addExternalToPost(post, gifUrl.toString(), gif.getDescription(), "", nullptr);
 }
 

@@ -2302,6 +2302,21 @@ QString UserSettings::getDeviceId()
     return deviceId;
 }
 
+DraftPosts::StorageType UserSettings::getDraftStorageType() const
+{
+    int storageType = mSettings.value("draftStorageType", (int)DraftPosts::STORAGE_FILE).toInt();
+
+    if (storageType < 0 || storageType > (int)DraftPosts::STORAGE_LAST)
+        return DraftPosts::STORAGE_FILE;
+
+    return DraftPosts::StorageType(storageType);
+}
+
+void UserSettings::setDraftStorageType(DraftPosts::StorageType storageType)
+{
+    mSettings.setValue("draftStorageType", (int)storageType);
+}
+
 void UserSettings::cleanup()
 {
     mSettings.remove("draftRepoToFileMigration");

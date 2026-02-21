@@ -235,10 +235,18 @@ Item {
     }
 
     function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
-        let component = guiSettings.createComponent("Message.qml")
+        let component = guiSettings.createComponent("DiscardSaveMessage.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })
-        message.onDiscarded.connect(() => { message.destroy(); onDiscardCb() })
-        message.onAccepted.connect(() => { message.destroy(); onSaveCb() })
+        message.onDiscarded.connect(() => {
+                message.destroy()
+                onDiscardCb()
+            })
+        message.onAccepted.connect(() => {
+                const storageType = message.storageType
+                userSettings.setDraftStorageType(storageType)
+                message.destroy()
+                onSaveCb(storageType)
+            })
         message.onRejected.connect(() => message.destroy())
         message.show(question)
     }

@@ -1921,34 +1921,20 @@ SkyPage {
         }
     }
 
-    DraftPosts {
+    SkyDraftPosts {
         id: draftPosts
         skywalker: page.skywalker
         storageType: DraftPosts.STORAGE_FILE
 
-        onSaveDraftPostOk: {
-            skywalker.showStatusMessage(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
-            page.closed()
-        }
-
-        onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onUploadingImage: (seq) => skywalker.showStatusMessage(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
-        onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onDraftSaved: page.closed()
     }
 
-    DraftPosts {
+    SkyDraftPosts {
         id: blueskyDraftPosts
         skywalker: page.skywalker
         storageType: DraftPosts.STORAGE_BLUESKY
 
-        onSaveDraftPostOk: {
-            skywalker.showStatusMessage(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
-            page.closed()
-        }
-
-        onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onDeleteDraftFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onDraftSaved: page.closed()
     }
 
     LanguageUtils {
@@ -2325,12 +2311,12 @@ SkyPage {
                     qsTr("Do you want to to discard your post?"),
                     () => page.closed())
         }
-        else if (draftPosts.canSaveDraft()) { // TODO option to choose local or bsky
+        else if (draftPosts.canSaveDraft()) {
             guiSettings.askDiscardSaveQuestion(
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
                     () => page.closed(),
-                    () => page.saveDraftPost())
+                    (storageType) => page.saveDraftPost(storageType))
         }
         else {
             guiSettings.askYesNoQuestion(
@@ -2538,7 +2524,7 @@ SkyPage {
         sendThreadPosts(sendingThreadPost + 1, prevUri, prevCid, threadRootUri, threadRootCid)
     }
 
-    function saveDraftPost() {
+    function saveDraftPost(storageType) {
         threadPosts.copyPostItemsToPostList()
         const postItem = threadPosts.postList[0]
         const qUri = postItem.getQuoteUri()
@@ -2596,8 +2582,17 @@ SkyPage {
             languageUtils.addUsedPostLanguage(threadItem.language)
         }
 
-        // TODO: local vs bluesky
-        blueskyDraftPosts.saveDraftPost(draft, draftItemList)
+        switch (storageType) {
+        case DraftPosts.STORAGE_FILE:
+            draftPosts.saveDraftPost(draft, draftItemList)
+            break
+        case DraftPosts.STORAGE_BLUESKY:
+            blueskyDraftPosts.saveDraftPost(draft, draftItemList)
+            break
+        default:
+            console.warn("Unknown storage type", storageType)
+            break
+        }
 
         postUtils.cacheTags(postItem.text)
         languageUtils.addUsedPostLanguage(postItem.language)
@@ -2632,8 +2627,8 @@ SkyPage {
                 root.popStack()
             }
         })
-        draftsPage.onLocalDeleted.connect((index) => draftPosts.removeDraftPost(index))
-        draftsPage.onBlueskyDeleted.connect((index) => blueskyDraftPosts.removeDraftPost(index))
+        draftsPage.onLocalDeleted.connect((index) => draftPosts.deleteDraft(index))
+        draftsPage.onBlueskyDeleted.connect((index) => blueskyDraftPosts.deleteDraft(index))
 
         root.pushStack(draftsPage)
     }
