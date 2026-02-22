@@ -33,9 +33,8 @@ public:
     enum StorageType {
         STORAGE_FILE = 0,
         STORAGE_BLUESKY,
-        STORAGE_REPO,
 
-        STORAGE_LAST = STORAGE_REPO
+        STORAGE_LAST = STORAGE_BLUESKY
     };
     Q_ENUM(StorageType)
 
@@ -221,17 +220,8 @@ private:
     void getPostRecordList(const Post& post, int index, const QString& listUri);
     void getPostRecordStarterPack(const Post& post, int index, const QString& starterPackUri);
 
-    // PDS REPO STORAGE
-    bool writeRecord(const Draft::Draft& draft);
-    void listRecords();
-    void deleteRecord(const QString& recordUri);
-    bool uploadImage(const QString& imageName, const UploadImageSuccessCb& successCb, const ErrorCb& errorCb);
-    void addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
-                         const QList<ImageView>& images,
-                         const std::function<void()>& continueCb, int imgSeq = 1);
-
     std::unique_ptr<DraftPostsModel> mDraftPostsModel;
-    StorageType mStorageType = STORAGE_REPO;
+    StorageType mStorageType = STORAGE_FILE;
 };
 
 }

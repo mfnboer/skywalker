@@ -65,6 +65,7 @@ void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed, 
 
     if (!mFeed.empty() && mCursor.isEmpty())
     {
+        qDebug() << "End of feed:" << mFeed.back().getText();
         mFeed.back().setEndOfFeed(true);
         changeData({ int(Role::EndOfFeed) });
     }
@@ -284,7 +285,9 @@ void DraftPostsModel::updatePostExternal(const Post& post, int index)
         return;
     }
 
+    bool endOfFeed = oldPost.isEndOfFeed();
     mFeed[index] = post;
+    mFeed[index].setEndOfFeed(endOfFeed);
     changeData({ int(Role::PostExternal) });
 }
 
@@ -332,7 +335,9 @@ void DraftPostsModel::updatePostRecord(const Post& post, int index)
         return;
     }
 
+    bool endOfFeed = oldPost.isEndOfFeed();
     mFeed[index] = post;
+    mFeed[index].setEndOfFeed(endOfFeed);
     changeData({ int(Role::PostRecord), int(Role::PostRecordWithMedia) });
 }
 
