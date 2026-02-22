@@ -147,7 +147,7 @@ private:
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(
         const ATProto::AppBskyEmbed::RecordWithMedia* record, Draft::Quote::SharedPtr quote);
 
-    QString checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, int embedImagesCount, int embedVideoCount) const;
+    QString checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, const ATProto::AppBskyFeed::PostFeed& postFeed, int embedImagesCount, int embedVideoCount) const;
     ATProto::AppBskyFeed::PostFeed convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri);
     ATProto::AppBskyFeed::ReplyRef::SharedPtr createReplyRef(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const;
     ATProto::AppBskyFeed::PostView::SharedPtr convertReplyToPostView(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const;
@@ -157,7 +157,7 @@ private:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(const ATProto::AppBskyFeed::ThreadgateRules& threadgateRules, const QString& recordUri, QDateTime createdAt) const;
     bool hasEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
     bool hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
-    ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& deviceId);
+    ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external);

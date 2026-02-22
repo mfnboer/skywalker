@@ -1167,16 +1167,50 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
     return view;
 }
 
-QString DraftPosts::checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, int embedImagesCount, int embedVideoCount) const
+// The obvious test is the check deviceId in the draft against this deviceId.
+// However this is not reliable. When the user re-installs the app, a new deviceId will
+// be generated, while the media files from the draft are still on this device.
+// When the user copies all contents of a device to a new device, then both devices will
+// have the same deviceId.
+// Instead we check the media file names from the posts to find out if the files exist.
+QString DraftPosts::checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, const ATProto::AppBskyFeed::PostFeed& postFeed, int embedImagesCount, int embedVideoCount) const
 {
+    qDebug() << "Check media storage:" << draft.mId << "embedImagesCount:" << embedImagesCount << "embedVideoCount:" << embedVideoCount;
+
     if (embedImagesCount + embedVideoCount == 0)
         return {};
 
-    const QString draftDeviceId = draft.mDraft->mDeviceId.value_or("");
-    const QString thisDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+    std::vector<Post> thread;
 
-    if (draftDeviceId == thisDeviceId)
-        return {};
+    for (const auto& feedViewPost : postFeed)
+        thread.push_back(Post(feedViewPost));
+
+    const QString mediaBaseName = getMediaBaseName(thread);
+
+    if (!mediaBaseName.isEmpty())
+    {
+        const QString mediaPath = getPictureDraftsPath();
+
+        if (mediaPath.isEmpty())
+        {
+            qWarning() << "Cannot get media path";
+            return {};
+        }
+
+        QDir mediaDir(mediaPath);
+        const QString filter = QString("SW*_%1-*").arg(mediaBaseName);
+        const auto mediaFileNames = mediaDir.entryList({ filter }, QDir::Files);
+
+        if (!mediaFileNames.empty())
+        {
+            qDebug() << "Media files found:" << draft.mId << "files:" << mediaFileNames;
+            return {};
+        }
+    }
+    else
+    {
+        qDebug() << "Media files probably written by another app:" << draft.mId;
+    }
 
     QString warning;
 
@@ -1219,7 +1253,7 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATPr
         postFeed.push_back(std::move(view));
     }
 
-    const QString mediaWarning = checkMediaStorage(draft, embedImagesCount, embedVideoCount);
+    const QString mediaWarning = checkMediaStorage(draft, postFeed, embedImagesCount, embedVideoCount);
 
     if (!mediaWarning.isEmpty())
     {
@@ -1298,8 +1332,7 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(con
     postView->mUri = recordUri;
     postView->mAuthor = createProfileViewBasic(mSkywalker->getUser());
     postView->mIndexedAt = draftView.mUpdatedAt;
-    const QString draftDeviceId = draftView.mDraft->mDeviceId.value_or("");
-    postView->mEmbed = createEmbedView(draftPost, draftDeviceId);
+    postView->mEmbed = createEmbedView(draftPost);
     postView->mLabels = createContentLabels(draftPost.mLabels, draftView.mCreatedAt, recordUri);
 
     auto postRecord = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
@@ -1365,18 +1398,16 @@ bool DraftPosts::hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost
            !draftPost.mEmbedVideos.empty();
 }
 
-ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& deviceId)
+ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost)
 {
     if (!hasEmbed(draftPost))
         return nullptr;
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
 
-    const QString thisDeviceId = mSkywalker->getUserSettings()->getDeviceId();
-
     if (!draftPost.mEmbedRecords.empty())
     {
-        if (!draftPost.mEmbedImages.empty() && deviceId == thisDeviceId)
+        if (!draftPost.mEmbedImages.empty())
         {
             auto imagesView = createImagesView(draftPost.mEmbedImages);
 
@@ -1392,7 +1423,7 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
                 view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
             }
         }
-        else if (!draftPost.mEmbedVideos.empty() && deviceId == thisDeviceId)
+        else if (!draftPost.mEmbedVideos.empty())
         {
             auto videoView = createVideoView(*draftPost.mEmbedVideos.front());
 
@@ -1420,12 +1451,12 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
             view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
         }
     }
-    else if (!draftPost.mEmbedImages.empty() && deviceId == thisDeviceId)
+    else if (!draftPost.mEmbedImages.empty())
     {
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
         view->mEmbed = createImagesView(draftPost.mEmbedImages);
     }
-    else if (!draftPost.mEmbedVideos.empty() && deviceId == thisDeviceId)
+    else if (!draftPost.mEmbedVideos.empty())
     {
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
         view->mEmbed = createVideoView(*draftPost.mEmbedVideos.front());
@@ -1463,11 +1494,23 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
     for (const auto& image : images)
     {
         const QString path = createAbsPath(draftsPath, image->mLocalRef->mPath);
-        const QString imgSource = "file://" + path;
 
-        auto imgView = createImageView(image->mJson, imgSource, image->mAlt.value_or(""));
-        view->mImages.push_back(std::move(imgView));
+        // We explicitly test if the image exists on this device. Checking the deviceId is not
+        // reliable. deviceId changes on re-install, or may be copied to another device.
+        if (QFile::exists(path))
+        {
+            const QString imgSource = "file://" + path;
+            auto imgView = createImageView(image->mJson, imgSource, image->mAlt.value_or(""));
+            view->mImages.push_back(std::move(imgView));
+        }
+        else
+        {
+            qDebug() << "File does not exist:" << path;
+        }
     }
+
+    if (view->mImages.empty())
+        return nullptr;
 
     return view;
 }
@@ -1480,7 +1523,14 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
         return nullptr;
 
     const QString path = createAbsPath(draftsPath, video.mLocalRef->mPath);
-    const QString videoSource = "file://" + path;
+
+    // We explicitly test if the video exists on this device. Checking the deviceId is not
+    // reliable. deviceId changes on re-install, or may be copied to another device.
+    if (!QFile::exists(path))
+    {
+        qDebug() << "File does not exist:" << path;
+        return nullptr;
+    }
 
     ATProto::XJsonObject xjson(video.mJson);
     std::optional<QString> rawPresentation = xjson.getOptionalString(Lexicon::DRAFT_VIDEO_PRESENTATION);
@@ -1489,6 +1539,7 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
     if (rawPresentation)
         presentation = ATProto::AppBskyEmbed::stringToVideoPresentation(*rawPresentation);
 
+    const QString videoSource = "file://" + path;
     return createVideoView(video.mJson, videoSource, video.mAlt, presentation);
 }
 
