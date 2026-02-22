@@ -181,6 +181,6 @@ public class FileUtils {
         }
 
         ContentResolver resolver = context.getContentResolver();
-        return Settings.Global.getString(resolver, Settings.Global.DEVICE_NAME)
+        return Settings.Global.getString(resolver, Settings.Global.DEVICE_NAME);
     }
 }

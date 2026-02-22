@@ -39,6 +39,7 @@ public:
     Q_ENUM(StorageType)
 
     static constexpr int MAX_DRAFTS = 100;
+    static constexpr char const* DRAFT_BSKY_PICTURES_DIR = "SkywalkerBskyDrafts";
 
     static void setReplyRestrictions(DraftPostData* data, const Post& post);
     static void setDraftPost(DraftPostData* data, const Post& post);
@@ -92,7 +93,6 @@ public:
 signals:
     void saveDraftPostOk();
     void saveDraftPostFailed(QString error);
-    void uploadingImage(int seq);
     void loadDraftPostsOk();
     void loadDraftPostsFailed(QString error);
     void deleteDraftFailed(QString error);
@@ -100,11 +100,6 @@ signals:
     void storageTypeChanged();
 
 private:
-    using UploadImageSuccessCb = std::function<void(ATProto::Blob::SharedPtr, QSize)>;
-    using SuccessCb = std::function<void()>;
-    using DoneCb = std::function<void()>;
-    using ErrorCb = std::function<void(const QString& error, const QString& message)>;
-
     QString getDraftUri(const QString& ref) const;
     QString getDraftsPath() const;
     QString getPictureDraftsPath() const;

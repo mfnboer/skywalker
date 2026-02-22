@@ -11,7 +11,6 @@ DraftPosts {
 
     onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-    onUploadingImage: (seq) => skywalker.showStatusMessage(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
     onDeleteDraftFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
     function deleteDraft(index) {

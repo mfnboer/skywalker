@@ -20,7 +20,6 @@ namespace {
 
 constexpr char const* DRAFT_POSTS_DIR = "sw-draft-posts";
 constexpr char const* DRAFT_PICTURES_DIR = "SkywalkerDrafts";
-constexpr char const* DRAFT_BSKY_PICTURES_DIR = "SkywalkerBskyDrafts";
 
 QString createAbsPath(const QString& draftsPath, const QString& fileName)
 {
@@ -1418,7 +1417,7 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
             }
             else
             {
-                qWarning() << "Failed to create images view";
+                qDebug() << "Failed to create images view";
                 view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
                 view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
             }
@@ -1434,7 +1433,7 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
             }
             else
             {
-                qWarning() << "Failed to create video view";
+                qDebug() << "Failed to create video view";
                 view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
                 view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
             }
@@ -1475,7 +1474,7 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
 
     if (!embedSet)
     {
-        qWarning() << "Embed could not be created:" << (int)view->mType;
+        qDebug() << "Embed could not be created:" << (int)view->mType;
         return nullptr;
     }
 

@@ -655,6 +655,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/DraftPostsPage.qml
         QML_FILES qml/SkyDraftPosts.qml
         QML_FILES qml/DiscardSaveMessage.qml
+        SOURCES draft_orphaned_media_checker.h
+        SOURCES draft_orphaned_media_checker.cpp
 )
 
 if (NOT ANDROID)
