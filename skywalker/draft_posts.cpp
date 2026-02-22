@@ -569,19 +569,25 @@ void DraftPosts::removeDraftPost(int index)
     const Post& post = mDraftPostsModel->getPost(index);
 
     // NOTE:
-    // With file storage, the record-uri is the file name
-    // With Bluesky storage, the record-uri is the draft ID
+    // With file storage, the record-uri rkey is the file name of the draft
+    // With Bluesky storage, the record-uri rkey is the draft ID
     const QString& recordUri = post.getUri();
-    qDebug() << "Remove draft post:" << index << "uri:" << recordUri;
+    const QString rkey = getRefFromDraftUri(recordUri);
+    qDebug() << "Remove draft post:" << index << "uri:" << recordUri << "rkey:" << rkey;
+
+    if (rkey.isEmpty())
+        return;
 
     switch(mStorageType)
     {
     case STORAGE_FILE:
-        dropDraftPost(recordUri);
+    {
+        dropDraftPost(rkey);
         mDraftPostsModel->deleteDraft(index);
         break;
+    }
     case STORAGE_BLUESKY:
-        deleteBlueskyDraft(recordUri, index);
+        deleteBlueskyDraft(rkey, index);
         break;
     }
 }
@@ -602,6 +608,25 @@ QString DraftPosts::getDraftUri(const QString& ref) const
     const QString userDid = mSkywalker->getUserDid();
     ATProto::ATUri atUri(userDid, Lexicon::COLLECTION_DRAFT_POST, ref);
     return atUri.toString();
+}
+
+QString DraftPosts::getRefFromDraftUri(const QString& uri) const
+{
+    ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid draft-uri:" << uri;
+        return {};
+    }
+
+    if (atUri.getCollection() != Lexicon::COLLECTION_DRAFT_POST)
+    {
+        qWarning() << "Invalid collection:" << uri;
+        return {};
+    }
+
+    return atUri.getRkey();
 }
 
 QString DraftPosts::getDraftsPath() const
@@ -1939,7 +1964,7 @@ void DraftPosts::dropDraftPostFiles(const QString& draftsPath, const QString& fi
         return;
     }
 
-    dropDraftPostFilesByBaseName(draftsPath, fileName);
+    dropDraftPostFilesByBaseName(draftsPath, baseName);
 }
 
 void DraftPosts::dropDraftPostFilesByBaseName(const QString& draftsPath, const QString& baseName)
@@ -1997,8 +2022,9 @@ void DraftPosts::loadBlueskyDrafts(const QString& cursor)
 
             for (const auto& draftView : output->mDrafts)
             {
-                // NOTE: we store the draft ID as post URI
-                auto postFeed = convertDraftToFeedViewPost(*draftView, draftView->mId);
+                // NOTE: we store the draft ID as rkey in the post URI
+                const QString& recordUri = getDraftUri(draftView->mId);
+                auto postFeed = convertDraftToFeedViewPost(*draftView, recordUri);
                 postThreads.push_back(std::move(postFeed));
             }
 

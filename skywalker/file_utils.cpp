@@ -425,7 +425,7 @@ QString FileUtils::getDeviceName()
         return {};
     }
 
-    return nameObj.toString();
+    deviceName = nameObj.toString();
 #else
     deviceName = QHostInfo::localHostName();
 #endif

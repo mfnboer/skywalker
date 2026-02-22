@@ -112,6 +112,8 @@ Rectangle {
                 width: parent.width
                 topPadding: 10
                 font.italic: true
+                wrapMode: Text.Wrap
+                font.pointSize: guiSettings.scaledFont(7/8)
                 text: `⚠️ ${postFeedContext}`
                 visible: Boolean(postFeedContext)
             }

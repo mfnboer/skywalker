@@ -101,6 +101,7 @@ signals:
 
 private:
     QString getDraftUri(const QString& ref) const;
+    QString getRefFromDraftUri(const QString& uri) const;
     QString getDraftsPath() const;
     QString getPictureDraftsPath() const;
     QString createDraftPostFileName(const QString& baseName) const;
