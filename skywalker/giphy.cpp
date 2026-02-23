@@ -73,6 +73,15 @@ void Giphy::setSearchInProgress(bool inProgress)
     emit searchInProgressChanged();
 }
 
+void Giphy::setCategoriesLoading(bool loading)
+{
+    if (loading == mCategoriesLoading)
+        return;
+
+    mCategoriesLoading = loading;
+    emit categoriesLoadingChanged();
+}
+
 void Giphy::getCategories()
 {
     getRecentCategory();
@@ -400,6 +409,12 @@ void Giphy::setTrendingCategory(const TenorGif& gif)
 
 void Giphy::getRecentCategory()
 {
+    if (mCategoriesLoading)
+    {
+        qDebug() << "Categories still loading";
+        return;
+    }
+
     if (mRecentCategory)
     {
         allCategoriesRetrieved();
@@ -419,10 +434,13 @@ void Giphy::getRecentCategory()
     QNetworkRequest request(buildUrl("gifs", params));
     QNetworkReply* reply = mNetwork->get(request);
 
+    setCategoriesLoading(true);
+
     connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
         if (!presence)
             return;
 
+        setCategoriesLoading(false);
         setRecentCategory(reply);
         allCategoriesRetrieved();
     });
@@ -431,6 +449,7 @@ void Giphy::getRecentCategory()
         if (!presence)
             return;
 
+        setCategoriesLoading(false);
         qWarning() << "Posts error:" << reply->request().url() << "error:" <<
             errCode << reply->errorString();
         allCategoriesRetrieved();
@@ -440,6 +459,7 @@ void Giphy::getRecentCategory()
         if (!presence)
             return;
 
+        setCategoriesLoading(false);
         qWarning() << "Posts SSL error:" <<  reply->request().url();
         allCategoriesRetrieved();
     });

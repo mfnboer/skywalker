@@ -105,6 +105,11 @@ SkyPage {
                         }
                     }
 
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: parent.status == Image.Loading
+                    }
+
                     SkyMouseArea {
                         anchors.fill: parent
                         onClicked: searchCategory(category)
@@ -165,6 +170,12 @@ SkyPage {
                 inProgress: giphy.searchInProgress
                 bottomOvershootFun: () => giphy.getNextPage()
             }
+
+            EmptyListIndication {
+                svg: SvgOutline.noGif
+                text: qsTr("No GIFs")
+                list: gifOverview
+            }
         }
 
         function isCategoriesShowing() {
@@ -193,9 +204,8 @@ SkyPage {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: giphy.searchInProgress
+        running: giphy.searchInProgress || giphy.categoriesLoading
     }
-
 
     function searchGiphy(text) {
         giphy.searchGifs(text)

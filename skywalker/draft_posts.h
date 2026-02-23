@@ -20,6 +20,7 @@ namespace Skywalker {
 
 class DraftPostsModel;
 
+// TODO: refactor in sub subclassed for file and bluesky storage
 class DraftPosts : public WrappedSkywalker, public Presence
 {
     Q_MOC_INCLUDE("draft_posts_model.h")

@@ -17,6 +17,7 @@ class Giphy : public WrappedSkywalker, public Presence
     Q_PROPERTY(int width READ getWidth WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(int spacing READ getSpacing WRITE setSpacing NOTIFY spacingChanged FINAL)
     Q_PROPERTY(bool searchInProgress READ getSearchInProgress WRITE setSearchInProgress NOTIFY searchInProgressChanged FINAL)
+    Q_PROPERTY(bool categoriesLoading READ getCategoriesLoading WRITE setCategoriesLoading NOTIFY categoriesLoadingChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -35,6 +36,8 @@ public:
     void setSpacing(int spacing);
     bool getSearchInProgress() const { return mSearchInProgress; }
     void setSearchInProgress(bool inProgress);
+    bool getCategoriesLoading() const { return mCategoriesLoading; }
+    void setCategoriesLoading(bool loading);
     TenorOverviewModel* getOverviewModel() { return &mOverviewModel; }
 
 signals:
@@ -43,6 +46,7 @@ signals:
     void widthChanged();
     void spacingChanged();
     void searchInProgressChanged();
+    void categoriesLoadingChanged();
 
 private:
     using Params = QList<QPair<QString, QString>>;
@@ -80,6 +84,7 @@ private:
     bool mTrendingSearch = false;
     std::optional<int> mNextOffset;
     bool mSearchInProgress = false;
+    bool mCategoriesLoading = false;
     QNetworkAccessManager* mNetwork;
 };
 
