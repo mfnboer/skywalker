@@ -13,6 +13,8 @@ class LinkUtils : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
+    static bool isFeedLink(const QString& link);
+    static bool isListLink(const QString& link);
     Q_INVOKABLE static bool isDomain(const QString& value);
     Q_INVOKABLE static bool isWebLink(const QString& link);
     Q_INVOKABLE static bool hasScheme(const QString& link);
@@ -39,11 +41,11 @@ private:
     void openFeedLink(const ATProto::ATUri& atUri);
     void openListLink(const ATProto::ATUri& atUri);
     void openStarterPackLink(const ATProto::ATUri& atUri);
-    QString isAuthorLink(const QString& link) const;
-    ATProto::ATUri getPostUri(const QString& link) const;
-    ATProto::ATUri getFeedUri(const QString& link) const;
-    ATProto::ATUri getListUri(const QString& link) const;
-    ATProto::ATUri getStarterPackUri(const QString& link) const;
+    static QString isAuthorLink(const QString& link);
+    static ATProto::ATUri getPostUri(const QString& link);
+    static ATProto::ATUri getFeedUri(const QString& link);
+    static ATProto::ATUri getListUri(const QString& link);
+    static ATProto::ATUri getStarterPackUri(const QString& link);
 };
 
 }

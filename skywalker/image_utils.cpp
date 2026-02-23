@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "image_utils.h"
 #include "jni_callback.h"
+#include "link_utils.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "songlink.h"
@@ -225,6 +226,9 @@ ImageView ImageUtils::createImageView(const QString& url, const QString& alt)
 double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
 {
     qDebug() << "Link:" << link;
+
+    if (LinkUtils::isFeedLink(link) || LinkUtils::isListLink(link))
+        return 1.0;
 
     if (Songlink::isMusicLink(link))
         return 1.0;

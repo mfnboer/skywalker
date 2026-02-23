@@ -9,6 +9,18 @@
 
 namespace Skywalker {
 
+bool LinkUtils::isFeedLink(const QString& link)
+{
+    const ATProto::ATUri uri = getFeedUri(link);
+    return uri.isValid();
+}
+
+bool LinkUtils::isListLink(const QString& link)
+{
+    const ATProto::ATUri uri = getListUri(link);
+    return uri.isValid();
+}
+
 bool LinkUtils::isDomain(const QString& value)
 {
     const auto index = value.lastIndexOf('.');
@@ -178,7 +190,7 @@ void LinkUtils::openStarterPackLink(const ATProto::ATUri& atUri)
     openLink(atUri, [this](const QString& uri){ emit starterPackLink(uri); });
 }
 
-QString LinkUtils::isAuthorLink(const QString& link) const
+QString LinkUtils::isAuthorLink(const QString& link)
 {
     static const QRegularExpression authorHandleRE(
             QString(R"(^https:\/\/bsky.app\/profile\/(?<handle>%1)$)").arg(
@@ -198,7 +210,7 @@ QString LinkUtils::isAuthorLink(const QString& link) const
     return {};
 }
 
-ATProto::ATUri LinkUtils::getPostUri(const QString& link) const
+ATProto::ATUri LinkUtils::getPostUri(const QString& link)
 {
     const auto atUri = ATProto::ATUri::fromHttpsPostUri(link);
     if (atUri.isValid())
@@ -207,7 +219,7 @@ ATProto::ATUri LinkUtils::getPostUri(const QString& link) const
     return {};
 }
 
-ATProto::ATUri LinkUtils::getFeedUri(const QString& link) const
+ATProto::ATUri LinkUtils::getFeedUri(const QString& link)
 {
     const auto atUri = ATProto::ATUri::fromHttpsFeedUri(link);
     if (atUri.isValid())
@@ -216,7 +228,7 @@ ATProto::ATUri LinkUtils::getFeedUri(const QString& link) const
     return {};
 }
 
-ATProto::ATUri LinkUtils::getListUri(const QString& link) const
+ATProto::ATUri LinkUtils::getListUri(const QString& link)
 {
     const auto atUri = ATProto::ATUri::fromHttpsListUri(link);
     if (atUri.isValid())
@@ -225,7 +237,7 @@ ATProto::ATUri LinkUtils::getListUri(const QString& link) const
     return {};
 }
 
-ATProto::ATUri LinkUtils::getStarterPackUri(const QString& link) const
+ATProto::ATUri LinkUtils::getStarterPackUri(const QString& link)
 {
     const auto atUri = ATProto::ATUri::fromHttpsStarterPackUri(link);
     if (atUri.isValid())

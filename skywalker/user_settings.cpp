@@ -8,6 +8,7 @@
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/client.h>
+#include <QUuid>
 
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
 // This will break OffLineMessageChecker. This runs in an Android background process.
@@ -2286,6 +2287,44 @@ void UserSettings::setPinnedSearchFeeds(const QString& did, const SearchFeed::Li
     }
 
     mSettings.setValue(key(did, "pinnedSearchFeeds"), jsonArray);
+}
+
+QString UserSettings::getDeviceId()
+{
+    QString deviceId = mSettings.value("deviceId").toString();
+
+    if (deviceId.isEmpty())
+    {
+        deviceId = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        mSettings.setValue("deviceId", deviceId);
+    }
+
+    return deviceId;
+}
+
+DraftPosts::StorageType UserSettings::getDraftStorageType() const
+{
+    int storageType = mSettings.value("draftStorageType", (int)DraftPosts::STORAGE_FILE).toInt();
+
+    if (storageType < 0 || storageType > (int)DraftPosts::STORAGE_LAST)
+        return DraftPosts::STORAGE_FILE;
+
+    return DraftPosts::StorageType(storageType);
+}
+
+void UserSettings::setDraftStorageType(DraftPosts::StorageType storageType)
+{
+    mSettings.setValue("draftStorageType", (int)storageType);
+}
+
+QDateTime UserSettings::getLastDraftOrphanCheck(const QString& did) const
+{
+    return mSettings.value(key(did, "lastDraftOrphanCheck")).toDateTime();
+}
+
+void UserSettings::updateLastDraftOrphanCheck(const QString& did)
+{
+    mSettings.setValue(key(did, "lastDraftOrphanCheck"), QDateTime::currentDateTime());
 }
 
 void UserSettings::cleanup()

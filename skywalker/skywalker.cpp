@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "chat.h"
 #include "definitions.h"
+#include "draft_orphaned_media_checker.h"
 #include "file_utils.h"
 #include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"
@@ -1110,6 +1111,7 @@ void Skywalker::finishTimelineSync(int index)
     JNICallbackListener::handlePendingIntent();
 
     checkAnniversary();
+    checkDraftOrphanedMedia();
 }
 
 void Skywalker::finishTimelineSyncFailed()
@@ -4636,6 +4638,26 @@ void Skywalker::checkAnniversary()
 
     if (mAnniversary.checkAnniversary())
         emit anniversary();
+}
+
+void Skywalker::checkDraftOrphanedMedia()
+{
+    const QDateTime lastCheck = mUserSettings.getLastDraftOrphanCheck(mUserDid);
+
+    if (lastCheck.isValid())
+    {
+        const auto dt = QDateTime::currentDateTime() - lastCheck;
+        qDebug() << "Last check:" << lastCheck.toString() << dt / 1h << "hours ago";
+
+        if (dt < 24h)
+            return;
+    }
+
+    auto checker = std::make_shared<DraftOrphanedMediaChecker>(mUserDid, mBsky);
+    checker->start([this, checker]{
+        qDebug() << "Finished draft orphaned media check";
+        mUserSettings.updateLastDraftOrphanCheck(mUserDid);
+    });
 }
 
 void Skywalker::updateServiceAppView(const QString& did)

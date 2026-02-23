@@ -33,7 +33,9 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     {
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND:
     {
+        const auto record = std::get<ATProto::AppBskyEmbed::RecordViewNotFound::SharedPtr>(view.mRecord);
         mPrivate->mNotFound = true;
+        mPrivate->mNotFoundUri = record->mUri;
         break;
     }
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_BLOCKED:

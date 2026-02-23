@@ -132,6 +132,7 @@ Item {
         Loader {
             width: parent.width
             active: record.notFound || record.notSupported
+            visible: active
 
             sourceComponent: AccessibleText {
                 width: parent.width

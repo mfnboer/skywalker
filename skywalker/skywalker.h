@@ -383,6 +383,7 @@ private:
     void resumeApp();
     void setAnniversaryDate();
     void checkAnniversary();
+    void checkDraftOrphanedMedia();
     void updateServiceAppView(const QString& did);
     void updateServiceChat(const QString& did);
     void updateServiceVideoHost(const QString& did);

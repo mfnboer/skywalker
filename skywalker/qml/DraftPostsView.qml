@@ -4,31 +4,14 @@ import QtQuick.Layouts
 import skywalker
 
 SkyListView {
-    readonly property string sideBarTitle: qsTr("Drafts")
-    readonly property string sideBarSubTitle: `${view.count} / ${view.model?.getMaxDrafts()}`
-    readonly property SvgImage sideBarSvg: SvgOutline.chat
+    required property DraftPosts draftPosts
 
-    signal closed
     signal selected(int index)
     signal deleted(int index)
 
     id: view
+    model: draftPosts.getDraftPostsModel()
     boundsBehavior: Flickable.StopAtBounds
-
-    header: Item {
-        width: parent.width
-        height: portraitHeader.visible ? portraitHeader.height : landscapeHeader.height
-        z: guiSettings.headerZLevel
-
-        SimpleHeader {
-            id: portraitHeader
-            text: sideBarTitle
-            subTitle: sideBarSubTitle
-            visible: !root.showSideBar
-            onBack: view.closed()
-        }
-    }
-    headerPositioning: ListView.OverlayHeader
 
     delegate: DraftPostViewDelegate {
         required property int index
@@ -38,6 +21,13 @@ SkyListView {
         onDeleted: view.deleted(index)
     }
 
+    FlickableRefresher {
+        inProgress: model.getFeedInProgress
+        topOvershootFun: () => draftPosts.loadDraftPosts()
+        bottomOvershootFun: () => draftPosts.loadDraftPostsNextPage()
+        topText: qsTr("Pull down to refresh drafts")
+    }
+
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
         svg: SvgOutline.noPosts
@@ -45,4 +35,9 @@ SkyListView {
         list: view
     }
 
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        running: model.getFeedInProgress
+    }
 }

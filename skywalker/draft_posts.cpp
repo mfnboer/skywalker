@@ -1,13 +1,16 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "draft_posts.h"
+#include "draft_posts_model.h"
 #include "atproto_image_provider.h"
 #include "content_filter.h"
 #include "file_utils.h"
 #include "gif_utils.h"
+#include "link_card_reader.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 #include "temp_file_holder.h"
+#include "utils.h"
 #include "lexicon/lexicon.h"
 #include <atproto/lib/xjson.h>
 
@@ -17,6 +20,7 @@ namespace {
 
 constexpr char const* DRAFT_POSTS_DIR = "sw-draft-posts";
 constexpr char const* DRAFT_PICTURES_DIR = "SkywalkerDrafts";
+constexpr char const* DRAFT_BSKY_PICTURES_DIR = "SkywalkerBskyDrafts";
 
 QString createAbsPath(const QString& draftsPath, const QString& fileName)
 {
@@ -53,7 +57,15 @@ bool DraftPosts::hasDrafts() const
 
 bool DraftPosts::canSaveDraft() const
 {
-    return mDraftPostsModel->rowCount() < MAX_DRAFTS;
+    switch (mStorageType)
+    {
+    case STORAGE_FILE:
+        return mDraftPostsModel->rowCount() < MAX_DRAFTS;
+    case STORAGE_BLUESKY:
+        return true;
+    }
+
+    return false;
 }
 
 DraftPostData* DraftPosts::createDraft(
@@ -143,33 +155,30 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
 {
     qDebug() << "Save draft post:" << draftPost->text();
 
-    QString draftsPath;
-    QString picDraftsPath;
-
-    if (mStorageType == STORAGE_FILE)
+    switch (mStorageType)
     {
-        draftsPath = getDraftsPath();
+    case STORAGE_FILE:
+        return saveFileDraftPost(draftPost, draftThread);
+    case STORAGE_BLUESKY:
+        return saveBlueskyDraftPost(draftPost, draftThread);
+    }
 
-        if (draftsPath.isEmpty())
-        {
-            emit saveDraftPostFailed(tr("Cannot create app data path"));
-            return false;
-        }
+    Q_ASSERT(false);
+    return false;
+}
 
-        if (!draftPost->images().isEmpty() || !draftPost->video().isNull())
-        {
-            picDraftsPath = getPictureDraftsPath();
+bool DraftPosts::saveFileDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread)
+{
+    Q_ASSERT(mStorageType == STORAGE_FILE);
+    const QString draftsPath = getDraftsPath();
 
-            if (picDraftsPath.isEmpty())
-            {
-                emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
-                return false;
-            }
-        }
+    if (draftsPath.isEmpty())
+    {
+        emit saveDraftPostFailed(tr("Cannot create app data path"));
+        return false;
     }
 
     const QString dateTime = FileUtils::createDateTimeName(draftPost->indexedAt());
-
     auto draft = std::make_shared<Draft::Draft>();
     draft->mPost = createPost(draftPost, createPicBaseName(dateTime, 0));
 
@@ -178,7 +187,7 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
 
     if (draftPost->restrictReplies())
     {
-        const QString fileName = mStorageType == STORAGE_FILE ? createDraftPostFileName(dateTime) : "draft";
+        const QString fileName = createDraftPostFileName(dateTime);
         const bool allowNobody = !draftPost->allowMention() && !draftPost->allowFollower() && !draftPost->allowFollowing() && draftPost->allowLists().empty();
         draft->mThreadgate = ATProto::PostMaster::createThreadgate(
             getDraftUri(fileName), draftPost->allowMention(), draftPost->allowFollower(), draftPost->allowFollowing(),
@@ -214,57 +223,36 @@ bool DraftPosts::saveDraftPost(const DraftPostData* draftPost, const QList<Draft
         draft->mThreadPosts.push_back(std::move(threadPost));
     }
 
-    switch(mStorageType)
+    if (!save(*draft, draftsPath, dateTime))
     {
-    case STORAGE_FILE:
-        if (!save(*draft, draftsPath, dateTime))
-        {
-            dropImages(picDraftsPath, createPicBaseName(dateTime, 0), draftPost->images().size());
-            dropVideo(picDraftsPath, createPicBaseName(dateTime, 0));
-
-            for (int i = 0; i < draftThread.size(); ++i)
-            {
-                const auto* draftThreadPost = draftThread[i];
-                dropImages(picDraftsPath, createPicBaseName(dateTime, i + 1), draftThreadPost->images().size());
-                dropVideo(picDraftsPath, createPicBaseName(dateTime, i + 1));
-            }
-
-            return false;
-        }
-
-        break;
-    case STORAGE_REPO:
-        qWarning() << "Not supported.";
-        break;
-    };
+        dropDraftMedia(draftPost, draftThread, dateTime);
+        return false;
+    }
 
     return true;
 }
 
 ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const DraftPostData* draftPost, const QString& picBaseName)
 {
-    QString draftsPath;
+    Q_ASSERT(mStorageType == STORAGE_FILE);
     QString picDraftsPath;
 
-    if (mStorageType == STORAGE_FILE)
+    const QString draftsPath = getDraftsPath();
+
+    if (draftsPath.isEmpty())
     {
-        draftsPath = getDraftsPath();
+        emit saveDraftPostFailed(tr("Cannot create app data path"));
+        return nullptr;
+    }
 
-        if (draftsPath.isEmpty())
+    if (!draftPost->images().isEmpty() || !draftPost->video().isNull())
+    {
+        picDraftsPath = getPictureDraftsPath();
+
+        if (picDraftsPath.isEmpty())
         {
-            emit saveDraftPostFailed(tr("Cannot create app data path"));
+            emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
             return nullptr;
-        }
-
-        if (!draftPost->images().isEmpty() || !draftPost->video().isNull())
-        {
-            picDraftsPath = getPictureDraftsPath();
-
-            if (picDraftsPath.isEmpty())
-            {
-                emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
-                return nullptr;
-            }
         }
     }
 
@@ -281,14 +269,11 @@ ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const Draft
     if (!draftPost->quoteUri().isEmpty())
         ATProto::PostMaster::addQuoteToPost(*post, draftPost->quoteUri(), draftPost->quoteCid());
 
-    if (mStorageType == STORAGE_FILE)
-    {
-        if (!addImagesToPost(*post, draftPost->images(), picDraftsPath, picBaseName))
-            return nullptr;
+    if (!addImagesToPost(*post, draftPost->images(), picDraftsPath, picBaseName))
+        return nullptr;
 
-        if (!addVideoToPost(*post, draftPost->video(), picDraftsPath, picBaseName))
-            return nullptr;
-    }
+    if (!addVideoToPost(*post, draftPost->video(), picDraftsPath, picBaseName))
+        return nullptr;
 
     if (!draftPost->gif().isNull())
         addGifToPost(*post, draftPost->gif());
@@ -311,16 +296,25 @@ void DraftPosts::loadDraftPosts()
     case STORAGE_FILE:
         loadDraftFeed();
         break;
-    case STORAGE_REPO:
-        listRecords();
+    case STORAGE_BLUESKY:
+        loadBlueskyDrafts();
         break;
     }
+}
+
+void DraftPosts::loadDraftPostsNextPage()
+{
+    if (mStorageType == STORAGE_BLUESKY)
+        loadBlueskyDraftsNextPage();
 }
 
 DraftPostsModel* DraftPosts::getDraftPostsModel()
 {
     if (!mDraftPostsModel)
+    {
         mDraftPostsModel = mSkywalker->createDraftPostsModel();
+        mDraftPostsModel->setDraftPosts(this);
+    }
 
     return mDraftPostsModel.get();
 }
@@ -407,11 +401,12 @@ static void setVideo(DraftPostData* data, const VideoView& videoView)
 static void setExternal(DraftPostData* data, const ExternalView* externalView)
 {
     GifUtils gifUtils;
+    const QString link = externalView->getUri();
 
-    if (gifUtils.isTenorLink(externalView->getUri()))
+    if (gifUtils.isTenorLink(link) || gifUtils.isGiphyLink(link))
     {
         // NOTE: in addGifToPost several gif properties are packed into the URI as query params
-        const QUrl uri(externalView->getUri());
+        const QUrl uri(link);
         const QUrlQuery query(uri.query());
         const QString smallUrl = query.queryItemValue("smallUrl");
         const int smallWidth = query.queryItemValue("smallWidth").toInt();
@@ -431,11 +426,13 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
                      uri.toString(QUrl::RemoveQuery), QSize(gifWidth, gifHeight),
                      smallUrl, QSize(smallWidth, smallHeight),
                      externalView->getThumbUrl(), QSize(1, 1));
+        gif.setIsGiphy(gifUtils.isGiphyLink(link));
         qDebug() << "GIF uri:" << uri << "url:" << gif.getUrl() << "size:" << gif.getSize() << "small:" << gif.getSmallUrl() << "size:" << gif.getSmallSize() << "image:" << gif.getImageUrl();
         data->setGif(gif);
     }
-    else {
-        data->setExternalLink(externalView->getUri());
+    else
+    {
+        data->setExternalLink(link);
     }
 }
 
@@ -539,6 +536,8 @@ void DraftPosts::setDraftPost(DraftPostData* data, const Post& post)
 
 QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
 {
+    getDraftPostsModel();
+
     if (index < 0 || index >= mDraftPostsModel->rowCount())
     {
         qWarning() << "Invalid index:" << index << "count:" << mDraftPostsModel->rowCount();
@@ -560,6 +559,8 @@ QList<DraftPostData*> DraftPosts::getDraftPostData(int index)
 
 void DraftPosts::removeDraftPost(int index)
 {
+    getDraftPostsModel();
+
     if (index < 0 || index >= mDraftPostsModel->rowCount())
     {
         qWarning() << "Invalid index:" << index << "count:" << mDraftPostsModel->rowCount();
@@ -568,21 +569,34 @@ void DraftPosts::removeDraftPost(int index)
 
     const Post& post = mDraftPostsModel->getPost(index);
 
-    // NOTE: with file storage, the record-uri is the file name;
+    // NOTE:
+    // With file storage, the record-uri rkey is the file name of the draft
+    // With Bluesky storage, the record-uri rkey is the draft ID
     const QString& recordUri = post.getUri();
-    qDebug() << "Remove draft post:" << index << "uri:" << recordUri;
+    const QString rkey = getRefFromDraftUri(recordUri);
+    qDebug() << "Remove draft post:" << index << "uri:" << recordUri << "rkey:" << rkey;
+
+    if (rkey.isEmpty())
+        return;
 
     switch(mStorageType)
     {
     case STORAGE_FILE:
-        dropDraftPost(recordUri);
-        break;
-    case STORAGE_REPO:
-        deleteRecord(recordUri);
+    {
+        dropDraftPost(rkey);
+        mDraftPostsModel->deleteDraft(index);
         break;
     }
+    case STORAGE_BLUESKY:
+        deleteBlueskyDraft(rkey, index);
+        break;
+    }
+}
 
-    mDraftPostsModel->deleteDraft(index);
+QString DraftPosts::getMediaStorageWarning(int index)
+{
+    getDraftPostsModel();
+    return mDraftPostsModel->getStoredMediaWarning(index);
 }
 
 void DraftPosts::removeDraftPostsModel()
@@ -595,6 +609,25 @@ QString DraftPosts::getDraftUri(const QString& ref) const
     const QString userDid = mSkywalker->getUserDid();
     ATProto::ATUri atUri(userDid, Lexicon::COLLECTION_DRAFT_POST, ref);
     return atUri.toString();
+}
+
+QString DraftPosts::getRefFromDraftUri(const QString& uri) const
+{
+    ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Invalid draft-uri:" << uri;
+        return {};
+    }
+
+    if (atUri.getCollection() != Lexicon::COLLECTION_DRAFT_POST)
+    {
+        qWarning() << "Invalid collection:" << uri;
+        return {};
+    }
+
+    return atUri.getRkey();
 }
 
 QString DraftPosts::getDraftsPath() const
@@ -612,17 +645,37 @@ QString DraftPosts::getDraftsPath() const
     return draftsPath;
 }
 
-QString DraftPosts::getPictureDraftsPath() const
+QString DraftPosts::getPictureDraftsPath(StorageType storageType, const QString& did)
 {
-    const QString draftsPath = FileUtils::getPicturesPath(DRAFT_PICTURES_DIR);
+    // NOTE: for the orphaned draft media files checker it is important
+    // that the media files are stored per DID. The checker cross references
+    // these file against drafts for that DID.
+    // Nested sub directories are not allowed in the public Pictures directory,
+    // so we concat the DID to the directory name.
+
+    // Colons are not allowed in Picture path/file names.
+    QString normalizedDid = did;
+    normalizedDid.replace(':', '-');
+
+    const QString path = storageType == STORAGE_BLUESKY ?
+                             QString("%1-%2").arg(DRAFT_BSKY_PICTURES_DIR, normalizedDid) :
+                             DRAFT_PICTURES_DIR;
+
+    const QString draftsPath = FileUtils::getPicturesPath(path);
 
     if (draftsPath.isEmpty())
     {
-        qWarning() << "Failed to get path:" << DRAFT_PICTURES_DIR;
+        qWarning() << "Failed to get path:" << path;
         return {};
     }
 
     return draftsPath;
+}
+
+QString DraftPosts::getPictureDraftsPath() const
+{
+    const auto did = mSkywalker->getUserDid();
+    return getPictureDraftsPath(mStorageType, did);
 }
 
 QString DraftPosts::createDraftPostFileName(const QString& baseName) const
@@ -651,6 +704,30 @@ QString DraftPosts::getBaseNameFromPostFileName(const QString& fileName) const
         return {};
 
     qDebug() << "Base name from:" << fileName << "=" << parts[0];
+    return parts[0];
+}
+
+QString DraftPosts::getBaseNameFromMediaFullFileUrl(const QString& fileUrl) const
+{
+    if (!fileUrl.startsWith("file://"))
+    {
+        qWarning() << "Not a file URL:" << fileUrl;
+        return {};
+    }
+
+    const QFileInfo fileInfo(fileUrl.sliced(7));
+    const QString base = fileInfo.baseName();
+
+    // Example base: SWI1_20251226131809-0
+    auto parts = base.split('_');
+    if (parts.size() != 2)
+        return {};
+
+    parts = parts[1].split('-');
+    if (parts.size() != 2)
+        return {};
+
+    qDebug() << "Base name from:" << fileUrl << "=" << parts[0];
     return parts[0];
 }
 
@@ -798,7 +875,7 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(Draft::Dra
 {
     ATProto::AppBskyFeed::PostFeed postFeed;
     auto feedView = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
-    feedView->mReply = createReplyRef(draft);
+    feedView->mReply = createReplyRef(draft.mReplyToPost, draft.mPost->mReply);
     feedView->mPost = convertDraftToPostView(draft, recordUri);
     postFeed.push_back(std::move(feedView));
 
@@ -857,87 +934,26 @@ ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView
     return view;
 }
 
-ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createReplyToPost(const Draft::Draft& draft) const
-{
-    if (!draft.mReplyToPost)
-        return nullptr;
-
-    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
-    post->mText = draft.mReplyToPost->mText;
-    post->mCreatedAt = draft.mReplyToPost->mDateTime;
-    return post;
-}
-
-ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertReplyToPostView(Draft::Draft& draft) const
-{
-    if (!draft.mReplyToPost)
-        return nullptr;
-
-    Q_ASSERT(draft.mPost->mReply);
-    Q_ASSERT(draft.mPost->mReply->mParent);
-
-    if (!draft.mPost->mReply || !draft.mPost->mReply->mParent)
-    {
-        qWarning() << "Reply parent information missing from draft for reply:" << draft.mReplyToPost->mText;
-        return nullptr;
-    }
-
-    auto view = std::make_shared<ATProto::AppBskyFeed::PostView>();
-    view->mUri = draft.mPost->mReply->mParent->mUri;
-    view->mCid = draft.mPost->mReply->mParent->mCid;
-    view->mAuthor = std::move(draft.mReplyToPost->mAuthor);
-    view->mRecord = createReplyToPost(draft);
-    view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
-    view->mIndexedAt = draft.mReplyToPost->mDateTime;
-    return view;
-}
-
-ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(Draft::Draft& draft) const
-{
-    if (!draft.mReplyToPost)
-        return nullptr;
-
-    Q_ASSERT(draft.mPost->mReply);
-    Q_ASSERT(draft.mPost->mReply->mRoot);
-
-    if (!draft.mPost->mReply || !draft.mPost->mReply->mRoot)
-    {
-        qWarning() << "Reply root information missing from draft for reply:" << draft.mReplyToPost->mText;
-        return nullptr;
-    }
-
-    auto replyRef = std::make_shared<ATProto::AppBskyFeed::ReplyRef>();
-
-    replyRef->mParent = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
-    replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
-    replyRef->mParent->mPost = convertReplyToPostView(draft);
-
-    // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
-    // does not need it.
-    replyRef->mRoot = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
-    replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
-    auto notFound = std::make_shared<ATProto::AppBskyFeed::NotFoundPost>();
-    notFound->mUri = draft.mPost->mReply->mRoot->mUri;
-    replyRef->mRoot->mPost = std::move(notFound);
-
-    return replyRef;
-}
-
 ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const
 {
-    if (!post.mLabels)
+    return createContentLabels(post.mLabels, post.mCreatedAt, recordUri);
+}
+
+ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const
+{
+    if (!selfLabels)
         return {};
 
     const QString userDid = mSkywalker->getUserDid();
     ATProto::ComATProtoLabel::Label::List labels;
 
-    for (const auto& selfLabel : post.mLabels->mValues)
+    for (const auto& selfLabel : selfLabels->mValues)
     {
         auto label = std::make_shared<ATProto::ComATProtoLabel::Label>();
         label->mVal = selfLabel->mVal;
         label->mSrc = userDid;
         label->mUri = recordUri;
-        label->mCreatedAt = post.mCreatedAt;
+        label->mCreatedAt = createdAt;
         labels.push_back(std::move(label));
     }
 
@@ -995,49 +1011,44 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
     if (!images || images->mImages.empty())
         return nullptr;
 
-    auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
     const QString did = mSkywalker->getUserDid();
     auto view = std::make_shared<ATProto::AppBskyEmbed::ImagesView>();
 
     for (const auto& image : images->mImages)
     {
-        QString imgSource;
+        const auto draftsPath = getPictureDraftsPath();
 
-        switch (mStorageType)
-        {
-        case STORAGE_FILE:
-        {
-            const auto draftsPath = getPictureDraftsPath();
+        if (draftsPath.isEmpty())
+            return nullptr;
 
-            if (draftsPath.isEmpty())
-                return nullptr;
+        const QString path = createAbsPath(draftsPath, image->mImage->mRefLink);
+        const QString imgSource = "file://" + path;
 
-            const QString path = createAbsPath(draftsPath, image->mImage->mRefLink);
-            imgSource = "file://" + path;
-            break;
-        }
-        case STORAGE_REPO:
-        {
-            const QString& cid = image->mImage->mRefLink;
-            imgSource = imgProvider->createImageSource(did, cid);
-            break;
-        }
-        }
-
-        const ATProto::XJsonObject xjson(image->mImage->mJson);
-        const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
-        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
-
-        auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
-        imgView->mThumb = imgSource;
-        imgView->mFullSize = imgSource;
-        imgView->mAlt = image->mAlt;
-        imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
-        imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+        auto imgView = createImageView(image->mImage->mJson, imgSource, image->mAlt);
         view->mImages.push_back(std::move(imgView));
     }
 
     return view;
+}
+
+ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr DraftPosts::createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt)
+{
+    const ATProto::XJsonObject xjson(imgJson);
+    const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+    const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
+
+    auto imgView = std::make_shared<ATProto::AppBskyEmbed::ImagesViewImage>();
+    imgView->mThumb = imgSource;
+    imgView->mFullSize = imgSource;
+    imgView->mAlt = alt;
+
+    if (!memeTopText.isEmpty())
+        imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+
+    if (!memeBottomText.isEmpty())
+        imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+    return imgView;
 }
 
 ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const ATProto::AppBskyEmbed::Video* video)
@@ -1045,27 +1056,20 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
     if (!video || !video->mVideo)
         return nullptr;
 
-    QString videoSource;
+    const auto draftsPath = getPictureDraftsPath();
 
-    switch (mStorageType)
-    {
-    case STORAGE_FILE:
-    {
-        const auto draftsPath = getPictureDraftsPath();
-
-        if (draftsPath.isEmpty())
-            return nullptr;
-
-        const QString path = createAbsPath(draftsPath, video->mVideo->mRefLink);
-        videoSource = "file://" + path;
-        break;
-    }
-    case STORAGE_REPO:
-        qWarning() << "REPO storage not supported";
+    if (draftsPath.isEmpty())
         return nullptr;
-    }
 
-    const ATProto::XJsonObject xjson(video->mVideo->mJson);
+    const QString path = createAbsPath(draftsPath, video->mVideo->mRefLink);
+    const QString videoSource = "file://" + path;
+
+    return createVideoView(video->mVideo->mJson, videoSource, video->mAlt, video->mPresentation);
+}
+
+ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt, const std::optional<ATProto::AppBskyEmbed::VideoPresentation>& presentation)
+{
+    const ATProto::XJsonObject xjson(videoJson);
     const int startMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_START_MS_FIELD, 0);
     const int endMs = xjson.getOptionalInt(Lexicon::DRAFT_VIDEO_END_MS_FIELD, 0);
     const bool removeAudio = xjson.getOptionalBool(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, false);
@@ -1073,11 +1077,20 @@ ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const AT
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::VideoView>();
     view->mPlaylist = videoSource;
-    view->mAlt = video->mAlt;
-    view->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, startMs);
-    view->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, endMs);
-    view->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, removeAudio);
-    view->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, newHeight);
+    view->mAlt = alt;
+    view->mPresentation = presentation;
+
+    if (startMs > 0)
+        view->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, startMs);
+
+    if (endMs > 0)
+        view->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, endMs);
+
+    if (removeAudio)
+        view->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, removeAudio);
+
+    if (newHeight > 0)
+        view->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, newHeight);
 
     return view;
 }
@@ -1105,7 +1118,7 @@ ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(
 ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
     const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const
 {
-    if (!record || !quote)
+    if (!quote)
         return nullptr;
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
@@ -1114,6 +1127,14 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
     {
     case Draft::Quote::RecordType::QUOTE_POST:
     {
+        Q_ASSERT(record);
+
+        if (!record)
+        {
+            qWarning() << "Need record for a quote";
+            return nullptr;
+        }
+
         auto& quotePost = std::get<Draft::QuotePost::SharedPtr>(quote->mRecord);
         auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
         post->mText = quotePost->mText;
@@ -1138,6 +1159,14 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
     case Draft::Quote::RecordType::QUOTE_LIST:
         view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(quote->mRecord));
+        break;
+    case Draft::Quote::RecordType::QUOTE_LABELER:
+        view->mRecordType = ATProto::RecordType::APP_BSKY_LABELER_VIEW;
+        view->mRecord = std::move(std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(quote->mRecord));
+        break;
+    case Draft::Quote::RecordType::QUOTE_STARTER_PACK:
+        view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_STARTER_PACK_VIEW_BASIC;
+        view->mRecord = std::move(std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(quote->mRecord));
         break;
     default:
         qWarning() << "Unknown record type" << (int)quote->mRecordType;
@@ -1182,6 +1211,431 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
     return view;
 }
 
+// The obvious test is the check deviceId in the draft against this deviceId.
+// However this is not reliable. When the user re-installs the app, a new deviceId will
+// be generated, while the media files from the draft are still on this device.
+// When the user copies all contents of a device to a new device, then both devices will
+// have the same deviceId.
+// Instead we check the media file names from the posts to find out if the files exist.
+QString DraftPosts::checkMediaStorage(const ATProto::AppBskyDraft::DraftView& draft, const ATProto::AppBskyFeed::PostFeed& postFeed, int embedImagesCount, int embedVideoCount) const
+{
+    qDebug() << "Check media storage:" << draft.mId << "embedImagesCount:" << embedImagesCount << "embedVideoCount:" << embedVideoCount;
+
+    if (embedImagesCount + embedVideoCount == 0)
+        return {};
+
+    std::vector<Post> thread;
+
+    for (const auto& feedViewPost : postFeed)
+        thread.push_back(Post(feedViewPost));
+
+    const QString mediaBaseName = getMediaBaseName(thread);
+
+    if (!mediaBaseName.isEmpty())
+    {
+        const QString mediaPath = getPictureDraftsPath();
+
+        if (mediaPath.isEmpty())
+        {
+            qWarning() << "Cannot get media path";
+            return {};
+        }
+
+        QDir mediaDir(mediaPath);
+        const QString filter = QString("SW*_%1-*").arg(mediaBaseName);
+        const auto mediaFileNames = mediaDir.entryList({ filter }, QDir::Files);
+
+        if (!mediaFileNames.empty())
+        {
+            qDebug() << "Media files found:" << draft.mId << "files:" << mediaFileNames;
+            return {};
+        }
+    }
+    else
+    {
+        qDebug() << "Media files probably written by another app:" << draft.mId;
+    }
+
+    QString warning;
+
+    const QString draftDeviceName = draft.mDraft->mDeviceName.value_or(tr("other device"));
+    const QString thisDeviceName = FileUtils::getDeviceName();
+    const QString otherDeviceName = draftDeviceName == thisDeviceName ? tr("%1 (other app)").arg(draftDeviceName) : draftDeviceName;
+
+    const QString imageWord = embedImagesCount == 1 ? tr("image") : tr("images");
+    const QString videoWord = embedVideoCount == 1 ? tr("video") : tr("videos");
+
+    // HACK: abusing feed context to show this warning in the drafts overview
+    if (embedVideoCount == 0)
+        warning = tr("%1 %2 stored on %3").arg(embedImagesCount).arg(imageWord, otherDeviceName);
+    else if (embedImagesCount == 0)
+        warning = tr("%1 %2 stored on %3").arg(embedVideoCount).arg(videoWord, otherDeviceName);
+    else
+        warning = tr("%1 %2 and %3 %4 on %5").arg(embedImagesCount).arg(imageWord).arg(embedVideoCount).arg(videoWord, otherDeviceName);
+
+    return warning;
+}
+
+ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATProto::AppBskyDraft::DraftView& draft, const QString& recordUri)
+{
+    ATProto::AppBskyFeed::PostFeed postFeed;
+    int embedImagesCount = 0;
+    int embedVideoCount = 0;
+
+    for (const auto& threadPost : draft.mDraft->mPosts)
+    {
+        auto view = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
+        view->mPost = convertDraftToPostView(draft, *threadPost, recordUri);
+
+        ATProto::XJsonObject xjson(draft.mDraft->mJson);
+        auto replyTo = xjson.getOptionalObject<Draft::ReplyToPost>(Lexicon::DRAFT_REPPLY_TO);
+        auto postRecord = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(view->mPost->mRecord);
+        view->mReply = createReplyRef(replyTo, postRecord->mReply);
+
+        embedImagesCount += threadPost->mEmbedImages.size();
+        embedVideoCount += threadPost->mEmbedVideos.size();
+        postFeed.push_back(std::move(view));
+    }
+
+    const QString mediaWarning = checkMediaStorage(draft, postFeed, embedImagesCount, embedVideoCount);
+
+    if (!mediaWarning.isEmpty())
+    {
+        // HACK: abusing feed context to show this warning in the drafts overview
+        auto& view = postFeed.front();
+        view->mFeedContext = mediaWarning;
+    }
+
+    return postFeed;
+}
+
+ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const
+{
+    if (!replyToPost || !postReplyRef)
+        return nullptr;
+
+    Q_ASSERT(postReplyRef->mRoot);
+
+    if (!postReplyRef->mRoot)
+    {
+        qWarning() << "Reply root information missing from draft for reply:" << replyToPost->mText;
+        return nullptr;
+    }
+
+    auto replyRef = std::make_shared<ATProto::AppBskyFeed::ReplyRef>();
+    replyRef->mParent = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
+    replyRef->mParent->mPost = convertReplyToPostView(replyToPost, postReplyRef);
+
+    // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
+    // does not need it.
+    replyRef->mRoot = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
+    replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
+    auto notFound = std::make_shared<ATProto::AppBskyFeed::NotFoundPost>();
+    notFound->mUri = postReplyRef->mRoot->mUri;
+    replyRef->mRoot->mPost = std::move(notFound);
+
+    return replyRef;
+}
+
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertReplyToPostView(const Draft::ReplyToPost::SharedPtr& replyToPost, const ATProto::AppBskyFeed::PostReplyRef::SharedPtr& postReplyRef) const
+{
+    if (!replyToPost)
+        return nullptr;
+
+    Q_ASSERT(postReplyRef);
+    Q_ASSERT(postReplyRef->mParent);
+
+    if (!postReplyRef || !postReplyRef->mParent)
+    {
+        qWarning() << "Reply parent information missing from draft for reply:" << replyToPost->mText;
+        return nullptr;
+    }
+
+    auto view = std::make_shared<ATProto::AppBskyFeed::PostView>();
+    view->mUri = postReplyRef->mParent->mUri;
+    view->mCid = postReplyRef->mParent->mCid;
+    view->mAuthor = std::move(replyToPost->mAuthor);
+    view->mRecord = createReplyToPost(replyToPost);
+    view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    view->mIndexedAt = replyToPost->mDateTime;
+    return view;
+}
+
+ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createReplyToPost(const Draft::ReplyToPost::SharedPtr& replyToPost) const
+{
+    auto post = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
+    post->mText = replyToPost->mText;
+    post->mCreatedAt = replyToPost->mDateTime;
+    return post;
+}
+
+ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(const ATProto::AppBskyDraft::DraftView& draftView, const ATProto::AppBskyDraft::DraftPost& draftPost, const QString& recordUri)
+{
+    auto postView = std::make_shared<ATProto::AppBskyFeed::PostView>();
+    postView->mUri = recordUri;
+    postView->mAuthor = createProfileViewBasic(mSkywalker->getUser());
+    postView->mIndexedAt = draftView.mUpdatedAt;
+    postView->mEmbed = createEmbedView(draftPost);
+    postView->mLabels = createContentLabels(draftPost.mLabels, draftView.mCreatedAt, recordUri);
+
+    auto postRecord = std::make_shared<ATProto::AppBskyFeed::Record::Post>();
+    postRecord->mText = draftPost.mText;
+    postRecord->mLabels = draftPost.mLabels;
+    postRecord->mLanguages = draftView.mDraft->mLangs;
+    postRecord->mCreatedAt = draftView.mCreatedAt;
+
+    ATProto::XJsonObject xjson(draftPost.mJson);
+    postRecord->mReply = xjson.getOptionalObject<ATProto::AppBskyFeed::PostReplyRef>(Lexicon::DRAFT_REPPLY_REF);
+    std::optional<QJsonObject> embeddedLinks = xjson.getOptionalJsonObject(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD);
+
+    if (embeddedLinks)
+        postRecord->mJson.insert(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD, *embeddedLinks);
+
+    postView->mRecord = postRecord;
+    postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
+    postView->mThreadgate = createThreadgateView(draftView.mDraft->mThreadgateRules, recordUri, draftView.mCreatedAt);
+    postView->mViewer = createViewerState(*draftView.mDraft);
+
+    return postView;
+}
+
+ATProto::AppBskyFeed::ViewerState::SharedPtr DraftPosts::createViewerState(const ATProto::AppBskyDraft::Draft& draft) const
+{
+    auto viewer = std::make_shared<ATProto::AppBskyFeed::ViewerState>();
+    viewer->mEmbeddingDisabled = draft.mDisableEmbedding;
+    return viewer;
+}
+
+ATProto::AppBskyFeed::ThreadgateView::SharedPtr DraftPosts::createThreadgateView(const ATProto::AppBskyFeed::ThreadgateRules& threadgateRules, const QString& recordUri, QDateTime createdAt) const
+{
+    if (!threadgateRules.mAllowNobody && !threadgateRules.mAllowFollower && !threadgateRules.mAllowFollowing && !threadgateRules.mAllowFollower && threadgateRules.mAllowList.empty())
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyFeed::ThreadgateView>();
+    view->mRecord = std::make_shared<ATProto::AppBskyFeed::Threadgate>();
+    view->mRecord->mRules = threadgateRules;
+    view->mRecord->mPost = recordUri;
+    view->mRecord->mCreatedAt = createdAt;
+
+    for (const auto& list : view->mRecord->mRules.mAllowList)
+    {
+        auto listView = std::make_shared<ATProto::AppBskyGraph::ListViewBasic>();
+        listView->mUri = list->mList;
+        listView->mName = list->mList;
+        view->mLists.push_back(std::move(listView));
+    }
+
+    return view;
+}
+
+bool DraftPosts::hasEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const
+{
+    return !draftPost.mEmbedRecords.empty() ||
+           !draftPost.mEmbedExternals.empty() ||
+           hasMediaEmbed(draftPost);
+}
+
+bool DraftPosts::hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const
+{
+    return !draftPost.mEmbedImages.empty() ||
+           !draftPost.mEmbedVideos.empty();
+}
+
+ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost)
+{
+    if (!hasEmbed(draftPost))
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
+
+    if (!draftPost.mEmbedRecords.empty())
+    {
+        if (!draftPost.mEmbedImages.empty())
+        {
+            auto imagesView = createImagesView(draftPost.mEmbedImages);
+
+            if (imagesView)
+            {
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+                view->mEmbed = createRecordWithMediaView(imagesView, *draftPost.mEmbedRecords.front());
+            }
+            else
+            {
+                qDebug() << "Failed to create images view";
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+                view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+            }
+        }
+        else if (!draftPost.mEmbedVideos.empty())
+        {
+            auto videoView = createVideoView(*draftPost.mEmbedVideos.front());
+
+            if (videoView)
+            {
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+                view->mEmbed = createRecordWithMediaView(videoView, *draftPost.mEmbedRecords.front());
+            }
+            else
+            {
+                qDebug() << "Failed to create video view";
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+                view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+            }
+        }
+        else if (!draftPost.mEmbedExternals.empty())
+        {
+            auto externalView = createExternalView(*draftPost.mEmbedExternals.front());
+            view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+            view->mEmbed = createRecordWithMediaView(externalView, *draftPost.mEmbedRecords.front());
+        }
+        else
+        {
+            view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+            view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+        }
+    }
+    else if (!draftPost.mEmbedImages.empty())
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+        view->mEmbed = createImagesView(draftPost.mEmbedImages);
+    }
+    else if (!draftPost.mEmbedVideos.empty())
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+        view->mEmbed = createVideoView(*draftPost.mEmbedVideos.front());
+    }
+    else if (!draftPost.mEmbedExternals.empty())
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
+        view->mEmbed = createExternalView(*draftPost.mEmbedExternals.front());
+    }
+    else
+    {
+        return nullptr;
+    }
+
+    const bool embedSet = std::visit([](auto&& v){ return v != nullptr; }, view->mEmbed);
+
+    if (!embedSet)
+    {
+        qDebug() << "Embed could not be created:" << (int)view->mType;
+        return nullptr;
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images)
+{
+    const auto draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::ImagesView>();
+
+    for (const auto& image : images)
+    {
+        const QString path = createAbsPath(draftsPath, image->mLocalRef->mPath);
+
+        // We explicitly test if the image exists on this device. Checking the deviceId is not
+        // reliable. deviceId changes on re-install, or may be copied to another device.
+        if (QFile::exists(path))
+        {
+            const QString imgSource = "file://" + path;
+            auto imgView = createImageView(image->mJson, imgSource, image->mAlt.value_or(""));
+            view->mImages.push_back(std::move(imgView));
+        }
+        else
+        {
+            qDebug() << "File does not exist:" << path;
+        }
+    }
+
+    if (view->mImages.empty())
+        return nullptr;
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::VideoView::SharedPtr DraftPosts::createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video)
+{
+    const auto draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return nullptr;
+
+    const QString path = createAbsPath(draftsPath, video.mLocalRef->mPath);
+
+    // We explicitly test if the video exists on this device. Checking the deviceId is not
+    // reliable. deviceId changes on re-install, or may be copied to another device.
+    if (!QFile::exists(path))
+    {
+        qDebug() << "File does not exist:" << path;
+        return nullptr;
+    }
+
+    ATProto::XJsonObject xjson(video.mJson);
+    std::optional<QString> rawPresentation = xjson.getOptionalString(Lexicon::DRAFT_VIDEO_PRESENTATION);
+    std::optional<ATProto::AppBskyEmbed::VideoPresentation> presentation;
+
+    if (rawPresentation)
+        presentation = ATProto::AppBskyEmbed::stringToVideoPresentation(*rawPresentation);
+
+    const QString videoSource = "file://" + path;
+    return createVideoView(video.mJson, videoSource, video.mAlt, presentation);
+}
+
+ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::ExternalView>();
+    view->mExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalViewExternal>();
+    view->mExternal->mUri = external.mUri;
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    // HACK: we create a NotFound record as we do not have the full record view here.
+    // In DraftsPostModel, the URI from the NotFound record will be resolved to a post.
+    auto postRecord = std::make_shared<ATProto::AppBskyEmbed::RecordViewNotFound>();
+    postRecord->mUri = record.mRecord->mUri;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
+    view->mRecord = postRecord;
+    view->mRecordType = ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND;
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{   
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
+    view->mMedia = imagesView;
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::VideoView::SharedPtr videoView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
+    view->mMedia = videoView;
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::ExternalView::SharedPtr externalView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
+    view->mMedia = externalView;
+    return view;
+}
+
 QString DraftPosts::dumpDraftFeed()
 {
     Q_ASSERT(mStorageType == STORAGE_FILE);
@@ -1223,8 +1677,7 @@ void DraftPosts::loadDraftFeed()
     if (draftsPath.isEmpty())
         return;
 
-    if (!mDraftPostsModel)
-        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+    getDraftPostsModel();
 
     const auto fileList = getDraftPostFiles(draftsPath);
     std::vector<ATProto::AppBskyFeed::PostFeed> postThreads;
@@ -1248,7 +1701,7 @@ void DraftPosts::loadDraftFeed()
         }
     }
 
-    mDraftPostsModel->setFeed(std::move(postThreads));
+    mDraftPostsModel->setFeed(std::move(postThreads), {});
     emit draftsChanged();
     emit loadDraftPostsOk();
 }
@@ -1384,7 +1837,6 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
                                                const QString& memeTopText, const QString& memeBottomText,
                                                const QString& draftsPath, const QString& baseName, int seq)
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
     qDebug() << "Save image:" << seq << imgName << "path:" << draftsPath << "base:" << baseName;
     QImage img = PhotoPicker::loadImage(imgName);
 
@@ -1402,6 +1854,7 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
     if (!FileUtils::checkWriteMediaPermission())
     {
         qWarning() << "No permission to write media:" << fileName;
+        emit saveDraftPostFailed(tr("Failed to save image #%1: %2").arg(seq + 1).arg(fileName));
         return { nullptr, QSize{} };
     }
 
@@ -1417,8 +1870,13 @@ std::tuple<ATProto::Blob::SharedPtr, QSize> DraftPosts::saveImage(const QString&
     blob->mMimeType = "image/jpeg";
     blob->mSize = img.sizeInBytes();
     blob->mJson = blob->toJson();
-    blob->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
-    blob->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+    if (!memeTopText.isEmpty())
+        blob->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+
+    if (!memeBottomText.isEmpty())
+        blob->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
     return { blob, img.size() };
 }
 
@@ -1426,12 +1884,12 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
         const QString& videoName, int videoStartMs, int videoEndMs, bool videoRemoveAudio,
         int videoNewHeight, const QString& draftsPath, const QString& baseName)
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
     qDebug() << "Save video:" << videoName << "path:" << draftsPath << "base:" << baseName;
 
     if (!videoName.startsWith("file://"))
     {
         qWarning() << "Invalid video:" << videoName;
+        emit saveDraftPostFailed(tr("Could not load video: %1").arg(videoName));
         return nullptr;
     }
 
@@ -1443,6 +1901,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     if (!FileUtils::checkWriteMediaPermission())
     {
         qWarning() << "No permission to write media:" << absDraftFileName;
+        emit saveDraftPostFailed(tr("Failed to save video: %1").arg(absDraftFileName));
         return nullptr;
     }
 
@@ -1451,6 +1910,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     if (!fromFile.open(QFile::ReadOnly))
     {
         qWarning() << "Cannot open file:" << videoFileName << fromFile.errorString();
+        emit saveDraftPostFailed(tr("Could not load video: %1").arg(videoFileName));
         return nullptr;
     }
 
@@ -1459,6 +1919,7 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     if (!toFile.open(QFile::WriteOnly))
     {
         qWarning() << "Cannot create file:" << absDraftFileName << toFile.errorString();
+        emit saveDraftPostFailed(tr("Failed to save video: %1").arg(absDraftFileName));
         return nullptr;
     }
 
@@ -1474,23 +1935,30 @@ ATProto::Blob::SharedPtr DraftPosts::saveVideo(
     auto blob = std::make_shared<ATProto::Blob>();
     blob->mRefLink = draftFileName;
     blob->mMimeType = "video/mp4";
-    blob->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, videoStartMs);
-    blob->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, videoEndMs);
-    blob->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, videoRemoveAudio);
-    blob->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, videoNewHeight);
+
+    if (videoStartMs > 0)
+        blob->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, videoStartMs);
+
+    if (videoEndMs > 0)
+        blob->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, videoEndMs);
+
+    if (videoRemoveAudio)
+        blob->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, videoRemoveAudio);
+
+    if (videoNewHeight > 0)
+        blob->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, videoNewHeight);
+
     return blob;
 }
 
 void DraftPosts::dropImages(const QString& draftsPath, const QString& baseName, int count) const
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
     for (int j = 0; j < count; ++j)
         dropImage(draftsPath, baseName, j);
 }
 
 void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, int seq) const
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
     const QString imgFileName = createDraftImageFileName(baseName, seq);
     const QString fileName = createAbsPath(draftsPath, imgFileName);
     qDebug() << "Drop draft image:" << fileName;
@@ -1499,7 +1967,6 @@ void DraftPosts::dropImage(const QString& draftsPath, const QString& baseName, i
 
 void DraftPosts::dropVideo(const QString& draftsPath, const QString& baseName)
 {
-    Q_ASSERT(mStorageType == STORAGE_FILE);
     const QString videoFileName = createDraftVideoFileName(baseName);
     const QString fileName = createAbsPath(draftsPath, videoFileName);
     qDebug() << "Drop draft video:" << fileName;
@@ -1517,6 +1984,12 @@ void DraftPosts::dropDraftPostFiles(const QString& draftsPath, const QString& fi
         return;
     }
 
+    dropDraftPostFilesByBaseName(draftsPath, baseName);
+}
+
+void DraftPosts::dropDraftPostFilesByBaseName(const QString& draftsPath, const QString& baseName)
+{
+    qDebug() << "Remove post files:" << draftsPath << "baseName:" << baseName;
     QDir dir(draftsPath);
     const QString filePattern = QString("*%1*").arg(baseName);
     const auto files = dir.entryList({filePattern});
@@ -1542,70 +2015,40 @@ void DraftPosts::dropDraftPost(const QString& fileName)
         dropDraftPostFiles(picsPath, fileName);
 }
 
-bool DraftPosts::writeRecord(const Draft::Draft& draft)
+void DraftPosts::loadBlueskyDrafts(const QString& cursor)
 {
-    Q_ASSERT(mStorageType == STORAGE_REPO);
-
-    if (!bskyClient())
-        return false;
-
-    const QString& repo = mSkywalker->getUserDid();
-    const auto json = draft.toJson();
-
-    bskyClient()->createRecord(repo, Lexicon::COLLECTION_DRAFT_POST, {}, json, false,
-        [this, presence=getPresence()](auto /* strongRef */) {
-            if (!presence)
-                return;
-
-            emit saveDraftPostOk();
-        },
-        [this, presence=getPresence()](const QString& error, const QString& msg) {
-            if (!presence)
-                return;
-
-            qDebug() << "Failed to write draft post:" << error << "-" << msg;
-            emit saveDraftPostFailed(tr("Could not save draft: %1").arg(msg));
-        });
-
-    return true;
-}
-
-void DraftPosts::listRecords()
-{
-    Q_ASSERT(mStorageType == STORAGE_REPO);
+    Q_ASSERT(mStorageType == STORAGE_BLUESKY);
 
     if (!bskyClient())
         return;
 
-    if (!mDraftPostsModel)
-        mDraftPostsModel = mSkywalker->createDraftPostsModel();
+    getDraftPostsModel();
 
-    const QString& repo = mSkywalker->getUserDid();
+    if (mDraftPostsModel->isGetFeedInProgress())
+    {
+        qDebug() << "Already in progress";
+        return;
+    }
 
-    bskyClient()->listRecords(repo, Lexicon::COLLECTION_DRAFT_POST, 100, {},
-        [this, presence=getPresence()](auto output) {
+    mDraftPostsModel->setGetFeedInProgress(true);
+
+    bskyClient()->getDrafts({}, Utils::makeOptionalString(cursor),
+        [this, presence=getPresence()](ATProto::AppBskyDraft::GetDraftsOutput::SharedPtr output){
             if (!presence)
                 return;
 
+            mDraftPostsModel->setGetFeedInProgress(false);
             std::vector<ATProto::AppBskyFeed::PostFeed> postThreads;
 
-            for (const auto& record : output->mRecords)
+            for (const auto& draftView : output->mDrafts)
             {
-                try {
-                    auto draft = Draft::Draft::fromJson(record->mValue);
-                    auto postFeed = convertDraftToFeedViewPost(*draft, record->mUri);
-                    postThreads.push_back(std::move(postFeed));
-                }
-                catch (ATProto::InvalidJsonException& e) {
-                    qWarning() << "Record format error:" << record->mUri << e.msg();
-                    qInfo() << record->mValue;
-                    deleteRecord(record->mUri);
-                }
+                // NOTE: we store the draft ID as rkey in the post URI
+                const QString& recordUri = getDraftUri(draftView->mId);
+                auto postFeed = convertDraftToFeedViewPost(*draftView, recordUri);
+                postThreads.push_back(std::move(postFeed));
             }
 
-            Q_ASSERT(mDraftPostsModel);
-            mDraftPostsModel->setFeed(std::move(postThreads));
-
+            mDraftPostsModel->setFeed(std::move(postThreads), output->mCursor.value_or(""));
             emit draftsChanged();
             emit loadDraftPostsOk();
         },
@@ -1613,68 +2056,684 @@ void DraftPosts::listRecords()
             if (!presence)
                 return;
 
-            qDebug() << "Failed to list records:" << error << "-" << msg;
-            emit loadDraftPostsFailed(tr("Failed to get drafts: %1").arg(msg));
+            qDebug() << "Failed to get drafts:" << error << "-" << msg;
+            mDraftPostsModel->setGetFeedInProgress(false);
+            emit loadDraftPostsFailed(msg);
         });
 }
 
-void DraftPosts::deleteRecord(const QString& recordUri)
+void DraftPosts::loadBlueskyDraftsNextPage()
 {
-    Q_ASSERT(mStorageType == STORAGE_REPO);
-    ATProto::ATUri atUri(recordUri);
+    if (!mDraftPostsModel)
+        return;
 
-    if (!atUri.isValid())
+    const QString& cursor = mDraftPostsModel->getCursor();
+
+    if (cursor.isEmpty())
     {
-        qWarning() << "Invalid uri:" << recordUri;
+        qDebug() << "End of feed";
         return;
     }
 
-    if (!bskyClient())
-        return;
-
-    bskyClient()->deleteRecord(atUri.getAuthority(), atUri.getCollection(), atUri.getRkey(),
-        [atUri]{
-            qDebug() << "Deleted record:" << atUri.toString();
-        },
-        [atUri](const QString& error, const QString& msg){
-            qWarning() << "Failed to delete record:" << atUri.toString() << error << "-" << msg;
-        });
+    loadBlueskyDrafts(cursor);
 }
 
-bool DraftPosts::uploadImage(const QString& imageName, const UploadImageSuccessCb& successCb, const ErrorCb& errorCb)
+bool DraftPosts::saveBlueskyDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread)
 {
-    Q_ASSERT(mStorageType == STORAGE_REPO);
-    Q_ASSERT(successCb);
-    Q_ASSERT(errorCb);
+    Q_ASSERT(mStorageType == STORAGE_BLUESKY);
+    qDebug() << "Save Bluesky draft";
 
-    QByteArray imgData;
-    const auto [mimeType, imgSize] = PhotoPicker::createBlob(imgData, imageName);
+    if (!bskyClient())
+        return false;
 
-    if (imgData.isEmpty())
+    const QString dateTime = FileUtils::createDateTimeName(draftPost->indexedAt());
+    auto draft = createBlueskyDraft(draftPost, draftThread, dateTime);
+
+    if (!draft)
     {
-        qWarning() << "Image blob could not be created:" << imageName;
+        dropDraftMedia(draftPost, draftThread, dateTime);
         return false;
     }
 
-    bskyClient()->uploadBlob(imgData, mimeType,
-        [presence=getPresence(), imgSize, successCb](auto blob){
+    bskyClient()->createDraft(draft,
+        [this, presence=getPresence()](ATProto::AppBskyDraft::CreateDraftOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            successCb(std::move(blob), imgSize);
+            qDebug() << "Saved draft:" << output->mId;
+            emit saveDraftPostOk();
         },
-        [presence=getPresence(), errorCb](const QString& error, const QString& msg){
+        [this, presence=getPresence(), draftPost, draftThread, dateTime](const QString& error, const QString& msg) {
             if (!presence)
                 return;
 
-            qWarning() << "Upload image failed:" << error << " - " << msg;
-            errorCb(error, msg);
+            qDebug() << "Failed to save draft:" << error << "-" << msg;
+            dropDraftMedia(draftPost, draftThread, dateTime);
+            emit saveDraftPostFailed(msg);
         });
 
     return true;
 }
 
-void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
+ATProto::AppBskyDraft::Draft::SharedPtr DraftPosts::createBlueskyDraft(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName)
+{
+    auto draft = std::make_shared<ATProto::AppBskyDraft::Draft>();
+    draft->mDeviceId = mSkywalker->getUserSettings()->getDeviceId();
+    const QString deviceName = FileUtils::getDeviceName();
+    draft->mDeviceName = QString("%1 (%2)").arg(deviceName, Skywalker::APP_NAME);
+
+    draft->mPosts.reserve(draftThread.size() + 1);
+    const auto& post = createBlueskyDraftPost(draftPost, baseName, 0);
+
+    if (!post)
+        return nullptr;
+
+    draft->mPosts.push_back(post);
+
+    Draft::ReplyToPost::SharedPtr replyToPost = createReplyToPost(
+        draftPost->replyToUri(), draftPost->replyToAuthor(),
+        draftPost->replyToText(), draftPost->replyToDateTime());
+
+    if (replyToPost)
+        draft->mJson.insert(Lexicon::DRAFT_REPPLY_TO, replyToPost->toJson());
+
+    for (int i = 0; i < draftThread.size(); ++i)
+    {
+        const auto* draftThreadPost = draftThread[i];
+        const auto& threadPost = createBlueskyDraftPost(draftThreadPost, baseName, i + 1);
+
+        if (!threadPost)
+            return nullptr;
+
+        draft->mPosts.push_back(threadPost);
+    }
+
+    if (!draftPost->language().isEmpty())
+        draft->mLangs.push_back(draftPost->language());
+
+    draft->mDisableEmbedding = draftPost->embeddingDisabled();
+    draft->mThreadgateRules = createThreadgateRules(draftPost);
+
+    return draft;
+}
+
+void DraftPosts::dropDraftMedia(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName)
+{
+    const QString picDraftsPath = getPictureDraftsPath();
+
+    if (picDraftsPath.isEmpty())
+        return;
+
+    dropImages(picDraftsPath, createPicBaseName(baseName, 0), draftPost->images().size());
+    dropVideo(picDraftsPath, createPicBaseName(baseName, 0));
+
+    for (int i = 0; i < draftThread.size(); ++i)
+    {
+        const auto* draftThreadPost = draftThread[i];
+        dropImages(picDraftsPath, createPicBaseName(baseName, i + 1), draftThreadPost->images().size());
+        dropVideo(picDraftsPath, createPicBaseName(baseName, i + 1));
+    }
+}
+
+ATProto::AppBskyDraft::DraftPost::SharedPtr DraftPosts::createBlueskyDraftPost(const DraftPostData* draftPost, const QString& baseName, int threadIndex)
+{
+    auto post = std::make_shared<ATProto::AppBskyDraft::DraftPost>();
+    post->mText = draftPost->text();
+    post->mLabels = createSelfLabels(draftPost);
+
+    ATProto::AppBskyFeed::PostReplyRef::SharedPtr replyRef = ATProto::PostMaster::createReplyRef(
+        draftPost->replyToUri(), draftPost->replyToCid(),
+        draftPost->replyRootUri(), draftPost->replyRootCid());
+
+    if (replyRef)
+        post->mJson.insert(Lexicon::DRAFT_REPPLY_REF, replyRef->toJson());
+
+    if (!draftPost->images().empty())
+    {
+        const auto imageBaseName = createPicBaseName(baseName, threadIndex);
+        post->mEmbedImages = createDraftEmbedImages(draftPost, imageBaseName);
+
+        if (post->mEmbedImages.empty())
+            return {};
+    }
+
+    if (!draftPost->video().isNull())
+    {
+        const auto videoBaseName = createPicBaseName(baseName, threadIndex);
+        post->mEmbedVideos = createDraftEmbedVideos(draftPost, videoBaseName);
+
+        if (post->mEmbedVideos.empty())
+            return {};
+    }
+
+    post->mEmbedExternals = createDraftEmbedExternals(draftPost);
+    post->mEmbedRecords = createDraftEmbedRecords(draftPost);
+
+    if (!draftPost->embeddedLinks().empty())
+    {
+        auto links = createEmbeddedLinks(draftPost->embeddedLinks());
+        post->mJson.insert(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD, links->toJson());
+    }
+
+    return post;
+}
+
+ATProto::AppBskyDraft::DraftEmbedImage::List DraftPosts::createDraftEmbedImages(const DraftPostData* draftPost, const QString& baseName)
+{
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
+        return {};
+    }
+
+    ATProto::AppBskyDraft::DraftEmbedImage::List embedImageList;
+    const auto images = draftPost->images();
+    embedImageList.reserve(images.size());
+
+    for (int i = 0; i < images.size(); ++i)
+    {
+        const QString& imgName = images[i].getFullSizeUrl();
+        const QString& memeTopText = images[i].getMemeTopText();
+        const QString& memeBottomText = images[i].getMemeBottomText();
+        auto [blob, imgSize] = saveImage(imgName, memeTopText, memeBottomText, draftsPath, baseName, i);
+
+        if (!blob)
+        {
+            dropImages(draftsPath, baseName, i);
+            return {};
+        }
+
+        auto embedImage = std::make_shared<ATProto::AppBskyDraft::DraftEmbedImage>();
+        const QString& altText = images[i].getAlt();
+
+        if (!altText.isEmpty())
+            embedImage->mAlt = altText;
+
+        embedImage->mLocalRef = std::make_shared<ATProto::AppBskyDraft::DraftEmbedLocalRef>();
+        embedImage->mLocalRef->mPath = blob->mRefLink;
+
+        embedImage->mJson = embedImage->toJson();
+
+        if (!memeTopText.isEmpty())
+            embedImage->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+
+        if (!memeBottomText.isEmpty())
+            embedImage->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+        embedImageList.push_back(embedImage);
+    }
+
+    return embedImageList;
+}
+
+ATProto::AppBskyDraft::DraftEmbedVideo::List DraftPosts::createDraftEmbedVideos(const DraftPostData* draftPost, const QString& baseName)
+{
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
+        return {};
+    }
+
+    const auto video = draftPost->video();
+    Q_ASSERT(!video.isNull());
+    auto blob = saveVideo(video.getPlaylistUrl(), video.getStartMs(), video.getEndMs(),
+                          video.getRemoveAudio(), video.getNewHeight(), draftsPath, baseName);
+
+    if (!blob)
+    {
+        dropVideo(draftsPath, baseName);
+        return {};
+    }
+
+    auto embedVideo = std::make_shared<ATProto::AppBskyDraft::DraftEmbedVideo>();
+    const QString& altText = video.getAlt();
+
+    if (!altText.isEmpty())
+        embedVideo->mAlt = altText;
+
+    embedVideo->mLocalRef = std::make_shared<ATProto::AppBskyDraft::DraftEmbedLocalRef>();
+    embedVideo->mLocalRef->mPath = blob->mRefLink;
+
+    embedVideo->mJson = embedVideo->toJson();
+
+    if (video.getStartMs() > 0)
+        embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_START_MS_FIELD, video.getStartMs());
+
+    if (video.getEndMs() > 0)
+        embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_END_MS_FIELD, video.getEndMs());
+
+    if (video.getRemoveAudio())
+        embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_REMOVE_AUDIO_FIELD, video.getRemoveAudio());
+
+    if (video.getNewHeight())
+        embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_NEW_HEIGHT_FIELD, video.getNewHeight());
+
+    const auto presentation = video.getPresentation();
+
+    if (presentation != QEnums::VIDEO_PRESENTATION_DEFAULT && presentation != QEnums::VIDEO_PRESENTATION_UNKNOWN)
+    {
+        const QString rawPresentation = ATProto::AppBskyEmbed::videoPresentationToString((ATProto::AppBskyEmbed::VideoPresentation)presentation, "");
+        embedVideo->mJson.insert(Lexicon::DRAFT_VIDEO_PRESENTATION, rawPresentation);
+    }
+
+    return { embedVideo };
+}
+
+ATProto::AppBskyDraft::DraftEmbedExternal::List DraftPosts::createDraftEmbedExternals(const DraftPostData* draftPost)
+{   
+    if (!draftPost->gif().isNull())
+    {
+        auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
+        const QUrl gifUrl = getGifUrl(draftPost->gif());
+        embedExternal->mUri = gifUrl.toString();
+        return { embedExternal };
+    }
+    else if (!draftPost->externalLink().isEmpty())
+    {
+        auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
+        embedExternal->mUri = draftPost->externalLink();
+        return { embedExternal };
+    }
+
+    return {};
+}
+
+ATProto::ComATProtoLabel::SelfLabels::SharedPtr DraftPosts::createSelfLabels(const DraftPostData* draftPost) const
+{
+    if (draftPost->labels().empty())
+        return nullptr;
+
+    auto selfLabels = std::make_shared<ATProto::ComATProtoLabel::SelfLabels>();
+
+    for (const auto& label : draftPost->labels())
+    {
+        auto selfLabel = std::make_shared<ATProto::ComATProtoLabel::SelfLabel>();
+        selfLabel->mVal = label;
+        selfLabels->mValues.push_back(selfLabel);
+    }
+
+    return selfLabels;
+}
+
+ATProto::AppBskyDraft::DraftEmbedRecord::List DraftPosts::createDraftEmbedRecords(const DraftPostData* draftPost)
+{
+    auto embedRecord = std::make_shared<ATProto::AppBskyDraft::DraftEmbedRecord>();
+    embedRecord->mRecord = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
+
+    if (!draftPost->quoteUri().isEmpty())
+    {
+        embedRecord->mRecord->mUri = draftPost->quoteUri();
+        embedRecord->mRecord->mCid = draftPost->quoteCid();
+        return { embedRecord };
+    }
+
+    const auto quoteFeed = draftPost->quoteFeed();
+
+    if (!quoteFeed.isNull())
+    {
+        embedRecord->mRecord->mUri = quoteFeed.getUri();
+        embedRecord->mRecord->mCid = quoteFeed.getCid();
+        return { embedRecord };
+    }
+
+    const auto quoteList = draftPost->quoteList();
+
+    if (!quoteList.isNull())
+    {
+        embedRecord->mRecord->mUri = quoteList.getUri();
+        embedRecord->mRecord->mCid = quoteList.getCid();
+        return { embedRecord };
+    }
+
+    return {};
+}
+
+ATProto::AppBskyFeed::ThreadgateRules DraftPosts::createThreadgateRules(const DraftPostData* draftPost) const
+{
+    ATProto::AppBskyFeed::ThreadgateRules rules;
+
+    if (!draftPost->restrictReplies())
+        return rules;
+
+    rules.mAllowMention = draftPost->allowMention();
+    rules.mAllowFollower = draftPost->allowFollower();
+    rules.mAllowFollowing = draftPost->allowFollowing();
+
+    for (const auto& list : draftPost->allowLists())
+    {
+        auto listRule = std::make_shared<ATProto::AppBskyFeed::ThreadgateListRule>();
+        listRule->mList = list;
+        rules.mAllowList.push_back(listRule);
+    }
+
+    rules.mAllowNobody = !rules.mAllowMention && !rules.mAllowFollower && !rules.mAllowFollowing && rules.mAllowList.empty();
+    return rules;
+}
+
+void DraftPosts::deleteBlueskyDraft(const QString& draftId, int index)
+{
+    Q_ASSERT(mStorageType == STORAGE_BLUESKY);
+    qDebug() << "Delete draft:" << draftId;
+
+    if (!bskyClient())
+        return;
+
+    getDraftPostsModel();
+
+    bskyClient()->deleteDraft(draftId,
+        [this, presence=getPresence(), index]{
+            if (presence)
+            {
+                deleteMediaFiles(index);
+                mDraftPostsModel->deleteDraft(index);
+            }
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to delete draft:" << error << "-" << msg;
+            emit deleteDraftFailed(msg);
+        });
+}
+
+void DraftPosts::deleteMediaFiles(int index)
+{
+    const std::vector<Post> thread = mDraftPostsModel->getThread(index);
+    const QString baseName = getMediaBaseName(thread);
+
+    if (baseName.isEmpty())
+        return;
+
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        qWarning() << "No pictures drafts path";
+        return;
+    }
+
+    dropDraftPostFilesByBaseName(draftsPath, baseName);
+}
+
+QString DraftPosts::getMediaBaseName(const std::vector<Post>& thread) const
+{
+    for (const auto& post : thread)
+    {
+        auto images = post.getImages();
+
+        if (images.empty())
+        {
+            const RecordWithMediaView::Ptr& record = post.getRecordWithMediaView();
+
+            if (record)
+                images = record->getImages();
+        }
+
+        if (!images.empty())
+        {
+            const QString& url = images.front().getFullSizeUrl();
+            const QString baseName = getBaseNameFromMediaFullFileUrl(url);
+
+            if (!baseName.isEmpty())
+                return baseName;
+        }
+
+        VideoView::Ptr video = post.getVideoView();
+
+        if (!video)
+        {
+            const RecordWithMediaView::Ptr& record = post.getRecordWithMediaView();
+
+            if (record)
+                video = record->getVideoView();
+        }
+
+        if (video)
+        {
+            const QString& url = video->getPlaylistUrl();
+            const QString baseName = getBaseNameFromMediaFullFileUrl(url);
+
+            if (!baseName.isEmpty())
+                return baseName;
+        }
+    }
+
+    return {};
+}
+
+void DraftPosts::getPostExternal(const Post& post, int index)
+{
+    qDebug() << "Get post external:" << post.getUri() << "index:" << index;
+
+    auto externalView = post.getExternalView();
+    const QString linkUri = externalView ? externalView->getUri() : "";
+
+    if (linkUri.isEmpty())
+    {
+        qWarning() << "External link missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    auto linkCardReader = std::make_shared<LinkCardReader>(this);
+
+    connect(linkCardReader.get(), &LinkCardReader::linkCard, this,
+        [this, linkCardReader, post, index](LinkCard* card){
+            auto externalView = post.getExternalView();
+            auto external = externalView->getExternal();
+            external->mTitle = card->getTitle();
+            external->mDescription = card->getDescription();
+
+            if (!card->getThumb().isEmpty())
+                external->mThumb = card->getThumb();
+
+            mDraftPostsModel->updatePostExternal(post, index);
+        });
+
+    linkCardReader->getLinkCard(linkUri);
+}
+
+void DraftPosts::getPostRecord(const Post& post, int index)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index;
+
+    if (!bskyClient())
+        return;
+
+    auto recordView = post.getRecordViewFromRecordOrRecordWithMedia();
+
+    if (!recordView || recordView->isNull())
+    {
+        qWarning() << "Record view missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    const QString& uri = recordView->getNotFoundUri();
+
+    if (uri.isEmpty())
+    {
+        qWarning() << "Record URI missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    const ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+    {
+        qWarning() << "Record URI not valid:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_POST)
+        getPostRecordPost(post, index, uri);
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_FEED_GENERATOR)
+        getPostRecordFeed(post, index, uri);
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_GRAPH_LIST)
+        getPostRecordList(post, index, uri);
+    else if (atUri.getCollection() == ATProto::ATUri::COLLECTION_GRAPH_STARTERPACK)
+        getPostRecordStarterPack(post, index, uri);
+    else
+        qWarning() << "Record uri not supported:" << uri;
+}
+
+void DraftPosts::updatePostRecord(const Post& post, int index, const ATProto::AppBskyEmbed::Record* record, Draft::Quote::SharedPtr quote) const
+{
+    auto feedViewPost = post.getFeedViewPost();
+    Q_ASSERT(feedViewPost);
+
+    if (!feedViewPost)
+    {
+        qWarning() << "Feed view post missing:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    if (feedViewPost->mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW)
+    {
+        auto embed = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(feedViewPost->mPost->mEmbed->mEmbed);
+        embed->mRecord = createRecordView(record, quote);
+    }
+    else
+    {
+        feedViewPost->mPost->mEmbed = std::make_shared<ATProto::AppBskyEmbed::EmbedView>();
+        feedViewPost->mPost->mEmbed->mEmbed = createRecordView(record, quote);
+        feedViewPost->mPost->mEmbed->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+    }
+
+    const Post newPost(feedViewPost);
+    mDraftPostsModel->updatePostRecord(newPost, index);
+}
+
+void DraftPosts::failUpdatePostRecord(const Post& post, int index, const QString& error)
+{
+    if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
+    {
+        qDebug() << "Record has been deleted:" << post.getUri() << "index:" << index;
+        return;
+    }
+
+    mDraftPostsModel->updatePostRecordFailed(post, index);
+}
+
+void DraftPosts::getPostRecordPost(const Post& post, int index, const QString& postUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "post:" << postUri;
+
+    bskyClient()->getPosts({ postUri },
+        [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::PostView::List posts){
+            if (!presence)
+                return;
+
+            if (posts.empty())
+                return;
+
+            const auto& recordPost = posts.front();
+            auto quotePost = std::make_shared<Draft::QuotePost>();
+            quotePost->mAuthor = recordPost->mAuthor;
+
+            if (recordPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+                quotePost->mText = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(recordPost->mRecord)->mText;
+            else
+                qWarning() << "Unsupported record type:" << (int)recordPost->mRecordType;
+
+            quotePost->mDateTime = recordPost->mIndexedAt;
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_POST;
+            quote->mRecord = quotePost;
+
+            auto record = std::make_shared<ATProto::AppBskyEmbed::Record>();
+            record->mRecord = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
+            record->mRecord->mUri = recordPost->mUri;
+            record->mRecord->mCid = recordPost->mCid;
+
+            updatePostRecord(post, index, record.get(), quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get post record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
+
+void DraftPosts::getPostRecordFeed(const Post& post, int index, const QString& feedUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "feed:" << feedUri;
+
+    bskyClient()->getFeedGenerator(feedUri,
+        [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::GetFeedGeneratorOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_FEED;
+            quote->mRecord = output->mView;
+
+            updatePostRecord(post, index, nullptr, quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get feed record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
+
+void DraftPosts::getPostRecordList(const Post& post, int index, const QString& listUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "list:" << listUri;
+
+    bskyClient()->getList(listUri, 1, {},
+        [this, presence=getPresence(), post, index](ATProto::AppBskyGraph::GetListOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_LIST;
+            quote->mRecord = output->mList;
+
+            updatePostRecord(post, index, nullptr, quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get list record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
+
+void DraftPosts::getPostRecordStarterPack(const Post& post, int index, const QString& starterPackUri)
+{
+    qDebug() << "Get post record:" << post.getUri() << "index:" << index << "starterPack:" << starterPackUri;
+
+    bskyClient()->getStarterPack(starterPackUri,
+        [this, presence=getPresence(), post, index](ATProto::AppBskyGraph::StarterPackView::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto starterPackViewBasic = ATProto::GraphMaster::createStarterPackViewBasic(output);
+            auto quote = std::make_shared<Draft::Quote>();
+            quote->mRecordType = Draft::Quote::RecordType::QUOTE_STARTER_PACK;
+            quote->mRecord = starterPackViewBasic;
+
+            updatePostRecord(post, index, nullptr, quote);
+        },
+        [this, presence=getPresence(), post, index](const QString& error, const QString& msg) {
+            if (!presence)
+                return;
+
+            qDebug() << "Failed to get list record:" << error << "-" << msg;
+            failUpdatePostRecord(post, index ,error);
+        });
+}
+
+QUrl DraftPosts::getGifUrl(const TenorGif& gif) const
 {
     // Pack all gif properties into the URI.
     QUrlQuery query{
@@ -1688,6 +2747,12 @@ void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const Te
     QUrl gifUrl(gif.getUrl());
     gifUrl.setQuery(query);
 
+    return gifUrl;
+}
+
+void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
+{
+    const QUrl gifUrl = getGifUrl(gif);
     ATProto::PostMaster::addExternalToPost(post, gifUrl.toString(), gif.getDescription(), "", nullptr);
 }
 
@@ -1695,40 +2760,6 @@ void DraftPosts::addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post,
 {
     Q_ASSERT(!externalLink.isEmpty());
     ATProto::PostMaster::addExternalToPost(post, externalLink, "", "", nullptr);
-}
-
-void DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
-                     const QList<ImageView>& images,
-                     const std::function<void()>& continueCb, int imgSeq)
-{
-    Q_ASSERT(mStorageType == STORAGE_REPO);
-
-    if (images.isEmpty())
-    {
-        continueCb();
-        return;
-    }
-
-    emit uploadingImage(imgSeq);
-
-    const QString imgName = images.first().getFullSizeUrl();
-    const QString altText = images.first().getAlt();
-    const auto remainingImages = images.mid(1);
-
-    uploadImage(imgName,
-        [this, presence=getPresence(), &post, altText, remainingImages, continueCb, imgSeq](auto blob, QSize imgSize){
-            if (!presence)
-                return;
-
-            ATProto::PostMaster::addImageToPost(post, std::move(blob), imgSize.width(), imgSize.height(), altText);
-            addImagesToPost(post, remainingImages, continueCb, imgSeq + 1);
-        },
-        [this, presence=getPresence()](const QString&, const QString& msg){
-            if (!presence)
-                return;
-
-            emit saveDraftPostFailed(tr("Image upload failed: %1").arg(msg));
-        });
 }
 
 }

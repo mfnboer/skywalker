@@ -1124,7 +1124,7 @@ SkyPage {
         font.pointSize: guiSettings.scaledFont(9/8)
         textFormat: Text.RichText
         text: qsTr(`<a href=\"drafts\" style=\"color: ${guiSettings.linkColor}\">Drafts</a>`)
-        visible: threadPosts.count === 1 && !largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && draftPosts.hasDrafts
+        visible: threadPosts.count === 1 && !largeEditor && !hasFullContent() && !replyToPostUri && !openedAsQuotePost && (draftPosts.hasDrafts || blueskyDraftPosts.hasDrafts)
         onLinkActivated: showDraftPosts()
 
         Accessible.role: Accessible.Link
@@ -1921,21 +1921,21 @@ SkyPage {
         }
     }
 
-    DraftPosts {
+    SkyDraftPosts {
         id: draftPosts
         skywalker: page.skywalker
         storageType: DraftPosts.STORAGE_FILE
 
-        onSaveDraftPostOk: {
-            skywalker.showStatusMessage(qsTr("Saved post as draft"), QEnums.STATUS_LEVEL_INFO)
-            page.closed()
-        }
-
-        onSaveDraftPostFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onUploadingImage: (seq) => skywalker.showStatusMessage(qsTr(`Uploading image #${seq}`), QEnums.STATUS_LEVEL_INFO)
-        onLoadDraftPostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onDraftSaved: page.closed()
     }
 
+    SkyDraftPosts {
+        id: blueskyDraftPosts
+        skywalker: page.skywalker
+        storageType: DraftPosts.STORAGE_BLUESKY
+
+        onDraftSaved: page.closed()
+    }
 
     LanguageUtils {
         id: languageUtils
@@ -2316,7 +2316,7 @@ SkyPage {
                     page,
                     qsTr("Do you want to discard your post or save it as draft?"),
                     () => page.closed(),
-                    () => page.saveDraftPost())
+                    (storageType) => page.saveDraftPost(storageType))
         }
         else {
             guiSettings.askYesNoQuestion(
@@ -2524,7 +2524,7 @@ SkyPage {
         sendThreadPosts(sendingThreadPost + 1, prevUri, prevCid, threadRootUri, threadRootCid)
     }
 
-    function saveDraftPost() {
+    function saveDraftPost(storageType) {
         threadPosts.copyPostItemsToPostList()
         const postItem = threadPosts.postList[0]
         const qUri = postItem.getQuoteUri()
@@ -2582,24 +2582,61 @@ SkyPage {
             languageUtils.addUsedPostLanguage(threadItem.language)
         }
 
-        draftPosts.saveDraftPost(draft, draftItemList)
+        switch (storageType) {
+        case DraftPosts.STORAGE_FILE:
+            draftPosts.saveDraftPost(draft, draftItemList)
+            break
+        case DraftPosts.STORAGE_BLUESKY:
+            blueskyDraftPosts.saveDraftPost(draft, draftItemList)
+            break
+        default:
+            console.warn("Unknown storage type", storageType)
+            break
+        }
+
         postUtils.cacheTags(postItem.text)
         languageUtils.addUsedPostLanguage(postItem.language)
     }
 
     function showDraftPosts() {
-        let component = guiSettings.createComponent("DraftPostsView.qml")
-        let draftsPage = component.createObject(page, { model: draftPosts.getDraftPostsModel() })
+        let component = guiSettings.createComponent("DraftPostsPage.qml")
+        let draftsPage = component.createObject(page, {
+                localDraftPosts: draftPosts,
+                blueskyDraftPosts: blueskyDraftPosts
+        })
         draftsPage.onClosed.connect(() => root.popStack())
-        draftsPage.onSelected.connect((index) => {
+        draftsPage.onLocalSelected.connect((index) => {
             const draftDataList = draftPosts.getDraftPostData(index)
             setDraftPost(draftDataList)
             draftPosts.removeDraftPost(index)
             root.popStack()
         })
-        draftsPage.onDeleted.connect((index) => draftPosts.removeDraftPost(index))
+        draftsPage.onBlueskySelected.connect((index) => {
+            const mediaWarning = blueskyDraftPosts.getMediaStorageWarning(index)
+
+            if (mediaWarning) {
+                guiSettings.noticeOkCancel(
+                    draftsPage,
+                    qsTr(`You will lose: ${mediaWarning}`),
+                    () => {
+                        openBlueskyDraft(index)
+                        root.popStack()
+                    })
+            } else {
+                openBlueskyDraft(index)
+                root.popStack()
+            }
+        })
+        draftsPage.onLocalDeleted.connect((index) => draftPosts.deleteDraft(index))
+        draftsPage.onBlueskyDeleted.connect((index) => blueskyDraftPosts.deleteDraft(index))
 
         root.pushStack(draftsPage)
+    }
+
+    function openBlueskyDraft(index) {
+        const draftDataList = blueskyDraftPosts.getDraftPostData(index)
+        setDraftPost(draftDataList)
+        blueskyDraftPosts.removeDraftPost(index)
     }
 
     function addAnniversaryCard() {
@@ -3075,6 +3112,7 @@ SkyPage {
             skywalker.removeListListModel(restrictionsListModelId)
 
         draftPosts.removeDraftPostsModel()
+        blueskyDraftPosts.removeDraftPostsModel()
 
         for (const postData of editPostData)
             postData.release()
@@ -3102,6 +3140,7 @@ SkyPage {
 
         threadPosts.copyPostListToPostItems()
         draftPosts.loadDraftPosts()
+        blueskyDraftPosts.loadDraftPosts()
 
         if (editPostData.length > 0) {
             setDraftPost(editPostData)

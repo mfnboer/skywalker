@@ -23,6 +23,7 @@ Rectangle {
     required property string postContentWarning
     required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
+    required property string postFeedContext // HACK: abused for media stored on other device warning
     required property bool endOfFeed
 
     signal selected
@@ -106,6 +107,16 @@ Rectangle {
                 postIsThreadReply: false
                 isDraft: true
             }
+
+            AccessibleText {
+                width: parent.width
+                topPadding: 10
+                font.italic: true
+                wrapMode: Text.Wrap
+                font.pointSize: guiSettings.scaledFont(7/8)
+                text: `⚠️ ${postFeedContext}`
+                visible: Boolean(postFeedContext)
+            }
         }
 
         StatIcon {
@@ -134,6 +145,7 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
+            bottomPadding: 50
             elide: Text.ElideRight
             color: guiSettings.textColor
             text: qsTr("End of drafts")

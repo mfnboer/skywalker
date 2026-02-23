@@ -58,9 +58,10 @@ Quote::RecordType Quote::stringToRecordType(const QString& str)
 {
     static const std::unordered_map<QString, RecordType> recordMapping = {
         { Lexicon::DRAFT_DEFS_QUOTE_POST, RecordType::QUOTE_POST },
-        { "app.bsky.feed.defs#generatorView", RecordType::QUOTE_FEED },
-        { "app.bsky.graph.defs#listView", RecordType::QUOTE_LIST },
-        { ATProto::AppBskyLabeler::LabelerView::TYPE, RecordType::QUOTE_LABELER }
+        { ATProto::AppBskyFeed::GeneratorView::TYPE, RecordType::QUOTE_FEED },
+        { ATProto::AppBskyGraph::ListView::TYPE, RecordType::QUOTE_LIST },
+        { ATProto::AppBskyLabeler::LabelerView::TYPE, RecordType::QUOTE_LABELER },
+        { ATProto::AppBskyGraph::StarterPackViewBasic::TYPE, RecordType::QUOTE_STARTER_PACK }
     };
 
     const auto it = recordMapping.find(str);
@@ -88,6 +89,9 @@ QJsonObject Quote::toJson() const
         break;
     case RecordType::QUOTE_LABELER:
         json.insert("record", std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord)->toJson());
+        break;
+    case RecordType::QUOTE_STARTER_PACK:
+        json.insert("record", std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(mRecord)->toJson());
         break;
     case RecordType::UNKNOWN:
         qWarning() << "Unknown record type:" << (int)mRecordType;
@@ -120,6 +124,9 @@ Quote::SharedPtr Quote::fromJson(const QJsonObject& json)
         break;
     case RecordType::QUOTE_LABELER:
         quote->mRecord = xjson.getRequiredObject<ATProto::AppBskyLabeler::LabelerView>("record");
+        break;
+    case RecordType::QUOTE_STARTER_PACK:
+        quote->mRecord = xjson.getRequiredObject<ATProto::AppBskyGraph::StarterPackViewBasic>("record");
         break;
     case RecordType::UNKNOWN:
         qWarning() << "Unknown record type:" << rawRecordType;

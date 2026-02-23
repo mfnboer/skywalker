@@ -252,7 +252,6 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     // HACK: for some reason Twitch does not give the linkcard for a channel on the first call
     // NOTE: that a delay (500ms) is needed. Immediate retry does not work.
-    qDebug() << "MICHEL:" << mRetry << mCookieSaveControl << url.host() << card->getTitle().toLower();
     if (!mRetry && url.host().endsWith("twitch.tv") && card->getTitle().toLower() == "twitch")
     {
         qDebug() << "Retry Twitch:" << url.toString();
