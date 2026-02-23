@@ -2,25 +2,25 @@
 // License: GPLv3
 #include "draft_orphaned_media_checker.h"
 #include "draft_posts.h"
-#include "file_utils.h"
 #include "utils.h"
 
 namespace Skywalker {
 
-DraftOrphanedMediaChecker::DraftOrphanedMediaChecker(ATProto::Client::SharedPtr& bsky) :
+DraftOrphanedMediaChecker::DraftOrphanedMediaChecker(const QString& userDid, ATProto::Client::SharedPtr& bsky) :
+    mUserDid(userDid),
     mBsky(bsky)
 {
-    qDebug() << "Created draft orphaned media checker";
+    qDebug() << "Created draft orphaned media checker:" << mUserDid;
 }
 
 DraftOrphanedMediaChecker::~DraftOrphanedMediaChecker()
 {
-    qDebug() << "Destroyed draft orphaned media checker";
+    qDebug() << "Destroyed draft orphaned media checker:" << mUserDid;
 }
 
 void DraftOrphanedMediaChecker::start(const std::function<void()>& finishedCb)
 {
-    qDebug() << "Start draft orphaned media check";
+    qDebug() << "Start draft orphaned media check:" << mUserDid;
     Q_ASSERT(mBsky);
 
     if (!mBsky)
@@ -132,15 +132,7 @@ void DraftOrphanedMediaChecker::updateMediaFiles(const ATProto::AppBskyDraft::Dr
 
 QString DraftOrphanedMediaChecker::getPictureDraftsPath() const
 {
-    const QString draftsPath = FileUtils::getPicturesPath(DraftPosts::DRAFT_BSKY_PICTURES_DIR);
-
-    if (draftsPath.isEmpty())
-    {
-        qWarning() << "Failed to get path:" << DraftPosts::DRAFT_BSKY_PICTURES_DIR;
-        return {};
-    }
-
-    return draftsPath;
+    return DraftPosts::getPictureDraftsPath(DraftPosts::STORAGE_BLUESKY, mUserDid);
 }
 
 QStringList DraftOrphanedMediaChecker::getMediaFileNames() const
@@ -161,19 +153,19 @@ void DraftOrphanedMediaChecker::cleanupOrphans()
 {
     qDebug() << "Cleanup orphans:" << mFileNamesToCheck;
 
-    const QString draftsPath = FileUtils::getPicturesPath(DraftPosts::DRAFT_BSKY_PICTURES_DIR);
+    const QString mediaPath = getPictureDraftsPath();
 
-    if (draftsPath.isEmpty())
+    if (mediaPath.isEmpty())
         return;
 
-    QDir dir(draftsPath);
+    QDir dir(mediaPath);
 
     for (const auto& fileName : mFileNamesToCheck)
     {
         if (dir.remove(fileName))
-            qDebug() << "Removed orphaned media file:" << fileName << "in dir:" << draftsPath;
+            qDebug() << "Removed orphaned media file:" << fileName << "in dir:" << mediaPath;
         else
-            qWarning() << "Failed to remove orphaned media file:" << fileName << "in dir:" << draftsPath;
+            qWarning() << "Failed to remove orphaned media file:" << fileName << "in dir:" << mediaPath;
     }
 
     mFileNamesToCheck.clear();

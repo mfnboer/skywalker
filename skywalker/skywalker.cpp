@@ -4642,9 +4642,22 @@ void Skywalker::checkAnniversary()
 
 void Skywalker::checkDraftOrphanedMedia()
 {
-    // TODO: daily check
-    auto checker = std::make_shared<DraftOrphanedMediaChecker>(mBsky);
-    checker->start([checker]{ qDebug() << "Finished draft orphaned media check"; });
+    const QDateTime lastCheck = mUserSettings.getLastDraftOrphanCheck(mUserDid);
+
+    if (lastCheck.isValid())
+    {
+        const auto dt = QDateTime::currentDateTime() - lastCheck;
+        qDebug() << "Last check:" << lastCheck.toString() << dt / 1h << "hours ago";
+
+        if (dt < 24h)
+            return;
+    }
+
+    auto checker = std::make_shared<DraftOrphanedMediaChecker>(mUserDid, mBsky);
+    checker->start([this, checker]{
+        qDebug() << "Finished draft orphaned media check";
+        mUserSettings.updateLastDraftOrphanCheck(mUserDid);
+    });
 }
 
 void Skywalker::updateServiceAppView(const QString& did)

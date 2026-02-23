@@ -236,7 +236,7 @@ Item {
 
     function askDiscardSaveQuestion(parent, question, onDiscardCb, onSaveCb) {
         let component = guiSettings.createComponent("DiscardSaveMessage.qml")
-        let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save })
+        let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save | Dialog.Help })
         message.onDiscarded.connect(() => {
                 message.destroy()
                 onDiscardCb()

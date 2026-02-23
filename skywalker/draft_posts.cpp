@@ -20,6 +20,7 @@ namespace {
 
 constexpr char const* DRAFT_POSTS_DIR = "sw-draft-posts";
 constexpr char const* DRAFT_PICTURES_DIR = "SkywalkerDrafts";
+constexpr char const* DRAFT_BSKY_PICTURES_DIR = "SkywalkerBskyDrafts";
 
 QString createAbsPath(const QString& draftsPath, const QString& fileName)
 {
@@ -644,9 +645,22 @@ QString DraftPosts::getDraftsPath() const
     return draftsPath;
 }
 
-QString DraftPosts::getPictureDraftsPath() const
+QString DraftPosts::getPictureDraftsPath(StorageType storageType, const QString& did)
 {
-    const QString path = mStorageType == STORAGE_BLUESKY ? DRAFT_BSKY_PICTURES_DIR : DRAFT_PICTURES_DIR;
+    // NOTE: for the orphaned draft media files checker it is important
+    // that the media files are stored per DID. The checker cross references
+    // these file against drafts for that DID.
+    // Nested sub directories are not allowed in the public Pictures directory,
+    // so we concat the DID to the directory name.
+
+    // Colons are not allowed in Picture path/file names.
+    QString normalizedDid = did;
+    normalizedDid.replace(':', '-');
+
+    const QString path = storageType == STORAGE_BLUESKY ?
+                             QString("%1-%2").arg(DRAFT_BSKY_PICTURES_DIR, normalizedDid) :
+                             DRAFT_PICTURES_DIR;
+
     const QString draftsPath = FileUtils::getPicturesPath(path);
 
     if (draftsPath.isEmpty())
@@ -656,6 +670,12 @@ QString DraftPosts::getPictureDraftsPath() const
     }
 
     return draftsPath;
+}
+
+QString DraftPosts::getPictureDraftsPath() const
+{
+    const auto did = mSkywalker->getUserDid();
+    return getPictureDraftsPath(mStorageType, did);
 }
 
 QString DraftPosts::createDraftPostFileName(const QString& baseName) const

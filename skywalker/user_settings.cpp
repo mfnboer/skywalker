@@ -2317,6 +2317,16 @@ void UserSettings::setDraftStorageType(DraftPosts::StorageType storageType)
     mSettings.setValue("draftStorageType", (int)storageType);
 }
 
+QDateTime UserSettings::getLastDraftOrphanCheck(const QString& did) const
+{
+    return mSettings.value(key(did, "lastDraftOrphanCheck")).toDateTime();
+}
+
+void UserSettings::updateLastDraftOrphanCheck(const QString& did)
+{
+    mSettings.setValue(key(did, "lastDraftOrphanCheck"), QDateTime::currentDateTime());
+}
+
 void UserSettings::cleanup()
 {
     mSettings.remove("draftRepoToFileMigration");

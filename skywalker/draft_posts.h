@@ -39,8 +39,8 @@ public:
     Q_ENUM(StorageType)
 
     static constexpr int MAX_DRAFTS = 100;
-    static constexpr char const* DRAFT_BSKY_PICTURES_DIR = "SkywalkerBskyDrafts";
 
+    static QString getPictureDraftsPath(StorageType storageType, const QString& did);
     static void setReplyRestrictions(DraftPostData* data, const Post& post);
     static void setDraftPost(DraftPostData* data, const Post& post);
 

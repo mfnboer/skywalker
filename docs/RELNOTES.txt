@@ -1,5 +1,6 @@
 next
 ====
+* Support for Bluesky drafts
 * Support for Giphy GIF's
 * Support GIF presentation for video (GIF) playing/upload
 * Show pronouns when replying or quoting a post

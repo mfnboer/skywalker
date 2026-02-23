@@ -527,6 +527,9 @@ public:
     Q_INVOKABLE DraftPosts::StorageType getDraftStorageType() const;
     Q_INVOKABLE void setDraftStorageType(DraftPosts::StorageType storageType);
 
+    QDateTime getLastDraftOrphanCheck(const QString& did) const;
+    void updateLastDraftOrphanCheck(const QString& did);
+
     void sync() { mSettings.sync(); }
     void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }
 
