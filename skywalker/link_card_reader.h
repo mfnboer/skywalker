@@ -3,6 +3,7 @@
 #pragma once
 #include "link_card.h"
 #include "gif_utils.h"
+#include "tenor_gif.h"
 #include <QCache>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -25,6 +26,7 @@ public:
 signals:
     void linkCard(LinkCard*);
     void linkCardFailed();
+    void linkGif(TenorGif);
 
 private:
     QString toPlainText(const QString& text);

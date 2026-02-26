@@ -1,5 +1,6 @@
 next
 ====
+* Eurosky support
 * Support for Bluesky drafts
 * Support for Giphy GIF's
 * Support GIF presentation for video (GIF) playing/upload

@@ -41,7 +41,7 @@ SkyPage {
             elide: Text.ElideRight
             color: "white"
             textFormat: Text.RichText
-            text: qsTr("Explore the <b>Bluesky</b> social media network with Skywalker. To use Skywalker you must have a Bluesky account. If you do not have an account yet, then create one using the official Bluesky app or on <a href=\"https://bsky.app/\" style=\"color: ivory; font-weight: bold;\">https://bsky.app</a>")
+            text: qsTr("Explore the <b>ATProto</b> social media network with Skywalker. To use Skywalker you must have an ATProto account (Bluesky, Eurosky, or any other). If you do not have an account yet, then create one using the official Bluesky app or on <a href=\"https://bsky.app/\" style=\"color: ivory; font-weight: bold;\">https://bsky.app</a>")
 
             onLinkActivated: (link) => { root.openLink(link) }
 

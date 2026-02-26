@@ -591,6 +591,12 @@ SkyPage {
                             if (!autoLinkCard)
                                 return
 
+                            if (postItem.images.length > 0)
+                                return
+
+                            if (postItem.video)
+                                return
+
                             if (gifAttachment.visible)
                                 return
 
@@ -760,10 +766,11 @@ SkyPage {
                     // GIF attachment
                     AnimatedImage {
                         property tenorgif gif
+                        readonly property int gifWidth: gif ? (gif.smallSize.width > 0 ? gif.smallSize.width : 320) : 1
 
                         id: gifAttachment
                         x: page.margin
-                        width: Math.min(gif ? gif.smallSize.width : 1, page.width - 2 * page.margin)
+                        width: Math.min(gifWidth, page.width - 2 * page.margin)
                         anchors.top: videoAttachement.bottom
                         anchors.topMargin: !gif.isNull() ? 10 : 0
                         fillMode: Image.PreserveAspectFit
@@ -791,6 +798,11 @@ SkyPage {
                             svg: SvgOutline.close
                             accessibleName: qsTr("remove GIF image")
                             onClicked: gifAttachment.hide()
+                        }
+
+                        BusyIndicator {
+                            anchors.centerIn: parent
+                            running: gifAttachment.status == Image.Loading
                         }
                     }
 
@@ -1510,6 +1522,20 @@ SkyPage {
             }
 
             getNextLink()
+        }
+
+        onLinkGif: (gif) => {
+            busyIndicator.running = false
+            console.debug("Got GIF:", gif.url)
+            linkCardTimer.immediateGetInProgress = false
+
+            let postItem = threadPosts.itemAt(linkCardTimer.postIndex)
+
+            if (postItem) {
+                postItem.getGifAttachment().show(gif)
+                let postText = postItem.getPostText()
+                postText.cutLinkIfJustAdded(postText.firstWebLink, () => {})
+            }
         }
 
         onLinkCardFailed: {
@@ -2419,9 +2445,11 @@ SkyPage {
                 tenor.registerShare(postItem.gif)
 
             const attribution = postItem.gif.isGiphy() ? "Powered by Giphy" : "via Tenor"
+            const gifAttachment = threadPosts.itemAt(postIndex).getGifAttachment()
+            const gifSourceSize = gifAttachment.sourceSize
 
             let gifCard = linkCardReader.makeLinkCard(
-                    postItem.gif.getUrlForPosting(),
+                    postItem.gif.getUrlForPosting(gifSourceSize),
                     `${postItem.gif.description} (${attribution})\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
                     qsTr("This GIF has been posted from Skywalker for Android. " +
                          "Get Skywalker from Google Play.") +

@@ -64,7 +64,7 @@ public:
     void setIsGiphy(bool isGiphy) { mPrivate->mIsGiphy = isGiphy; }
 
     // Get a URL that is compatible with Bluesky
-    Q_INVOKABLE const QString getUrlForPosting() const;
+    Q_INVOKABLE const QString getUrlForPosting(QSize fallbackSize) const;
 
     TenorGif deepCopy() const;
 

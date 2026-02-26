@@ -61,8 +61,9 @@ QString GifUtils::getGifUrl(const QString& link) const
     return {};
 }
 
-QSize GifUtils::gitGifSize(const QString& link) const
+QSize GifUtils::getGifSize(const QString& link) const
 {
+    qDebug() << link;
     const QUrl url(link);
 
     if (!url.hasQuery())

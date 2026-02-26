@@ -64,7 +64,7 @@ static void setGif(DraftPostData* data, const Post& post)
 
     GifUtils gifUtils;
 
-    if (!gifUtils.isTenorLink(externalView->getUri()))
+    if (!gifUtils.isGif(externalView->getUri()))
         return;
 
     const QUrl uri(externalView->getUri());

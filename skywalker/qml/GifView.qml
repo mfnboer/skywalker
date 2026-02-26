@@ -10,6 +10,7 @@ Item {
     required property basicprofile contentLabeler
 
     id: view
+    width: parent.width
     height: Math.max(gifImage.height + (tenorAttribution.visible ? tenorAttribution.height : 0) + (giphyAttribution.visible ? giphyAttribution.height : 0) + 5, gifLoadingIndicator.height)
 
     AnimatedImagePreview {
@@ -19,7 +20,9 @@ Item {
         contentVisibility: view.contentVisibility
         contentWarning: view.contentWarning
         contentLabeler: view.contentLabeler
-        imgSize: gifUtils.gitGifSize(url)
+
+        // Use the view URI as the url query params have been removed by getGifUrl
+        imgSize: gifUtils.getGifSize(view.uri)
     }
     BusyIndicator {
         id: gifLoadingIndicator

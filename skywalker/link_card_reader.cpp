@@ -132,13 +132,14 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSav
         {
             qDebug() << "Create Giphy link card";
 
-            auto* card = makeLinkCard(
-                gifUrl,
-                QString(tr("Giphy GIF posted from Skywalker %1").arg(SKYWALKER_HANDLE)),
-                QString(tr("This GIF has been posted from Skywalker for Android. Get Skywalker from Google Play.<br>Bluesky: %1")).arg(SKYWALKER_HANDLE),
-                gifUrl);
+            TenorGif gif("",
+                         tr("This GIF has been posted from Skywalker for Android. Get Skywalker from Google Play.<br>Bluesky: %1").arg(SKYWALKER_HANDLE),
+                         "",
+                         gifUrl, QSize{},
+                         gifUrl, QSize{},
+                         gifUrl, QSize{});
 
-            emit linkCard(card);
+            emit linkGif(gif);
             return;
         }
     }

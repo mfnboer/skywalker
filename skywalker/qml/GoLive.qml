@@ -118,6 +118,12 @@ Dialog {
             linkCard.show(card)
         }
 
+        onLinkGif: (gif) => {
+            inProgress = false
+            console.warn("GIF not supported:", gif.url)
+            linkCard.hide()
+        }
+
         onLinkCardFailed: {
             inProgress= false
             console.debug("Failed to get link card")

@@ -64,7 +64,7 @@ SkyPage {
                 leftPadding: 10
                 font.bold: true
                 color: guiSettings.textColor
-                text: qsTr("Sign into")
+                text: qsTr("Hosting provider")
             }
 
             ComboBox {
@@ -72,7 +72,7 @@ SkyPage {
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
-                model: ["bsky.social"]
+                model: ["bsky.social", "eurosky.social"]
                 editable: true
                 editText: host
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -80,8 +80,8 @@ SkyPage {
                 activeFocusOnTab: false
 
                 Accessible.role: Accessible.ComboBox
-                Accessible.name: qsTr(`Sign into network ${editText}`)
-                Accessible.description: qsTr("Choose network to sign into")
+                Accessible.name: qsTr(`Hosting provider ${editText}`)
+                Accessible.description: qsTr("Choose hosting provider to sign into")
                 Accessible.editable: enabled
 
                 Rectangle {
@@ -90,6 +90,21 @@ SkyPage {
                     height: hostField.height
                     radius: 5
                     color: guiSettings.textInputBackgroundColor
+                }
+
+                function init() {
+                    if (!host)
+                        return
+
+                    const index = find(host)
+
+                    if (index >= 0) {
+                        currentIndex = index
+                        return
+                    }
+
+                    model.push(host)
+                    currentIndex = model.length - 1
                 }
             }
 
@@ -262,6 +277,8 @@ SkyPage {
     }
 
     Component.onCompleted: {
+        hostField.init()
+
         if (authFactorTokenRequired())
             authFactorTokenField.setFocus()
         else if (isNewAccount())

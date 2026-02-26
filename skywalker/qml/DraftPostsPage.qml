@@ -31,7 +31,7 @@ SkyPage {
             text: qsTr("On device")
         }
         AccessibleTabButton {
-            text: qsTr("Bluesky")
+            text: qsTr("Cloud")
         }
     }
 

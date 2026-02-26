@@ -22,8 +22,8 @@ Dialog {
 
     onHelpRequested: {
         guiSettings.notice(root, qsTr(
-            "You can save a draft locally on your device or in the Bluesky network. " +
-            "When a draft is saved in the network, then you can access it from other " +
+            "You can save a draft locally on your device or in the cloud (Bluesky or other). " +
+            "When a draft is saved in the cloud, you can access it from other " +
             "devices and apps.<br><br>" +
             "However any attached images and videos are always stored " +
             "on the device and cannot be accessed from other devices or apps."
@@ -70,7 +70,7 @@ Dialog {
 
             SkyRoundRadioButton {
                 Layout.fillWidth: true
-                text: qsTr("Save on Bluesky")
+                text: qsTr("Save in the cloud")
                 checked: storageType === DraftPosts.STORAGE_BLUESKY
 
                 onCheckedChanged: {

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-RoundedFrame {
+RoundCornerMask {
     required property string url
     property string title
     required property int contentVisibility // QEnums::ContentVisibility
@@ -14,17 +14,22 @@ RoundedFrame {
     property alias status: img.status
 
     id: frame
-    objectToRound: img
     width: filter.imageVisible() ? img.width : parent.width
     height: filter.imageVisible() ? img.height : filter.height
+    color: aspectRatio > 0.0 ? "transparent" : guiSettings.postHighLightColor
 
     ThumbAnimatedImageView {
         id: img
-        width: aspectRatio > 0.0 ? calcWidth() : Math.min(implicitWidth, frame.parent.width)
-        height: aspectRatio > 0.0 ? width * aspectRatio : undefined
+        width: aspectRatio > 0.0 ? calcWidth() : frame.parent.width
+        height: aspectRatio > 0.0 ? width * aspectRatio : Math.min(width, guiSettings.maxImageHeight)
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
         url: filter.imageVisible() ? frame.url : ""
+
+        onStatusChanged: {
+            if (status == Image.Ready)
+                imageUtils.setDominantColor(img, (color) => { frame.color = color })
+        }
 
         function calcWidth() {
             let w = Math.min(frame.parent.width, imgSize.width)
@@ -61,7 +66,9 @@ RoundedFrame {
         thumbImageViewList: [img]
         isAnimatedImage: true
         animatedImageAlt: title
-        onStarted: frame.visible = false
-        onFinished: frame.visible = true
+    }
+
+    SkyImageUtils {
+        id: imageUtils
     }
 }
