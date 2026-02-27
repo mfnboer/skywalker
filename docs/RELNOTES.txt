@@ -1,4 +1,4 @@
-next
+4.28
 ====
 * Eurosky support
 * Support for Bluesky drafts

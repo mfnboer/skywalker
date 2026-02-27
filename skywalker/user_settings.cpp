@@ -423,6 +423,9 @@ QString UserSettings::getActiveUserDid() const
 
 void UserSettings::addUser(const QString& did, const QString& host)
 {
+    // Host may have been changed for an existing user.
+    mSettings.setValue(key(did, "host"), host);
+
     auto users = getUserDidList();
 
     if (users.contains(did))
@@ -434,7 +437,6 @@ void UserSettings::addUser(const QString& did, const QString& host)
     users.append(did);
     users.sort();
     mSettings.setValue("users", users);
-    mSettings.setValue(key(did, "host"), host);
 }
 
 void UserSettings::removeUser(const QString& did)

@@ -5,7 +5,8 @@ import skywalker
 
 GridLayout {
     required property var userPrefs
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
 
     columns: 2
 
@@ -49,29 +50,24 @@ GridLayout {
     }
 
     AccessibleText {
-        color: guiSettings.textColor
         text: qsTr("Birthday:")
     }
     AccessibleText {
         Layout.fillWidth: true
-        color: guiSettings.textColor
         text: userPrefs.birthDate
     }
 
     AccessibleText {
-        color: guiSettings.textColor
         text: "PDS:"
     }
     AccessibleText {
         Layout.fillWidth: true
-        color: guiSettings.textColor
         elide: Text.ElideRight
         text: userPrefs.pds
     }
 
     AccessibleText {
         id: didLabel
-        color: guiSettings.textColor
         text: "DID:"
     }
     RowLayout {
@@ -79,7 +75,6 @@ GridLayout {
 
         AccessibleText {
             Layout.fillWidth: true
-            color: guiSettings.textColor
             elide: Text.ElideRight
             text: userPrefs.did
         }
@@ -91,6 +86,15 @@ GridLayout {
             accessibleName: qsTr("copy") + " D I D"
             onClicked: skywalker.copyToClipboard(userPrefs.did)
         }
+    }
+
+    AccessibleText {
+        text: qsTr("Provider:")
+    }
+    AccessibleText {
+        Layout.fillWidth: true
+        elide: Text.ElideRight
+        text: userSettings.getHost(userPrefs.did)
     }
 
     Rectangle {

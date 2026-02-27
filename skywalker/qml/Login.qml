@@ -76,13 +76,11 @@ SkyPage {
                 editable: true
                 editText: host
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                enabled: isNewAccount()
                 activeFocusOnTab: false
 
                 Accessible.role: Accessible.ComboBox
                 Accessible.name: qsTr(`Hosting provider ${editText}`)
                 Accessible.description: qsTr("Choose hosting provider to sign into")
-                Accessible.editable: enabled
 
                 Rectangle {
                     z: parent.z - 1
