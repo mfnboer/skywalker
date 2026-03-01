@@ -15,7 +15,7 @@ bool Anniversary::isAnniversary(QDate date) const
 {
     if (mFirstAppearance.isNull())
     {
-        qWarning() << "First appearane unknown";
+        qWarning() << "First appearance unknown";
         return false;
     }
 

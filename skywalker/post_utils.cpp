@@ -712,7 +712,6 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
                              const PostFeedContext& postFeedContext)
 {
     emit postProgress(video.mIsGif ? tr("Uploading GIF") : tr("Uploading video"));
-    std::shared_ptr<QIODevice> ioDevice;
 
     if (video.mResource.startsWith("file://"))
     {
@@ -727,7 +726,7 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
             return;
         }
 
-        ioDevice = file;
+        continuePost(file, video, post, postFeedContext);
     }
     else if (video.mResource.startsWith("http"))
     {
@@ -746,15 +745,36 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
         QNetworkRequest request(url);
         QNetworkReply* reply = mNetwork->get(request);
         mNetwork->setAutoDeleteReplies(true);
-        ioDevice = std::shared_ptr<QIODevice>(reply);
+
+        connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, video, post, postFeedContext]{
+            if (!presence)
+                return;
+
+            if (reply->error() != QNetworkReply::NoError)
+            {
+                const QString& error = reply->errorString();
+                qWarning() << "Failed to get video:" << video.mResource << "Error:" << error;
+                emit postFailed(tr("Could not get video: %1").arg(error));
+
+                delete reply;
+                return;
+            }
+
+            std::shared_ptr<QIODevice> ioDevice(reply);
+            continuePost(ioDevice, video, post, postFeedContext);
+        });
     }
     else
     {
         qWarning() << "Unknown video source:" << video.mResource;
         emit postFailed(tr("Could not open video"));
-        return;
     }
+}
 
+void PostUtils::continuePost(std::shared_ptr<QIODevice> ioDevice, const PostAttachmentVideo& video,
+                             ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                             const PostFeedContext& postFeedContext)
+{
     if (!bskyClient())
         return;
 

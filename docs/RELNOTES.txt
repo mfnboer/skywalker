@@ -1,3 +1,7 @@
+next
+====
+* Fix Giphy upload error: uploaded file format is not supported
+
 4.28
 ====
 * Eurosky support

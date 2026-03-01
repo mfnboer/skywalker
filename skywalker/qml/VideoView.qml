@@ -238,7 +238,6 @@ Column {
                     return;
                 }
 
-
                 if (!autoLoad) {
                     if (streamingEnabled) {
                         transcodedSource = videoSource

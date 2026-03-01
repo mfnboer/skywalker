@@ -176,6 +176,9 @@ private:
                       const PostFeedContext& postFeedContext);
     void continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                       const PostFeedContext& postFeedContext);
+    void continuePost(std::shared_ptr<QIODevice> ioDevice, const PostAttachmentVideo& video,
+                      ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+                      const PostFeedContext& postFeedContext);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post, const PostFeedContext& postFeedContext);
 
     void continueRepost(const QString& uri, const QString& cid,
