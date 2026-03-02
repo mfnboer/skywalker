@@ -1,5 +1,6 @@
 next
 ====
+* Support 16KB pages
 * Fix Giphy upload error: uploaded file format is not supported
 
 4.28

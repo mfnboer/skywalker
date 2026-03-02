@@ -111,5 +111,12 @@ android {
         minSdkVersion qtMinSdkVersion
         targetSdkVersion qtTargetSdkVersion
         ndk.abiFilters = qtTargetAbiList.split(",")
+
+        externalNativeBuild {
+            cmake {
+                cppFlags '-std=c++23'
+                arguments '-DANDROID_STL=c++_shared', "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
     }
 }

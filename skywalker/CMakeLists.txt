@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
@@ -677,6 +677,5 @@ if (ANDROID AND Qt6Core_VERSION VERSION_GREATER_EQUAL 6.9.0)
         PRIVATE Qt6::CorePrivate
     )
 endif()
-
 
 target_include_directories(libskywalker INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ..)
