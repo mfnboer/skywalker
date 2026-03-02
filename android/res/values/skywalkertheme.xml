@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <style name="skywalkerTheme">
+        <item name="android:windowBackground">@drawable/skywalkersplashscreen</item>
+        <item name="android:windowDisablePreview">false</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+</resources>
+

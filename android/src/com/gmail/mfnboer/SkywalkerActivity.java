@@ -119,6 +119,11 @@ public class SkywalkerActivity extends QtActivity {
         Intent intent = getIntent();
         String action = intent.getAction();
 
+        if (action == null) {
+            Log.w(LOGTAG, "NULL action");
+            return;
+        }
+
         if (action.equals(Intent.ACTION_SEND))
             handleActionSend(intent);
         else if (action.equals(Intent.ACTION_SEND_MULTIPLE))

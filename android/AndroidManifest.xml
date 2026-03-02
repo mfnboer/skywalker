@@ -21,6 +21,16 @@
         android:fullBackupOnly="true"
         android:icon="@mipmap/icon">
         <activity
+            android:name="com.gmail.mfnboer.SplashActivity"
+            android:exported="true"
+            android:theme="@style/splashScreenTheme"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name="com.gmail.mfnboer.SkywalkerActivity"
             android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
             android:label="Skywalker"
@@ -28,14 +38,12 @@
             android:screenOrientation="unspecified"
             android:windowSoftInputMode="adjustNothing" 
             android:exported="true"
-            android:theme="@style/splashScreenTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            android:theme="@style/skywalkerTheme">
             <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
             <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
             <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
+            <meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/skywalkersplashscreen"/>
+            <meta-data android:name="android.app.splash_screen_sticky" android:value="true"/>
             <intent-filter android:label="Post">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
