@@ -11,8 +11,10 @@ static constexpr int MAX_INTERACTIONS = 150;
 static constexpr int MAX_POSTS_ON_SCREEN = 200;
 static constexpr auto MIN_POST_SEEN_DURATION = 800ms;
 
-InteractionSender::InteractionSender(const QString& feedDid, ATProto::Client::SharedPtr bsky, QObject* parent) :
+InteractionSender::InteractionSender(const std::optional<QString> feedUri, const QString& feedDid,
+                                     ATProto::Client::SharedPtr bsky, QObject* parent) :
     QObject(parent),
+    mFeedUri(feedUri),
     mFeedDid(feedDid),
     mBsky(bsky)
 {
@@ -121,12 +123,12 @@ void InteractionSender::sendInteractions()
     if (mInteractions.empty())
         return;
 
-    mBsky->sendInteractions(makeAtInteractionList(), mFeedDid,
+    mBsky->sendInteractions(mFeedUri, makeAtInteractionList(), mFeedDid,
         [this, presence=getPresence()]{
             if (!presence)
                 return;
 
-            qDebug() << "Interactions sent:" << mInteractions.size() << "feedDid:" << mFeedDid;
+            qDebug() << "Interactions sent:" << mInteractions.size() << "feedDid:" << mFeedDid << "feedUri:" << mFeedUri;
             mInteractions.clear();
         },
         [this, presence=getPresence()](const QString& err, const QString& msg){

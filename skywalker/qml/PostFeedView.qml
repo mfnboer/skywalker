@@ -21,6 +21,7 @@ PostListView {
     resyncFun: () => setInSync(modelId, newLastVisibleIndex, newLastVisibleOffsetY, true)
     syncFun: (index, offsetY) => setInSync(modelId, index, offsetY)
     feedDid: underlyingModel ? underlyingModel.feedDid : ""
+    feedUri: underlyingModel ? underlyingModel.feedUri : ""
 
     Accessible.name: feedName
 
@@ -50,6 +51,7 @@ PostListView {
         width: postFeedView.width
         feedAcceptsInteractions: postFeedView.acceptsInteractions
         feedDid: postFeedView.feedDid
+        feedUri: postFeedView.feedUri
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraHeaderFooterLoader.active && !model.reverseFeed ? extraHeaderFooterLoader.height : 0
         extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0

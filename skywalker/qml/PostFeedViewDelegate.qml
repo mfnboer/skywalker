@@ -89,6 +89,7 @@ Rectangle {
     property var postThreadModel // provided when thread is unrolled
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
+    property string feedUri: ""
     property bool swipeMode: false
     property int extraHeaderHeight: 0
     property int extraFooterHeight: 0
@@ -766,8 +767,8 @@ Rectangle {
                     onUnpin: root.unpinPost(postCid, userDid)
                     onBlockAuthor: root.blockAuthor(author, userDid)
                     onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
-                    onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                    onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                    onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
                 }
             }
 

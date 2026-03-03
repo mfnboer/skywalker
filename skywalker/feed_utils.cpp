@@ -3,6 +3,7 @@
 #include "feed_utils.h"
 #include "local_post_model_changes.h"
 #include "skywalker.h"
+#include "utils.h"
 
 namespace Skywalker {
 
@@ -144,7 +145,7 @@ void FeedUtils::hideFollowing(const QString& feedUri, bool hide)
         });
 }
 
-void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& postCid, const QString& feedDid, const QString& feedContext)
+void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& postCid, const QString& feedUri, const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
@@ -154,7 +155,7 @@ void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& postCid,
             model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_MORE_LIKE_THIS);
         });
 
-    mPostMaster->sendInteractionShowMoreLikeThis(postUri, feedDid, feedContext,
+    mPostMaster->sendInteractionShowMoreLikeThis(postUri, Utils::makeOptionalString(feedUri), feedDid, feedContext,
         [this, presence=getPresence(), postCid]{
             if (!presence)
                 return;
@@ -184,7 +185,7 @@ void FeedUtils::showMoreLikeThis(const QString& postUri, const QString& postCid,
         });
 }
 
-void FeedUtils::showLessLikeThis(const QString& postUri, const QString& postCid, const QString& feedDid, const QString& feedContext)
+void FeedUtils::showLessLikeThis(const QString& postUri, const QString& postCid, const QString& feedUri, const QString& feedDid, const QString& feedContext)
 {
     if (!postMaster())
         return;
@@ -194,7 +195,7 @@ void FeedUtils::showLessLikeThis(const QString& postUri, const QString& postCid,
             model->updateFeedbackTransient(postCid, QEnums::FEEDBACK_LESS_LIKE_THIS);
         });
 
-    mPostMaster->sendInteractionShowLessLikeThis(postUri, feedDid, feedContext,
+    mPostMaster->sendInteractionShowLessLikeThis(postUri, Utils::makeOptionalString(feedUri), feedDid, feedContext,
         [this, presence=getPresence(), postCid]{
             if (!presence)
                 return;

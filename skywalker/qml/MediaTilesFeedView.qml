@@ -8,6 +8,7 @@ GridView {
     property Skywalker skywalker: root.getSkywalker(userDid)
     property bool acceptsInteractions: false
     property string feedDid: ""
+    property string feedUri: ""
     readonly property int columns: skywalker.TILE_VIEW_ROW_SIZE
     readonly property int spacing: 2
     property bool showAsHome: false
@@ -92,6 +93,7 @@ GridView {
         height: mediaTilesView.cellHeight
         feedAcceptsInteractions: mediaTilesView.acceptsInteractions
         feedDid: mediaTilesView.feedDid
+        feedUri: mediaTilesView.feedUri
 
         onActivateSwipe: (imgIndex, previewImg) => {
             let item = mediaTilesView

@@ -12,6 +12,7 @@ SkyListView {
     property bool showAsHome: false
     property bool acceptsInteractions: false
     property string feedDid
+    property string feedUri
     property var reverseSyncFun: () => {}
     property var resyncFun: () => {}
     property var syncFun: (index, offset) => {}
@@ -47,6 +48,7 @@ SkyListView {
             userDid: postListView.userDid
             acceptsInteractions: postListView.acceptsInteractions
             feedDid: postListView.feedDid
+            feedUri: postListView.feedUri
             showAsHome: postListView.showAsHome
             model: postListView.model
             virtualFooterHeight: postListView.virtualFooterHeight

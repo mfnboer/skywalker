@@ -18,7 +18,8 @@ public:
     using Ptr = std::unique_ptr<InteractionSender>;
     using EventType = ATProto::AppBskyFeed::Interaction::EventType;
 
-    InteractionSender(const QString& feedDid, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
+    InteractionSender(const std::optional<QString> feedUri, const QString& feedDid,
+                      ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
     ~InteractionSender();
 
     void addInteraction(EventType event, const QString& postUri, const QString& feedContext);
@@ -53,6 +54,7 @@ private:
     void sendInteractions();
     ATProto::AppBskyFeed::Interaction::List makeAtInteractionList() const;
 
+    std::optional<QString> mFeedUri;
     QString mFeedDid;
     ATProto::Client::SharedPtr mBsky;
     std::unordered_set<Interaction, Interaction::Hash> mInteractions;

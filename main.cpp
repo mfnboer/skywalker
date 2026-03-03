@@ -39,7 +39,9 @@ int main(int argc, char *argv[])
     const QUrl url(u"qrc:/skywalker/qml/Main.qml"_s);
     engine.load(url);
 
+#ifdef Q_OS_ANDROID
     QNativeInterface::QAndroidApplication::hideSplashScreen(200);
+#endif
 
     return app.exec();
 }

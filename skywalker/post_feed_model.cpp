@@ -4,6 +4,7 @@
 #include "definitions.h"
 #include "skywalker.h"
 #include "user_settings.h"
+#include "utils.h"
 #include <atproto/lib/time_monitor.h>
 #include <algorithm>
 #include <ranges>
@@ -70,18 +71,22 @@ void PostFeedModel::setChronological(bool chronological)
 
 void PostFeedModel::createInteractionSender(ATProto::Client::SharedPtr bsky)
 {
-    if (feedAcceptsInteractions() && !getFeedDid().isEmpty())
+    const QString feedDid = getFeedDid();
+
+    if (feedAcceptsInteractions() && !feedDid.isEmpty())
     {
         Q_ASSERT(bsky);
 
         if (bsky)
-        {
-            qDebug() << "Create feed interaction sender:" << getFeedDid();
-            mInteractionSender = std::make_unique<InteractionSender>(getFeedDid(), bsky, this);
+        {   
+            qDebug() << "Create feed interaction sender:" << feedDid;
+            const QString feedUri = getFeedUri();
+            mInteractionSender = std::make_unique<InteractionSender>(
+                Utils::makeOptionalString(feedUri), feedDid, bsky, this);
         }
         else
         {
-            qWarning() << "No ATProto client, feedDid:" << getFeedDid();
+            qWarning() << "No ATProto client, feedDid:" << feedDid;
         }
     }
 }

@@ -75,6 +75,7 @@ Rectangle {
     property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
+    property string feedUri: ""
 
     readonly property bool isLeftCell: index % GridView.view.columns == 0
     readonly property bool isRightCell: index % GridView.view.columns == GridView.view.columns - 1
@@ -352,8 +353,8 @@ Rectangle {
                 onPin: root.pinPost(postUri, postCid, userDid)
                 onUnpin: root.unpinPost(postCid, userDid)
                 onBlockAuthor: root.blockAuthor(author, userDid)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
-                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
             }
         }
 

@@ -18,6 +18,7 @@ SkyListView {
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
     readonly property string feedDid: underlyingModel ? underlyingModel.feedDid : ""
+    readonly property string feedUri: underlyingModel ? underlyingModel.feedUri : ""
     readonly property string color: currentItem ? currentItem.color : guiSettings.fullScreenColor // for Main right margin (navbar)
 
     signal closed
@@ -62,6 +63,7 @@ SkyListView {
         extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0
         feedAcceptsInteractions: postFeedView.acceptsInteractions
         feedDid: postFeedView.feedDid
+        feedUri: postFeedView.feedUri
 
         onClosed: postFeedView.closed()
 

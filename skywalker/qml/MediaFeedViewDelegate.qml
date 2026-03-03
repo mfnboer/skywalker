@@ -78,6 +78,7 @@ Rectangle {
     property list<imageview> postOrRecordImages: postImages.length > 0 ? postImages : (postRecordWithMedia ? postRecordWithMedia.images : [])
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
+    property string feedUri: ""
     property int headerHeight: 0
     property int footerHeight: 0
     property int leftMarginWidth: 0
@@ -538,8 +539,8 @@ Rectangle {
                 onUnpin: root.unpinPost(postCid, userDid)
                 onBlockAuthor: root.blockAuthor(author, userDid)
                 onShowEmojiNames: root.showEmojiNamesList(postPlainText)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
-                onShowLessLikeThis: root.showLessLikeThis(feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
             }
         }
 
