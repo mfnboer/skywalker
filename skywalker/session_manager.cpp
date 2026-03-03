@@ -199,7 +199,7 @@ void SessionManager::updateTokens()
         // The offline message checker may have refreshed tokens. Update these tokens
         // so we do not use an old token for refreshing below.
         if (!savedSession.mRefreshJwt.isEmpty())
-            session->mBsky->updateTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
+            session->mBsky->updateSessionTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
         else
             qWarning() << "No tokens:" << did;
     }

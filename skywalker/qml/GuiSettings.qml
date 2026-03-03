@@ -251,11 +251,12 @@ Item {
         message.show(question)
     }
 
-    function askYesNoQuestion(parent, question, onYesCb, onNoCb = () => {}) {
+    function askYesNoQuestion(parent, question, onYesCb, onNoCb = () => {}, onLinkCb = (link) => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })
         message.onAccepted.connect(() => { message.destroy(); onYesCb() })
         message.onRejected.connect(() => { message.destroy(); onNoCb() })
+        message.onLinkActivated.connect((link) => { message.destroy(); onLinkCb(link) })
         message.show(question)
     }
 
@@ -281,6 +282,22 @@ Item {
         let dialog = component.createObject(parent, { gifSource: gifSource })
         dialog.onAccepted.connect(() => { dialog.destroy(); onVideoCb() })
         dialog.onRejected.connect(() => { dialog.destroy(); onImageCb() })
+        dialog.open()
+    }
+
+    function askToken(parent, title, onOkCb, onCancelCb = () => {}) {
+        let component = guiSettings.createComponent("TokenDialog.qml")
+        let dialog = component.createObject(parent, { title: title })
+        dialog.onAccepted.connect(() => {
+                const token = dialog.getToken()
+                dialog.destroy()
+
+                if (token)
+                    onOkCb(token)
+                else
+                    onCancelCb()
+            })
+        dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
         dialog.open()
     }
 

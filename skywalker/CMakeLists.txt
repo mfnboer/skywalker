@@ -657,6 +657,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/DiscardSaveMessage.qml
         SOURCES draft_orphaned_media_checker.h
         SOURCES draft_orphaned_media_checker.cpp
+        SOURCES account_utils.h
+        SOURCES account_utils.cpp
+        QML_FILES qml/TokenDialog.qml
 )
 
 if (NOT ANDROID)

@@ -1,6 +1,7 @@
 next
 ====
-* Support 16KB pages
+* You can enable/disable 2FA in settings
+* Support 16KB pages (technical requirement)
 * Fix Giphy upload error: uploaded file format is not supported
 
 4.28

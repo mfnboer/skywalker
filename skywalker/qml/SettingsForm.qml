@@ -53,7 +53,6 @@ SkyPage {
         SettingsAccount {
             id: settingsAccount
             width: parent.width
-            height: visible ? undefined : 0
             userPrefs: page.userPrefs
             visible: allVisible
         }
