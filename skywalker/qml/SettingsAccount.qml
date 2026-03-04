@@ -147,16 +147,31 @@ Item {
             checked: !userPrefs.loggedOutVisibility
             onCheckedChanged: userPrefs.loggedOutVisibility = !checked
         }
+
+        Rectangle {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.preferredHeight: changePasswordButton.height
+            color: "transparent"
+
+            SkyButton {
+                id: changePasswordButton
+                implicitHeight: 40
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: qsTr("Change password")
+                onClicked: changePassword()
+            }
+        }
     }
 
     function update2FA() {
         if (emailAuthFactor) {
             guiSettings.askYesNoQuestion(root,
                 qsTr("Do you want to disable 2FA? You will receive a code in email to do so.<br><br>" +
-                     `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a token</a>.`),
+                     `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`),
                 () => { accountUtils.requestEmailUpdateToken() },
                 () => { emailAuthFactorSwitch.checked = true },
-                (link) => { accountUtils.enterToken() }
+                (link) => { accountUtils.enterToken("2fa") }
             )
         } else {
             guiSettings.noticeOkCancel(root,
@@ -165,6 +180,16 @@ Item {
                 () => { emailAuthFactorSwitch.checked = false }
             )
         }
+    }
+
+    function changePassword() {
+        guiSettings.askYesNoQuestion(root,
+            qsTr("Do you want to change you password? We will send you a code to verify that this is your account.<br><br>" +
+                 `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`),
+            () => { accountUtils.requestPasswordReset() },
+            () => {},
+            (link) => { accountUtils.enterPasswordResetToken() }
+        )
     }
 
     AccountUtils {
@@ -186,7 +211,7 @@ Item {
             emailAuthFactorSwitch.checked = emailAuthFactor
         }
 
-        onEmailUpdateTokenOk: enterToken()
+        onEmailUpdateTokenOk: enterEmailUpdateToken()
 
         onEmailUpdateTokenNotRequired: update2FA(false, "")
 
@@ -195,17 +220,28 @@ Item {
             emailAuthFactorSwitch.checked = emailAuthFactor
         }
 
-        function enterToken() {
-            guiSettings.askToken(root, qsTr("Email update token"),
+        onRequestResetPasswordOk: enterPasswordResetToken()
+        onRequestResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onResetPasswordOk: skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
+        onResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        function enterEmailUpdateToken() {
+            guiSettings.askToken(root, "Email update token",
                 (token) => { accountUtils.update2FA(false, token) },
                 () => { emailAuthFactorSwitch.checked = true }
+            )
+        }
+
+        function enterPasswordResetToken() {
+            guiSettings.askPasswordResetToken(root,
+                (password, token) => { accountUtils.resetPassword(password, token) }
             )
         }
     }
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: accountUtils.emailUpdateInProgress
+        running: accountUtils.updateInProgress
     }
 
 }

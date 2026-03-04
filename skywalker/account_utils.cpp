@@ -15,7 +15,7 @@ void AccountUtils::update2FA(bool enable, const QString& token)
 {
     Q_ASSERT(bskyClient());
 
-    if (mEmailUpdateInProgress)
+    if (mUpdateInProgress)
         return;
 
     const ATProto::ComATProtoServer::Session* session = bskyClient()->getSession();
@@ -31,14 +31,14 @@ void AccountUtils::update2FA(bool enable, const QString& token)
     }
 
     qDebug() << "Update 2FA:" << enable << "email:" << enable;
-    setEmailUpdateInProgress(true);
+    setUpdateInProgress(true);
 
     bskyClient()->updateEmail(*session->mEmail, enable, Utils::makeOptionalString(token),
         [this, presence=getPresence(), enable]{
             if (!presence)
                 return;
 
-            setEmailUpdateInProgress(false);
+            setUpdateInProgress(false);
             bskyClient()->updateSession2FA(enable);
             emit update2FAOk(enable);
         },
@@ -47,7 +47,7 @@ void AccountUtils::update2FA(bool enable, const QString& token)
                 return;
 
             qDebug() << "Update 2FA" << enable << "failed:" << error << "-" << msg;
-            setEmailUpdateInProgress(false);
+            setUpdateInProgress(false);
             emit update2FAFailed(msg);
         });
 }
@@ -57,10 +57,10 @@ void AccountUtils::requestEmailUpdateToken()
     Q_ASSERT(bskyClient());
     qDebug() << "Request email update token";
 
-    if (mEmailUpdateInProgress)
+    if (mUpdateInProgress)
         return;
 
-    setEmailUpdateInProgress(true);
+    setUpdateInProgress(true);
 
     bskyClient()->requestEmailUpdate(
         [this, presence=getPresence()](ATProto::ComATProtoServer::RequestEmailUpdateOutput::SharedPtr output){
@@ -68,7 +68,7 @@ void AccountUtils::requestEmailUpdateToken()
                 return;
 
             qDebug() << "Requenst email update token, tokenRequired:" << output->mTokenRequired;
-            setEmailUpdateInProgress(false);
+            setUpdateInProgress(false);
 
             if (output->mTokenRequired)
                 emit emailUpdateTokenOk();
@@ -80,18 +80,91 @@ void AccountUtils::requestEmailUpdateToken()
                 return;
 
             qDebug() << "Request email update token failed:" << error << "-" << msg;
-            setEmailUpdateInProgress(false);
+            setUpdateInProgress(false);
             emit emailUpdateTokenFailed(msg);
         });
 }
 
-void AccountUtils::setEmailUpdateInProgress(bool inProgress)
+void AccountUtils::resetPassword(const QString& password, const QString& token)
 {
-    if (mEmailUpdateInProgress == inProgress)
+    Q_ASSERT(bskyClient());
+
+    if (mUpdateInProgress)
         return;
 
-    mEmailUpdateInProgress = inProgress;
-    emit emailUpdateInProgressChanged();
+    qDebug() << "Reset password";
+    setUpdateInProgress(true);
+
+    bskyClient()->resetPassword(password, token,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            setUpdateInProgress(false);
+            emit resetPasswordOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Reset password failed:" << error << "-" << msg;
+            setUpdateInProgress(false);
+            emit resetPasswordFailed(msg);
+        });
+}
+
+void AccountUtils::requestPasswordReset(QString email)
+{
+    Q_ASSERT(bskyClient());
+
+    if (mUpdateInProgress)
+        return;
+
+    if (email.isEmpty())
+    {
+        const ATProto::ComATProtoServer::Session* session = bskyClient()->getSession();
+
+        if (!session)
+            return;
+
+        if (!session->mEmail)
+        {
+            qWarning() << "No email available";
+            QTimer::singleShot(0, this, [this]{ emit requestResetPasswordFailed(tr("No email address available")); });
+            return;
+        }
+
+        email = *session->mEmail;
+    }
+
+    qDebug() << "Request reset password:" << email;
+    setUpdateInProgress(true);
+
+    bskyClient()->requestPasswordReset(email,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            setUpdateInProgress(false);
+            emit requestResetPasswordOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Request reset password failed:" << error << "-" << msg;
+            setUpdateInProgress(false);
+            emit requestResetPasswordFailed(msg);
+        });
+}
+
+void AccountUtils::setUpdateInProgress(bool inProgress)
+{
+    if (mUpdateInProgress == inProgress)
+        return;
+
+    mUpdateInProgress = inProgress;
+    emit updateInProgressChanged();
 }
 
 }

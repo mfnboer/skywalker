@@ -660,6 +660,8 @@ qt_add_qml_module(libskywalker
         SOURCES account_utils.h
         SOURCES account_utils.cpp
         QML_FILES qml/TokenDialog.qml
+        QML_FILES
+        QML_FILES qml/TokenPasswordDialog.qml
 )
 
 if (NOT ANDROID)

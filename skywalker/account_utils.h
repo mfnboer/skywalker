@@ -9,7 +9,7 @@ namespace Skywalker {
 class AccountUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
-    Q_PROPERTY(bool emailUpdateInProgress READ getEmailUpdateInProgress NOTIFY emailUpdateInProgressChanged FINAL)
+    Q_PROPERTY(bool updateInProgress READ getUpdateInProgress NOTIFY updateInProgressChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -17,6 +17,8 @@ public:
 
     Q_INVOKABLE void update2FA(bool enable, const QString& token);
     Q_INVOKABLE void requestEmailUpdateToken();
+    Q_INVOKABLE void resetPassword(const QString& password, const QString& token);
+    Q_INVOKABLE void requestPasswordReset(QString email = {});
 
 signals:
     void update2FAOk(bool enabled);
@@ -24,13 +26,17 @@ signals:
     void emailUpdateTokenOk();
     void emailUpdateTokenNotRequired();
     void emailUpdateTokenFailed(QString error);
-    void emailUpdateInProgressChanged();
+    void resetPasswordOk();
+    void resetPasswordFailed(QString error);
+    void requestResetPasswordOk();
+    void requestResetPasswordFailed(QString error);
+    void updateInProgressChanged();
 
 private:
-    bool getEmailUpdateInProgress() const { return mEmailUpdateInProgress; }
-    void setEmailUpdateInProgress(bool inProgress);
+    bool getUpdateInProgress() const { return mUpdateInProgress; }
+    void setUpdateInProgress(bool inProgress);
 
-    bool mEmailUpdateInProgress = false;
+    bool mUpdateInProgress = false;
 };
 
 }

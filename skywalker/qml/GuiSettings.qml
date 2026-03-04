@@ -301,6 +301,14 @@ Item {
         dialog.open()
     }
 
+    function askPasswordResetToken(parent, onOkCb, onCancelCb = () => {}) {
+        let component = guiSettings.createComponent("TokenPasswordDialog.qml")
+        let dialog = component.createObject(parent)
+        dialog.onPasswordToken.connect((password, token) => { dialog.destroy(); onOkCb(password, token) })
+        dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
+        dialog.open()
+    }
+
     function showProgress(parent, msg, onCancelCb) {
         let component = guiSettings.createComponent("ProgressDialog.qml")
         let dialog = component.createObject(parent)
