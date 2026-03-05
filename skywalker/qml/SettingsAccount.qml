@@ -6,6 +6,8 @@ import skywalker
 Item {
     required property var userPrefs
     property bool emailAuthFactor: userPrefs.emailAuthFactor
+    property bool emailConfirmed: userPrefs.emailConfirmed
+    property string email: userPrefs.email
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
 
@@ -32,7 +34,7 @@ Item {
                 id: mailText
                 Layout.fillWidth: true
                 elide: Text.ElideRight
-                text: userPrefs.email
+                text: email
             }
             SvgPlainButton {
                 id: mailConfirmedImg
@@ -42,7 +44,7 @@ Item {
                 iconColor: guiSettings.buttonColor
                 accessibleName: qsTr("E-mail address confirmed")
                 svg: SvgOutline.check
-                visible: userPrefs.emailConfirmed
+                visible: emailConfirmed
                 onClicked: skywalker.showStatusMessage(accessibleName, QEnums.STATUS_LEVEL_INFO)
             }
             SvgPlainButton {
@@ -104,19 +106,35 @@ Item {
             text: userSettings.getHost(userPrefs.did)
         }
 
-        Rectangle {
+        AccessibleText {
             Layout.columnSpan: 2
+            Layout.topMargin: 10
             Layout.fillWidth: true
-            Layout.preferredHeight: advancedButton.height
-            color: "transparent"
+            horizontalAlignment: Text.AlignHCenter
+            textFormat: Text.RichText
+            text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Confirm email address</a>`)
+            visible: !emailConfirmed
+            onLinkActivated: confirmEmail()
+        }
 
-            SkyButton {
-                id: advancedButton
-                implicitHeight: 40
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Advanced settings")
-                onClicked: root.editAdvancedSettings()
-            }
+        AccessibleText {
+            Layout.columnSpan: 2
+            Layout.topMargin: 10
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            textFormat: Text.RichText
+            text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Change email address</a>`)
+            onLinkActivated: changeEmail()
+        }
+
+        AccessibleText {
+            Layout.columnSpan: 2
+            Layout.topMargin: 10
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            textFormat: Text.RichText
+            text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Advanced settings</a>`)
+            onLinkActivated: root.editAdvancedSettings()
         }
 
         HeaderText {
@@ -130,8 +148,9 @@ Item {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             text: qsTr("Two-factor authentication (2FA)")
-
             checked: emailAuthFactor
+            visible: emailConfirmed
+
             onCheckedChanged: {
                 if (checked !== emailAuthFactor)
                     update2FA()
@@ -148,20 +167,26 @@ Item {
             onCheckedChanged: userPrefs.loggedOutVisibility = !checked
         }
 
-        Rectangle {
+        AccessibleText {
             Layout.columnSpan: 2
+            Layout.topMargin: 10
+            Layout.bottomMargin: 10
             Layout.fillWidth: true
-            Layout.preferredHeight: changePasswordButton.height
-            color: "transparent"
-
-            SkyButton {
-                id: changePasswordButton
-                implicitHeight: 40
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Change password")
-                onClicked: changePassword()
-            }
+            horizontalAlignment: Text.AlignHCenter
+            textFormat: Text.RichText
+            text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Change password</a>`)
+            onLinkActivated: changePassword()
         }
+    }
+
+    function confirmEmail() {
+        guiSettings.askYesNoQuestion(root,
+            qsTr(`Do you want to confirm your email address <b>${email}</b>? You will receive a code in email to do so.<br><br>` +
+                 `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`),
+            () => { accountUtils.requestEmailConfirmation() },
+            () => {},
+            (link) => { accountUtils.enterEmailConfirmationToken() }
+        )
     }
 
     function update2FA() {
@@ -171,7 +196,7 @@ Item {
                      `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`),
                 () => { accountUtils.requestEmailUpdateToken() },
                 () => { emailAuthFactorSwitch.checked = true },
-                (link) => { accountUtils.enterToken("2fa") }
+                (link) => { accountUtils.enterEmailUpdateToken() }
             )
         } else {
             guiSettings.noticeOkCancel(root,
@@ -184,7 +209,7 @@ Item {
 
     function changePassword() {
         guiSettings.askYesNoQuestion(root,
-            qsTr("Do you want to change you password? We will send you a code to verify that this is your account.<br><br>" +
+            qsTr("Do you want to change your password? We will send you a code to verify that this is your account.<br><br>" +
                  `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`),
             () => { accountUtils.requestPasswordReset() },
             () => {},
@@ -195,6 +220,15 @@ Item {
     AccountUtils {
         id: accountUtils
         skywalker: section.skywalker
+
+        onConfirmEmailOk: {
+            skywalker.showStatusMessage(qsTr("Email address confirmed"), QEnums.STATUS_LEVEL_INFO)
+            emailConfirmed = true
+        }
+        onConfirmEmailFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onRequestEmailConfirmationOk: enterEmailConfirmationToken()
+        onRequestEmailConfirmationFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onUpdate2FAOk: (enabled) => {
             if (enabled) {
@@ -225,8 +259,14 @@ Item {
         onResetPasswordOk: skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
         onResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
+        function enterEmailConfirmationToken() {
+            guiSettings.askToken(root, "Email confirmation code",
+                (token) => { accountUtils.confirmEmail(token) }
+            )
+        }
+
         function enterEmailUpdateToken() {
-            guiSettings.askToken(root, "Email update token",
+            guiSettings.askToken(root, "Email update (2FA) code",
                 (token) => { accountUtils.update2FA(false, token) },
                 () => { emailAuthFactorSwitch.checked = true }
             )
@@ -239,9 +279,53 @@ Item {
         }
     }
 
-    BusyIndicator {
-        anchors.centerIn: parent
-        running: accountUtils.updateInProgress
+    function changeEmail() {
+        guiSettings.askYesNoQuestion(root,
+            qsTr(`Do you want to change your email address <b>${email}</b>?` +
+                 (emailConfirmed ?
+                    (" You will receive a code in email to do so.<br><br>" +
+                     `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`) :
+                    "")),
+            () => { emailUpdater.requestEmailUpdateToken() },
+            () => {},
+            (link) => { emailUpdater.enterEmailUpdateToken() }
+        )
     }
 
+    AccountUtils {
+        id: emailUpdater
+        skywalker: section.skywalker
+
+        onUpdateEmailOk: (newEmail) => {
+            skywalker.showStatusMessage(qsTr("Email address updated"), QEnums.STATUS_LEVEL_INFO)
+            email = newEmail
+            emailAuthFactor = false
+            emailConfirmed = false
+        }
+
+        onUpdateEmailFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onEmailUpdateTokenOk: enterEmailUpdateToken(true)
+        onEmailUpdateTokenNotRequired: enterEmailUpdateToken(false)
+        onEmailUpdateTokenFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        function enterEmailUpdateToken(tokenRequired) {
+            askEmailUpdateToken(tokenRequired,
+                (email, token) => { emailUpdater.updateEmail(email, token) }
+            )
+        }
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: accountUtils.updateInProgress || emailUpdater.updateInProgress
+    }
+
+    function askEmailUpdateToken(tokenRequired, onOkCb) {
+        let component = guiSettings.createComponent("TokenEmailDialog.qml")
+        let dialog = component.createObject(root, { tokenRequired: tokenRequired })
+        dialog.onEmailToken.connect((email, token) => { dialog.destroy(); onOkCb(email, token) })
+        dialog.onRejected.connect(() => { dialog.destroy() })
+        dialog.open()
+    }
 }

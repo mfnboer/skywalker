@@ -4,17 +4,17 @@ import QtQuick.Controls.Material
 import skywalker
 
 Dialog {
+    required property bool tokenRequired
     property Skywalker skywalker: root.getSkywalker()
-    readonly property int minPasswordLength: 8
 
-    signal passwordToken(string password, string token)
+    signal emailToken(string email, string token)
 
     id: dialog
     topMargin: guiSettings.headerHeight
     leftMargin: 20
     width: parent.width - 2 * leftMargin
     contentHeight: col.height
-    title: qsTr("Reset password")
+    title: qsTr("Update email")
     modal: true
     Material.background: guiSettings.backgroundColor
 
@@ -38,6 +38,7 @@ Dialog {
                 width: parent.width
                 wrapMode: Text.Wrap
                 text: qsTr("Enter token you received by email")
+                visible: tokenRequired
             }
 
             SkyTextInput {
@@ -48,35 +49,24 @@ Dialog {
                 placeholderText: "XXXXX-XXXXX"
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                 maximumLength: 253
-                valid: text.length > 0
+                valid: text.length > 0 || !tokenRequired
+                visible: tokenRequired
             }
 
             AccessibleText {
                 width: parent.width
                 wrapMode: Text.Wrap
-                text: qsTr("New password")
+                text: qsTr("New email address")
             }
 
             SkyTextInput {
-                id: passwordField
+                id: emailField
                 width: parent.width
-                svgIcon: SvgFilled.lock
-                echoMode: TextInput.Password
-                placeholderText: qsTr(`At least ${minPasswordLength} characters`)
+                svgIcon: SvgFilled.atSign
+                placeholderText: qsTr(`Enter your new email address`)
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                maximumLength: 255
-                valid: text.length >= minPasswordLength
-            }
-
-            SkyTextInput {
-                id: verificationField
-                width: parent.width
-                svgIcon: SvgFilled.lock
-                echoMode: TextInput.Password
-                placeholderText: qsTr("Repeat new password")
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                maximumLength: 255
-                valid: text.length >= minPasswordLength
+                validator: RegularExpressionValidator { regularExpression: /[^ ]+@[^ ]+/ }
+                valid: text.indexOf("@") > 0 && text.indexOf("@") < text.length - 1
             }
         }
     }
@@ -88,19 +78,13 @@ Dialog {
         }
         SkyTransparentButton {
             text: qsTr("OK")
-            enabled: tokenField.valid && passwordField.valid && verificationField.valid
+            enabled: tokenField.valid && emailField.valid
             onClicked: dialog.handleOk()
         }
     }
 
     function handleOk() {
-        if (passwordField.text !== verificationField.text)
-        {
-            skywalker.showStatusMessage(qsTr("Passwords are not equal"), QEnums.STATUS_LEVEL_ERROR)
-            return
-        }
-
         accept()
-        passwordToken(passwordField.text, tokenField.text)
+        emailToken(emailField.text, tokenField.text)
     }
 }

@@ -66,7 +66,6 @@ ATProto::Client* WrappedSkywalker::bskyClient()
         client = mNonActiveUserBsky.get();
     }
 
-    Q_ASSERT(client);
     return client;
 }
 

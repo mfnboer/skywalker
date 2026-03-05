@@ -93,6 +93,7 @@ Item {
     readonly property string moderatorIconColor: "lightgrey"
     readonly property string videoIconColor: "lightgrey"
     readonly property string placeholderTextColor: Material.color(Material.Grey)
+    readonly property string placeholderTextInvalidColor: "white"
     readonly property string postHighLightColor: isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     readonly property string selectionColor: accentColor
     readonly property string separatorColor: isLightMode ? Qt.darker(backgroundColor, 1.08) : Qt.lighter(backgroundColor, 1.6)
@@ -277,26 +278,10 @@ Item {
         message.show(msg)
     }
 
-    function askConvertGif(parent, gifSource, onVideoCb, onImageCb) {
-        let component = guiSettings.createComponent("ConvertGifDialog.qml")
-        let dialog = component.createObject(parent, { gifSource: gifSource })
-        dialog.onAccepted.connect(() => { dialog.destroy(); onVideoCb() })
-        dialog.onRejected.connect(() => { dialog.destroy(); onImageCb() })
-        dialog.open()
-    }
-
     function askToken(parent, title, onOkCb, onCancelCb = () => {}) {
         let component = guiSettings.createComponent("TokenDialog.qml")
         let dialog = component.createObject(parent, { title: title })
-        dialog.onAccepted.connect(() => {
-                const token = dialog.getToken()
-                dialog.destroy()
-
-                if (token)
-                    onOkCb(token)
-                else
-                    onCancelCb()
-            })
+        dialog.onToken.connect((token) => { dialog.destroy(); onOkCb(token) })
         dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
         dialog.open()
     }

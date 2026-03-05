@@ -472,11 +472,6 @@ ApplicationWindow {
                 return
             }
 
-            // guiSettings.askConvertGif(
-            //     rootContent,
-            //     "file://" + gifTempFileName,
-            //     () => gifToVideoConverter.start(gifTempFileName, text),
-            //     () => { postUtils.dropVideo("file://" + gifTempFileName); handleSharedImageReceived(source, text) })
             gifToVideoConverter.start(gifTempFileName, text)
         }
 

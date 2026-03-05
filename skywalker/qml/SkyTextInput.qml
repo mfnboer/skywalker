@@ -103,7 +103,7 @@ Rectangle {
             padding: parent.padding
             leftPadding: parent.leftPadding
             font.pointSize: parent.font.pointSize
-            color: guiSettings.placeholderTextColor
+            color: skyTextInput.valid ? guiSettings.placeholderTextColor : guiSettings.placeholderTextInvalidColor
             elide: Text.ElideRight
             text: placeholderText
             visible: parent.displayText.length === 0

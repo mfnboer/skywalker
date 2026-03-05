@@ -2150,11 +2150,6 @@ SkyPage {
             return
         }
 
-        // guiSettings.askConvertGif(
-        //     page,
-        //     "file://" + gifFileName,
-        //     () => gifToVideoConverter.start(gifFileName),
-        //     () => photoPickedContinued(source, altText))
         gifToVideoConverter.start(gifFileName)
     }
 

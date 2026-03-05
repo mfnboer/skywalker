@@ -411,7 +411,7 @@ qt_add_qml_module(libskywalker
         SOURCES gif_to_video_converter.h
         SOURCES gif_to_video_converter.cpp
         QML_FILES qml/ProgressDialog.qml
-        QML_FILES qml/ConvertGifDialog.qml
+        QML_FILES
         QML_FILES qml/SkyCleanedTextLine.qml
         QML_FILES qml/SkyFooterButton.qml
         SOURCES post_filter.h
@@ -662,6 +662,10 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/TokenDialog.qml
         QML_FILES
         QML_FILES qml/TokenPasswordDialog.qml
+        QML_FILES qml/SkyTransparentButton.qml
+        QML_FILES qml/ForgotPasswordDialog.qml
+        QML_FILES qml/HostingComboBox.qml
+        QML_FILES qml/TokenEmailDialog.qml
 )
 
 if (NOT ANDROID)

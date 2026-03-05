@@ -16,7 +16,8 @@ SkyPage {
     property string serviceChat
     property string serviceVideoHost
     property string serviceVideoDid
-    property var userSettings: root.getSkywalker().getUserSettings()
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
     readonly property string sideBarTitle: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
 
     signal accepted(string host,
@@ -63,47 +64,15 @@ SkyPage {
                 topPadding: 10
                 leftPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Hosting provider")
             }
 
-            ComboBox {
+            HostingComboBox {
                 id: hostField
                 Layout.fillWidth: true
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
-                model: ["bsky.social", "eurosky.social"]
-                editable: true
-                editText: host
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                activeFocusOnTab: false
-
-                Accessible.role: Accessible.ComboBox
-                Accessible.name: qsTr(`Hosting provider ${editText}`)
-                Accessible.description: qsTr("Choose hosting provider to sign into")
-
-                Rectangle {
-                    z: parent.z - 1
-                    width: hostField.width
-                    height: hostField.height
-                    radius: 5
-                    color: guiSettings.textInputBackgroundColor
-                }
-
-                function init() {
-                    if (!host)
-                        return
-
-                    const index = find(host)
-
-                    if (index >= 0) {
-                        currentIndex = index
-                        return
-                    }
-
-                    model.push(host)
-                    currentIndex = model.length - 1
-                }
+                host: loginPage.host
             }
 
             AccessibleText {
@@ -142,15 +111,15 @@ SkyPage {
                 placeholderText: qsTr("Password")
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                 maximumLength: 255
-            }
 
-            AccessibleCheckBox {
-                id: rememberPasswordSwitch
-                text: qsTr("Remember password")
-                checked: !isNewAccount() && userSettings.getRememberPassword(did)
-                onCheckedChanged: {
-                    if (!isNewAccount())
-                        userSettings.setRememberPassword(did, checked)
+                SkyButton {
+                    anchors.right: parent.right
+                    implicitHeight: 40
+                    textColor: guiSettings.linkColor
+                    Material.background: "transparent"
+                    text: qsTr("Forgot?")
+                    visible: passwordField.text.length === 0 && !isNewAccount()
+                    onClicked: forgotPassword()
                 }
             }
 
@@ -221,7 +190,7 @@ SkyPage {
                 loginPage.accepted(hostField.editText,
                                    handle, passwordField.text,
                                    loginPage.did,
-                                   rememberPasswordSwitch.checked,
+                                   false,
                                    authFactorTokenField.text,
                                    loginPage.setAdvancedSettings,
                                    loginPage.serviceAppView,
@@ -234,6 +203,31 @@ SkyPage {
 
     VirtualKeyboardHandler {
         id: keyboardHandler
+    }
+
+    AccountUtils {
+        id: accountUtils
+        skywalker: loginPage.skywalker
+
+        onRequestResetPasswordOk: enterPasswordResetToken()
+        onRequestResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onResetPasswordOk: skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
+        onResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function forgotPassword() {
+        let component = guiSettings.createComponent("ForgotPasswordDialog.qml")
+        let dialog = component.createObject(loginPage, { host: hostField.editText })
+        dialog.onHostEmail.connect((host, email) => { dialog.destroy(); accountUtils.requestPasswordReset(email, host) })
+        dialog.onAlreadyHasCode.connect(() => { dialog.destroy(); enterPasswordResetToken() })
+        dialog.onRejected.connect(() => { dialog.destroy() })
+        dialog.open()
+    }
+
+    function enterPasswordResetToken() {
+        guiSettings.askPasswordResetToken(root,
+            (password, token) => { accountUtils.resetPassword(password, token, hostField.editText) }
+        )
     }
 
     function autoCompleteHandle(handle, host) {

@@ -466,9 +466,11 @@ void UserSettings::setRememberPassword(const QString& did, bool enable)
     sync();
 }
 
-bool UserSettings::getRememberPassword(const QString& did) const
+// TODO: remove
+bool UserSettings::getRememberPassword(const QString&) const
 {
-    return mSettings.value(key(did, "rememberPassword"), false).toBool();
+    return false;
+    // return mSettings.value(key(did, "rememberPassword"), false).toBool();
 }
 
 void UserSettings::savePassword(const QString& did, const QString& password)
@@ -2331,9 +2333,8 @@ void UserSettings::updateLastDraftOrphanCheck(const QString& did)
 
 void UserSettings::cleanup()
 {
-    mSettings.remove("draftRepoToFileMigration");
-    mSettings.remove("floatingNavButtons");
-    mSettings.remove("landscapeSideBar");
+    mSettings.remove("rememberPassword");
+    mSettings.remove("password");
 }
 
 }
