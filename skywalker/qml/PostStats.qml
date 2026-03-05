@@ -8,6 +8,7 @@ Item {
     required property int repostCount
     required property int likeCount
     required property string repostUri
+    required property bool repostTransient
     required property string likeUri
     required property bool likeTransient
     required property bool threadMuted
@@ -70,7 +71,7 @@ Item {
         id: replyIcon
         y: topPadding
         width: parent.width / 4
-        iconColor: enabled ? postStats.color : guiSettings.disabledColor
+        iconColor: enabled ? postStats.color : guiSettings.statsDisabledColor
         svg: SvgOutline.reply
         statistic: replyCount
         visible: !limitedStats
@@ -88,6 +89,7 @@ Item {
         iconColor: repostUri ? guiSettings.likeColor : postStats.color
         svg: SvgOutline.repost
         statistic: repostCount
+        blinking: repostTransient
         visible: !limitedStats
         onClicked: repost()
         onPressAndHold: (mouseEvent) => repostLongPress(mouseEvent)

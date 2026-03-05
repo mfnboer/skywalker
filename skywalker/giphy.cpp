@@ -220,6 +220,7 @@ void Giphy::searchRecentGifs()
 
         setSearchInProgress(false);
         searchGifsFinished(reply, "");
+        mNextOffset.reset();
     });
 
     connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
@@ -302,8 +303,6 @@ void Giphy::getNextPage()
         qDebug() << "End of feed";
         return;
     }
-
-    Q_ASSERT(!mQuery.isEmpty() || mTrendingSearch);
 
     if (mTrendingSearch)
         searchTrendingGifs(*mNextOffset);

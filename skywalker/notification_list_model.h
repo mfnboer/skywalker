@@ -77,6 +77,7 @@ public:
         NotificationPostReplyRootCid,
         NotificationPostMentionDids,
         NotificationPostRepostUri,
+        NotificationPostRepostTransient,
         NotificationPostLikeUri,
         NotificationPostLikeTransient,
         NotificationPostThreadMuted,
@@ -158,6 +159,7 @@ signals:
 protected:
     // LocalPostModelChanges
     virtual void postIndexedSecondsAgoChanged() override;
+    virtual void repostTransientChanged() override;
     virtual void likeCountChanged() override;
     virtual void likeUriChanged() override;
     virtual void likeTransientChanged() override;

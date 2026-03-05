@@ -63,7 +63,7 @@ Dialog {
                 id: emailField
                 width: parent.width
                 svgIcon: SvgFilled.atSign
-                placeholderText: qsTr(`Enter your new email address`)
+                placeholderText: qsTr(`New email address`)
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                 validator: RegularExpressionValidator { regularExpression: /[^ ]+@[^ ]+/ }
                 valid: text.indexOf("@") > 0 && text.indexOf("@") < text.length - 1

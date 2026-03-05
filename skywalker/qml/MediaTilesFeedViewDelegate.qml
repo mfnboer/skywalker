@@ -45,6 +45,7 @@ Rectangle {
     required property int postLikeCount
     required property int postQuoteCount
     required property string postRepostUri
+    required property bool postRepostTransient
     required property string postLikeUri
     required property bool postLikeTransient
     required property bool postThreadMuted
@@ -231,6 +232,7 @@ Rectangle {
                 repostCount: postRepostCount + postQuoteCount
                 likeCount: postLikeCount
                 repostUri: postRepostUri
+                repostTransient: postRepostTransient
                 likeUri: postLikeUri
                 likeTransient: postLikeTransient
                 threadMuted: postThreadMuted

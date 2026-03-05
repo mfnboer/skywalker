@@ -5,6 +5,7 @@ next
 * You can change your password in settings
 * Support 16KB pages (technical requirement)
 * Fix Giphy upload error: uploaded file format is not supported
+* Bug fixes
 
 4.28
 ====

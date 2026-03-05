@@ -102,6 +102,7 @@ public:
         PostLikeCount,
         PostQuoteCount,
         PostRepostUri,
+        PostRepostTransient,
         PostLikeUri,
         PostLikeTransient,
         PostThreadMuted,
@@ -246,6 +247,7 @@ protected:
     // LocalPostModelChanges
     virtual void postIndexedSecondsAgoChanged() override;
     virtual void likeCountChanged() override;
+    virtual void repostTransientChanged() override;
     virtual void likeUriChanged() override;
     virtual void likeTransientChanged() override;
     virtual void replyCountChanged() override;

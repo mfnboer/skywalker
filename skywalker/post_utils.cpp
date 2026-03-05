@@ -912,16 +912,27 @@ void PostUtils::repost(const QString& uri, const QString& cid,
 
     emit repostProgress(tr("Reposting"));
 
+    mSkywalker->makeLocalModelChange(
+        [cid](LocalPostModelChanges* model){
+            model->updateRepostTransient(cid, true);
+        });
+
     postMaster()->checkRecordExists(uri, cid,
         [this, presence=getPresence(), uri, cid, viaUri, viaCid, feedDid, feedContext]{
             if (presence)
                 continueRepost(uri, cid, viaUri, viaCid, feedDid, feedContext);
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), cid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Repost failed:" << error << " - " << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalPostModelChanges* model){
+                    model->updateRepostTransient(cid, false);
+                });
+
             emit repostFailed(msg);
         });
 }
@@ -940,6 +951,7 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid,
 
             mSkywalker->makeLocalModelChange(
                 [cid, repostUri](LocalPostModelChanges* model){
+                    model->updateRepostTransient(cid, false);
                     model->updateRepostCountDelta(cid, 1);
                     model->updateRepostUri(cid, repostUri);
                 });
@@ -950,11 +962,17 @@ void PostUtils::continueRepost(const QString& uri, const QString& cid,
 
             emit repostOk();
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), cid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Repost failed:" << error << " - " << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [cid](LocalPostModelChanges* model){
+                    model->updateRepostTransient(cid, false);
+                });
+
             emit repostFailed(msg);
         });
 }
@@ -965,6 +983,11 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostUri,
     if (!postMaster())
         return;
 
+    mSkywalker->makeLocalModelChange(
+        [origPostCid](LocalPostModelChanges* model){
+            model->updateRepostTransient(origPostCid, true);
+        });
+
     postMaster()->undo(repostUri,
         [this, presence=getPresence(), origPostUri, origPostCid, feedDid]{
             if (!presence)
@@ -972,6 +995,7 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostUri,
 
             mSkywalker->makeLocalModelChange(
                 [origPostCid](LocalPostModelChanges* model){
+                    model->updateRepostTransient(origPostCid, false);
                     model->updateRepostCountDelta(origPostCid, -1);
                     model->updateRepostUri(origPostCid, "");
                 });
@@ -982,11 +1006,17 @@ void PostUtils::undoRepost(const QString& repostUri, const QString& origPostUri,
 
             emit undoRepostOk();
         },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
+        [this, presence=getPresence(), origPostCid](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Undo repost failed:" << error << " - " << msg;
+
+            mSkywalker->makeLocalModelChange(
+                [origPostCid](LocalPostModelChanges* model){
+                    model->updateRepostTransient(origPostCid, true);
+                });
+
             emit undoRepostFailed(msg);
         });
 }

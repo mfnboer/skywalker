@@ -103,6 +103,7 @@ Item {
     readonly property string skywalkerLogoColor: "#0387c7"
     readonly property string starterpackColor: accentColor
     readonly property string statsColor: Material.color(Material.Grey)
+    readonly property string statsDisabledColor: isLightMode ? "lightgrey" : "slategrey"
     property string textColor: userSettings ? userSettings.textColor : Material.foreground
     readonly property string textInputBackgroundColor: highLightColor(backgroundColor)
     readonly property string textInputInvalidColor: "palevioletred"

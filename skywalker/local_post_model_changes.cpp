@@ -70,6 +70,12 @@ void LocalPostModelChanges::updateLikeTransient(const QString& cid, bool transie
     likeTransientChanged();
 }
 
+void LocalPostModelChanges::updateRepostTransient(const QString& cid, bool transient)
+{
+    mChanges[cid].mRepostTransient = transient;
+    repostTransientChanged();
+}
+
 void LocalPostModelChanges::updateThreadgateUri(const QString& cid, const QString& threadgateUri)
 {
     mChanges[cid].mThreadgateUri = threadgateUri;

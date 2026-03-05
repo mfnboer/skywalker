@@ -23,6 +23,7 @@ public:
         // Empty means like removed.
         std::optional<QString> mLikeUri;
         bool mLikeTransient = false;
+        bool mRepostTransient = false;
 
         int mReplyCountDelta = 0;
         int mRepostCountDelta = 0;
@@ -59,6 +60,7 @@ public:
     void updateLikeCountDelta(const QString& cid, int delta);
     void updateLikeUri(const QString& cid, const QString& likeUri);
     void updateLikeTransient(const QString& cid, bool transient);
+    void updateRepostTransient(const QString& cid, bool transient);
     void updateThreadgateUri(const QString& cid, const QString& threadgateUri);
     void updateReplyRestriction(const QString& cid, const QEnums::ReplyRestriction replyRestricion);
     void updateReplyRestrictionLists(const QString& cid, const ListViewBasicList replyRestrictionLists);
@@ -86,6 +88,7 @@ protected:
     virtual void likeCountChanged() = 0;
     virtual void likeUriChanged() = 0;
     virtual void likeTransientChanged() = 0;
+    virtual void repostTransientChanged() = 0;
     virtual void replyCountChanged() = 0;
     virtual void repostCountChanged() = 0;
     virtual void quoteCountChanged() = 0;
