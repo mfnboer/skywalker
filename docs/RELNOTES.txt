@@ -4,6 +4,8 @@ next
 * You can change your email address in settings
 * You can change your password in settings
 * Support 16KB pages (technical requirement)
+* Added blacksky.app and northsky.social to the presets
+* Do not convert webp to jpg before uploading
 * Fix Giphy upload error: uploaded file format is not supported
 * Bug fixes
 

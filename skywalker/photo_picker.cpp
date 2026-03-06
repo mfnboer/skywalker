@@ -13,6 +13,7 @@
 #include <QGuiApplication>
 #include <QImage>
 #include <QImageReader>
+#include <QImageWriter>
 #include <QStandardPaths>
 
 #ifdef Q_OS_ANDROID
@@ -151,6 +152,24 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName)
     return createBlob(blob, img, imgName);
 }
 
+std::tuple<const char*, QString> determineImageFormat(const QString& name)
+{
+    const char* format = "jpg";
+    QString mimeType = "image/jpeg";
+
+    for (const auto& f : { "png", "webp" })
+    {
+        if (name.endsWith(QString(".%1").arg(f), Qt::CaseInsensitive) && QImageWriter::supportedImageFormats().contains(f))
+        {
+            format = f;
+            mimeType = QString("image/%1").arg(f);
+            break;
+        }
+    }
+
+    return { format, mimeType };
+}
+
 std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QString& name)
 {
     qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
@@ -164,16 +183,7 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
     }
 
 
-
-    const char* format = "jpg";
-    QString mimeType = "image/jpeg";
-
-    if (name.endsWith(".png", Qt::CaseInsensitive))
-    {
-        format = "png";
-        mimeType = "image/png";
-    }
-
+    auto [format, mimeType] = determineImageFormat(name);
     int quality = 75;
 
     while (quality > 0)

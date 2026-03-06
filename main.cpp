@@ -6,6 +6,8 @@
 #include "skywalker.h"
 #include "temp_file_holder.h"
 #include <QGuiApplication>
+#include <QImageReader>
+#include <QImageWriter>
 #include <QQmlApplicationEngine>
 #include <QFont>
 
@@ -25,6 +27,8 @@ int main(int argc, char *argv[])
 
     Skywalker::TempFileHolder::init();
     Skywalker::FontDownloader::initAppFonts();
+    qInfo() << "Image reader supported:" << QImageReader::supportedImageFormats();
+    qInfo() << "Image writer supported:" << QImageWriter::supportedImageFormats();
 
     QQmlApplicationEngine engine;
     auto* providerId = Skywalker::SharedImageProvider::SHARED_IMAGE;

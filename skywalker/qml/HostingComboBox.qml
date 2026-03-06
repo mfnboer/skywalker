@@ -6,7 +6,7 @@ ComboBox {
     property bool valid: true
 
     id: hostField
-    model: ["bsky.social", "eurosky.social"]
+    model: ["bsky.social", "eurosky.social", "blacksky.app", "northsky.social"]
     editable: true
     editText: host
     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
