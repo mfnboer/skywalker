@@ -1,4 +1,4 @@
-next
+4.29
 ====
 * You can enable/disable 2FA in settings
 * You can change your email address in settings
