@@ -208,9 +208,11 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
 
             if (quality <= 0 && mimeType == "image/png")
             {
-                // PNG compression does not compress well. Try JPG
-                format = "jpg";
-                mimeType = "image/jpeg";
+                // PNG compression does not compress well, fallback to webp or jpg
+                // Prefer webp as it supports transparency like png
+                const bool webpAvailable = QImageWriter::supportedImageFormats().contains("webp");
+                format = webpAvailable ? "webp" : "jpg";
+                mimeType = webpAvailable ? "image/webp" : "image/jpeg";
                 quality = 75;
             }
 
@@ -223,9 +225,9 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
     return { mimeType, img.size() };
 }
 
-static QString createPictureFileName()
+static QString createPictureFileName(const QString& extension)
 {
-    return QString("SKYWALKER_%1.jpg").arg(FileUtils::createDateTimeName());
+    return QString("SKYWALKER_%1.%2").arg(FileUtils::createDateTimeName(), extension);
 }
 
 void savePhoto(ImageReader* imageReader, const QString& sourceUrl, bool cache,
@@ -262,7 +264,11 @@ void savePhoto(ImageReader* imageReader, const QString& sourceUrl, bool cache,
                 return;
             }
 
-            const QString fileName = QString("%1/%2").arg(picturesPath, createPictureFileName());
+            const QString extension =
+                (img.hasAlphaChannel() && QImageWriter::supportedImageFormats().contains("webp")) ?
+                    "webp" : "jpg";
+
+            const QString fileName = QString("%1/%2").arg(picturesPath, createPictureFileName(extension));
 
             if (!img.save(fileName))
             {

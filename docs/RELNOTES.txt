@@ -6,6 +6,7 @@ next
 * Support 16KB pages (technical requirement)
 * Added blacksky.app and northsky.social to the presets
 * Do not convert webp to jpg before uploading
+* Save picture as webp when it has an alpha channel
 * Fix Giphy upload error: uploaded file format is not supported
 * Bug fixes
 
