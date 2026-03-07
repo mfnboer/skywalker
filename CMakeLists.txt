@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(appskywalker VERSION 4.28 LANGUAGES CXX)
-set(VERSION_CODE 104)
+project(appskywalker VERSION 4.29 LANGUAGES CXX)
+set(VERSION_CODE 105)
 set(APP_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 23)
@@ -22,25 +22,25 @@ add_compile_definitions(APP_VERSION="${APP_VERSION}")
 add_compile_definitions(TENOR_API_KEY="$ENV{TENOR_API_KEY}")
 add_compile_definitions(GIPHY_API_KEY="$ENV{GIPHY_API_KEY}")
 
-add_subdirectory(atproto/lib)
-add_subdirectory(skywalker)
-
-message("BUILD TYPE: ${CMAKE_BUILD_TYPE}")
-
-if (NOT ANDROID)
-    add_subdirectory(test)
-endif()
-
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
 endif()
 
 add_compile_options(-Wall -Wextra -Werror)
 
+message("BUILD TYPE: ${CMAKE_BUILD_TYPE}")
+
 if (NOT ANDROID AND NOT CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
     add_compile_options(-fsanitize=address)
     add_compile_options(-fno-omit-frame-pointer)
     add_link_options(-fsanitize=address)
+endif()
+
+add_subdirectory(atproto/lib)
+add_subdirectory(skywalker)
+
+if (NOT ANDROID)
+    add_subdirectory(test)
 endif()
 
 qt_add_executable(appskywalker
