@@ -96,7 +96,7 @@ private:
     ContentFilter mContentFilter;
     MutedWords mMutedWords;
     NotificationListModel mNotificationListModel;
-    std::unordered_map<QString, QByteArray> mAvatars; // URL -> jpg
+    std::unordered_map<QString, QByteArray> mAvatars; // URL -> jpg/png
     QObject mPresence;
 };
 

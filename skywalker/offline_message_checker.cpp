@@ -694,13 +694,13 @@ void OffLineMessageChecker::getAvatars(const QStringList& urls)
 
     const bool validUrl = mImageReader.getImage(url,
         [this, url, remainingUrls](QImage image){
-            QByteArray jpgBlob;
-            PhotoPicker::createBlob(jpgBlob, image);
+            QByteArray blob;
+            PhotoPicker::createBlob(blob, image, { "png" });
 
-            if (!jpgBlob.isNull())
-                mAvatars[url] = jpgBlob;
+            if (!blob.isNull())
+                mAvatars[url] = blob;
             else
-                qWarning() << "Could not convert avatar to JPG:" << url;
+                qWarning() << "Could not convert avatar to blob:" << url;
 
             getAvatars(remainingUrls);
         },

@@ -21,8 +21,8 @@ QImage loadImage(const QString& imgName);
 // The image will be rotated according to EXIF meta data.
 // EXIF meta data will be stripped from the blob.
 // imgName is "file://..." or "image://..."
-std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName);
-std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QString& fileName = "");
+std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName, const QStringList& extraFormats = { "png", "webp" });
+std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStringList& extraFormats = { "png", "webp" }, const QString& fileName = "");
 
 QImage cutRect(const QString& imgName, const QRect& rect);
 

@@ -142,22 +142,42 @@ QImage cutRect(const QString& imgName, const QRect& rect)
     return img.copy(rect);
 }
 
-std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName)
+std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName, const QStringList& extraFormats)
 {
     QImage img = loadImage(imgName);
 
     if (img.isNull())
         return {};
 
-    return createBlob(blob, img, imgName);
+    return createBlob(blob, img, extraFormats, imgName);
 }
 
-std::tuple<const char*, QString> determineImageFormat(const QString& name)
+// <extension, mimeType>
+std::tuple<QString, QString> determineImageFormat(const QImage& img, const QStringList& extraFormats, const QString& name)
 {
-    const char* format = "jpg";
+    QString format = "jpg";
     QString mimeType = "image/jpeg";
 
-    for (const auto& f : { "png", "webp" })
+    if (name.startsWith("image://"))
+    {
+        if (img.hasAlphaChannel())
+        {
+            if (extraFormats.contains("webp") && QImageWriter::supportedImageFormats().contains("webp"))
+            {
+                format = "webp";
+                mimeType = "image/webp";
+            }
+            else if (extraFormats.contains("png"))
+            {
+                format = "png";
+                mimeType = "image/png";
+            }
+
+            return { format, mimeType };
+        }
+    }
+
+    for (const auto& f : extraFormats)
     {
         if (name.endsWith(QString(".%1").arg(f), Qt::CaseInsensitive) && QImageWriter::supportedImageFormats().contains(f))
         {
@@ -170,7 +190,7 @@ std::tuple<const char*, QString> determineImageFormat(const QString& name)
     return { format, mimeType };
 }
 
-std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QString& name)
+std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStringList& extraFormats, const QString& name)
 {
     qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
 
@@ -183,7 +203,7 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
     }
 
 
-    auto [format, mimeType] = determineImageFormat(name);
+    auto [format, mimeType] = determineImageFormat(img, extraFormats, name);
     int quality = 75;
 
     while (quality > 0)
@@ -191,7 +211,7 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
         QBuffer buffer(&blob);
         buffer.open(QIODevice::WriteOnly);
 
-        if (!img.save(&buffer, format, quality))
+        if (!img.save(&buffer, format.toUtf8().constData(), quality))
         {
             qWarning() << "Failed to write blob:" << name << "format:" << format;
             blob.clear();
@@ -210,7 +230,7 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
             {
                 // PNG compression does not compress well, fallback to webp or jpg
                 // Prefer webp as it supports transparency like png
-                const bool webpAvailable = QImageWriter::supportedImageFormats().contains("webp");
+                const bool webpAvailable = extraFormats.contains("webp") && QImageWriter::supportedImageFormats().contains("webp");
                 format = webpAvailable ? "webp" : "jpg";
                 mimeType = webpAvailable ? "image/webp" : "image/jpeg";
                 quality = 75;

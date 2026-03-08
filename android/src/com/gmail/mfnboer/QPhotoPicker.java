@@ -151,6 +151,10 @@ public class QPhotoPicker extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // For the visual media picker, the callback is handled by ActivityResultLauncher
+        if (isPhotoPickerAvailable())
+            return;
+
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
             Uri uri = data.getData();
             ClipData clipData = data.getClipData();

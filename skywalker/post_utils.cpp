@@ -664,7 +664,7 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb,
 
     if (!thumb.isNull())
     {
-        const auto [imgMime, imgSize] = PhotoPicker::createBlob(blob, thumb, card.mLinkCard->getThumb());
+        const auto [imgMime, imgSize] = PhotoPicker::createBlob(blob, thumb, { "png", "webp" }, card.mLinkCard->getThumb());
         mimeType = imgMime;
     }
 

@@ -1,3 +1,7 @@
+next
+====
+* Fix for uploading images with an alpha channel (transparency)
+
 4.29
 ====
 * You can enable/disable 2FA in settings
