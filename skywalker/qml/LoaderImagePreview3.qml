@@ -44,6 +44,6 @@ Loader {
             return filter.height
 
         const maxWidth = guiSettings.maxImageHeight * 1.5
-        return Math.min(width, guiSettings.maxWidth) / 1.5
+        return Math.min(width, maxWidth) / 1.5
     }
 }
