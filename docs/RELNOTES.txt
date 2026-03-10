@@ -1,5 +1,6 @@
 next
 ====
+* Performance improvement
 * Fix for uploading images with an alpha channel (transparency)
 
 4.29

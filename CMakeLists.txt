@@ -26,6 +26,10 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    add_compile_definitions(DEBUG)
+endif()
+
 add_compile_options(-Wall -Wextra -Werror)
 
 message("BUILD TYPE: ${CMAKE_BUILD_TYPE}")

@@ -5,7 +5,7 @@ ThumbImageView {
     required property imageview image
     required property int maxWidth
     required property int maxHeight
-    readonly property int idealHeight: (image.height / image.width) * width
+    readonly property int idealHeight: (image.height / image.width) * maxWidth
     readonly property bool exceedsMaxHeight: maxHeight > 0 && idealHeight > maxHeight
     property bool tileMode: false
     property bool noCrop: false

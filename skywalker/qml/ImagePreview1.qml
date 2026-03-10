@@ -93,6 +93,10 @@ Item {
         }
     }
 
+    function getFilter() {
+        return filter
+    }
+
     function getImageMaskWidth() {
         if (!imgSizeKnown)
             return img.item.width

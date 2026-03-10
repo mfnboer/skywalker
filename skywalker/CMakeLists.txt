@@ -666,6 +666,17 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ForgotPasswordDialog.qml
         QML_FILES qml/HostingComboBox.qml
         QML_FILES qml/TokenEmailDialog.qml
+        SOURCES sky_application.h
+        SOURCES sky_application.cpp
+        QML_FILES qml/LoaderImagePreview1.qml
+        QML_FILES qml/LoaderImagePreview2.qml
+        QML_FILES qml/LoaderImagePreview3.qml
+        QML_FILES qml/LoaderImagePreview4.qml
+        QML_FILES qml/LoaderVideoPreview.qml
+        QML_FILES qml/LoaderExternal.qml
+        QML_FILES qml/LoaderUnknownEmbed.qml
+        QML_FILES qml/LoaderDateTime.qml
+        QML_FILES qml/LoaderContentLabels.qml
 )
 
 if (NOT ANDROID)

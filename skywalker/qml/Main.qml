@@ -25,6 +25,7 @@ ApplicationWindow {
     // property int frameCount: 0
 
     id: root
+    objectName: "root"
     width: 480
     height: 960
     visible: true

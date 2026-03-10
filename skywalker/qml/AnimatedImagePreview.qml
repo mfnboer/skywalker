@@ -71,4 +71,8 @@ RoundCornerMask {
     SkyImageUtils {
         id: imageUtils
     }
+
+    function getFilter() {
+        return filter
+    }
 }

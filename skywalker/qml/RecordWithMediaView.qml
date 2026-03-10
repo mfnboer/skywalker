@@ -26,12 +26,87 @@ Item {
         anchors.centerIn: parent
         spacing: 5
 
-        // See media loader in PostBody.qml
-        Loader {
-            id: mediaLoader
-            x: swipeMode ? -margin - 1 : 0
-            width: parent.width + (swipeMode ? 2 * margin + 2 : 0)
-            visible: status == Loader.Ready
+        // Images
+        LoaderImagePreview1 {
+            id: images1Loader
+            x: swipeMode ? -margin : 0
+            width: parent.width + (swipeMode ? 2 * margin : 0)
+            postImages: record.images
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+            swipeMode: recordItem.swipeMode
+
+            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
+        }
+        LoaderImagePreview2 {
+            id: images2Loader
+            x: swipeMode ? -margin : 0
+            width: parent.width + (swipeMode ? 2 * margin : 0)
+            postImages: record.images
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+            swipeMode: recordItem.swipeMode
+
+            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
+        }
+        LoaderImagePreview3 {
+            id: images3Loader
+            x: swipeMode ? -margin : 0
+            width: parent.width + (swipeMode ? 2 * margin : 0)
+            postImages: record.images
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+            swipeMode: recordItem.swipeMode
+
+            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
+        }
+        LoaderImagePreview4 {
+            id: images4Loader
+            x: swipeMode ? -margin : 0
+            width: parent.width + (swipeMode ? 2 * margin : 0)
+            postImages: record.images
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+            swipeMode: recordItem.swipeMode
+
+            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
+        }
+
+        LoaderVideoPreview {
+            id: videoLoader
+            postVideo: record.video
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            bodyBackgroundColor: recordItem.backgroundColor
+            swipeMode: recordItem.swipeMode
+            isDraft: recordItem.isDraft
+
+            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
+        }
+
+        LoaderExternal {
+            width: parent.width
+            userDid: recordItem.userDid
+            postExternal: record.external
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            highlight: recordItem.highlight
+        }
+
+        LoaderUnknownEmbed {
+            width: parent.width
+            postHasUnknownEmbed: record.hasUnknownEmbed
+            postUnknownEmbedType: record.unknownEmbedType
         }
 
         RecordView {
@@ -40,145 +115,10 @@ Item {
             backgroundColor: guiSettings.highLightColor(recordItem.backgroundColor)
             visible: !recordItem.swipeMode && recordItem.showRecord
         }
-
-        Component {
-            id: images1Component
-
-            ImagePreview1 {
-                images: record.images
-                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-                contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentWarning
-                contentLabeler: recordItem.contentLabeler
-                swipeMode: recordItem.swipeMode
-
-                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-            }
-        }
-
-        Component {
-            id: images2Component
-
-            ImagePreview2 {
-                images: record.images
-                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-                contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentWarning
-                contentLabeler: recordItem.contentLabeler
-                swipeMode: recordItem.swipeMode
-
-                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-            }
-        }
-
-        Component {
-            id: images3Component
-
-            ImagePreview3 {
-                images: record.images
-                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-                contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentWarning
-                contentLabeler: recordItem.contentLabeler
-                swipeMode: recordItem.swipeMode
-
-                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-            }
-        }
-
-        Component {
-            id: images4Component
-
-            ImagePreview4 {
-                images: record.images
-                maskColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-                contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentWarning
-                contentLabeler: recordItem.contentLabeler
-                swipeMode: recordItem.swipeMode
-
-                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-            }
-        }
-
-        Component {
-            id: videoThumbnailComponent
-
-            VideoThumbnail {
-                width: Math.min(180 * 1.777, record.width)
-                height: 180
-                videoSource: record.video.playlistUrl
-            }
-        }
-
-        Component {
-            id: videoViewComponent
-
-            VideoView {
-                videoView: record.video
-                contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentWarning
-                contentLabeler: recordItem.contentLabeler
-                backgroundColor: recordItem.backgroundColor
-                highlight: recordItem.highlight
-                swipeMode: recordItem.swipeMode
-
-                onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-            }
-        }
-
-        Component {
-            id: externalViewComponent
-
-            ExternalView {
-                userDid: recordItem.userDid
-                postExternal: record.external
-                contentVisibility: recordItem.contentVisibility
-                contentWarning: recordItem.contentWarning
-                contentLabeler: recordItem.contentLabeler
-                highlight: recordItem.highlight
-            }
-        }
-
-        Component {
-            id: unknownEmbedComponent
-
-            UnknownEmbedView {
-                width: parent.width
-                unknownEmbedType: record.unknownEmbedType
-            }
-        }
-
-        Component.onCompleted: {
-            if (record.images.length > 0) {
-                const compList = [images1Component, images2Component, images3Component, images4Component]
-                mediaLoader.sourceComponent = compList[record.images.length - 1]
-                mediaLoader.active = true
-            }
-            else if (record.video) {
-                if (isDraft) {
-                    mediaLoader.sourceComponent = videoThumbnailComponent
-                    mediaLoader.active = true
-                }
-                else {
-                    mediaLoader.sourceComponent = videoViewComponent
-                    mediaLoader.active = true
-                }
-            }
-            else if (record.external) {
-                mediaLoader.sourceComponent = externalViewComponent
-                mediaLoader.active = true
-            }
-            else if (record.hasUnknownEmbed) {
-                mediaLoader.sourceComponent = unknownEmbedComponent
-                mediaLoader.active = true
-            }
-        }
     }
 
-
     function movedOffScreen() {
-        if (record.video && mediaLoader.item)
-            mediaLoader.item.pause()
+        if (record.video && videoLoader.item)
+            videoLoader.item.pause()
     }
 }

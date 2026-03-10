@@ -43,27 +43,35 @@ RoundCornerMask {
             visible: isLiveExternal & !card.thumbUrl
         }
         Loader {
+            id: imgLoader
+            x: (externalColumn.width - width) / 2
+            width: calcWidth()
+            height: imageUtils.getPreferredLinkCardAspectRatio(card.uri) * width
             active: filter.imageVisible() && Boolean(card.thumbUrl)
+            asynchronous: true
 
             sourceComponent: ThumbImageFixedSizeView {
                 x: (externalColumn.width - width) / 2
-                width: calcWidth()
-                height: imageUtils.getPreferredLinkCardAspectRatio(card.uri) * width
+                width: imgLoader.width
+                height: imgLoader.height
                 canvasColor: card.color
                 dynamicCanvasColor: false
                 fillMode: Image.PreserveAspectCrop
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
                 indicateLoading: false
+            }
 
-                function calcWidth() {
-                    let w = externalColumn.width
-                    const h = imageUtils.getPreferredLinkCardAspectRatio(card.uri) * w
+            function calcWidth() {
+                if (!card.thumbUrl)
+                    return 0
 
-                    if (h > guiSettings.maxImageHeight)
-                        w *= (guiSettings.maxImageHeight / h)
+                let w = externalColumn.width
+                const h = imageUtils.getPreferredLinkCardAspectRatio(card.uri) * w
 
-                    return w
-                }
+                if (h > guiSettings.maxImageHeight)
+                    w *= (guiSettings.maxImageHeight / h)
+
+                return w
             }
         }
         AccessibleText {
@@ -141,5 +149,7 @@ RoundCornerMask {
         id: imageUtils
     }
 
-    Component.onCompleted: console.debug("CARD:", thumbUrl)
+    function getFilter() {
+        return filter
+    }
 }

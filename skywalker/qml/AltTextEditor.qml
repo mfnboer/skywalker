@@ -56,8 +56,8 @@ SkyPage {
             anchors.left: parent.left
             anchors.topMargin: 10
             anchors.top: altText.bottom
-            width: 240
-            height: 180
+            width: guiSettings.draftImageWidth
+            height: guiSettings.draftImageHeight
             fillMode: Image.PreserveAspectCrop
             autoTransform: true
             source: !sourceIsVideo ? page.imgSource : ""
@@ -117,7 +117,7 @@ SkyPage {
             anchors.topMargin: 10
             anchors.top: altText.bottom
             width: Math.min(height * 1.777, page.width - 2 * page.margin)
-            height: 180
+            height: guiSettings.draftImageHeight
             videoSource: sourceIsVideo ? page.imgSource : ""
             visible: sourceIsVideo
         }

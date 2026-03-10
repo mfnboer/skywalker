@@ -42,6 +42,7 @@ Column {
     readonly property int playControlsHeight: playControls.height
     readonly property bool showPlayControls: playControls.show
     readonly property bool videoPlayingOrPaused: videoPlayer.playbackState == MediaPlayer.PlayingState || videoPlayer.playbackState == MediaPlayer.PausedState || !videoPlayer.manualStop
+    readonly property int extraInlineHeight: (playControls.visible ? playControls.height : 0) + (errorDisplay.visible ? errorDisplay.height : 0)
 
     // The meta information for video can be wrong.
     // I have seen 2160 x 3840 whereas the video and the thumbnail are 1080 x 1920
@@ -75,7 +76,7 @@ Column {
         width: parent.width
         height: tileMode ? parent.height : videoColumn.height
 
-        // The high light color is visible when the thumbnail image is smaller than the
+        // The canvas color is visible when the thumbnail image is smaller than the
         // given aspect ratio size.
         color: isFullViewMode ? "transparent" : canvasColor
         visible: videoPlayer.hasVideo || videoPlayer.error == MediaPlayer.NoError
@@ -635,6 +636,7 @@ Column {
     }
 
     Rectangle {
+        id: errorDisplay
         width: parent.width
         height: errorText.height
         radius: guiSettings.radius
@@ -828,6 +830,10 @@ Column {
             if (autoPlay)
                 videoPlayer.start()
         }
+    }
+
+    function getFilter() {
+        return filter
     }
 
     function clearCache() {

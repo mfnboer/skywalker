@@ -26,8 +26,12 @@ Item {
     }
 
     // Geometry
+    readonly property int draftImageHeight: 180
+    readonly property int draftImageWidth: 240
     readonly property int footerHeight: 50
     readonly property int footerZLevel: 10
+    readonly property int gifAttributionHeight: 11
+    readonly property int gifAttributionWidth: 50
     readonly property int headerHeight: Math.max(50, appFontHeight + appFontHeight * 7/8 + 10) // title + subTitle in SimpleHeader
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2

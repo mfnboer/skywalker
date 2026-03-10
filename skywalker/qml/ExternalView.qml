@@ -47,16 +47,43 @@ Item {
     Loader {
         id: gifLoader
         width: parent.width
+        height: calcHeight()
         active: isGif
+        asynchronous: true
         visible: status == Loader.Ready
 
         sourceComponent: GifView {
-            width: parent.width
+            width: gifLoader.width
+            height: gifLoader.height
             uri: postExternal.uri
             title: postExternal.title
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
             contentLabeler: view.contentLabeler
+        }
+
+        function calcHeight() {
+            if (!isGif)
+                return 0
+
+            const filter = item ? item.getFilter() : null
+
+            if (filter && !filter.imageVisible())
+                return filter.height
+
+            const imgSize = gifUtils.getGifSize(postExternal.uri)
+            const aspectRatio = (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
+
+            if (aspectRatio <= 0.0)
+                return Math.min(width, guiSettings.maxImageHeight) + guiSettings.gifAttributionHeight
+
+            let w = Math.min(width, imgSize.width)
+            const h = w * aspectRatio
+
+            if (h > guiSettings.maxImageHeight)
+                w *= (guiSettings.maxImageHeight / h)
+
+            return w * aspectRatio + guiSettings.gifAttributionHeight
         }
     }
 

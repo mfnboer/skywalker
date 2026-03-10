@@ -751,7 +751,7 @@ SkyPage {
                         id: videoAttachement
                         x: page.margin
                         width: Math.min(height * 1.777, page.width - 2 * page.margin)
-                        height: visible ? 180 : 0
+                        height: visible ? guiSettings.draftImageHeight : 0
                         anchors.top: imageScroller.bottom
                         anchors.topMargin: visible ? 10 : 0
                         videoSource: video

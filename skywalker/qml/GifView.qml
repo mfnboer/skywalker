@@ -34,8 +34,8 @@ Item {
         anchors.right: gifImage.right
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
-        width: 50
-        height: 11
+        width: guiSettings.gifAttributionWidth
+        height: guiSettings.gifAttributionHeight
         fillMode: Image.PreserveAspectFit
         source: "/images/via_tenor_logo_blue.svg"
         asynchronous: true
@@ -46,8 +46,8 @@ Item {
         anchors.right: gifImage.right
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
-        width: 50
-        height: 11
+        width: guiSettings.gifAttributionWidth
+        height: guiSettings.gifAttributionHeight
         fillMode: Image.PreserveAspectFit
         source: "/images/giphy_logo.png"
         asynchronous: true
@@ -56,5 +56,9 @@ Item {
 
     GifUtils {
         id: gifUtils
+    }
+
+    function getFilter() {
+        return gifImage.getFilter()
     }
 }

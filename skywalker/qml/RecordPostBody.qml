@@ -217,80 +217,113 @@ Column {
     }
 
     // Images
-    Loader {
+    LoaderImagePreview1 {
+        id: images1Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
-        active: postImages.length === 1 && postVisible()
-        sourceComponent: images1Component
+        postImages: postBody.postImages
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: postBody.swipeMode
+        postVisible: postBody.postVisible()
+
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
-    Loader {
+    LoaderImagePreview2 {
+        id: images2Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
-        active: postImages.length === 2 && postVisible()
-        sourceComponent: images2Component
+        postImages: postBody.postImages
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: postBody.swipeMode
+        postVisible: postBody.postVisible()
+
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
-    Loader {
+    LoaderImagePreview3 {
+        id: images3Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
-        active: postImages.length === 3 && postVisible()
-        sourceComponent: images3Component
+        postImages: postBody.postImages
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: postBody.swipeMode
+        postVisible: postBody.postVisible()
+
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
-    Loader {
+    LoaderImagePreview4 {
+        id: images4Loader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
-        active: postImages.length === 4 && postVisible()
-        sourceComponent: images4Component
+        postImages: postBody.postImages
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: postBody.swipeMode
+        postVisible: postBody.postVisible()
+
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
 
     // Video
     // HACK: somehow video leaves 1 empty pixel at each side. Add 2 pixels to fix it.
-    Loader {
+    LoaderVideoPreview {
         id: videoLoader
-        x: swipeMode ? -margin - 1 : 0
-        width: parent.width + (swipeMode ? 2 * margin + 2 : 0)
-        active: Boolean(postVideo) && postVisible()
-        sourceComponent: isDraft ? videoThumbnailComponent : videoViewComponent
+        postVideo: postBody.postVideo
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: postBody.swipeMode
+        isDraft: postBody.isDraft
+        postVisible: postBody.postVisible()
+
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
 
     // External
-    Loader {
+    LoaderExternal {
         width: parent.width
-        active: Boolean(postExternal) && postVisible()
-        sourceComponent: externalViewComponent
+        userDid: postBody.userDid
+        postExternal: postBody.postExternal
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        postVisible: postBody.postVisible()
     }
 
     // Unknown embed
-    Loader {
+    LoaderUnknownEmbed {
         width: parent.width
-        active: postHasUnknownEmbed && postVisible()
-        sourceComponent: unknownEmbedComponent
+        postHasUnknownEmbed: postBody.postHasUnknownEmbed
+        postUnknownEmbedType: postBody.postUnknownEmbedType
+        postVisible: postBody.postVisible()
     }
 
-    Loader {
+    LoaderContentLabels {
         width: parent.width
-        active: postContentLabels.length > 0 && postVisible()
-        sourceComponent: ContentLabels {
-            parentWidth: parent.width
-            alignRight: true
-            contentLabels: postContentLabels
-            filteredContentLabel: postBody.filteredContentLabel
-            contentAuthor: postAuthor
-        }
+        postAuthor: postBody.postAuthor
+        postContentLabels: postBody.postContentLabels
+        filteredContentLabel: postBody.filteredContentLabel
+        postVisible: postBody.postVisible()
     }
 
-    Loader {
+    LoaderDateTime {
         id: dateTimeLoader
         width: parent.width
-        active: detailedView && postVisible()
-        sourceComponent: AccessibleText {
-            width: parent.width
-            topPadding: 10
-            Layout.fillWidth: true
-            elide: Text.ElideRight
-            color: Material.color(Material.Grey)
-            text: postDateTime.toLocaleString(Qt.locale(), Locale.ShortFormat)
-            font.pointSize: guiSettings.scaledFont(7/8)
-        }
+        postDateTime: postBody.postDateTime
+        detailedView: postBody.detailedView
+        postVisible: postBody.postVisible()
     }
 
     function movedOffScreen() {
@@ -339,116 +372,5 @@ Column {
 
     function mustShowLangauges() {
         return root.getSkywalker().getUserSettings().getShowLanguageTags()
-    }
-
-    Component {
-        id: images1Component
-
-        ImagePreview1 {
-            images: postImages
-            maskColor: bodyBackgroundColor
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            swipeMode: postBody.swipeMode
-
-            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-        }
-    }
-
-    Component {
-        id: images2Component
-
-        ImagePreview2 {
-            images: postImages
-            maskColor: bodyBackgroundColor
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            swipeMode: postBody.swipeMode
-
-            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-        }
-    }
-
-    Component {
-        id: images3Component
-
-        ImagePreview3 {
-            images: postImages
-            maskColor: bodyBackgroundColor
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            swipeMode: postBody.swipeMode
-
-            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-        }
-    }
-
-    Component {
-        id: images4Component
-
-        ImagePreview4 {
-            images: postImages
-            maskColor: bodyBackgroundColor
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            swipeMode: postBody.swipeMode
-
-            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-        }
-    }
-
-    Component {
-        id: videoThumbnailComponent
-
-        VideoThumbnail {
-            width: Math.min(180 * 1.777, postBody.width)
-            height: 180
-            videoSource: postBody.postVideo.playlistUrl
-        }
-    }
-
-    Component {
-        id: videoViewComponent
-
-        VideoView {
-            id: videoViewItem
-
-            videoView: postBody.postVideo
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            backgroundColor: bodyBackgroundColor
-            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
-            swipeMode: postBody.swipeMode
-
-            onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-        }
-    }
-
-    Component {
-        id: externalViewComponent
-
-        ExternalView {
-            userDid: postBody.userDid
-            postExternal: postBody.postExternal
-            contentVisibility: postContentVisibility
-            contentWarning: postContentWarning
-            contentLabeler: postContentLabeler
-            highlight: bodyBackgroundColor === guiSettings.postHighLightColor
-            maskColor: bodyBackgroundColor
-        }
-    }
-
-    Component {
-        id: unknownEmbedComponent
-
-        UnknownEmbedView {
-            width: parent.width
-            unknownEmbedType: postUnknownEmbedType
-        }
     }
 }
