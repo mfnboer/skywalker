@@ -50,7 +50,6 @@ Item {
         height: calcHeight()
         active: isGif
         asynchronous: true
-        visible: status == Loader.Ready
 
         sourceComponent: GifView {
             width: gifLoader.width
@@ -60,6 +59,11 @@ Item {
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
             contentLabeler: view.contentLabeler
+            backgroundColor: maskColor
+        }
+
+        LoaderCanvas {
+            backgroundColor: maskColor
         }
 
         function calcHeight() {
@@ -75,7 +79,7 @@ Item {
             const aspectRatio = (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
 
             if (aspectRatio <= 0.0)
-                return Math.min(width, guiSettings.maxImageHeight) + guiSettings.gifAttributionHeight
+                return Math.min(width, guiSettings.maxImageHeight) + guiSettings.gifAttributionHeight + 5
 
             let w = Math.min(width, imgSize.width)
             const h = w * aspectRatio
@@ -83,7 +87,7 @@ Item {
             if (h > guiSettings.maxImageHeight)
                 w *= (guiSettings.maxImageHeight / h)
 
-            return w * aspectRatio + guiSettings.gifAttributionHeight
+            return w * aspectRatio + guiSettings.gifAttributionHeight + 5
         }
     }
 

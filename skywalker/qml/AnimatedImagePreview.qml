@@ -9,6 +9,7 @@ RoundCornerMask {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     required property basicprofile contentLabeler
+    property string backgroundColor: guiSettings.backgroundColor
     property size imgSize
     readonly property double aspectRatio: (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
     property alias status: img.status
@@ -16,7 +17,8 @@ RoundCornerMask {
     id: frame
     width: filter.imageVisible() ? img.width : parent.width
     height: filter.imageVisible() ? img.height : filter.height
-    color: aspectRatio > 0.0 ? "transparent" : guiSettings.postHighLightColor
+    color: guiSettings.highLightColor(backgroundColor)
+    maskColor: backgroundColor
 
     ThumbAnimatedImageView {
         id: img

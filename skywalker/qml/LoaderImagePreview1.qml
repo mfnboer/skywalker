@@ -30,6 +30,10 @@ Loader {
         onActivateSwipe: (imgIndex, previewImg) => images1Loader.activateSwipe(imgIndex, previewImg)
     }
 
+    LoaderCanvas {
+        backgroundColor: bodyBackgroundColor
+    }
+
     function calcHeight() {
         if (postImages.length !== 1)
             return 0

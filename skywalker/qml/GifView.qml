@@ -8,6 +8,7 @@ Item {
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     required property basicprofile contentLabeler
+    property string backgroundColor: guiSettings.backgroundColor
 
     id: view
     width: parent.width
@@ -20,6 +21,7 @@ Item {
         contentVisibility: view.contentVisibility
         contentWarning: view.contentWarning
         contentLabeler: view.contentLabeler
+        backgroundColor: view.backgroundColor
 
         // Use the view URI as the url query params have been removed by getGifUrl
         imgSize: gifUtils.getGifSize(view.uri)

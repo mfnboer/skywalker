@@ -677,6 +677,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/LoaderUnknownEmbed.qml
         QML_FILES qml/LoaderDateTime.qml
         QML_FILES qml/LoaderContentLabels.qml
+        QML_FILES qml/LoaderCanvas.qml
 )
 
 if (NOT ANDROID)

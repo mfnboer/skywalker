@@ -23,6 +23,10 @@ Loader {
 
     sourceComponent: isDraft ? videoThumbnailComponent : videoViewComponent
 
+    LoaderCanvas {
+        backgroundColor: bodyBackgroundColor
+    }
+
     function calcWidth() {
         if (isDraft)
             return Math.min(guiSettings.draftImageHeight * 1.777, parent.width)

@@ -61,6 +61,10 @@ RoundCornerMask {
                 indicateLoading: false
             }
 
+            LoaderCanvas {
+                backgroundColor: card.color
+            }
+
             function calcWidth() {
                 if (!card.thumbUrl)
                     return 0
@@ -73,15 +77,6 @@ RoundCornerMask {
 
                 return w
             }
-        }
-        AccessibleText {
-            id: linkText
-            width: parent.width - 10
-            leftPadding: 5
-            rightPadding: 5
-            text: card.uri ? new URL(card.uri).hostname : ""
-            elide: Text.ElideRight
-            color: guiSettings.linkColor
         }
         SkyCleanedText {
             id: titleText
@@ -108,6 +103,15 @@ RoundCornerMask {
             maximumLineCount: 8
             textFormat: descriptionIsHtml ? Text.RichText : Text.PlainText
             elide: descriptionIsHtml ? Text.ElideNone : Text.ElideRight
+        }
+        AccessibleText {
+            id: linkText
+            width: parent.width - 10
+            leftPadding: 5
+            rightPadding: 5
+            text: card.uri ? new URL(card.uri).hostname : ""
+            elide: Text.ElideRight
+            color: guiSettings.linkColor
         }
 
         SonglinkWidget {
