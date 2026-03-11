@@ -46,7 +46,7 @@ TextEdit {
     font.pointSize: guiSettings.scaledFont(9/8)
     color: guiSettings.textColor
     selectionColor: guiSettings.selectionColor
-    clip: true
+    // TODO clip: true
     text: initialText
 
     Accessible.role: Accessible.EditableText
