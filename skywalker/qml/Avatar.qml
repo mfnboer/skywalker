@@ -50,7 +50,7 @@ Item {
     Loader {
         width: parent.width
         height: width
-        active: !avatarFrame.visible
+        active: avatarImg.status !== Image.Ready || !avatarUrl
 
         sourceComponent: Rectangle {
             radius: avatarItem.radius
