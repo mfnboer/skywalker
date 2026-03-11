@@ -231,19 +231,21 @@ Rectangle {
             opacity: avatar.opacity
             visible: threadBarVisible
 
-            Rectangle {
+            Loader {
                 y: postEntry.margin - (height / 2)
                 width: parent.width
                 height: 6
-                color: guiSettings.threadMidColor(threadColor)
-                visible: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
+                active: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
+
+                sourceComponent: Rectangle {
+                    color: guiSettings.threadMidColor(threadColor)
+                }
             }
         }
-        Rectangle {
+        Item {
             Layout.leftMargin: contentLeftMargin
             Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: topLeftSpace.visible ? topLeftSpace.height : postEntry.margin
-            color: "transparent"
 
             Loader {
                 width: parent.width
@@ -348,12 +350,10 @@ Rectangle {
 
         // BAR
         // Author and content
-        Rectangle {
+        Item {
             id: avatar
             Layout.preferredWidth: threadColumnWidth
             Layout.fillHeight: true
-            color: "transparent"
-            opacity: 0.9
             visible: threadBarVisible
 
             Rectangle {
@@ -361,6 +361,7 @@ Rectangle {
                 y: ((postType === QEnums.POST_ROOT && !postIsReply) || ((postThreadType & QEnums.THREAD_TOP) && !postIsReply)) ? avatarImg.y + avatarImg.height / 2 : 0
                 width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
                 height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 && !unrollThread ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
+                opacity: 0.9
 
                 // Gradient is used display thread context.
                 gradient: Gradient {
@@ -992,10 +993,9 @@ Rectangle {
         // BAR
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
-        Rectangle {
+        Item {
             Layout.preferredWidth: threadColumnWidth
             Layout.preferredHeight: postEntry.margin
-            color: "transparent"
             visible: threadBarVisible && !unrollThread
 
             Rectangle {
@@ -1028,11 +1028,10 @@ Rectangle {
                 }
             }
         }
-        Rectangle {
+        Item {
             Layout.leftMargin: contentLeftMargin
             Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
             Layout.preferredHeight: postEntry.margin
-            color: "transparent"
             visible: !unrollThread
         }
 

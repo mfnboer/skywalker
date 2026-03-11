@@ -47,18 +47,21 @@ Item {
             indicateLoading: false
         }
     }
-    Rectangle {
+    Loader {
         width: parent.width
         height: width
-        radius: parent.radius
-        color: guiSettings.avatarDefaultColor
-        visible: !avatarFrame.visible
+        active: !avatarFrame.visible
 
-        SkySvg {
-            width: parent.width
-            height: width
-            color: "white"
-            svg: author.associated.isLabeler ? SvgFilled.moderator : avatarItem.unknownSvg
+        sourceComponent: Rectangle {
+            radius: avatarItem.radius
+            color: guiSettings.avatarDefaultColor
+
+            SkySvg {
+                width: parent.width
+                height: width
+                color: "white"
+                svg: author.associated.isLabeler ? SvgFilled.moderator : avatarItem.unknownSvg
+            }
         }
     }
     Loader {
@@ -123,9 +126,18 @@ Item {
         }
     }
 
-    ModeratorIcon {
-        width: parent.width * 0.6
-        visible: author.associated.isLabeler && showModeratorIcon
+    Loader {
+        width: parent.width
+        height: parent.height
+        active: author.associated.isLabeler && showModeratorIcon
+        sourceComponent: Item {
+            ModeratorIcon {
+                x: parent.width - width * 0.8
+                y: height - height * 0.2
+                width: parent.width * 0.6
+                height: width
+            }
+        }
     }
 
     function contentVisible() {
