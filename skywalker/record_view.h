@@ -137,6 +137,7 @@ private:
 
     bool mValid = false;
 
+    // Optimal field order as suggested by clang-analyzer
     struct PrivateData
     {
         ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
@@ -144,27 +145,26 @@ private:
         ATProto::AppBskyGraph::ListView::SharedPtr mList;
         ATProto::AppBskyLabeler::LabelerView::SharedPtr mLabeler;
         ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr mStarterPack;
-        bool mNotFound = false;
-        QString mNotFoundUri;
-        bool mBlocked = false;
         BlockedAuthor mBlockedAuthor;
-        bool mDetached = false;
+        QString mNotFoundUri;
         QString mDetachedByDid;
         QString mDetachedPostUri;
-        bool mNotSupported = false;
         QString mUnsupportedType;
-        QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
         QString mContentWarning = "NOT INITIALIZED";
-        BasicProfile mContentLabeler;
-        QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
         LanguageList mLanguages;
-        std::optional<ContentLabelList> mContentLabels;
-        std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
-
         QString mFormattedText;
         QList<ImageView> mImages;
-        VideoView mVideo;
+        std::optional<ContentLabelList> mContentLabels;
+        std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
+        BasicProfile mContentLabeler;
         ExternalView mExternal;
+        VideoView mVideo;
+        QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
+        QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
+        bool mNotFound = false;
+        bool mBlocked = false;
+        bool mDetached = false;
+        bool mNotSupported = false;
     };
     std::shared_ptr<PrivateData> mPrivate = std::make_shared<PrivateData>();
 };

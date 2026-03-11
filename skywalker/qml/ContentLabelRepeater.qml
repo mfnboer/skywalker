@@ -56,9 +56,6 @@ Repeater {
             font.italic: true
             color: guiSettings.textColor
             text: getDisplayText(modelData)
-
-            Accessible.role: Accessible.StaticText
-            Accessible.name: qsTr(`content label: ${text}`)
         }
 
         SkyMouseArea {
