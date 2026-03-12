@@ -96,10 +96,9 @@ Rectangle {
     property int extraFooterHeight: 0
     property bool threadBarVisible: !swipeMode
     readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
-            (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
+                                               (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
     readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser || postHiddenPosts || postFoldedType === QEnums.FOLDED_POST_FIRST
     readonly property int minGridHeight: noPostRendering ? 30 : 90
-    readonly property int gridColumns: threadBarVisible ? 2 : 1
     readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0
     readonly property int contentLeftMargin: threadBarVisible ? 0 : margin
 
@@ -176,681 +175,766 @@ Rectangle {
         postBody.closeMedia(mediaIndex, closeCb)
     }
 
-    GridLayout {
+    Column {
         id: grid
         y: extraHeaderHeight
-        columns: gridColumns
         width: parent.width
-        rowSpacing: 0
+        spacing: 0
 
         // End of feed indication
         Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: endOfFeed && reverseFeed
             sourceComponent: endOfFeedComp
         }
 
-        // BAR
-        // Instead of using row spacing, these empty rectangles are used for white space.
-        // This way we can color the background for threads.
-        Rectangle {
-            id: topLeftSpace
-            Layout.leftMargin: 8 + (avatarImg.width - width) / 2
-            Layout.preferredWidth: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
-            Layout.preferredHeight: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ?
-                                        2 :
-                                        ((postIsReply && (postThreadType & QEnums.THREAD_TOP) ? 4 : 1)))
+        Row {
+            width: parent.width
 
-            color: {
-                switch (postType) {
-                case QEnums.POST_ROOT:
-                    return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
-                case QEnums.POST_REPLY:
-                case QEnums.POST_LAST_REPLY:
-                    return !postParentInThread ? "transparent" : guiSettings.threadMidColor(threadColor)
-                case QEnums.POST_THREAD: {
-                    if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
-                        return guiSettings.threadStartColor(threadColor)
-                    } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
-                               (postThreadType & QEnums.THREAD_ENTRY)){
-                        return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : getThreadEntryColor(threadColor)
-                    } else if (postThreadType & QEnums.THREAD_TOP) {
-                        return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
-                    } else if (postThreadType & QEnums.THREAD_PARENT) {
-                        return guiSettings.threadStartColor(threadColor)
-                    }
+            // BAR
+            // Instead of using row spacing, these empty rectangles are used for white space.
+            // This way we can color the background for threads.
+            Item {
+                width: threadColumnWidth
+                height: topLeftSpace.height
 
-                    return guiSettings.threadMidColor(threadColor)
-                }
-                default:
-                    return "transparent"
-                }
-            }
+                Rectangle {
+                    id: topLeftSpace
+                    x: 8 + (avatarImg.width - width) / 2
+                    width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
+                    height: postEntry.margin * (!postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY) ?
+                                                2 :
+                                                ((postIsReply && (postThreadType & QEnums.THREAD_TOP) ? 4 : 1)))
 
-            opacity: avatar.opacity
-            visible: threadBarVisible
-
-            Loader {
-                y: postEntry.margin - (height / 2)
-                width: parent.width
-                height: 6
-                active: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
-
-                sourceComponent: Rectangle {
-                    color: guiSettings.threadMidColor(threadColor)
-                }
-            }
-        }
-        Item {
-            Layout.leftMargin: contentLeftMargin
-            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
-            Layout.preferredHeight: topLeftSpace.visible ? topLeftSpace.height : postEntry.margin
-
-            Loader {
-                width: parent.width
-                height: parent.height
-                active: postIsReply && (postThreadType & QEnums.THREAD_TOP)
-                visible: status == Loader.Ready
-
-                sourceComponent: AccessibleText {
-                    width: parent.width
-                    height: parent.height
-                    elide: Text.ElideRight
-                    color: guiSettings.linkColor
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr("Read older...")
-
-                    SkyMouseArea {
-                        anchors.fill: parent
-                        onClicked: addOlderPosts()
-                    }
-                }
-            }
-        }
-
-        // BAR
-        // Pinned post
-        Loader {
-            Layout.preferredWidth: threadColumnWidth
-            Layout.fillHeight: true
-            active: postIsPinned && !postLocallyDeleted && threadBarVisible
-            visible: status == Loader.Ready
-            sourceComponent: Rectangle {
-                width: parent.width
-                height: parent.height
-                color: guiSettings.backgroundColor
-
-                SkySvg {
-                    anchors.right: parent.right
-                    width: 18
-                    height: width
-                    color: Material.color(Material.Grey)
-                    svg: SvgFilled.pin
-                }
-            }
-        }
-        Loader {
-            Layout.leftMargin: contentLeftMargin
-            Layout.fillWidth: true
-            active: postIsPinned && !postLocallyDeleted
-            visible: status == Loader.Ready
-            sourceComponent: AccessibleText {
-                width: parent.width
-                elide: Text.ElideRight
-                text: qsTr("Pinned post")
-                color: Material.color(Material.Grey)
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(7/8)
-            }
-        }
-
-        // BAR
-        // Repost information
-        Loader {
-            Layout.preferredWidth: threadColumnWidth
-            Layout.fillHeight: true
-            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted && threadBarVisible
-            visible: status == Loader.Ready
-            sourceComponent: Rectangle {
-                width: parent.width
-                height: parent.height
-                color: guiSettings.backgroundColor
-
-                SkySvg {
-                    anchors.right: parent.right
-                    width: 18
-                    height: width
-                    color: Material.color(Material.Grey)
-                    svg: SvgOutline.repost
-                }
-            }
-        }
-        Loader {
-            Layout.leftMargin: contentLeftMargin
-            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
-            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
-            visible: status == Loader.Ready
-            sourceComponent: SkyCleanedTextLine {
-                id: repostedByText
-                width: parent.width
-                elide: Text.ElideRight
-                plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
-                color: Material.color(Material.Grey)
-                font.bold: true
-                font.pointSize: guiSettings.scaledFont(7/8)
-                Accessible.ignored: true
-
-                SkyMouseArea {
-                    anchors.fill: parent
-                    onClicked: skywalker.getDetailedProfile(postRepostedByAuthor.did)
-                }
-            }
-        }
-
-        // BAR
-        // Author and content
-        Item {
-            id: avatar
-            Layout.preferredWidth: threadColumnWidth
-            Layout.fillHeight: true
-            visible: threadBarVisible
-
-            Rectangle {
-                x: avatarImg.x + (avatarImg.width - width) / 2
-                y: ((postType === QEnums.POST_ROOT && !postIsReply) || ((postThreadType & QEnums.THREAD_TOP) && !postIsReply)) ? avatarImg.y + avatarImg.height / 2 : 0
-                width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
-                height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 && !unrollThread ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
-                opacity: 0.9
-
-                // Gradient is used display thread context.
-                gradient: Gradient {
-                    GradientStop {
-                        position: 0.0
-                        color: {
-                            switch (postType) {
-                            case QEnums.POST_ROOT:
+                    color: {
+                        switch (postType) {
+                        case QEnums.POST_ROOT:
+                            return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
+                        case QEnums.POST_REPLY:
+                        case QEnums.POST_LAST_REPLY:
+                            return !postParentInThread ? "transparent" : guiSettings.threadMidColor(threadColor)
+                        case QEnums.POST_THREAD: {
+                            if (postThreadType & QEnums.THREAD_FIRST_DIRECT_CHILD) {
                                 return guiSettings.threadStartColor(threadColor)
-                            case QEnums.POST_REPLY:
-                            case QEnums.POST_LAST_REPLY:
-                                return guiSettings.threadMidColor(threadColor)
-                            case QEnums.POST_THREAD: {
-                                if (postThreadType & QEnums.THREAD_ENTRY) {
-                                    return getThreadEntryColor(threadColor)
-                                } else if ((postThreadType & QEnums.THREAD_PARENT) ||
-                                        (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
-                                    return guiSettings.threadStartColor(threadColor)
-                                }
+                            } else if ((postThreadType & QEnums.THREAD_DIRECT_CHILD) ||
+                                       (postThreadType & QEnums.THREAD_ENTRY)){
+                                return (postThreadType & QEnums.THREAD_TOP) ? "transparent" : getThreadEntryColor(threadColor)
+                            } else if (postThreadType & QEnums.THREAD_TOP) {
+                                return postIsReply ? guiSettings.threadStartColor(threadColor) : "transparent"
+                            } else if (postThreadType & QEnums.THREAD_PARENT) {
+                                return guiSettings.threadStartColor(threadColor)
+                            }
 
-                                return guiSettings.threadMidColor(threadColor)
-                            }
-                            default:
-                                return guiSettings.backgroundColor
-                            }
+                            return guiSettings.threadMidColor(threadColor)
+                        }
+                        default:
+                            return "transparent"
                         }
                     }
-                    GradientStop {
-                        position: 1.0
-                        color: {
-                            switch (postType) {
-                            case QEnums.POST_STANDALONE:
-                                return guiSettings.backgroundColor
-                            case QEnums.POST_LAST_REPLY:
-                                return getThreadEndColor(threadColor)
-                            case QEnums.POST_THREAD: {
-                                if (postThreadType & QEnums.THREAD_ENTRY) {
-                                    return getThreadEntryColor(threadColor)
-                                } else if (postThreadType & QEnums.THREAD_PARENT) {
-                                    return guiSettings.threadStartColor(threadColor)
-                                } else if (postThreadType & QEnums.THREAD_LEAF) {
-                                    return getThreadEndColor(threadColor)
-                                }
 
-                                return guiSettings.threadMidColor(threadColor)
-                            }
-                            default:
-                                return guiSettings.threadMidColor(threadColor)
-                            }
+                    opacity: avatar.opacity
+                    visible: threadBarVisible
+
+                    Loader {
+                        y: postEntry.margin - (height / 2)
+                        width: parent.width
+                        height: 6
+                        active: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
+
+                        sourceComponent: Rectangle {
+                            color: guiSettings.threadMidColor(threadColor)
                         }
                     }
                 }
             }
+            Item {
+                width: parent.width - threadColumnWidth
+                height: topLeftSpace.visible ? topLeftSpace.height : postEntry.margin
 
-            Avatar {
-                id: avatarImg
-                x: 8
-                y: 5
-                width: parent.width - 13
-                userDid: postEntry.userDid
-                author: postEntry.author
-                showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
-                visible: (!postIsPlaceHolder || postBlockedByUser) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    height: parent.height
+                    active: postIsReply && (postThreadType & QEnums.THREAD_TOP)
+                    visible: status == Loader.Ready
 
-                onClicked: skywalker.getDetailedProfile(author.did)
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr(`show profile of ${author.name}`)
-                Accessible.onPressAction: clicked()
-            }
-
-            // Mask to turn the threadbar into a dotted line
-            Loader {
-                width: parent.width
-                active: postFoldedType === QEnums.FOLDED_POST_FIRST
-
-                sourceComponent: Repeater {
-                    model: Math.floor(avatar.height / 8)
-
-                    Rectangle {
-                        required property int index
-
-                        y: 4 + index * 8
+                    sourceComponent: AccessibleText {
                         width: parent.width
-                        height: 4
-                        color: guiSettings.backgroundColor
+                        height: parent.height
+                        elide: Text.ElideRight
+                        color: guiSettings.linkColor
+                        verticalAlignment: Text.AlignVCenter
+                        text: qsTr("Read older...")
+
+                        SkyMouseArea {
+                            anchors.fill: parent
+                            onClicked: addOlderPosts()
+                        }
                     }
                 }
             }
         }
-        Column {
-            id: postColumn
-            // Change from width to Layout.preferredWidth seems to solve the issue
-            // where posts sometimes are too wide (like landscape mode) but makes
-            // things very slow :-(
-            // This seems fixed on Qt 6.7.3
-            Layout.leftMargin: contentLeftMargin
-            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
-            visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
 
-            Loader {
-                width: parent.width
-                active: threadBarVisible && (!unrollThread || postEntry.index == 0)
-                visible: status == Loader.Ready
+        Loader {
+            width: parent.width
+            active: postIsPinned && !postLocallyDeleted
 
-                sourceComponent: PostHeader {
-                    width: parent.width
-                    userDid: postEntry.userDid
-                    author: postEntry.author
-                    postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
-                    filteredContentLabel: postEntry.filteredPostContentLabel
-                }
-            }
+            sourceComponent: Row {
+                spacing: contentLeftMargin
 
-            Loader {
-                width: parent.width
-                active: !threadBarVisible && (!unrollThread || postEntry.index == 0)
-                visible: status == Loader.Ready
+                // BAR
+                // Pinned post
+                Loader {
+                    width: threadColumnWidth
+                    height: 18
+                    active: threadBarVisible
+                    visible: status == Loader.Ready
 
-                sourceComponent: PostHeaderWithAvatar {
-                    width: parent.width
-                    userDid: postEntry.userDid
-                    author: postEntry.author
-                    postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
-                    filteredContentLabel: postEntry.filteredPostContentLabel
-                }
-            }
-
-            // Reply to
-            Loader {
-                width: parent.width
-                active: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && (postType !== QEnums.POST_THREAD || index === 0)
-                visible: status == Loader.Ready
-                sourceComponent: ReplyToRow {
-                    width: parent.width
-                    text: qsTr(`Reply to ${postReplyToAuthor.name}`)
-                }
-            }
-
-            // Reply hidden by user
-            Loader {
-                width: parent.width
-                active: postIsHiddenReply && postReplyRootAuthorDid === skywalker.getUserDid()
-                visible: status == Loader.Ready
-                sourceComponent: ReplyToRow {
-                    width: parent.width
-                    text: qsTr("Reply hidden by you")
-                    svg: SvgOutline.hideVisibility
-                }
-            }
-
-            // Hide reason (only when filtered posts are shown
-            Loader {
-                width: parent.width
-                active: filteredPostHideReason !== QEnums.HIDE_REASON_NONE
-                visible: status == Loader.Ready
-
-                sourceComponent: Rectangle {
-                    width: hideReasonRow.width
-                    height: hideReasonRow.height
-                    radius: 3
-                    color: guiSettings.hideReasonLabelColor
-
-                    Row {
-                        id: hideReasonRow
-                        width: parent.width
-                        spacing: 10
+                    sourceComponent: Rectangle {
+                        color: guiSettings.backgroundColor
 
                         SkySvg {
-                            id: hideIcon
-                            width: 20
-                            height: 20
-                            color: guiSettings.textColor
-                            svg: SvgOutline.hideVisibility
-                        }
-
-                        AccessibleText {
-                            width: parent.width - hideIcon.width
-                            rightPadding: 10
-                            anchors.verticalCenter: parent.verticalCenter
-                            elide: Text.ElideRight
-                            text: QEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
+                            anchors.right: parent.right
+                            width: 18
+                            height: width
+                            color: Material.color(Material.Grey)
+                            svg: SvgFilled.pin
                         }
                     }
                 }
-            }
 
-            PostBody {
-                id: postBody
-                width: parent.width
-                userDid: postEntry.userDid
-                postAuthor: author
-                postText: postEntry.postText
-                postPlainText: postEntry.postPlainText
-                postHasUnknownEmbed: postEntry.postHasUnknownEmbed
-                postUnknownEmbedType: postEntry.postUnknownEmbedType
-                postImages: postEntry.postImages
-                postLanguageLabels: postLanguages
-                postContentLabels: postLabels
-                postContentVisibility: postEntry.postContentVisibility
-                postContentWarning: postEntry.postContentWarning
-                postContentLabeler: postEntry.postContentLabeler
-                postMuted: postEntry.postMutedReason
-                postIsThread: postEntry.postIsThread && !postEntry.unrollThread
-                postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
-                postVideo: postEntry.postVideo
-                postExternal: postEntry.postExternal
-                postRecord: postEntry.postRecord
-                postRecordWithMedia: postEntry.postRecordWithMedia
-                postDateTime: postEntry.postIndexedDateTime
-                detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
-                initialShowMaxTextLines: postEntry.unrollThread ? maxTextLines : 25
-                bodyBackgroundColor: postEntry.color.toString()
-                borderColor: postEntry.border.color.toString()
-                postHighlightColor: postEntry.postHighlightColor
-                swipeMode: postEntry.swipeMode
-                showRecord: postEntry.showRecord
-
-                onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
-                onUnrollThread: {
-                    if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
-                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
-                }
-            }
-
-            // Reposts and likes in detailed view of post entry in thread view
-            Loader {
-                width: parent.width
-                active: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
-                visible: status == Loader.Ready
-                sourceComponent: Flow {
-                    width: parent.width
-                    topPadding: 10
-                    bottomPadding: 5
-                    spacing: 10
-
-                    StatAuthors {
-                        userDid: postEntry.userDid
-                        atUri: postUri
-                        count: postRepostCount
-                        nameSingular: qsTr("repost")
-                        namePlural: qsTr("reposts")
-                        authorListType: QEnums.AUTHOR_LIST_REPOSTS
-                        authorListHeader: qsTr("Reposted by")
-                    }
-                    StatQuotes {
-                        userDid: postEntry.userDid
-                        atUri: postUri
-                        count: postQuoteCount
-                    }
-                    StatAuthors {
-                        userDid: postEntry.userDid
-                        atUri: postUri
-                        count: postLikeCount
-                        nameSingular: qsTr("like")
-                        namePlural: qsTr("likes")
-                        authorListType: QEnums.AUTHOR_LIST_LIKES
-                        authorListHeader: qsTr("Liked by")
-                    }
-                }
-            }
-
-            // Stats
-            Loader {
-                width: parent.width
-                height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10)
-                active: !unrollThread || endOfFeed
-                asynchronous: true
-                visible: active
-
-                sourceComponent: PostStats {
-                    id: postStats
-                    topPadding: 10
-                    skywalker: postEntry.skywalker
-                    replyCount: postReplyCount
-                    repostCount: postRepostCount + postQuoteCount
-                    likeCount: postLikeCount
-                    repostUri: postRepostUri
-                    repostTransient: postRepostTransient
-                    likeUri: postLikeUri
-                    likeTransient: postLikeTransient
-                    threadMuted: postThreadMuted
-                    replyDisabled: postReplyDisabled
-                    viewerStatePinned: postViewerStatePinned
-                    replyRestriction: postReplyRestriction
-                    isHiddenReply: postIsHiddenReply
-                    isReply: postIsReply
-                    replyRootAuthorDid: postReplyRootAuthorDid
-                    replyRootUri: postReplyRootUri
-                    authorIsUser: author.did === userDid
-                    isBookmarked: postBookmarked
-                    bookmarkTransient: postBookmarkTransient
-                    feedback: postFeedback
-                    feedbackTransient: postFeedbackTransient
-                    isThread: postIsThread || postIsThreadReply
-                    isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
-                    isUnrolledThread: postEntry.unrollThread
-                    showViewThread: swipeMode
-                    record: postRecord
-                    recordWithMedia: postRecordWithMedia
-                    feedAcceptsInteractions: postEntry.feedAcceptsInteractions
-
-                    onReply: {
-                        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
-                        root.composeReply(postUri, postCid,
-                                          postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                          postIndexedDateTime,
-                                          author, postReplyRootUri, postReplyRootCid, lang,
-                                          postMentionDids, "", "", feedDid, postFeedContext, userDid)
-                    }
-
-                    onReplyLongPress: (mouseEvent) => {
-                        if (!root.isActiveUser(userDid))
-                            return
-
-                        const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
-                        root.replyByNonActiveUser(
-                                mouseEvent, postStats, postEntry.ListView.view,
-                                postUri, postCid,
-                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                postIndexedDateTime,
-                                author, postReplyRootUri, postReplyRootCid, lang,
-                                postMentionDids)
-                    }
-
-                    onRepost: {
-                        root.repost(postRepostUri, postUri, postCid,
-                                    postReasonRepostUri, postReasonRepostCid,
-                                    feedDid, postFeedContext,
-                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                    postIndexedDateTime, author, postEmbeddingDisabled,
-                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText,
-                                    userDid)
-                    }
-
-                    function quote(quoteByDid = "") {
-                        root.quotePost(postUri, postCid,
-                            postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                            postIndexedDateTime, author, postEmbeddingDisabled,
-                            feedDid, postFeedContext, quoteByDid)
-                    }
-
-                    onRepostLongPress: (mouseEvent) => {
-                        if (!root.isActiveUser(userDid)) {
-                            quote(userDid)
-                            return
-                        }
-
-                        const actionDone = root.repostByNonActiveUser(
-                                mouseEvent, postStats, postEntry.ListView.view, postUri, postCid,
-                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled,
-                                postReasonRepostUri, postReasonRepostCid)
-
-                        if (!actionDone)
-                            quote()
-                    }
-
-                    onLike: root.like(postLikeUri, postUri, postCid,
-                                      postReasonRepostUri, postReasonRepostCid,
-                                      feedDid, postFeedContext, userDid)
-
-                    onLikeLongPress: (mouseEvent) => {
-                        if (root.isActiveUser(userDid))
-                            root.likeByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
-                    }
-
-                    onBookmark: {
-                        if (isBookmarked)
-                            skywalker.getBookmarks().removeBookmark(postUri, postCid)
-                        else
-                            skywalker.getBookmarks().addBookmark(postUri, postCid)
-                    }
-
-                    onBookmarkLongPress: (mouseEvent) => {
-                        if (root.isActiveUser(userDid))
-                            root.bookmarkByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri)
-                    }
-
-                    onViewThread: {
-                        if (!postIsPlaceHolder && postUri)
-                            skywalker.getPostThread(postUri)
-                    }
-
-                    onUnrollThread: {
-                        if (!postIsPlaceHolder && postUri)
-                            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
-                    }
-
-                    onQuoteChain: {
-                        if (!postIsPlaceHolder && postUri)
-                            root.viewQuoteChain(postUri, userDid)
-                    }
-
-                    onShare: skywalker.sharePost(postUri)
-                    onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
-                    onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
-                    onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
-                    onEditPost: root.composePostEdit(postEntry.ListView.view.model, postEntry.index)
-                    onDeletePost: confirmDelete()
-                    onCopyPostText: skywalker.copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author, userDid)
-                    onTranslatePost: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
-                    onPin: root.pinPost(postUri, postCid, userDid)
-                    onUnpin: root.unpinPost(postCid, userDid)
-                    onBlockAuthor: root.blockAuthor(author, userDid)
-                    onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
-                    onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
-                    onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
-                }
-            }
-
-            Loader {
-                width: parent.width
-                height: item ? item.height : 0
-                active: (postThreadType & QEnums.THREAD_LEAF) &&
-                        !(postThreadType & QEnums.THREAD_ENTRY) &&
-                        !unrollThread &&
-                        postReplyCount > 0
-                visible: status == Loader.Ready
-
-                sourceComponent: AccessibleText {
-                    topPadding: 10
-                    bottomPadding: 10
-                    width: parent.width
+                AccessibleText {
+                    leftPadding: contentLeftMargin
+                    rightPadding: postEntry.margin
+                    width: parent.width - threadColumnWidth
                     elide: Text.ElideRight
-                    color: guiSettings.linkColor
-                    text: qsTr("Read more...")
+                    text: qsTr("Pinned post")
+                    color: Material.color(Material.Grey)
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                }
+            }
+        }
+
+        Loader {
+            width: parent.width
+            active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+
+            sourceComponent: Row {
+                // BAR
+                // Repost information
+                Rectangle {
+                    width: threadColumnWidth
+                    height: 18
+                    color: guiSettings.backgroundColor
+                    visible: threadBarVisible
+
+                    SkySvg {
+                        anchors.right: parent.right
+                        width: 18
+                        height: width
+                        color: Material.color(Material.Grey)
+                        svg: SvgOutline.repost
+                    }
+                }
+                SkyCleanedTextLine {
+                    id: repostedByText
+                    leftPadding: contentLeftMargin
+                    rightPadding: postEntry.margin
+                    width: parent.width - threadColumnWidth
+                    elide: Text.ElideRight
+                    plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
+                    color: Material.color(Material.Grey)
+                    font.bold: true
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    Accessible.ignored: true
 
                     SkyMouseArea {
                         anchors.fill: parent
-                        onClicked: addMorePosts(postUri)
-                    }
-                }
-            }
-
-            Loader {
-                width: parent.width
-                active: postType === QEnums.POST_THREAD &&
-                        !(postThreadType & QEnums.THREAD_LEAF) &&
-                        !(postThreadType & QEnums.THREAD_ENTRY) &&
-                        !unrollThread &&
-                        postReplyCount > 1
-                visible: status == Loader.Ready
-
-                sourceComponent: AccessibleText {
-                    topPadding: 10
-                    bottomPadding: 10
-                    width: parent.width
-                    elide: Text.ElideRight
-                    color: guiSettings.linkColor
-                    text: qsTr("Show more replies...")
-
-                    SkyMouseArea {
-                        anchors.fill: parent
-                        onClicked: openPostThread()
+                        onClicked: skywalker.getDetailedProfile(postRepostedByAuthor.did)
                     }
                 }
             }
         }
 
-        // Folded Posts (Replaces the post content above)
-        Loader {
-            Layout.leftMargin: contentLeftMargin
-            Layout.fillWidth: true
-            active: postFoldedType === QEnums.FOLDED_POST_FIRST
-            visible: status == Loader.Ready
-            sourceComponent: AccessibleText {
-                topPadding: 10
-                bottomPadding: 10
-                width: parent.width
-                elide: Text.ElideRight
-                color: guiSettings.linkColor
-                text: qsTr("Unfold post thread")
+        Row {
+            width: parent.width
 
-                SkyMouseArea {
-                    anchors.fill: parent
-                    onClicked: unfoldPosts()
+            // BAR
+            // Author and content
+            Item {
+                id: avatar
+                width: threadColumnWidth
+                height: calcHeight()
+                visible: threadBarVisible
+
+                function calcHeight() {
+                    let h = 0
+
+                    if (postColumn.visible)
+                        h = postColumn.height
+                    else if (postColumnFolded.active)
+                        h = postColumnFolded.height
+                    else if (postColumnBlockedByUser.active)
+                        h = postColumn.height
+
+                    return h
+                }
+
+                Rectangle {
+                    id: avatarRect
+                    x: avatarImg.x + (avatarImg.width - width) / 2
+                    y: ((postType === QEnums.POST_ROOT && !postIsReply) || ((postThreadType & QEnums.THREAD_TOP) && !postIsReply)) ? avatarImg.y + avatarImg.height / 2 : 0
+                    width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
+                    height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 && !unrollThread ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
+                    opacity: 0.9
+
+                    // Gradient is used display thread context.
+                    gradient: Gradient {
+                        GradientStop {
+                            position: 0.0
+                            color: {
+                                switch (postType) {
+                                case QEnums.POST_ROOT:
+                                    return guiSettings.threadStartColor(threadColor)
+                                case QEnums.POST_REPLY:
+                                case QEnums.POST_LAST_REPLY:
+                                    return guiSettings.threadMidColor(threadColor)
+                                case QEnums.POST_THREAD: {
+                                    if (postThreadType & QEnums.THREAD_ENTRY) {
+                                        return getThreadEntryColor(threadColor)
+                                    } else if ((postThreadType & QEnums.THREAD_PARENT) ||
+                                            (postThreadType & QEnums.THREAD_DIRECT_CHILD)) {
+                                        return guiSettings.threadStartColor(threadColor)
+                                    }
+
+                                    return guiSettings.threadMidColor(threadColor)
+                                }
+                                default:
+                                    return guiSettings.backgroundColor
+                                }
+                            }
+                        }
+                        GradientStop {
+                            position: 1.0
+                            color: {
+                                switch (postType) {
+                                case QEnums.POST_STANDALONE:
+                                    return guiSettings.backgroundColor
+                                case QEnums.POST_LAST_REPLY:
+                                    return getThreadEndColor(threadColor)
+                                case QEnums.POST_THREAD: {
+                                    if (postThreadType & QEnums.THREAD_ENTRY) {
+                                        return getThreadEntryColor(threadColor)
+                                    } else if (postThreadType & QEnums.THREAD_PARENT) {
+                                        return guiSettings.threadStartColor(threadColor)
+                                    } else if (postThreadType & QEnums.THREAD_LEAF) {
+                                        return getThreadEndColor(threadColor)
+                                    }
+
+                                    return guiSettings.threadMidColor(threadColor)
+                                }
+                                default:
+                                    return guiSettings.threadMidColor(threadColor)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Avatar {
+                    id: avatarImg
+                    x: 8
+                    y: 5
+                    width: parent.width - 13
+                    userDid: postEntry.userDid
+                    author: postEntry.author
+                    showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
+                    visible: (!postIsPlaceHolder || postBlockedByUser) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
+
+                    onClicked: skywalker.getDetailedProfile(author.did)
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr(`show profile of ${author.name}`)
+                    Accessible.onPressAction: clicked()
+                }
+
+                // Mask to turn the threadbar into a dotted line
+                Loader {
+                    width: parent.width
+                    active: postFoldedType === QEnums.FOLDED_POST_FIRST
+
+                    sourceComponent: Repeater {
+                        model: Math.floor(avatar.height / 8)
+
+                        Rectangle {
+                            required property int index
+
+                            y: 4 + index * 8
+                            width: parent.width
+                            height: 4
+                            color: guiSettings.backgroundColor
+                        }
+                    }
+                }
+            }
+            Column {
+                id: postColumn
+                width: parent.width - threadColumnWidth
+                visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
+
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: threadBarVisible && (!unrollThread || postEntry.index == 0)
+                    visible: status == Loader.Ready
+
+                    sourceComponent: PostHeader {
+                        width: parent.width
+                        userDid: postEntry.userDid
+                        author: postEntry.author
+                        postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                        filteredContentLabel: postEntry.filteredPostContentLabel
+                    }
+                }
+
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: !threadBarVisible && (!unrollThread || postEntry.index == 0)
+                    visible: status == Loader.Ready
+
+                    sourceComponent: PostHeaderWithAvatar {
+                        width: parent.width
+                        userDid: postEntry.userDid
+                        author: postEntry.author
+                        postIndexedSecondsAgo: postEntry.postIndexedSecondsAgo
+                        filteredContentLabel: postEntry.filteredPostContentLabel
+                    }
+                }
+
+                // Reply to
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && (postType !== QEnums.POST_THREAD || index === 0)
+                    visible: status == Loader.Ready
+                    sourceComponent: ReplyToRow {
+                        width: parent.width
+                        text: qsTr(`Reply to ${postReplyToAuthor.name}`)
+                    }
+                }
+
+                // Reply hidden by user
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: postIsHiddenReply && postReplyRootAuthorDid === skywalker.getUserDid()
+                    visible: status == Loader.Ready
+                    sourceComponent: ReplyToRow {
+                        width: parent.width
+                        text: qsTr("Reply hidden by you")
+                        svg: SvgOutline.hideVisibility
+                    }
+                }
+
+                // Hide reason (only when filtered posts are shown
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: filteredPostHideReason !== QEnums.HIDE_REASON_NONE
+                    visible: status == Loader.Ready
+
+                    sourceComponent: Rectangle {
+                        width: hideReasonRow.width
+                        height: hideReasonRow.height
+                        radius: 3
+                        color: guiSettings.hideReasonLabelColor
+
+                        Row {
+                            id: hideReasonRow
+                            width: parent.width
+                            spacing: 10
+
+                            SkySvg {
+                                id: hideIcon
+                                width: 20
+                                height: 20
+                                color: guiSettings.textColor
+                                svg: SvgOutline.hideVisibility
+                            }
+
+                            AccessibleText {
+                                width: parent.width - hideIcon.width
+                                rightPadding: 10
+                                anchors.verticalCenter: parent.verticalCenter
+                                elide: Text.ElideRight
+                                text: QEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
+                            }
+                        }
+                    }
+                }
+
+                PostBody {
+                    id: postBody
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    userDid: postEntry.userDid
+                    postAuthor: author
+                    postText: postEntry.postText
+                    postPlainText: postEntry.postPlainText
+                    postHasUnknownEmbed: postEntry.postHasUnknownEmbed
+                    postUnknownEmbedType: postEntry.postUnknownEmbedType
+                    postImages: postEntry.postImages
+                    postLanguageLabels: postLanguages
+                    postContentLabels: postLabels
+                    postContentVisibility: postEntry.postContentVisibility
+                    postContentWarning: postEntry.postContentWarning
+                    postContentLabeler: postEntry.postContentLabeler
+                    postMuted: postEntry.postMutedReason
+                    postIsThread: postEntry.postIsThread && !postEntry.unrollThread
+                    postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
+                    postVideo: postEntry.postVideo
+                    postExternal: postEntry.postExternal
+                    postRecord: postEntry.postRecord
+                    postRecordWithMedia: postEntry.postRecordWithMedia
+                    postDateTime: postEntry.postIndexedDateTime
+                    detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
+                    initialShowMaxTextLines: postEntry.unrollThread ? maxTextLines : 25
+                    bodyBackgroundColor: postEntry.color.toString()
+                    borderColor: postEntry.border.color.toString()
+                    postHighlightColor: postEntry.postHighlightColor
+                    swipeMode: postEntry.swipeMode
+                    showRecord: postEntry.showRecord
+
+                    onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
+                    onUnrollThread: {
+                        if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
+                            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
+                    }
+                }
+
+                // Reposts and likes in detailed view of post entry in thread view
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
+                    visible: status == Loader.Ready
+                    sourceComponent: Flow {
+                        width: parent.width
+                        topPadding: 10
+                        bottomPadding: 5
+                        spacing: 10
+
+                        StatAuthors {
+                            userDid: postEntry.userDid
+                            atUri: postUri
+                            count: postRepostCount
+                            nameSingular: qsTr("repost")
+                            namePlural: qsTr("reposts")
+                            authorListType: QEnums.AUTHOR_LIST_REPOSTS
+                            authorListHeader: qsTr("Reposted by")
+                        }
+                        StatQuotes {
+                            userDid: postEntry.userDid
+                            atUri: postUri
+                            count: postQuoteCount
+                        }
+                        StatAuthors {
+                            userDid: postEntry.userDid
+                            atUri: postUri
+                            count: postLikeCount
+                            nameSingular: qsTr("like")
+                            namePlural: qsTr("likes")
+                            authorListType: QEnums.AUTHOR_LIST_LIKES
+                            authorListHeader: qsTr("Liked by")
+                        }
+                    }
+                }
+
+                // Stats
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10)
+                    active: !unrollThread || endOfFeed
+                    asynchronous: true
+                    visible: active
+
+                    sourceComponent: PostStats {
+                        id: postStats
+                        topPadding: 10
+                        skywalker: postEntry.skywalker
+                        replyCount: postReplyCount
+                        repostCount: postRepostCount + postQuoteCount
+                        likeCount: postLikeCount
+                        repostUri: postRepostUri
+                        repostTransient: postRepostTransient
+                        likeUri: postLikeUri
+                        likeTransient: postLikeTransient
+                        threadMuted: postThreadMuted
+                        replyDisabled: postReplyDisabled
+                        viewerStatePinned: postViewerStatePinned
+                        replyRestriction: postReplyRestriction
+                        isHiddenReply: postIsHiddenReply
+                        isReply: postIsReply
+                        replyRootAuthorDid: postReplyRootAuthorDid
+                        replyRootUri: postReplyRootUri
+                        authorIsUser: author.did === userDid
+                        isBookmarked: postBookmarked
+                        bookmarkTransient: postBookmarkTransient
+                        feedback: postFeedback
+                        feedbackTransient: postFeedbackTransient
+                        isThread: postIsThread || postIsThreadReply
+                        isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
+                        isUnrolledThread: postEntry.unrollThread
+                        showViewThread: swipeMode
+                        record: postRecord
+                        recordWithMedia: postRecordWithMedia
+                        feedAcceptsInteractions: postEntry.feedAcceptsInteractions
+
+                        onReply: {
+                            const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                            root.composeReply(postUri, postCid,
+                                              postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                              postIndexedDateTime,
+                                              author, postReplyRootUri, postReplyRootCid, lang,
+                                              postMentionDids, "", "", feedDid, postFeedContext, userDid)
+                        }
+
+                        onReplyLongPress: (mouseEvent) => {
+                            if (!root.isActiveUser(userDid))
+                                return
+
+                            const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
+                            root.replyByNonActiveUser(
+                                    mouseEvent, postStats, postEntry.ListView.view,
+                                    postUri, postCid,
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                    postIndexedDateTime,
+                                    author, postReplyRootUri, postReplyRootCid, lang,
+                                    postMentionDids)
+                        }
+
+                        onRepost: {
+                            root.repost(postRepostUri, postUri, postCid,
+                                        postReasonRepostUri, postReasonRepostCid,
+                                        feedDid, postFeedContext,
+                                        postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                        postIndexedDateTime, author, postEmbeddingDisabled,
+                                        postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostPlainText() : postPlainText,
+                                        userDid)
+                        }
+
+                        function quote(quoteByDid = "") {
+                            root.quotePost(postUri, postCid,
+                                postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                postIndexedDateTime, author, postEmbeddingDisabled,
+                                feedDid, postFeedContext, quoteByDid)
+                        }
+
+                        onRepostLongPress: (mouseEvent) => {
+                            if (!root.isActiveUser(userDid)) {
+                                quote(userDid)
+                                return
+                            }
+
+                            const actionDone = root.repostByNonActiveUser(
+                                    mouseEvent, postStats, postEntry.ListView.view, postUri, postCid,
+                                    postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,
+                                    postIndexedDateTime, author, postEmbeddingDisabled,
+                                    postReasonRepostUri, postReasonRepostCid)
+
+                            if (!actionDone)
+                                quote()
+                        }
+
+                        onLike: root.like(postLikeUri, postUri, postCid,
+                                          postReasonRepostUri, postReasonRepostCid,
+                                          feedDid, postFeedContext, userDid)
+
+                        onLikeLongPress: (mouseEvent) => {
+                            if (root.isActiveUser(userDid))
+                                root.likeByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri, postReasonRepostUri, postReasonRepostCid)
+                        }
+
+                        onBookmark: {
+                            if (isBookmarked)
+                                skywalker.getBookmarks().removeBookmark(postUri, postCid)
+                            else
+                                skywalker.getBookmarks().addBookmark(postUri, postCid)
+                        }
+
+                        onBookmarkLongPress: (mouseEvent) => {
+                            if (root.isActiveUser(userDid))
+                                root.bookmarkByNonActiveUser(mouseEvent, postStats, postEntry.ListView.view, postUri)
+                        }
+
+                        onViewThread: {
+                            if (!postIsPlaceHolder && postUri)
+                                skywalker.getPostThread(postUri)
+                        }
+
+                        onUnrollThread: {
+                            if (!postIsPlaceHolder && postUri)
+                                skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
+                        }
+
+                        onQuoteChain: {
+                            if (!postIsPlaceHolder && postUri)
+                                root.viewQuoteChain(postUri, userDid)
+                        }
+
+                        onShare: skywalker.sharePost(postUri)
+                        onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
+                        onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                        onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
+                        onEditPost: root.composePostEdit(postEntry.ListView.view.model, postEntry.index)
+                        onDeletePost: confirmDelete()
+                        onCopyPostText: skywalker.copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                        onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author, userDid)
+                        onTranslatePost: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                        onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
+                        onPin: root.pinPost(postUri, postCid, userDid)
+                        onUnpin: root.unpinPost(postCid, userDid)
+                        onBlockAuthor: root.blockAuthor(author, userDid)
+                        onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                        onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                        onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                    }
+                }
+
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    height: item ? item.height : 0
+                    active: (postThreadType & QEnums.THREAD_LEAF) &&
+                            !(postThreadType & QEnums.THREAD_ENTRY) &&
+                            !unrollThread &&
+                            postReplyCount > 0
+                    visible: status == Loader.Ready
+
+                    sourceComponent: AccessibleText {
+                        topPadding: 10
+                        bottomPadding: 10
+                        width: parent.width
+                        elide: Text.ElideRight
+                        color: guiSettings.linkColor
+                        text: qsTr("Read more...")
+
+                        SkyMouseArea {
+                            anchors.fill: parent
+                            onClicked: addMorePosts(postUri)
+                        }
+                    }
+                }
+
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: postType === QEnums.POST_THREAD &&
+                            !(postThreadType & QEnums.THREAD_LEAF) &&
+                            !(postThreadType & QEnums.THREAD_ENTRY) &&
+                            !unrollThread &&
+                            postReplyCount > 1
+                    visible: status == Loader.Ready
+
+                    sourceComponent: AccessibleText {
+                        topPadding: 10
+                        bottomPadding: 10
+                        width: parent.width
+                        elide: Text.ElideRight
+                        color: guiSettings.linkColor
+                        text: qsTr("Show more replies...")
+
+                        SkyMouseArea {
+                            anchors.fill: parent
+                            onClicked: openPostThread()
+                        }
+                    }
+                }
+            }
+
+            // Folded Posts (Replaces the post content above)
+            Loader {
+                id: postColumnFolded
+                x: contentLeftMargin
+                width: parent.width - contentLeftMargin - postEntry.margin
+                active: postFoldedType === QEnums.FOLDED_POST_FIRST
+                visible: status == Loader.Ready
+
+                sourceComponent: AccessibleText {
+                    topPadding: 10
+                    bottomPadding: 10
+                    width: parent.width
+                    elide: Text.ElideRight
+                    color: guiSettings.linkColor
+                    text: qsTr("Unfold post thread")
+
+                    SkyMouseArea {
+                        anchors.fill: parent
+                        onClicked: unfoldPosts()
+                    }
+                }
+            }
+
+            // Place holder for BLOCKED posts where you blocked the author.
+            // Avatar is already displayed in the thread bar!
+            Loader {
+                id: postColumnBlockedByUser
+                x: contentLeftMargin
+                width: parent.width - contentLeftMargin - postEntry.margin
+                active: postBlockedByUser
+                visible: status == Loader.Ready
+
+                sourceComponent: Column {
+                    width: parent.width
+
+                    PostHeader {
+                        width: parent.width
+                        userDid: postEntry.userDid
+                        author: postBlockedAuthor.author
+                        postIndexedSecondsAgo: -1
+                        visible: threadBarVisible
+                    }
+
+                    PostHeaderWithAvatar {
+                        width: parent.width
+                        userDid: postEntry.userDid
+                        author: postBlockedAuthor.author
+                        postIndexedSecondsAgo: -1
+                        visible: !threadBarVisible
+                    }
+
+                    AccessibleText {
+                        bottomPadding: 5
+                        width: parent.width
+                        elide: Text.ElideRight
+                        text: {
+                            if (postBlockedAuthor.blockingByListUri)
+                                return qsTr("🚫 Blocked by list")
+                            else if (postBlockedAuthor.viewer.blocking)
+                                return qsTr("🚫 Blocked by you")
+                            else
+                                return qsTr("🚫 Blocked")
+                        }
+                    }
+
+                    ListHeader {
+                        width: parent.width
+                        list: postBlockedAuthor.blockingByList
+                        visible: !postBlockedAuthor.blockingByList.isNull()
+                    }
                 }
             }
         }
 
         // Gap place holder
         Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: postGapId > 0
             visible: status == Loader.Ready
+
             sourceComponent: AccessibleText {
                 width: parent.width
                 topPadding: 50
@@ -869,10 +953,10 @@ Rectangle {
 
         // Hidden posts
         Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: postHiddenPosts
             visible: status == Loader.Ready
+
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -890,10 +974,10 @@ Rectangle {
         // Place holder for NOT FOUND, NOT SUPPORTED, DELETED posts
         // NOTE: if a post is blocked locally, it also gets deleted locally
         Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: (postNotFound || postNotSupported || postLocallyDeleted) && !postBlocked
             visible: status == Loader.Ready
+
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -914,10 +998,10 @@ Rectangle {
         // Place holder for BLOCKED posts where you (probably) did not block the author.
         // If there is no viewer state we do not know where the block comes from.
         Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: postBlocked && !postBlockedByUser
             visible: status == Loader.Ready
+
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -926,58 +1010,11 @@ Rectangle {
             }
         }
 
-        // Place holder for BLOCKED posts where you blocked the author.
-        // Avatar is already displayed in the thread bar!
         Loader {
-            Layout.fillWidth: true
-            active: postBlockedByUser
-            visible: status == Loader.Ready
-            sourceComponent: Column {
-                width: parent.width
-
-                PostHeader {
-                    width: parent.width
-                    userDid: postEntry.userDid
-                    author: postBlockedAuthor.author
-                    postIndexedSecondsAgo: -1
-                    visible: threadBarVisible
-                }
-
-                PostHeaderWithAvatar {
-                    width: parent.width
-                    userDid: postEntry.userDid
-                    author: postBlockedAuthor.author
-                    postIndexedSecondsAgo: -1
-                    visible: !threadBarVisible
-                }
-
-                AccessibleText {
-                    bottomPadding: 5
-                    width: parent.width
-                    elide: Text.ElideRight
-                    text: {
-                        if (postBlockedAuthor.blockingByListUri)
-                            return qsTr("🚫 Blocked by list")
-                        else if (postBlockedAuthor.viewer.blocking)
-                            return qsTr("🚫 Blocked by you")
-                        else
-                            return qsTr("🚫 Blocked")
-                    }
-                }
-
-                ListHeader {
-                    width: parent.width
-                    list: postBlockedAuthor.blockingByList
-                    visible: !postBlockedAuthor.blockingByList.isNull()
-                }
-            }
-        }
-
-        Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: postNotSupported
             visible: status == Loader.Ready
+
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -994,8 +1031,8 @@ Rectangle {
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Item {
-            Layout.preferredWidth: threadColumnWidth
-            Layout.preferredHeight: postEntry.margin
+            width: threadColumnWidth
+            height: postEntry.margin
             visible: threadBarVisible && !unrollThread
 
             Rectangle {
@@ -1028,18 +1065,11 @@ Rectangle {
                 }
             }
         }
-        Item {
-            Layout.leftMargin: contentLeftMargin
-            Layout.preferredWidth: parent.width - threadColumnWidth - postEntry.margin * 2
-            Layout.preferredHeight: postEntry.margin
-            visible: !unrollThread
-        }
 
         // Post/Thread separator
         Rectangle {
-            Layout.preferredWidth: parent.width
-            Layout.columnSpan: gridColumns
-            Layout.preferredHeight: 1
+            width: parent.width
+            height: 1
             color: postThreadType & QEnums.THREAD_ENTRY ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
             visible: [QEnums.POST_STANDALONE, QEnums.POST_LAST_REPLY].includes(postType) ||
                 ((postThreadType & QEnums.THREAD_LEAF) && !unrollThread)
@@ -1047,8 +1077,7 @@ Rectangle {
 
         // End of feed indication
         Loader {
-            Layout.columnSpan: gridColumns
-            Layout.fillWidth: true
+            width: parent.width
             active: endOfFeed && !reverseFeed
             sourceComponent: endOfFeedComp
         }

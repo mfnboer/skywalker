@@ -132,7 +132,7 @@ Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost) :
         mPost = feedViewPost->mPost;
 
         // Cache authors to minimize network requests for authors later.
-        const BasicProfile profile = getAuthor();
+        const BasicProfile profile = BasicProfile(mPost->mAuthor);
 
         if (!profile.isNull())
             AuthorCache::instance().put(profile);
@@ -152,7 +152,7 @@ Post::Post(const ATProto::AppBskyFeed::PostView::SharedPtr postView) :
     mPost(postView)
 {
     Q_ASSERT(postView);
-    const BasicProfile profile = getAuthor();
+    const BasicProfile profile = BasicProfile(mPost->mAuthor);
 
     if (!profile.isNull())
         AuthorCache::instance().put(profile);
