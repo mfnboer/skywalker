@@ -180,6 +180,7 @@ Rectangle {
 
                 SkyMouseArea {
                     anchors.fill: parent
+                    enabled: filter.imageVisible()
                     onClicked: {
                         if (parent.failedCanReload)
                             parent.reload()
@@ -187,6 +188,10 @@ Rectangle {
                             fullImageLoader.show(0, true)
                     }
                 }
+            }
+
+            function imageVisible() {
+                return item ? item.contentFilter.imageVisible() : false
             }
         }
     }
@@ -371,7 +376,12 @@ Rectangle {
         z: -2
         anchors.fill: parent
         enabled: !(postThreadType & QEnums.THREAD_ENTRY) && !postIsPlaceHolder
-        onClicked: activateSwipe(0, null)
+        onClicked: {
+            if (imageLoader.imageVisible())
+                activateSwipe(0, null)
+            else
+                console.debug("Image is hidden")
+        }
     }
 
     function checkOnScreen() {

@@ -160,6 +160,11 @@ Rectangle {
                     if (onScreen)
                         videoItem.play()
                 }
+
+                Component.onCompleted: {
+                    if (!getFilter().imageVisible())
+                        imageLoaded()
+                }
             }
         }
 
@@ -246,6 +251,11 @@ Rectangle {
                             contentWarning: postContentWarning
                             contentLabeler: postContentLabeler
                             images: postOrRecordImages
+                        }
+
+                        Component.onCompleted: {
+                            if (!filter.imageVisible())
+                                imageLoaded()
                         }
                     }
                 }

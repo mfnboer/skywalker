@@ -13,6 +13,7 @@ class SearchPostFeedModel : public AbstractPostFeedModel
     Q_OBJECT
     Q_PROPERTY(QList<FilteredSearchPostFeedModel*> filteredPostFeedModels READ getFilteredPostFeedModels NOTIFY filteredPostFeedModelsChanged FINAL)
     Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
+    Q_PROPERTY(QString feedUri READ getFeedUri CONSTANT FINAL)
     Q_PROPERTY(QString feedDid READ getFeedDid CONSTANT FINAL)
     Q_PROPERTY(bool feedAcceptsInteractions READ feedAcceptsInteractions CONSTANT FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode CONSTANT FINAL)
@@ -34,6 +35,7 @@ public:
     Q_INVOKABLE SearchPostFeedModel* getUnderlyingModel() { return this; }
     QString getFeedName() const override { return mFeedName; }
     QEnums::FeedType getFeedType() const { return QEnums::FEED_SEARCH; }
+    QString getFeedUri() const { return ""; }
     QString getFeedDid() const { return ""; }
     bool feedAcceptsInteractions() const { return false; }
     QEnums::ContentMode getContentMode() const { return QEnums::CONTENT_MODE_UNSPECIFIED; }

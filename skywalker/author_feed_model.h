@@ -12,6 +12,7 @@ class AuthorFeedModel : public AbstractPostFeedModel
 {
     Q_OBJECT
     Q_PROPERTY(QEnums::FeedType feedType READ getFeedType CONSTANT FINAL)
+    Q_PROPERTY(QString feedUri READ getFeedUri CONSTANT FINAL)
     Q_PROPERTY(QString feedDid READ getFeedDid CONSTANT FINAL)
     Q_PROPERTY(bool feedAcceptsInteractions READ feedAcceptsInteractions CONSTANT FINAL)
 
@@ -29,6 +30,7 @@ public:
     Q_INVOKABLE AuthorFeedModel* getUnderlyingModel() { return this; }
     QString getFeedName() const override;
     QEnums::FeedType getFeedType() const { return QEnums::FEED_AUTHOR; }
+    QString getFeedUri() const { return ""; }
     QString getFeedDid() const { return ""; }
     bool feedAcceptsInteractions() const { return false; }
 

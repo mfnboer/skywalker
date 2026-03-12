@@ -84,7 +84,7 @@ Column {
         FilteredImageWarning {
             id: filter
             x: 10
-            y: 10
+            anchors.verticalCenter: parent.verticalCenter
             width: parent.width - 20
             contentVisibility: videoStack.contentVisibility
             contentWarning: videoStack.contentWarning
@@ -216,8 +216,8 @@ Column {
             opacity: 0.5
             accessibleName: qsTr("play video")
             svg: SvgFilled.play
-            visible: filter.imageVisible() && !videoPlayer.playing && videoPlayer.hasVideo
-            enabled: videoPlayer.hasVideo && videoPlayer.error == MediaPlayer.NoError
+            visible: filter.imageVisible() && !videoPlayer.playing && (videoPlayer.hasVideo || !autoLoad)
+            enabled: (videoPlayer.hasVideo && videoPlayer.error == MediaPlayer.NoError) || !autoLoad
 
             onClicked: {
                 if (swipeMode && !isFullViewMode) {
