@@ -65,7 +65,7 @@ Item {
     signal showLessLikeThis()
 
     id: postStats
-    height: replyIcon.height + topPadding + (showMoreIcon.visible ? showMoreIcon.height + topPadding : 0)
+    height: replyIcon.height + topPadding + (showMoreIconLoader.item ? showMoreIconLoader.item.height + topPadding : 0)
 
     StatIcon {
         id: replyIcon
@@ -281,34 +281,42 @@ Item {
         }
     }
 
-    StatIcon {
-        id: showMoreIcon
+    Loader {
+        id: showMoreIconLoader
         anchors.topMargin: topPadding
         anchors.top: likeIcon.bottom
         anchors.left: likeIcon.left
         width: parent.width / 4
-        iconColor: postStats.color
-        svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
-        blinking: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS
-        visible: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
-        Accessible.name: qsTr("Show more like this")
-        onClicked: emitShowMoreLikeThis()
-        onPressAndHold: showFeedbackNotice(true)
+        active: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
+
+        sourceComponent: StatIcon {
+            id: showMoreIcon
+            iconColor: postStats.color
+            svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
+            blinking: feedbackTransient === QEnums.FEEDBACK_MORE_LIKE_THIS
+            Accessible.name: qsTr("Show more like this")
+            onClicked: emitShowMoreLikeThis()
+            onPressAndHold: showFeedbackNotice(true)
+        }
     }
 
-    StatIcon {
-        id: showLessIcon
+    Loader {
+        id: showLessIconLoader
         anchors.topMargin: topPadding
         anchors.top: moreIcon.bottom
         anchors.left: moreIcon.left
         width: parent.width / 8
-        iconColor: postStats.color
-        svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
-        blinking: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS
-        visible: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
-        Accessible.name: qsTr("Show more less this")
-        onClicked: emitShowLessLikeThis()
-        onPressAndHold: showFeedbackNotice(true)
+        active: feedAcceptsInteractions && !limitedStats && userSettings.showFeedbackButtons
+
+        sourceComponent: StatIcon {
+            id: showLessIcon
+            iconColor: postStats.color
+            svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
+            blinking: feedbackTransient === QEnums.FEEDBACK_LESS_LIKE_THIS
+            Accessible.name: qsTr("Show more less this")
+            onClicked: emitShowLessLikeThis()
+            onPressAndHold: showFeedbackNotice(true)
+        }
     }
 
     AccessibilityUtils {
