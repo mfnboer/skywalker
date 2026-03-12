@@ -43,10 +43,11 @@ RoundCornerMask {
             visible: isLiveExternal & !card.thumbUrl
         }
         Loader {
+            readonly property real aspectRatio: imageUtils.getPreferredLinkCardAspectRatio(card.uri)
             id: imgLoader
             x: (externalColumn.width - width) / 2
             width: calcWidth()
-            height: imageUtils.getPreferredLinkCardAspectRatio(card.uri) * width
+            height: aspectRatio * width
             active: filter.imageVisible() && Boolean(card.thumbUrl)
             asynchronous: true
 
@@ -70,7 +71,7 @@ RoundCornerMask {
                     return 0
 
                 let w = externalColumn.width
-                const h = imageUtils.getPreferredLinkCardAspectRatio(card.uri) * w
+                const h = aspectRatio * w
 
                 if (h > guiSettings.maxImageHeight)
                     w *= (guiSettings.maxImageHeight / h)

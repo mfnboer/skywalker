@@ -678,6 +678,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/LoaderDateTime.qml
         QML_FILES qml/LoaderContentLabels.qml
         QML_FILES qml/LoaderCanvas.qml
+        SOURCES record_word_index.h
+        SOURCES record_word_index.cpp
 )
 
 if (NOT ANDROID)

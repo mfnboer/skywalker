@@ -233,6 +233,7 @@ SkyPage {
             elide: Text.ElideRight
             wrapMode: Text.Wrap
             color: guiSettings.linkColor
+            textFormat: Text.StyledText
             text: page.getSearchPostScopeText()
 
             SkyMouseArea {

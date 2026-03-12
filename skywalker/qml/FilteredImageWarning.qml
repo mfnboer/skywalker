@@ -14,70 +14,86 @@ Row {
     property bool isVideo: false
     readonly property string showMsg: isVideo ? qsTr("Show video") : qsTr("Show picture")
 
-    height: !imageVisible() ? Math.max(imgIcon.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnColumn.height : hideColumn.height) : 0
+    height: !imageVisible() ? Math.max(imgIconLoader.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnColumnLoader.getHeight() : hideColumnLoader.getHeight()) : 0
     spacing: 10
 
-    Accessible.role: warnColumn.visible ? Accessible.Link : Accessible.StaticText
-    Accessible.name: warnColumn.visible ? qsTr(`Hidden image content: ${contentWarning}. Press to show pictures`) : qsTr(`Hidden image content: ${contentWarning}`)
-    Accessible.onPressAction: if (warnColumn.visible) warnText.linkActivated("")
-
-    SkySvg {
-        id: imgIcon
+    Loader {
+        id: imgIconLoader
         width: 30
         height: width
-        color: Material.color(Material.Grey)
-        svg: SvgOutline.hideVisibility
-        visible: !imageVisible()
-    }
+        active: !imageVisible()
 
-    Column {
-        id: warnColumn
-        anchors.verticalCenter: parent.verticalCenter
-        width: parent.width - imgIcon.width
-        visible: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
-
-        AccessibleText {
-            id: warnText
-            width: parent.width
-            wrapMode: Text.Wrap
-            textFormat: Text.RichText
+        sourceComponent: SkySvg {
+            id: imgIcon
             color: Material.color(Material.Grey)
-            text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
-                  (images.length === 1 || imageUrl ? showMsg : qsTr("Show pictures")) + "</a>"
-            onLinkActivated: showWarnedMedia = true;
-        }
-        AccessibleText {
-            width: parent.width
-            elide: Text.ElideRight
-            color: Material.color(Material.Grey)
-            font.pointSize: guiSettings.scaledFont(7/8)
-            font.italic: true
-            text: `@${contentLabeler.handle}`
-            visible: !contentLabeler.isNull()
+            svg: SvgOutline.hideVisibility
         }
     }
 
-    Column {
-        id: hideColumn
+    Loader {
+        id: warnColumnLoader
         anchors.verticalCenter: parent.verticalCenter
-        width: parent.width - imgIcon.width
-        visible: contentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+        width: parent.width - imgIconLoader.width
+        active: contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA && !showWarnedMedia
 
-        AccessibleText {
-            width: parent.width
-            wrapMode: Text.Wrap
-            textFormat: Text.RichText
-            color: Material.color(Material.Grey)
-            text: contentWarning
+        sourceComponent: Column {
+            id: warnColumn
+
+            AccessibleText {
+                id: warnText
+                width: parent.width
+                wrapMode: Text.Wrap
+                textFormat: Text.RichText
+                color: Material.color(Material.Grey)
+                text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
+                      (images.length === 1 || imageUrl ? showMsg : qsTr("Show pictures")) + "</a>"
+                onLinkActivated: showWarnedMedia = true;
+            }
+            AccessibleText {
+                width: parent.width
+                elide: Text.ElideRight
+                color: Material.color(Material.Grey)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                font.italic: true
+                text: `@${contentLabeler.handle}`
+                visible: !contentLabeler.isNull()
+            }
         }
-        AccessibleText {
-            width: parent.width
-            elide: Text.ElideRight
-            color: Material.color(Material.Grey)
-            font.pointSize: guiSettings.scaledFont(7/8)
-            font.italic: true
-            text: `@${contentLabeler.handle}`
-            visible: !contentLabeler.isNull()
+
+        function getHeight() {
+            return item ? item.height : 0
+        }
+    }
+
+    Loader {
+        id: hideColumnLoader
+        anchors.verticalCenter: parent.verticalCenter
+        width: parent.width - imgIconLoader.width
+        active: contentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+
+        sourceComponent: Column {
+            id: hideColumn
+
+            AccessibleText {
+                width: parent.width
+                wrapMode: Text.Wrap
+                textFormat: Text.RichText
+                color: Material.color(Material.Grey)
+                text: contentWarning
+            }
+            AccessibleText {
+                width: parent.width
+                elide: Text.ElideRight
+                color: Material.color(Material.Grey)
+                font.pointSize: guiSettings.scaledFont(7/8)
+                font.italic: true
+                text: `@${contentLabeler.handle}`
+                visible: !contentLabeler.isNull()
+            }
+        }
+
+        function getHeight() {
+            return item ? item.height : 0
         }
     }
 

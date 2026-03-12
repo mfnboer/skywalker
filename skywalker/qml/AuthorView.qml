@@ -555,6 +555,7 @@ SkyPage {
                 }
                 AccessibleText {
                     color: guiSettings.textColor
+                    textFormat: Text.StyledText
                     text: qsTr(`<b>${author.postsCount}</b> posts`)
 
                     Accessible.role: Accessible.StaticText

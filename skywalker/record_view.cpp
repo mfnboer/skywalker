@@ -56,6 +56,7 @@ RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
     case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
     {
         mPrivate->mRecord = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
+        mPrivate->mRecordWordIndex = std::make_unique<RecordWordIndex>(mPrivate->mRecord);
         break;
     }
     case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
@@ -98,40 +99,7 @@ QString RecordView::getCid() const
 
 QString RecordView::getText() const
 {
-    if (!mPrivate->mRecord)
-        return {};
-
-    switch (mPrivate->mRecord->mValueType)
-    {
-    case ATProto::RecordType::APP_BSKY_FEED_POST:
-    {
-        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
-
-        if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
-            return UnicodeFonts::toPlainText(*recordValue->mBridgyOriginalText);
-        else
-            return recordValue->mText;
-    }
-    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
-    {
-        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue);
-        return recordValue->mDescription.value_or("");
-    }
-    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
-    {
-        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue);
-        return recordValue->mDescription.value_or("");
-    }
-    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
-    {
-        const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mPrivate->mRecord->mValue);
-        return recordValue->mCreator->mDescription.value_or("");
-    }
-    default:
-        break;
-    }
-
-    return {};
+    return mPrivate->mRecordWordIndex ? mPrivate->mRecordWordIndex->getText() : QString{};
 }
 
 QString RecordView::getFormattedText() const
@@ -178,7 +146,7 @@ QString RecordView::getFormattedText() const
 
 BasicProfile RecordView::getAuthor() const
 {
-    return mPrivate->mRecord ? BasicProfile(mPrivate->mRecord->mAuthor) : BasicProfile();
+    return mPrivate->mRecordWordIndex ? mPrivate->mRecordWordIndex->getAuthor() : BasicProfile();
 }
 
 QDateTime RecordView::getIndexedAt() const
@@ -219,37 +187,7 @@ QString RecordView::getUnknownEmbedType() const
 
 QList<ImageView> RecordView::getImages() const
 {
-    if (!mPrivate->mImages.empty())
-        return mPrivate->mImages;
-
-    ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView;
-    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW);
-
-    if (embed)
-    {
-        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(embed->mEmbed);
-    }
-    else
-    {
-        embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
-
-        if (!embed)
-            return {};
-
-        const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
-
-        if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
-            return {};
-
-        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia);
-    }
-
-    QList<ImageView> images;
-
-    for (const auto& img : imagesView->mImages)
-        images.append(ImageView(img));
-
-    return images;
+    return mPrivate->mRecordWordIndex ? mPrivate->mRecordWordIndex->getImages() : QList<ImageView>{};
 }
 
 QVariant RecordView::getVideo() const
@@ -264,29 +202,7 @@ QVariant RecordView::getVideo() const
 
 VideoView::Ptr RecordView::getVideoView() const
 {
-    if (!mPrivate->mVideo.isNull())
-        return  std::make_unique<VideoView>(mPrivate->mVideo);
-
-    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW);
-
-    if (embed)
-    {
-        const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mEmbed);
-        return std::make_unique<VideoView>(videoView);
-    }
-
-    embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
-
-    if (!embed)
-        return {};
-
-    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
-
-    if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW)
-        return {};
-
-    const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia);
-    return std::make_unique<VideoView>(videoView);
+    return mPrivate->mRecordWordIndex ? mPrivate->mRecordWordIndex->getVideoView() : nullptr;
 }
 
 QVariant RecordView::getExternal() const
@@ -301,29 +217,7 @@ QVariant RecordView::getExternal() const
 
 ExternalView::Ptr RecordView::getExternalView() const
 {
-    if (!mPrivate->mExternal.isNull())
-        return std::make_unique<ExternalView>(mPrivate->mExternal);
-
-    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW);
-
-    if (embed)
-    {
-        const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mEmbed)->mExternal;
-        return std::make_unique<ExternalView>(external);
-    }
-
-    embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW);
-
-    if (!embed)
-        return {};
-
-    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
-
-    if (recordWithMediaView->mMediaType != ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW)
-        return {};
-
-    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia)->mExternal;
-    return std::make_unique<ExternalView>(external);
+    return mPrivate->mRecordWordIndex ? mPrivate->mRecordWordIndex->getExternalView() : nullptr;
 }
 
 const ContentLabelList& RecordView::getContentLabels() const
@@ -482,95 +376,32 @@ const LanguageList& RecordView::getLanguages() const
     return mPrivate->mLanguages;
 }
 
-std::vector<QString> RecordView::getHashtags() const
-{
-    if (!mPrivate->mRecord)
-        return {};
-
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return {};
-
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
-    const auto tags = ATProto::RichTextMaster::getFacetTags(*recordValue);
-    std::vector<QString> hashtags;
-    hashtags.reserve(tags.size());
-
-    for (const auto& tag : tags)
-    {
-        if (!tag.startsWith('$'))
-            hashtags.push_back(tag);
-    }
-
-    return hashtags;
-}
-
-std::vector<QString> RecordView::getCashtags() const
-{
-    if (!mPrivate->mRecord)
-        return {};
-
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return {};
-
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
-    const auto tags = ATProto::RichTextMaster::getFacetTags(*recordValue);
-    std::vector<QString> cashtags;
-    cashtags.reserve(tags.size());
-
-    for (const auto& tag : tags)
-    {
-        if (tag.startsWith('$'))
-            cashtags.push_back(tag);
-    }
-
-    return cashtags;
-}
-
-std::vector<QString> RecordView::getAllTags() const
-{
-    if (!mPrivate->mRecord)
-        return {};
-
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return {};
-
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
-    const auto tags = ATProto::RichTextMaster::getFacetTags(*recordValue);
-    return tags;
-}
-
-std::vector<QString> RecordView::getWebLinks() const
-{
-    if (!mPrivate->mRecord)
-        return {};
-
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
-        return {};
-
-    const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
-    auto links = ATProto::RichTextMaster::getFacetLinks(*recordValue);
-
-    if (recordValue->mEmbed && recordValue->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::EXTERNAL)
-    {
-        const auto& external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(recordValue->mEmbed->mEmbed);
-        Q_ASSERT(external);
-        Q_ASSERT(external->mExternal);
-
-        if (external && external->mExternal)
-            links.push_back(external->mExternal->mUri);
-    }
-
-    return links;
-}
-
 void RecordView::setMutedReason(const IMatchWords& mutedWords)
 {
     if (getAuthor().getViewer().isMuted())
         setMutedReason(QEnums::MUTED_POST_AUTHOR);
-    else if (mutedWords.match(*this).first)
+    else if (mPrivate->mRecordWordIndex && mutedWords.match(*mPrivate->mRecordWordIndex).first)
         setMutedReason(QEnums::MUTED_POST_WORDS);
     else
         setMutedReason(QEnums::MUTED_POST_NONE);
+}
+
+void RecordView::setImages(const QList<ImageView>& images)
+{
+    if (mPrivate->mRecordWordIndex)
+        mPrivate->mRecordWordIndex->setImages(images);
+};
+
+void RecordView::setVideo(const VideoView& video)
+{
+    if (mPrivate->mRecordWordIndex)
+        mPrivate->mRecordWordIndex->setVideo(video);
+}
+
+void RecordView::setExternal(const ExternalView& external)
+{
+    if (mPrivate->mRecordWordIndex)
+        mPrivate->mRecordWordIndex->setExternal(external);
 }
 
 GeneratorView RecordView::getFeed() const

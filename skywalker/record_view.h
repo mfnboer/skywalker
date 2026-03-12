@@ -7,55 +7,54 @@
 #include "labeler.h"
 #include "language_utils.h"
 #include "list_view.h"
-#include "normalized_word_index.h"
 #include "profile.h"
+#include "record_word_index.h"
 #include "starter_pack.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
 
-namespace Skywalker
-{
+namespace Skywalker {
 
-class RecordView : public NormalizedWordIndex
+class RecordView
 {
     Q_GADGET
-    Q_PROPERTY(QString postUri READ getUri FINAL)
-    Q_PROPERTY(QString postPlainText READ getText FINAL)
-    Q_PROPERTY(QString postTextFormatted READ getFormattedText FINAL)
-    Q_PROPERTY(BasicProfile author READ getAuthor FINAL)
-    Q_PROPERTY(QDateTime postDateTime READ getIndexedAt FINAL)
-    Q_PROPERTY(bool postIsReply READ isReply FINAL)
-    Q_PROPERTY(QEnums::TripleBool postIsThread READ isThread FINAL)
-    Q_PROPERTY(bool postIsThreadReply READ isThreadReply FINAL)
-    Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor FINAL)
-    Q_PROPERTY(bool hasUnknownEmbed READ hasUnknownEmbed FINAL)
-    Q_PROPERTY(QString unknownEmbedType READ getUnknownEmbedType FINAL)
-    Q_PROPERTY(QList<ImageView> images READ getImages FINAL)
-    Q_PROPERTY(LanguageList languages READ getLanguages FINAL)
-    Q_PROPERTY(ContentLabelList contentLabels READ getContentLabels FINAL)
-    Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility FINAL)
-    Q_PROPERTY(QString contentWarning READ getContentWarning FINAL)
-    Q_PROPERTY(BasicProfile contentLabeler READ getContentLabeler FINAL)
-    Q_PROPERTY(QEnums::MutedPostReason mutedReason READ getMutedReason FINAL)
-    Q_PROPERTY(QVariant video READ getVideo FINAL)
-    Q_PROPERTY(QVariant external READ getExternal FINAL)
-    Q_PROPERTY(bool notFound READ getNotFound FINAL)
-    Q_PROPERTY(bool blocked READ getBlocked FINAL)
-    Q_PROPERTY(BlockedAuthor blockedAuthor READ getBlockedAuthor FINAL)
-    Q_PROPERTY(bool detached READ getDetached FINAL)
-    Q_PROPERTY(QString detachedByDid READ getDetachedByDid FINAL)
-    Q_PROPERTY(QString detachedPostUri READ getDetachedPostUri FINAL)
-    Q_PROPERTY(bool notSupported READ getNotSupported FINAL)
-    Q_PROPERTY(QString unsupportedType READ getUnsupportedType FINAL)
-    Q_PROPERTY(bool available READ getAvailable FINAL)
-    Q_PROPERTY(bool feedAvailable READ getFeedAvailable FINAL)
-    Q_PROPERTY(GeneratorView feed READ getFeed FINAL)
-    Q_PROPERTY(bool listAvailable READ getListAvailable FINAL)
-    Q_PROPERTY(ListView list READ getList FINAL)
-    Q_PROPERTY(bool labelerAvailable READ getLabelerAvailable FINAL)
-    Q_PROPERTY(LabelerView labeler READ getLabeler FINAL)
-    Q_PROPERTY(bool starterPackAvailable READ getStarterPackAvailable FINAL)
-    Q_PROPERTY(StarterPackViewBasic starterPack READ getStarterPack FINAL)
+    Q_PROPERTY(QString postUri READ getUri CONSTANT FINAL)
+    Q_PROPERTY(QString postPlainText READ getText CONSTANT FINAL)
+    Q_PROPERTY(QString postTextFormatted READ getFormattedText CONSTANT FINAL)
+    Q_PROPERTY(BasicProfile author READ getAuthor CONSTANT FINAL)
+    Q_PROPERTY(QDateTime postDateTime READ getIndexedAt CONSTANT FINAL)
+    Q_PROPERTY(bool postIsReply READ isReply CONSTANT FINAL)
+    Q_PROPERTY(QEnums::TripleBool postIsThread READ isThread CONSTANT FINAL)
+    Q_PROPERTY(bool postIsThreadReply READ isThreadReply CONSTANT FINAL)
+    Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor CONSTANT FINAL)
+    Q_PROPERTY(bool hasUnknownEmbed READ hasUnknownEmbed CONSTANT FINAL)
+    Q_PROPERTY(QString unknownEmbedType READ getUnknownEmbedType CONSTANT FINAL)
+    Q_PROPERTY(QList<ImageView> images READ getImages CONSTANT FINAL)
+    Q_PROPERTY(LanguageList languages READ getLanguages CONSTANT FINAL)
+    Q_PROPERTY(ContentLabelList contentLabels READ getContentLabels CONSTANT FINAL)
+    Q_PROPERTY(QEnums::ContentVisibility contentVisibility READ getContentVisibility CONSTANT FINAL)
+    Q_PROPERTY(QString contentWarning READ getContentWarning CONSTANT FINAL)
+    Q_PROPERTY(BasicProfile contentLabeler READ getContentLabeler CONSTANT FINAL)
+    Q_PROPERTY(QEnums::MutedPostReason mutedReason READ getMutedReason CONSTANT FINAL)
+    Q_PROPERTY(QVariant video READ getVideo CONSTANT FINAL)
+    Q_PROPERTY(QVariant external READ getExternal CONSTANT FINAL)
+    Q_PROPERTY(bool notFound READ getNotFound CONSTANT FINAL)
+    Q_PROPERTY(bool blocked READ getBlocked CONSTANT FINAL)
+    Q_PROPERTY(BlockedAuthor blockedAuthor READ getBlockedAuthor CONSTANT FINAL)
+    Q_PROPERTY(bool detached READ getDetached CONSTANT FINAL)
+    Q_PROPERTY(QString detachedByDid READ getDetachedByDid CONSTANT FINAL)
+    Q_PROPERTY(QString detachedPostUri READ getDetachedPostUri CONSTANT FINAL)
+    Q_PROPERTY(bool notSupported READ getNotSupported CONSTANT FINAL)
+    Q_PROPERTY(QString unsupportedType READ getUnsupportedType CONSTANT FINAL)
+    Q_PROPERTY(bool available READ getAvailable CONSTANT FINAL)
+    Q_PROPERTY(bool feedAvailable READ getFeedAvailable CONSTANT FINAL)
+    Q_PROPERTY(GeneratorView feed READ getFeed CONSTANT FINAL)
+    Q_PROPERTY(bool listAvailable READ getListAvailable CONSTANT FINAL)
+    Q_PROPERTY(ListView list READ getList CONSTANT FINAL)
+    Q_PROPERTY(bool labelerAvailable READ getLabelerAvailable CONSTANT FINAL)
+    Q_PROPERTY(LabelerView labeler READ getLabeler CONSTANT FINAL)
+    Q_PROPERTY(bool starterPackAvailable READ getStarterPackAvailable CONSTANT FINAL)
+    Q_PROPERTY(StarterPackViewBasic starterPack READ getStarterPack CONSTANT FINAL)
     QML_VALUE_TYPE(recordview)
 
 public:
@@ -70,19 +69,19 @@ public:
     Q_INVOKABLE bool isNull() const { return !mValid; }
     QString getUri() const;
     QString getCid() const;
-    QString getText() const override;
+    QString getText() const;
     QString getFormattedText() const;
-    BasicProfile getAuthor() const override;
+    BasicProfile getAuthor() const;
     QString getAuthorDid() const { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
     bool hasUnknownEmbed() const;
     QString getUnknownEmbedType() const;
-    QList<ImageView> getImages() const override;
+    QList<ImageView> getImages() const;
     QVariant getVideo() const;
-    VideoView::Ptr getVideoView() const override;
+    VideoView::Ptr getVideoView() const;
 
     QVariant getExternal() const;
-    ExternalView::Ptr getExternalView() const override;
+    ExternalView::Ptr getExternalView() const;
     const ContentLabelList& getContentLabels() const;
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     const ContentLabelList& getLabelsIncludingAuthorLabels() const;
@@ -91,10 +90,6 @@ public:
     BasicProfile getReplyToAuthor() const;
     QString getReplyRootAuthorDid() const;
     const LanguageList& getLanguages() const;
-    std::vector<QString> getHashtags() const override;
-    std::vector<QString> getCashtags() const override;
-    std::vector<QString> getAllTags() const override;
-    std::vector<QString> getWebLinks() const override;
     QEnums::ContentVisibility getContentVisibility() const { return mPrivate->mContentVisibility; }
     const QString& getContentWarning() const { return mPrivate->mContentWarning; }
     const BasicProfile& getContentLabeler() const { return mPrivate->mContentLabeler; }
@@ -121,6 +116,8 @@ public:
     bool getStarterPackAvailable() const { return mPrivate->mStarterPack != nullptr; }
     StarterPackViewBasic getStarterPack() const;
 
+    const RecordWordIndex* getRecordWordIndex() const { return mPrivate->mRecordWordIndex.get(); }
+
     void setContentVisibility(QEnums::ContentVisibility visibility) { mPrivate->mContentVisibility = visibility; }
     void setContentWarning(const QString& warning) { mPrivate->mContentWarning = warning; }
     void setContentLabeler(const BasicProfile& labeler) { mPrivate->mContentLabeler = labeler; }
@@ -128,9 +125,10 @@ public:
     void setMutedReason(const IMatchWords& mutedWords);
 
     void setFormattedText(const QString& text) { mPrivate->mFormattedText = text; }
-    void setImages(const QList<ImageView>& images) { mPrivate->mImages = images; };
-    void setVideo(const VideoView& video) { mPrivate->mVideo = video; }
-    void setExternal(const ExternalView& external) { mPrivate->mExternal = external; }
+
+    void setImages(const QList<ImageView>& images);
+    void setVideo(const VideoView& video);
+    void setExternal(const ExternalView& external);
 
 private:
     ATProto::AppBskyEmbed::EmbedView::SharedPtr getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const;
@@ -140,6 +138,7 @@ private:
     // Optimal field order as suggested by clang-analyzer
     struct PrivateData
     {
+        RecordWordIndex::Ptr mRecordWordIndex;
         ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
         ATProto::AppBskyFeed::GeneratorView::SharedPtr mFeed;
         ATProto::AppBskyGraph::ListView::SharedPtr mList;
@@ -153,12 +152,9 @@ private:
         QString mContentWarning = "NOT INITIALIZED";
         LanguageList mLanguages;
         QString mFormattedText;
-        QList<ImageView> mImages;
         std::optional<ContentLabelList> mContentLabels;
         std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
         BasicProfile mContentLabeler;
-        ExternalView mExternal;
-        VideoView mVideo;
         QEnums::ContentVisibility mContentVisibility = QEnums::CONTENT_VISIBILITY_HIDE_POST;
         QEnums::MutedPostReason mMutedReason = QEnums::MUTED_POST_NONE;
         bool mNotFound = false;

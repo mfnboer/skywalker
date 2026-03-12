@@ -210,10 +210,11 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
     }
 
     const auto& record = post.getRecordViewFromRecordOrRecordWithMedia();
+    const auto* recordWordIndex = record ? record->getRecordWordIndex() : nullptr;
 
-    if (record)
+    if (recordWordIndex)
     {
-        if (auto match = mMutedWords.match(*record); match.first)
+        if (auto match = mMutedWords.match(*recordWordIndex); match.first)
         {
             qDebug() << "Hide post due to muted words in record" << post.getCid();
             return { QEnums::HIDE_REASON_MUTED_WORD, MutedWordEntry(match.second) };
