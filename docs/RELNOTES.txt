@@ -1,6 +1,8 @@
 next
 ====
 * Performance improvement
+* Fix "post not found" error that you sometimes get when you want to
+  reply or repost.
 * Fix for uploading images with an alpha channel (transparency)
 * Bug fixes
 
