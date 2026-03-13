@@ -644,6 +644,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getReasonPost(mReasonPostCache).getCid();
     case Role::NotificationReasonPostText:
         return notification.getReasonPost(mReasonPostCache).getFormattedText();
+    case Role::NotificationReasonPostTextMetaInfo:
+        return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getTextMetaInfo());
     case Role::NotificationReasonPostPlainText:
         return notification.getReasonPost(mReasonPostCache).getText();
     case Role::NotificationReasonPostAuthor:
@@ -788,6 +790,8 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return notification.getPostRecord().getFormattedText();
     case Role::NotificationPostPlainText:
         return notification.getPostRecord().getText();
+    case Role::NotificationPostTextMetaInfo:
+        return QVariant::fromValue(notification.getPostRecord().getTextMetaInfo());
     case Role::NotificationPostLanguages:
     {
         const auto& postRecord = notification.getPostRecord();
@@ -1078,6 +1082,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonSubjectCid), "notificationReasonSubjectCid" },
         { int(Role::NotificationReasonPostText), "notificationReasonPostText" },
         { int(Role::NotificationReasonPostPlainText), "notificationReasonPostPlainText" },
+        { int(Role::NotificationReasonPostTextMetaInfo), "notificationReasonPostTextMetaInfo" },
         { int(Role::NotificationReasonPostAuthor), "notificationReasonPostAuthor" },
         { int(Role::NotificationReasonPostIsReply), "notificationReasonPostIsReply" },
         { int(Role::NotificationReasonPostReplyToAuthor), "notificationReasonPostReplyToAuthor" },
@@ -1102,6 +1107,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostAuthor), "notificationPostAuthor" },
         { int(Role::NotificationPostText), "notificationPostText" },
         { int(Role::NotificationPostPlainText), "notificationPostPlainText" },
+        { int(Role::NotificationPostTextMetaInfo), "notificationPostTextMetaInfo" },
         { int(Role::NotificationPostLanguages), "notificationPostLanguages" },
         { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
         { int(Role::NotificationPostHasUnknownEmbed), "notificationPostHasUnknownEmbed" },

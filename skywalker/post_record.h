@@ -3,6 +3,7 @@
 #pragma once
 #include "language_utils.h"
 #include "profile.h"
+#include "text_meta_info.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 
 namespace Skywalker {
@@ -16,6 +17,7 @@ public:
     bool isNull() const;
     QString getText() const;
     QString getFormattedText() const;
+    TextMetaInfo getTextMetaInfo() const;
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyToRef() const;
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getReplyRootRef() const;
     QString getReplyRootCid() const;

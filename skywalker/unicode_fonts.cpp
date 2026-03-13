@@ -494,6 +494,34 @@ QStringList UnicodeFonts::getUniqueEmojis(const QString& text)
     return QStringList{emojiSet.begin(), emojiSet.end()};
 }
 
+TextMetaInfo UnicodeFonts::getTextMetaInfo(const QString& text, bool hasFacets)
+{
+    int newLineCount = 0;
+    int spaceLen = 0;
+
+    for (auto character : text)
+    {
+        if (character == '\n')
+            ++newLineCount;
+
+        if (spaceLen < 2)
+        {
+            if (character.isSpace())
+                ++spaceLen;
+            else
+                spaceLen = 0;
+        }
+    }
+
+    TextMetaInfo info;
+    info.setNewLineCount(newLineCount);
+    info.setHasContinousWhitespace(spaceLen > 1);
+    info.setHasFacets(hasFacets);
+    info.setHasCombinedEmoji(hasCombinedEmojis(text));
+
+    return info;
+}
+
 bool UnicodeFonts::hasPhraseEnding(const QString& text)
 {
     if (text.isEmpty())

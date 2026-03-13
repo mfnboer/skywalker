@@ -430,6 +430,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post), mOverrideLinkColor);
     case Role::PostPlainText:
         return post.getText();
+    case Role::PostTextMetaInfo:
+        return QVariant::fromValue(post.getTextMetaInfo());
     case Role::PostLanguages:
         return QVariant::fromValue(post.getLanguages());
     case Role::PostUri:
@@ -840,6 +842,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostCid), "postCid" },
         { int(Role::PostText), "postText" },
         { int(Role::PostPlainText), "postPlainText" },
+        { int(Role::PostTextMetaInfo), "postTextMetaInfo" },
         { int(Role::PostLanguages), "postLanguages" },
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },

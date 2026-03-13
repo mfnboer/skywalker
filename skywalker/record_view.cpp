@@ -144,6 +144,49 @@ QString RecordView::getFormattedText() const
     return {};
 }
 
+TextMetaInfo RecordView::getTextMetaInfo() const
+{
+    const QString text = getText();
+    return UnicodeFonts::getTextMetaInfo(text, hasFacets());
+}
+
+bool RecordView::hasFacets() const
+{
+    if (!mPrivate->mRecord)
+        return false;
+
+    switch (mPrivate->mRecord->mValueType)
+    {
+    case ATProto::RecordType::APP_BSKY_FEED_POST:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
+        return !recordValue->mFacets.empty();
+    }
+    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue);
+        return !recordValue->mDescriptionFacets.empty();
+    }
+    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    {
+        const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue);
+        return !recordValue->mDescriptionFacets.empty();
+    }
+    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    {
+        // There is no explicit facets field here. The text gets linkfied based on the presence
+        // of what looks likes links. Let's just assume there are facets to make sure text display
+        // always looks good.
+        return true;
+
+    }
+    default:
+        break;
+    }
+
+    return false;
+}
+
 BasicProfile RecordView::getAuthor() const
 {
     return mPrivate->mRecordWordIndex ? mPrivate->mRecordWordIndex->getAuthor() : BasicProfile();

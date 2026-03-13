@@ -7,6 +7,7 @@ Column {
     property string userDid
     property basicprofile author
     property string postText
+    property textmetainfo postTextMetaInfo
     property date postDateTime
     property string postBackgroundColor: guiSettings.backgroundColor
     property bool showCloseButton: false
@@ -63,6 +64,7 @@ Column {
             postAuthor: author
             postText: quoteColumn.postText
             postPlainText: quoteColumn.postText
+            postTextMetaInfo: quoteColumn.postTextMetaInfo
             postHasUnknownEmbed: false
             postUnknownEmbedType: ""
             postImages: []

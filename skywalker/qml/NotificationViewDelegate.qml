@@ -18,6 +18,7 @@ Rectangle {
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
     required property string notificationReasonPostPlainText
+    required property string notificationReasonPostTextMetaInfo
     required property basicprofile notificationReasonPostAuthor
     required property bool notificationReasonPostIsReply
     required property basicprofile notificationReasonPostReplyToAuthor
@@ -42,6 +43,7 @@ Rectangle {
     required property basicprofile notificationPostAuthor
     required property string notificationPostText
     required property string notificationPostPlainText
+    required property string notificationPostTextMetaInfo
     required property date notificationPostTimestamp
     required property bool notificationPostHasUnknownEmbed
     required property string notificationPostUnknownEmbedType
@@ -275,6 +277,7 @@ Rectangle {
                     postAuthor: notificationAuthor
                     postText: notificationPostBlocked ? qsTr("🚫 Blocked") : notificationPostText
                     postPlainText: notificationPostBlocked ? "" : notificationPostPlainText
+                    postTextMetaInfo: notificationPostTextMetaInfo
                     postHasUnknownEmbed: notificationPostHasUnknownEmbed
                     postUnknownEmbedType: notificationPostUnknownEmbedType
                     postImages: notificationPostImages
@@ -550,6 +553,7 @@ Rectangle {
                     }
                     postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
                                        notificationReasonPostPlainText : ""
+                    postTextMetaInfo: notificationReasonPostTextMetaInfo
                     postHasUnknownEmbed: notificationReasonPostHasUnknownEmbed
                     postUnknownEmbedType: notificationReasonPostUnknownEmbedType
                     postImages: notificationReasonPostImages

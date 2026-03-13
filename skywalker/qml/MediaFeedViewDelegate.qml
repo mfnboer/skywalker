@@ -11,6 +11,7 @@ Rectangle {
     required property string postCid
     required property string postText
     required property string postPlainText
+    required property textmetainfo postTextMetaInfo
     required property list<language> postLanguages
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
@@ -394,6 +395,7 @@ Rectangle {
             postAuthor: videoPage.author
             postText: videoPage.postText
             postPlainText: videoPage.postPlainText
+            postTextMetaInfo: videoPage.postTextMetaInfo
             postHasUnknownEmbed: false
             postUnknownEmbedType: ""
             postImages: []

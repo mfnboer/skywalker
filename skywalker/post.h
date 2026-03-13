@@ -9,6 +9,7 @@
 #include "profile.h"
 #include "record_view.h"
 #include "record_with_media_view.h"
+#include "text_meta_info.h"
 #include "video_view.h"
 #include "web_link.h"
 #include <atproto/lib/lexicon/app_bsky_feed.h>
@@ -68,6 +69,7 @@ public:
 
     QString getText() const override;
     QString getFormattedText(const std::set<QString>& emphasizeHashtags = {}, const QString& linkColor = {}) const;
+    TextMetaInfo getTextMetaInfo() const;
 
     WebLink::List getDraftEmbeddedLinks() const;
     WebLink::List getEmbeddedLinks() const;

@@ -225,6 +225,22 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const
     return ATProto::RichTextMaster::plainToHtml(text);
 }
 
+TextMetaInfo Post::getTextMetaInfo() const
+{
+    if (!mOverrideText.isEmpty() || !mOverrideFormattedText.isEmpty())
+        return {};
+
+    if (!mPost)
+        return {};
+
+    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return {};
+
+    const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
+    const QString text = getText();
+    return UnicodeFonts::getTextMetaInfo(text, !record->mFacets.empty());
+}
+
 WebLink::List Post::getDraftEmbeddedLinks() const
 {
     if (!mPost)

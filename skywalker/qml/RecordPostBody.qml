@@ -10,6 +10,7 @@ Column {
     readonly property int margin: 10
     required property basicprofile postAuthor
     required property string postText
+    required property textmetainfo postTextMetaInfo
     required property bool postHasUnknownEmbed
     required property string postUnknownEmbedType
     required property list<imageview> postImages
@@ -53,39 +54,78 @@ Column {
 
     id: postBody
 
-    SkyCleanedText {
-        id: bodyText
+    Loader {
         width: parent.width
         Layout.fillWidth: true
-        wrapMode: Text.Wrap
-        initialShowMaxLineCount: Math.min(maxTextLines, initialShowMaxTextLines)
-        maximumLineCount: maxTextLines
-        ellipsisBackgroundColor: postBody.bodyBackgroundColor
-        elide: Text.ElideRight
-        textFormat: Text.RichText
-        color: guiSettings.textColor
-        font.pointSize: getPostFontSize()
-        plainText: displayText
-        bottomPadding: postImages.length > 0 || postVideo || postExternal || postHasUnknownEmbed ? 5 : 0
-        visible: postVisible() && displayText
+        active: postVisible() && displayText && (postTextMetaInfo.isNull() || postTextMetaInfo.newLineCount >= initialShowMaxTextLines)
 
-        Accessible.ignored: true
+        SkyCleanedText {
+            wrapMode: Text.Wrap
+            initialShowMaxLineCount: Math.min(maxTextLines, initialShowMaxTextLines)
+            maximumLineCount: maxTextLines
+            ellipsisBackgroundColor: postBody.bodyBackgroundColor
+            elide: Text.ElideRight
+            textFormat: Text.RichText
+            font.pointSize: getPostFontSize()
+            plainText: displayText
+            bottomPadding: postImages.length > 0 || postVideo || postExternal || postHasUnknownEmbed ? 5 : 0
 
-        LinkCatcher {
-            z: parent.z - 1
-            containingText: postPlainText
-            userDid: postBody.userDid
-            author: postBody.postAuthor
+            LinkCatcher {
+                z: parent.z - 1
+                containingText: postPlainText
+                userDid: postBody.userDid
+                author: postBody.postAuthor
 
-            onUnrollThread: postBody.unrollThread()
+                onUnrollThread: postBody.unrollThread()
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                z: parent.z - 2
+                radius: 5
+                color: postHighlightColor
+                opacity: guiSettings.focusHighlightOpacity
+            }
         }
+    }
 
-        Rectangle {
-            anchors.fill: parent
-            z: parent.z - 2
-            radius: 5
-            color: postHighlightColor
-            opacity: guiSettings.focusHighlightOpacity
+    Loader {
+        width: parent.width
+        Layout.fillWidth: true
+        active: postVisible() && displayText && !postTextMetaInfo.isNull() && postTextMetaInfo.newLineCount < initialShowMaxTextLines
+
+        sourceComponent: AccessibleText {
+            wrapMode: Text.Wrap
+            maximumLineCount: maxTextLines
+            textFormat: isSimpleText() ? Text.StyledText : Text.RichText
+            font.pointSize: getPostFontSize()
+            text: displayText
+            bottomPadding: postImages.length > 0 || postVideo || postExternal || postHasUnknownEmbed ? 5 : 0
+
+            LinkCatcher {
+                z: parent.z - 1
+                containingText: postPlainText
+                userDid: postBody.userDid
+                author: postAuthor
+
+                onUnrollThread: postBody.unrollThread()
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                z: parent.z - 2
+                radius: 5
+                color: postHighlightColor
+                opacity: guiSettings.focusHighlightOpacity
+            }
+
+            function isSimpleText() {
+                return !postTextMetaInfo.hasFacets &&
+                        !postTextMetaInfo.hasCombinedEmoji &&
+                        !postTextMetaInfo.hasContinuousWhitespace &&
+                        !replaceThreadIndicator &&
+                        !showThreadIndicator
+            }
         }
     }
 

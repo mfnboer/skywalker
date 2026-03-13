@@ -1,8 +1,9 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "post_record.h"
-#include "post_utils.h"
 #include "author_cache.h"
+#include "post_utils.h"
+#include "unicode_fonts.h"
 #include "user_settings.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/rich_text_master.h>
@@ -31,6 +32,14 @@ QString PostRecord::getFormattedText() const
         return {};
 
     return ATProto::RichTextMaster::getFormattedPostText(*mRecord, UserSettings::getCurrentLinkColor());
+}
+
+TextMetaInfo PostRecord::getTextMetaInfo() const
+{
+    if (!mRecord)
+        return {};
+
+    return UnicodeFonts::getTextMetaInfo(mRecord->mText, !mRecord->mFacets.empty());
 }
 
 ATProto::ComATProtoRepo::StrongRef::SharedPtr PostRecord::getReplyToRef() const

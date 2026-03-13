@@ -64,6 +64,7 @@ public:
         PostCid,
         PostText, // Formatted
         PostPlainText,
+        PostTextMetaInfo,
         PostLanguages,
         PostIndexedDateTime,
         PostIndexedSecondsAgo,

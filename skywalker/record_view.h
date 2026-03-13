@@ -10,6 +10,7 @@
 #include "profile.h"
 #include "record_word_index.h"
 #include "starter_pack.h"
+#include "text_meta_info.h"
 #include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QtQmlIntegration>
 
@@ -21,6 +22,7 @@ class RecordView
     Q_PROPERTY(QString postUri READ getUri CONSTANT FINAL)
     Q_PROPERTY(QString postPlainText READ getText CONSTANT FINAL)
     Q_PROPERTY(QString postTextFormatted READ getFormattedText CONSTANT FINAL)
+    Q_PROPERTY(TextMetaInfo postTextMetaInfo READ getTextMetaInfo CONSTANT FINAL)
     Q_PROPERTY(BasicProfile author READ getAuthor CONSTANT FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt CONSTANT FINAL)
     Q_PROPERTY(bool postIsReply READ isReply CONSTANT FINAL)
@@ -71,6 +73,7 @@ public:
     QString getCid() const;
     QString getText() const;
     QString getFormattedText() const;
+    TextMetaInfo getTextMetaInfo() const;
     BasicProfile getAuthor() const;
     QString getAuthorDid() const { return getAuthor().getDid(); }
     QDateTime getIndexedAt() const;
@@ -132,6 +135,7 @@ public:
 
 private:
     ATProto::AppBskyEmbed::EmbedView::SharedPtr getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const;
+    bool hasFacets() const;
 
     bool mValid = false;
 

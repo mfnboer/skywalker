@@ -16,6 +16,7 @@ Rectangle {
     required property string postCid
     required property string postText
     required property string postPlainText
+    required property textmetainfo postTextMetaInfo
     required property list<language> postLanguages
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
@@ -583,6 +584,7 @@ Rectangle {
                     postAuthor: author
                     postText: postEntry.postText
                     postPlainText: postEntry.postPlainText
+                    postTextMetaInfo: postEntry.postTextMetaInfo
                     postHasUnknownEmbed: postEntry.postHasUnknownEmbed
                     postUnknownEmbedType: postEntry.postUnknownEmbedType
                     postImages: postEntry.postImages

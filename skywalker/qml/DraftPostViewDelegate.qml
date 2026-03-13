@@ -9,6 +9,7 @@ Rectangle {
     required property basicprofile author
     required property string postText
     required property string postPlainText
+    required property textmetainfo postTextMetaInfo
     required property date postIndexedDateTime
     required property list<imageview> postImages
     required property var postVideo // videoview (var allows NULL)
@@ -89,6 +90,7 @@ Rectangle {
                 postAuthor: draftPostView.author
                 postText: draftPostView.postText
                 postPlainText: draftPostView.postPlainText
+                postTextMetaInfo: draftPostView.postTextMetaInfo
                 postVideo: draftPostView.postVideo
                 postHasUnknownEmbed: false
                 postUnknownEmbedType: ""

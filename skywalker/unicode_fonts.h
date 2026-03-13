@@ -3,6 +3,7 @@
 #pragma once
 #include "enums.h"
 #include "grapheme_info.h"
+#include "text_meta_info.h"
 #include <QObject>
 #include <QQmlEngine>
 #include <QQuickTextDocument>
@@ -54,6 +55,7 @@ public:
     static QString setEmojiFontCombinedEmojis(const QString& text);
     static QString removeEmojis(const QString& text);
 
+    static TextMetaInfo getTextMetaInfo(const QString& text, bool hasFacets);
     static bool hasPhraseEnding(const QString& text);
     static bool hasPhraseStarting(const QString& text);
     static QString getFirstGrapheme(const QString& text);

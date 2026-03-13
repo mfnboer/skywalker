@@ -60,6 +60,7 @@ Item {
                 postAuthor: recordView.getRecordAuthor()
                 postText: record.postTextFormatted
                 postPlainText: record.postPlainText
+                postTextMetaInfo: record.postTextMetaInfo
                 postHasUnknownEmbed: record.hasUnknownEmbed
                 postUnknownEmbedType: record.unknownEmbedType
                 postImages: record.images
