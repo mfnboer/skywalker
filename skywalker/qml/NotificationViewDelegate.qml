@@ -18,7 +18,7 @@ Rectangle {
     required property string notificationReasonSubjectCid
     required property string notificationReasonPostText
     required property string notificationReasonPostPlainText
-    required property string notificationReasonPostTextMetaInfo
+    required property textmetainfo notificationReasonPostTextMetaInfo
     required property basicprofile notificationReasonPostAuthor
     required property bool notificationReasonPostIsReply
     required property basicprofile notificationReasonPostReplyToAuthor
@@ -43,7 +43,7 @@ Rectangle {
     required property basicprofile notificationPostAuthor
     required property string notificationPostText
     required property string notificationPostPlainText
-    required property string notificationPostTextMetaInfo
+    required property textmetainfo notificationPostTextMetaInfo
     required property date notificationPostTimestamp
     required property bool notificationPostHasUnknownEmbed
     required property string notificationPostUnknownEmbedType
