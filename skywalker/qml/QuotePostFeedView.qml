@@ -12,6 +12,7 @@ SkyListView {
     signal closed
 
     id: postFeedView
+    cacheBuffer: Screen.height * 3
     model: skywalker.getPostFeedModel(modelId)
 
     Accessible.name: sideBarTitle

@@ -9,7 +9,7 @@ RoundCornerMask {
     property list<imageview> images
     property bool swipeMode: false
     readonly property list<var> imgList: [img1, img2]
-    readonly property int maxWidth: (guiSettings.maxImageHeight) * 2
+    readonly property int maxWidth: guiSettings.maxImageHeight * 2
 
     signal activateSwipe(int imgIndex, var previewImg)
 
