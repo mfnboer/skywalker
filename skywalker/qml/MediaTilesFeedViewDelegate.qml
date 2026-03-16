@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls.Material
 import skywalker
 
-Rectangle {
+Item {
     required property int index
     required property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
@@ -92,7 +92,6 @@ Rectangle {
     signal activateSwipe(int imgIndex, var previewImg)
 
     id: page
-    color: guiSettings.backgroundColor
 
     onYChanged: checkOnScreen()
 
@@ -106,12 +105,11 @@ Rectangle {
         }
     }
 
-    Rectangle {
+    Item {
         id: mediaRect
         x: leftMargin
         width: parent.width - leftMargin - rightMargin
         height: parent.height - bottomMargin
-        color: "transparent"
 
         Loader {
             id: videoLoader
@@ -216,11 +214,13 @@ Rectangle {
         visible: postColumn.visible
     }
 
-    Column {
+    Item {
         id: postColumn
         x: 10
         anchors.bottom: mediaRect.bottom
+        //anchors.bottomMargin: 5
         width: mediaRect.width - 20
+        height: guiSettings.postStatsHeight(feedAcceptsInteractions, 10, true)
         visible: mediaItem ? mediaItem.contentFilter.imageVisible() : !postIsPlaceHolder
 
         Loader {
@@ -262,54 +262,6 @@ Rectangle {
                 limitedStats: true
                 color: "white"
 
-                onReply: {
-                    const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
-                    root.composeReply(postUri, postCid, postText, postIndexedDateTime,
-                                      author, postReplyRootUri, postReplyRootCid, lang,
-                                      postMentionDids, "", "", feedDid, postFeedContext, userDid)
-                }
-
-                onReplyLongPress: (mouseEvent) => {
-                    if (!root.isActiveUser(userDid))
-                        return
-
-                    const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
-                    root.replyByNonActiveUser(
-                            mouseEvent, postStats, page.GridView.view,
-                            postUri, postCid, postText, postIndexedDateTime,
-                            author, postReplyRootUri, postReplyRootCid, lang,
-                            postMentionDids)
-                }
-
-                onRepost: {
-                    root.repost(postRepostUri, postUri, postCid,
-                                postReasonRepostUri, postReasonRepostCid,
-                                feedDid, postFeedContext, postText,
-                                postIndexedDateTime, author, postEmbeddingDisabled,
-                                postPlainText, userDid)
-                }
-
-                function quote(quoteByDid = "") {
-                    root.quotePost(postUri, postCid,
-                            postText, postIndexedDateTime, author, postEmbeddingDisabled,
-                            feedDid, postFeedContext, quoteByDid)
-                }
-
-                onRepostLongPress: (mouseEvent) => {
-                    if (!root.isActiveUser(userDid)) {
-                        quote(userDid)
-                        return
-                    }
-
-                    const actionDone = root.repostByNonActiveUser(
-                            mouseEvent, postStats, page.GridView.view, postUri, postCid,
-                            postText, postIndexedDateTime, author, postEmbeddingDisabled,
-                            postReasonRepostUri, postReasonRepostCid)
-
-                    if (!actionDone)
-                        quote()
-                }
-
                 onLike: root.like(postLikeUri, postUri, postCid,
                                   postReasonRepostUri, postReasonRepostCid,
                                   feedDid, postFeedContext, userDid)
@@ -318,57 +270,7 @@ Rectangle {
                     if (root.isActiveUser(userDid))
                         root.likeByNonActiveUser(mouseEvent, postStats, page.GridView.view, postUri, postReasonRepostUri, postReasonRepostCid)
                 }
-
-                onBookmark: {
-                    if (isBookmarked)
-                        skywalker.getBookmarks().removeBookmark(postUri, postCid)
-                    else
-                        skywalker.getBookmarks().addBookmark(postUri, postCid)
-                }
-
-                onBookmarkLongPress: (mouseEvent) => {
-                    if (root.isActiveUser(userDid))
-                        root.bookmarkByNonActiveUser(mouseEvent, postStats, page.GridView.view, postUri)
-                }
-
-                onShare: skywalker.sharePost(postUri)
-
-                onViewThread: {
-                    if (!postIsPlaceHolder && postUri)
-                        skywalker.getPostThread(postUri)
-                }
-
-                onUnrollThread: {
-                    if (!postIsPlaceHolder && postUri)
-                        skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
-                }
-
-                onQuoteChain: {
-                    if (!postIsPlaceHolder && postUri)
-                        root.viewQuoteChain(postUri, userDid)
-                }
-
-                onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
-                onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
-                onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
-                onEditPost: root.composePostEdit(page.GridView.view.model, page.index)
-                onDeletePost: confirmDelete()
-                onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
-                onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)
-                onTranslatePost: root.translateText(postPlainText)
-                onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
-                onPin: root.pinPost(postUri, postCid, userDid)
-                onUnpin: root.unpinPost(postCid, userDid)
-                onBlockAuthor: root.blockAuthor(author, userDid)
-                onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
-                onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
             }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 5
-            color: "transparent"
         }
     }
 

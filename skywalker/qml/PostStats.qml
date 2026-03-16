@@ -131,6 +131,7 @@ Item {
         width: parent.width / 8
         iconColor: postStats.color
         svg: SvgOutline.moreVert
+        visible: !limitedStats
         onClicked: moreMenuLoader.open()
 
         Accessible.name: qsTr("more options")
