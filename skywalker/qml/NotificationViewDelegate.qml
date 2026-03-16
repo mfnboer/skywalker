@@ -295,7 +295,6 @@ Rectangle {
                     postRecordWithMedia: notificationPostRecordWithMedia
                     postDateTime: notificationPostTimestamp
                     bodyBackgroundColor: notification.color
-                    borderColor: notificationIsRead ? guiSettings.borderColor : guiSettings.borderHighLightColor
                 }
 
                 Loader {
@@ -571,7 +570,6 @@ Rectangle {
                     postRecord: notificationReasonPostRecord
                     postRecordWithMedia: notificationReasonPostRecordWithMedia
                     bodyBackgroundColor: notification.color
-                    borderColor: notificationIsRead ? guiSettings.borderColor : guiSettings.borderHighLightColor
                     visible: showPostForAggregatableReason()
                 }
             }

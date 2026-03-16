@@ -32,7 +32,6 @@ Column {
     property int initialShowMaxTextLines: 25
     property int maxTextLines: 10000
     property string bodyBackgroundColor: guiSettings.backgroundColor
-    property string borderColor: guiSettings.borderColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
     property string postHighlightColor: "transparent"

@@ -604,7 +604,6 @@ Rectangle {
                     detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
                     initialShowMaxTextLines: postEntry.unrollThread ? maxTextLines : 25
                     bodyBackgroundColor: postEntry.color.toString()
-                    borderColor: postEntry.border.color.toString()
                     postHighlightColor: postEntry.postHighlightColor
                     swipeMode: postEntry.swipeMode
                     showRecord: postEntry.showRecord
