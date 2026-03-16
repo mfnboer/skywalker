@@ -22,7 +22,6 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QLoggingCategory>
-#include <QSettings>
 
 #ifdef Q_OS_ANDROID
 #include <QJniObject>

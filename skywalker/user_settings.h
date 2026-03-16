@@ -530,8 +530,8 @@ public:
     QDateTime getLastDraftOrphanCheck(const QString& did) const;
     void updateLastDraftOrphanCheck(const QString& did);
 
-    void sync() { mSettings.sync(); }
-    void syncLater() { QTimer::singleShot(0, this, [this]{ sync(); }); }
+    void sync();
+    void syncLater();
 
 signals:
     void serviceAppViewChanged(QString did);

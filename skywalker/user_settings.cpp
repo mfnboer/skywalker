@@ -47,6 +47,7 @@ UserSettings::UserSettings(QObject* parent) :
     QObject(parent)
 {
     qDebug() << "Settings:" << mSettings.fileName();
+    mSettings.setObjectName("UserSettings");
     mEncryption.init(KEY_ALIAS_PASSWORD);
     cleanup();
 }
@@ -56,6 +57,7 @@ UserSettings::UserSettings(const QString& fileName, QObject* parent) :
     mSettings(fileName, QSettings::defaultFormat())
 {
     qDebug() << "Settings:" << mSettings.fileName();
+    mSettings.setObjectName("UserSettings");
     mEncryption.init(KEY_ALIAS_PASSWORD);
     cleanup();
 }
@@ -644,7 +646,7 @@ void UserSettings::clearTokens(const QString& did)
     qDebug() << "Clear tokens:" << did;
     mSettings.remove(key(did, "access"));
     mSettings.remove(key(did, "refresh"));
-    mSettings.sync();
+    sync();
 }
 
 void UserSettings::clearCredentials(const QString& did)
@@ -2329,6 +2331,18 @@ QDateTime UserSettings::getLastDraftOrphanCheck(const QString& did) const
 void UserSettings::updateLastDraftOrphanCheck(const QString& did)
 {
     mSettings.setValue(key(did, "lastDraftOrphanCheck"), QDateTime::currentDateTime());
+}
+
+void UserSettings::sync()
+{
+    qDebug() << "Sync user settings";
+    mSettings.sync();
+}
+
+void UserSettings::syncLater()
+{
+    qDebug() << "Sync user settings later";
+    QTimer::singleShot(0, this, [this]{ sync(); });
 }
 
 void UserSettings::cleanup()
