@@ -270,32 +270,45 @@ Rectangle {
                     visible: notificationPostIsHiddenReply && notificationPostReplyRootAuthorDid === skywalker.getUserDid()
                 }
 
-                PostBody {
-                    id: postBody
+                PostBodyText {
+                    id: postBodyText
                     width: parent.width
                     userDid: owner.did
                     postAuthor: notificationAuthor
                     postText: notificationPostBlocked ? qsTr("🚫 Blocked") : notificationPostText
                     postPlainText: notificationPostBlocked ? "" : notificationPostPlainText
                     postTextMetaInfo: notificationPostTextMetaInfo
-                    postHasUnknownEmbed: notificationPostHasUnknownEmbed
-                    postUnknownEmbedType: notificationPostUnknownEmbedType
-                    postImages: notificationPostImages
                     postLanguageLabels: notificationPostLanguages
-                    postContentLabels: notificationPostLabels
                     postContentVisibility: notificationPostContentVisibility
                     postContentWarning: notificationPostContentWarning
                     postContentLabeler: notificationPostContentLabeler
                     postMuted: notificationPostMutedReason
                     postIsThread: false
                     postIsThreadReply: false
+                    bodyBackgroundColor: notification.color
+                    textBottomPadding: notificationPostImages.length > 0 || notificationPostVideo || notificationPostExternal || notificationPostRecord || notificationPostRecordWithMedia || notificationPostHasUnknownEmbed ? 5 : 0
+                }
+
+                PostBody {
+                    id: postBody
+                    width: parent.width
+                    userDid: owner.did
+                    postAuthor: notificationAuthor
+                    postHasUnknownEmbed: notificationPostHasUnknownEmbed
+                    postUnknownEmbedType: notificationPostUnknownEmbedType
+                    postImages: notificationPostImages
+                    postContentLabels: notificationPostLabels
+                    postContentVisibility: notificationPostContentVisibility
+                    postContentWarning: notificationPostContentWarning
+                    postContentLabeler: notificationPostContentLabeler
+                    showWarnedPost: postBodyText.showWarnedPost
+                    postMuted: notificationPostMutedReason
                     postVideo: notificationPostVideo
                     postExternal: notificationPostExternal
                     postRecord: notificationPostRecord
                     postRecordWithMedia: notificationPostRecordWithMedia
-                    postDateTime: notificationPostTimestamp
                     bodyBackgroundColor: notification.color
-                    borderColor: notificationIsRead ? guiSettings.borderColor : guiSettings.borderHighLightColor
+                    postVisible: postBodyText.postVisible()
                 }
 
                 Loader {
@@ -537,9 +550,8 @@ Rectangle {
                     visible: showPostForAggregatableReason() && notificationReasonPostIsReply
                 }
 
-                PostBody {
-                    id: reasonPostBody
-                    topPadding: 5
+                PostBodyText {
+                    id: reasonPostBodyText
                     width: parent.width
                     userDid: owner.did
                     postAuthor: notificationReasonPostAuthor
@@ -554,24 +566,41 @@ Rectangle {
                     postPlainText: !notificationReasonPostLocallyDeleted && !notificationReasonPostNotFound ?
                                        notificationReasonPostPlainText : ""
                     postTextMetaInfo: notificationReasonPostTextMetaInfo
+                    postLanguageLabels: notificationReasonPostLanguages
+                    postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
+                    postContentWarning: ""
+                    postContentLabeler: accessibilityUtils.nullAuthor
+                    showWarnedPost: reasonPostBodyText.showWarnedPost
+                    postMuted: QEnums.MUTED_POST_NONE
+                    postIsThread: false
+                    postIsThreadReply: false
+                    bodyBackgroundColor: notification.color
+                    textBottomPadding: notificationReasonPostImages.length > 0 || notificationReasonPostVideo || notificationReasonPostExternal || notificationReasonPostRecord || notificationReasonPostRecordWithMedia || notificationReasonPostHasUnknownEmbed ? 5 : 0
+                    visible: showPostForAggregatableReason()
+                }
+
+                PostBody {
+                    id: reasonPostBody
+                    topPadding: 5
+                    width: parent.width
+                    userDid: owner.did
+                    postAuthor: notificationReasonPostAuthor
+
                     postHasUnknownEmbed: notificationReasonPostHasUnknownEmbed
                     postUnknownEmbedType: notificationReasonPostUnknownEmbedType
                     postImages: notificationReasonPostImages
-                    postLanguageLabels: notificationReasonPostLanguages
                     postContentLabels: notificationReasonPostLabels
                     postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                     postContentWarning: ""
                     postContentLabeler: accessibilityUtils.nullAuthor
+                    showWarnedPost: reasonPostBodyText.showWarnedPost
                     postMuted: QEnums.MUTED_POST_NONE
-                    postIsThread: false
-                    postIsThreadReply: false
-                    postDateTime: notificationReasonPostTimestamp
                     postVideo: notificationReasonPostVideo
                     postExternal: notificationReasonPostExternal
                     postRecord: notificationReasonPostRecord
                     postRecordWithMedia: notificationReasonPostRecordWithMedia
                     bodyBackgroundColor: notification.color
-                    borderColor: notificationIsRead ? guiSettings.borderColor : guiSettings.borderHighLightColor
+                    postVisible: readonPostBodyText.postVisible()
                     visible: showPostForAggregatableReason()
                 }
             }

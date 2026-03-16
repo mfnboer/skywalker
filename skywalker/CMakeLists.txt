@@ -681,6 +681,9 @@ qt_add_qml_module(libskywalker
         SOURCES record_word_index.h
         SOURCES record_word_index.cpp
         SOURCES text_meta_info.h
+        QML_FILES qml/PostBodyLongText.qml
+        QML_FILES qml/PostBodyShortText.qml
+        QML_FILES qml/PostBodyText.qml
 )
 
 if (NOT ANDROID)

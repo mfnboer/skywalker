@@ -389,32 +389,47 @@ Rectangle {
             }
         }
 
-        PostBody {
-            width: parent.width
+        PostBodyText {
+            id: postBodyText
+            width: videoPage.width
             userDid: videoPage.userDid
-            postAuthor: videoPage.author
+            postAuthor: author
             postText: videoPage.postText
             postPlainText: videoPage.postPlainText
             postTextMetaInfo: videoPage.postTextMetaInfo
-            postHasUnknownEmbed: false
-            postUnknownEmbedType: ""
-            postImages: []
-            postLanguageLabels: videoPage.postLanguages
-            postContentLabels: videoPage.postLabels
+            postLanguageLabels: postLanguages
             postContentVisibility: videoPage.postContentVisibility
             postContentWarning: videoPage.postContentWarning
             postContentLabeler: videoPage.postContentLabeler
             postMuted: videoPage.postMutedReason
-            postIsThread: videoPage.postIsThread
-            postIsThreadReply: videoPage.postIsThreadReply
-            postDateTime: videoPage.postIndexedDateTime
+            postIsThread: videoPage.postIsThread && !videoPage.unrollThread
+            postIsThreadReply: videoPage.postIsThreadReply && !videoPage.unrollThread
             maxTextLines: videoPage.showFullPostText ? 1000 : 2
             bodyBackgroundColor: "transparent"
+            postHighlightColor: postEntry.postHighlightColor
+            textBottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia ? 5 : 0
 
             onUnrollThread: {
-                if (!postIsPlaceHolder && postUri)
+                if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
                     skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
             }
+        }
+
+        PostBody {
+            width: parent.width
+            userDid: videoPage.userDid
+            postAuthor: videoPage.author
+            postHasUnknownEmbed: false
+            postUnknownEmbedType: ""
+            postImages: []
+            postContentLabels: videoPage.postLabels
+            postContentVisibility: videoPage.postContentVisibility
+            postContentWarning: videoPage.postContentWarning
+            postContentLabeler: videoPage.postContentLabeler
+            showWarnedPost: postBodyText.showWarnedPost
+            postMuted: videoPage.postMutedReason
+            bodyBackgroundColor: "transparent"
+            postVisible: postBodyText.postVisible()
         }
 
         Loader {

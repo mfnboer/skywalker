@@ -83,31 +83,45 @@ Rectangle {
                 visible: postIsReply
             }
 
-            PostBody {
-                id: postBody
+            PostBodyText {
+                id: postBodyText
                 width: parent.width
-                Layout.fillWidth: true
-                postAuthor: draftPostView.author
+                userDid: postEntry.userDid
+                postAuthor: author
                 postText: draftPostView.postText
                 postPlainText: draftPostView.postPlainText
                 postTextMetaInfo: draftPostView.postTextMetaInfo
+                postLanguageLabels: postLanguages
+                postContentVisibility: postEntry.postContentVisibility
+                postContentWarning: postEntry.postContentWarning
+                postContentLabeler: postEntry.postContentLabeler
+                postMuted: postEntry.postMutedReason
+                postIsThread: postEntry.postIsThread && !postEntry.unrollThread
+                postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
+                bodyBackgroundColor: postEntry.color.toString()
+                postHighlightColor: postEntry.postHighlightColor
+                textBottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia ? 5 : 0
+            }
+
+            PostBody {
+                id: postBody
+                width: parent.width
+                postAuthor: draftPostView.author
                 postVideo: draftPostView.postVideo
                 postHasUnknownEmbed: false
                 postUnknownEmbedType: ""
                 postImages: draftPostView.postImages
-                postLanguageLabels: draftPostView.postLanguages
                 postContentLabels: draftPostView.postLabels
                 postContentVisibility: draftPostView.postContentVisibility
                 postContentWarning: draftPostView.postContentWarning
                 postContentLabeler: draftPostView.postContentLabeler
+                showWarnedPost: postBodyText.showWarnedPost
                 postMuted: draftPostView.postMutedReason
                 postExternal: draftPostView.postExternal
                 postRecord: draftPostView.postRecord
                 postRecordWithMedia: draftPostView.postRecordWithMedia
-                postDateTime: draftPostView.postIndexedDateTime
-                postIsThread: false
-                postIsThreadReply: false
                 isDraft: true
+                postVisible: postBodyText.postVisible()
             }
 
             AccessibleText {

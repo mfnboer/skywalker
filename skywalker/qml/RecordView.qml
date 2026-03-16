@@ -75,7 +75,7 @@ Item {
                 postVideo: record.video
                 postExternal: record.external
                 postDateTime: record.postDateTime
-                bodyBackgroundColor: recordView.backgroundColor
+                bodyBackgroundColor: recordView.backgroundColor                
 
                 onUnrollThread: {
                     if (record.postUri)

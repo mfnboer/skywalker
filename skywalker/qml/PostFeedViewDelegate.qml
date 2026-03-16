@@ -169,11 +169,13 @@ Rectangle {
         if (feedAcceptsInteractions)
             postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
 
-        postBody.movedOffScreen()
+        if (postBodyLoader.item)
+            postBodyLoader.item.movedOffScreen()
     }
 
     function closeMedia(mediaIndex, closeCb) {
-        postBody.closeMedia(mediaIndex, closeCb)
+        if (postBodyLoader.item)
+            postBodyLoader.item.closeMedia(mediaIndex, closeCb)
     }
 
     Column {
@@ -576,8 +578,8 @@ Rectangle {
                     }
                 }
 
-                PostBody {
-                    id: postBody
+                PostBodyText {
+                    id: postBodyText
                     x: contentLeftMargin
                     width: parent.width - contentLeftMargin - postEntry.margin
                     userDid: postEntry.userDid
@@ -585,35 +587,66 @@ Rectangle {
                     postText: postEntry.postText
                     postPlainText: postEntry.postPlainText
                     postTextMetaInfo: postEntry.postTextMetaInfo
-                    postHasUnknownEmbed: postEntry.postHasUnknownEmbed
-                    postUnknownEmbedType: postEntry.postUnknownEmbedType
-                    postImages: postEntry.postImages
                     postLanguageLabels: postLanguages
-                    postContentLabels: postLabels
                     postContentVisibility: postEntry.postContentVisibility
                     postContentWarning: postEntry.postContentWarning
                     postContentLabeler: postEntry.postContentLabeler
                     postMuted: postEntry.postMutedReason
                     postIsThread: postEntry.postIsThread && !postEntry.unrollThread
                     postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
-                    postVideo: postEntry.postVideo
-                    postExternal: postEntry.postExternal
-                    postRecord: postEntry.postRecord
-                    postRecordWithMedia: postEntry.postRecordWithMedia
-                    postDateTime: postEntry.postIndexedDateTime
-                    detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
-                    initialShowMaxTextLines: postEntry.unrollThread ? maxTextLines : 25
                     bodyBackgroundColor: postEntry.color.toString()
-                    borderColor: postEntry.border.color.toString()
                     postHighlightColor: postEntry.postHighlightColor
-                    swipeMode: postEntry.swipeMode
-                    showRecord: postEntry.showRecord
+                    textBottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
 
-                    onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
                     onUnrollThread: {
                         if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
                             skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
                     }
+                }
+
+                Loader {
+                    id: postBodyLoader
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: postEntry.postImages.length > 0 || postVideo || postExternal ||
+                            postRecord || postRecordWithMedia || postLabels || postEntry.postHasUnknownEmbed
+                    asynchronous: true
+
+                    sourceComponent: PostBody {
+                        id: postBody
+                        width: parent.width
+                        userDid: postEntry.userDid
+                        postAuthor: author
+                        postHasUnknownEmbed: postEntry.postHasUnknownEmbed
+                        postUnknownEmbedType: postEntry.postUnknownEmbedType
+                        postImages: postEntry.postImages
+                        postContentLabels: postLabels
+                        postContentVisibility: postEntry.postContentVisibility
+                        postContentWarning: postEntry.postContentWarning
+                        postContentLabeler: postEntry.postContentLabeler
+                        showWarnedPost: postBodyText.showWarnedPost
+                        postMuted: postEntry.postMutedReason
+                        postVideo: postEntry.postVideo
+                        postExternal: postEntry.postExternal
+                        postRecord: postEntry.postRecord
+                        postRecordWithMedia: postEntry.postRecordWithMedia
+                        bodyBackgroundColor: postEntry.color.toString()
+                        postHighlightColor: postEntry.postHighlightColor
+                        swipeMode: postEntry.swipeMode
+                        showRecord: postEntry.showRecord
+                        postVisible: postBodyText.postVisible()
+
+                        onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
+                    }
+                }
+
+                LoaderDateTime {
+                    id: dateTimeLoader
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    postDateTime: postEntry.postIndexedDateTime
+                    detailedView: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
+                    postVisible: postBodyText.postVisible()
                 }
 
                 // Reposts and likes in detailed view of post entry in thread view
@@ -1146,7 +1179,7 @@ Rectangle {
             return
         }
 
-        if (postBody.postVisible())
+        if (postBodyText.postVisible())
             openPostThread()
     }
 
@@ -1162,7 +1195,7 @@ Rectangle {
                     postNotFound, postBlocked, postNotSupported)
         }
 
-        if (!postBody.postVisible())
+        if (!postBodyText.postVisible())
             return getHiddenPostSpeech()
 
         return accessibilityUtils.getPostSpeech(postIndexedDateTime, author,
@@ -1175,8 +1208,8 @@ Rectangle {
         if (postContentVisibility === QEnums.CONTENT_VISIBILITY_HIDE_POST)
             return postContentWarning
 
-        if (postBody.mutePost)
-            return postBody.getMuteText()
+        if (postBodyText.mutePost)
+            return postBodyText.getMuteText()
 
         return postContentWarning
     }

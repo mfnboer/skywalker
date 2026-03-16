@@ -58,27 +58,39 @@ Column {
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: SkyScrollBarVertical {}
 
-        PostBody {
+        PostBodyText {
+            id: postBodyText
             width: parent.width - (height > guiSettings.appFontHeight * 5 ? 10 : 0)
             userDid: quoteColumn.userDid
             postAuthor: author
             postText: quoteColumn.postText
-            postPlainText: quoteColumn.postText
+            postPlainText: quoteColumn.postPlainText
             postTextMetaInfo: quoteColumn.postTextMetaInfo
-            postHasUnknownEmbed: false
-            postUnknownEmbedType: ""
-            postImages: []
             postLanguageLabels: []
-            postContentLabels: []
             postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
             postContentWarning: ""
             postContentLabeler: accessibilityUtils.nullAuthor
             postMuted: QEnums.MUTED_POST_NONE
             postIsThread: false
             postIsThreadReply: false
-            postDateTime: postDateTime
             initialShowMaxTextLines: maxTextLines
             bodyBackgroundColor: quoteColumn.postBackgroundColor
+        }
+
+        PostBody {
+            width: parent.width - (height > guiSettings.appFontHeight * 5 ? 10 : 0)
+            userDid: quoteColumn.userDid
+            postAuthor: author
+            postHasUnknownEmbed: false
+            postUnknownEmbedType: ""
+            postImages: []
+            postContentLabels: []
+            postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
+            postContentWarning: ""
+            postContentLabeler: accessibilityUtils.nullAuthor
+            postMuted: QEnums.MUTED_POST_NONE
+            bodyBackgroundColor: quoteColumn.postBackgroundColor
+            postVisible: postBodyText.postVisible()
         }
     }
 
