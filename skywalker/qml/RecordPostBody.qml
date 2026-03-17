@@ -84,6 +84,7 @@ Column {
                 radius: 5
                 color: postHighlightColor
                 opacity: guiSettings.focusHighlightOpacity
+                visible: postHighlightColor != "transparent"
             }
         }
     }
@@ -116,6 +117,7 @@ Column {
                 radius: 5
                 color: postHighlightColor
                 opacity: guiSettings.focusHighlightOpacity
+                visible: postHighlightColor != "transparent"
             }
 
             function isSimpleText() {

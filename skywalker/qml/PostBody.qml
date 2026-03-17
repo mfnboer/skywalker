@@ -38,6 +38,7 @@ Column {
     property bool isDraft: false
     property bool swipeMode: false
     property bool showRecord: true
+    property bool moving: false
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
     readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
 
@@ -85,6 +86,7 @@ Column {
                 radius: 5
                 color: postHighlightColor
                 opacity: guiSettings.focusHighlightOpacity
+                visible: postHighlightColor != "transparent"
             }
         }
     }
@@ -117,6 +119,7 @@ Column {
                 radius: 5
                 color: postHighlightColor
                 opacity: guiSettings.focusHighlightOpacity
+                visible: postHighlightColor != "transparent"
             }
 
             function isSimpleText() {
@@ -272,6 +275,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -286,6 +290,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -300,6 +305,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -314,6 +320,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -330,6 +337,7 @@ Column {
         swipeMode: postBody.swipeMode
         isDraft: postBody.isDraft
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -344,6 +352,7 @@ Column {
         postContentLabeler: postBody.postContentLabeler
         bodyBackgroundColor: postBody.bodyBackgroundColor
         postVisible: postBody.postVisible()
+        moving: postBody.moving
     }
 
     // Unknown embed
@@ -360,18 +369,24 @@ Column {
         postContentLabels: postBody.postContentLabels
         filteredContentLabel: postBody.filteredContentLabel
         postVisible: postBody.postVisible()
+        moving: postBody.moving
     }
 
     // Record
     Loader {
         id: recordLoader
         width: parent.width
-        active: Boolean(postRecord) && showRecord && postVisible()
+        active: Boolean(postRecord) && showRecord && postVisible() && !moving
 
         sourceComponent: RecordView {
             userDid: postBody.userDid
             record: postRecord
             backgroundColor: guiSettings.highLightColor(bodyBackgroundColor)
+        }
+
+        onStatusChanged: {
+            if (status == Loader.Ready)
+                active = true
         }
     }
 
@@ -379,7 +394,7 @@ Column {
     Loader {
         id: recordWithMediaLoader
         width: parent.width
-        active: Boolean(postRecordWithMedia) && postVisible()
+        active: Boolean(postRecordWithMedia) && postVisible() && !moving
 
         sourceComponent: RecordWithMediaView {
             userDid: postBody.userDid
@@ -394,6 +409,11 @@ Column {
             showRecord: postBody.showRecord
 
             onActivateSwipe: (imgIndex, img) => postBody.activateSwipe(imgIndex, img)
+        }
+
+        onStatusChanged: {
+            if (status == Loader.Ready)
+                active = true
         }
     }
 

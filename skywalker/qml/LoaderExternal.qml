@@ -10,9 +10,10 @@ Loader {
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property bool highlight: bodyBackgroundColor === guiSettings.postHighLightColor
     property bool postVisible: true
+    property bool moving: false
 
     id: loaderExternal
-    active: Boolean(postExternal) && postVisible
+    active: Boolean(postExternal) && postVisible && !moving
 
     sourceComponent: ExternalView {
         userDid: loaderExternal.userDid
@@ -22,5 +23,10 @@ Loader {
         contentLabeler: postContentLabeler
         highlight: loaderExternal.highlight
         maskColor: bodyBackgroundColor
+    }
+
+    onStatusChanged: {
+        if (status == Loader.Ready)
+            active = true
     }
 }

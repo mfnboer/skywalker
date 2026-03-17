@@ -9,12 +9,13 @@ Loader {
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property bool swipeMode: false
     property bool postVisible: true
+    property bool moving: false
 
     signal activateSwipe(int imgIndex, var previewImg)
 
     id: images1Loader
     height: calcHeight()
-    active: postImages.length === 1 && postVisible
+    active: postImages.length === 1 && postVisible && !moving
     asynchronous: true
 
     sourceComponent: ImagePreview1 {
@@ -28,6 +29,11 @@ Loader {
         swipeMode: images1Loader.swipeMode
 
         onActivateSwipe: (imgIndex, previewImg) => images1Loader.activateSwipe(imgIndex, previewImg)
+    }
+
+    onStatusChanged: {
+        if (status == Loader.Ready)
+            active = true
     }
 
     LoaderCanvas {

@@ -233,7 +233,6 @@ Rectangle {
                         }
                     }
 
-                    opacity: avatar.opacity
                     visible: threadBarVisible
 
                     Loader {
@@ -388,7 +387,6 @@ Rectangle {
                     y: ((postType === QEnums.POST_ROOT && !postIsReply) || ((postThreadType & QEnums.THREAD_TOP) && !postIsReply)) ? avatarImg.y + avatarImg.height / 2 : 0
                     width: threadStyle === QEnums.THREAD_STYLE_LINE ? guiSettings.threadLineWidth : avatarImg.width
                     height: ((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && postReplyCount === 0 && !unrollThread ? avatarImg.y + avatarImg.height / 2 - y : parent.height - y
-                    opacity: 0.9
 
                     // Gradient is used display thread context.
                     gradient: Gradient {
@@ -607,6 +605,7 @@ Rectangle {
                     postHighlightColor: postEntry.postHighlightColor
                     swipeMode: postEntry.swipeMode
                     showRecord: postEntry.showRecord
+                    moving: postEntry.ListView.view.fastMoving
 
                     onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
                     onUnrollThread: {
@@ -1040,7 +1039,6 @@ Rectangle {
                 x: 8 + (avatarImg.width - width) / 2
                 width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
                 height: parent.height
-                opacity: avatar.opacity
                 visible: !((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF))
 
                 color: {

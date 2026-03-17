@@ -14,6 +14,7 @@ ListView {
     readonly property int virtualFooterTopY: (originY - contentY) - virtualFooterStartY + height - virtualFooterHeight + verticalOvershoot
     readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
     property int prevContentY: 0
+    property bool fastMoving: false
 
     signal contentMoved()
 
@@ -44,6 +45,7 @@ ListView {
 
     onMovementEnded: {
         prevContentY = contentY
+        fastMoving = false
 
         if (virtualFooterHeight !== 0)
             moveVirtualFooter()
@@ -68,6 +70,7 @@ ListView {
         // contentY change.
         if (Math.abs(contentY - prevContentY) > 250) {
             prevContentY = contentY
+            fastMoving = (Math.abs(verticalVelocity) > guiSettings.slowFlickVelocity)
             contentMoved()
         }
     }

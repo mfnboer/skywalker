@@ -16,7 +16,7 @@ Row {
 
     height: !imageVisible() ? Math.max(imgIconLoader.height, contentVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA ? warnColumnLoader.getHeight() : hideColumnLoader.getHeight()) : 0
     spacing: 10
-    visible: imageVisible()
+    visible: !imageVisible()
 
     Loader {
         id: imgIconLoader
