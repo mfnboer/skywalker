@@ -28,10 +28,9 @@ RoundCornerMask {
 
         // The rectangle is here to keep an empty space when the image is made invisble
         // by AnimateToFullImage
-        Rectangle {
+        Item {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            color: "transparent"
 
             ThumbImageView {
                 id: img1
@@ -44,10 +43,9 @@ RoundCornerMask {
             }
         }
 
-        Rectangle {
+        Item {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            color: "transparent"
 
             ThumbImageView {
                 id: img2

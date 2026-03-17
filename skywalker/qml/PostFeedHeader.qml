@@ -23,7 +23,7 @@ Rectangle {
     property bool showFavoritesPlaceHolder: false
     property bool isSideBar: false
     property int bottomMargin: 0
-    readonly property int favoritesY: favoritesPlaceHolder.y
+    readonly property int favoritesY: headerRow.height
 
     signal closed
     signal feedAvatarClicked
@@ -39,7 +39,7 @@ Rectangle {
 
     id: header
     width: parent.width
-    height: headerRow.y + headerRow.height + (showFavoritesPlaceHolder ? favoritesPlaceHolder.height : 0) + bottomMargin
+    height: headerRow.y + headerRow.height + (showFavoritesPlaceHolder ? guiSettings.tabBarHeight : 0) + bottomMargin
     z: guiSettings.headerZLevel
     color: guiSettings.headerColor
 
@@ -356,15 +356,6 @@ Rectangle {
                 }
             }
         }
-    }
-
-    Rectangle {
-        id: favoritesPlaceHolder
-        anchors.top: headerRow.bottom
-        width: parent.width
-        height: guiSettings.tabBarHeight
-        color: guiSettings.backgroundColor
-        visible: showFavoritesPlaceHolder
     }
 
     function showLanguageFilterDetails() {

@@ -28,10 +28,9 @@ RoundCornerMask {
         columns: 2
         spacing: 4
 
-        Rectangle {
+        Item {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            color: "transparent"
 
             ThumbImageView {
                 id: img1
@@ -44,10 +43,9 @@ RoundCornerMask {
             }
         }
 
-        Rectangle {
+        Item {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            color: "transparent"
 
             ThumbImageView {
                 id: img2
@@ -60,10 +58,9 @@ RoundCornerMask {
             }
         }
 
-        Rectangle {
+        Item {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            color: "transparent"
 
             ThumbImageView {
                 id: img3
@@ -76,10 +73,9 @@ RoundCornerMask {
             }
         }
 
-        Rectangle {
+        Item {
             width: parent.width / 2 - parent.spacing / 2
             height: width
-            color: "transparent"
 
             ThumbImageView {
                 id: img4

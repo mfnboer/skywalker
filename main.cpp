@@ -17,8 +17,12 @@ using namespace Qt::Literals::StringLiterals;
 int main(int argc, char *argv[])
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
-    //qputenv("QSG_INFO", "1");
+
+#ifdef DEBUG
+    qputenv("QSG_INFO", "1");
     //qputenv("QSG_RENDER_TIMING", "1");
+    //qputenv("QSG_VISUALIZE", "batches"); // batches, overdraw, clip, changes
+#endif
 
 #ifdef QT_NO_DEBUG_OUTPUT
     QLoggingCategory::setFilterRules("qml*.debug=false");

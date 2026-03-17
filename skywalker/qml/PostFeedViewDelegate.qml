@@ -101,7 +101,7 @@ Rectangle {
     readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser || postHiddenPosts || postFoldedType === QEnums.FOLDED_POST_FIRST
     readonly property int minGridHeight: noPostRendering ? 30 : 90
     readonly property int threadColumnWidth: threadBarVisible ? guiSettings.threadColumnWidth : 0
-    readonly property int contentLeftMargin: threadBarVisible ? 0 : margin
+    readonly property int contentLeftMargin: margin // threadBarVisible ? 0 : margin
 
     property int prevYCoord: 0
     property int lastDY: 0

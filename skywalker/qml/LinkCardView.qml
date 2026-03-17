@@ -22,7 +22,12 @@ RoundCornerMask {
     id: card
     height: columnHeight
     cornerRadius: guiSettings.radius
-    color: guiSettings.highLightColor(maskColor)
+
+    Rectangle {
+        id: cardBackground
+        anchors.fill: parent
+        color: guiSettings.highLightColor(maskColor)
+    }
 
     Column {
         id: externalColumn
@@ -55,7 +60,7 @@ RoundCornerMask {
                 x: (externalColumn.width - width) / 2
                 width: imgLoader.width
                 height: imgLoader.height
-                canvasColor: card.color
+                canvasColor: cardBackground.color
                 dynamicCanvasColor: false
                 fillMode: Image.PreserveAspectCrop
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
@@ -63,7 +68,7 @@ RoundCornerMask {
             }
 
             LoaderCanvas {
-                backgroundColor: card.color
+                backgroundColor: cardBackground.color
             }
 
             function calcWidth() {

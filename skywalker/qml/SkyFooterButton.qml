@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import skywalker
 
-Rectangle {
+Item {
     property SvgImage svg
     property int counter: 0
     property string counterBackgroundColor: guiSettings.badgeColor
@@ -13,7 +13,6 @@ Rectangle {
     signal clicked
 
     id: button
-    color: "transparent"
 
     Accessible.role: Accessible.PageTab
     Accessible.onPressAction: clicked()

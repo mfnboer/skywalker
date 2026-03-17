@@ -17,8 +17,13 @@ RoundCornerMask {
     id: frame
     width: filter.imageVisible() ? img.width : parent.width
     height: filter.imageVisible() ? img.height : filter.height
-    color: guiSettings.highLightColor(backgroundColor)
     maskColor: backgroundColor
+
+    Rectangle {
+        id: frameBackground
+        anchors.fill: parent
+        color: guiSettings.highLightColor(backgroundColor)
+    }
 
     ThumbAnimatedImageView {
         id: img
@@ -30,7 +35,7 @@ RoundCornerMask {
 
         onStatusChanged: {
             if (status == Image.Ready)
-                imageUtils.setDominantColor(img, (color) => { frame.color = color })
+                imageUtils.setDominantColor(img, (color) => { frameBackground.color = color })
         }
 
         function calcWidth() {

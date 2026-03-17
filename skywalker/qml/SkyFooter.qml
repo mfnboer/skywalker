@@ -49,10 +49,9 @@ Rectangle {
             onClicked: searchClicked()
         }
 
-        Rectangle {
+        Item {
             Layout.preferredHeight: parent.height
             Layout.fillWidth: true
-            color: "transparent"
 
             FooterPostButton {
                 messagesActive: isMessagesActive()

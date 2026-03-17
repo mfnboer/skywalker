@@ -155,11 +155,11 @@ ApplicationWindow {
         id: favoritesTabBar
         x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
         y: calcY()
-        z: guiSettings.headerZLevel - 1
+        z: guiSettings.headerZLevel
         width: parent.width - x - guiSettings.rightMargin
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
-        clip: true
+        clip: sideBar.visible
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
 
         onCurrentIndexChanged: {
@@ -757,6 +757,7 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: rootSplitView.left
         color: getBackgroundColor()
+        visible: width > 0
     }
 
     // Right margin (navbar on Android)
@@ -766,6 +767,7 @@ ApplicationWindow {
         anchors.left: rootSplitView.right
         anchors.right: parent.right
         color: getBackgroundColor()
+        visible: width > 0
     }
 
     function getBackgroundColor() {
@@ -802,6 +804,7 @@ ApplicationWindow {
         height: guiSettings.headerMargin
         z: guiSettings.headerZLevel
         color: displayUtils.statusBarColor
+        visible: height > 0
     }
 
     SettingsDrawer {

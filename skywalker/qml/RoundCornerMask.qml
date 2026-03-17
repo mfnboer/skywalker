@@ -1,14 +1,13 @@
 import QtQuick
 import QtQuick.Shapes
 
-Rectangle {
+Item {
     property int cornerRadius: guiSettings.radius
     property string maskColor: guiSettings.backgroundColor
     property int maskWidth: width
     property int maskHeight: height
 
     id: maskRect
-    color: "transparent"
 
     Shape {
         id: topLeftMask
