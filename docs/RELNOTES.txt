@@ -1,6 +1,7 @@
 next
 ====
 * Performance improvements
+* Fix "post not found" error when posting a thread 
 * Bug fixes
 
 4.30
