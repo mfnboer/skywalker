@@ -30,6 +30,7 @@ GridView {
     readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
 
     property int prevContentY: 0
+    property bool fastMoving: false
     property bool inSync: true
 
     signal contentMoved
@@ -95,6 +96,7 @@ GridView {
         feedAcceptsInteractions: mediaTilesView.acceptsInteractions
         feedDid: mediaTilesView.feedDid
         feedUri: mediaTilesView.feedUri
+        moving: GridView.view.fastMoving
 
         onActivateSwipe: (imgIndex, previewImg) => {
             let item = mediaTilesView
@@ -146,6 +148,7 @@ GridView {
 
     onMovementEnded: {
         prevContentY = contentY
+        fastMoving = false
         moveHeader()
 
         if (virtualFooterHeight !== 0)
@@ -171,6 +174,7 @@ GridView {
     onContentYChanged: {
         if (Math.abs(contentY - prevContentY) > mediaTilesView.cellHeight) {
             prevContentY = contentY
+            fastMoving = fastMoving || (Math.abs(verticalVelocity) > guiSettings.slowFlickVelocity)
             contentMoved()
             updateOnMovement()
         }

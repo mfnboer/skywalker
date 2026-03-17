@@ -77,6 +77,7 @@ Item {
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property string feedUri: ""
+    property bool moving: false
 
     readonly property bool isLeftCell: index % GridView.view.columns == 0
     readonly property bool isRightCell: index % GridView.view.columns == GridView.view.columns - 1
@@ -113,7 +114,7 @@ Item {
 
         Loader {
             id: videoLoader
-            active: Boolean(postOrRecordVideo)
+            active: Boolean(postOrRecordVideo) && !moving
 
             sourceComponent: VideoView {
                 id: video
@@ -131,13 +132,18 @@ Item {
 
                 onActivateSwipe: (imgIndex, previewImg) => page.activateSwipe(imgIndex, previewImg)
             }
+
+            onStatusChanged: {
+                if (status == Loader.Ready)
+                    active = true
+            }
         }
 
         Loader {
             property int imageIndex: 0
 
             id: imageLoader
-            active: postOrRecordImages.length > 0
+            active: postOrRecordImages.length > 0 && !moving
 
             sourceComponent: ImageAutoRetry {
                 property alias contentFilter: filter
@@ -186,6 +192,11 @@ Item {
                             fullImageLoader.show(0, true)
                     }
                 }
+            }
+
+            onStatusChanged: {
+                if (status == Loader.Ready)
+                    active = true
             }
 
             function imageVisible() {

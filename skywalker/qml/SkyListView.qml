@@ -70,7 +70,7 @@ ListView {
         // contentY change.
         if (Math.abs(contentY - prevContentY) > 250) {
             prevContentY = contentY
-            fastMoving = (Math.abs(verticalVelocity) > guiSettings.slowFlickVelocity)
+            fastMoving = fastMoving || (Math.abs(verticalVelocity) > guiSettings.slowFlickVelocity)
             contentMoved()
         }
     }

@@ -441,21 +441,26 @@ Rectangle {
                     }
                 }
 
-                Avatar {
+                Loader {
                     id: avatarImg
                     x: 8
                     y: 5
                     width: parent.width - 13
-                    userDid: postEntry.userDid
-                    author: postEntry.author
-                    showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
-                    visible: (!postIsPlaceHolder || postBlockedByUser) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
+                    active: true
+                    asynchronous: true
 
-                    onClicked: skywalker.getDetailedProfile(author.did)
+                    sourceComponent: Avatar {
+                        userDid: postEntry.userDid
+                        author: postEntry.author
+                        showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
+                        visible: (!postIsPlaceHolder || postBlockedByUser) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
-                    Accessible.role: Accessible.Button
-                    Accessible.name: qsTr(`show profile of ${author.name}`)
-                    Accessible.onPressAction: clicked()
+                        onClicked: skywalker.getDetailedProfile(author.did)
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr(`show profile of ${author.name}`)
+                        Accessible.onPressAction: clicked()
+                    }
                 }
 
                 // Mask to turn the threadbar into a dotted line
@@ -1031,15 +1036,15 @@ Rectangle {
         // Instead of using row spacing, these empty rectangles are used for white space.
         // This way we can color the background for threads.
         Item {
-            width: threadColumnWidth
+            width: parent.width // threadColumnWidth
             height: postEntry.margin
-            visible: threadBarVisible && !unrollThread
+            visible: !unrollThread
 
             Rectangle {
                 x: 8 + (avatarImg.width - width) / 2
                 width: threadStyle === QEnums.THREAD_STYLE_BAR ? avatarImg.width : guiSettings.threadLineWidth
                 height: parent.height
-                visible: !((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF))
+                visible: !((postType === QEnums.POST_LAST_REPLY) || (postThreadType & QEnums.THREAD_LEAF)) && threadBarVisible
 
                 color: {
                     switch (postType) {
