@@ -4360,16 +4360,7 @@ void Skywalker::updateUser(const QString& did, const QString& host)
 std::optional<ATProto::ComATProtoServer::Session> Skywalker::getSavedSession() const
 {
     const QString did = mUserSettings.getActiveUserDid();
-
-    if (did.isEmpty())
-        return {};
-
-    const auto session = mUserSettings.getSession(did);
-
-    if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
-        return {};
-
-    return session;
+    return mUserSettings.getSavedSession(did);
 }
 
 void Skywalker::saveSyncTimestamp(int postIndex, int offsetY)

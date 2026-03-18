@@ -641,6 +641,33 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
     return session;
 }
 
+std::optional<ATProto::ComATProtoServer::Session> UserSettings::getSavedSession(const QString& did) const
+{
+    if (did.isEmpty())
+    {
+        qWarning() << "Empty DID";
+        return {};
+    }
+
+    const auto session = getSession(did);
+
+    // The access token may have been invalidated before.
+    if (session.mRefreshJwt.isEmpty())
+    {
+        qDebug() << "No JWT:" << did;
+        return {};
+    }
+
+    return session;
+}
+
+void UserSettings::clearAccessToken(const QString& did)
+{
+    qDebug() << "Clear access token:" << did;
+    mSettings.remove(key(did, "access"));
+    sync();
+}
+
 void UserSettings::clearTokens(const QString& did)
 {
     qDebug() << "Clear tokens:" << did;

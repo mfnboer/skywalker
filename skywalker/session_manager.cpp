@@ -75,7 +75,7 @@ void SessionManager::insertSession(const QString& did, ATProto::Client* client)
 bool SessionManager::resumeAndRefreshSession(const QString& did)
 {
     qDebug() << "Resume and refresh session:" << did;
-    const auto session = getSavedSession(did);
+    const auto session = mUserSettings->getSavedSession(did);
 
     if (!session)
     {
@@ -138,9 +138,11 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
                 successCb();
         },
         [this, did, errorCb](const QString& error, const QString& msg){
-            qDebug() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
+            qWarning() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
 
-            if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_FAILED || error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
+            if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_TMP_FAILURE)
+                mUserSettings->clearAccessToken(did); // calls sync
+            else if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_TOKEN_INVALID)
                 mUserSettings->clearTokens(did); // calls sync
 
             deleteSession(did);
@@ -343,25 +345,6 @@ SessionManager::Session* SessionManager::getSession(const QString& did) const
     }
 
     return session.get();
-}
-
-std::optional<ATProto::ComATProtoServer::Session> SessionManager::getSavedSession(const QString& did) const
-{
-    if (did.isEmpty())
-    {
-        qWarning() << "Empty DID";
-        return {};
-    }
-
-    const auto session = mUserSettings->getSession(did);
-
-    if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
-    {
-        qDebug() << "No JWT:" << did;
-        return {};
-    }
-
-    return session;
 }
 
 void SessionManager::startRefreshTimers(const QString& did, int initialDelayCount)

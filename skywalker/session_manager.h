@@ -94,7 +94,6 @@ private:
     void addNonActiveUser(NonActiveUser* nonActiveUser);
     void addExpiredUser(const QString& did);
     Session* getSession(const QString& did) const;
-    std::optional<ATProto::ComATProtoServer::Session> getSavedSession(const QString& did) const;
     void startRefreshTimers(const QString& did, int initialDelayCount);
     void stopRefreshTimers(const QString& did);
     void startNotificationRefreshTimers(const QString& did, int initialDelayCount);

@@ -167,7 +167,9 @@ public:
 
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
+    std::optional<ATProto::ComATProtoServer::Session> getSavedSession(const QString& did) const;
 
+    void clearAccessToken(const QString& did);
     void clearTokens(const QString& did);
     void clearCredentials(const QString& did);
 
