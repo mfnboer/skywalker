@@ -24,7 +24,7 @@ Text {
         Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     Layout.maximumHeight: mustElideRich && wrapMode !== Text.NoWrap ?
         capLineCount * fontMetrics.height + topPadding + bottomPadding : -1
-    clip: capLineCount * fontMetrics.height < contentHeight
+    clip: textFormat == Text.RichText && capLineCount * fontMetrics.height < contentHeight
     font.pointSize: guiSettings.scaledFont(1)
     color: guiSettings.textColor
 

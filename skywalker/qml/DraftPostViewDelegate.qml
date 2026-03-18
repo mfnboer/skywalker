@@ -108,6 +108,7 @@ Rectangle {
                 postIsThread: false
                 postIsThreadReply: false
                 isDraft: true
+                moving: draftPostView.ListView.view.fastMoving
             }
 
             AccessibleText {

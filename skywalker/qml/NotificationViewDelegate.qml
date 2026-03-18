@@ -295,6 +295,7 @@ Rectangle {
                     postRecordWithMedia: notificationPostRecordWithMedia
                     postDateTime: notificationPostTimestamp
                     bodyBackgroundColor: notification.color
+                    moving: notification.ListView.view.fastMoving
                 }
 
                 Loader {
@@ -570,6 +571,7 @@ Rectangle {
                     postRecord: notificationReasonPostRecord
                     postRecordWithMedia: notificationReasonPostRecordWithMedia
                     bodyBackgroundColor: notification.color
+                    moving: notification.ListView.view.fastMoving
                     visible: showPostForAggregatableReason()
                 }
             }
