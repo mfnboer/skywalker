@@ -137,14 +137,10 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             if (successCb)
                 successCb();
         },
-        [this, did, errorCb](const QString& error, const QString& msg){
+        [this, did, errorCb](const QString& error, const QString& msg, const QString& accessJwt, const QString& refreshJwt){
             qWarning() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
 
-            if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_TMP_FAILURE)
-                mUserSettings->clearAccessToken(did); // calls sync
-            else if (error == ATProto::ATProtoErrorMsg::REFRESH_SESSION_TOKEN_INVALID)
-                mUserSettings->clearTokens(did); // calls sync
-
+            mUserSettings->saveTokens(did, accessJwt, refreshJwt); // calls sync
             deleteSession(did);
 
             if (errorCb)

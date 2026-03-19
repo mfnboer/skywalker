@@ -661,10 +661,11 @@ std::optional<ATProto::ComATProtoServer::Session> UserSettings::getSavedSession(
     return session;
 }
 
-void UserSettings::clearAccessToken(const QString& did)
+void UserSettings::saveTokens(const QString& did, const QString& accessJwt, const QString& refreshJwt)
 {
-    qDebug() << "Clear access token:" << did;
-    mSettings.remove(key(did, "access"));
+    qDebug() << "Set tokens:" << did;
+    mSettings.setValue(key(did, "access"), accessJwt);
+    mSettings.setValue(key(did, "refresh"), refreshJwt);
     sync();
 }
 
