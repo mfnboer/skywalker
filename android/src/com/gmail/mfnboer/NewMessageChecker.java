@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class NewMessageChecker extends Worker {
     private static final String LOGTAG = "NewMessageChecker";
     private static final String SETTINGS_FILE_NAME = "/settings/Skywalker/Skywalker.conf";
+    private static final int EXIT_RETRY = -1;
+    private static final int EXIT_FAILED = -2;
 
     static {
         try {
@@ -87,8 +89,10 @@ public class NewMessageChecker extends Worker {
         NewMessageNotifier.setContext(mContext);
         int exitCode = checkNewMessages(getSettingsFileName(), appInfo.nativeLibraryDir);
 
-        if (exitCode == -1)
+        if (exitCode == EXIT_RETRY)
             return Result.retry();
+        else if (exitCode == EXIT_FAILED)
+            return Result.failure();
 
         return Result.success();
     }

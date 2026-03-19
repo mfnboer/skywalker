@@ -26,7 +26,8 @@ constexpr char const* CHANNEL_ACTIVITY_SUBSCRIPTION = "CHANNEL_ACTIVIY_SUBSCRIPT
 
 constexpr int EXIT_OK = 0;
 constexpr int EXIT_RETRY = -1;
-constexpr int EXIT_NETWORK_FAILURE = -2;
+constexpr int EXIT_FAILED = -2;
+constexpr int EXIT_NETWORK_FAILURE = -10;
 }
 
 #if defined(Q_OS_ANDROID)
@@ -194,7 +195,7 @@ int OffLineMessageChecker::startEventLoop()
 
 void OffLineMessageChecker::exit(int exitCode)
 {
-    qDebug() << "Exit";
+    qDebug() << "Exit:" << exitCode;
 
     if (mBackgroundApp)
         mBackgroundApp->exit(exitCode);
@@ -322,19 +323,6 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 #endif
 }
 
-std::optional<ATProto::ComATProtoServer::Session> OffLineMessageChecker::getSession(const QString& did) const
-{
-    if (did.isEmpty())
-        return {};
-
-    const auto session = mUserSettings.getSession(did);
-
-    if (session.mAccessJwt.isEmpty() || session.mRefreshJwt.isEmpty())
-        return {};
-
-    return session;
-}
-
 void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     mUserSettings.saveSession(session);
@@ -343,7 +331,7 @@ void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session
 void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
 {
     qDebug() << "Resume session, retry:" << retry << "did:" << did;
-    const auto session = getSession(did);
+    const auto session = mUserSettings.getSavedSession(did);
 
     if (!session)
     {
@@ -372,7 +360,7 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
         [this, did, retry, session](const QString& error, const QString& msg){
             qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
-            if (!retry && error == ATProto::ATProtoErrorMsg::EXPIRED_TOKEN)
+            if (!retry && ATProto::ATProtoErrorMsg::isTokenFailure(error))
             {
                 mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
                 mBsky->refreshSession(
@@ -381,18 +369,36 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
                         saveSession(*mBsky->getSession());
                         resumeSession(did, true);
                     },
-                    [this](const QString& error, const QString& msg){
+                    [this, did, session](const QString& error, const QString& msg){
                         qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+
+                        if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+                        {
+                            mUserSettings.clearTokens(did);
+                            exit(EXIT_FAILED);
+                        }
+                        else
+                        {
+                            mUserSettings.saveTokens(did, "", session->mRefreshJwt);
+                        }
+
                         exit(EXIT_RETRY);
                     });
+            }
+            else if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+            {
+                mUserSettings.saveTokens(did, "", session->mRefreshJwt);
+                exit(EXIT_RETRY);
             }
             else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
             {
                 qWarning() << "PDS not found, network failure";
+                mUserSettings.saveTokens(did, session->mAccessJwt, session->mRefreshJwt);
                 exit(EXIT_NETWORK_FAILURE);
             }
             else
             {
+                mUserSettings.saveTokens(did, session->mAccessJwt, session->mRefreshJwt);
                 exit(EXIT_RETRY);
             }
         });
@@ -419,6 +425,13 @@ void OffLineMessageChecker::refreshSession()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Session could not be refreshed:" << error << " - " << msg;
+
+            if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+            {
+                mUserSettings.clearTokens(mBsky->getSessionDid());
+                exit(EXIT_FAILED);
+            }
+
             exit(EXIT_RETRY);
         });
 }
