@@ -392,7 +392,7 @@ QList<BasicProfile> UserSettings::getUserList() const
 QList<BasicProfile> UserSettings::getUserListWithAddAccount() const
 {
     auto userList = getUserList();
-    const BasicProfile addAccount("", "", tr("Add other acount"), "");
+    const BasicProfile addAccount("", "", tr("Add other account"), "");
     userList.append(addAccount);
     return userList;
 }

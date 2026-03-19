@@ -26,6 +26,7 @@ SkyPage {
         rowPadding: 13
         allowDelete: true
         model: userList
+        showHost: true
         onAuthorClicked: (profile) => { selectedUser(profile) }
         onDeleteClicked: (profile) => { deleteUser(profile) }
     }

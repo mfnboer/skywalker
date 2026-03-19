@@ -14,6 +14,7 @@ SkyDrawer {
         anchors.fill: parent
         rowPadding: 9
         model: userList
+        showHost: true
         onAuthorClicked: (profile) => { selectedUser(profile) }
 
         header: Rectangle {

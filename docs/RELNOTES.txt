@@ -1,6 +1,7 @@
 next
 ====
 * Performance improvements
+* Show hosting provider in your list of accounts
 * Fix "post not found" error when posting a thread 
 * Improve token failure handling (login)
 * Bug fixes

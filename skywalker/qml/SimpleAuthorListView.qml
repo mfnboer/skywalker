@@ -8,6 +8,9 @@ ListView {
     property string userDid
     property int rowPadding: 3
     property bool allowDelete: false
+    property bool showHost: false
+    property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSettings: skywalker.getUserSettings()
 
     signal authorClicked(basicprofile profile)
     signal deleteClicked(basicprofile profile)
@@ -85,7 +88,6 @@ ListView {
             }
 
             AccessibleText {
-                bottomPadding: rowPadding
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 elide: Text.ElideRight
@@ -96,7 +98,22 @@ ListView {
                 Accessible.ignored: true
             }
 
-            Item{}
+            Item {
+                visible: showHost && author.did
+            }
+
+            AccessibleText {
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                visible: showHost && author.did
+
+                text: author.did ? userSettings.getHost(author.did) : ""
+            }
+
+            Item {}
 
             Rectangle {
                 Layout.columnSpan: 2
