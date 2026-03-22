@@ -30,15 +30,6 @@ SkyDrawer {
                 color: guiSettings.textColor
                 text: qsTr("Switch Account")
             }
-
-            SvgPlainButton {
-                id: closeButton
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                svg: SvgOutline.close
-                accessibleName: qsTr("cancel switch user")
-                onClicked: drawer.close()
-            }
         }
         headerPositioning: ListView.OverlayHeader
     }

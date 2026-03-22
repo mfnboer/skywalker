@@ -1013,50 +1013,42 @@ ApplicationWindow {
 
         id: repostDrawer
         width: parent.width
+        contentHeight: menuColumn.height
         edge: Qt.BottomEdge
-        bottomPadding: guiSettings.footerMargin
 
         Column {
             id: menuColumn
-            width: parent.width
+            x: 10
+            width: parent.width - 20
+            spacing: 10
 
-            Item {
+            SkyMenuButton {
                 width: parent.width
-                height: closeButton.height
+                svg: SvgOutline.repost
+                text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
 
-                SvgButton {
-                    id: closeButton
-                    anchors.right: parent.right
-                    svg: SvgOutline.close
-                    accessibleName: qsTr("cancel repost")
-                    onClicked: repostDrawer.close()
-                }
+                onClicked: {
+                    const pu = getPostUtils(repostDrawer.repostByDid)
 
-                SkyButton {
-                    id: repostButton
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
-                    onClicked: {
-                        const pu = getPostUtils(repostDrawer.repostByDid)
-
-                        if (repostDrawer.repostedAlreadyUri) {
-                            pu.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostUri,
-                                          repostDrawer.repostCid, repostDrawer.repostFeedDid)
-                        } else {
-                            pu.repost(repostDrawer.repostUri, repostDrawer.repostCid,
-                                      repostDrawer.repostViaUri, repostDrawer.repostViaCid,
-                                      repostDrawer.repostFeedDid, repostDrawer.repostFeedContext)
-                        }
-
-                        repostDrawer.close()
+                    if (repostDrawer.repostedAlreadyUri) {
+                        pu.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostUri,
+                                      repostDrawer.repostCid, repostDrawer.repostFeedDid)
+                    } else {
+                        pu.repost(repostDrawer.repostUri, repostDrawer.repostCid,
+                                  repostDrawer.repostViaUri, repostDrawer.repostViaCid,
+                                  repostDrawer.repostFeedDid, repostDrawer.repostFeedContext)
                     }
+
+                    repostDrawer.close()
                 }
             }
-            SkyButton {
-                id: quotePostButton
-                anchors.horizontalCenter: parent.horizontalCenter
+
+            SkyMenuButton {
+                width: parent.width
+                svg: SvgOutline.quote
                 text: qsTr("Quote post")
                 enabled: !repostDrawer.repostEmbeddingDisabled
+
                 onClicked: {
                     // No need to check if post still exist. Already checked before
                     // opening this drawer
@@ -1069,9 +1061,9 @@ ApplicationWindow {
                 }
             }
 
-            SkyButton {
-                id: copyQuotePostButton
-                anchors.horizontalCenter: parent.horizontalCenter
+            SkyMenuButton {
+                width: parent.width
+                svg: SvgOutline.copy
                 text: qsTr("Copy & quote post")
                 enabled: !repostDrawer.repostEmbeddingDisabled
                 onClicked: {
@@ -1086,12 +1078,13 @@ ApplicationWindow {
                 }
             }
 
-            SkyButton {
-                id: quoteInMessageButton
-                anchors.horizontalCenter: parent.horizontalCenter
+            SkyMenuButton {
+                width: parent.width
+                svg: SvgOutline.chat
                 text: qsTr("Quote in direct message")
                 enabled: !repostDrawer.repostEmbeddingDisabled
                 visible: isActiveUser(repostDrawer.repostByDid)
+
                 onClicked: {
                     const link = linkUtils.toHttpsLink(repostDrawer.repostUri)
                     startConvo(link)

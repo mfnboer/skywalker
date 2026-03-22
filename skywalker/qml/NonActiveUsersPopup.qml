@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Popup {
+SkyPopup {
     required property int mouseY // in parent coordinates
     required property string postUri
     required property int action // QEnums::NonActiveUserAction
@@ -60,23 +60,12 @@ Popup {
             AccessibleText {
                 anchors.left: parent.left
                 anchors.leftMargin: 10
-                anchors.right: closeButton.left
+                anchors.right: parent.right
                 anchors.rightMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
                 font.bold: true
                 elide: Text.ElideRight
                 text: getTitle()
-            }
-
-            SvgButton {
-                id: closeButton
-                anchors.rightMargin: 5
-                anchors.right: parent.right
-                width: height
-                height: parent.height
-                svg: SvgOutline.close
-                accessibleName: qsTr("close")
-                onClicked: popup.close()
             }
         }
     }

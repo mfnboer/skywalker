@@ -156,91 +156,99 @@ Item {
                 menuWidth: 240
                 onAboutToHide: parent.active = false
 
-                CloseMenuItem {
-                    text: qsTr("<b>Post</b>")
-                    Accessible.name: qsTr("close options menu")
-                }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Translate")
                     svg: SvgOutline.googleTranslate
-                    onTriggered: translatePost()
+                    popup: moreMenu
+                    onClicked: translatePost()
                 }
-
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Copy post text")
                     svg: SvgOutline.copy
-                    onTriggered: copyPostText()
+                    popup: moreMenu
+                    onClicked: copyPostText()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Share")
                     svg: SvgOutline.share
-                    onTriggered: share()
+                    popup: moreMenu
+                    onClicked: share()
                 }
-                AccessibleMenuItem {
-                    textColor: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
+                SkyMenuButton {
+                    color: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
                     text: qsTr("Show more like this")
                     svg: feedback === QEnums.FEEDBACK_MORE_LIKE_THIS ? SvgFilled.thumbUp : SvgOutline.thumbUp
+                    popup: moreMenu
                     visible: feedAcceptsInteractions
-                    onTriggered: emitShowMoreLikeThis()
+                    onClicked: emitShowMoreLikeThis()
                 }
-                AccessibleMenuItem {
-                    textColor: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
+                SkyMenuButton {
+                    color: feedback === QEnums.FEEDBACK_NONE ? guiSettings.textColor : guiSettings.disabledColor
                     text: qsTr("Show less like this")
                     svg: feedback === QEnums.FEEDBACK_LESS_LIKE_THIS ? SvgFilled.thumbDown : SvgOutline.thumbDown
+                    popup: moreMenu
                     visible: feedAcceptsInteractions
-                    onTriggered: emitShowLessLikeThis()
+                    onClicked: emitShowLessLikeThis()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("View thread")
                     svg: SvgOutline.chat
+                    popup: moreMenu
                     visible: showViewThread
-                    onTriggered: viewThread()
+                    onClicked: viewThread()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Unroll thread")
                     svg: SvgOutline.thread
+                    popup: moreMenu
                     visible: isThread && !isUnrolledThread
-                    onTriggered: unrollThread()
+                    onClicked: unrollThread()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Unwrap quote chain")
                     svg: SvgFilled.quote
+                    popup: moreMenu
                     visible: isQuotePost
-                    onTriggered: quoteChain()
+                    onClicked: quoteChain()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: threadMuted ? qsTr("Unmute thread") : qsTr("Mute thread")
                     svg: threadMuted ? SvgOutline.notifications : SvgOutline.notificationsOff
+                    popup: moreMenu
                     visible: !isReply || replyRootUri
-                    onTriggered: muteThread()
+                    onClicked: muteThread()
                 }
 
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: isHiddenReply ? qsTr("Unhide reply") : qsTr("Hide reply")
                     svg: isHiddenReply ? SvgOutline.visibility : SvgOutline.hideVisibility
+                    popup: moreMenu
                     visible: isReply && !authorIsUser && isThreadFromUser()
-                    onTriggered: hideReply()
+                    onClicked: hideReply()
                 }
 
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Restrictions")
                     svg: replyRestriction !== QEnums.REPLY_RESTRICTION_NONE ? SvgOutline.replyRestrictions : SvgOutline.noReplyRestrictions
+                    popup: moreMenu
                     visible: authorIsUser
-                    onTriggered: threadgate()
+                    onClicked: threadgate()
                 }
 
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: recordIsDetached() ? qsTr("Re-attach quote") : qsTr("Detach quote")
                     svg: recordIsDetached() ? SvgOutline.attach : SvgOutline.detach
+                    popup: moreMenu
                     visible: hasOwnRecord()
-                    onTriggered: detachQuote(getRecordPostUri(), !recordIsDetached())
+                    onClicked: detachQuote(getRecordPostUri(), !recordIsDetached())
                 }
 
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: viewerStatePinned ? qsTr("Unpin from profile") : qsTr("Pin to profile")
                     svg: viewerStatePinned ? SvgFilled.unpin : SvgFilled.pin
+                    popup: moreMenu
                     visible: authorIsUser && !isUnrolledThread
-                    onTriggered: {
+                    onClicked: {
                         if (viewerStatePinned)
                             unpin()
                         else
@@ -249,34 +257,39 @@ Item {
                 }
 
                 // Only allow the active user to edit posts to avoid too much complexity
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Edit")
                     svg: SvgOutline.edit
+                    popup: moreMenu
                     visible: authorIsUser && !isUnrolledThread && root.isActiveUser(skywalker.getUserDid())
-                    onTriggered: editPost()
+                    onClicked: editPost()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Delete")
                     svg: SvgOutline.delete
+                    popup: moreMenu
                     visible: authorIsUser && !isUnrolledThread
-                    onTriggered: deletePost()
+                    onClicked: deletePost()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Report post")
                     svg: SvgOutline.report
+                    popup: moreMenu
                     visible: !authorIsUser && !isUnrolledThread
-                    onTriggered: reportPost()
+                    onClicked: reportPost()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Block author")
                     svg: SvgOutline.block
+                    popup: moreMenu
                     visible: !authorIsUser
-                    onTriggered: blockAuthor()
+                    onClicked: blockAuthor()
                 }
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Emoji names")
                     svg: SvgOutline.emojiLanguage
-                    onTriggered: showEmojiNames()
+                    popup: moreMenu
+                    onClicked: showEmojiNames()
                 }
             }
         }

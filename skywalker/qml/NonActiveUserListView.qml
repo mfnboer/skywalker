@@ -24,6 +24,7 @@ ListView {
     Accessible.role: Accessible.List
 
     delegate: Rectangle {
+        required property int index
         required property NonActiveUser modelData
         property alias user: userEntry.modelData
 
@@ -234,6 +235,7 @@ ListView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: guiSettings.separatorColor
+                visible: userEntry.index < listView.count - 1
             }
         }
         SkyMouseArea {
