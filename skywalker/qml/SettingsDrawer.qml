@@ -115,8 +115,6 @@ SkyDrawer {
 
                 SkyMenu {
                     id: moderationMenu
-                    onAboutToShow: enableSettingsPopupShield(true)
-                    onAboutToHide: enableSettingsPopupShield(false)
 
                     CloseMenuItem {
                         text: qsTr("<b>Moderation</b>")
@@ -264,29 +262,5 @@ SkyDrawer {
                 }
             }
         }
-
-        SvgButton {
-            id: closeButton
-            anchors.right: userColumn.right
-            anchors.top: userColumn.top
-            svg: SvgOutline.close
-            accessibleName: qsTr("close menu")
-            onClicked: drawer.close()
-        }
-    }
-
-    Rectangle {
-        id: settingsPopupShield
-        anchors.fill: parent
-        color: "black"
-        opacity: 0.2
-        visible: false
-
-        Accessible.role: Accessible.Window
-    }
-
-
-    function enableSettingsPopupShield(enable) {
-        settingsPopupShield.visible = enable
     }
 }

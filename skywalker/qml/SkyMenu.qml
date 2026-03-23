@@ -23,8 +23,5 @@ Menu {
 
     onAboutToShow: {
         background.color = guiSettings.menuColor
-        //root.enablePopupShield(true)
     }
-
-    // onAboutToHide: root.enablePopupShield(false)
 }

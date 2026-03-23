@@ -15,12 +15,33 @@ Drawer {
     onAboutToHide: root.enablePopupShield(false)
 
     Rectangle {
-        y: -10 - height / 2
+        y: -topPadding / 2 - height / 2
         anchors.horizontalCenter: parent.horizontalCenter
         width: 40
         height: 4
         radius: height / 2
         color: guiSettings.buttonColor
         visible: edge == Qt.BottomEdge
+    }
+
+    Rectangle {
+        x: -leftPadding / 2 - width / 2
+        anchors.verticalCenter: parent.verticalCenter
+        width: 4
+        height: 40
+        radius: width / 2
+        color: guiSettings.buttonColor
+        visible: edge == Qt.RightEdge
+    }
+
+    Rectangle {
+        anchors.right: parent.right
+        anchors.rightMargin: -rightPadding / 2 - width / 2
+        anchors.verticalCenter: parent.verticalCenter
+        width: 4
+        height: 40
+        radius: width / 2
+        color: guiSettings.buttonColor
+        visible: edge == Qt.LeftEdge
     }
 }
