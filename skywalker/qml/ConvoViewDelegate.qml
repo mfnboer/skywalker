@@ -212,25 +212,24 @@ Rectangle {
                     SkyMenu {
                         id: moreMenu
 
-                        CloseMenuItem {
-                            text: qsTr("<b>Conversation</b>")
-                            Accessible.name: qsTr("close conversations menu")
-                        }
-                        AccessibleMenuItem {
+                        SkyMenuButton {
                             text: qsTr("Delete")
                             svg: SvgOutline.delete
-                            onTriggered: deleteConvo(convo)
+                            popup: moreMenu
+                            onClicked: deleteConvo(convo)
                         }
-                        AccessibleMenuItem {
+                        SkyMenuButton {
                             text: convo.muted ? qsTr("Unmute") : qsTr("Mute")
                             svg: convo.muted ? SvgOutline.notifications : SvgOutline.notificationsOff
-                            onTriggered: convo.muted ? unmuteConvo(convo) : muteConvo(convo)
+                            popup: moreMenu
+                            onClicked: convo.muted ? unmuteConvo(convo) : muteConvo(convo)
                         }
-                        AccessibleMenuItem {
+                        SkyMenuButton {
                             text: firstMember.viewer.blocking ? qsTr("Unblock account") : qsTr("Block account")
                             svg: firstMember.viewer.blocking ? SvgOutline.unblock : SvgOutline.block
+                            popup: moreMenu
                             visible: !root.isActiveUser(firstMember.did)
-                            onTriggered: {
+                            onClicked: {
                                 if (firstMember.viewer.blocking)
                                     unblockAuthor(firstMember)
                                 else

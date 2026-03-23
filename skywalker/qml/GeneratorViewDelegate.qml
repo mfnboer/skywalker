@@ -237,31 +237,31 @@ Rectangle {
                 SkyMenu {
                     id: moreMenu
 
-                    CloseMenuItem {
-                        text: qsTr("<b>Feed</b>")
-                        Accessible.name: qsTr("close more options menu")
-                    }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Translate")
                         svg: SvgOutline.googleTranslate
+                        popup: moreMenu
                         enabled: feed.description
-                        onTriggered: root.translateText(feed.description)
+                        onClicked: root.translateText(feed.description)
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Share")
                         svg: SvgOutline.share
-                        onTriggered: skywalker.shareFeed(feed)
+                        popup: moreMenu
+                        onClicked: skywalker.shareFeed(feed)
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Report feed")
                         svg: SvgOutline.report
-                        onTriggered: root.reportFeed(feed, userDid)
+                        popup: moreMenu
+                        onClicked: root.reportFeed(feed, userDid)
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Emoji names")
                         svg: SvgOutline.emojiLanguage
+                        popup: moreMenu
                         visible: UnicodeFonts.hasEmoji(feed.description)
-                        onTriggered: root.showEmojiNamesList(feed.description)
+                        onClicked: root.showEmojiNamesList(feed.description)
                     }
                     AccessibleMenuItem {
                         text: qsTr("Show following")

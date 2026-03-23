@@ -141,23 +141,26 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Save picture")
                 svg: SvgOutline.save
-                onTriggered: page.saveImage(images[view.currentIndex].fullSizeUrl)
+                popup: moreMenu
+                onClicked: page.saveImage(images[view.currentIndex].fullSizeUrl)
             }
 
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Share picture")
                 svg: SvgOutline.share
-                onTriggered: page.shareImage(images[view.currentIndex].fullSizeUrl)
+                popup: moreMenu
+                onClicked: page.shareImage(images[view.currentIndex].fullSizeUrl)
             }
 
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Translate")
                 svg: SvgOutline.googleTranslate
+                popup: moreMenu
                 enabled: images[view.currentIndex].alt
-                onTriggered: root.translateText(images[view.currentIndex].alt)
+                onClicked: root.translateText(images[view.currentIndex].alt)
             }
         }
     }

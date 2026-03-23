@@ -143,30 +143,30 @@ Rectangle {
             id: moreMenu
             modal: false
 
-            CloseMenuItem {
-                text: qsTr("<b>Message</b>")
-                Accessible.name: qsTr("close messages menu")
-            }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Translate")
                 svg: SvgOutline.googleTranslate
-                onTriggered: root.translateText(message.text)
+                popup: moreMenu
+                onClicked: root.translateText(message.text)
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Copy message")
                 svg: SvgOutline.copy
-                onTriggered: skywalker.copyToClipboard(message.text)
+                popup: moreMenu
+                onClicked: skywalker.copyToClipboard(message.text)
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Delete")
                 svg: SvgOutline.delete
-                onTriggered: deleteMessage(message.id)
+                popup: moreMenu
+                onClicked: deleteMessage(message.id)
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Report message")
                 svg: SvgOutline.report
+                popup: moreMenu
                 visible: !senderIsUser
-                onTriggered: reportMessage(message)
+                onClicked: reportMessage(message)
             }
         }
 

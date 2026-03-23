@@ -170,7 +170,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SelectSignInUser.qml
         QML_FILES qml/SwitchUserDrawer.qml
         QML_FILES qml/AltTextEditor.qml
-        QML_FILES
         QML_FILES qml/Bookmarks.qml
         QML_FILES qml/About.qml
         QML_FILES qml/StartupStatus.qml
@@ -185,7 +184,6 @@ qt_add_qml_module(libskywalker
         SOURCES report_utils.cpp
         QML_FILES qml/SkyTextEdit.qml
         QML_FILES qml/SimpleButtonHeader.qml
-        QML_FILES
         SOURCES muted_words.h
         SOURCES muted_words.cpp
         QML_FILES qml/MutedWords.qml
@@ -211,7 +209,6 @@ qt_add_qml_module(libskywalker
         SOURCES generator_view.h
         SOURCES generator_view.cpp
         SOURCES feed_list_model.cpp
-        QML_FILES
         QML_FILES qml/GeneratorViewDelegate.qml
         QML_FILES qml/PostFeedView.qml
         QML_FILES qml/FeedAvatar.qml
@@ -272,10 +269,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/AccessibilityUtils.qml
         QML_FILES qml/AccessibleMenuItem.qml
         QML_FILES qml/AccessibleTabButton.qml
-        QML_FILES qml/CloseMenuItem.qml
         QML_FILES qml/AccessibleCheckBox.qml
         QML_FILES qml/AccessibleText.qml
-        QML_FILES
         SOURCES emoji_fix_highlighter.h
         SOURCES emoji_fix_highlighter.cpp
         QML_FILES qml/SkyCleanedText.qml
@@ -380,7 +375,6 @@ qt_add_qml_module(libskywalker
         SOURCES meme_maker.cpp
         QML_FILES qml/MemeEditor.qml
         QML_FILES qml/GifView.qml
-        QML_FILES qml/MenuWithInfoItem.qml
         QML_FILES qml/BlinkingOpacity.qml
         QML_FILES qml/QuoteStarterPack.qml
         QML_FILES qml/StatQuotes.qml
@@ -411,7 +405,6 @@ qt_add_qml_module(libskywalker
         SOURCES gif_to_video_converter.h
         SOURCES gif_to_video_converter.cpp
         QML_FILES qml/ProgressDialog.qml
-        QML_FILES
         QML_FILES qml/SkyCleanedTextLine.qml
         QML_FILES qml/SkyFooterButton.qml
         SOURCES post_filter.h
@@ -537,8 +530,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/AuthorViewerState.qml
         QML_FILES qml/LiveLabel.qml
         QML_FILES qml/ThumbImageFixedSizeView.qml
-        QML_FILES
-        QML_FILES
         QML_FILES qml/NotificationTypeSetting.qml
         QML_FILES qml/NotificationIncludeSetting.qml
         SOURCES edit_notification_preferences.h
@@ -586,7 +577,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/MainFeedUtils.qml
         QML_FILES qml/MainLinkUtils.qml
         QML_FILES qml/AdvancedSettingsForm.qml
-        QML_FILES
         SOURCES post_edit_utils.h
         SOURCES post_edit_utils.cpp
         SOURCES interaction_sender.h
@@ -610,7 +600,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyTreeView.qml
         QML_FILES qml/SkySplitView.qml
         QML_FILES qml/SkyDrawer.qml
-        QML_FILES
         QML_FILES qml/SelectList.qml
         QML_FILES qml/SkyTabListButton.qml
         SOURCES report_category.h
@@ -621,7 +610,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ListHeader.qml
         QML_FILES qml/RecordPostBody.qml
         QML_FILES qml/PhotoCamera.qml
-        SOURCES
         SOURCES camera_utils.h
         SOURCES camera_utils.cpp
         QML_FILES qml/SwipeHandler.qml
@@ -638,7 +626,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyWebLinkInput.qml
         QML_FILES qml/LiveCardView.qml
         QML_FILES qml/SkyTumbler.qml
-        QML_FILES qml/PostsOrderMenu.qml
         QML_FILES qml/FeedViewLoadMore.qml
         QML_FILES qml/PostListView.qml
         QML_FILES qml/FeedOptionsMenu.qml
@@ -660,7 +647,6 @@ qt_add_qml_module(libskywalker
         SOURCES account_utils.h
         SOURCES account_utils.cpp
         QML_FILES qml/TokenDialog.qml
-        QML_FILES
         QML_FILES qml/TokenPasswordDialog.qml
         QML_FILES qml/SkyTransparentButton.qml
         QML_FILES qml/ForgotPasswordDialog.qml

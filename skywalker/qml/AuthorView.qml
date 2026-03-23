@@ -268,24 +268,23 @@ SkyPage {
                             id: moreMenu
                             onAboutToHide: parent.active = false
 
-                            CloseMenuItem {
-                                text: qsTr("<b>Account</b>")
-                                Accessible.name: qsTr("close more options menu")
-                            }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Translate")
                                 svg: SvgOutline.googleTranslate
+                                popup: moreMenu
                                 visible: authorDescription || authorPronouns
-                                onTriggered: root.translateText(authorPronouns ? authorPronouns + "\n" + authorDescription : authorDescription)
+                                onClicked: root.translateText(authorPronouns ? authorPronouns + "\n" + authorDescription : authorDescription)
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Share")
                                 svg: SvgOutline.share
-                                onTriggered: skywalker.shareAuthor(author)
+                                popup: moreMenu
+                                onClicked: skywalker.shareAuthor(author)
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: following ? qsTr("Unfollow") : qsTr("Follow")
                                 svg: following ? SvgOutline.noUsers : SvgOutline.addUser
+                                popup: moreMenu
                                 visible: isLabeler && !page.isUser(author) && contentVisible()
                                 onClicked: {
                                     if (following)
@@ -294,16 +293,18 @@ SkyPage {
                                         graphUtils.follow(author)
                                 }
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Search")
                                 svg: SvgOutline.search
-                                onTriggered: root.viewSearchView("", author.handle)
+                                popup: moreMenu
+                                onClicked: root.viewSearchView("", author.handle)
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: authorMuted ? qsTr("Unmute account") : qsTr("Mute account")
                                 svg: authorMuted ? SvgOutline.unmute : SvgOutline.mute
+                                popup: moreMenu
                                 visible: !page.isUser(author) && author.viewer.mutedByList.isNull()
-                                onTriggered: {
+                                onClicked: {
                                     if (authorMuted) {
                                         graphUtils.unmute(author.did)
                                     }
@@ -314,11 +315,12 @@ SkyPage {
                                     }
                                 }
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: blocking ? qsTr("Unblock account") : qsTr("Block account")
                                 svg: blocking ? SvgOutline.unblock : SvgOutline.block
+                                popup: moreMenu
                                 visible: !page.isUser(author) && author.viewer.blockingByList.isNull()
-                                onTriggered: {
+                                onClicked: {
                                     if (blocking) {
                                         graphUtils.unblock(author.did, blocking)
                                     }
@@ -329,11 +331,12 @@ SkyPage {
                                     }
                                 }
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
                                svg: SvgOutline.repost
+                               popup: moreMenu
                                visible: !page.isUser(author)
-                               onTriggered: {
+                               onClicked: {
                                    if (authorMutedReposts)
                                        graphUtils.unmuteReposts(author.did)
                                    else
@@ -341,28 +344,32 @@ SkyPage {
                                }
                             }
 
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Update lists")
                                 svg: SvgOutline.list
-                                onTriggered: updateLists()
+                                popup: moreMenu
+                                onClicked: updateLists()
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Report account")
                                 svg: SvgOutline.report
+                                popup: moreMenu
                                 visible: !page.isUser(author)
-                                onTriggered: root.reportAuthor(author, userDid)
+                                onClicked: root.reportAuthor(author, userDid)
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Emoji names")
                                 svg: SvgOutline.emojiLanguage
+                                popup: moreMenu
                                 visible: UnicodeFonts.hasEmoji(authorDescription)
-                                onTriggered: root.showEmojiNamesList(authorDescription)
+                                onClicked: root.showEmojiNamesList(authorDescription)
                             }
-                            AccessibleMenuItem {
+                            SkyMenuButton {
                                 text: qsTr("Go live")
                                 svg: SvgOutline.wifi
+                                popup: moreMenu
                                 visible: page.isUser(author)
-                                onTriggered: profileUtils.retrieveStatus()
+                                onClicked: profileUtils.retrieveStatus()
                             }
                         }
                     }

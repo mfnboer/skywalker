@@ -116,44 +116,47 @@ SkyDrawer {
                 SkyMenu {
                     id: moderationMenu
 
-                    CloseMenuItem {
-                        text: qsTr("<b>Moderation</b>")
-                        Accessible.name: qsTr("close moderation menu")
-                    }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Content Filtering")
                         svg: SvgOutline.visibility
-                        onTriggered: contentFiltering()
+                        popup: moderationMenu
+                        onClicked: contentFiltering()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Blocked Accounts")
                         svg: SvgOutline.block
-                        onTriggered: blockedAccounts()
+                        popup: moderationMenu
+                        onClicked: blockedAccounts()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Muted Accounts")
                         svg: SvgOutline.mute
-                        onTriggered: mutedAccounts()
+                        popup: moderationMenu
+                        onClicked: mutedAccounts()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Muted Reposts")
                         svg: SvgOutline.repost
-                        onTriggered: mutedReposts()
+                        popup: moderationMenu
+                        onClicked: mutedReposts()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Moderation Lists")
                         svg: SvgOutline.list
-                        onTriggered: modLists()
+                        popup: moderationMenu
+                        onClicked: modLists()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Muted Words")
                         svg: SvgOutline.mutedWords
-                        onTriggered: mutedWords()
+                        popup: moderationMenu
+                        onClicked: mutedWords()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Focus Hashtags")
-                        svg: SvgOutline.hashtag
-                        onTriggered: focusHashtags()
+                        svg: SvgOutline.focusHashtag
+                        popup: moderationMenu
+                        onClicked: focusHashtags()
                     }
                 }
             }
@@ -187,19 +190,17 @@ SkyDrawer {
                 SkyMenu {
                     id: accountsMenu
 
-                    CloseMenuItem {
-                        text: qsTr("<b>Accounts</b>")
-                        Accessible.name: qsTr("close accounts menu")
-                    }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         svg: SvgOutline.group
                         text: qsTr("Switch Account")
-                        onTriggered: switchAccount()
+                        popup: accountsMenu
+                        onClicked: switchAccount()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         svg: SvgOutline.signOut
                         text: qsTr("Sign Out")
-                        onTriggered: signOut()
+                        popup: accountsMenu
+                        onClicked: signOut()
                     }
                 }
             }
@@ -213,24 +214,23 @@ SkyDrawer {
                 SkyMenu {
                     id: backupMenu
 
-                    CloseMenuItem {
-                        text: qsTr("<b>Backup</b>")
-                        Accessible.name: qsTr("close backup menu")
-                    }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Backup settings")
                         svg: SvgOutline.upload
-                        onTriggered: backup()
+                        popup: backupMenu
+                        onClicked: backup()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Restore settings")
                         svg: SvgOutline.download
-                        onTriggered: restore()
+                        popup: backupMenu
+                        onClicked: restore()
                     }
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Help")
                         svg: SvgOutline.help
-                        onTriggered: backupHelp()
+                        popup: backupMenu
+                        onClicked: backupHelp()
                     }
                 }
             }

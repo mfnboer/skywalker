@@ -4,7 +4,7 @@ import skywalker
 SkyPage {
     property var skywalker: root.getSkywalker()
     readonly property string sideBarTitle: qsTr("Add focus hashtag view")
-    readonly property SvgImage sideBarSvg: SvgOutline.hashtag
+    readonly property SvgImage sideBarSvg: SvgOutline.focusHashtag
 
     signal closed
     signal selected(var focusHashtag)
@@ -69,7 +69,7 @@ SkyPage {
         EmptyListIndication {
             id: emptyListIndication
             y: parent.headerItem ? parent.headerItem.height : 0
-            svg: SvgOutline.hashtag
+            svg: SvgOutline.focusHashtag
             text: qsTr("You have no focus hashtags. Create them in Settings > Moderation")
             list: focusHashtagView
         }

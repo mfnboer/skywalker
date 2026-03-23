@@ -1,10 +1,11 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 SkyMenu {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
-    property UserSettings userSetting: skywalker.getUserSettings()
+    property UserSettings userSettings: skywalker.getUserSettings()
     required property var postFeedModel
     required property var feed
     property bool feedHideFollowing: false
@@ -17,22 +18,19 @@ SkyMenu {
     id: feedOptionsMenu
     menuWidth: 270
 
-    CloseMenuItem {
-        text: qsTr(`<b>${feed.name}</b>`)
-        Accessible.name: qsTr("close more options menu")
-    }
-
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: postFeedModel.feedType === QEnums.FEED_GENERATOR ? qsTr("Feed profile") : qsTr("Search")
         svg: postFeedModel.feedType === QEnums.FEED_GENERATOR ? SvgOutline.feed : SvgOutline.search
-        onTriggered: showFeed()
+        popup: feedOptionsMenu
+        onClicked: showFeed()
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Remove favorite")
         svg: SvgFilled.star
         svgColor: guiSettings.favoriteColor
-        onTriggered: {
+        popup: feedOptionsMenu
+        onClicked: {
             if (postFeedModel.feedType === QEnums.FEED_GENERATOR)
                 skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
             else
@@ -42,24 +40,47 @@ SkyMenu {
         }
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Share")
         svg: SvgOutline.share
+        popup: feedOptionsMenu
         visible: postFeedModel.feedType === QEnums.FEED_GENERATOR
-        onTriggered: skywalker.shareFeed(feedOptionsMenu.feed)
+        onClicked: skywalker.shareFeed(feedOptionsMenu.feed)
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Filtered posts")
         svg: SvgOutline.hideVisibility
-        onTriggered: root.viewContentFilterStats(postFeedModel)
+        popup: feedOptionsMenu
+        onClicked: root.viewContentFilterStats(postFeedModel)
     }
 
-    PostsOrderMenu {
-        reverseFeed: model.reverseFeed
-        globalFeedOrder: userSettings.globalFeedOrder
-        onNewReverseFeed: (reverse) => feedOptionsMenu.newReverseFeed(reverse)
+    MenuSeparator {}
+
+    AccessibleText {
+        width: parent.width
+        leftPadding: 10
+        rightPadding: 10
+        elide: Text.ElideRight
+        font.bold: true
+        text: qsTr("Posts order")
     }
+
+    SkyRadioMenuItem {
+        text: qsTr("New to old")
+        checked: !model.reverseFeed
+        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
+        onTriggered: newReverseFeed(false)
+    }
+
+    SkyRadioMenuItem {
+        text: qsTr("Old to new")
+        checked: model.reverseFeed
+        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
+        onTriggered: newReverseFeed(true)
+    }
+
+    MenuSeparator {}
 
     AccessibleMenuItem {
         text: qsTr("Show following")
@@ -94,7 +115,7 @@ SkyMenu {
 
     function show() {
         if (postFeedModel.feedType === QEnums.FEED_GENERATOR) {
-            feedHideFollowing = skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
+            feedHideFollowing = userSettings.getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
             feedSync = userSettings.mustSyncFeed(skywalker.getUserDid(), feed.uri)
         } else {
             feedSync = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), feed.searchQuery)

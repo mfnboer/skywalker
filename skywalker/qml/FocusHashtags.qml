@@ -8,7 +8,7 @@ ListView {
     property Skywalker skywalker: root.getSkywalker()
     readonly property string sideBarTitle: qsTr("Focus hashtags")
     readonly property string sideBarSubTitle: `${view.count} / ${skywalker.focusHashtags.maxSize}`
-    readonly property SvgImage sideBarSvg: SvgOutline.hashtag
+    readonly property SvgImage sideBarSvg: SvgOutline.focusHashtag
 
     signal closed
 
@@ -86,19 +86,17 @@ ListView {
 
                         id: hashtagMenu
 
-                        CloseMenuItem {
-                            text: qsTr(`<b>${hashtagMenu.selectedTag}</b>`)
-                            Accessible.name: qsTr("close menu")
-                        }
-                        AccessibleMenuItem {
+                        SkyMenuButton {
                             text: qsTr("Edit")
                             svg: SvgOutline.edit
-                            onTriggered: editHashtagInEntry(modelData, hashtagMenu.selectedTag)
+                            popup: hashtagMenu
+                            onClicked: editHashtagInEntry(modelData, hashtagMenu.selectedTag)
                         }
-                        AccessibleMenuItem {
+                        SkyMenuButton {
                             text: qsTr("Delete")
                             svg: SvgOutline.delete
-                            onTriggered: removeHashtagFromEntry(modelData, hashtagMenu.selectedTag)
+                            popup: hashtagMenu
+                            onClicked: removeHashtagFromEntry(modelData, hashtagMenu.selectedTag)
                         }
                     }
                 }
@@ -151,7 +149,7 @@ ListView {
 
     EmptyListIndication {
         y: parent.headerItem ? parent.headerItem.height : 0
-        svg: SvgOutline.hashtag
+        svg: SvgOutline.focusHashtag
         text: qsTr("No focus hashtags")
         list: view
     }

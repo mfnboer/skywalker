@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import skywalker
 
 SkyMenu {
@@ -18,22 +19,19 @@ SkyMenu {
     id: listFeedOptionsMenu
     menuWidth: 270
 
-    CloseMenuItem {
-        text: qsTr("<b>List</b>")
-        Accessible.name: qsTr("close more options menu")
-    }
-
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("List profile")
         svg: SvgOutline.list
-        onTriggered: showFeed()
+        popup: listFeedOptionsMenu
+        onClicked: showFeed()
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Remove favorite")
         svg: SvgFilled.star
         svgColor: guiSettings.favoriteColor
-        onTriggered: {
+        popup: listFeedOptionsMenu
+        onClicked: {
             const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
 
             if (favorite.isNull()) {
@@ -50,12 +48,13 @@ SkyMenu {
         }
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         id: hideListMenuItem
         visible: listFeedOptionsMenu.list?.purpose === QEnums.LIST_PURPOSE_CURATE && listFeedOptionsMenu.isOwnList()
         text: listFeedOptionsMenu.listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
         svg: listFeedOptionsMenu.listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
-        onTriggered: {
+        popup: listFeedOptionsMenu
+        onClicked: {
             const gu = root.getGraphUtils(userDid)
 
             if (listFeedOptionsMenu.listHideFromTimeline) {
@@ -68,10 +67,11 @@ SkyMenu {
         }
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Share")
         svg: SvgOutline.share
-        onTriggered: {
+        popup: listFeedOptionsMenu
+        onClicked: {
             const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
 
             if (favorite.isNull()) {
@@ -83,17 +83,39 @@ SkyMenu {
         }
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Filtered posts")
         svg: SvgOutline.hideVisibility
-        onTriggered: root.viewContentFilterStats(postFeedModel)
+        popup: listFeedOptionsMenu
+        onClicked: root.viewContentFilterStats(postFeedModel)
     }
 
-    PostsOrderMenu {
-        reverseFeed: model.reverseFeed
-        globalFeedOrder: userSettings.globalFeedOrder
-        onNewReverseFeed: (reverse) => listFeedOptionsMenu.newReverseFeed(reverse)
+    MenuSeparator {}
+
+    AccessibleText {
+        width: parent.width
+        leftPadding: 10
+        rightPadding: 10
+        elide: Text.ElideRight
+        font.bold: true
+        text: qsTr("Posts order")
     }
+
+    SkyRadioMenuItem {
+        text: qsTr("New to old")
+        checked: !model.reverseFeed
+        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
+        onTriggered: newReverseFeed(false)
+    }
+
+    SkyRadioMenuItem {
+        text: qsTr("Old to new")
+        checked: model.reverseFeed
+        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
+        onTriggered: newReverseFeed(true)
+    }
+
+    MenuSeparator {}
 
     AccessibleMenuItem {
         text: qsTr("Show replies")

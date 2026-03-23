@@ -76,9 +76,11 @@ SkyPage {
                 SkyMenu {
                     id: moreMenu
 
-                    CloseMenuItem {
-                        text: qsTr("<b>Scripts</b>")
-                        Accessible.name: qsTr("close scripts menu")
+                    AccessibleText {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        font.bold: true
+                        text: qsTr("Scripts")
                     }
 
                     ScriptRecognitionMenuItem {

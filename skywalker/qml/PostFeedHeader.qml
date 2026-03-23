@@ -74,55 +74,73 @@ Rectangle {
 
                 SkyMenu {
                     id: moreMenu
-                    menuWidth: 300
+                    menuWidth: 250
 
-                    CloseMenuItem {
-                        text: qsTr("<b>Options</b>")
-                        Accessible.name: qsTr("close options menu")
-                    }
-
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Add user view")
                         svg: SvgOutline.user
-                        onTriggered: addUserView()
+                        popup: moreMenu
+                        onClicked: addUserView()
                     }
 
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Add hashtag view")
                         svg: SvgOutline.hashtag
-                        onTriggered: addHashtagView()
+                        popup: moreMenu
+                        onClicked: addHashtagView()
                     }
 
-                    AccessibleMenuItem {
-                        id: focusMenuItem
+                    SkyMenuButton {
                         text: qsTr("Add focus hashtag view")
-                        svg: SvgOutline.hashtag
-                        svgColor: guiSettings.favoriteColor
-                        onTriggered: addFocusHashtagView()
+                        svg: SvgOutline.focusHashtag
+                        popup: moreMenu
+                        onClicked: addFocusHashtagView()
                     }
 
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Add media view")
                         svg: SvgOutline.image
-                        onTriggered: addMediaView()
+                        popup: moreMenu
+                        onClicked: addMediaView()
                     }
 
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Add video view")
                         svg: SvgOutline.film
-                        onTriggered: addVideoView()
+                        popup: moreMenu
+                        onClicked: addVideoView()
                     }
 
-                    AccessibleMenuItem {
+                    SkyMenuButton {
                         text: qsTr("Filtered posts")
                         svg: SvgOutline.hideVisibility
-                        onTriggered: filterStatistics()
+                        popup: moreMenu
+                        onClicked: filterStatistics()
                     }
 
-                    PostsOrderMenu {
-                        reverseFeed: header.reverseFeed
-                        globalFeedOrder: userSettings.globalFeedOrder
-                        onNewReverseFeed: (reverse) => header.newReverseFeed(reverse)
+                    MenuSeparator {}
+
+                    AccessibleText {
+                        width: parent.width
+                        leftPadding: 10
+                        rightPadding: 10
+                        elide: Text.ElideRight
+                        font.bold: true
+                        text: qsTr("Posts order")
+                    }
+
+                    SkyRadioMenuItem {
+                        text: qsTr("New to old")
+                        checked: !reverseFeed
+                        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
+                        onTriggered: newReverseFeed(false)
+                    }
+
+                    SkyRadioMenuItem {
+                        text: qsTr("Old to new")
+                        checked: reverseFeed
+                        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
+                        onTriggered: newReverseFeed(true)
                     }
                 }
             }
@@ -297,58 +315,58 @@ Rectangle {
         SkyMenu {
             id: viewMenu
 
-            CloseMenuItem {
-                text: qsTr("<b>View</b>")
-                Accessible.name: qsTr("close view menu")
-            }
-
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Post view")
                 svg: SvgOutline.chat
+                popup: viewMenu
                 visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                onTriggered: {
+                onClicked: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
 
                     viewChanged(QEnums.CONTENT_MODE_UNSPECIFIED)
                 }
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Media view")
                 svg: SvgOutline.image
+                popup: viewMenu
                 visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                onTriggered: {
+                onClicked: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_MEDIA
 
                     viewChanged(QEnums.CONTENT_MODE_MEDIA)
                 }
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Media gallery")
                 svg: SvgOutline.gallery
+                popup: viewMenu
                 visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                onTriggered: {
+                onClicked: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_MEDIA_TILES
 
                     viewChanged(QEnums.CONTENT_MODE_MEDIA_TILES)
                 }
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Video view")
                 svg: SvgOutline.film
-                onTriggered: {
+                popup: viewMenu
+                onClicked: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_VIDEO
 
                     viewChanged(QEnums.CONTENT_MODE_VIDEO)
                 }
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Video gallery")
                 svg: SvgOutline.videoGallery
-                onTriggered: {
+                popup: viewMenu
+                onClicked: {
                     if (!isSideBar)
                         contentMode = QEnums.CONTENT_MODE_VIDEO_TILES
 

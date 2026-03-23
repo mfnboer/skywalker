@@ -53,19 +53,17 @@ ListView {
         id: newListMenu
         x: parent.width - width
 
-        CloseMenuItem {
-            text: qsTr("<b>Create list</b>")
-            Accessible.name: qsTr("close create list menu")
-        }
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("User list")
             svg: SvgOutline.user
-            onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
+            popup: newListMenu
+            onClicked: root.newList(view.model, QEnums.LIST_PURPOSE_CURATE, userDid)
         }
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("Moderation list")
             svg: SvgOutline.moderation
-            onTriggered: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
+            popup: newListMenu
+            onClicked: root.newList(view.model, QEnums.LIST_PURPOSE_MOD, userDid)
         }
     }
 

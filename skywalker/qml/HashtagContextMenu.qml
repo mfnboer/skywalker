@@ -34,35 +34,34 @@ SkyMenu {
         done()
     }
 
-    CloseMenuItem {
-        text: qsTr(`<b>${hashtag}</b>`)
-        Accessible.name: qsTr("close menu")
-    }
-
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Posts")
         svg: SvgOutline.chat
-        onTriggered: root.viewSearchView(hashtag)
+        popup: hashtagMenu
+        onClicked: root.viewSearchView(hashtag)
         visible: Boolean(handle)
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: qsTr("Posts from user")
         svg: SvgOutline.user
-        onTriggered: root.viewSearchView(hashtag, handle)
+        popup: hashtagMenu
+        onClicked: root.viewSearchView(hashtag, handle)
         visible: Boolean(handle)
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: hashtagMenu.isCashtag ? qsTr("Focus cashtag") : qsTr("Focus hashtag")
-        svg: SvgOutline.hashtag
-        onTriggered: focusHashtag(hashtag)
+        svg: SvgOutline.focusHashtag
+        popup: hashtagMenu
+        onClicked: focusHashtag(hashtag)
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: getText()
         svg: hashtagMenu.isMuted ? SvgOutline.unmute : SvgOutline.mute
-        onTriggered: {
+        popup: hashtagMenu
+        onClicked: {
             if (hashtagMenu.isMuted)
                 unmuteWord(hashtag)
             else
@@ -77,11 +76,12 @@ SkyMenu {
         }
     }
 
-    AccessibleMenuItem {
+    SkyMenuButton {
         text: hashtagMenu.isPinned ? qsTr("Remove favorite") : qsTr("Add favorite")
         svg: hashtagMenu.isPinned ? SvgFilled.star : SvgOutline.star
+        popup: hashtagMenu
         svgColor: hashtagMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
-        onTriggered: {
+        onClicked: {
             const view = searchUtils.createSearchFeed(hashtag,
                 postAuthorUser, postMentionsUser,
                 postSetSince ? postSince : nullDate,

@@ -205,9 +205,11 @@ SkyListView {
         SkyMenu {
             id: orderMenu
 
-            CloseMenuItem {
-                text: qsTr("<b>Sort Replies</b>")
-                Accessible.name: qsTr("close sort replies menu")
+            AccessibleText {
+                width: parent.width
+                elide: Text.ElideRight
+                font.bold: true
+                text: qsTr("Sort replies")
             }
 
             SkyRadioMenuItem {

@@ -192,10 +192,6 @@ SkyPage {
             SkyMenu {
                 id: moreMenu
 
-                CloseMenuItem {
-                    text: qsTr("<b>Options</b>")
-                    Accessible.name: qsTr("close options menu")
-                }
                 AccessibleMenuItem {
                     id: altItem
                     text: qsTr("Require ALT text")

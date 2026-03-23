@@ -177,15 +177,11 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            CloseMenuItem {
-                text: qsTr("<b>Options</b>")
-                Accessible.name: qsTr("close options menu")
-            }
-
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Permissions")
                 svg: SvgOutline.key
-                onTriggered: root.editChatSettings()
+                popup: moreMenu
+                onClicked: root.editChatSettings()
             }
         }
     }

@@ -290,27 +290,30 @@ Rectangle {
         SkyMenu {
             id: moreMenu
 
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Save picture")
-                textColor: "white"
+                color: "white"
                 svg: SvgOutline.save
-                onTriggered: root.savePhoto(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
+                popup: moreMenu
+                onClicked: root.savePhoto(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
             }
 
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Share picture")
-                textColor: "white"
+                color: "white"
                 svg: SvgOutline.share
-                onTriggered: root.sharePhotoToApp(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
+                popup: moreMenu
+                onClicked: root.sharePhotoToApp(postOrRecordImages[imageItem.currentIndex].fullSizeUrl)
                 visible: Boolean(imageItem)
             }
 
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Save video")
-                textColor: "white"
+                color: "white"
                 svg: SvgOutline.save
-                onTriggered: root.saveVideo(videoItem.videoSource, postOrRecordVideo.playlistUrl)
+                popup: moreMenu
+                onClicked: root.saveVideo(videoItem.videoSource, postOrRecordVideo.playlistUrl)
                 visible: Boolean(videoItem)
             }
         }

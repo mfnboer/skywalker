@@ -285,14 +285,11 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            CloseMenuItem {
-                text: qsTr("<b>Options</b>")
-                Accessible.name: qsTr("close options menu")
-            }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Settings")
                 svg: SvgOutline.settings
-                onTriggered: root.editNotificationSettings()
+                popup: moreMenu
+                onClicked: root.editNotificationSettings()
             }
         }
     }

@@ -37,31 +37,29 @@ SkyPage {
 
             SkyMenu {
                 id: moreMenu
-                menuWidth: 250
+                menuWidth: 240
 
-                CloseMenuItem {
-                    text: qsTr("<b>Options</b>")
-                    Accessible.name: qsTr("close options menu")
-                }
-
-                AccessibleMenuItem {
+                SkyMenuButton {
                     id: followingItem
                     text: qsTr("Add filters for following")
                     svg: SvgOutline.group
+                    popup: moreMene
                     enabled: !contentFilter.hasFollowingPrefs
-                    onTriggered: addFollowingPrefs()
+                    onClicked: addFollowingPrefs()
                 }
 
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Add filters for list")
                     svg: SvgOutline.list
-                    onTriggered: selectList()
+                    popup: moreMene
+                    onClicked: selectList()
                 }
 
-                AccessibleMenuItem {
+                SkyMenuButton {
                     text: qsTr("Help")
                     svg: SvgOutline.help
-                    onTriggered: showHelp()
+                    popup: moreMene
+                    onClicked: showHelp()
                 }
             }
         }

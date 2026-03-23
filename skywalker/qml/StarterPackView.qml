@@ -228,36 +228,37 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            CloseMenuItem {
-                text: qsTr("<b>Starter pack</b>")
-                Accessible.name: qsTr("close more options menu")
-            }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Translate")
                 svg: SvgOutline.googleTranslate
+                popup: moreMenu
                 enabled: starterPack.description
-                onTriggered: root.translateText(starterPack.description)
+                onClicked: root.translateText(starterPack.description)
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Share")
                 svg: SvgOutline.share
-                onTriggered: skywalker.shareStarterPack(starterPack)
+                popup: moreMenu
+                onClicked: skywalker.shareStarterPack(starterPack)
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Copy to list")
                 svg: SvgOutline.list
-                onTriggered: copyStarterPackToList()
+                popup: moreMenu
+                onClicked: copyStarterPackToList()
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Report starter pack")
                 svg: SvgOutline.report
-                onTriggered: root.reportStarterPack(starterPack, userDid)
+                popup: moreMenu
+                onClicked: root.reportStarterPack(starterPack, userDid)
             }
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Emoji names")
                 svg: SvgOutline.emojiLanguage
+                popup: moreMenu
                 visible: UnicodeFonts.hasEmoji(starterPack.description)
-                onTriggered: root.showEmojiNamesList(starterPack.description)
+                onClicked: root.showEmojiNamesList(starterPack.description)
             }
         }
     }

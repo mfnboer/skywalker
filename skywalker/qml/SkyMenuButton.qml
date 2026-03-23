@@ -7,6 +7,7 @@ Item {
     required property string text
     property bool enabled: true
     property string color: enabled ? guiSettings.textColor : guiSettings.disabledColor
+    property string svgColor: color
     property var popup
 
     signal clicked
@@ -22,7 +23,7 @@ Item {
         height: label.height + 10
         width: height
         svg: button.svg
-        color: button.color
+        color: button.svgColor
     }
 
     Text {

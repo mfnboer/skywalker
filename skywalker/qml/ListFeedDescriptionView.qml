@@ -232,39 +232,38 @@ SkyPage {
         id: moreMenu
         menuWidth: 250
 
-        CloseMenuItem {
-            text: qsTr("<b>List</b>")
-            Accessible.name: qsTr("close more options menu")
-        }
-
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("Edit")
             svg: SvgOutline.edit
+            popup: moreMenu
             visible: isOwnList()
-            onTriggered: editList()
+            onClicked: editList()
         }
 
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: listMuted ? qsTr("Unmute") : qsTr("Mute")
             svg: listMuted ? SvgOutline.unmute : SvgOutline.mute
-            onTriggered: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
+            popup: moreMenu
+            onClicked: listMuted ? graphUtils.unmuteList(list.uri) : graphUtils.muteList(list.uri)
             visible: list.purpose === QEnums.LIST_PURPOSE_MOD
             enabled: !listBlockedUri || listMuted
         }
 
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: listBlockedUri ? qsTr("Unblock") : qsTr("Block")
             svg: listBlockedUri ? SvgOutline.unblock : SvgOutline.block
-            onTriggered: listBlockedUri ? graphUtils.unblockList(list.uri, listBlockedUri) : graphUtils.blockList(list.uri)
+            popup: moreMenu
+            onClicked: listBlockedUri ? graphUtils.unblockList(list.uri, listBlockedUri) : graphUtils.blockList(list.uri)
             visible: list.purpose === QEnums.LIST_PURPOSE_MOD
             enabled: !listMuted || listBlockedUri
         }
 
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: isSavedList ? qsTr("Unsave list") : qsTr("Save list")
             svg: isSavedList ? SvgOutline.remove : SvgOutline.add
+            popup: moreMenu
             visible: list.purpose === QEnums.LIST_PURPOSE_CURATE && !isOwnList()
-            onTriggered: {
+            onClicked: {
                 if (isSavedList)
                     skywalker.favoriteFeeds.removeList(list)
                 else
@@ -276,12 +275,13 @@ SkyPage {
             }
         }
 
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
             svg: isPinnedList ? SvgFilled.star : SvgOutline.star
             svgColor: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
+            popup: moreMenu
             visible: list.purpose === QEnums.LIST_PURPOSE_CURATE
-            onTriggered: {
+            onClicked: {
                 if (isOwnList()) {
                     if (isPinnedList)
                         skywalker.favoriteFeeds.removeList(list) // We never show own lists as saved
@@ -298,12 +298,13 @@ SkyPage {
             }
         }
 
-        AccessibleMenuItem {
+        SkyMenuButton {
             id: hideListMenuItem
             visible: list.purpose === QEnums.LIST_PURPOSE_CURATE && isOwnList()
             text: listHideFromTimeline ? qsTr("Unhide list from timeline") : qsTr("Hide list from timeline")
             svg: listHideFromTimeline ? SvgOutline.unmute : SvgOutline.mute
-            onTriggered: {
+            popup: moreMenu
+            onClicked: {
                 if (listHideFromTimeline) {
                     graphUtils.unhideList(list.uri)
                     listHideFromTimeline = false
@@ -314,27 +315,31 @@ SkyPage {
             }
         }
 
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("Translate")
             svg: SvgOutline.googleTranslate
+            popup: moreMenu
             visible: list.description
-            onTriggered: root.translateText(list.description)
+            onClicked: root.translateText(list.description)
         }
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("Share")
             svg: SvgOutline.share
-            onTriggered: skywalker.shareList(list)
+            popup: moreMenu
+            onClicked: skywalker.shareList(list)
         }
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("Report list")
             svg: SvgOutline.report
-            onTriggered: root.reportList(list, userDid)
+            popup: moreMenu
+            onClicked: root.reportList(list, userDid)
         }
-        AccessibleMenuItem {
+        SkyMenuButton {
             text: qsTr("Emoji names")
             svg: SvgOutline.emojiLanguage
+            popup: moreMenu
             visible: UnicodeFonts.hasEmoji(list.description)
-            onTriggered: root.showEmojiNamesList(list.description)
+            onClicked: root.showEmojiNamesList(list.description)
         }
         AccessibleMenuItem {
             text: qsTr("Show replies")

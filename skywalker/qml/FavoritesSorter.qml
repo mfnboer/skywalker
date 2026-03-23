@@ -80,15 +80,11 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            CloseMenuItem {
-                text: qsTr("<b>Favorites</b>")
-                Accessible.name: qsTr("close more options menu")
-            }
-
-            AccessibleMenuItem {
+            SkyMenuButton {
                 text: qsTr("Sort alphabetically")
                 svg: SvgOutline.sortByAlpha
-                onTriggered: alphaSort()
+                popup: moreMenu
+                onClicked: alphaSort()
             }
         }
     }
