@@ -16,7 +16,17 @@ QJsonObject ReplyToPost::toJson() const
         json.insert("author", mAuthor->toJson());
 
     json.insert("text", mText);
-    json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+
+    if (mDateTime.isValid())
+    {
+        json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+    }
+    else
+    {
+        qWarning() << "Invalid date in reply:" << mText;
+        json.insert("date", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs));
+    }
+
     return json;
 }
 
@@ -40,7 +50,17 @@ QJsonObject QuotePost::toJson() const
         json.insert("author", mAuthor->toJson());
 
     json.insert("text", mText);
-    json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+
+    if (mDateTime.isValid())
+    {
+        json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+    }
+    else
+    {
+        qWarning() << "Invalid date in quote:" << mText;
+        json.insert("date", QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs));
+    }
+
     return json;
 }
 

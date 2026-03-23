@@ -1688,8 +1688,12 @@ void DraftPosts::loadDraftFeed()
 
         if (draft)
         {
-            auto postFeed = convertDraftToFeedViewPost(*draft, getDraftUri(file));
-            postThreads.push_back(std::move(postFeed));
+            try {
+                auto postFeed = convertDraftToFeedViewPost(*draft, getDraftUri(file));
+                postThreads.push_back(std::move(postFeed));
+            } catch (ATProto::InvalidJsonException& e) {
+                qWarning() << "Draft format error:" << e.msg();
+            }
         }
         else
         {
@@ -1744,7 +1748,7 @@ Draft::Draft::SharedPtr DraftPosts::loadDraft(const QString& fileName, const QSt
         return draft;
     } catch (ATProto::InvalidJsonException& e) {
         qWarning() << "File format error:" << e.msg();
-        qInfo() << doc.object();
+        qWarning() << doc.object();
         return nullptr;
     }
 }
@@ -2043,9 +2047,15 @@ void DraftPosts::loadBlueskyDrafts(const QString& cursor)
             for (const auto& draftView : output->mDrafts)
             {
                 // NOTE: we store the draft ID as rkey in the post URI
-                const QString& recordUri = getDraftUri(draftView->mId);
-                auto postFeed = convertDraftToFeedViewPost(*draftView, recordUri);
-                postThreads.push_back(std::move(postFeed));
+
+                try {
+                    const QString& recordUri = getDraftUri(draftView->mId);
+                    auto postFeed = convertDraftToFeedViewPost(*draftView, recordUri);
+                    postThreads.push_back(std::move(postFeed));
+                } catch (ATProto::InvalidJsonException& e) {
+                    qWarning() << "Draft format error:" << e.msg();
+                    qWarning() << draftView->mDraft->mJson;
+                }
             }
 
             mDraftPostsModel->setFeed(std::move(postThreads), output->mCursor.value_or(""));
