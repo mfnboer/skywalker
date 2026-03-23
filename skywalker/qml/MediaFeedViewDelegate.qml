@@ -473,8 +473,9 @@ Rectangle {
                             postMentionDids)
                 }
 
-                onRepost: {
-                    root.repost(postRepostUri, postUri, postCid,
+                onRepost: (mouseEvent) => {
+                    root.repost(mouseEvent, postStats, videoPage.ListView.view,
+                                postRepostUri, postUri, postCid,
                                 postReasonRepostUri, postReasonRepostCid,
                                 feedDid, postFeedContext, postText,
                                 postIndexedDateTime, author, postEmbeddingDisabled,

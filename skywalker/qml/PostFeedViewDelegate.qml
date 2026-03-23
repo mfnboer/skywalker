@@ -721,8 +721,8 @@ Rectangle {
                                     postMentionDids)
                         }
 
-                        onRepost: {
-                            root.repost(postRepostUri, postUri, postCid,
+                        onRepost: (mouseEvent) => {
+                            root.repost(mouseEvent, postStats, postEntry.ListView.view, postRepostUri, postUri, postCid,
                                         postReasonRepostUri, postReasonRepostCid,
                                         feedDid, postFeedContext,
                                         postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText,

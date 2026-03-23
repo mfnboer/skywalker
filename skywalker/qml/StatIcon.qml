@@ -8,7 +8,7 @@ Rectangle {
     property string iconColor: guiSettings.statsColor
     property bool blinking: false
 
-    signal clicked
+    signal clicked(MouseEvent event)
     signal pressAndHold(MouseEvent event)
 
     id: control
@@ -17,7 +17,10 @@ Rectangle {
     color: "transparent"
 
     Accessible.role: Accessible.Button
-    Accessible.onPressAction: if (enabled) emitClicked()
+    Accessible.onPressAction: {
+        if (enabled)
+            emitClicked(null)
+    }
 
     SkySvg {
         id: statIcon
@@ -50,13 +53,13 @@ Rectangle {
     }
     SkyMouseArea {
         anchors.fill: parent
-        onClicked: control.emitClicked()
+        onClicked: (mouseEvent) => control.emitClicked(mouseEvent)
         onPressAndHold: (mouseEvent) => control.emitPressAndHold(mouseEvent)
     }
 
-    function emitClicked() {
+    function emitClicked(event) {
         if (!blinking)
-            control.clicked()
+            control.clicked(event)
     }
 
     function emitPressAndHold(event) {

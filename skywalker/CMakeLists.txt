@@ -683,6 +683,7 @@ qt_add_qml_module(libskywalker
         SOURCES text_meta_info.h
         QML_FILES qml/SkyMenuButton.qml
         QML_FILES qml/SkyPopup.qml
+        QML_FILES qml/RepostMenu.qml
 )
 
 if (NOT ANDROID)

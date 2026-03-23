@@ -38,7 +38,7 @@ Item {
 
     signal reply()
     signal replyLongPress(MouseEvent mouseEvent)
-    signal repost()
+    signal repost(MouseEvent mouseEvent)
     signal repostLongPress(MouseEvent mouseEvent)
     signal like()
     signal likeLongPress(MouseEvent mouseEvent)
@@ -91,7 +91,7 @@ Item {
         statistic: repostCount
         blinking: repostTransient
         visible: !limitedStats
-        onClicked: repost()
+        onClicked: (mouseEvent) => repost(mouseEvent)
         onPressAndHold: (mouseEvent) => repostLongPress(mouseEvent)
 
         Accessible.name: qsTr("repost") + statSpeech(repostCount, "repost", "reposts")
@@ -153,7 +153,6 @@ Item {
 
             sourceComponent: SkyMenu {
                 id: moreMenu
-                menuWidth: 240
                 onAboutToHide: parent.active = false
 
                 SkyMenuButton {

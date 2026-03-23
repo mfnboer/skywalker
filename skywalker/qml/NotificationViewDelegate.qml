@@ -360,14 +360,15 @@ Rectangle {
                                     lang, notificationPostMentionDids)
                         }
 
-                        function repostNotification(nonActiveUserDid = "") {
-                            root.repost(notificationPostRepostUri, notificationPostUri, notificationCid,
+                        function repostNotification(mouseEvent, nonActiveUserDid = "") {
+                            root.repost(mouseEvent, postStats, notification.ListView.view,
+                                        notificationPostRepostUri, notificationPostUri, notificationCid,
                                         "", "", "", "", notificationPostText, notificationPostTimestamp,
                                         notificationAuthor, notificationPostEmbeddingDisabled, notificationPostPlainText,
                                         nonActiveUserDid)
                         }
 
-                        onRepost: repostNotification(notification.owner.did)
+                        onRepost: (mouseEvent) => repostNotification(mouseEvent, notification.owner.did)
 
                         function quoteNotification(nonActiveUserDid = "") {
                             root.quotePost(notificationPostUri, notificationCid,

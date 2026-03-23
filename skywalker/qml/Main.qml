@@ -996,122 +996,6 @@ ApplicationWindow {
         }
     }
 
-    SkyDrawer {
-        property string repostByDid
-        property string repostedAlreadyUri
-        property string repostUri
-        property string repostCid
-        property string repostViaUri
-        property string repostViaCid
-        property string repostFeedDid
-        property string repostFeedContext
-        property string repostText
-        property date repostDateTime
-        property basicprofile repostAuthor
-        property bool repostEmbeddingDisabled
-        property string repostPlainText
-
-        id: repostDrawer
-        width: parent.width
-        contentHeight: menuColumn.height
-        edge: Qt.BottomEdge
-
-        Column {
-            id: menuColumn
-            x: 10
-            width: parent.width - 20
-            spacing: 10
-
-            SkyMenuButton {
-                width: parent.width
-                svg: SvgOutline.repost
-                text: repostDrawer.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
-
-                onClicked: {
-                    const pu = getPostUtils(repostDrawer.repostByDid)
-
-                    if (repostDrawer.repostedAlreadyUri) {
-                        pu.undoRepost(repostDrawer.repostedAlreadyUri, repostDrawer.repostUri,
-                                      repostDrawer.repostCid, repostDrawer.repostFeedDid)
-                    } else {
-                        pu.repost(repostDrawer.repostUri, repostDrawer.repostCid,
-                                  repostDrawer.repostViaUri, repostDrawer.repostViaCid,
-                                  repostDrawer.repostFeedDid, repostDrawer.repostFeedContext)
-                    }
-
-                    repostDrawer.close()
-                }
-            }
-
-            SkyMenuButton {
-                width: parent.width
-                svg: SvgOutline.quote
-                text: qsTr("Quote post")
-                enabled: !repostDrawer.repostEmbeddingDisabled
-
-                onClicked: {
-                    // No need to check if post still exist. Already checked before
-                    // opening this drawer
-                    root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
-                                        repostDrawer.repostText, repostDrawer.repostDateTime,
-                                        repostDrawer.repostAuthor, "",
-                                        repostDrawer.repostFeedDid, repostDrawer.repostFeedContext,
-                                        repostDrawer.repostByDid)
-                    repostDrawer.close()
-                }
-            }
-
-            SkyMenuButton {
-                width: parent.width
-                svg: SvgOutline.copy
-                text: qsTr("Copy & quote post")
-                enabled: !repostDrawer.repostEmbeddingDisabled
-                onClicked: {
-                    // No need to check if post still exist. Already checked before
-                    // opening this drawer
-                    root.doComposeQuote(repostDrawer.repostUri, repostDrawer.repostCid,
-                                        repostDrawer.repostText, repostDrawer.repostDateTime,
-                                        repostDrawer.repostAuthor, repostDrawer.repostPlainText,
-                                        repostDrawer.repostFeedDid, repostDrawer.repostFeedContext,
-                                        repostDrawer.repostByDid)
-                    repostDrawer.close()
-                }
-            }
-
-            SkyMenuButton {
-                width: parent.width
-                svg: SvgOutline.chat
-                text: qsTr("Quote in direct message")
-                enabled: !repostDrawer.repostEmbeddingDisabled
-                visible: isActiveUser(repostDrawer.repostByDid)
-
-                onClicked: {
-                    const link = linkUtils.toHttpsLink(repostDrawer.repostUri)
-                    startConvo(link)
-                    repostDrawer.close()
-                }
-            }
-        }
-
-        function show(hasRepostedUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
-                      dateTime, author, embeddingDisabled, plainText, byDid = "") {
-            repostByDid = byDid
-            repostedAlreadyUri =  hasRepostedUri
-            repostUri = uri
-            repostCid = cid
-            repostViaUri = viaUri
-            repostViaCid = viaCid
-            repostFeedDid = feedDid
-            repostFeedContext = feedContext
-            repostText = text
-            repostDateTime = dateTime
-            repostAuthor = author
-            repostEmbeddingDisabled = embeddingDisabled
-            repostPlainText = plainText
-            open()
-        }
-    }
-
     MainPostUtils {
         id: postUtils
         skywalker: skywalker
@@ -1599,18 +1483,29 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function repost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+    function repost(mouseEvent, mouseView, parentView,
+                    repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
                     dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
         const pu = getPostUtils(repostByDid)
         pu.checkPost(uri, cid,
-            () => doRepost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+            () => doRepost(mouseEvent, mouseView, parentView,
+                           repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
                            dateTime, author, embeddingDisabled, plainText, repostByDid))
     }
 
-    function doRepost(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+    function doRepost(mouseEvent, mouseView, parentView,
+                      repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
                       dateTime, author, embeddingDisabled, plainText, repostByDid = "") {
-        repostDrawer.show(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
-                          dateTime, author, embeddingDisabled, plainText, repostByDid)
+        const mousePoint = mouseEvent ?
+            mouseView.mapToItem(parentView, mouseEvent.x, mouseEvent.y) :
+            mouseView.mapToItem(parentView, 0, 0)
+
+        let component = guiSettings.createComponent("RepostMenu.qml")
+        let menu = component.createObject(parentView, { x: mousePoint.x, y: mousePoint.y })
+        menu.onClosed.connect(() => { menu.destroy() })
+
+        menu.show(repostUri, uri, cid, viaUri, viaCid, feedDid, feedContext, text,
+                  dateTime, author, embeddingDisabled, plainText, repostByDid)
     }
 
     function quotePost(uri, cid, text, dateTime, author, embeddingDisabled, feedDid = "", feedContext = "", quoteByDid = "") {
