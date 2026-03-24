@@ -106,6 +106,15 @@ Item {
             text: userSettings.getHost(userPrefs.did)
         }
 
+        AccessibleCheckBox {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            text: qsTr("Add automation label to account to show the world that this account is automated. 🤖 is shown in front of the name.")
+
+            checked: userPrefs.automatedAccount
+            onCheckedChanged: userPrefs.automatedAccount = checked
+        }
+
         AccessibleText {
             Layout.columnSpan: 2
             Layout.topMargin: 10

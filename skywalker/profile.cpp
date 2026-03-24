@@ -362,12 +362,31 @@ static QString createName(const QString& handle, const QString& displayName)
 
 QString BasicProfile::getName() const
 {
-    const QString name = createName(getHandle(), getDisplayName());
+    QString name = createName(getHandle(), getDisplayName());
+
+    if (hasAutomationLabel())
+        name = QString("🤖 %1").arg(name);
 
     if (hasInvalidHandle())
-        return QString("⚠️ %1").arg(name);
+        name = QString("⚠️ %1").arg(name);
 
     return name;
+}
+
+bool BasicProfile::hasAutomationLabel() const
+{
+    if (mPrivate && mPrivate->mHasAutomationLabel)
+        return *mPrivate->mHasAutomationLabel;
+
+    const auto& labels = getContentLabels();
+
+    for (const auto& label : labels)
+    {
+        if (label.getLabelId() == ContentFilter::AUTOMATION_LABEL_ID)
+            return true;
+    }
+
+    return false;
 }
 
 const QString& BasicProfile::getDisplayName() const
@@ -658,6 +677,14 @@ const ActorStatusView& BasicProfile::getActorStatus() const
 {
     ActorStatusView& status = const_cast<BasicProfile*>(this)->getActorStatus();
     return status;
+}
+
+void BasicProfile::setAutomationLabel(bool automated)
+{
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
+
+    mPrivate->mHasAutomationLabel = automated;
 }
 
 void BasicProfile::setDisplayName(const QString& displayName)

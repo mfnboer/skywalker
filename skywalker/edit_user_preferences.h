@@ -17,6 +17,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(QString birthDate READ getBirthDate CONSTANT FINAL)
     Q_PROPERTY(QString did READ getDID CONSTANT FINAL)
     Q_PROPERTY(QString pds READ getPDS CONSTANT FINAL)
+    Q_PROPERTY(bool automatedAccount READ isAutomatedAccount WRITE setAutomatedAccount NOTIFY automatedAccountChanged FINAL)
     Q_PROPERTY(bool loggedOutVisibility READ getLoggedOutVisiblity WRITE setLoggedOutVisibility NOTIFY loggedOutVisibilityChanged FINAL)
     Q_PROPERTY(bool hideReplies READ getHideReplies WRITE setHideReplies NOTIFY hideRepliesChanged FINAL)
     Q_PROPERTY(bool hideRepliesByUnfollowed READ getHideRepliesByUnfollowed WRITE setHideRepliesByUnfollowed NOTIFY hideRepliesByUnfollowedChanged FINAL)
@@ -52,6 +53,9 @@ public:
     bool getLoggedOutVisiblity() const { return mLoggedOutVisibility; }
     void setLoggedOutVisibility(bool visibility);
 
+    bool isAutomatedAccount() const { return mAutomatedAccount; }
+    void setAutomatedAccount(bool automated);
+
     bool getHideReplies() const { return mHomeFeedPref.mHideReplies; }
     void setHideReplies(bool hide);
 
@@ -73,6 +77,7 @@ public:
     void setAllowIncomingChat(QEnums::AllowIncomingChat allowIncomingChat);
 
 signals:
+    void automatedAccountChanged();
     void loggedOutVisibilityChanged();
     void hideRepliesChanged();
     void hideRepliesByUnfollowedChanged();
@@ -89,6 +94,7 @@ private:
     QString mDID;
     QString mPDS;
     bool mLoggedOutVisibility = true;
+    bool mAutomatedAccount = false;
 
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;
     ATProto::UserPreferences::VerificationPrefs mVerificationPrefs;

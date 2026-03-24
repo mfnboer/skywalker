@@ -3,13 +3,14 @@
 #include "content_filter.h"
 #include "definitions.h"
 #include "list_store.h"
-#include "profile_store.h"
 #include "user_settings.h"
 
 namespace Skywalker {
 
 // We are implicitly subscribed to the Bluesky moderator
 const QString ContentFilter::BLUESKY_MODERATOR_DID = QStringLiteral("did:plc:ar7c4by46qjdydhdevvrndac");
+
+const QString ContentFilter::AUTOMATION_LABEL_ID = "bot";
 
 const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
     {
@@ -21,7 +22,8 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_HIDE_POST,
         QEnums::LABEL_TARGET_CONTENT,
         QEnums::LABEL_SEVERITY_ALERT,
-        ""
+        "",
+        false
     },
     {
         "!warn",
@@ -32,7 +34,8 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_WARN_POST,
         QEnums::LABEL_TARGET_CONTENT,
         QEnums::LABEL_SEVERITY_ALERT,
-        ""
+        "",
+        false
     },
     {
         "!no-unauthenticated",
@@ -43,7 +46,8 @@ const std::vector<ContentGroup> ContentFilter::SYSTEM_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_SHOW,
         QEnums::LABEL_TARGET_CONTENT,
         QEnums::LABEL_SEVERITY_NONE,
-        ""
+        "",
+        false
     }
 };
 
@@ -62,7 +66,8 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
         QEnums::LABEL_SEVERITY_ALERT,
-        ""
+        "",
+        false
     },
     {
         "sexual",
@@ -73,7 +78,8 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_WARN_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
         QEnums::LABEL_SEVERITY_NONE,
-        ""
+        "",
+        false
     },
     {
         "graphic-media",
@@ -84,7 +90,8 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_HIDE_MEDIA,
         QEnums::LABEL_TARGET_MEDIA,
         QEnums::LABEL_SEVERITY_ALERT,
-        ""
+        "",
+        false
     },
     {
         "nudity",
@@ -95,7 +102,20 @@ const std::vector<ContentGroup> ContentFilter::USER_CONTENT_GROUP_LIST = {
         QEnums::CONTENT_VISIBILITY_SHOW,
         QEnums::LABEL_TARGET_MEDIA,
         QEnums::LABEL_SEVERITY_NONE,
-        ""
+        "",
+        false
+    },
+    {
+        ContentFilter::AUTOMATION_LABEL_ID,
+        QObject::tr("Automated Account"),
+        QObject::tr("Content is posting is automated"),
+        {},
+        false,
+        QEnums::CONTENT_VISIBILITY_SHOW,
+        QEnums::LABEL_TARGET_CONTENT,
+        QEnums::LABEL_SEVERITY_NONE,
+        "",
+        true
     }
 };
 

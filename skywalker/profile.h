@@ -259,6 +259,7 @@ class BasicProfile
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(VerificationState verificationState READ getVerificationState FINAL)
     Q_PROPERTY(ActorStatusView actorStatus READ getActorStatus FINAL)
+    Q_PROPERTY(bool automatedAccount READ hasAutomationLabel FINAL)
     QML_VALUE_TYPE(basicprofile)
 
 public:
@@ -295,12 +296,14 @@ public:
     const VerificationState& getVerificationState() const;
     ActorStatusView& getActorStatus();
     const ActorStatusView& getActorStatus() const;
+    bool hasAutomationLabel() const;
 
     Q_INVOKABLE bool hasInvalidHandle() const;
 
     // Get the handle, but if it is invalid then get the DID
     const QString& getHandleOrDid() const;
 
+    void setAutomationLabel(bool automated);
     void setDisplayName(const QString& displayName);
     void setPronouns(const QString& pronouns);
 
@@ -342,6 +345,7 @@ private:
         std::optional<QDateTime> mCreatedAt;
         std::optional<VerificationState> mVerificationState;
         std::optional<ActorStatusView> mActorStatus;
+        std::optional<bool> mHasAutomationLabel;
     };
     std::shared_ptr<PrivateData> mPrivate;
 };

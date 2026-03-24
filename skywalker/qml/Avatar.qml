@@ -100,7 +100,6 @@ Item {
 
         id: followingLoader
         active: activeStatus || followsStatus
-        //active: avatarItem.isActive && userSettings.showFollowsActiveStatus && showActivityStatus
 
         sourceComponent: Rectangle {
             x: avatarItem.width - width

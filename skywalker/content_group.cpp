@@ -18,7 +18,7 @@ ContentGroup::ContentGroup(
     const QString& labelId, const QString& title, const QString& description,
     const QStringList& legacyLabelIds, bool adult,
     QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget,
-    const QEnums::LabelSeverity& severity, const QString& labelerDid) :
+    const QEnums::LabelSeverity& severity, const QString& labelerDid, bool isBadge) :
     mLabelId(labelId),
     mTitle(title),
     mDescription(description),
@@ -27,6 +27,7 @@ ContentGroup::ContentGroup(
     mDefaultVisibility(defaultVisibility),
     mLabelTarget(labelTarget),
     mSeverity(severity),
+    mIsBadge(isBadge),
     mLabelerDid(labelerDid)
 {
 }

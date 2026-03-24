@@ -41,6 +41,15 @@ void EditUserPreferences::setLoggedOutVisibility(bool visibility)
     }
 }
 
+void EditUserPreferences::setAutomatedAccount(bool automated)
+{
+    if (automated != mAutomatedAccount)
+    {
+        mAutomatedAccount = automated;
+        emit automatedAccountChanged();
+    }
+}
+
 void EditUserPreferences::setHideReplies(bool hide)
 {
     if (hide != mHomeFeedPref.mHideReplies)

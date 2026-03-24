@@ -32,8 +32,8 @@ private slots:
         mContentFilter.createListPref(mListPhilosophers);
 
         const ContentGroupMap groupMap {
-            { "foo", { "foo", "foo title", "foo description", {}, false, QEnums::CONTENT_VISIBILITY_HIDE_POST, QEnums::LABEL_TARGET_CONTENT, QEnums::LABEL_SEVERITY_INFO, FOO_LABELER_DID } },
-            { "bar", { "bar", "bar title", "bar description", {}, false, QEnums::CONTENT_VISIBILITY_WARN_POST, QEnums::LABEL_TARGET_CONTENT, QEnums::LABEL_SEVERITY_INFO, FOO_LABELER_DID } }
+            { "foo", { "foo", "foo title", "foo description", {}, false, QEnums::CONTENT_VISIBILITY_HIDE_POST, QEnums::LABEL_TARGET_CONTENT, QEnums::LABEL_SEVERITY_INFO, FOO_LABELER_DID, false } },
+            { "bar", { "bar", "bar title", "bar description", {}, false, QEnums::CONTENT_VISIBILITY_WARN_POST, QEnums::LABEL_TARGET_CONTENT, QEnums::LABEL_SEVERITY_INFO, FOO_LABELER_DID, false } }
         };
 
         mContentFilter.addContentGroupMap(FOO_LABELER_DID, groupMap);

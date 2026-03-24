@@ -1,5 +1,6 @@
 next
 ====
+* Show 🤖 in front of name of automated account
 * Bug fixes
 
 4.31

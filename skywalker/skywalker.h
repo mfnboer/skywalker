@@ -364,6 +364,8 @@ private:
     void updateUser(const QString& did, const QString& host);
     ATProto::ProfileMaster& getProfileMaster();
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
+    void saveLoggedOutvisibility();
+    void saveAutomatedAccount();
     void saveSyncTimestamp(int postIndex, int offsetY);
     void saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& feedUri, int postIndex, int offsetY);
     void saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchQuery, int postIndex, int offsetY);

@@ -38,6 +38,7 @@ public:
     using GlobalContentGroupMap = std::unordered_map<QString, const ContentGroup*>;
 
     static const QString BLUESKY_MODERATOR_DID;
+    static const QString AUTOMATION_LABEL_ID;
 
     // System labels have a hard coded setting.
     static const std::vector<ContentGroup> SYSTEM_CONTENT_GROUP_LIST;

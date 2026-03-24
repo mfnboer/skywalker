@@ -610,6 +610,14 @@ SkyPage {
             }
 
             AccessibleText {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                wrapMode: Text.Wrap
+                text: qsTr("🤖 Automated account")
+                visible: contentVisible() && author.automatedAccount
+            }
+
+            AccessibleText {
                 id: firstAppearanceText
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10

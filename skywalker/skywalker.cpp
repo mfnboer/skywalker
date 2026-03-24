@@ -4264,6 +4264,7 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setEmailConfirmed(session->mEmailConfirmed);
     mEditUserPreferences->setEmailAuthFactor(session->mEmailAuthFactor);
     mEditUserPreferences->setDID(mUserDid);
+    mEditUserPreferences->setAutomatedAccount(mUserProfile.hasAutomationLabel());
     mEditUserPreferences->setLoggedOutVisibility(mLoggedOutVisibility);
     mEditUserPreferences->setUserPreferences(mUserPreferences);
 
@@ -4294,18 +4295,8 @@ void Skywalker::saveUserPreferences()
         return;
     }
 
-    const bool loggedOutVisibility = mEditUserPreferences->getLoggedOutVisiblity();
-    if (loggedOutVisibility != mLoggedOutVisibility)
-    {
-        getProfileMaster().setLoggedOutVisibility(mUserDid, loggedOutVisibility,
-            [this, loggedOutVisibility]{
-                mLoggedOutVisibility = loggedOutVisibility;
-            },
-            [this](const QString& error, const QString& msg){
-                qWarning() << error << " - " << msg;
-                emit statusMessage(mUserDid, tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
-            });
-    }
+    saveLoggedOutvisibility();
+    saveAutomatedAccount();
 
     const auto allowIncomingChat = mEditUserPreferences->getAllowIncomingChat();
     if (allowIncomingChat != mChat->getAllowIncomingChat())
@@ -4320,6 +4311,71 @@ void Skywalker::saveUserPreferences()
     auto prefs = mUserPreferences;
     mEditUserPreferences->saveTo(prefs);
     saveUserPreferences(prefs);
+    mEditUserPreferences = nullptr;
+}
+
+void Skywalker::saveLoggedOutvisibility()
+{
+    Q_ASSERT(mEditUserPreferences);
+    const bool loggedOutVisibility = mEditUserPreferences->getLoggedOutVisiblity();
+
+    if (loggedOutVisibility != mLoggedOutVisibility)
+    {
+        getProfileMaster().setLoggedOutVisibility(mUserDid, loggedOutVisibility,
+            [this, loggedOutVisibility]{
+                mLoggedOutVisibility = loggedOutVisibility;
+            },
+            [this](const QString& error, const QString& msg){
+                qWarning() << error << " - " << msg;
+                emit statusMessage(mUserDid, tr("Failed to change logged-out visibility: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            });
+    }
+}
+
+void Skywalker::saveAutomatedAccount()
+{
+    Q_ASSERT(mEditUserPreferences);
+    const bool automated = mEditUserPreferences->isAutomatedAccount();
+
+    if (automated == mUserProfile.hasAutomationLabel())
+        return;
+
+    if (automated)
+    {
+        getProfileMaster().addSelfLabel(mUserDid, ContentFilter::AUTOMATION_LABEL_ID,
+            [this]{
+                qDebug() << "Automation label added";
+                mUserProfile.setAutomationLabel(true);
+                AuthorCache::instance().setUser(mUserProfile);
+
+                makeLocalModelChange(
+                    [this](LocalProfileChanges* model){ model->updateProfile(mUserProfile); });
+
+                emit userChanged();
+            },
+            [this](const QString& error, const QString& msg){
+                qWarning() << error << " - " << msg;
+                emit statusMessage(mUserDid, tr("Failed to set automation label: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            });
+    }
+    else
+    {
+        getProfileMaster().removeSelfLabel(mUserDid, ContentFilter::AUTOMATION_LABEL_ID,
+            [this]{
+                qDebug() << "Automation label removed";
+                mUserProfile.setAutomationLabel(false);
+                AuthorCache::instance().setUser(mUserProfile);
+
+                makeLocalModelChange(
+                    [this](LocalProfileChanges* model){ model->updateProfile(mUserProfile); });
+
+                emit userChanged();
+            },
+            [this](const QString& error, const QString& msg){
+                qWarning() << error << " - " << msg;
+                emit statusMessage(mUserDid, tr("Failed to remove automation label: ") + msg, QEnums::STATUS_LEVEL_ERROR);
+            });
+    }
 }
 
 BookmarksModel* Skywalker::createBookmarksModel()

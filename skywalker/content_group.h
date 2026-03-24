@@ -30,7 +30,8 @@ public:
     ContentGroup(const QString& labelId, const QString& title, const QString& description,
                  const QStringList& legacyLabelIds, bool adult,
                  QEnums::ContentVisibility defaultVisibility, QEnums::LabelTarget labelTarget,
-                 const QEnums::LabelSeverity& severity, const QString& labelerDid);
+                 const QEnums::LabelSeverity& severity, const QString& labelerDid,
+                 bool iaBadge);
     explicit ContentGroup(const ATProto::ComATProtoLabel::LabelValueDefinition& labelDef,
                           const QString& labelerDid);
 
