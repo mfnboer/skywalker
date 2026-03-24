@@ -54,7 +54,7 @@ Loader {
 
         const videoSizeIsKnown = postVideo.width > 0 && postVideo.height > 0
         const aspectRatio = videoSizeIsKnown ? postVideo.width / postVideo.height : guiSettings.videoPreviewRatio
-        const maxHeight = root.height
+        const maxHeight = guiSettings.maxImageHeight
         const maxWidth = maxHeight * aspectRatio
         const image = postVideo.imageView
 

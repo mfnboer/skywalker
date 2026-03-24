@@ -14,7 +14,7 @@ Column {
     property bool highlight: false
     property bool swipeMode: false
     property string borderColor: highlight ? guiSettings.borderHighLightColor : guiSettings.borderColor
-    property int maxHeight: root.height
+    property int maxHeight: guiSettings.maxImageHeight
     property bool isFullViewMode: false
     readonly property bool isFullVideoFeedViewMode: isFullViewMode && swipeMode
     readonly property bool isPlaying: videoPlayer.playing
