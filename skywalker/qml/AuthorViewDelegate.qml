@@ -87,7 +87,13 @@ Rectangle {
                 Accessible.ignored: true
             }
 
+            Item {
+                width: parent.width
+                height: viewerState.height > 0 ? 3 : 0
+            }
+
             AuthorViewerState {
+                id: viewerState
                 userDid: authorRect.userDid
                 did: author.did
                 followedBy: author.viewer.followedBy && showFollow

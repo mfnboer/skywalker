@@ -495,6 +495,32 @@ SkyPage {
                 }
             }
 
+            Item {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                height: blocking || author.viewer.blockedBy ? 3 : 0
+            }
+
+            RowLayout {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                visible: blocking || author.viewer.blockedBy
+
+                SkyLabel {
+                    text: qsTr("blocks you")
+                    visible: author.viewer.blockedBy
+                }
+                SkyLabel {
+                    text: getBlockingText()
+                    visible: blocking && author.viewer.blockingByList.isNull()
+                }
+                SkyLabel {
+                    text: qsTr("list blocked")
+                    visible: !author.viewer.blockingByList.isNull()
+                }
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
+
             Rectangle {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 height: contentLabels.height
@@ -1824,9 +1850,9 @@ SkyPage {
         const expiresAt = blocksWithExpiry.getExpiry(blocking)
 
         if (!isNaN(expiresAt.getTime()))
-            return qsTr(`You blocked this account till ${guiSettings.expiresIndication(expiresAt)}`)
+            return qsTr(`blocked by you till ${guiSettings.expiresIndication(expiresAt)}`)
 
-        return qsTr("You blocked this account")
+        return qsTr("blocked by you")
     }
 
     function getMutingText() {

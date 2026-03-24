@@ -127,7 +127,13 @@ Rectangle {
                         visible: convo.members.length > 1
                     }
 
+                    Item {
+                        width: parent.width
+                        height: viewerState.height > 0 ? 3 : 0
+                    }
+
                     AuthorViewerState {
+                        id: viewerState
                         did: firstMember.did
                         blockingUri: firstMember.viewer.blocking
                         blockingByList: !firstMember.viewer.blockingByList.isNull()
