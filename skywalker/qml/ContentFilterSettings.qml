@@ -344,7 +344,7 @@ SkyPage {
             if (!list.isNull())
                 addListPrefs(list)
 
-            dialog.destroy()
+            dialog.close()
             skywalker.removeListListModel(modelId)
         })
         dialog.onNewList.connect(() => {
@@ -353,7 +353,7 @@ SkyPage {
             root.newList(model, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid(), () => { dialog.open() })
         })
         dialog.onRejected.connect(() => {
-            dialog.destroy()
+            dialog.close()
             skywalker.removeListListModel(modelId)
         })
         dialog.open()

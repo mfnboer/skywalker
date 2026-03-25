@@ -3,17 +3,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     required property videouploadlimits limits
 
     id: limitsDialog
     width: parent.width - 40
     title: qsTr("Video upload limits")
-    modal: true
     contentHeight: limitsGrid.height
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     GridLayout {
         id: limitsGrid

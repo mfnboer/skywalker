@@ -17,8 +17,8 @@ Image {
     function showVerifierStatus() {
         let component = guiSettings.createComponent("TrustedVerifierDialog.qml")
         let dialog = component.createObject(rootContent, { author: badge.author })
-        dialog.onAccepted.connect(() => { dialog.destroy() })
-        dialog.onRejected.connect(() => { dialog.destroy() })
+        dialog.onAccepted.connect(() => { dialog.close() })
+        dialog.onRejected.connect(() => { dialog.close() })
         dialog.open()
     }
 }

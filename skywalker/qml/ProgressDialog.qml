@@ -2,14 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+SkyDialog {
     id: progressDialog
     contentHeight: column.height
     width: parent.width - 40
-    modal: true
     standardButtons: Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     ColumnLayout {
         id: column

@@ -223,9 +223,9 @@ SkyPage {
     function forgotPassword() {
         let component = guiSettings.createComponent("ForgotPasswordDialog.qml")
         let dialog = component.createObject(loginPage, { host: hostField.editText })
-        dialog.onHostEmail.connect((host, email) => { dialog.destroy(); accountUtils.requestPasswordReset(email, host) })
-        dialog.onAlreadyHasCode.connect(() => { dialog.destroy(); enterPasswordResetToken() })
-        dialog.onRejected.connect(() => { dialog.destroy() })
+        dialog.onHostEmail.connect((host, email) => { dialog.close(); accountUtils.requestPasswordReset(email, host) })
+        dialog.onAlreadyHasCode.connect(() => { dialog.close(); enterPasswordResetToken() })
+        dialog.onRejected.connect(() => { dialog.close() })
         dialog.open()
     }
 

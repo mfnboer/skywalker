@@ -245,41 +245,41 @@ Item {
         let component = guiSettings.createComponent("DiscardSaveMessage.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.No | Dialog.Discard | Dialog.Save | Dialog.Help })
         message.onDiscarded.connect(() => {
-                message.destroy()
+                message.close()
                 onDiscardCb()
             })
         message.onAccepted.connect(() => {
                 const storageType = message.storageType
                 userSettings.setDraftStorageType(storageType)
-                message.destroy()
+                message.close()
                 onSaveCb(storageType)
             })
-        message.onRejected.connect(() => message.destroy())
+        message.onRejected.connect(() => message.close())
         message.show(question)
     }
 
     function askYesNoQuestion(parent, question, onYesCb, onNoCb = () => {}, onLinkCb = (link) => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Yes | Dialog.No })
-        message.onAccepted.connect(() => { message.destroy(); onYesCb() })
-        message.onRejected.connect(() => { message.destroy(); onNoCb() })
-        message.onLinkActivated.connect((link) => { message.destroy(); onLinkCb(link) })
+        message.onAccepted.connect(() => { message.close(); onYesCb() })
+        message.onRejected.connect(() => { message.close(); onNoCb() })
+        message.onLinkActivated.connect((link) => { message.close(); onLinkCb(link) })
         message.show(question)
     }
 
     function noticeOkCancel(parent, question, onOkCb, onCancelCb = () => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Ok | Dialog.Cancel })
-        message.onAccepted.connect(() => { message.destroy(); onOkCb() })
-        message.onRejected.connect(() => { message.destroy(); onCancelCb() })
+        message.onAccepted.connect(() => { message.close(); onOkCb() })
+        message.onRejected.connect(() => { message.close(); onCancelCb() })
         message.show(question)
     }
 
     function notice(parent, msg, emoji = "", onOkCb = () => {}, onLinkCb = (link) => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { emoji: emoji, standardButtons: Dialog.Ok })
-        message.onAccepted.connect(() => { message.destroy(); onOkCb() })
-        message.onRejected.connect(() => message.destroy())
+        message.onAccepted.connect(() => { message.close(); onOkCb() })
+        message.onRejected.connect(() => message.close())
         message.onLinkActivated.connect((link) => { onLinkCb(link) })
         message.show(msg)
     }
@@ -287,23 +287,23 @@ Item {
     function askToken(parent, title, onOkCb, onCancelCb = () => {}) {
         let component = guiSettings.createComponent("TokenDialog.qml")
         let dialog = component.createObject(parent, { title: title })
-        dialog.onToken.connect((token) => { dialog.destroy(); onOkCb(token) })
-        dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
+        dialog.onToken.connect((token) => { dialog.close(); onOkCb(token) })
+        dialog.onRejected.connect(() => { dialog.close(); onCancelCb() })
         dialog.open()
     }
 
     function askPasswordResetToken(parent, onOkCb, onCancelCb = () => {}) {
         let component = guiSettings.createComponent("TokenPasswordDialog.qml")
         let dialog = component.createObject(parent)
-        dialog.onPasswordToken.connect((password, token) => { dialog.destroy(); onOkCb(password, token) })
-        dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
+        dialog.onPasswordToken.connect((password, token) => { dialog.close(); onOkCb(password, token) })
+        dialog.onRejected.connect(() => { dialog.close(); onCancelCb() })
         dialog.open()
     }
 
     function showProgress(parent, msg, onCancelCb) {
         let component = guiSettings.createComponent("ProgressDialog.qml")
         let dialog = component.createObject(parent)
-        dialog.onRejected.connect(() => { dialog.destroy(); onCancelCb() })
+        dialog.onRejected.connect(() => { dialog.close(); onCancelCb() })
         dialog.show(msg)
         return dialog
     }

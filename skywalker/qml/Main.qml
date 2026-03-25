@@ -231,8 +231,8 @@ ApplicationWindow {
     function showEmojiNamesList(txt) {
         let component = guiSettings.createComponent("EmojiNamesList.qml")
         let page = component.createObject(rootContent, { txt: txt })
-        page.onAccepted.connect(() => { page.destroy() })
-        page.onRejected.connect(() => { page.destroy() })
+        page.onAccepted.connect(() => { page.close() })
+        page.onRejected.connect(() => { page.close() })
         page.open()
     }
 
@@ -585,13 +585,13 @@ ApplicationWindow {
         id: gifToVideoConverter
 
         onConversionOk: (videoFileName) => {
-            progressDialog.destroy()
+            progressDialog.close()
             postUtils.dropVideo("file://" + gifFileName)
             skywalker.handleSharedVideoReceived(`file://${videoFileName}`, postText, true)
         }
 
         onConversionFailed: (error) => {
-            progressDialog.destroy()
+            progressDialog.close()
             postUtils.dropVideo("file://" + gifFileName)
             statusPopup.show(skywalker.getUserDid(), qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
@@ -1744,11 +1744,11 @@ ApplicationWindow {
                     console.debug("No postgate change")
                 }
 
-                restrictionsPage.destroy()
+                restrictionsPage.close()
                 sw.removeListListModel(restrictionsListModelId)
         })
         restrictionsPage.onRejected.connect(() => {
-                restrictionsPage.destroy()
+                restrictionsPage.close()
                 sw.removeListListModel(restrictionsListModelId)
         })
         restrictionsPage.open()
@@ -1828,9 +1828,9 @@ ApplicationWindow {
             else
                 okCb(dialog.expiresAt)
 
-            dialog.destroy()
+            dialog.close()
         })
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.open()
     }
 

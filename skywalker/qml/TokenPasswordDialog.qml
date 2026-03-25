@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import skywalker
 
-Dialog {
+SkyDialog {
     property Skywalker skywalker: root.getSkywalker()
     readonly property int minPasswordLength: 8
 
@@ -15,8 +14,6 @@ Dialog {
     width: parent.width - 2 * leftMargin
     contentHeight: col.height
     title: qsTr("Reset password")
-    modal: true
-    Material.background: guiSettings.backgroundColor
 
     Flickable {
         id: flick

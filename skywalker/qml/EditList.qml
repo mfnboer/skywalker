@@ -387,7 +387,7 @@ SkyPage {
         })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
-                linkPage.destroy()
+                linkPage.close()
 
                 if (name.length > 0)
                     descriptionField.addEmbeddedLink(webLinkIndex, name)
@@ -395,7 +395,7 @@ SkyPage {
                 descriptionField.forceActiveFocus()
         })
         linkPage.onRejected.connect(() => {
-                linkPage.destroy()
+                linkPage.close()
                 descriptionField.forceActiveFocus()
         })
         linkPage.open()
@@ -422,7 +422,7 @@ SkyPage {
         })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
-                linkPage.destroy()
+                linkPage.close()
 
                 if (name.length <= 0)
                     descriptionField.removeEmbeddedLink(linkIndex)
@@ -432,7 +432,7 @@ SkyPage {
                 descriptionField.forceActiveFocus()
         })
         linkPage.onRejected.connect(() => {
-                linkPage.destroy()
+                linkPage.close()
                 descriptionField.forceActiveFocus()
         })
         linkPage.open()

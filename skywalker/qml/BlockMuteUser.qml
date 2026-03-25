@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     required property bool blockUser
     required property basicprofile author
     property alias expiresAt: durationInput.expiresAt
@@ -12,9 +12,7 @@ Dialog {
     width: parent.width
     contentHeight: durationInput.y + durationInput.height
     topMargin: guiSettings.headerHeight
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
 
     AccessibleText {
         id: headerText

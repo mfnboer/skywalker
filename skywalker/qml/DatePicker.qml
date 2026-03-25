@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property date selectedDate
     property bool enableTime: false
     readonly property int firstYear: 2020
@@ -14,9 +14,7 @@ Dialog {
     contentWidth: Math.max(yearComboBox.x + yearComboBox.width, monthGrid.width)
     contentHeight: timeRow.visible ? timeRow.y + timeRow.height : monthColumn.y + monthColumn.height
     topMargin: guiSettings.headerHeight + 10
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
 
     ComboBox {
         id: monthComboBox

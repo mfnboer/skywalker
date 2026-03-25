@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import skywalker
 
-Dialog {
+SkyDialog {
     required property bool suggestive
     required property bool nudity
     required property bool porn
@@ -13,10 +12,8 @@ Dialog {
     width: parent.width
     contentHeight: warningColumn.height
     title: qsTr("Adult content warning")
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     Flickable {
         anchors.fill: parent

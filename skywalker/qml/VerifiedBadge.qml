@@ -18,8 +18,8 @@ Image {
     function showVerifiedStatus() {
         let component = guiSettings.createComponent("VerifiedDialog.qml")
         let dialog = component.createObject(rootContent, { author: badge.author })
-        dialog.onAccepted.connect(() => { dialog.destroy() })
-        dialog.onRejected.connect(() => { dialog.destroy() })
+        dialog.onAccepted.connect(() => { dialog.close() })
+        dialog.onRejected.connect(() => { dialog.close() })
         dialog.open()
     }
 }

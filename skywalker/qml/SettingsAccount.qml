@@ -333,8 +333,8 @@ Item {
     function askEmailUpdateToken(tokenRequired, onOkCb) {
         let component = guiSettings.createComponent("TokenEmailDialog.qml")
         let dialog = component.createObject(root, { tokenRequired: tokenRequired })
-        dialog.onEmailToken.connect((email, token) => { dialog.destroy(); onOkCb(email, token) })
-        dialog.onRejected.connect(() => { dialog.destroy() })
+        dialog.onEmailToken.connect((email, token) => { dialog.close(); onOkCb(email, token) })
+        dialog.onRejected.connect(() => { dialog.close() })
         dialog.open()
     }
 }

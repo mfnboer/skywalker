@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     required property var skywalker
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
@@ -25,9 +25,7 @@ Dialog {
     width: parent.width
     contentHeight: Math.max(scopeGrid.height, (authorTypeaheadView.visible ? authorTypeaheadView.y + authorTypeaheadView.height : 0))
     topMargin: guiSettings.headerHeight
-    modal: true
     standardButtons: Dialog.Ok
-    Material.background: guiSettings.backgroundColor
 
     GridLayout {
         id: scopeGrid
@@ -292,7 +290,7 @@ Dialog {
     function selectDate(textInput) {
         let component = guiSettings.createComponent("DatePicker.qml")
         let datePicker = component.createObject(parent, { selectedDate: (textInput === sinceText) ? sinceDate : untilDate })
-        datePicker.onRejected.connect(() => datePicker.destroy())
+        datePicker.onRejected.connect(() => datePicker.close())
 
         datePicker.onAccepted.connect(() => {
             if (textInput === sinceText) {
@@ -304,7 +302,7 @@ Dialog {
                 setUntil = true
             }
 
-            datePicker.destroy()
+            datePicker.close()
         })
 
         datePicker.open()

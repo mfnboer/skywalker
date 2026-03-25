@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import skywalker
 
-Dialog {
+SkyDialog {
     required property int listModelId
     property Skywalker skywalker: root.getSkywalker()
 
@@ -12,11 +11,9 @@ Dialog {
     id: dialog
     width: parent.width - 20
     contentHeight: listComboBox.height + newListButton.height + 10
-    modal: true
     title: qsTr("Select list")
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     PagingComboBox {
         id: listComboBox

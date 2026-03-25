@@ -1914,13 +1914,13 @@ SkyPage {
         id: gifToVideoConverter
 
         onConversionOk: (videoFileName) => {
-            progressDialog.destroy()
+            progressDialog.close()
             page.tmpVideos.push("file://" + videoFileName)
             autoEditGif(`file://${videoFileName}`)
         }
 
         onConversionFailed: (error) => {
-            progressDialog.destroy()
+            progressDialog.close()
             skywalker.showStatusMessage(qsTr(`GIF conversion failed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
 
@@ -2354,10 +2354,10 @@ SkyPage {
         dialog.onAccepted.connect(() => {
             threadPrefix = dialog.getPrefix()
             skywalker.getUserSettings().setThreadPrefix(threadPrefix)
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.open()
     }
 
@@ -2780,9 +2780,9 @@ SkyPage {
                 page.allowListIndexes = restrictionsPage.allowListIndexes
                 page.allowQuoting = restrictionsPage.allowQuoting
                 allowListUrisFromDraft = []
-                restrictionsPage.destroy()
+                restrictionsPage.close()
         })
-        restrictionsPage.onRejected.connect(() => restrictionsPage.destroy())
+        restrictionsPage.onRejected.connect(() => restrictionsPage.close())
         restrictionsPage.open()
     }
 
@@ -2853,9 +2853,9 @@ SkyPage {
                 postItem.cwNudity = cwPage.nudity
                 postItem.cwPorn = cwPage.porn
                 postItem.cwGore = cwPage.gore
-                cwPage.destroy()
+                cwPage.close()
         })
-        cwPage.onRejected.connect(() => cwPage.destroy())
+        cwPage.onRejected.connect(() => cwPage.close())
         cwPage.open()
     }
 
@@ -2882,7 +2882,7 @@ SkyPage {
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
                 const addLinkCard = linkPage.addLinkCard
-                linkPage.destroy()
+                linkPage.close()
 
                 if (name.length > 0)
                     postText.addEmbeddedLink(webLinkIndex, name)
@@ -2893,7 +2893,7 @@ SkyPage {
                 postText.forceActiveFocus()
         })
         linkPage.onRejected.connect(() => {
-                linkPage.destroy()
+                linkPage.close()
                 postText.forceActiveFocus()
         })
         linkPage.open()
@@ -2927,7 +2927,7 @@ SkyPage {
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
                 const addLinkCard = linkPage.addLinkCard
-                linkPage.destroy()
+                linkPage.close()
 
                 if (name.length <= 0)
                     postText.removeEmbeddedLink(linkIndex)
@@ -2940,7 +2940,7 @@ SkyPage {
                 postText.forceActiveFocus()
         })
         linkPage.onRejected.connect(() => {
-                linkPage.destroy()
+                linkPage.close()
                 postText.forceActiveFocus()
         })
         linkPage.open()
@@ -3101,7 +3101,7 @@ SkyPage {
     function showVideoUploadLimits(limits) {
         let component = guiSettings.createComponent("VideoUploadLimits.qml")
         let limitsPage = component.createObject(page, { limits: limits })
-        limitsPage.onAccepted.connect(() => limitsPage.destroy())
+        limitsPage.onAccepted.connect(() => limitsPage.close())
         limitsPage.open()
     }
 

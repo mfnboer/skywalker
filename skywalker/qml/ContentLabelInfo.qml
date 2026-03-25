@@ -4,7 +4,7 @@ import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property string contentAuthorDid
@@ -16,10 +16,8 @@ Dialog {
     id: contentLabelInfo
     width: parent.width - 40
     contentHeight: grid.height
-    modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     signal appeal(contentgroup group, string labelerHandle)
 

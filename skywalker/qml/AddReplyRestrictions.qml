@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 import skywalker
 
-Dialog {
+SkyDialog {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property string rootUri
@@ -29,10 +29,8 @@ Dialog {
     id: restrictionDialog
     width: parent.width
     contentHeight: restrictionColumn.height
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     onAccepted: {
         if (saveAsDefault)

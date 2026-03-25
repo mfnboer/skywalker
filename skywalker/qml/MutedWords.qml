@@ -93,10 +93,10 @@ ListView {
             if (word)
                 skywalker.mutedWords.addEntry(word, actorTarget, dialog.expiresAt)
 
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.show()
     }
 
@@ -120,10 +120,10 @@ ListView {
                 skywalker.mutedWords.addEntry(word, actorTarget, dialog.expiresAt)
             }
 
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.show()
     }
 

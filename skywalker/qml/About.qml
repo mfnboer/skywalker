@@ -72,6 +72,7 @@ SkyPage {
         SkyButton {
             id: okButton
             anchors.horizontalCenter: parent.horizontalCenter
+            height: 40
             text: qsTr("OK")
             onClicked: closed()
         }

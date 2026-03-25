@@ -1134,7 +1134,7 @@ SkyPage {
             userSettings.setSearchAdultOverrideVisibility(userDid, scopePage.overrideAdultVisibility)
             overrideAdultVisibility = scopePage.overrideAdultVisibility
             searchUtils.scopedSearchPosts(page.getSearchText())
-            scopePage.destroy()
+            scopePage.close()
         }
 
         scopePage.onRejected.connect(callback)

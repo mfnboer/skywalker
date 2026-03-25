@@ -442,7 +442,7 @@ SkyPage {
         })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
-                linkPage.destroy()
+                linkPage.close()
 
                 if (name.length > 0)
                     newMessageText.addEmbeddedLink(webLinkIndex, name)
@@ -450,7 +450,7 @@ SkyPage {
                 newMessageText.forceActiveFocus()
         })
         linkPage.onRejected.connect(() => {
-                linkPage.destroy()
+                linkPage.close()
                 newMessageText.forceActiveFocus()
         })
         linkPage.open()

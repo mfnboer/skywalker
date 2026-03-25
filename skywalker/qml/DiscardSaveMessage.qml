@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
     property int storageType: userSettings.getDraftStorageType()
@@ -13,10 +13,8 @@ Dialog {
     id: msgDialog
     contentHeight: msgCol.height
     width: parent.width - 40
-    modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     onOpened: msgLabel.focus = true
 

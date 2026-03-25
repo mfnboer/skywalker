@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property string emoji: ""
 
     signal linkActivated(string link)
@@ -11,10 +11,8 @@ Dialog {
     id: msgDialog
     contentHeight: msgRow.height
     width: parent.width - 40
-    modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     onOpened: msgLabel.focus = true
 

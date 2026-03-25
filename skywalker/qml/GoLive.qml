@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property string uri
     property int duration: 60
 
@@ -11,10 +11,8 @@ Dialog {
     width: parent.width - 20
     contentHeight: col.height
     title: qsTr("Go live")
-    modal: true
     standardButtons: linkCard.visible && isDurationValid() ? Dialog.Ok | Dialog.Cancel : Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     Column {
         id: col

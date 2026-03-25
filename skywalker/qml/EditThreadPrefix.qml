@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Dialog {
+SkyDialog {
     property string prefix
 
     x: (parent.width - width) / 2
@@ -10,9 +10,7 @@ Dialog {
     title: qsTr("Prefix")
     contentHeight: exampleText.y + exampleText.height
     topMargin: guiSettings.headerHeight
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
 
     Rectangle {
         width: parent.width

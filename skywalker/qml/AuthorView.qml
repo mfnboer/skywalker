@@ -1607,7 +1607,7 @@ SkyPage {
             notificationUtils.subscribeActivity(author.did, post, reply)
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.open()
     }
 
@@ -1631,10 +1631,10 @@ SkyPage {
                 profileUtils.updatingStatus = true
                 profileUtils.updateStatus(author.did, card.link, card.title, card.description, card.thumb, durationMinutes)
             }
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.open()
     }
 

@@ -101,11 +101,11 @@ Repeater {
                 contentAuthorDid: contentAuthor.did,
                 label: contentLabel
         })
-        infoPage.onAccepted.connect(() => infoPage.destroy())
-        infoPage.onRejected.connect(() => infoPage.destroy())
+        infoPage.onAccepted.connect(() => infoPage.close())
+        infoPage.onRejected.connect(() => infoPage.close())
         infoPage.onAppeal.connect((contentGroup, labelerHandle) => {
             appeal(contentLabel, contentGroup, labelerHandle)
-            infoPage.destroy()
+            infoPage.close()
         })
         infoPage.open()
     }

@@ -101,11 +101,11 @@ Item {
 
         let component = guiSettings.createComponent("DatePicker.qml")
         let datePicker = component.createObject(parent, { selectedDate: expiresAt, enableTime: true })
-        datePicker.onRejected.connect(() => datePicker.destroy())
+        datePicker.onRejected.connect(() => datePicker.close())
 
         datePicker.onAccepted.connect(() => {
             expiresAt = datePicker.selectedDate
-            datePicker.destroy()
+            datePicker.close()
         })
 
         datePicker.open()

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Dialog {
+SkyDialog {
     signal token(string token)
 
     id: dialog
@@ -10,8 +10,6 @@ Dialog {
     leftMargin: 20
     width: parent.width - 2 * leftMargin
     contentHeight: col.height
-    modal: true
-    Material.background: guiSettings.backgroundColor
 
     Column {
         id: col

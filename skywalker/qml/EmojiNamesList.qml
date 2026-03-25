@@ -1,21 +1,18 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     required property string txt
     readonly property list<string> emojiList: UnicodeFonts.getUniqueEmojis(txt)
 
     id: page
     width: parent.width - 40
     contentHeight: emojiList.length > 0 ? emojiListView.contentHeight : 200
-    modal: true
     title: qsTr("Emoji names")
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     SkyListView {
         id: emojiListView

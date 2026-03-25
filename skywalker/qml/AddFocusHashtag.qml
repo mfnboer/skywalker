@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property string focusHashtag
     property bool isTyping: false
     readonly property int hashTagTypeaheadHeight: 200 * guiSettings.fontScaleFactor
@@ -12,9 +12,7 @@ Dialog {
     width: parent.width
     contentHeight: textInput.height + hashTagTypeaheadHeight
     topMargin: guiSettings.headerHeight
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
 
     SkyTextInput {
         id: textInput

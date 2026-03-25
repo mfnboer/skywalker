@@ -174,10 +174,10 @@ ListView {
             if (tag)
                 skywalker.focusHashtags.addEntry(tag)
 
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.show()
     }
 
@@ -191,10 +191,10 @@ ListView {
             if (tag)
                 skywalker.focusHashtags.addHashtagToEntry(entry, tag)
 
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.show()
     }
 
@@ -220,10 +220,10 @@ ListView {
                 }
             }
 
-            dialog.destroy()
+            dialog.close()
         })
 
-        dialog.onRejected.connect(() => dialog.destroy())
+        dialog.onRejected.connect(() => dialog.close())
         dialog.show()
     }
 

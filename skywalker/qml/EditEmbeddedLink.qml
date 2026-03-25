@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+SkyDialog {
     required property string link
     property string name
     property string error
@@ -13,9 +13,7 @@ Dialog {
     width: parent.width
     contentHeight: linkColumn.height
     topMargin: guiSettings.headerHeight
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
-    Material.background: guiSettings.backgroundColor
 
     ColumnLayout {
         id: linkColumn

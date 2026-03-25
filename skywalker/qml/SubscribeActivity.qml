@@ -1,9 +1,8 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import skywalker
 
-Dialog {
+SkyDialog {
     required property activitysubscription subscription
     property bool post: subscription.post
     property bool reply: subscription.reply
@@ -12,10 +11,8 @@ Dialog {
 
     width: parent.width
     contentHeight: activityCol.height
-    modal: true
     standardButtons: Dialog.Ok | Dialog.Cancel
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     onAccepted: {
         if (post === subscription.post && reply === subscription.reply)

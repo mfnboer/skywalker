@@ -1,10 +1,9 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Controls.Material
 import QtQuick.Layouts
 import skywalker
 
-Dialog {
+SkyDialog {
     property string userDid
     required property basicprofile author
     property var skywalker: root.getSkywalker(userDid)
@@ -12,10 +11,8 @@ Dialog {
     id: page
     width: parent.width - 40
     contentHeight: nameText.height + handleText.height + verifiedByText.height + verifierList.contentHeight + 20
-    modal: true
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
-    Material.background: guiSettings.backgroundColor
 
     SkyCleanedText {
         id: nameText
