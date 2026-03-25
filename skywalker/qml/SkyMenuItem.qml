@@ -19,12 +19,12 @@ Item {
     Row {
         id: itemRow
         width: parent.width
-        topPadding: 10
-        bottomPadding: 10
-        spacing: 20
+        topPadding: 5
+        bottomPadding: 5
+        spacing: 10
 
         SkySvg {
-            width: 30
+            width: 25
             height: width
             color: guiSettings.textColor
             svg: menuItem.icon
@@ -32,7 +32,7 @@ Item {
         AccessibleText {
             width: parent.width - 30 - parent.spacing
             anchors.verticalCenter: parent.verticalCenter
-            font.pointSize: guiSettings.scaledFont(10/8)
+            font.pointSize: guiSettings.scaledFont(9/8)
             elide: Text.ElideRight
             text: menuItem.text
         }

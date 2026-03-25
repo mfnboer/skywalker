@@ -26,6 +26,7 @@ ListView {
     Accessible.role: Accessible.List
 
     delegate: Rectangle {
+        required property int index
         required property basicprofile modelData
         property alias author: authorEntry.modelData
 
@@ -115,11 +116,10 @@ ListView {
 
             Item {}
 
-            Rectangle {
+            Item {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: contentLabels.height + 5
-                color: "transparent"
 
                 ContentLabels {
                     id: contentLabels
@@ -136,6 +136,7 @@ ListView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
                 color: guiSettings.separatorColor
+                visible: authorEntry.index < searchList.count - 1
             }
         }
         SkyMouseArea {

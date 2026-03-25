@@ -9,10 +9,7 @@ Drawer {
 
     onAboutToShow: {
         background.color = guiSettings.menuColor
-        root.enablePopupShield(true)
     }
-
-    onAboutToHide: root.enablePopupShield(false)
 
     Rectangle {
         y: -topPadding / 2 - height / 2
@@ -20,7 +17,7 @@ Drawer {
         width: 40
         height: 4
         radius: height / 2
-        color: guiSettings.buttonColor
+        color: guiSettings.separatorHighLightColor
         visible: edge == Qt.BottomEdge
     }
 
@@ -30,7 +27,7 @@ Drawer {
         width: 4
         height: 40
         radius: width / 2
-        color: guiSettings.buttonColor
+        color: guiSettings.separatorHighLightColor
         visible: edge == Qt.RightEdge
     }
 
@@ -41,7 +38,7 @@ Drawer {
         width: 4
         height: 40
         radius: width / 2
-        color: guiSettings.buttonColor
+        color: guiSettings.separatorHighLightColor
         visible: edge == Qt.LeftEdge
     }
 }

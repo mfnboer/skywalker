@@ -688,8 +688,11 @@ void SearchUtils::getSuggestedActors(const QString& cursor)
             auto* model = getSearchSuggestedUsersModel();
             model->setGetFeedInProgress(false);
 
-            qDebug() << "getSuggestedActors failed:" << error << " - " << msg;
-            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+            qWarning() << "getSuggestedActors failed:" << error << " - " << msg;
+
+            // HACK: bsky gives a weird error: relativeToDid must be provided
+            // This field does not exist however. For now suppress the error
+            // mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

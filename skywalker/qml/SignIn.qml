@@ -69,6 +69,7 @@ SkyPage {
         SkyButton {
             id: signInButton
             anchors.horizontalCenter: parent.horizontalCenter
+            height: 40
             text: qsTr("Sign In")
             onClicked: signIn()
         }

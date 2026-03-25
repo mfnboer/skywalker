@@ -19,7 +19,7 @@ SplitView {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             width: 1
-            height: 15
+            height: 20
             color: guiSettings.separatorHighLightColor
         }
 
@@ -28,7 +28,7 @@ SplitView {
             anchors.rightMargin: 4
             anchors.verticalCenter: parent.verticalCenter
             width: 1
-            height: 15
+            height: 20
             color: guiSettings.separatorHighLightColor
         }
     }

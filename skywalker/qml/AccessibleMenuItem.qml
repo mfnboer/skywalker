@@ -46,4 +46,9 @@ MenuItem {
     Accessible.name: text
     Accessible.description: Accessible.name
     Accessible.onPressAction: triggered()
+
+    onHighlightedChanged: {
+        if (highlighted)
+            highlighted = false
+    }
 }

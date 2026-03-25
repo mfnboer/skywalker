@@ -266,7 +266,7 @@ SkyPage {
 
                         sourceComponent: SkyMenu {
                             id: moreMenu
-                            onAboutToHide: parent.active = false
+                            onClosed: parent.active = false
 
                             SkyMenuButton {
                                 text: qsTr("Translate")

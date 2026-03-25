@@ -173,16 +173,21 @@ SkyPage {
             }
         }
 
-        SkyButton {
+        AccessibleText {
+            anchors.left: parent.left
+            anchors.leftMargin: 10
             anchors.top: loginForm.bottom
-            text: qsTr("Advanced settings")
-            onClicked: editAdvancedSettings()
+            anchors.topMargin: 10
+            textFormat: Text.RichText
+            text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Advanced settings</a>`)
+            onLinkActivated: editAdvancedSettings()
         }
 
         SkyButton {
             id: okButton
             anchors.top: loginForm.bottom
             anchors.right: parent.right
+            height: 40
             text: qsTr("OK")
             enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
             onClicked: {

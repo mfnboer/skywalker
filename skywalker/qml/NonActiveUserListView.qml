@@ -215,11 +215,10 @@ ListView {
 
             Item{}
 
-            Rectangle {
+            Item {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
                 Layout.preferredHeight: contentLabels.height + 5
-                color: "transparent"
 
                 ContentLabels {
                     id: contentLabels

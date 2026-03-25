@@ -123,12 +123,14 @@ Rectangle {
             Layout.rightMargin: authorRect.margin
 
             SkyButton {
+                height: 40
                 text: qsTr("Follow")
                 visible: !followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: follow(author)
                 Accessible.name: qsTr(`press to follow ${author.name}`)
             }
             SkyButton {
+                height: 40
                 flat: true
                 text: qsTr("Following")
                 visible: followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
@@ -136,6 +138,8 @@ Rectangle {
                 Accessible.name: qsTr(`press to unfollow ${author.name}`)
             }
             SvgButton {
+                width: 40
+                height: width
                 svg: SvgOutline.delete
                 accessibleName: qsTr(`press to delete ${author.name}`)
                 visible: listItemUri && allowDeleteItem
@@ -182,11 +186,17 @@ Rectangle {
             color: authorRect.highlight ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
         }
 
+        // Create empty space (rowSpacing)
+        Item {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            height: 0
+        }
+
         AccessibleText {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            topPadding: 10
             bottomPadding: 20
             elide: Text.ElideRight
             color: guiSettings.textColor
