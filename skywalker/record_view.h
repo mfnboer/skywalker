@@ -26,6 +26,7 @@ class RecordView
     Q_PROPERTY(BasicProfile author READ getAuthor CONSTANT FINAL)
     Q_PROPERTY(QDateTime postDateTime READ getIndexedAt CONSTANT FINAL)
     Q_PROPERTY(bool postIsReply READ isReply CONSTANT FINAL)
+    Q_PROPERTY(bool postIsQuote READ isQuote CONSTANT FINAL)
     Q_PROPERTY(QEnums::TripleBool postIsThread READ isThread CONSTANT FINAL)
     Q_PROPERTY(bool postIsThreadReply READ isThreadReply CONSTANT FINAL)
     Q_PROPERTY(BasicProfile replyToAuthor READ getReplyToAuthor CONSTANT FINAL)
@@ -89,6 +90,7 @@ public:
     const std::vector<ATProto::ComATProtoLabel::Label::SharedPtr>& getLabels() const;
     const ContentLabelList& getLabelsIncludingAuthorLabels() const;
     bool isReply() const;
+    bool isQuote() const;
     QString getReplyToAuthorDid() const;
     BasicProfile getReplyToAuthor() const;
     QString getReplyRootAuthorDid() const;

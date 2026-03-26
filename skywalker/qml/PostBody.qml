@@ -497,12 +497,10 @@ Column {
     onBodyBackgroundColorChanged: {
         if (recordLoader.item) {
             recordLoader.item.backgroundColor = bodyBackgroundColor
-            recordLoader.item.highlight = bodyBackgroundColor === guiSettings.postHighLightColor
         }
 
         if (recordWithMediaLoader.item) {
             recordWithMediaLoader.item.backgroundColor = bodyBackgroundColor
-            recordWithMediaLoader.item.highlight = bodyBackgroundColor === guiSettings.postHighLightColor
         }
     }
 }

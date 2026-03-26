@@ -836,7 +836,8 @@ ApplicationWindow {
             onBookmarks: {
                 let component = guiSettings.createComponent("Bookmarks.qml")
                 let page = component.createObject(root, { skywalker: skywalker })
-                page.onClosed.connect(() => { popStack() })
+                const r = root
+                page.onClosed.connect(() => { r.popStack() })
                 pushStack(page)
                 skywalker.getBookmarks().getBookmarks()
                 close()
@@ -899,7 +900,8 @@ ApplicationWindow {
             onMutedWords: {
                 let component = guiSettings.createComponent("MutedWords.qml")
                 let page = component.createObject(root, { skywalker: skywalker })
-                page.onClosed.connect(() => { popStack() })
+                const r = root
+                page.onClosed.connect(() => { r.popStack() })
                 pushStack(page)
                 close()
             }
@@ -907,7 +909,8 @@ ApplicationWindow {
             onFocusHashtags: {
                 let component = guiSettings.createComponent("FocusHashtags.qml")
                 let page = component.createObject(root)
-                page.onClosed.connect(() => { popStack() })
+                const r = root
+                page.onClosed.connect(() => { r.popStack() })
                 pushStack(page)
                 close()
             }

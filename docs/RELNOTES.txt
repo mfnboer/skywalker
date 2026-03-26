@@ -1,5 +1,8 @@
 next
 ====
+* User interface polishing
+* Unroll post thread button
+* Unwrap quote chain button
 * Show 🤖 in front of name of automated account
 * Bug fixes
 

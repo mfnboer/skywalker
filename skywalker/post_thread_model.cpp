@@ -541,15 +541,12 @@ void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost
             // If the author made multiple replies on a post, then we want the oldest,
             // assuming that the thread was posted in one go, the oldest is most likely
             // the thread continuation.
-            if (mUnrollThread)
-                return olderLessThan(viewPost, *lhsPost, *rhsPost);
-
             const auto& lhsAuthor = lhsPost->mAuthor;
             const auto& rhsAuthor = rhsPost->mAuthor;
 
             // When sorting the thread first, keep the replies from the author first as
             // those are most likely forming a thread.
-            if (mThreadFirst || mReplyOrder == QEnums::REPLY_ORDER_SMART)
+            if (mThreadFirst || mReplyOrder == QEnums::REPLY_ORDER_SMART || mUnrollThread)
             {
                 if (lhsAuthor->mDid != rhsAuthor->mDid)
                 {

@@ -187,6 +187,7 @@ Rectangle {
             width: parent.width
             active: endOfFeed && reverseFeed
             sourceComponent: endOfFeedComp
+            visible: status === Loader.Ready
         }
 
         Row {
@@ -240,6 +241,7 @@ Rectangle {
                         width: parent.width
                         height: 6
                         active: !postParentInThread && (postType === QEnums.POST_REPLY || postType === QEnums.POST_LAST_REPLY)
+                        visible: status === Loader.Ready
 
                         sourceComponent: Rectangle {
                             color: guiSettings.threadMidColor(threadColor)
@@ -278,6 +280,7 @@ Rectangle {
         Loader {
             width: parent.width
             active: postIsPinned && !postLocallyDeleted
+            visible: status === Loader.Ready
 
             sourceComponent: Row {
                 spacing: contentLeftMargin
@@ -319,6 +322,7 @@ Rectangle {
         Loader {
             width: parent.width
             active: !postRepostedByAuthor.isNull() && !postGapId && !postLocallyDeleted
+            visible: status === Loader.Ready
 
             sourceComponent: Row {
                 // BAR
@@ -463,10 +467,59 @@ Rectangle {
                     }
                 }
 
+                // Unroll thread button
+                Loader {
+                    anchors.top: avatarImg.bottom
+                    anchors.topMargin: 10
+                    anchors.horizontalCenter: avatarImg.horizontalCenter
+                    active: postIsThread && !unrollThread
+                    asynchronous: true
+                    visible: status === Loader.Ready
+
+                    sourceComponent: SvgButton {
+                        svg: SvgOutline.thread
+                        accessibleName: qsTr("unroll thread")
+                        flat: true
+                        iconColor: guiSettings.threadStartColor(threadColor)
+                        background: Rectangle {
+                            implicitWidth: 34
+                            implicitHeight: 34
+                            radius: width / 2
+                            color: postEntry.color
+                        }
+                        onClicked: unrollPostThread()
+                    }
+                }
+
+                // Unwrap quote chain
+                Loader {
+                    anchors.top: avatarImg.bottom
+                    anchors.topMargin: 10
+                    anchors.horizontalCenter: avatarImg.horizontalCenter
+                    active: !postIsThread && showRecord && ((Boolean(postRecord) && postRecord.postIsQuote) || (Boolean(postRecordWithMedia) && postRecordWithMedia.record.postIsQuote))
+                    asynchronous: true
+                    visible: status === Loader.Ready
+
+                    sourceComponent: SvgButton {
+                        svg: SvgFilled.quote
+                        accessibleName: qsTr("unwrap quote chain")
+                        flat: true
+                        iconColor: guiSettings.threadStartColor(threadColor)
+                        background: Rectangle {
+                            implicitWidth: 34
+                            implicitHeight: 34
+                            radius: width / 2
+                            color: postEntry.color
+                        }
+                        onClicked: unwrapQuoteChain()
+                    }
+                }
+
                 // Mask to turn the threadbar into a dotted line
                 Loader {
                     width: parent.width
                     active: postFoldedType === QEnums.FOLDED_POST_FIRST
+                    visible: status === Loader.Ready
 
                     sourceComponent: Repeater {
                         model: Math.floor(avatar.height / 8)
@@ -523,6 +576,7 @@ Rectangle {
                     width: parent.width - contentLeftMargin - postEntry.margin
                     active: postIsReply && (!postParentInThread || postType === QEnums.POST_ROOT) && (postType !== QEnums.POST_THREAD || index === 0)
                     visible: status == Loader.Ready
+
                     sourceComponent: ReplyToRow {
                         width: parent.width
                         text: qsTr(`Reply to ${postReplyToAuthor.name}`)
@@ -535,6 +589,7 @@ Rectangle {
                     width: parent.width - contentLeftMargin - postEntry.margin
                     active: postIsHiddenReply && postReplyRootAuthorDid === skywalker.getUserDid()
                     visible: status == Loader.Ready
+
                     sourceComponent: ReplyToRow {
                         width: parent.width
                         text: qsTr("Reply hidden by you")
@@ -613,10 +668,7 @@ Rectangle {
                     moving: postEntry.ListView.view.fastMoving
 
                     onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
-                    onUnrollThread: {
-                        if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
-                            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
-                    }
+                    onUnrollThread: unrollPostThread()
                 }
 
                 // Reposts and likes in detailed view of post entry in thread view
@@ -625,6 +677,7 @@ Rectangle {
                     width: parent.width - contentLeftMargin - postEntry.margin
                     active: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
                     visible: status == Loader.Ready
+
                     sourceComponent: Flow {
                         width: parent.width
                         topPadding: 10
@@ -780,16 +833,8 @@ Rectangle {
                                 skywalker.getPostThread(postUri)
                         }
 
-                        onUnrollThread: {
-                            if (!postIsPlaceHolder && postUri)
-                                skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
-                        }
-
-                        onQuoteChain: {
-                            if (!postIsPlaceHolder && postUri)
-                                root.viewQuoteChain(postUri, userDid)
-                        }
-
+                        onUnrollThread: unrollPostThread()
+                        onQuoteChain: unwrapQuoteChain()
                         onShare: skywalker.sharePost(postUri)
                         onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
                         onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
@@ -1083,6 +1128,7 @@ Rectangle {
         Loader {
             width: parent.width
             active: endOfFeed && !reverseFeed
+            visible: status === Loader.Ready
             sourceComponent: endOfFeedComp
         }
     }
@@ -1130,6 +1176,16 @@ Rectangle {
             if (!postIsPlaceHolder && postUri)
                 skywalker.getPostThread(postUri)
         }
+    }
+
+    function unrollPostThread() {
+        if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
+            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
+    }
+
+    function unwrapQuoteChain() {
+        if (!postIsPlaceHolder && postUri)
+            root.viewQuoteChain(postUri, userDid)
     }
 
     function getGapPosts() {

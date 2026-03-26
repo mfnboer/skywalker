@@ -312,6 +312,31 @@ bool RecordView::isReply() const
     return post->mReply != nullptr;
 }
 
+bool RecordView::isQuote() const
+{
+    if (!mPrivate->mRecord)
+        return false;
+
+    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+        return false;
+
+    const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
+
+    if (!post->mEmbed)
+        return false;
+
+    switch (post->mEmbed->mType)
+    {
+    case ATProto::AppBskyEmbed::EmbedType::RECORD:
+    case ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA:
+        return true;
+    default:
+        break;
+    }
+
+    return false;
+}
+
 QEnums::TripleBool RecordView::isThread() const
 {
     if (!mPrivate->mRecord)

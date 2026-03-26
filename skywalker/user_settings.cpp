@@ -1408,7 +1408,7 @@ void UserSettings::setThreadColor(const QString& color)
 
 QString UserSettings::getThreadColor() const
 {
-    const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#000080" : "#8080ff";
+    const QString defaultColor = getActiveDisplayMode() == QEnums::DISPLAY_MODE_DARK ? "#2040a0" : "#8080ff";
     return mSettings.value(displayKey("threadColor"), defaultColor).toString();
 }
 
