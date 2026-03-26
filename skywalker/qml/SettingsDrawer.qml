@@ -46,7 +46,7 @@ SkyDrawer {
         Column {
             id: userColumn
             width: parent.width
-            spacing: 5
+            spacing: 10
 
             Column {
                 width: parent.width

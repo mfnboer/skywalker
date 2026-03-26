@@ -43,7 +43,7 @@ SkyPage {
                     id: followingItem
                     text: qsTr("Add filters for following")
                     svg: SvgOutline.group
-                    popup: moreMene
+                    popup: moreMenu
                     enabled: !contentFilter.hasFollowingPrefs
                     onClicked: addFollowingPrefs()
                 }
@@ -51,14 +51,14 @@ SkyPage {
                 SkyMenuButton {
                     text: qsTr("Add filters for list")
                     svg: SvgOutline.list
-                    popup: moreMene
+                    popup: moreMenu
                     onClicked: selectList()
                 }
 
                 SkyMenuButton {
                     text: qsTr("Help")
                     svg: SvgOutline.help
-                    popup: moreMene
+                    popup: moreMenu
                     onClicked: showHelp()
                 }
             }

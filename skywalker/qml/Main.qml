@@ -807,192 +807,252 @@ ApplicationWindow {
         visible: height > 0
     }
 
-    SettingsDrawer {
-        id: settingsDrawer
-        height: parent.height
-        edge: !showSideBar ? Qt.RightEdge : Qt.LeftEdge
+    Loader {
+        id: settingsLoader
+        active: false
 
-        onProfile: {
-            let did = skywalker.getUserDid()
-            skywalker.getDetailedProfile(did)
-            close()
+        sourceComponent: SettingsDrawer {
+            id: settingsDrawer
+            height: parent.height
+            edge: !showSideBar ? Qt.RightEdge : Qt.LeftEdge
+
+            onProfile: {
+                let did = skywalker.getUserDid()
+                skywalker.getDetailedProfile(did)
+                close()
+            }
+
+            // onInviteCodes: {
+            //     let component = guiSettings.createComponent("InviteCodesView.qml")
+            //     const codes = inviteCodeStore.getCodes()
+            //     const failedToLoad = inviteCodeStore.failedToLoad()
+            //     let page = component.createObject(root, { codes: codes, failedToLoad: failedToLoad })
+            //     page.onClosed.connect(() => { popStack() })
+            //     page.onAuthorClicked.connect((did) => { skywalker.getDetailedProfile(did) })
+            //     pushStack(page)
+            //     close()
+            // }
+
+            onBookmarks: {
+                let component = guiSettings.createComponent("Bookmarks.qml")
+                let page = component.createObject(root, { skywalker: skywalker })
+                page.onClosed.connect(() => { popStack() })
+                pushStack(page)
+                skywalker.getBookmarks().getBookmarks()
+                close()
+            }
+
+            onContentFiltering: {
+                editContentFilterSettings()
+                close()
+            }
+
+            onActiveFollows: {
+                let userSettings = skywalker.getUserSettings()
+                const interval = userSettings.getActiveOnlineIntervalMins()
+                let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_ACTIVE_FOLLOWS, "")
+                viewAuthorList(modelId, qsTr("Now Online"),
+                        qsTr(`Users you follow that have been active in the last ${interval} minutes.`),
+                        false)
+                close()
+            }
+
+            onBlockedAccounts: {
+                let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKS, "")
+                viewAuthorList(modelId, qsTr("Blocked Accounts"),
+                        qsTr("Blocked accounts cannot reply in your threads, mention you, or otherwise interact with you. You will not see their content and they will be prevented from seeing yours."),
+                        false)
+                close()
+            }
+
+            onMutedAccounts: {
+                let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_MUTES, "")
+                viewAuthorList(modelId, qsTr("Muted Accounts"),
+                        qsTr("Muted accounts have their posts removed from your feed and from your notifications. Mutes are completely private."),
+                        false)
+                close()
+            }
+
+            onMutedReposts: {
+                let userSettings = skywalker.getUserSettings()
+                let did = skywalker.getUserDid()
+                let listUri = userSettings.getMutedRepostsListUri(did)
+                let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, listUri)
+                viewAuthorList(modelId, qsTr("Muted Reposts"),
+                        qsTr("Reposts from these accounts are removed from your feed."),
+                        false)
+                close()
+            }
+
+            onModLists: {
+                let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
+                viewModerationLists(modelId)
+                close()
+            }
+
+            onUserLists: {
+                let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+                viewUserLists(modelId)
+                close()
+            }
+
+            onMutedWords: {
+                let component = guiSettings.createComponent("MutedWords.qml")
+                let page = component.createObject(root, { skywalker: skywalker })
+                page.onClosed.connect(() => { popStack() })
+                pushStack(page)
+                close()
+            }
+
+            onFocusHashtags: {
+                let component = guiSettings.createComponent("FocusHashtags.qml")
+                let page = component.createObject(root)
+                page.onClosed.connect(() => { popStack() })
+                pushStack(page)
+                close()
+            }
+
+            onSettings: {
+                editSettings()
+                close()
+            }
+
+            onSwitchAccount: {
+                selectUser()
+                close()
+            }
+
+            onSignOut: {
+                skywalker.deleteSession()
+                close()
+            }
+
+            onBackup: {
+                backupSettings()
+                close()
+            }
+
+            onRestore: {
+                restoreSettings()
+                close()
+            }
+
+            onBackupHelp: showBackupHelp()
+
+            onAbout: {
+                showAbout()
+                close()
+            }
+
+            onBuyCoffee: {
+                linkUtils.openLink("https://buymeacoffee.com/skywalker.thereforeiam.eu")
+                close()
+            }
+
+            onClosed: {
+                settingsLoader.active = false
+            }
+
+            function show() {
+                user = skywalker.getUser()
+                open()
+            }
         }
 
-        // onInviteCodes: {
-        //     let component = guiSettings.createComponent("InviteCodesView.qml")
-        //     const codes = inviteCodeStore.getCodes()
-        //     const failedToLoad = inviteCodeStore.failedToLoad()
-        //     let page = component.createObject(root, { codes: codes, failedToLoad: failedToLoad })
-        //     page.onClosed.connect(() => { popStack() })
-        //     page.onAuthorClicked.connect((did) => { skywalker.getDetailedProfile(did) })
-        //     pushStack(page)
-        //     close()
-        // }
-
-        onBookmarks: {
-            let component = guiSettings.createComponent("Bookmarks.qml")
-            let page = component.createObject(root, { skywalker: skywalker })
-            page.onClosed.connect(() => { popStack() })
-            pushStack(page)
-            skywalker.getBookmarks().getBookmarks()
-            close()
-        }
-
-        onContentFiltering: {
-            editContentFilterSettings()
-            close()
-        }
-
-        onActiveFollows: {
-            let userSettings = skywalker.getUserSettings()
-            const interval = userSettings.getActiveOnlineIntervalMins()
-            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_ACTIVE_FOLLOWS, "")
-            viewAuthorList(modelId, qsTr("Now Online"),
-                    qsTr(`Users you follow that have been active in the last ${interval} minutes.`),
-                    false)
-            close()
-        }
-
-        onBlockedAccounts: {
-            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKS, "")
-            viewAuthorList(modelId, qsTr("Blocked Accounts"),
-                    qsTr("Blocked accounts cannot reply in your threads, mention you, or otherwise interact with you. You will not see their content and they will be prevented from seeing yours."),
-                    false)
-            close()
-        }
-
-        onMutedAccounts: {
-            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_MUTES, "")
-            viewAuthorList(modelId, qsTr("Muted Accounts"),
-                    qsTr("Muted accounts have their posts removed from your feed and from your notifications. Mutes are completely private."),
-                    false)
-            close()
-        }
-
-        onMutedReposts: {
-            let userSettings = skywalker.getUserSettings()
-            let did = skywalker.getUserDid()
-            let listUri = userSettings.getMutedRepostsListUri(did)
-            let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, listUri)
-            viewAuthorList(modelId, qsTr("Muted Reposts"),
-                    qsTr("Reposts from these accounts are removed from your feed."),
-                    false)
-            close()
-        }
-
-        onModLists: {
-            let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
-            viewModerationLists(modelId)
-            close()
-        }
-
-        onUserLists: {
-            let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
-            viewUserLists(modelId)
-            close()
-        }
-
-        onMutedWords: {
-            let component = guiSettings.createComponent("MutedWords.qml")
-            let page = component.createObject(root, { skywalker: skywalker })
-            page.onClosed.connect(() => { popStack() })
-            pushStack(page)
-            close()
-        }
-
-        onFocusHashtags: {
-            let component = guiSettings.createComponent("FocusHashtags.qml")
-            let page = component.createObject(root)
-            page.onClosed.connect(() => { popStack() })
-            pushStack(page)
-            close()
-        }
-
-        onSettings: {
-            editSettings()
-            close()
-        }
-
-        onSwitchAccount: {
-            selectUser()
-            close()
-        }
-
-        onSignOut: {
-            skywalker.deleteSession()
-            close()
-        }
-
-        onBackup: {
-            backupFileDialog.backup()
-            close()
-        }
-
-        onRestore: {
-            backupFileDialog.restore()
-            close()
-        }
-
-        onBackupHelp: backupFileDialog.help()
-
-        onAbout: {
-            showAbout()
-            close()
-        }
-
-        onBuyCoffee: {
-            linkUtils.openLink("https://buymeacoffee.com/skywalker.thereforeiam.eu")
-            close()
+        onStatusChanged: {
+            if (status === Loader.Ready)
+                item.show()
         }
 
         function show() {
-            user = skywalker.getUser()
-            open()
+            active = true
         }
     }
 
-    BackupFileDialog {
-        id: backupFileDialog
+    function createBackupFileDialog() {
+        let component = guiSettings.createComponent("BackupFileDialog.qml")
+        return component.createObject(root)
     }
 
-    SwitchUserDrawer {
-        id: switchUserDrawer
-        width: parent.width
-        height: parent.height * 0.7
-        edge: Qt.BottomEdge
-        dragMargin: 0
-        bottomPadding: guiSettings.footerMargin
-        modal: true
+    function backupSettings() {
+        let dialog = createBackupFileDialog()
+        dialog.backup()
+    }
 
-        onSelectedUser: (profile) => {
-            if (!profile.did) {
-                signOutCurrentUser()
-                newUser()
+    function restoreSettings() {
+        let dialog = createBackupFileDialog()
+        dialog.restore()
+    }
+
+    function showBackupHelp() {
+        guiSettings.notice(root, qsTr(
+            "Your configured accounts and some of their settings are stored locally on your " +
+            "device. When you uninstall Skywalker you may lose these. You can backup these " +
+            "settings to a file and restore them again, e.g. after a re-install or on another " +
+            "device. Note that <b>all</b> your accounts (if you have multple) will be backed up, " +
+            "not just the currently active one.<br><br>" +
+            "To backup you have to enter a file name, e.g. 'skywalker', and the settings will be " +
+            "saved to a file called 'skywalker.json'. Or you can select a previous backup file " +
+            "and that file will be overwritten with the current settings.<br><br>" +
+            "To restore you select a backup file. You will be signed out from Skwalker and the " +
+            "backup will be restored."
+        ))
+    }
+
+    Loader {
+        id: switchUserLoader
+        active: false
+
+        sourceComponent: SwitchUserDrawer {
+            id: switchUserDrawer
+            width: parent.width
+            height: parent.height * 0.7
+            edge: Qt.BottomEdge
+            dragMargin: 0
+            bottomPadding: guiSettings.footerMargin
+            modal: true
+
+            onSelectedUser: (profile) => {
+                if (!profile.did) {
+                    signOutCurrentUser()
+                    newUser()
+                }
+                else if (profile.did !== skywalker.getUserDid()) {
+                    signOutCurrentUser()
+                    skywalker.switchUser(profile.did)
+
+                    if (skywalker.resumeAndRefreshSession()) {
+                        showStartupStatus()
+                    }
+                    else if (skywalker.autoLogin()) {
+                        showStartupStatus()
+                    }
+                    else {
+                        const userSettings = skywalker.getUserSettings()
+                        const host = userSettings.getHost(profile.did)
+                        loginUser(host, profile.handle, profile.did)
+                    }
+                }
+
+                close()
             }
-            else if (profile.did !== skywalker.getUserDid()) {
-                signOutCurrentUser()
-                skywalker.switchUser(profile.did)
 
-                if (skywalker.resumeAndRefreshSession()) {
-                    showStartupStatus()
-                }
-                else if (skywalker.autoLogin()) {
-                    showStartupStatus()
-                }
-                else {
-                    const userSettings = skywalker.getUserSettings()
-                    const host = userSettings.getHost(profile.did)
-                    loginUser(host, profile.handle, profile.did)
-                }
+            onClosed: switchUserLoader.active = false
+
+            function show() {
+                const userSettings = skywalker.getUserSettings()
+                userList = userSettings.getUserListWithAddAccount()
+                open()
             }
+        }
 
-            close()
+        onStatusChanged: {
+            if (status === Loader.Ready)
+                item.show()
         }
 
         function show() {
-            const userSettings = skywalker.getUserSettings()
-            userList = userSettings.getUserListWithAddAccount()
-            open()
+            active = true
         }
     }
 
@@ -1148,11 +1208,11 @@ ApplicationWindow {
     }
 
     function showSettingsDrawer() {
-        settingsDrawer.show()
+        settingsLoader.show()
     }
 
     function showSwitchUserDrawer() {
-        switchUserDrawer.show()
+        switchUserLoader.show()
     }
 
     function openLink(link, containingText, openByDid = "") {
