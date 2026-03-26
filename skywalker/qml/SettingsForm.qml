@@ -50,63 +50,98 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
-        SettingsAccount {
-            id: settingsAccount
+        ColumnLayout {
             width: parent.width
-            userPrefs: page.userPrefs
-            visible: allVisible
-        }
 
-        SettingsHomeFeed {
-            id: settingsHomeFeed
-            anchors.top: settingsAccount.bottom
-            width: parent.width
-            height: visible ? undefined : 0
-            userPrefs: page.userPrefs
-            visible: allVisible
-        }
+            SettingsAccount {
+                Layout.fillWidth: true
+                userPrefs: page.userPrefs
+                visible: allVisible
+            }
 
-        SettingsChat {
-            id: settingsChat
-            anchors.top: settingsHomeFeed.bottom
-            width: parent.width
-            height: visible ? undefined : 0
-            userPrefs: page.userPrefs
-            visible: allVisible || onlyChatVisible
-        }
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
 
-        SettingsSearch {
-            id: settingsSearch
-            anchors.top: settingsChat.bottom
-            width: parent.width
-            height: visible ? undefined : 0
-            visible: allVisible
-        }
+            SettingsHomeFeed {
+                Layout.fillWidth: true
+                userPrefs: page.userPrefs
+                visible: allVisible
+            }
 
-        SettingsLanguage {
-            id: settingsLanguage
-            anchors.top: settingsSearch.bottom
-            width: parent.width
-            height: visible ? undefined : 0
-            visible: allVisible
-        }
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
 
-        SettingsAppearance {
-            id: settingsAppearance
-            anchors.top: settingsLanguage.bottom
-            width: parent.width
-            height: visible ? undefined : 0
-            userPrefs: page.userPrefs
-            visible: allVisible
+            SettingsChat {
+                Layout.fillWidth: true
+                userPrefs: page.userPrefs
+                visible: allVisible || onlyChatVisible
+            }
 
-            onOffsetY: (dy) => flick.contentY += dy
-            onFontScaleChanged: page.header.initPrevHeight()
-        }
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
 
-        Loader {
-            id: notificationsLoader
-            anchors.top: settingsAppearance.bottom
-            width: parent.width
+            SettingsSearch {
+                Layout.fillWidth: true
+                visible: allVisible
+            }
+
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
+
+            SettingsLanguage {
+                Layout.fillWidth: true
+                visible: allVisible
+            }
+
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
+
+            SettingsAppearance {
+                Layout.fillWidth: true
+                userPrefs: page.userPrefs
+                visible: allVisible
+
+                onOffsetY: (dy) => flick.contentY += dy
+                onFontScaleChanged: page.header.initPrevHeight()
+            }
+
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
+
+            Loader {
+                id: notificationsLoader
+                Layout.fillWidth: true
+            }
         }
     }
 

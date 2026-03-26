@@ -12,7 +12,7 @@ Item {
     property UserSettings userSettings: skywalker.getUserSettings()
 
     id: section
-    height: visible ? grid.height : 0
+    Layout.preferredHeight: visible ? grid.height : 0
 
     GridLayout {
         id: grid
@@ -146,6 +146,14 @@ Item {
             onLinkActivated: root.editAdvancedSettings()
         }
 
+        Rectangle {
+            Layout.topMargin: 10
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            height: 1
+            color: guiSettings.separatorColor
+        }
+
         HeaderText {
             Layout.columnSpan: 2
             Layout.topMargin: 10
@@ -179,7 +187,6 @@ Item {
         AccessibleText {
             Layout.columnSpan: 2
             Layout.topMargin: 10
-            Layout.bottomMargin: 10
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             textFormat: Text.RichText

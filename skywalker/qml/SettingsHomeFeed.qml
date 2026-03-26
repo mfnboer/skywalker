@@ -69,6 +69,13 @@ ColumnLayout {
         onCheckedChanged: userSettings.setRewindToLastSeenPost(userDid, checked)
     }
 
+    Rectangle {
+        Layout.topMargin: 10
+        Layout.columnSpan: 2
+        Layout.fillWidth: true
+        height: 1
+        color: guiSettings.separatorColor
+    }
 
     HeaderText {
         Layout.topMargin: 10

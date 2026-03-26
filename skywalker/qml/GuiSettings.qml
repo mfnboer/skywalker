@@ -76,7 +76,6 @@ Item {
     readonly property string footerColor: backgroundColor
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: backgroundColor
-    readonly property string headerHighLightColor: isLightMode ? "lightblue" : "darkslategrey"
     readonly property string headerTextColor: textColor
     readonly property string hideReasonLabelColor: "palevioletred"
     readonly property string labelColor: isLightMode ? "lightblue" : "steelblue"
