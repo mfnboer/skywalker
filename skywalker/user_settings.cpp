@@ -468,11 +468,9 @@ void UserSettings::setRememberPassword(const QString& did, bool enable)
     sync();
 }
 
-// TODO: remove
-bool UserSettings::getRememberPassword(const QString&) const
+bool UserSettings::getRememberPassword(const QString& did) const
 {
-    return false;
-    // return mSettings.value(key(did, "rememberPassword"), false).toBool();
+    return mSettings.value(key(did, "rememberPassword"), false).toBool();
 }
 
 void UserSettings::savePassword(const QString& did, const QString& password)
@@ -2375,8 +2373,8 @@ void UserSettings::syncLater()
 
 void UserSettings::cleanup()
 {
-    mSettings.remove("rememberPassword");
-    mSettings.remove("password");
+    // Here deprecated settings can be removed
+    qDebug() << "Cleanup";
 }
 
 }

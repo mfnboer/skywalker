@@ -123,6 +123,16 @@ SkyPage {
                 }
             }
 
+            AccessibleCheckBox {
+                id: rememberPasswordSwitch
+                text: qsTr("Remember password")
+                checked: !isNewAccount() && userSettings.getRememberPassword(did)
+                onCheckedChanged: {
+                    if (!isNewAccount())
+                        userSettings.setRememberPassword(did, checked)
+                }
+            }
+
             AccessibleText {
                 Layout.fillWidth: true
                 topPadding: 10
@@ -195,7 +205,7 @@ SkyPage {
                 loginPage.accepted(hostField.editText,
                                    handle, passwordField.text,
                                    loginPage.did,
-                                   false,
+                                   rememberPasswordSwitch.checked,
                                    authFactorTokenField.text,
                                    loginPage.setAdvancedSettings,
                                    loginPage.serviceAppView,
@@ -216,7 +226,14 @@ SkyPage {
 
         onRequestResetPasswordOk: enterPasswordResetToken()
         onRequestResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onResetPasswordOk: skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
+
+        onResetPasswordOk: (password) => {
+            if (userSettings.getRememberPassword(did))
+                userSettings.savePassword(did, password)
+
+            skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
+        }
+
         onResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 

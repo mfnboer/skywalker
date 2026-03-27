@@ -35,7 +35,7 @@ signals:
     void emailUpdateTokenOk();
     void emailUpdateTokenNotRequired();
     void emailUpdateTokenFailed(QString error);
-    void resetPasswordOk();
+    void resetPasswordOk(QString password);
     void resetPasswordFailed(QString error);
     void requestResetPasswordOk();
     void requestResetPasswordFailed(QString error);

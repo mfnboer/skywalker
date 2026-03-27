@@ -315,7 +315,7 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    login("", did, mUserSettings.getPassword(did), true, {});
+    login(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
     return true;
 }
 

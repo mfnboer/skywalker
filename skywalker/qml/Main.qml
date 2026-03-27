@@ -1377,8 +1377,9 @@ ApplicationWindow {
                 }
                 else {
                     if (userSettings.getRememberPassword(profile.did)) {
+                        const host = userSettings.getHost(profile.did)
                         const password = userSettings.getPassword(profile.did)
-                        skywalkerLogin("", profile.did, password, true)
+                        skywalkerLogin(host, profile.did, password, true)
                     }
                     else {
                         const host = userSettings.getHost(profile.did)

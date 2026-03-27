@@ -9,6 +9,7 @@ Item {
     property bool emailConfirmed: userPrefs.emailConfirmed
     property string email: userPrefs.email
     property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
 
     id: section
     Layout.preferredHeight: visible ? grid.height : 0
@@ -20,6 +21,13 @@ Item {
         HeaderText {
             Layout.topMargin: 10
             text: qsTr("Privacy and security")
+        }
+
+        AccessibleCheckBox {
+            Layout.fillWidth: true
+            text: qsTr("Remember password")
+            checked: userSettings.getRememberPassword(userPrefs.did)
+            onCheckedChanged: userSettings.setRememberPassword(userPrefs.did, checked)
         }
 
         AccessibleCheckBox {
@@ -131,7 +139,14 @@ Item {
 
         onRequestResetPasswordOk: enterPasswordResetToken()
         onRequestResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onResetPasswordOk: skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
+
+        onResetPasswordOk: (password) => {
+            if (userSettings.getRememberPassword(userPrefs.did))
+                userSettings.savePassword(userPrefs.did, password)
+
+            skywalker.showStatusMessage(qsTr("Password changed"), QEnums.STATUS_LEVEL_INFO)
+        }
+
         onResetPasswordFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         function enterEmailConfirmationToken() {

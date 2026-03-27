@@ -214,12 +214,12 @@ void AccountUtils::resetPassword(const QString& password, const QString& token, 
     setUpdateInProgress(true);
 
     bsky->resetPassword(password, token,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), password]{
             if (!presence)
                 return;
 
             setUpdateInProgress(false);
-            emit resetPasswordOk();
+            emit resetPasswordOk(password);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
