@@ -93,7 +93,7 @@ Pane {
                 visible: Boolean(postFeedView)
 
                 onClosed: postFeedView.closed()
-                onFeedAvatarClicked: postFeedView.showFeedOptions()
+                onFeedAvatarClicked: (mouseEvent) => postFeedView.showFeedOptions(mouseEvent, postFeedHeader)
 
                 onViewChanged: (newContentMode) => {
                     postFeedView.headerItem.contentMode = newContentMode

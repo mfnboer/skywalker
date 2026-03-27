@@ -157,11 +157,13 @@ SkyMenu {
         return skywalker.getUserDid() === listCreatorDid
     }
 
-    function show() {
+    function show(origin) {
         listHideFromTimeline = skywalker.getTimelineHide().hasList(list.uri)
         listHideReplies = userSettings.getFeedHideReplies(skywalker.getUserDid(), list.uri)
         listHideFollowing = userSettings.getFeedHideFollowing(skywalker.getUserDid(), list.uri)
         listSync = userSettings.mustSyncFeed(skywalker.getUserDid(), list.uri)
+        x = origin.x
+        y = origin.y
         open()
     }
 }

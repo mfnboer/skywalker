@@ -113,7 +113,7 @@ SkyMenu {
         }
     }
 
-    function show() {
+    function show(origin) {
         if (postFeedModel.feedType === QEnums.FEED_GENERATOR) {
             feedHideFollowing = userSettings.getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
             feedSync = userSettings.mustSyncFeed(skywalker.getUserDid(), feed.uri)
@@ -121,6 +121,8 @@ SkyMenu {
             feedSync = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), feed.searchQuery)
         }
 
+        x = origin.x
+        y = origin.y
         open()
     }
 }

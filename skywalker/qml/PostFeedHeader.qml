@@ -26,7 +26,7 @@ Rectangle {
     readonly property int favoritesY: headerRow.height
 
     signal closed
-    signal feedAvatarClicked
+    signal feedAvatarClicked(MouseEvent mouseEvent)
     signal feedAvatarPressAndHold
     signal addUserView
     signal addHashtagView
@@ -157,12 +157,12 @@ Rectangle {
             unknownSvg: defaultSvg
             visible: showAsHome && !isHomeFeed
 
-            onClicked: header.feedAvatarClicked()
+            onClicked: (mouseEvent) => header.feedAvatarClicked(mouseEvent)
             onPressAndHold: header.feedAvatarPressAndHold()
 
             Accessible.role: Accessible.Button
             Accessible.name: header.feedName
-            Accessible.onPressAction: clicked()
+            Accessible.onPressAction: clicked(null)
         }
         SkyCleanedTextLine {
             id: headerTexts
@@ -235,12 +235,12 @@ Rectangle {
             unknownSvg: defaultSvg
             visible: !showAsHome && !isHomeFeed && !isSideBar
 
-            onClicked: header.feedAvatarClicked()
+            onClicked: (mouseEvent) => header.feedAvatarClicked(mouseEvent)
 
             Accessible.role: Accessible.Button
             Accessible.name: header.feedName
             Accessible.description: Accessible.name
-            Accessible.onPressAction: header.feedAvatarClicked()
+            Accessible.onPressAction: header.feedAvatarClicked(null)
         }
         Loader {
             Layout.rightMargin: 10

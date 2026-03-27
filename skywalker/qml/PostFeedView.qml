@@ -42,7 +42,7 @@ PostListView {
         visible: !root.showSideBar
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: showFeedOptions()
+        onFeedAvatarClicked: (mouseEvent) => showFeedOptions(mouseEvent, headerItem)
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -169,9 +169,9 @@ PostListView {
             onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
         }
 
-        function show() {
+        function show(origin) {
             if (item)
-                item.show()
+                item.show(origin)
         }
     }
 
@@ -189,9 +189,9 @@ PostListView {
             onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
         }
 
-        function show() {
+        function show(origin) {
             if (item)
-                item.show()
+                item.show(origin)
         }
     }
 
@@ -253,16 +253,20 @@ PostListView {
         }
     }
 
-    function showFeedOptions() {
+    function showFeedOptions(mouseEvent, mouseView) {
         if (!underlyingModel)
             return
 
+        const mousePoint = mouseEvent ?
+            mouseView.mapToItem(postFeedView, mouseEvent.x, mouseEvent.y) :
+            mouseView.mapToItem(postFeedView, 0, 0)
+
         switch (underlyingModel.feedType) {
         case QEnums.FEED_GENERATOR:
-            feedOptionsMenuLoader.show()
+            feedOptionsMenuLoader.show(mousePoint)
             break
         case QEnums.FEED_LIST:
-            listFeedOptionsMenuLoader.show()
+            listFeedOptionsMenuLoader.show(mousePoint)
             break
         default:
             console.warn("Unexpected feed type:", underlyingModel.feedType)
