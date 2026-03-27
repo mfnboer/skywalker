@@ -14,7 +14,8 @@ SkyPage {
     readonly property SvgImage sideBarSvg: SvgOutline.settings
 
     id: page
-    padding: 10
+    topPadding: 10
+    bottomPadding: 10
 
     signal closed()
 
@@ -54,6 +55,24 @@ SkyPage {
             width: parent.width
 
             SettingsAccount {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
+                Layout.fillWidth: true
+                userPrefs: page.userPrefs
+                visible: allVisible
+            }
+
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
+
+            SettingsSecurity {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
                 userPrefs: page.userPrefs
                 visible: allVisible
@@ -68,6 +87,8 @@ SkyPage {
             }
 
             SettingsHomeFeed {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
                 userPrefs: page.userPrefs
                 visible: allVisible
@@ -81,7 +102,24 @@ SkyPage {
                 visible: allVisible
             }
 
+            SettingsGeneralFeed {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
+                Layout.fillWidth: true
+                visible: allVisible
+            }
+
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
+
             SettingsChat {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
                 userPrefs: page.userPrefs
                 visible: allVisible || onlyChatVisible
@@ -96,6 +134,8 @@ SkyPage {
             }
 
             SettingsSearch {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
                 visible: allVisible
             }
@@ -109,6 +149,8 @@ SkyPage {
             }
 
             SettingsLanguage {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
                 visible: allVisible
             }
@@ -122,6 +164,8 @@ SkyPage {
             }
 
             SettingsAppearance {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
                 userPrefs: page.userPrefs
                 visible: allVisible
@@ -140,6 +184,8 @@ SkyPage {
 
             Loader {
                 id: notificationsLoader
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
                 Layout.fillWidth: true
             }
         }
