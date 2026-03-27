@@ -782,6 +782,12 @@ ApplicationWindow {
         return guiSettings.backgroundColor
     }
 
+    function getForegroundColor() {
+        const backgroundColor = getBackgroundColor()
+        const foregroundColor = utils.determineForegroundColor(backgroundColor, "black", "white")
+        return foregroundColor
+    }
+
     // Hack for Talkback
     // When a popup menu (drawer) is shown, then Talkback still lets the user navigate
     // throught the controls on the window underneath. The user may activate a control

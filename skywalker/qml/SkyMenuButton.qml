@@ -6,7 +6,7 @@ Item {
     required property SvgImage svg
     required property string text
     property bool enabled: true
-    property string color: enabled ? guiSettings.textColor : guiSettings.disabledColor
+    property string color: enabled ? guiSettings.menuTextColor : guiSettings.menuDisabledColor
     property string svgColor: color
     property var popup
 

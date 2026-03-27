@@ -469,6 +469,7 @@ Rectangle {
 
                 // Unroll thread button
                 Loader {
+                    id: unrollThreadLoader
                     anchors.top: avatarImg.bottom
                     anchors.topMargin: 10
                     anchors.horizontalCenter: avatarImg.horizontalCenter
@@ -494,9 +495,9 @@ Rectangle {
                 // Unwrap quote chain
                 Loader {
                     anchors.top: avatarImg.bottom
-                    anchors.topMargin: 10
+                    anchors.topMargin: unrollThreadLoader.active ? 54 : 10
                     anchors.horizontalCenter: avatarImg.horizontalCenter
-                    active: !postIsThread && showRecord && ((Boolean(postRecord) && postRecord.postIsQuote) || (Boolean(postRecordWithMedia) && postRecordWithMedia.record.postIsQuote))
+                    active: showRecord && ((Boolean(postRecord) && postRecord.postIsQuote) || (Boolean(postRecordWithMedia) && postRecordWithMedia.record.postIsQuote))
                     asynchronous: true
                     visible: status === Loader.Ready
 

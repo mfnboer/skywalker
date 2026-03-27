@@ -3,7 +3,7 @@ import QtQuick.Controls
 import skywalker
 
 MenuItem {
-    property string textColor: enabled ? guiSettings.textColor : guiSettings.disabledColor
+    property string textColor: enabled ? guiSettings.menuTextColor : guiSettings.menuDisabledColor
     property SvgImage svg
     property string svgColor: textColor
 

@@ -85,7 +85,12 @@ Item {
     property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
     readonly property string liveColor: "red"
     readonly property string liveTextColor: "white"
-    readonly property string menuColor: backgroundColor
+
+    // The menu colors adapt to the backgroud of the top page
+    readonly property string menuColor: root.getBackgroundColor()
+    readonly property string menuDisabledColor: utils.determineForegroundColor(menuColor, "lightgrey", "slategrey")
+    readonly property string menuTextColor: utils.determineForegroundColor(menuColor, "black", "white")
+
     readonly property string messageTimeColor: Material.color(Material.Grey)
     readonly property string messageNewBackgroundColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string messageNewTextColor: isLightMode ? "black" : "white"
