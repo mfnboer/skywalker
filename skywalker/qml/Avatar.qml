@@ -20,7 +20,7 @@ Item {
     property bool showFollowingStatus: true
     property bool authorIsLive: author.actorStatus.isActive
 
-    signal clicked
+    signal clicked(point clickPoint)
     signal pressAndHold
 
     id: avatarItem
@@ -115,9 +115,9 @@ Item {
 
     SkyMouseArea {
         anchors.fill: parent
-        onClicked: {
+        onClicked: (mouseEvent) => {
             console.debug("Avatar clicked");
-            avatarItem.clicked()
+            avatarItem.clicked(Qt.point(mouseEvent.x, mouseEvent.y))
         }
         onPressAndHold: {
             console.debug("Avatar press and hold")

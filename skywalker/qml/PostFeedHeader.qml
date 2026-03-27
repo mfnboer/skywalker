@@ -26,7 +26,7 @@ Rectangle {
     readonly property int favoritesY: headerRow.height
 
     signal closed
-    signal feedAvatarClicked(MouseEvent mouseEvent)
+    signal feedAvatarClicked(point clickPoint)
     signal feedAvatarPressAndHold
     signal addUserView
     signal addHashtagView
@@ -157,12 +157,18 @@ Rectangle {
             unknownSvg: defaultSvg
             visible: showAsHome && !isHomeFeed
 
-            onClicked: (mouseEvent) => header.feedAvatarClicked(mouseEvent)
+            onClicked: (clickPoint) => {
+                const mousePoint = clickPoint ?
+                    mapToItem(header, clickPoint) :
+                    mapToItem(header, 0, 0)
+
+                header.feedAvatarClicked(mousePoint)
+            }
             onPressAndHold: header.feedAvatarPressAndHold()
 
             Accessible.role: Accessible.Button
             Accessible.name: header.feedName
-            Accessible.onPressAction: clicked(null)
+            Accessible.onPressAction: clicked(Qt.point(0, 0))
         }
         SkyCleanedTextLine {
             id: headerTexts
@@ -235,12 +241,18 @@ Rectangle {
             unknownSvg: defaultSvg
             visible: !showAsHome && !isHomeFeed && !isSideBar
 
-            onClicked: (mouseEvent) => header.feedAvatarClicked(mouseEvent)
+            onClicked: (clickPoint) => {
+                const mousePoint = clickPoint ?
+                    mapToItem(header, clickPoint) :
+                    mapToItem(header, 0, 0)
+
+                header.feedAvatarClicked(mousePoint)
+            }
 
             Accessible.role: Accessible.Button
             Accessible.name: header.feedName
             Accessible.description: Accessible.name
-            Accessible.onPressAction: header.feedAvatarClicked(null)
+            Accessible.onPressAction: header.feedAvatarClicked(Qt.point(0, 0))
         }
         Loader {
             Layout.rightMargin: 10

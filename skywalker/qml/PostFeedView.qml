@@ -42,7 +42,7 @@ PostListView {
         visible: !root.showSideBar
 
         onClosed: postFeedView.closed()
-        onFeedAvatarClicked: (mouseEvent) => showFeedOptions(mouseEvent, headerItem)
+        onFeedAvatarClicked: (clickPoint) => showFeedOptions(clickPoint, headerItem)
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -253,12 +253,12 @@ PostListView {
         }
     }
 
-    function showFeedOptions(mouseEvent, mouseView) {
+    function showFeedOptions(clickPoint, mouseView) {
         if (!underlyingModel)
             return
 
-        const mousePoint = mouseEvent ?
-            mouseView.mapToItem(postFeedView, mouseEvent.x, mouseEvent.y) :
+        const mousePoint = clickPoint ?
+            mouseView.mapToItem(postFeedView, clickPoint) :
             mouseView.mapToItem(postFeedView, 0, 0)
 
         switch (underlyingModel.feedType) {

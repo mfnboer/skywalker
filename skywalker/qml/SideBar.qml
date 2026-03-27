@@ -93,7 +93,7 @@ Pane {
                 visible: Boolean(postFeedView)
 
                 onClosed: postFeedView.closed()
-                onFeedAvatarClicked: (mouseEvent) => postFeedView.showFeedOptions(mouseEvent, postFeedHeader)
+                onFeedAvatarClicked: (clickPoint) => postFeedView.showFeedOptions(clickPoint, postFeedHeader)
 
                 onViewChanged: (newContentMode) => {
                     postFeedView.headerItem.contentMode = newContentMode
@@ -114,12 +114,18 @@ Pane {
                 unknownSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
                 visible: Boolean(postFeedView)
 
-                onClicked: postFeedView.headerItem.feedAvatarClicked()
+                onClicked: (clickPoint) => {
+                    const mousePoint = clickPoint ?
+                        mapToItem(postFeedView.headerItem, clickPoint) :
+                        mapToItem(postFeedView.headerItem, 0, 0)
+
+                    postFeedView.headerItem.feedAvatarClicked(mousePoint)
+                }
 
                 Accessible.role: Accessible.Button
                 Accessible.name: postFeedView ? postFeedView.headerItem.feedName : ""
                 Accessible.description: Accessible.name
-                Accessible.onPressAction: postFeedView.headerItem.feedAvatarClicked()
+                Accessible.onPressAction: postFeedView.headerItem.feedAvatarClicked(Qt.point(0, 0))
             }
 
             PostFeedHeader {
@@ -144,7 +150,7 @@ Pane {
                 isSideBar: true
                 visible: Boolean(searchFeedView)
 
-                onFeedAvatarClicked: searchFeedView.showOptionsMenu()
+                onFeedAvatarClicked: (clickPoint) => searchFeedView.showOptionsMenu(clickPoint, searchFeedHeader)
             }
 
             MessagesListHeader {

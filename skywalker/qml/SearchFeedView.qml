@@ -41,7 +41,7 @@ PostListView {
         visible: !root.showSideBar
 
         onClosed: feedView.closed()
-        onFeedAvatarClicked: showOptionsMenu()
+        onFeedAvatarClicked: (clickPoint) => showOptionsMenu(clickPoint, headerItem)
         onViewChanged: (contentMode) => changeView(contentMode)
     }
     headerPositioning: ListView.PullBackHeader
@@ -179,8 +179,12 @@ PostListView {
         setInSync(reverseIndex, offsetY)
     }
 
-    function showOptionsMenu() {
-        optionsMenu.show()
+    function showOptionsMenu(clickPoint, mouseView) {
+        const mousePoint = clickPoint ?
+            mouseView.mapToItem(feedView, clickPoint) :
+            mouseView.mapToItem(feedView, 0, 0)
+
+        optionsMenu.show(mousePoint)
     }
 
     function moveToHome() {

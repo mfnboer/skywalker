@@ -121,8 +121,11 @@ SkyMenu {
             feedSync = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), feed.searchQuery)
         }
 
-        x = origin.x
-        y = origin.y
+        if (origin) {
+            x = origin.x
+            y = origin.y
+        }
+
         open()
     }
 }
