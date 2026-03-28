@@ -207,12 +207,10 @@ Rectangle {
             }
         }
 
-        SvgPlainButton {
-            svg: SvgOutline.language
-            iconColor: guiSettings.headerTextColor
-            accessibleName: qsTr("language filter active")
+        LanguageFilterButton {
+            filteredLanguages: header.filteredLanguages
+            showPostWithMissingLanguage: header.showPostWithMissingLanguage
             visible: showLanguageFilter && !isSideBar
-            onClicked: showLanguageFilterDetails()
         }
 
         SvgPlainButton {
@@ -289,126 +287,17 @@ Rectangle {
         }
     }
 
-    Loader {
-        anchors.right: parent.right
-        anchors.top: headerRow.bottom
-        active: isSideBar
-
-        sourceComponent: Column {
-            spacing: 0
-
-            SvgPlainButton {
-                svg: guiSettings.getContentModeSvg(contentMode)
-                iconColor: guiSettings.headerTextColor
-                accessibleName: qsTr("view mode")
-                visible: showViewOptions && isSideBar
-
-                onClicked: viewMenuLoaderSideBar.open()
-
-                SkyMenuLoader {
-                    id: viewMenuLoaderSideBar
-                    sourceComponent: viewMenuComponent
-                }
-            }
-
-            SvgPlainButton {
-                svg: SvgOutline.language
-                iconColor: guiSettings.headerTextColor
-                accessibleName: qsTr("language filter active")
-                visible: showLanguageFilter && isSideBar
-                onClicked: showLanguageFilterDetails()
-            }
-        }
-    }
-
     Component {
         id: viewMenuComponent
 
-        SkyMenu {
+        ContentViewMenu {
             id: viewMenu
+            contentMode: header.contentMode
+            underlyingContentMode: header.underlyingContentMode
 
-            SkyMenuButton {
-                text: qsTr("Post view")
-                svg: SvgOutline.chat
-                popup: viewMenu
-                visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                onClicked: {
-                    if (!isSideBar)
-                        contentMode = QEnums.CONTENT_MODE_UNSPECIFIED
-
-                    viewChanged(QEnums.CONTENT_MODE_UNSPECIFIED)
-                }
-            }
-            SkyMenuButton {
-                text: qsTr("Media view")
-                svg: SvgOutline.image
-                popup: viewMenu
-                visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                onClicked: {
-                    if (!isSideBar)
-                        contentMode = QEnums.CONTENT_MODE_MEDIA
-
-                    viewChanged(QEnums.CONTENT_MODE_MEDIA)
-                }
-            }
-            SkyMenuButton {
-                text: qsTr("Media gallery")
-                svg: SvgOutline.gallery
-                popup: viewMenu
-                visible: underlyingContentMode === QEnums.CONTENT_MODE_UNSPECIFIED
-                onClicked: {
-                    if (!isSideBar)
-                        contentMode = QEnums.CONTENT_MODE_MEDIA_TILES
-
-                    viewChanged(QEnums.CONTENT_MODE_MEDIA_TILES)
-                }
-            }
-            SkyMenuButton {
-                text: qsTr("Video view")
-                svg: SvgOutline.film
-                popup: viewMenu
-                onClicked: {
-                    if (!isSideBar)
-                        contentMode = QEnums.CONTENT_MODE_VIDEO
-
-                    viewChanged(QEnums.CONTENT_MODE_VIDEO)
-                }
-            }
-            SkyMenuButton {
-                text: qsTr("Video gallery")
-                svg: SvgOutline.videoGallery
-                popup: viewMenu
-                onClicked: {
-                    if (!isSideBar)
-                        contentMode = QEnums.CONTENT_MODE_VIDEO_TILES
-
-                    viewChanged(QEnums.CONTENT_MODE_VIDEO_TILES)
-                }
+            onViewChanged: (contentMode) => {
+                header.viewChanged(contentMode)
             }
         }
-    }
-
-    function showLanguageFilterDetails() {
-        let languageList = []
-
-        for (let i = 0; i < filteredLanguages.length; ++i) {
-            const lang = `${filteredLanguages[i].nativeName} (${filteredLanguages[i].shortCode})`
-            languageList.push(lang)
-            console.debug(lang)
-        }
-
-        let msg = qsTr("Language filter is active.") + "<br><br>"
-
-        if (languageList.length > 0) {
-            msg += qsTr("Only posts with the following languages will be shown:") +
-                    " " + languageList.join(", ") + "<br><br>"
-        }
-
-        if (!showPostWithMissingLanguage)
-            msg += qsTr("Posts without language tags will not be shown.")
-        else
-            msg += qsTr("Posts without language tags will be shown.")
-
-        guiSettings.notice(rootContent, msg)
     }
 }

@@ -673,6 +673,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SkyDialog.qml
         QML_FILES qml/SettingsSecurity.qml
         QML_FILES qml/SettingsGeneralFeed.qml
+        QML_FILES qml/ContentViewMenu.qml
+        QML_FILES qml/LanguageFilterButton.qml
 )
 
 if (NOT ANDROID)

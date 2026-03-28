@@ -12,6 +12,9 @@ Pane {
     property bool messagesActive: false
     property var rootItem: root.currentStackItem()
     property bool isBasePage: root.currentStack().depth === 1
+    readonly property var activeHeader: postFeedHeader.visible ? postFeedHeader :
+            (searchFeedHeader.visible ? searchFeedHeader : null)
+
 
     signal homeClicked()
     signal notificationsClicked()
@@ -26,10 +29,59 @@ Pane {
         color: guiSettings.sideBarColor
     }
 
+    RowLayout {
+        id: topRow
+        width: parent.width
+
+        Avatar {
+            Layout.leftMargin: 10
+            Layout.topMargin: 10
+            Layout.bottomMargin: 10
+            Layout.preferredWidth: 40
+            author: skywalker.user
+            visible: isBasePage
+
+            onClicked: root.showSettingsDrawer()
+            onPressAndHold: root.showSwitchUserDrawer()
+
+            Accessible.role: Accessible.ButtonMenu
+            Accessible.name: qsTr("Skywalker menu")
+            Accessible.description: Accessible.name
+            Accessible.onPressAction: clicked()
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        LanguageFilterButton {
+            filteredLanguages: activeHeader ? activeHeader.filteredLanguages : []
+            showPostWithMissingLanguage: activeHeader ? activeHeader.showPostWithMissingLanguage : true
+            visible: activeHeader && activeHeader.showLanguageFilter
+        }
+
+        SvgPlainButton {
+            svg: guiSettings.getContentModeSvg(activeHeader.contentMode)
+            iconColor: guiSettings.headerTextColor
+            accessibleName: qsTr("view mode")
+            visible: Boolean(activeHeader)
+
+            onClicked: feedViewMenu.open()
+
+            ContentViewMenu {
+                id: feedViewMenu
+                contentMode: activeHeader.postFeedView ? activeHeader.postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: activeHeader.postFeedView ? activeHeader.postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+
+                onViewChanged: (contentMode) => activeHeader.viewChanged(contentMode)
+            }
+        }
+    }
+
     Flickable {
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.top: topRow.bottom
         anchors.bottom: postButton.top
         anchors.bottomMargin: 10
         clip: true
@@ -129,7 +181,7 @@ Pane {
             }
 
             PostFeedHeader {
-                property var searchFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
+                property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
 
                 id: searchFeedHeader
                 width: undefined
@@ -137,20 +189,25 @@ Pane {
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 color: guiSettings.sideBarColor
-                feedName: searchFeedView ? searchFeedView.headerItem.feedName : ""
-                defaultSvg: searchFeedView ? searchFeedView.headerItem.defaultSvg : SvgFilled.search
+                feedName: postFeedView ? postFeedView.headerItem.feedName : ""
+                defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.search
                 feedAvatar: ""
-                contentMode: searchFeedView ? searchFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                underlyingContentMode: searchFeedView ? searchFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                showAsHome: searchFeedView ? searchFeedView.showAsHome : false
-                showLanguageFilter: searchFeedView ? searchFeedView.headerItem.showLanguageFilter : false
-                filteredLanguages: searchFeedView ? searchFeedView.headerItem.filteredLanguages : []
+                contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: postFeedView ? postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                showAsHome: postFeedView ? postFeedView.showAsHome : false
+                showLanguageFilter: postFeedView ? postFeedView.headerItem.showLanguageFilter : false
+                filteredLanguages: postFeedView ? postFeedView.headerItem.filteredLanguages : []
                 showPostWithMissingLanguage: false
                 showViewOptions: true
                 isSideBar: true
-                visible: Boolean(searchFeedView)
+                visible: Boolean(postFeedView)
 
-                onFeedAvatarClicked: (clickPoint) => searchFeedView.showOptionsMenu(clickPoint, searchFeedHeader)
+                onFeedAvatarClicked: (clickPoint) => postFeedView.showOptionsMenu(clickPoint, searchFeedHeader)
+
+                onViewChanged: (newContentMode) => {
+                    postFeedView.headerItem.contentMode = newContentMode
+                    postFeedView.headerItem.viewChanged(newContentMode)
+                }
             }
 
             MessagesListHeader {
@@ -394,23 +451,6 @@ Pane {
                         onClicked: notificationsClicked()
                     }
                 }
-            }
-
-            Avatar {
-                Layout.topMargin: 10
-                Layout.bottomMargin: 10
-                Layout.preferredWidth: 80
-                Layout.alignment: Qt.AlignHCenter
-                author: skywalker.user
-                visible: isBasePage
-
-                onClicked: root.showSettingsDrawer()
-                onPressAndHold: root.showSwitchUserDrawer()
-
-                Accessible.role: Accessible.ButtonMenu
-                Accessible.name: qsTr("Skywalker menu")
-                Accessible.description: Accessible.name
-                Accessible.onPressAction: clicked()
             }
         }
     }
