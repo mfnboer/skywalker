@@ -39,7 +39,7 @@ SkyListView {
             svg: sideBarButtonSvg
             accessibleName: sideBarButtonName
             visible: !root.showSideBar
-            onClicked: sideBarButtonClicked()
+            onClicked: sideBarButtonClicked(view.headerItem, Qt.point(x, y))
         }
 
         Rectangle {
@@ -194,8 +194,8 @@ SkyListView {
 
     SkyMenuLoader {
         id: orderMenuLoader
-        anchors.top: parent.top
-        anchors.right: parent.right
+        // anchors.top: parent.top
+        // anchors.right: parent.right
         sourceComponent: orderMenuComponent
     }
 
@@ -207,6 +207,8 @@ SkyListView {
 
             AccessibleText {
                 width: parent.width
+                leftPadding: 10
+                rightPadding: 10
                 elide: Text.ElideRight
                 font.bold: true
                 text: qsTr("Sort replies")
@@ -265,7 +267,13 @@ SkyListView {
         skywalker: view.skywalker
     }
 
-    function sideBarButtonClicked() {
+    function sideBarButtonClicked(mouseView, clickPoint) {
+        const mousePoint = clickPoint ?
+            mouseView.mapToItem(view, clickPoint) :
+            mouseView.mapToItem(view, 0, 0)
+
+        orderMenuLoader.x = mousePoint.x
+        orderMenuLoader.y = mousePoint.y
         orderMenuLoader.open()
     }
 

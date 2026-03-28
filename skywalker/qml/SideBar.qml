@@ -61,7 +61,7 @@ Pane {
         }
 
         SvgPlainButton {
-            svg: guiSettings.getContentModeSvg(activeHeader.contentMode)
+            svg: activeHeader ? guiSettings.getContentModeSvg(activeHeader.contentMode) : SvgOutline.chat
             iconColor: guiSettings.headerTextColor
             accessibleName: qsTr("view mode")
             visible: Boolean(activeHeader)
@@ -70,8 +70,8 @@ Pane {
 
             ContentViewMenu {
                 id: feedViewMenu
-                contentMode: activeHeader.postFeedView ? activeHeader.postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                underlyingContentMode: activeHeader.postFeedView ? activeHeader.postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                contentMode: (activeHeader && activeHeader.postFeedView) ? activeHeader.postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: (activeHeader && activeHeader).postFeedView ? activeHeader.postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
 
                 onViewChanged: (contentMode) => activeHeader.viewChanged(contentMode)
             }
@@ -227,6 +227,7 @@ Pane {
             }
 
             SimpleHeader {
+                id: simpleHeader
                 width: undefined
                 height: undefined
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
@@ -246,7 +247,7 @@ Pane {
                     svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
                     accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
                     visible: typeof rootItem?.sideBarButtonSvg != 'undefined'
-                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked() : () => {}
+                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked(simpleHeader, Qt.point(x, y)) : () => {}
                 }
 
                 onBack: {
@@ -258,6 +259,7 @@ Pane {
             }
 
             SimpleDescriptionHeader {
+                id: simpleDescriptionHeader
                 width: undefined
                 height: undefined
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
@@ -277,7 +279,7 @@ Pane {
                     svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
                     accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
                     visible: typeof rootItem?.sideBarButtonSvg != 'undefined'
-                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked() : () => {}
+                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked(simpleDescriptionHeader, Qt.point(x, y)) : () => {}
                 }
 
                 onClosed: rootItem.closed()

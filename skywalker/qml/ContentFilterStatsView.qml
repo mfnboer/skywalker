@@ -28,11 +28,11 @@ SkyPage {
             anchors.top: parent.top
             svg: sideBarButtonSvg
             accessibleName: sideBarButtonName
-            onClicked: sideBarButtonClicked()
+            onClicked: sideBarButtonClicked(page.header, Qt.point(x, y))
         }
     }
 
-    function sideBarButtonClicked() {
+    function sideBarButtonClicked(mouseView, clickPoint) {
         guiSettings.notice(page, qsTr(
             "This pages shows you how many posts have been filtered from your feed due to " +
             "various settings:<br><br>" +

@@ -29,11 +29,12 @@ SkyPage {
         onBack: page.closed()
 
         SvgPlainButton {
+            id: moreButton
             anchors.right: parent.right
             anchors.top: parent.top
             svg: sideBarButtonSvg
             accessibleName: sideBarButtonName
-            onClicked: sideBarButtonClicked()
+            onClicked: sideBarButtonClicked(page.header, Qt.point(x, y))
 
             SkyMenu {
                 id: moreMenu
@@ -410,7 +411,13 @@ SkyPage {
             listPrefUris.splice(index, 1)
     }
 
-    function sideBarButtonClicked() {
+    function sideBarButtonClicked(mouseView, clickPoint) {
+        const mousePoint = clickPoint ?
+            mouseView.mapToItem(moreButton, clickPoint) :
+            mouseView.mapToItem(moreButton, 0, 0)
+
+        moreMenu.x = mousePoint.x
+        moreMenu.y = mousePoint.y
         moreMenu.open()
     }
 

@@ -42,7 +42,7 @@ ListView {
                 anchors.right: parent.right
                 anchors.rightMargin: parent.usedRightMargin + 10
                 svg: sideBarButtonSvg
-                onClicked: sideBarButtonClicked()
+                onClicked: sideBarButtonClicked(portraitHeader, Qt.point(x, y))
                 accessibleName: sideBarButtonName
             }
         }
@@ -101,7 +101,13 @@ ListView {
         onRemoveListUserFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    function sideBarButtonClicked() {
+    function sideBarButtonClicked(mouseView, clickPoint) {
+        const mousePoint = clickPoint ?
+            mouseView.mapToItem(view, clickPoint) :
+            mouseView.mapToItem(view, 0, 0)
+
+        newListMenu.x = mousePoint.x
+        newListMenu.y = mousePoint.y
         newListMenu.open()
     }
 
