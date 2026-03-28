@@ -7,14 +7,13 @@ SkyPage {
     required property var chat
     property var skywalker: root.getSkywalker()
     readonly property int margin: 10
-    readonly property string sideBarTitle: qsTr("Conversations")
 
     signal closed
 
     id: page
 
     header: SimpleHeader {
-        text: sideBarTitle
+        text: qsTr("Conversations")
         visible: !root.showSideBar
         onBack: page.closed()
     }

@@ -6,6 +6,7 @@ import skywalker
 Item {
     property SvgImage svg
     property int counter: 0
+    property string color: guiSettings.textColor
     property string counterBackgroundColor: guiSettings.badgeColor
     property string counterBorderColor: guiSettings.badgeBorderColor
     property string counterTextColor: guiSettings.badgeTextColor
@@ -23,7 +24,7 @@ Item {
         width: height
         height: button.height - 10
         anchors.horizontalCenter: button.horizontalCenter
-        color: guiSettings.textColor
+        color: button.color
         svg: button.svg
 
         BadgeCounter {

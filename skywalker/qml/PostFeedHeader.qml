@@ -21,7 +21,7 @@ Rectangle {
     property bool showMoreOptions: false
     property bool showViewOptions: false
     property bool showFavoritesPlaceHolder: false
-    property bool isSideBar: false
+    property bool isSideBar: false // TODO: not needed?
     property int bottomMargin: 0
     readonly property int favoritesY: headerRow.height
 
@@ -72,76 +72,17 @@ Rectangle {
 
                 onClicked: moreMenu.open()
 
-                SkyMenu {
+                TimelineOptionsMenu {
                     id: moreMenu
-                    menuWidth: 250
+                    reverseFeed: header.reverseFeed
 
-                    SkyMenuButton {
-                        text: qsTr("Add user view")
-                        svg: SvgOutline.user
-                        popup: moreMenu
-                        onClicked: addUserView()
-                    }
-
-                    SkyMenuButton {
-                        text: qsTr("Add hashtag view")
-                        svg: SvgOutline.hashtag
-                        popup: moreMenu
-                        onClicked: addHashtagView()
-                    }
-
-                    SkyMenuButton {
-                        text: qsTr("Add focus hashtag view")
-                        svg: SvgOutline.focusHashtag
-                        popup: moreMenu
-                        onClicked: addFocusHashtagView()
-                    }
-
-                    SkyMenuButton {
-                        text: qsTr("Add media view")
-                        svg: SvgOutline.image
-                        popup: moreMenu
-                        onClicked: addMediaView()
-                    }
-
-                    SkyMenuButton {
-                        text: qsTr("Add video view")
-                        svg: SvgOutline.film
-                        popup: moreMenu
-                        onClicked: addVideoView()
-                    }
-
-                    SkyMenuButton {
-                        text: qsTr("Filtered posts")
-                        svg: SvgOutline.hideVisibility
-                        popup: moreMenu
-                        onClicked: filterStatistics()
-                    }
-
-                    MenuSeparator {}
-
-                    AccessibleText {
-                        width: parent.width
-                        leftPadding: 10
-                        rightPadding: 10
-                        elide: Text.ElideRight
-                        font.bold: true
-                        text: qsTr("Posts order")
-                    }
-
-                    SkyRadioMenuItem {
-                        text: qsTr("New to old")
-                        checked: !reverseFeed
-                        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
-                        onTriggered: newReverseFeed(false)
-                    }
-
-                    SkyRadioMenuItem {
-                        text: qsTr("Old to new")
-                        checked: reverseFeed
-                        enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
-                        onTriggered: newReverseFeed(true)
-                    }
+                    onAddUserView: header.addUserView()
+                    onAddHashtagView: header.addHashtagView()
+                    onAddFocusHashtagView: header.addFocusHashtagView()
+                    onAddMediaView: header.addMediaView()
+                    onAddVideoView: header.addVideoView()
+                    onFilterStatistics: header.filterStatistics()
+                    onNewReverseFeed: (reverse) => header.newReverseFeed(reverse)
                 }
             }
         }

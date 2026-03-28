@@ -8,7 +8,6 @@ SkyPage {
     required property var timeline
     property SessionManager sessionManager: skywalker.getSessionManager()
     readonly property int margin: 10
-    readonly property string sideBarTitle: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
 
     signal closed
 
@@ -19,7 +18,7 @@ SkyPage {
     }
 
     header: SimpleHeader {
-        text: sideBarTitle
+        text: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
         visible: !root.showSideBar
         onBack: page.closed()
     }

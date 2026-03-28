@@ -150,7 +150,7 @@ ApplicationWindow {
     FavoritesTabBar {
         property var favoritesSwipeView
         property bool favoritesSwipeViewVisible: false
-        property bool show: favoritesSwipeViewVisible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
+        property bool show: favoritesSwipeViewVisible && !sideBar.visible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
         x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
@@ -159,7 +159,6 @@ ApplicationWindow {
         width: parent.width - x - guiSettings.rightMargin
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
-        clip: sideBar.visible
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
 
         onCurrentIndexChanged: {

@@ -675,6 +675,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SettingsGeneralFeed.qml
         QML_FILES qml/ContentViewMenu.qml
         QML_FILES qml/LanguageFilterButton.qml
+        QML_FILES qml/TimelineOptionsMenu.qml
 )
 
 if (NOT ANDROID)

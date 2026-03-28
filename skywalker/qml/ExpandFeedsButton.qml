@@ -24,9 +24,7 @@ SvgButton {
             contentItem: AccessibleText {
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: homeAvatar.width + 5
-                color: guiSettings.textColor
                 elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(1)
                 text: qsTr("Following", "timeline title")
             }
 
@@ -58,9 +56,7 @@ SvgButton {
                 contentItem: SkyCleanedTextLine {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: feedAvatar.width + 5
-                    color: guiSettings.textColor
                     elide: Text.ElideRight
-                    font.pointSize: guiSettings.scaledFont(1)
                     plainText: modelData.name
 
                     Accessible.ignored: true
@@ -74,7 +70,7 @@ SvgButton {
                     width: height
                     height: parent.height - 10
                     avatarUrl: modelData.avatarThumb
-                    unknownSvg: getDefaultAvatar()
+                    unknownSvg: guiSettings.favoriteDefaultAvatar(modelData)
                     contentMode: modelData.contentMode
                     onClicked: parent.triggered()
                 }
@@ -88,19 +84,6 @@ SvgButton {
                 Accessible.name: contentItem.text
                 Accessible.description: Accessible.name
                 Accessible.onPressAction: triggered()
-
-                function getDefaultAvatar() {
-                    switch (modelData.type) {
-                    case QEnums.FAVORITE_FEED:
-                        return guiSettings.feedDefaultAvatar(modelData.generatorView)
-                    case QEnums.FAVORITE_LIST:
-                        return SvgFilled.list
-                    case QEnums.FAVORITE_SEARCH:
-                        return guiSettings.searchFeedDefaultAvatar(modelData.searchFeed)
-                    }
-
-                    return SvgOutline.feed
-                }
             }
 
             onObjectAdded: (index, object) => {
@@ -118,7 +101,6 @@ SvgButton {
                 verticalAlignment: Text.AlignVCenter
                 rightPadding: settingsIcon.width + 5
                 elide: Text.ElideRight
-                color: guiSettings.textColor
                 text: qsTr("Sort favorites")
             }
 

@@ -12,8 +12,12 @@ Pane {
     property bool messagesActive: false
     property var rootItem: root.currentStackItem()
     property bool isBasePage: root.currentStack().depth === 1
-    readonly property var activeHeader: postFeedHeader.visible ? postFeedHeader :
-            (searchFeedHeader.visible ? searchFeedHeader : null)
+    readonly property list<favoritefeedview> favorites: skywalker.favoriteFeeds.userOrderedPinnedFeeds
+    readonly property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof PostFeedView) ?
+            rootItem.currentView :
+            (rootItem instanceof PostFeedView ? rootItem : null)
+    readonly property var searchFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
+    readonly property var activeFeedView: postFeedView ? postFeedView : (searchFeedView ? searchFeedView : null)
 
 
     signal homeClicked()
@@ -55,26 +59,43 @@ Pane {
         }
 
         LanguageFilterButton {
-            filteredLanguages: activeHeader ? activeHeader.filteredLanguages : []
-            showPostWithMissingLanguage: activeHeader ? activeHeader.showPostWithMissingLanguage : true
-            visible: activeHeader && activeHeader.showLanguageFilter
+            filteredLanguages: activeFeedView ? activeFeedView.headerItem.filteredLanguages : []
+            showPostWithMissingLanguage: activeFeedView ? activeFeedView.headerItem.showPostWithMissingLanguage : true
+            visible: activeFeedView && activeFeedView.headerItem.showLanguageFilter
         }
 
         SvgPlainButton {
-            svg: activeHeader ? guiSettings.getContentModeSvg(activeHeader.contentMode) : SvgOutline.chat
+            svg: activeFeedView ? guiSettings.getContentModeSvg(activeFeedView.headerItem.contentMode) : SvgOutline.chat
             iconColor: guiSettings.headerTextColor
             accessibleName: qsTr("view mode")
-            visible: Boolean(activeHeader)
+            visible: Boolean(activeFeedView)
 
             onClicked: feedViewMenu.open()
 
             ContentViewMenu {
                 id: feedViewMenu
-                contentMode: (activeHeader && activeHeader.postFeedView) ? activeHeader.postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                underlyingContentMode: (activeHeader && activeHeader).postFeedView ? activeHeader.postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                contentMode: activeFeedView ? activeFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+                underlyingContentMode: activeFeedView ? activeFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
 
-                onViewChanged: (contentMode) => activeHeader.viewChanged(contentMode)
+                onViewChanged: (newContentMode) => {
+                    activeFeedView.headerItem.contentMode = newContentMode
+                    activeFeedView.headerItem.viewChanged(newContentMode)
+                }
             }
+        }
+
+        SkyFooterButton {
+            Layout.rightMargin: 10
+            Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+            Layout.preferredWidth: Layout.preferredHeight
+            svg: homeActive ? (timeline && timeline.reverseFeed ? SvgFilled.homeUnderlined : SvgFilled.home) : SvgOutline.home
+            counter: homeActive && timeline ? timeline.unreadPosts : 0
+            counterBackgroundColor: guiSettings.sideBarColor
+            counterBorderColor: guiSettings.sideBarColor
+            counterTextColor: guiSettings.textColor
+            Accessible.name: getHomeSpeech()
+            visible: isBasePage
+            onClicked: homeClicked()
         }
     }
 
@@ -94,64 +115,6 @@ Pane {
             id: sideBarColumn
             width: parent.width
             spacing: 0
-
-            PostFeedHeader {
-                id: timelineHeader
-                width: undefined
-                height: undefined
-                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
-                Layout.fillWidth: true
-                color: guiSettings.sideBarColor
-                reverseFeed: skywalker.timelineModel.reverseFeed
-                feedName: skywalker.timelineModel.feedName
-                showAsHome: true
-                isHomeFeed: true
-                showMoreOptions: true
-                isSideBar: true
-                visible: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
-
-                onAddUserView: root.getTimelineView().addUserView()
-                onAddHashtagView: root.getTimelineView().addHashtagView()
-                onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
-                onAddMediaView: root.getTimelineView().showMediaView()
-                onAddVideoView: root.getTimelineView().showVideoView()
-                onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
-            }
-
-            PostFeedHeader {
-                property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof PostFeedView) ?
-                        rootItem.currentView :
-                        (rootItem instanceof PostFeedView ? rootItem : null)
-
-                id: postFeedHeader
-                width: undefined
-                height: undefined
-                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
-                Layout.fillWidth: true
-                color: guiSettings.sideBarColor
-                userDid: postFeedView ? postFeedView.userDid : ""
-                reverseFeed: postFeedView ? postFeedView.headerItem.reverseFeed : false
-                feedName: postFeedView ? postFeedView.headerItem.feedName : ""
-                feedAvatar: postFeedView ? postFeedView.headerItem.feedAvatar : ""
-                defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.feed
-                contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                underlyingContentMode: postFeedView ? postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                showAsHome: postFeedView ? postFeedView.showAsHome : false
-                showLanguageFilter: postFeedView ? postFeedView.headerItem.showLanguageFilter : false
-                filteredLanguages: postFeedView ? postFeedView.headerItem.filteredLanguages : []
-                showPostWithMissingLanguage: postFeedView ? postFeedView.headerItem.showPostWithMissingLanguage : true
-                showViewOptions: true
-                isSideBar: true
-                visible: Boolean(postFeedView)
-
-                onClosed: postFeedView.closed()
-                onFeedAvatarClicked: (clickPoint) => postFeedView.showFeedOptions(clickPoint, postFeedHeader)
-
-                onViewChanged: (newContentMode) => {
-                    postFeedView.headerItem.contentMode = newContentMode
-                    postFeedView.headerItem.viewChanged(newContentMode)
-                }
-            }
 
             FeedAvatar {
                 property var postFeedView: rootItem instanceof PostFeedView ? rootItem : null
@@ -178,36 +141,6 @@ Pane {
                 Accessible.name: postFeedView ? postFeedView.headerItem.feedName : ""
                 Accessible.description: Accessible.name
                 Accessible.onPressAction: postFeedView.headerItem.feedAvatarClicked(Qt.point(0, 0))
-            }
-
-            PostFeedHeader {
-                property var postFeedView: (rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof SearchFeedView) ? rootItem.currentView : null
-
-                id: searchFeedHeader
-                width: undefined
-                height: undefined
-                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
-                Layout.fillWidth: true
-                color: guiSettings.sideBarColor
-                feedName: postFeedView ? postFeedView.headerItem.feedName : ""
-                defaultSvg: postFeedView ? postFeedView.headerItem.defaultSvg : SvgFilled.search
-                feedAvatar: ""
-                contentMode: postFeedView ? postFeedView.headerItem.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                underlyingContentMode: postFeedView ? postFeedView.headerItem.underlyingContentMode : QEnums.CONTENT_MODE_UNSPECIFIED
-                showAsHome: postFeedView ? postFeedView.showAsHome : false
-                showLanguageFilter: postFeedView ? postFeedView.headerItem.showLanguageFilter : false
-                filteredLanguages: postFeedView ? postFeedView.headerItem.filteredLanguages : []
-                showPostWithMissingLanguage: false
-                showViewOptions: true
-                isSideBar: true
-                visible: Boolean(postFeedView)
-
-                onFeedAvatarClicked: (clickPoint) => postFeedView.showOptionsMenu(clickPoint, searchFeedHeader)
-
-                onViewChanged: (newContentMode) => {
-                    postFeedView.headerItem.contentMode = newContentMode
-                    postFeedView.headerItem.viewChanged(newContentMode)
-                }
             }
 
             MessagesListHeader {
@@ -343,33 +276,57 @@ Pane {
                 }
             }
 
+            // Following feed
             RowLayout {
-                Layout.fillWidth: true
+                readonly property bool active: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
+
+                id: followingEntry
+                width: parent.width
                 spacing: 12
                 visible: isBasePage
 
                 SkyFooterButton {
                     Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                     Layout.preferredWidth: Layout.preferredHeight
-                    svg: homeActive ? (timeline && timeline.reverseFeed ? SvgFilled.homeUnderlined : SvgFilled.home) : SvgOutline.home
-                    counter: homeActive && timeline ? timeline.unreadPosts : 0
-                    counterBackgroundColor: guiSettings.sideBarColor
-                    counterBorderColor: guiSettings.sideBarColor
-                    counterTextColor: guiSettings.textColor
-                    Accessible.name: getHomeSpeech()
-                    onClicked: homeClicked()
+                    svg: SvgOutline.menu
+                    Accessible.name: qsTr("more options")
+                    onClicked: {
+                        if (followingEntry.active)
+                            moreMenu.open()
+                        else
+                            followingEntry.activate()
+                    }
+
+                    TimelineOptionsMenu {
+                        id: moreMenu
+                        reverseFeed: skywalker.timelineModel.reverseFeed
+
+                        onAddUserView: root.getTimelineView().addUserView()
+                        onAddHashtagView: root.getTimelineView().addHashtagView()
+                        onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
+                        onAddMediaView: root.getTimelineView().showMediaView()
+                        onAddVideoView: root.getTimelineView().showVideoView()
+                        onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
+                        onNewReverseFeed: (reverse) => root.getTimelineView().setReverseFeed(reverse)
+                    }
                 }
 
                 AccessibleText {
                     Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                    rightPadding: 10
                     elide: Text.ElideRight
-                    font.bold: homeActive
-                    text: qsTr("Home")
+                    font.bold: followingEntry.active
+                    text: qsTr("Following", "timeline title")
 
                     SkyMouseArea {
                         anchors.fill: parent
-                        onClicked: homeClicked()
+                        onClicked: followingEntry.activate()
                     }
+                }
+
+                function activate() {
+                    root.viewHomeFeed()
                 }
             }
 
@@ -454,6 +411,90 @@ Pane {
                     }
                 }
             }
+
+            // Favorites
+            Repeater {
+                Layout.fillWidth: true
+                model: favorites
+
+                RowLayout {
+                    required property favoritefeedview modelData
+                    readonly property bool active: activeFeedView && activeFeedView.feedUri === modelData.uri
+
+                    id: favoriteEntry
+                    width: parent.width
+                    spacing: 12
+                    visible: isBasePage
+
+                    FeedAvatar {
+                        Layout.margins: 5
+                        Layout.preferredHeight: guiSettings.sideBarHeaderHeight - 10
+                        Layout.preferredWidth: Layout.preferredHeight
+                        avatarUrl: modelData.avatarThumb
+                        unknownSvg: guiSettings.favoriteDefaultAvatar(modelData)
+                        contentMode: modelData.contentMode
+
+                        onClicked: (clickPoint) => {
+                            if (favoriteEntry.active)
+                                activeFeedView.showFeedOptions(clickPoint, favoriteEntry)
+                            else
+                                favoriteEntry.activate()
+                        }
+
+                        onPressAndHold: showFavoritesSorter()
+                    }
+
+                    SkyCleanedTextLine {
+                        Layout.fillWidth: true
+                        verticalAlignment: Text.AlignVCenter
+                        rightPadding: 10
+                        elide: Text.ElideRight
+                        font.bold: active
+                        plainText: modelData.name
+
+                        SkyMouseArea {
+                            anchors.fill: parent
+                            onClicked: favoriteEntry.activate()
+                            onPressAndHold: showFavoritesSorter()
+                        }
+                    }
+
+                    function activate() {
+                        root.showFavorite(modelData)
+
+                        if (!homeActive)
+                            homeClicked()
+                    }
+                }
+            }
+
+            // Sort favorites
+            RowLayout {
+                width: parent.width
+                spacing: 12
+                visible: isBasePage && favorites.length > 1
+
+                SkyFooterButton {
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
+                    Layout.preferredWidth: Layout.preferredHeight
+                    color: guiSettings.buttonColor
+                    svg: SvgFilled.settings
+                    Accessible.name: qsTr("Sort favorites")
+                    onClicked: showFavoritesSorter()
+                }
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    font.bold: searchActive
+                    text: qsTr("Sort favorites")
+
+                    SkyMouseArea {
+                        anchors.fill: parent
+                        onClicked: showFavoritesSorter()
+                    }
+                }
+            }
         }
     }
 
@@ -462,7 +503,7 @@ Pane {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 20
-        width: 70
+        width: 50
         height: width
 
         messagesActive: sideBar.messagesActive
@@ -474,6 +515,11 @@ Pane {
         visible: isBasePage || rootItem instanceof AuthorView || (rootItem instanceof PostThreadView && !rootItem.isUnrolledThread)
 
         onAddConvoClicked: sideBar.addConvoClicked()
+    }
+
+    function showFavoritesSorter() {
+        if (favorites.length > 1)
+            root.showFavoritesSorter()
     }
 
     function getHomeSpeech() {

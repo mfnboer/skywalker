@@ -292,6 +292,10 @@ SkyPage {
         skywalker.timelineModel.addMediaFilter()
     }
 
+    function setReverseFeed(reverse) {
+        timelineView.setReverseFeed(reverse)
+    }
+
     function switchToFullView() {
         viewBar.setCurrentIndex(0)
     }

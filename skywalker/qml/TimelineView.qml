@@ -34,13 +34,7 @@ PostListView {
         onAddVideoView: page.showVideoView()
         onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
 
-        onNewReverseFeed: (reverse) => {
-            userSettings.setReverseTimeline(skywalker.getUserDid(), reverse)
-
-            const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
-            skywalker.timelineModel.reverseFeed = reverse
-            moveToPost(reverseIndex, () => { contentY -= offsetY; resetHeaderPosition() })
-        }
+        onNewReverseFeed: (reverse) => timelineView.setReverseFeed(reverse)
     }
     headerPositioning: ListView.PullBackHeader
 
@@ -134,6 +128,14 @@ PostListView {
         id: reverseSyncTimer
         interval: 100
         onTriggered: setInSync(count - 1)
+    }
+
+    function setReverseFeed(reverse) {
+        userSettings.setReverseTimeline(skywalker.getUserDid(), reverse)
+
+        const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
+        skywalker.timelineModel.reverseFeed = reverse
+        moveToPost(reverseIndex, () => { contentY -= offsetY; resetHeaderPosition() })
     }
 
     function moveToPost(index, afterMoveCb = () => {}) {

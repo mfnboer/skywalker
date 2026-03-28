@@ -27,7 +27,6 @@ SkyPage {
     property bool firstSearch: true
     readonly property int margin: 10
     property date nullDate
-    readonly property string sideBarTitle: qsTr("Search")
 
     signal closed
 
