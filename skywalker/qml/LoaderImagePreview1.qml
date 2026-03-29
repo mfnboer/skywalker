@@ -58,6 +58,6 @@ Loader {
             return exceedsMaxHeight ? guiSettings.maxImageHeight : idealHeight
         }
 
-        return width
+        return Math.min(width, guiSettings.maxImageHeight)
     }
 }
