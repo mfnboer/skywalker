@@ -218,6 +218,54 @@ Rectangle {
                     svg: SvgFilled.newFollower
                 }
             }
+
+            // Unwrap quote chain post
+            Loader {
+                anchors.top: parent.top
+                anchors.topMargin: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                active: showPost() && (Boolean(notificationPostRecord) && notificationPostRecord.postIsQuote) || (Boolean(notificationReasonPostRecordWithMedia) && notificationPostRecordWithMedia.record.postIsQuote)
+                asynchronous: true
+                visible: status === Loader.Ready
+
+                sourceComponent: SvgButton {
+                    svg: SvgFilled.quote
+                    accessibleName: qsTr("unwrap quote chain")
+                    flat: true
+                    iconColor: skywalker.getUserSettings().threadColor
+                    background: Rectangle {
+                        implicitWidth: 34
+                        implicitHeight: 34
+                        radius: width / 2
+                        color: notification.color
+                    }
+                    onClicked: unwrapQuoteChain(notificationPostUri)
+                }
+            }
+
+            // Unwrap quote chain aggregatable reason post
+            Loader {
+                anchors.top: parent.top
+                anchors.topMargin: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                active: showPostForAggregatableReason() && (Boolean(notificationReasonPostRecord) && notificationReasonPostRecord.postIsQuote) || (Boolean(notificationReasonPostRecordWithMedia) && notificationReasonPostRecordWithMedia.record.postIsQuote)
+                asynchronous: true
+                visible: status === Loader.Ready
+
+                sourceComponent: SvgButton {
+                    svg: SvgFilled.quote
+                    accessibleName: qsTr("unwrap quote chain")
+                    flat: true
+                    iconColor: skywalker.getUserSettings().threadColor
+                    background: Rectangle {
+                        implicitWidth: 34
+                        implicitHeight: 34
+                        radius: width / 2
+                        color: notification.color
+                    }
+                    onClicked: unwrapQuoteChain(notificationReasonSubjectUri)
+                }
+            }
         }
 
         Loader {
@@ -858,6 +906,10 @@ Rectangle {
             return getNewLabelsSpeech()
 
         return qsTr("unknown notification");
+    }
+
+    function unwrapQuoteChain(postUri) {
+        root.viewQuoteChain(postUri, owner.did)
     }
 
     function checkOnScreen() {
