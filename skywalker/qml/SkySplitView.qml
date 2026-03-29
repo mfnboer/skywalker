@@ -6,8 +6,8 @@ SplitView {
 
     handle: Rectangle {
         id: handleItem
-        implicitWidth: 2
-        color: SplitHandle.pressed ? guiSettings.separatorHighLightColor : guiSettings.backgroundColor
+        implicitWidth: SplitHandle.pressed ? 2 : 1
+        color: SplitHandle.pressed ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
 
         containmentMask: Item {
             x: (handleItem.width - width) / 2
@@ -17,17 +17,9 @@ SplitView {
 
         Rectangle {
             anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            width: 1
-            height: 20
-            color: guiSettings.separatorHighLightColor
-        }
-
-        Rectangle {
-            anchors.right: parent.right
             anchors.rightMargin: 4
             anchors.verticalCenter: parent.verticalCenter
-            width: 1
+            width: 2
             height: 20
             color: guiSettings.separatorHighLightColor
         }

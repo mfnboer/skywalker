@@ -129,7 +129,7 @@ Item {
     // Misc
     readonly property real flickDeceleration: 900
     readonly property real maxFlickVelocity: 800 * Screen.devicePixelRatio * 10
-    readonly property real slowFlickVelocity: maxFlickVelocity / 15
+    readonly property real slowFlickVelocity: maxFlickVelocity / 10
     readonly property bool flickPixelAligned: false
     readonly property bool isAndroid: Qt.platform.os === "android"
 

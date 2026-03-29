@@ -64,6 +64,7 @@ Pane {
             visible: activeFeedView && activeFeedView.headerItem.showLanguageFilter
         }
 
+        // View mode
         SvgPlainButton {
             svg: activeFeedView ? guiSettings.getContentModeSvg(activeFeedView.headerItem.contentMode) : SvgOutline.chat
             iconColor: guiSettings.headerTextColor
@@ -84,6 +85,7 @@ Pane {
             }
         }
 
+        // Home
         SkyFooterButton {
             Layout.rightMargin: 10
             Layout.preferredHeight: guiSettings.sideBarHeaderHeight
@@ -288,7 +290,7 @@ Pane {
                 SkyFooterButton {
                     Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                     Layout.preferredWidth: Layout.preferredHeight
-                    svg: SvgOutline.menu
+                    svg: followingEntry.active ? SvgFilled.menu : SvgOutline.menu
                     Accessible.name: qsTr("more options")
                     onClicked: {
                         if (followingEntry.active)
@@ -330,6 +332,7 @@ Pane {
                 }
             }
 
+            // Search
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
@@ -356,6 +359,7 @@ Pane {
                 }
             }
 
+            // DM
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12
@@ -384,6 +388,7 @@ Pane {
                 }
             }
 
+            // Notifications
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 12

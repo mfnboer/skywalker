@@ -21,7 +21,6 @@ Rectangle {
     property bool showMoreOptions: false
     property bool showViewOptions: false
     property bool showFavoritesPlaceHolder: false
-    property bool isSideBar: false // TODO: not needed?
     property int bottomMargin: 0
     readonly property int favoritesY: headerRow.height
 
@@ -48,7 +47,7 @@ Rectangle {
     RowLayout {
         id: headerRow
         width: parent.width
-        height: header.visible ? (isSideBar ? guiSettings.sideBarHeaderHeight : guiSettings.headerHeight) : 0
+        height: header.visible ? guiSettings.headerHeight : 0
         spacing: 0
 
         SvgPlainButton {
@@ -119,7 +118,7 @@ Rectangle {
             rightPadding: showAsHome ? expandFeedsButton.width : 0
             elide: Text.ElideRight
             font.bold: true
-            font.pointSize: isSideBar ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
+            font.pointSize: guiSettings.scaledFont(10/8)
             color: guiSettings.headerTextColor
             plainText: header.feedName
 
@@ -151,14 +150,14 @@ Rectangle {
         LanguageFilterButton {
             filteredLanguages: header.filteredLanguages
             showPostWithMissingLanguage: header.showPostWithMissingLanguage
-            visible: showLanguageFilter && !isSideBar
+            visible: showLanguageFilter
         }
 
         SvgPlainButton {
             svg: guiSettings.getContentModeSvg(contentMode)
             iconColor: guiSettings.headerTextColor
             accessibleName: qsTr("view mode")
-            visible: showViewOptions && !isSideBar
+            visible: showViewOptions
 
             onClicked: viewMenuLoader.open()
 
@@ -178,7 +177,7 @@ Rectangle {
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
             unknownSvg: defaultSvg
-            visible: !showAsHome && !isHomeFeed && !isSideBar
+            visible: !showAsHome && !isHomeFeed
 
             onClicked: (clickPoint) => {
                 const mousePoint = clickPoint ?
@@ -210,7 +209,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: Layout.preferredHeight
-            visible: showAsHome && !isSideBar
+            visible: showAsHome
             Accessible.role: Accessible.Pane
 
             Avatar {
