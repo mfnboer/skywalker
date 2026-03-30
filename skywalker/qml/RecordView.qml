@@ -77,6 +77,7 @@ Item {
                 postExternal: record.external
                 postDateTime: record.postDateTime
                 bodyBackgroundColor: recordView.backgroundColor
+                moving: recordView.moving
 
                 onUnrollThread: {
                     if (record.postUri)

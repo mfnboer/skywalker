@@ -1,6 +1,7 @@
-next
+4.32
 ====
 * User interface polishing
+* Show all pinned favorites in side bar
 * Unroll post thread button
 * Unwrap quote chain button
 * Show 🤖 in front of name of automated account

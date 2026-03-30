@@ -381,6 +381,7 @@ Column {
             userDid: postBody.userDid
             record: postRecord
             backgroundColor: guiSettings.highLightColor(bodyBackgroundColor)
+            moving: postBody.moving
         }
     }
 
