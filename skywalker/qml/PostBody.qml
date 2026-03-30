@@ -369,24 +369,18 @@ Column {
         postContentLabels: postBody.postContentLabels
         filteredContentLabel: postBody.filteredContentLabel
         postVisible: postBody.postVisible()
-        moving: postBody.moving
     }
 
     // Record
     Loader {
         id: recordLoader
         width: parent.width
-        active: Boolean(postRecord) && showRecord && postVisible() && !moving
+        active: Boolean(postRecord) && showRecord && postVisible()
 
         sourceComponent: RecordView {
             userDid: postBody.userDid
             record: postRecord
             backgroundColor: guiSettings.highLightColor(bodyBackgroundColor)
-        }
-
-        onStatusChanged: {
-            if (status == Loader.Ready)
-                active = true
         }
     }
 
@@ -394,7 +388,7 @@ Column {
     Loader {
         id: recordWithMediaLoader
         width: parent.width
-        active: Boolean(postRecordWithMedia) && postVisible() && !moving
+        active: Boolean(postRecordWithMedia) && postVisible()
 
         sourceComponent: RecordWithMediaView {
             userDid: postBody.userDid
@@ -407,6 +401,7 @@ Column {
             isDraft: postBody.isDraft
             swipeMode: postBody.swipeMode
             showRecord: postBody.showRecord
+            moving: postBody.moving
 
             onActivateSwipe: (imgIndex, img) => postBody.activateSwipe(imgIndex, img)
         }

@@ -10,6 +10,7 @@ Item {
     property bool highlight: false
     property string maskColor: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
+    property bool moving: false
 
     id: view
     width: parent.width
@@ -41,6 +42,7 @@ Item {
             contentLabeler: view.contentLabeler
             maskColor: view.maskColor
             showSonglinkWidget: true
+            moving: view.moving
         }
     }
 
@@ -48,7 +50,7 @@ Item {
         id: gifLoader
         width: parent.width
         height: calcHeight()
-        active: isGif
+        active: isGif && !moving
         asynchronous: true
 
         sourceComponent: GifView {
@@ -60,6 +62,11 @@ Item {
             contentWarning: view.contentWarning
             contentLabeler: view.contentLabeler
             backgroundColor: maskColor
+        }
+
+        onStatusChanged: {
+            if (status == Loader.Ready)
+                active = true
         }
 
         LoaderCanvas {

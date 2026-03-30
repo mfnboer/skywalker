@@ -18,6 +18,7 @@ RoundCornerMask {
     property bool showSonglinkWidget: false
     property bool isLiveExternal: false
     property date liveExpiresAt
+    property bool moving: false
 
     id: card
     height: columnHeight
@@ -53,7 +54,7 @@ RoundCornerMask {
             x: (externalColumn.width - width) / 2
             width: calcWidth()
             height: aspectRatio * width
-            active: filter.imageVisible() && Boolean(card.thumbUrl)
+            active: filter.imageVisible() && Boolean(card.thumbUrl) && !moving
             asynchronous: true
 
             sourceComponent: ThumbImageFixedSizeView {
@@ -65,6 +66,11 @@ RoundCornerMask {
                 fillMode: Image.PreserveAspectCrop
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
                 indicateLoading: false
+            }
+
+            onStatusChanged: {
+                if (status == Loader.Ready)
+                    active = true
             }
 
             LoaderCanvas {

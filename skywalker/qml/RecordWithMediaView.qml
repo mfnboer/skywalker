@@ -13,6 +13,7 @@ Item {
     property bool swipeMode: false
     property bool showRecord: true
     readonly property int margin: 10
+    property bool moving: false
 
     signal activateSwipe(int imgIndex, var previewImg)
 
@@ -37,6 +38,7 @@ Item {
             postContentLabeler: contentLabeler
             bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
             swipeMode: recordItem.swipeMode
+            moving: recordItem.moving
 
             onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
         }
@@ -50,6 +52,7 @@ Item {
             postContentLabeler: contentLabeler
             bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
             swipeMode: recordItem.swipeMode
+            moving: recordItem.moving
 
             onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
         }
@@ -63,6 +66,7 @@ Item {
             postContentLabeler: contentLabeler
             bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
             swipeMode: recordItem.swipeMode
+            moving: recordItem.moving
 
             onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
         }
@@ -76,6 +80,7 @@ Item {
             postContentLabeler: contentLabeler
             bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
             swipeMode: recordItem.swipeMode
+            moving: recordItem.moving
 
             onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
         }
@@ -89,6 +94,7 @@ Item {
             bodyBackgroundColor: recordItem.backgroundColor
             swipeMode: recordItem.swipeMode
             isDraft: recordItem.isDraft
+            moving: recordItem.moving
 
             onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
         }
@@ -101,6 +107,7 @@ Item {
             postContentWarning: contentWarning
             postContentLabeler: contentLabeler
             highlight: recordItem.highlight
+            moving: recordItem.moving
         }
 
         LoaderUnknownEmbed {
@@ -109,11 +116,16 @@ Item {
             postUnknownEmbedType: record.unknownEmbedType
         }
 
-        RecordView {
-            userDid: recordItem.userDid
-            record: recordItem.record.record
-            backgroundColor: guiSettings.highLightColor(recordItem.backgroundColor)
-            visible: !recordItem.swipeMode && recordItem.showRecord
+        Loader {
+            width: parent.width
+            active: !recordItem.swipeMode && recordItem.showRecord
+
+            sourceComponent: RecordView {
+                userDid: recordItem.userDid
+                record: recordItem.record.record
+                backgroundColor: guiSettings.highLightColor(recordItem.backgroundColor)
+                moving: recordItem.moving
+            }
         }
     }
 

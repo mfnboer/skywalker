@@ -6,11 +6,9 @@ Loader {
     required property list<contentlabel> postContentLabels
     property contentlabel filteredContentLabel
     property bool postVisible: true
-    property bool moving: false
 
     id: loaderContentLabels
-
-    active: postContentLabels.length > 0 && postVisible && !moving
+    active: postContentLabels.length > 0 && postVisible
 
     sourceComponent: ContentLabels {
         parentWidth: loaderContentLabels.width
@@ -18,10 +16,5 @@ Loader {
         contentLabels: postContentLabels
         filteredContentLabel: loaderContentLabels.filteredContentLabel
         contentAuthor: postAuthor
-    }
-
-    onStatusChanged: {
-        if (status == Loader.Ready)
-            active = true
     }
 }

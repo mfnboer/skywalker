@@ -10,6 +10,7 @@ Item {
             (record.blockedAuthor.viewer.blocking || !record.blockedAuthor.viewer.blockingByList.isNull())
     property string backgroundColor: guiSettings.backgroundColor
     property string borderColor: guiSettings.isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
+    property bool moving: false
 
     signal opening
 

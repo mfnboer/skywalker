@@ -37,6 +37,7 @@ Column {
     property bool isDraft: false
     property bool swipeMode: false
     property bool showRecord: true
+    property bool moving: false
     readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
     readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
 
@@ -269,6 +270,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -283,6 +285,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -297,6 +300,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -311,6 +315,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -327,6 +332,7 @@ Column {
         swipeMode: postBody.swipeMode
         isDraft: postBody.isDraft
         postVisible: postBody.postVisible()
+        moving: postBody.moving
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -341,6 +347,7 @@ Column {
         postContentLabeler: postBody.postContentLabeler
         bodyBackgroundColor: postBody.bodyBackgroundColor
         postVisible: postBody.postVisible()
+        moving: postBody.moving
     }
 
     // Unknown embed

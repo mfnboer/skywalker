@@ -13,7 +13,7 @@ Loader {
     property bool moving: false
 
     id: loaderExternal
-    active: Boolean(postExternal) && postVisible && !moving
+    active: Boolean(postExternal) && postVisible
 
     sourceComponent: ExternalView {
         userDid: loaderExternal.userDid
@@ -23,10 +23,6 @@ Loader {
         contentLabeler: postContentLabeler
         highlight: loaderExternal.highlight
         maskColor: bodyBackgroundColor
-    }
-
-    onStatusChanged: {
-        if (status == Loader.Ready)
-            active = true
+        moving: loaderExternal.moving
     }
 }
