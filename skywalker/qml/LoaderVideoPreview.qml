@@ -53,13 +53,12 @@ Loader {
             return filter.height + 20
 
         const videoSizeIsKnown = postVideo.width > 0 && postVideo.height > 0
-        const aspectRatio = videoSizeIsKnown ? postVideo.width / postVideo.height : guiSettings.videoPreviewRatio
+        const aspectRatio = videoSizeIsKnown ? postVideo.width / postVideo.height : (1 / guiSettings.videoPreviewRatio)
         const maxHeight = guiSettings.maxImageHeight
         const maxWidth = maxHeight * aspectRatio
         const image = postVideo.imageView
 
-        if (image.isNull()) {
-            const maxWidth = maxHeight * aspectRatio
+        if (image.isNull() || image.width <= 0 || image.height <= 0) {
             const w = (maxWidth > 0 && videoLoader.width > maxWidth) ? maxWidth : videoLoader.width
             return w / aspectRatio
         }
