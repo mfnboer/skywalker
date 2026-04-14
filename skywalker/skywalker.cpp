@@ -256,22 +256,8 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
             const auto* session = mBsky->getSession();
             const QString& did = session->mDid;
             updateUser(did, host);
-
-            if (setAdvancedSettings)
-            {
-                // These settings will trigger updates on mBsky
-                mUserSettings.setServiceAppView(did, serviceAppView);
-                mUserSettings.setServiceChat(did, serviceChat);
-                mUserSettings.setServiceVideoHost(did, serviceVideoHost);
-                mUserSettings.setServiceVideoDid(did, serviceVideoDid);
-            }
-            else
-            {
-                mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
-                mBsky->setServiceChat(mUserSettings.getServiceChat(did));
-                mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
-                mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
-            }
+            updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
+                                   serviceVideoHost, serviceVideoDid);
 
             mUserSettings.setOAuthEnabled(did, false);
             mUserSettings.saveSession(*session);
@@ -293,7 +279,10 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
         });
 }
 
-void Skywalker::loginWithOAuth(const QString host, const QString user)
+void Skywalker::loginWithOAuth(const QString host, const QString user,
+                               bool setAdvancedSettings, const QString serviceAppView,
+                               const QString serviceChat, const QString serviceVideoHost,
+                               const QString serviceVideoDid)
 {
     qDebug() << "Login with OAuth:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
@@ -301,15 +290,16 @@ void Skywalker::loginWithOAuth(const QString host, const QString user)
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
     mBsky->oauthLogin(user, OAuthRedirect::CLIENT_ID, OAuthRedirect::REDIRECT_URL, OAuthRedirect::SCOPE,
-        [this, host, user](QUrl redirectUrl)
+        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid](QUrl redirectUrl)
         {
             qDebug() << "Login" << user << "succeeded";
             mOAuthRedirect = std::make_unique<OAuthRedirect>();
 
             const bool started = mOAuthRedirect->start(
-                [this, host, user](QUrl url)
+                [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid](QUrl url)
                 {
-                    loginWithOAuthContiniue(url, host, user);
+                    loginWithOAuthContiniue(url, host, user, setAdvancedSettings, serviceAppView,
+                                            serviceChat, serviceVideoHost, serviceVideoDid);
                 });
 
             if (!started)
@@ -324,23 +314,29 @@ void Skywalker::loginWithOAuth(const QString host, const QString user)
         });
 }
 
-void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user)
+void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user,
+                                        bool setAdvancedSettings, const QString serviceAppView,
+                                        const QString serviceChat, const QString serviceVideoHost,
+                                        const QString serviceVideoDid)
 {
     qDebug() << "Continue login:" << url << "host:" << host << "user:" << user;
     mBsky->oauthLoginContinue(url,
-        [this, host, user](QString did, QString scope, QString accessToken, QString refreshToken){
+        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
+         serviceVideoDid](QString did, QString scope, QString accessToken, QString refreshToken){
             qDebug() << "Got tokens, did:" << did << "scope:" << scope << "access:" << accessToken << "refresh:" << refreshToken;
             mOAuthRedirect.reset();
             const auto* session = mBsky->getSession();
             updateUser(did, host);
+            updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
+                                   serviceVideoHost, serviceVideoDid);
+
             mUserSettings.setOAuthEnabled(did, true);
             mUserSettings.saveSession(*session);
-            // TODO: advanced settings
 
             // TODO: Android
 #ifndef Q_OS_ANDROID
-            const QString path = QString("%1/dpop.pem").arg(FileUtils::getAppDataPath(did));
-            mBsky->oauthSaveDpopKey(path, "LinuxTest");
+            const QString path = OAuthRedirect::getKeyStorageFilename(did);
+            mBsky->oauthSaveDpopKey(path, OAuthRedirect::getTestPassPhrase());
 #endif
             emit loginOk();
 
@@ -354,6 +350,28 @@ void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, con
             mUserSettings.setActiveUserDid({});
             emit loginFailed(error, msg, host, user, "");
         });
+}
+
+void Skywalker::updateAdvancedSettings(const QString& did,
+                                       bool setAdvancedSettings, const QString& serviceAppView,
+                                       const QString& serviceChat, const QString& serviceVideoHost,
+                                       const QString& serviceVideoDid)
+{
+    if (setAdvancedSettings)
+    {
+        // These settings will trigger updates on mBsky
+        mUserSettings.setServiceAppView(did, serviceAppView);
+        mUserSettings.setServiceChat(did, serviceChat);
+        mUserSettings.setServiceVideoHost(did, serviceVideoHost);
+        mUserSettings.setServiceVideoDid(did, serviceVideoDid);
+    }
+    else
+    {
+        mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+        mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+        mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+        mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+    }
 }
 
 bool Skywalker::autoLogin()
@@ -4321,6 +4339,7 @@ ATProto::ProfileMaster& Skywalker::getProfileMaster()
 
 EditUserPreferences* Skywalker::getEditUserPreferences()
 {
+    qDebug() << "Get edit user preferences";
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);

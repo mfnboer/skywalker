@@ -296,7 +296,7 @@ private:
                                  ((i % 4) == 0 ? "bar" : "foo") :
                                  authorId;
             QString postData = QString(POST_TEMPLATE).arg(QString::number(mNextPostId++),
-                                                          postTime.toString(Qt::ISODateWithMs),
+                                                          postTime.toUTC().toString(Qt::ISODateWithMs),
                                                           author);
             feedData += postData;
 

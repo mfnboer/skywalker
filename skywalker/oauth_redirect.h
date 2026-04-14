@@ -18,7 +18,10 @@ public:
     static constexpr char const* REDIRECT_URL = "http://127.0.0.1:1970/oauth/callback";
     static const QStringList SCOPE;
 
-    ~OAuthRedirect() = default;
+#ifndef Q_OS_ANDROID
+    static QString getKeyStorageFilename(const QString& did);
+    static QString getTestPassPhrase() ;
+#endif
 
     bool start(const RedirectCb& redirectCb);
 

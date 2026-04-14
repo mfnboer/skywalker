@@ -184,7 +184,7 @@ QJsonObject UserSettings::toJson() const
             const QDateTime dateTime = value.toDateTime();
 
             if (dateTime.isValid())
-                json[key] = valueToJson(VALUE_TYPE_DATE_TIME, dateTime.toString(Qt::ISODateWithMs));
+                json[key] = valueToJson(VALUE_TYPE_DATE_TIME, dateTime.toUTC().toString(Qt::ISODateWithMs));
             else
                 json[key] = valueToJson(VALUE_TYPE_NULL, QString(""));
         }

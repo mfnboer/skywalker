@@ -90,8 +90,14 @@ public:
                            bool setAdvancedSettings = false, const QString serviceAppView = "",
                            const QString serviceChat = "", const QString serviceVideoHost = "",
                            const QString serviceVideoDid = "");
-    Q_INVOKABLE void loginWithOAuth(const QString host, const QString user);
-    void loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user);
+    Q_INVOKABLE void loginWithOAuth(const QString host, const QString user,
+                                    bool setAdvancedSettings = false, const QString serviceAppView = "",
+                                    const QString serviceChat = "", const QString serviceVideoHost = "",
+                                    const QString serviceVideoDid = "");
+    void loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user,
+                                 bool setAdvancedSettings, const QString serviceAppView,
+                                 const QString serviceChat, const QString serviceVideoHost,
+                                 const QString serviceVideoDid);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
@@ -394,6 +400,10 @@ private:
     void updateServiceChat(const QString& did);
     void updateServiceVideoHost(const QString& did);
     void updateServiceVideoDid(const QString& did);
+    void updateAdvancedSettings(const QString& did,
+                                bool setAdvancedSettings, const QString& serviceAppView,
+                                const QString& serviceChat, const QString& serviceVideoHost,
+                                const QString& serviceVideoDid);
     void updateGlobalFeedOrder();
     ATProto::PostMaster* postMaster();
 

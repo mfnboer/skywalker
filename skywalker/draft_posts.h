@@ -72,7 +72,7 @@ public:
         const QString& language,
         bool restrictReplies, bool allowMention, bool allowFollwer, bool allowFollowing,
         const QStringList& allowLists, bool embeddingDisabled,
-        QDateTime timestamp = QDateTime::currentDateTime());
+        QDateTime timestamp = QDateTime::currentDateTimeUtc());
 
     Q_INVOKABLE bool saveDraftPost(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread = {});
     Q_INVOKABLE void loadDraftPosts();

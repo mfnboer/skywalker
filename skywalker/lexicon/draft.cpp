@@ -19,7 +19,7 @@ QJsonObject ReplyToPost::toJson() const
 
     if (mDateTime.isValid())
     {
-        json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+        json.insert("date", mDateTime.toUTC().toString(Qt::ISODateWithMs));
     }
     else
     {
@@ -53,7 +53,7 @@ QJsonObject QuotePost::toJson() const
 
     if (mDateTime.isValid())
     {
-        json.insert("date", mDateTime.toString(Qt::ISODateWithMs));
+        json.insert("date", mDateTime.toUTC().toString(Qt::ISODateWithMs));
     }
     else
     {

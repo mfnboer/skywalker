@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "oauth_redirect.h"
+#include "file_utils.h"
 #include <atproto/lib/oauth.h>
 #include <QTcpServer>
 
@@ -12,6 +13,18 @@ const QStringList OAuthRedirect::SCOPE = {
     ATProto::OAuth::SCOPE_TRANSITION_CHAT,
     ATProto::OAuth::SCOPE_TRANSITION_EMAIL
 };
+
+#ifndef Q_OS_ANDROID
+QString OAuthRedirect::getKeyStorageFilename(const QString& did)
+{
+    return QString("%1/dpop.pem").arg(FileUtils::getAppDataPath(did));
+}
+
+QString OAuthRedirect::getTestPassPhrase()
+{
+    return "Rage! Rage! Against the dying of the light.";
+}
+#endif
 
 bool OAuthRedirect::start(const RedirectCb& redirectCb)
 {

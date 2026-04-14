@@ -27,6 +27,7 @@ Item {
             Layout.fillWidth: true
             text: qsTr("Remember password")
             checked: userSettings.getRememberPassword(userPrefs.did)
+            visible: !userSettings.getOAuthEnabled(userPrefs.did)
             onCheckedChanged: userSettings.setRememberPassword(userPrefs.did, checked)
         }
 

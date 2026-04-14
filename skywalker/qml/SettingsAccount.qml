@@ -57,12 +57,15 @@ Item {
             }
         }
 
+        // Birthday is not given when using OAuth
         AccessibleText {
             text: qsTr("Birthday:")
+            visible: Boolean(userPrefs.birthDate)
         }
         AccessibleText {
             Layout.fillWidth: true
             text: userPrefs.birthDate
+            visible: Boolean(userPrefs.birthDate)
         }
 
         AccessibleText {

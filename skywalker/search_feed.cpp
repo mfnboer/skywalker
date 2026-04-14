@@ -56,10 +56,10 @@ QJsonObject SearchFeed::toJson() const
         json.insert("mention", mMentionHandle);
 
     if (mSince.isValid())
-        json.insert("since", mSince.toString(Qt::ISODateWithMs));
+        json.insert("since", mSince.toUTC().toString(Qt::ISODateWithMs));
 
     if (mUntil.isValid())
-        json.insert("until", mUntil.toString(Qt::ISODateWithMs));
+        json.insert("until", mUntil.toUTC().toString(Qt::ISODateWithMs));
 
     if (!mLanguage.isEmpty())
         json.insert("language", mLanguage);

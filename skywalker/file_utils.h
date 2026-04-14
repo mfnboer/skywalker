@@ -38,7 +38,7 @@ public:
     static std::unique_ptr<QTemporaryFile> createTempFile(const QString& fileUri, const QString& fileExtension);
     static std::unique_ptr<QTemporaryFile> createTempFile(QFile& file, const QString& fileExtension);
     static std::unique_ptr<QTemporaryFile> createTempFile(int fd, const QString& fileExtension);
-    static QString createDateTimeName(QDateTime timestamp = QDateTime::currentDateTime());
+    static QString createDateTimeName(QDateTime timestamp = QDateTime::currentDateTimeUtc());
     static void scanMediaFile(const QString& fileName);
     static QString getDeviceName();
 };

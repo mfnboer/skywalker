@@ -1167,7 +1167,7 @@ QJsonObject Post::toJson() const
     if (mThreadIndentLevel)
         json.insert("threadIndentLevel", mThreadIndentLevel);
     if (!mReplyRefTimestamp.isNull())
-        json.insert("replyRefTimestamp", mReplyRefTimestamp.toString(Qt::ISODateWithMs));
+        json.insert("replyRefTimestamp", mReplyRefTimestamp.toUTC().toString(Qt::ISODateWithMs));
     if (mReplyToAuthor && mReplyToAuthor->getProfileBasicView())
         json.insert("replyToAuthor", mReplyToAuthor->getProfileBasicView()->toJson());
     if (mParentInThread)

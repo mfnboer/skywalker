@@ -1,7 +1,6 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "session_manager.h"
-#include "file_utils.h"
 #include "oauth_redirect.h"
 #include "skywalker.h"
 
@@ -114,9 +113,8 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
     if (useOAuth)
     {
 #ifndef Q_OS_ANDROID
-        // TODO: handle load error, Android
-        const QString path = QString("%1/dpop.pem").arg(FileUtils::getAppDataPath(did));
-        client->oauthLoadDpopKey(path, "LinuxTest");
+        const QString path = OAuthRedirect::getKeyStorageFilename(did);
+        client->oauthLoadDpopKey(path, OAuthRedirect::getTestPassPhrase());
 #endif
         client->oauthResumeSession(OAuthRedirect::CLIENT_ID, session,
             [this, did, refreshDelayCount, successCb, errorCb]{
