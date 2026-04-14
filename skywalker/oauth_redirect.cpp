@@ -7,10 +7,10 @@
 namespace Skywalker {
 
 const QStringList OAuthRedirect::SCOPE = {
-    ATProto::OAuth::SCPOPE_ATPROTO,
-    ATProto::OAuth::SCPOPE_TRANSITION_GENERIC,
-    ATProto::OAuth::SCPOPE_TRANSITION_CHAT,
-    ATProto::OAuth::SCPOPE_TRANSITION_EMAIL
+    ATProto::OAuth::SCOPE_ATPROTO,
+    ATProto::OAuth::SCOPE_TRANSITION_GENERIC,
+    ATProto::OAuth::SCOPE_TRANSITION_CHAT,
+    ATProto::OAuth::SCOPE_TRANSITION_EMAIL
 };
 
 bool OAuthRedirect::start(const RedirectCb& redirectCb)
