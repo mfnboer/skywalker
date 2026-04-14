@@ -39,6 +39,7 @@
 namespace Skywalker {
 
 class Chat;
+class OAuthRedirect;
 class FocusHashtags;
 
 class Skywalker : public IFeedPager
@@ -84,11 +85,13 @@ public:
     Ptr createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
     void initNonActiveUser();
 
-    Q_INVOKABLE void login(const QString host, const QString user, QString password,
+    Q_INVOKABLE void loginWithPassword(const QString host, const QString user, QString password,
                            bool rememberPassword, const QString authFactorToken,
                            bool setAdvancedSettings = false, const QString serviceAppView = "",
                            const QString serviceChat = "", const QString serviceVideoHost = "",
                            const QString serviceVideoDid = "");
+    Q_INVOKABLE void loginWithOAuth(const QString host, const QString user);
+    void loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
@@ -279,6 +282,7 @@ signals:
     void skywalkerDestroyed(const QString& did);
     void loginOk();
     void loginFailed(QString error, QString msg, const QString host, QString handle, QString password);
+    void loginOAuthRedirect(QUrl url);
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();
@@ -458,6 +462,7 @@ private:
     Anniversary mAnniversary;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
+    std::unique_ptr<OAuthRedirect> mOAuthRedirect;
     bool mDebugLogging = false;
 };
 

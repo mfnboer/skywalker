@@ -501,6 +501,19 @@ QString UserSettings::getPassword(const QString& did) const
     return mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD);
 }
 
+void UserSettings::setOAuthEnabled(const QString& did, bool enable)
+{
+    mSettings.setValue(key(did, "oauthEnabled"), enable);
+
+    if (enable)
+        setRememberPassword(did, false);
+}
+
+bool UserSettings::getOAuthEnabled(const QString& did)
+{
+    return mSettings.value(key(did, "oauthEnabled"), false).toBool();
+}
+
 QString UserSettings::getHandle(const QString& did) const
 {
     return mSettings.value(key(did, "handle")).toString();

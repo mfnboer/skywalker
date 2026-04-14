@@ -13,7 +13,7 @@ set(CMAKE_AUTORCC ON)
 set(QT_NO_GLOBAL_APK_TARGET_PART_OF_ALL OFF)
 
 include(FetchContent)
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia HttpServer)
 message(STATUS "QT version: ${Qt6Core_VERSION}")
 
 qt_standard_project_setup()
@@ -157,6 +157,7 @@ target_link_libraries(appskywalker
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Multimedia
+    PRIVATE Qt6::HttpServer
 )
 
 include(GNUInstallDirs)

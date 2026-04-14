@@ -1,6 +1,8 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "session_manager.h"
+#include "file_utils.h"
+#include "oauth_redirect.h"
 #include "skywalker.h"
 
 namespace Skywalker {
@@ -107,45 +109,76 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
                                              int refreshDelayCount, const SuccessCb& successCb, const ErrorCb& errorCb)
 {
     const QString did = session.mDid;
+    const bool useOAuth = mUserSettings->getOAuthEnabled(did);
 
-    client->resumeAndRefreshSession(session,
-        [this, did, refreshDelayCount, successCb, errorCb]{
-            qDebug() << "Session resumed:" << did;
-            auto* session = getSession(did);
+    if (useOAuth)
+    {
+#ifndef Q_OS_ANDROID
+        // TODO: handle load error, Android
+        const QString path = QString("%1/dpop.pem").arg(FileUtils::getAppDataPath(did));
+        client->oauthLoadDpopKey(path, "LinuxTest");
+#endif
+        client->oauthResumeSession(OAuthRedirect::CLIENT_ID, session,
+            [this, did, refreshDelayCount, successCb, errorCb]{
+                resumeAndRefreshSessionSuccess(did, refreshDelayCount, successCb, errorCb);
+            },
+            [this, did, errorCb](const QString& error, const QString& msg){
+                qWarning() << "Session could not be resumed:" << error << " - " << msg;
+                mUserSettings->clearTokens(did); // calls sync
+                deleteSession(did);
 
-            if (!session)
-            {
                 if (errorCb)
-                    errorCb("NoSession", "No session");
+                    errorCb(error, msg);
+            });
+    }
+    else
+    {
+        client->resumeAndRefreshSession(session,
+            [this, did, refreshDelayCount, successCb, errorCb]{
+                resumeAndRefreshSessionSuccess(did, refreshDelayCount, successCb, errorCb);
+            },
+            [this, did, errorCb](const QString& error, const QString& msg, const QString& accessJwt, const QString& refreshJwt){
+                qWarning() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
 
-                return;
-            }
+                mUserSettings->saveTokens(did, accessJwt, refreshJwt); // calls sync
+                deleteSession(did);
 
-            auto& bsky = session->mBsky;
-            mUserSettings->saveSession(*bsky->getSession());
-            mUserSettings->sync();
+                if (errorCb)
+                    errorCb(error, msg);
+            });
+    }
+}
 
-            // Timers for the active user are started by Skywalker::resumeAndRefreshSession()
-            if (did != mSkywalker->getUserDid())
-            {
-                startRefreshTimers(did, refreshDelayCount);
+void SessionManager::resumeAndRefreshSessionSuccess(
+    const QString& did, int refreshDelayCount,
+    const SuccessCb& successCb, const ErrorCb& errorCb)
+{
+    qDebug() << "Session resumed:" << did;
+    auto* session = getSession(did);
 
-                if (session->mNonActiveUser)
-                    session->mNonActiveUser->init();
-            }
+    if (!session)
+    {
+        if (errorCb)
+            errorCb("NoSession", "No session");
 
-            if (successCb)
-                successCb();
-        },
-        [this, did, errorCb](const QString& error, const QString& msg, const QString& accessJwt, const QString& refreshJwt){
-            qWarning() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
+        return;
+    }
 
-            mUserSettings->saveTokens(did, accessJwt, refreshJwt); // calls sync
-            deleteSession(did);
+    auto& bsky = session->mBsky;
+    mUserSettings->saveSession(*bsky->getSession());
+    mUserSettings->sync();
 
-            if (errorCb)
-                errorCb(error, msg);
-        });
+    // Timers for the active user are started by Skywalker::resumeAndRefreshSession()
+    if (did != mSkywalker->getUserDid())
+    {
+        startRefreshTimers(did, refreshDelayCount);
+
+        if (session->mNonActiveUser)
+            session->mNonActiveUser->init();
+    }
+
+    if (successCb)
+        successCb();
 }
 
 void SessionManager::startRefreshTimers()

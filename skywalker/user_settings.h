@@ -141,6 +141,9 @@ public:
     Q_INVOKABLE void savePassword(const QString& did, const QString& password);
     Q_INVOKABLE QString getPassword(const QString& did) const;
 
+    void setOAuthEnabled(const QString& did, bool enable);
+    Q_INVOKABLE bool getOAuthEnabled(const QString& did);
+
     QString getHandle(const QString& did) const;
 
     void saveDisplayName(const QString& did, const QString& displayName);

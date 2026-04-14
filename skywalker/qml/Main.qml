@@ -331,6 +331,8 @@ ApplicationWindow {
             }
         }
 
+        onLoginOAuthRedirect: (url) => Qt.openUrlExternally(url)
+
         onResumeSessionOk: start()
 
         onResumeSessionFailed: (error) => {
@@ -1304,6 +1306,9 @@ ApplicationWindow {
 
     function loginUser(host, handle, did, error="", msg="", password="") {
         console.debug("login, host:", host, "handle:", handle, "did:", did)
+        const userSettings = skywalker.getUserSettings()
+        const useOAuth = userSettings.getOAuthEnabled(did)
+
         let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
                 host: host,
@@ -1311,17 +1316,18 @@ ApplicationWindow {
                 did: did,
                 errorCode: error,
                 errorMsg: msg,
-                password: password
+                password: password,
+                useOAuth: useOAuth
         })
         page.onCanceled.connect(() => {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken,
+        page.onAccepted.connect((useOAuth, host, handle, password, did, rememberPassword, authFactorToken,
                                  setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
                 popStack()
                 const user = did ? did : handle
-                skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+                skywalkerLogin(useOAuth, host, user, password, rememberPassword, authFactorToken,
                                setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
         pushStack(page)
@@ -1334,10 +1340,10 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword, _authFactorToken,
+        page.onAccepted.connect((useOAuth, host, handle, password, did, rememberPassword, _authFactorToken,
                                  setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
                 popStack()
-                skywalkerLogin(host, handle, password, rememberPassword, "",
+                skywalkerLogin(useOAuth, host, handle, password, rememberPassword, "",
                                setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
 
@@ -1378,7 +1384,7 @@ ApplicationWindow {
                     if (userSettings.getRememberPassword(profile.did)) {
                         const host = userSettings.getHost(profile.did)
                         const password = userSettings.getPassword(profile.did)
-                        skywalkerLogin(host, profile.did, password, true)
+                        skywalkerLogin(false, host, profile.did, password, true)
                     }
                     else {
                         const host = userSettings.getHost(profile.did)
@@ -1403,11 +1409,17 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+    function skywalkerLogin(useOAuth, host, user, password, rememberPassword, authFactorToken,
                             setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) {
         showStartupStatus()
-        skywalker.login(host, user, password, rememberPassword, authFactorToken,
-                        setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
+
+        if (useOAuth) {
+            skywalker.loginWithOAuth(host, user)
+        } else {
+            skywalker.loginWithPassword(host, user, password, rememberPassword, authFactorToken,
+                                        setAdvancedSettings, serviceAppView, serviceChat,
+                                        serviceVideoHost, serviceVideoDid)
+        }
     }
 
     function  signOutCurrentUser() {

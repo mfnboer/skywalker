@@ -11,6 +11,7 @@
 #include "font_downloader.h"
 #include "jni_callback.h"
 #include "list_cache.h"
+#include "oauth_redirect.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "post_thread_cache.h"
@@ -237,12 +238,13 @@ QString Skywalker::getUserAgentString()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString host, const QString user, QString password,
-                      bool rememberPassword, const QString authFactorToken,
-                      bool setAdvancedSettings, const QString serviceAppView,
-                      const QString serviceChat, const QString serviceVideoHost,
-                      const QString serviceVideoDid)
+void Skywalker::loginWithPassword(const QString host, const QString user, QString password,
+                                  bool rememberPassword, const QString authFactorToken,
+                                  bool setAdvancedSettings, const QString serviceAppView,
+                                  const QString serviceChat, const QString serviceVideoHost,
+                                  const QString serviceVideoDid)
 {
+    qDebug() << "Login with password:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
@@ -271,6 +273,7 @@ void Skywalker::login(const QString host, const QString user, QString password,
                 mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
             }
 
+            mUserSettings.setOAuthEnabled(did, false);
             mUserSettings.saveSession(*session);
             mUserSettings.setRememberPassword(did, rememberPassword); // this calls sync
 
@@ -290,6 +293,69 @@ void Skywalker::login(const QString host, const QString user, QString password,
         });
 }
 
+void Skywalker::loginWithOAuth(const QString host, const QString user)
+{
+    qDebug() << "Login with OAuth:" << user << "host:" << host;
+    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    xrpc->setUserAgent(Skywalker::getUserAgentString());
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
+
+    mBsky->oauthLogin(user, OAuthRedirect::CLIENT_ID, OAuthRedirect::REDIRECT_URL, OAuthRedirect::SCOPE,
+        [this, host, user](QUrl redirectUrl)
+        {
+            qDebug() << "Login" << user << "succeeded";
+            mOAuthRedirect = std::make_unique<OAuthRedirect>();
+
+            const bool started = mOAuthRedirect->start(
+                [this, host, user](QUrl url)
+                {
+                    loginWithOAuthContiniue(url, host, user);
+                });
+
+            if (!started)
+                emit loginFailed("InternalError", "Could not setup OAuth redirect", host, user, "");
+            else
+                emit loginOAuthRedirect(redirectUrl);
+        },
+        [this, host, user](const QString& error, const QString& msg){
+            qDebug() << "Login" << user << "failed:" << error << " - " << msg;
+            mUserSettings.setActiveUserDid({});
+            emit loginFailed(error, msg, host, user, "");
+        });
+}
+
+void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user)
+{
+    qDebug() << "Continue login:" << url << "host:" << host << "user:" << user;
+    mBsky->oauthLoginContinue(url,
+        [this, host, user](QString did, QString scope, QString accessToken, QString refreshToken){
+            qDebug() << "Got tokens, did:" << did << "scope:" << scope << "access:" << accessToken << "refresh:" << refreshToken;
+            mOAuthRedirect.reset();
+            const auto* session = mBsky->getSession();
+            updateUser(did, host);
+            mUserSettings.setOAuthEnabled(did, true);
+            mUserSettings.saveSession(*session);
+            // TODO: advanced settings
+
+            // TODO: Android
+#ifndef Q_OS_ANDROID
+            const QString path = QString("%1/dpop.pem").arg(FileUtils::getAppDataPath(did));
+            mBsky->oauthSaveDpopKey(path, "LinuxTest");
+#endif
+            emit loginOk();
+
+            mSessionManager.insertSession(did, mBsky.get());
+            startRefreshTimers();
+            mSessionManager.resumeAndRefreshNonActiveUsers();
+        },
+        [this, host, user](const QString& error, const QString& msg){
+            qDebug() << "Login" << user << "failed:" << error << " - " << msg;
+            mOAuthRedirect.reset();
+            mUserSettings.setActiveUserDid({});
+            emit loginFailed(error, msg, host, user, "");
+        });
+}
+
 bool Skywalker::autoLogin()
 {
     qDebug() << "Auto login";
@@ -298,6 +364,12 @@ bool Skywalker::autoLogin()
     if (did.isEmpty())
     {
         qDebug() << "No active user";
+        return false;
+    }
+
+    if (mUserSettings.getOAuthEnabled(did))
+    {
+        qDebug() << "OAuth enabled";
         return false;
     }
 
@@ -315,7 +387,7 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    login(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
+    loginWithPassword(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
     return true;
 }
 

@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg HttpServer)
 
 if (ANDROID AND Qt6Core_VERSION VERSION_GREATER_EQUAL 6.9.0)
     find_package(Qt6 REQUIRED COMPONENTS CorePrivate)
@@ -676,6 +676,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ContentViewMenu.qml
         QML_FILES qml/LanguageFilterButton.qml
         QML_FILES qml/TimelineOptionsMenu.qml
+        SOURCES oauth_redirect.h
+        SOURCES oauth_redirect.cpp
 )
 
 if (NOT ANDROID)
@@ -688,6 +690,7 @@ target_link_libraries(libskywalker
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Svg
+    PRIVATE Qt6::HttpServer
     ${COVERAGE_LIB}
 )
 

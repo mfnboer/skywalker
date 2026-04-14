@@ -104,6 +104,10 @@ private:
     void updateTokens();
     void clearPostCache();
 
+    void resumeAndRefreshSessionSuccess(
+        const QString& did, int refreshDelayCount,
+        const SuccessCb& successCb, const ErrorCb& errorCb);
+
     std::unordered_map<QString, Session::Ptr> mDidSessionMap;
     Skywalker* mSkywalker = nullptr;
     UserSettings* mUserSettings = nullptr;
