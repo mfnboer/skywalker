@@ -676,8 +676,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ContentViewMenu.qml
         QML_FILES qml/LanguageFilterButton.qml
         QML_FILES qml/TimelineOptionsMenu.qml
-        SOURCES oauth_redirect.h
-        SOURCES oauth_redirect.cpp
+        SOURCES oauth_controller.h
+        SOURCES oauth_controller.cpp
 )
 
 if (NOT ANDROID)

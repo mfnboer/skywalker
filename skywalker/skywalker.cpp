@@ -11,7 +11,7 @@
 #include "font_downloader.h"
 #include "jni_callback.h"
 #include "list_cache.h"
-#include "oauth_redirect.h"
+#include "oauth_controller.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "post_thread_cache.h"
@@ -119,7 +119,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,
             [this]{ emit showDirectMessages(); });
     connect(&jniCallbackListener, &JNICallbackListener::showLink, this,
-            [this](const QString& uri) { emit showLinkReceived(uri); });
+            [this](const QString& uri){ emit handleShowLink(uri); });
 
     auto* app = (QGuiApplication*)QGuiApplication::instance();
     Q_ASSERT(app);
@@ -289,17 +289,19 @@ void Skywalker::loginWithOAuth(const QString host, const QString user,
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
-    mBsky->oauthLogin(user, OAuthRedirect::CLIENT_ID, OAuthRedirect::REDIRECT_URL, OAuthRedirect::SCOPE,
-        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid](QUrl redirectUrl)
+    mBsky->oauthLogin(user, OAuthController::CLIENT_ID, OAuthController::REDIRECT_URL, OAuthController::SCOPE,
+        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
+         serviceVideoDid](QUrl redirectUrl, QString dpopKeyAlias)
         {
             qDebug() << "Login" << user << "succeeded";
-            mOAuthRedirect = std::make_unique<OAuthRedirect>();
+            mOAuthController = std::make_unique<OAuthController>();
 
-            const bool started = mOAuthRedirect->start(
-                [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid](QUrl url)
+            const bool started = mOAuthController->start(
+                [this, host, user, setAdvancedSettings, serviceAppView, serviceChat,
+                 serviceVideoHost, serviceVideoDid, dpopKeyAlias](QUrl url)
                 {
-                    loginWithOAuthContiniue(url, host, user, setAdvancedSettings, serviceAppView,
-                                            serviceChat, serviceVideoHost, serviceVideoDid);
+                    loginWithOAuthContinue(url, host, user, setAdvancedSettings, serviceAppView,
+                                           serviceChat, serviceVideoHost, serviceVideoDid, dpopKeyAlias);
                 });
 
             if (!started)
@@ -314,17 +316,17 @@ void Skywalker::loginWithOAuth(const QString host, const QString user,
         });
 }
 
-void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user,
+void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
                                         bool setAdvancedSettings, const QString serviceAppView,
                                         const QString serviceChat, const QString serviceVideoHost,
-                                        const QString serviceVideoDid)
+                                        const QString serviceVideoDid, const QString& dpopKeyAlias)
 {
     qDebug() << "Continue login:" << url << "host:" << host << "user:" << user;
     mBsky->oauthLoginContinue(url,
         [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
-         serviceVideoDid](QString did, QString scope, QString accessToken, QString refreshToken){
+         serviceVideoDid, dpopKeyAlias](QString did, QString scope, QString accessToken, QString refreshToken){
             qDebug() << "Got tokens, did:" << did << "scope:" << scope << "access:" << accessToken << "refresh:" << refreshToken;
-            mOAuthRedirect.reset();
+            mOAuthController.reset();
             const auto* session = mBsky->getSession();
             updateUser(did, host);
             updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
@@ -333,10 +335,12 @@ void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, con
             mUserSettings.setOAuthEnabled(did, true);
             mUserSettings.saveSession(*session);
 
-            // TODO: Android
-#ifndef Q_OS_ANDROID
-            const QString path = OAuthRedirect::getKeyStorageFilename(did);
-            mBsky->oauthSaveDpopKey(path, OAuthRedirect::getTestPassPhrase());
+#ifdef Q_OS_ANDROID
+            mUserSettings.setOAuthDpopKeyAlias(did, dpopKeyAlias);
+#else
+            Q_UNUSED(dpopKeyAlias);
+            const QString path = OAuthController::getKeyStorageFilename(did);
+            mBsky->oauthSaveDpopKey(path, OAuthController::getTestPassPhrase());
 #endif
             emit loginOk();
 
@@ -346,7 +350,7 @@ void Skywalker::loginWithOAuthContiniue(const QUrl& url, const QString host, con
         },
         [this, host, user](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
-            mOAuthRedirect.reset();
+            mOAuthController.reset();
             mUserSettings.setActiveUserDid({});
             emit loginFailed(error, msg, host, user, "");
         });
@@ -4835,6 +4839,24 @@ void Skywalker::updateGlobalFeedOrder()
     {
         const QString name = model->getFeedName();
         model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, name));
+    }
+}
+
+void Skywalker::handleShowLink(const QString& url)
+{
+    if (url.startsWith(OAuthController::REDIRECT_URL))
+    {
+        qDebug() << "OAuth callback:" << url;
+
+        if (mOAuthController)
+            mOAuthController->redirect(url);
+        else
+            qWarning() << "No OAuth controller for callback:" << url;
+    }
+    else
+    {
+        qDebug() << "Show link:" << url;
+        emit showLinkReceived(url);
     }
 }
 

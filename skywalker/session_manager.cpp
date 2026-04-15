@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "session_manager.h"
-#include "oauth_redirect.h"
+#include "oauth_controller.h"
 #include "skywalker.h"
 
 namespace Skywalker {
@@ -112,15 +112,20 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
 
     if (useOAuth)
     {
-#ifndef Q_OS_ANDROID
-        const QString path = OAuthRedirect::getKeyStorageFilename(did);
-        client->oauthLoadDpopKey(path, OAuthRedirect::getTestPassPhrase());
+#if defined(Q_OS_ANDROID)
+        const QString alias = mUserSettings->getOAuthDpopKeyAlias(did);
+        client->oauthSetDpopKeyAlias(alias);
+#else
+        const QString path = OAuthController::getKeyStorageFilename(did);
+        client->oauthLoadDpopKey(path, OAuthController::getTestPassPhrase());
 #endif
-        client->oauthResumeSession(OAuthRedirect::CLIENT_ID, session,
+        client->oauthResumeSession(OAuthController::CLIENT_ID, session,
             [this, did, refreshDelayCount, successCb, errorCb]{
                 resumeAndRefreshSessionSuccess(did, refreshDelayCount, successCb, errorCb);
             },
             [this, did, errorCb](const QString& error, const QString& msg){
+                // TODO: check for token failure?
+                // TODO: token may have been refreshed, but we do not have it here
                 qWarning() << "Session could not be resumed:" << error << " - " << msg;
                 mUserSettings->clearTokens(did); // calls sync
                 deleteSession(did);
@@ -137,7 +142,6 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             },
             [this, did, errorCb](const QString& error, const QString& msg, const QString& accessJwt, const QString& refreshJwt){
                 qWarning() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
-
                 mUserSettings->saveTokens(did, accessJwt, refreshJwt); // calls sync
                 deleteSession(did);
 

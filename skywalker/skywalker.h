@@ -39,7 +39,7 @@
 namespace Skywalker {
 
 class Chat;
-class OAuthRedirect;
+class OAuthController;
 class FocusHashtags;
 
 class Skywalker : public IFeedPager
@@ -94,10 +94,10 @@ public:
                                     bool setAdvancedSettings = false, const QString serviceAppView = "",
                                     const QString serviceChat = "", const QString serviceVideoHost = "",
                                     const QString serviceVideoDid = "");
-    void loginWithOAuthContiniue(const QUrl& url, const QString host, const QString user,
+    void loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
                                  bool setAdvancedSettings, const QString serviceAppView,
                                  const QString serviceChat, const QString serviceVideoHost,
-                                 const QString serviceVideoDid);
+                                 const QString serviceVideoDid, const QString& dpopKeyAlias);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
@@ -405,6 +405,7 @@ private:
                                 const QString& serviceChat, const QString& serviceVideoHost,
                                 const QString& serviceVideoDid);
     void updateGlobalFeedOrder();
+    void handleShowLink(const QString& url);
     ATProto::PostMaster* postMaster();
 
     template<typename ModelType>
@@ -472,7 +473,7 @@ private:
     Anniversary mAnniversary;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
-    std::unique_ptr<OAuthRedirect> mOAuthRedirect;
+    std::unique_ptr<OAuthController> mOAuthController;
     bool mDebugLogging = false;
 };
 

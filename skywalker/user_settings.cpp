@@ -5,6 +5,7 @@
 #include "definitions.h"
 #include "file_utils.h"
 #include "font_downloader.h"
+#include "oauth_controller.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/client.h>
@@ -449,6 +450,7 @@ void UserSettings::removeUser(const QString& did)
     clearCredentials(did);
 
     const auto activeUser = getActiveUserDid();
+
     if (did == activeUser)
         setActiveUserDid({});
 }
@@ -506,12 +508,44 @@ void UserSettings::setOAuthEnabled(const QString& did, bool enable)
     mSettings.setValue(key(did, "oauthEnabled"), enable);
 
     if (enable)
+    {
         setRememberPassword(did, false);
+    }
+    else
+    {
+#if defined(Q_OS_ANDROID)
+        removeOAuthDpopKeyAlias(did);
+#else
+        const QString path = OAuthController::getKeyStorageFilename(did);
+        ATProto::JsonWebKey::deleteKey(path);
+#endif
+    }
 }
 
-bool UserSettings::getOAuthEnabled(const QString& did)
+bool UserSettings::getOAuthEnabled(const QString& did) const
 {
     return mSettings.value(key(did, "oauthEnabled"), false).toBool();
+}
+
+void UserSettings::setOAuthDpopKeyAlias(const QString& did, const QString& alias)
+{
+    mSettings.setValue(key(did, "oauthDpopKeyAlias"), alias);
+}
+
+QString UserSettings::getOAuthDpopKeyAlias(const QString& did) const
+{
+    return mSettings.value(key(did, "oauthDpopKeyAlias")).toString();
+}
+
+void UserSettings::removeOAuthDpopKeyAlias(const QString& did)
+{
+    const QString alias = getOAuthDpopKeyAlias(did);
+
+    if (!alias.isEmpty())
+    {
+        ATProto::JsonWebKey::deleteKey(alias);
+        mSettings.remove(key(did, "oauthDpopKeyAlias"));
+    }
 }
 
 QString UserSettings::getHandle(const QString& did) const
@@ -694,6 +728,12 @@ void UserSettings::clearCredentials(const QString& did)
     setRememberPassword(did, false);
     mSettings.remove(key(did, "password"));
     clearTokens(did);
+
+#ifdef Q_OS_ANDROID
+    removeOAuthDpopKeyAlias(did);
+#else
+    ATProto::JsonWebKey::deleteKey(OAuthController::getKeyStorageFilename(did));
+#endif
 }
 
 void UserSettings::saveSyncTimestamp(const QString& did, QDateTime timestamp)

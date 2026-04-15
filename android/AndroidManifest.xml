@@ -67,6 +67,12 @@
                 <data android:pathPrefix="/profile/"/>
                 <data android:pathPrefix="/starter-pack/"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="nl.xs4all.home.mfnboer" android:path="/oauth/callback"/>
+            </intent-filter>
         </activity>
         <activity
             android:name="com.gmail.mfnboer.DirectMessageActivity"

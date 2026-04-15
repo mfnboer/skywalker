@@ -95,7 +95,7 @@ public class SkywalkerActivity extends QtActivity {
         if (intent == null)
             return;
 
-        Log.d(LOGTAG, "Intent action: " + intent.getAction() + ", type: " + intent.getType());
+        Log.d(LOGTAG, "Intent action: " + intent.getAction() + ", type: " + intent.getType() + ", ready: " + mIsReady);
         setIntent(intent);
 
         if (mIsReady)
@@ -151,17 +151,21 @@ public class SkywalkerActivity extends QtActivity {
     private void handleActionShowLink(Intent intent) {
         Log.d(LOGTAG, "Handle SHOW_LINK");
 
-        Uri data = intent.getData();
-        if (data == null) {
-            Log.d(LOGTAG, "Empty data received");
+        Uri uri = intent.getData();
+        if (uri == null) {
+            Log.d(LOGTAG, "Empty uri received");
             return;
         }
+
+        Log.d(LOGTAG, "Link: " + uri);
+
+        // TODO: why getPath()? data.toString() gives the complet uri?
         // Android helpfully strips off the beginning of the link. Since the QML link code
         // expects the prefix, we just stick it back on here before sending it along.
-        String path = "https://bsky.app" + data.getPath();
-        Log.d(LOGTAG, "Handling the link: " + path);
+        // String path = "https://bsky.app" + data.getPath();
+        // Log.d(LOGTAG, "Handling the link: " + path);
 
-        emitShowLink(path);
+        emitShowLink(uri.toString());
     }
 
     private String getMimeType(Intent intent) {

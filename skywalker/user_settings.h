@@ -142,7 +142,11 @@ public:
     Q_INVOKABLE QString getPassword(const QString& did) const;
 
     void setOAuthEnabled(const QString& did, bool enable);
-    Q_INVOKABLE bool getOAuthEnabled(const QString& did);
+    Q_INVOKABLE bool getOAuthEnabled(const QString& did) const;
+
+    void setOAuthDpopKeyAlias(const QString& did, const QString& alias);
+    QString getOAuthDpopKeyAlias(const QString& did) const;
+    void removeOAuthDpopKeyAlias(const QString& did);
 
     QString getHandle(const QString& did) const;
 
