@@ -305,9 +305,16 @@ void Skywalker::loginWithOAuth(const QString host, const QString user,
                 });
 
             if (!started)
+            {
                 emit loginFailed("InternalError", "Could not setup OAuth redirect", host, user, "");
-            else
-                emit loginOAuthRedirect(redirectUrl);
+                return;
+            }
+
+#ifdef Q_OS_ANDROID
+            openLinkInApp(redirectUrl.toString());
+#else
+            emit loginOAuthRedirect(redirectUrl, host, user);
+#endif
         },
         [this, host, user](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
@@ -316,12 +323,20 @@ void Skywalker::loginWithOAuth(const QString host, const QString user,
         });
 }
 
+void Skywalker::loginWithOAuthFailed(const QString code, const QString error, const QString host, const QString user)
+{
+    qWarning() << "Login failed:" << code << "-" << error;
+    emit loginFailed(code, error, host, user, "");
+}
+
 void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
                                         bool setAdvancedSettings, const QString serviceAppView,
                                         const QString serviceChat, const QString serviceVideoHost,
                                         const QString serviceVideoDid, const QString& dpopKeyAlias)
 {
     qDebug() << "Continue login:" << url << "host:" << host << "user:" << user;
+    emit loginOAuthContinue();
+
     mBsky->oauthLoginContinue(url,
         [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
          serviceVideoDid, dpopKeyAlias](QString did, QString scope, QString accessToken, QString refreshToken){
@@ -4196,6 +4211,28 @@ void Skywalker::shareAuthor(const BasicProfile& author)
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(shareUri);
     emit statusMessage(mUserDid, tr("Author link copied to clipboard"));
+#endif
+}
+
+// TODO: move to a separate class together with other share functions
+void Skywalker::openLinkInApp(const QString& link)
+{
+#ifdef Q_OS_ANDROID
+    if (!QNativeInterface::QAndroidApplication::isActivityContext())
+    {
+        qWarning() << "Cannot find Android activity";
+        return;
+    }
+
+    QJniObject activity = QNativeInterface::QAndroidApplication::context();
+    QJniObject jLink = QJniObject::fromString(link);
+
+    activity.callMethod<void>(
+        "openLinkInApp",
+        "(Ljava/lang/String;)V",
+        jLink.object<jstring>());
+#else
+    qWarning() << "Cannot open link in app:" << link;
 #endif
 }
 

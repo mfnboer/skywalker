@@ -24,6 +24,8 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import android.util.Log;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 // For EdgeToEdge
 import androidx.core.view.WindowCompat;
 
@@ -312,5 +314,14 @@ public class SkywalkerActivity extends QtActivity {
 
     public void startContentChooser(Intent intent, String title) {
         startActivity(Intent.createChooser(intent, title));
+    }
+
+    public void openLinkInApp(String uriString)
+    {
+        Log.d(LOGTAG, "Open in-app: " + uriString);
+        Uri uri = Uri.parse(uriString);
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(this, uri);
     }
 }

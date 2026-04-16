@@ -28,15 +28,11 @@ public:
 #endif
 
     bool start(const RedirectCb& redirectCb);
-
-#ifdef Q_OS_ANDROID
     void redirect(const QString& url);
-#endif
 
 private:
-#ifdef Q_OS_ANDROID
     RedirectCb mRedirectCb;
-#else
+#ifndef Q_OS_ANDROID
     QHttpServer mHttpServer;
 #endif
 };

@@ -108,6 +108,15 @@ Item {
             text: userSettings.getHost(userPrefs.did)
         }
 
+        AccessibleText {
+            text: qsTr("Login:")
+        }
+        AccessibleText {
+            Layout.fillWidth: true
+            elide: Text.ElideRight
+            text: userSettings.getOAuthEnabled(userPrefs.did) ? "OAuth" : "password"
+        }
+
         AccessibleCheckBox {
             Layout.columnSpan: 2
             Layout.fillWidth: true

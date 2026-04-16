@@ -55,7 +55,7 @@ SkyPage {
             text: qsTr("App password")
         }
         AccessibleTabButton {
-            text: qsTr("OAuth")
+            text: qsTr("Web (OAuth)")
         }
     }
 
@@ -246,6 +246,14 @@ SkyPage {
                 id: oauthLoginForm
                 width: parent.width
                 Accessible.role: Accessible.Pane
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    rightPadding: 10
+                    text: qsTr("Login via the web site of your provider")
+                }
 
                 AccessibleText {
                     Layout.fillWidth: true

@@ -123,11 +123,14 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             [this, did, refreshDelayCount, successCb, errorCb]{
                 resumeAndRefreshSessionSuccess(did, refreshDelayCount, successCb, errorCb);
             },
-            [this, did, errorCb](const QString& error, const QString& msg){
-                // TODO: check for token failure?
-                // TODO: token may have been refreshed, but we do not have it here
+            [this, did, errorCb](const QString& error, const QString& msg, const QString& accessToken, const QString& refreshToken){
                 qWarning() << "Session could not be resumed:" << error << " - " << msg;
-                mUserSettings->clearTokens(did); // calls sync
+
+                if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+                    mUserSettings->clearTokens(did); // calls sync
+                else
+                    mUserSettings->saveTokens(did, accessToken, refreshToken);
+
                 deleteSession(did);
 
                 if (errorCb)
@@ -142,6 +145,7 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
             },
             [this, did, errorCb](const QString& error, const QString& msg, const QString& accessJwt, const QString& refreshJwt){
                 qWarning() << "Session could not be resumed:" << error << " - " << msg << "did:" << did;
+                // NOTE: token errors are handled by resumeAndRefreshSessionSuccess
                 mUserSettings->saveTokens(did, accessJwt, refreshJwt); // calls sync
                 deleteSession(did);
 

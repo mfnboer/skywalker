@@ -59,11 +59,22 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
     // This makes networking work???
     // Somehow Qt fails to find this class if we don't do this lookup.
     QJniEnvironment jniEnv;
-    jclass javaClass = jniEnv.findClass("org/qtproject/qt/android/network/QtNetwork");
+    const char* qtNetworkClassName = "org/qtproject/qt/android/network/QtNetwork";
+    jclass qtNetworkClass = jniEnv.findClass(qtNetworkClassName);
 
-    if (!javaClass)
+    if (!qtNetworkClass)
     {
-        qWarning() << "Class loading failed";
+        qWarning() << "Cannot load:" << qtNetworkClassName;
+        return EXIT_OK;
+    }
+
+    // Need to load our own classes oursevers
+    const char* keystoreHelperClassName = "eu/thereforeiam/atproto/KeystoreHelper";
+    jclass keystoreHelperClass = jniEnv.findClass(keystoreHelperClassName);
+
+    if (!keystoreHelperClass)
+    {
+        qWarning() << "Cannot load:" << keystoreHelperClassName;
         return EXIT_OK;
     }
 
@@ -369,9 +380,8 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
                 saveSession(*mBsky->getSession());
                 refreshSession();
             },
-            [this, did, session](const QString& error, const QString& msg){
+            [this, did, session](const QString& error, const QString& msg, const QString& accessToken, const QString& refreshToken){
                 qWarning() << "Session could not be resumed:" << error << " - " << msg;
-                // TODO: token may have been refreshed, but we do not have it here
 
                 if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
                 {
@@ -381,10 +391,12 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
                 else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
                 {
                     qWarning() << "PDS not found, network failure";
+                    mUserSettings.saveTokens(did, accessToken, refreshToken);
                     exit(EXIT_NETWORK_FAILURE);
                 }
                 else
                 {
+                    mUserSettings.saveTokens(did, accessToken, refreshToken);
                     exit(EXIT_RETRY);
                 }
             });

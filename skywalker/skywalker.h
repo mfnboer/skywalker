@@ -94,6 +94,7 @@ public:
                                     bool setAdvancedSettings = false, const QString serviceAppView = "",
                                     const QString serviceChat = "", const QString serviceVideoHost = "",
                                     const QString serviceVideoDid = "");
+    Q_INVOKABLE void loginWithOAuthFailed(const QString code, const QString error, const QString host, const QString user);
     void loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
                                  bool setAdvancedSettings, const QString serviceAppView,
                                  const QString serviceChat, const QString serviceVideoHost,
@@ -201,6 +202,7 @@ public:
     Q_INVOKABLE void shareList(const ListView& list);
     Q_INVOKABLE void shareStarterPack(const StarterPackViewBasic& starterPack);
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
+    void openLinkInApp(const QString& link);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
@@ -288,7 +290,8 @@ signals:
     void skywalkerDestroyed(const QString& did);
     void loginOk();
     void loginFailed(QString error, QString msg, const QString host, QString handle, QString password);
-    void loginOAuthRedirect(QUrl url);
+    void loginOAuthRedirect(QUrl url, QString host, QString user);
+    void loginOAuthContinue();
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();

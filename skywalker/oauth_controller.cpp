@@ -60,7 +60,6 @@ bool OAuthController::start(const RedirectCb& redirectCb)
 #endif
 }
 
-#ifdef Q_OS_ANDROID
 void OAuthController::redirect(const QString& url)
 {
     qDebug() << "Redirect:" << url;
@@ -73,6 +72,5 @@ void OAuthController::redirect(const QString& url)
 
     mRedirectCb(url);
 }
-#endif
 
 }
