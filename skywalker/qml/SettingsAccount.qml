@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
@@ -95,7 +96,7 @@ Item {
                 implicitHeight: didLabel.height
                 svg: SvgOutline.copy
                 accessibleName: qsTr("copy") + " D I D"
-                onClicked: skywalker.copyToClipboard(userPrefs.did)
+                onClicked: skywalker.getShareUtils().copyToClipboard(userPrefs.did)
             }
         }
 
@@ -156,5 +157,91 @@ Item {
             text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Advanced settings</a>`)
             onLinkActivated: root.editAdvancedSettings()
         }
+    }
+
+    function confirmEmail() {
+        guiSettings.askYesNoQuestion(root,
+            qsTr(`Do you want to confirm your email address <b>${email}</b>? You will receive a code in email to do so.<br><br>` +
+                 `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`),
+            () => { accountUtils.requestEmailConfirmation() },
+            () => {},
+            (link) => { accountUtils.enterEmailConfirmationToken() }
+        )
+    }
+
+    AccountUtils {
+        id: accountUtils
+        skywalker: section.skywalker
+
+        onConfirmEmailOk: {
+            skywalker.showStatusMessage(qsTr("Email address confirmed"), QEnums.STATUS_LEVEL_INFO)
+            emailConfirmed = true
+        }
+        onConfirmEmailFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onRequestEmailConfirmationOk: enterEmailConfirmationToken()
+        onRequestEmailConfirmationFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+
+        function enterEmailConfirmationToken() {
+            guiSettings.askToken(root, "Email confirmation code",
+                (token) => { accountUtils.confirmEmail(token) }
+            )
+        }
+    }
+
+    function changeEmail() {
+        if (userSettings.getOAuthEnabled(userPrefs.did)) {
+            skywalker.showStatusMessage(qsTr("Email address cannot be changed when you are logged in with OAuth"), QEnums.STATUS_LEVEL_INFO, 5)
+            return
+        }
+
+        guiSettings.askYesNoQuestion(root,
+            qsTr(`Do you want to change your email address <b>${email}</b>?` +
+                 (emailConfirmed ?
+                    (" You will receive a code in email to do so.<br><br>" +
+                     `<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">I already have a code</a>.`) :
+                    "")),
+            () => { emailUpdater.requestEmailUpdateToken() },
+            () => {},
+            (link) => { emailUpdater.enterEmailUpdateToken() }
+        )
+    }
+
+    AccountUtils {
+        id: emailUpdater
+        skywalker: section.skywalker
+
+        onUpdateEmailOk: (newEmail) => {
+            skywalker.showStatusMessage(qsTr("Email address updated"), QEnums.STATUS_LEVEL_INFO)
+            email = newEmail
+            emailAuthFactor = false
+            emailConfirmed = false
+        }
+
+        onUpdateEmailFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onEmailUpdateTokenOk: enterEmailUpdateToken(true)
+        onEmailUpdateTokenNotRequired: enterEmailUpdateToken(false)
+        onEmailUpdateTokenFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        function enterEmailUpdateToken(tokenRequired) {
+            askEmailUpdateToken(tokenRequired,
+                (email, token) => { emailUpdater.updateEmail(email, token) }
+            )
+        }
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: accountUtils.updateInProgress || emailUpdater.updateInProgress
+    }
+
+    function askEmailUpdateToken(tokenRequired, onOkCb) {
+        let component = guiSettings.createComponent("TokenEmailDialog.qml")
+        let dialog = component.createObject(root, { tokenRequired: tokenRequired })
+        dialog.onEmailToken.connect((email, token) => { dialog.close(); onOkCb(email, token) })
+        dialog.onRejected.connect(() => { dialog.close() })
+        dialog.open()
     }
 }

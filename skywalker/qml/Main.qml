@@ -318,7 +318,7 @@ ApplicationWindow {
 
         onLoginOk: start()
 
-        onLoginFailed: (error, msg, host, handleOrDid, password) => {
+        onLoginFailed: (error, msg, useOAuth, host, handleOrDid, password) => {
             closeLoginPage()
             closeStartupStatus()
 
@@ -326,9 +326,9 @@ ApplicationWindow {
                 const did = handleOrDid
                 const userSettings = getUserSettings()
                 const user = userSettings.getUser(did)
-                loginUser(host, user.handle, did, error, msg, password)
+                loginUser(useOAuth, host, user.handle, did, error, msg, password)
             } else {
-                loginUser(host, handleOrDid, "", error, msg, password)
+                loginUser(useOAuth, host, handleOrDid, "", error, msg, password)
             }
         }
 
@@ -1049,7 +1049,8 @@ ApplicationWindow {
                     else {
                         const userSettings = skywalker.getUserSettings()
                         const host = userSettings.getHost(profile.did)
-                        loginUser(host, profile.handle, profile.did)
+                        const useOAuth = userSettings.getOAuthEnabled(profile.did)
+                        loginUser(useOAuth, host, profile.handle, profile.did)
                     }
                 }
 
@@ -1320,11 +1321,8 @@ ApplicationWindow {
         pushStack(page, StackView.Immediate)
     }
 
-    function loginUser(host, handle, did, error="", msg="", password="") {
+    function loginUser(useOAuth, host, handle, did, error="", msg="", password="") {
         console.debug("login, host:", host, "handle:", handle, "did:", did)
-        const userSettings = skywalker.getUserSettings()
-        const useOAuth = userSettings.getOAuthEnabled(did)
-
         let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
                 host: host,
@@ -1411,7 +1409,8 @@ ApplicationWindow {
                     }
                     else {
                         const host = userSettings.getHost(profile.did)
-                        loginUser(host, profile.handle, profile.did)
+                        const useOAuth = userSettings.getOAuthEnabled(profile.did)
+                        loginUser(useOAuth, host, profile.handle, profile.did)
                     }
                 }
         })

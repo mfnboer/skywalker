@@ -3,8 +3,6 @@
 #pragma once
 #include "non_active_user.h"
 #include "user_settings.h"
-#include <atproto/lib/client.h>
-#include <QObject>
 #include <unordered_map>
 
 namespace Skywalker {
@@ -47,6 +45,7 @@ public:
     int getTotalUnreadNotificationCount() const;
     int getActiveUserUnreadNotificationCount() const;
 
+    Q_INVOKABLE bool hasSession(const QString& did) const { return mDidSessionMap.contains(did); }
     Q_INVOKABLE bool hasNonActiveUsers() const { return !mNonActiveUsers.empty(); }
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }
     const NonActiveUser::List& getNonActiveNotifications() const;

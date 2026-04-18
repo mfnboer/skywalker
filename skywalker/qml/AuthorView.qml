@@ -279,7 +279,7 @@ SkyPage {
                                 text: qsTr("Share")
                                 svg: SvgOutline.share
                                 popup: moreMenu
-                                onClicked: skywalker.shareAuthor(author)
+                                onClicked: skywalker.getShareUtils().shareAuthor(author)
                             }
                             SkyMenuButton {
                                 text: following ? qsTr("Unfollow") : qsTr("Follow")

@@ -672,7 +672,7 @@ void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    qDebug() << "Session saved:" << session.mHandle;
+    qDebug() << "Session saved:" << session.mHandle << "access:" << session.mAccessJwt << "refresh:" << session.mRefreshJwt;
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -708,7 +708,7 @@ std::optional<ATProto::ComATProtoServer::Session> UserSettings::getSavedSession(
 
 void UserSettings::saveTokens(const QString& did, const QString& accessJwt, const QString& refreshJwt)
 {
-    qDebug() << "Set tokens:" << did;
+    qDebug() << "Set tokens:" << did << "access:" << accessJwt << "refresh:" << refreshJwt;
     mSettings.setValue(key(did, "access"), accessJwt);
     mSettings.setValue(key(did, "refresh"), refreshJwt);
     sync();

@@ -47,6 +47,11 @@ SkyPage {
         onBack: loginPage.canceled()
     }
 
+    footer: Item {
+        width: loginPage.width
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0
+    }
+
     SkyTabBar {
         id: authBar
         width: parent.width
@@ -329,6 +334,7 @@ SkyPage {
                 text: qsTr("OK")
                 enabled: oauthHostField.editText && oauthUserField.text
                 onClicked: {
+                    skywalker.showStatusMessage(qsTr("Redirecting to login page"), QEnums.STATUS_LEVEL_INFO)
                     const handle = autoCompleteHandle(oauthUserField.text, oauthHostField.editText)
                     loginPage.accepted(true,
                                        oauthHostField.editText,

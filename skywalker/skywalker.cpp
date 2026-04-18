@@ -16,11 +16,11 @@
 #include "photo_picker.h"
 #include "post_thread_cache.h"
 #include "search_utils.h"
+#include "share_utils.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include "utils.h"
 #include <atproto/lib/at_uri.h>
-#include <QClipboard>
 #include <QGuiApplication>
 #include <QLoggingCategory>
 
@@ -275,7 +275,7 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
         [this, host, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, msg, host, user, password);
+            emit loginFailed(error, msg, false, host, user, password);
         });
 }
 
@@ -306,12 +306,12 @@ void Skywalker::loginWithOAuth(const QString host, const QString user,
 
             if (!started)
             {
-                emit loginFailed("InternalError", "Could not setup OAuth redirect", host, user, "");
+                emit loginFailed("InternalError", "Could not setup OAuth redirect", true, host, user, "");
                 return;
             }
 
 #ifdef Q_OS_ANDROID
-            openLinkInApp(redirectUrl.toString());
+            getShareUtils()->openLinkInApp(redirectUrl.toString());
 #else
             emit loginOAuthRedirect(redirectUrl, host, user);
 #endif
@@ -319,14 +319,14 @@ void Skywalker::loginWithOAuth(const QString host, const QString user,
         [this, host, user](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, msg, host, user, "");
+            emit loginFailed(error, msg, true, host, user, "");
         });
 }
 
 void Skywalker::loginWithOAuthFailed(const QString code, const QString error, const QString host, const QString user)
 {
     qWarning() << "Login failed:" << code << "-" << error;
-    emit loginFailed(code, error, host, user, "");
+    emit loginFailed(code, error, true, host, user, "");
 }
 
 void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
@@ -349,6 +349,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
 
             mUserSettings.setOAuthEnabled(did, true);
             mUserSettings.saveSession(*session);
+            mUserSettings.sync();
 
 #ifdef Q_OS_ANDROID
             mUserSettings.setOAuthDpopKeyAlias(did, dpopKeyAlias);
@@ -367,7 +368,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mOAuthController.reset();
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, msg, host, user, "");
+            emit loginFailed(error, msg, true, host, user, "");
         });
 }
 
@@ -4084,172 +4085,6 @@ BasicProfile Skywalker::getUser() const
     return profile;
 }
 
-void Skywalker::sharePost(const QString& postUri)
-{
-    qDebug() << "Share post:" << postUri;
-    ATProto::ATUri atUri(postUri);
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("post");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Post link copied to clipboard"));
-#endif
-}
-
-void Skywalker::shareFeed(const GeneratorView& feed)
-{
-    qDebug() << "Share feed:" << feed.getDisplayName();
-    ATProto::ATUri atUri(feed.getUri());
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("feed");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Feed link copied to clipboard"));
-#endif
-}
-
-
-void Skywalker::shareList(const ListView& list)
-{
-    qDebug() << "Share list:" << list.getName();
-    ATProto::ATUri atUri(list.getUri());
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("list");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("List link copied to clipboard"));
-#endif
-}
-
-void Skywalker::shareStarterPack(const StarterPackViewBasic& starterPack)
-{
-    qDebug() << "Share starter pack:" << starterPack.getName();
-    ATProto::ATUri atUri(starterPack.getUri());
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("starter pack");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Starter pack link copied to clipboard"));
-#endif
-}
-
-void Skywalker::shareAuthor(const BasicProfile& author)
-{
-    const QString& authorId = author.getDid();
-    const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("author profile");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Author link copied to clipboard"));
-#endif
-}
-
-// TODO: move to a separate class together with other share functions
-void Skywalker::openLinkInApp(const QString& link)
-{
-#ifdef Q_OS_ANDROID
-    if (!QNativeInterface::QAndroidApplication::isActivityContext())
-    {
-        qWarning() << "Cannot find Android activity";
-        return;
-    }
-
-    QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    QJniObject jLink = QJniObject::fromString(link);
-
-    activity.callMethod<void>(
-        "openLinkInApp",
-        "(Ljava/lang/String;)V",
-        jLink.object<jstring>());
-#else
-    qWarning() << "Cannot open link in app:" << link;
-#endif
-}
-
-void Skywalker::copyPostTextToClipboard(const QString& text)
-{
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(text);
-    emit statusMessage(mUserDid, tr("Post text copied to clipboard"));
-}
-
-void Skywalker::copyToClipboard(const QString& text)
-{
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(text);
-    emit statusMessage(mUserDid, tr("Copied to clipboard"));
-}
-
 ContentGroup Skywalker::getContentGroup(const QString& did, const QString& labelId) const
 {
     const auto* group = mContentFilter.getContentGroup(did, labelId);
@@ -4660,6 +4495,17 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
     emit sharedVideoReceived(url, text);
 }
 
+ShareUtils* Skywalker::getShareUtils()
+{
+    if (!mShareUtils)
+    {
+        mShareUtils = std::make_unique<ShareUtils>(this);
+        mShareUtils->setSkywalker(this);
+    }
+
+    return mShareUtils.get();
+}
+
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)
 {
     emit statusMessage(mUserDid, msg, level, seconds);
@@ -4727,6 +4573,9 @@ void Skywalker::resumeApp()
 {
     qDebug() << "Resume app";
 
+    // Make sure any settings changed by the offline checker are reloaded!
+    mUserSettings.sync();
+
     if (mUserDid.isEmpty())
     {
         qDebug() << "No user active";
@@ -4754,7 +4603,6 @@ void Skywalker::resumeApp()
     mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, lastSyncIndex]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-
         if (pauseInterval > 60s)
         {
             updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, lastSyncIndex](bool gapFilled){

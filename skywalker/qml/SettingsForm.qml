@@ -227,6 +227,11 @@ SkyPage {
         closed()
     }
 
+    // The Android back-button should also save all changes
+    function cancel() {
+        saveAndClose()
+    }
+
     Component.onCompleted: {
         if (allVisible || onlyNotificationVisible)
             notificationtUtils.getNotificationPrefs()

@@ -248,7 +248,7 @@ Rectangle {
                         text: qsTr("Share")
                         svg: SvgOutline.share
                         popup: moreMenu
-                        onClicked: skywalker.shareFeed(feed)
+                        onClicked: skywalker.getShareUtils().shareFeed(feed)
                     }
                     SkyMenuButton {
                         text: qsTr("Report feed")

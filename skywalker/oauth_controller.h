@@ -1,6 +1,8 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <QUrl>
+
 #ifndef Q_OS_ANDROID
 #include <QHttpServer>
 #endif

@@ -224,7 +224,7 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                active: showPost() && (Boolean(notificationPostRecord) && notificationPostRecord.postIsQuote) || (Boolean(notificationReasonPostRecordWithMedia) && notificationPostRecordWithMedia.record.postIsQuote)
+                active: showPost() && ((Boolean(notificationPostRecord) && notificationPostRecord.postIsQuote) || (Boolean(notificationPostRecordWithMedia) && notificationPostRecordWithMedia.record.postIsQuote))
                 asynchronous: true
                 visible: status === Loader.Ready
 
@@ -248,7 +248,7 @@ Rectangle {
                 anchors.top: parent.top
                 anchors.topMargin: parent.width
                 anchors.horizontalCenter: parent.horizontalCenter
-                active: showPostForAggregatableReason() && (Boolean(notificationReasonPostRecord) && notificationReasonPostRecord.postIsQuote) || (Boolean(notificationReasonPostRecordWithMedia) && notificationReasonPostRecordWithMedia.record.postIsQuote)
+                active: showPostForAggregatableReason() && ((Boolean(notificationReasonPostRecord) && notificationReasonPostRecord.postIsQuote) || (Boolean(notificationReasonPostRecordWithMedia) && notificationReasonPostRecordWithMedia.record.postIsQuote))
                 asynchronous: true
                 visible: status === Loader.Ready
 
@@ -472,11 +472,11 @@ Rectangle {
                             root.viewQuoteChain(notificationPostUri, notification.owner.did)
                         }
 
-                        onShare: skywalker.sharePost(notificationPostUri)
+                        onShare: skywalker.getShareUtils().sharePost(notificationPostUri)
                         onMuteThread: root.muteThread(notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostThreadMuted, owner.did)
                         onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies, owner.did)
                         onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies, owner.did)
-                        onCopyPostText: skywalker.copyPostTextToClipboard(notificationPostPlainText)
+                        onCopyPostText: skywalker.getShareUtils().copyPostTextToClipboard(notificationPostPlainText)
                         onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor, owner.did)
                         onTranslatePost: root.translateText(notificationPostPlainText)
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach, owner.did)

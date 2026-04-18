@@ -111,7 +111,7 @@ ListView {
                 color: guiSettings.handleColor
                 visible: showHost && author.did
 
-                text: author.did ? userSettings.getHost(author.did) : ""
+                text: visible ? getHostStatus(author.did) : ""
             }
 
             Item {}
@@ -144,5 +144,27 @@ ListView {
             anchors.fill: parent
             onClicked: authorClicked(author)
         }
+    }
+
+    function getHostStatus(did) {
+        const isActive = did === skywalker.getUserDid()
+        const hasSession = skywalker.getSessionManager().hasSession(did)
+        const useOAuth = userSettings.getOAuthEnabled(did)
+        const host = userSettings.getHost(did)
+        let status = ""
+
+        if (isActive) {
+            if (hasSession)
+                status = useOAuth ? "🟩" : "🟢"
+            else
+                status = useOAuth ? "⬛" : "⚫"
+        } else {
+            if (hasSession)
+                status = useOAuth ? "🟨" : "🟡"
+            else
+                status = useOAuth ? "⬛" : "⚫"
+        }
+
+        return `${status} ${host}`
     }
 }

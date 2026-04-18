@@ -239,7 +239,7 @@ SkyPage {
                 text: qsTr("Share")
                 svg: SvgOutline.share
                 popup: moreMenu
-                onClicked: skywalker.shareStarterPack(starterPack)
+                onClicked: skywalker.getShareUtils().shareStarterPack(starterPack)
             }
             SkyMenuButton {
                 text: qsTr("Copy to list")

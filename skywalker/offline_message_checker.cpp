@@ -338,6 +338,7 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     mUserSettings.saveSession(session);
+    mUserSettings.sync();
 }
 
 void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
@@ -378,7 +379,9 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
             [this] {
                 qDebug() << "Session resumed";
                 saveSession(*mBsky->getSession());
-                refreshSession();
+
+                // Session has been refreshed already
+                getUserPreferences();
             },
             [this, did, session](const QString& error, const QString& msg, const QString& accessToken, const QString& refreshToken){
                 qWarning() << "Session could not be resumed:" << error << " - " << msg;

@@ -401,7 +401,8 @@ void SessionManager::startRefreshTimers(const QString& did, int initialDelayCoun
             mUserSettings->syncLater();
         },
         [this, did](const QString& msg){
-            qWarning() << "Session refresh failed:" << msg;
+            qWarning() << "Session expired:" << msg;
+            mUserSettings->clearTokens(did);
 
             if (did == mSkywalker->getUserDid())
                 emit activeSessionExpired(msg);

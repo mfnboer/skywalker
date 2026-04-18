@@ -3,7 +3,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
 include(FetchContent)
-find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg HttpServer)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
+
+if (NOT ANDROID)
+    find_package(Qt6 REQUIRED COMPONENTS HttpServer)
+endif()
 
 if (ANDROID AND Qt6Core_VERSION VERSION_GREATER_EQUAL 6.9.0)
     find_package(Qt6 REQUIRED COMPONENTS CorePrivate)
@@ -678,11 +682,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/TimelineOptionsMenu.qml
         SOURCES oauth_controller.h
         SOURCES oauth_controller.cpp
+        SOURCES share_utils.h
+        SOURCES share_utils.cpp
 )
-
-if (NOT ANDROID)
-    set(COVERAGE_LIB -lgcov)
-endif()
 
 target_link_libraries(libskywalker
     PRIVATE libatproto
@@ -690,9 +692,14 @@ target_link_libraries(libskywalker
     PRIVATE Qt6::Quick
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Svg
-    PRIVATE Qt6::HttpServer
-    ${COVERAGE_LIB}
 )
+
+if (NOT ANDROID)
+    target_link_libraries(libskywalker
+        PRIVATE Qt6::HttpServer
+        -lgcov
+    )
+endif()
 
 if (ANDROID AND Qt6Core_VERSION VERSION_GREATER_EQUAL 6.9.0)
     target_link_libraries(libskywalker

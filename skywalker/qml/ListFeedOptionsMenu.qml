@@ -79,7 +79,7 @@ SkyMenu {
                 return
             }
 
-            skywalker.shareList(favorite.listView)
+            skywalker.getShareUtils().shareList(favorite.listView)
         }
     }
 

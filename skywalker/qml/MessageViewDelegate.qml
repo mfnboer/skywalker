@@ -153,7 +153,7 @@ Rectangle {
                 text: qsTr("Copy message")
                 svg: SvgOutline.copy
                 popup: moreMenu
-                onClicked: skywalker.copyToClipboard(message.text)
+                onClicked: skywalker.getShareUtils().copyToClipboard(message.text)
             }
             SkyMenuButton {
                 text: qsTr("Delete")
