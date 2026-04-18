@@ -18,6 +18,8 @@ import androidx.work.WorkManager;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.multiprocess.RemoteWorkManager;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.MemoryInfo;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -80,6 +82,12 @@ public class NewMessageChecker extends Worker {
         }
 
         Log.d(LOGTAG, "Check for new messages");
+
+        if (isMemoryLow()) {
+            Log.w(LOGTAG, "Memory is low, postpone checking");
+            return Result.retry();
+        }
+
         Log.d(LOGTAG, "data dir: " + mContext.getDataDir().getPath());
 
         ApplicationInfo appInfo = mContext.getApplicationInfo();
@@ -100,6 +108,27 @@ public class NewMessageChecker extends Worker {
     private String getSettingsFileName() {
         String appDir = mContext.getFilesDir().getPath();
         return appDir + SETTINGS_FILE_NAME;
+    }
+
+    private boolean isMemoryLow() {
+        Context context = SkywalkerApplication.getContext();
+
+        if (context == null) {
+            Log.w(LOGTAG, "No context. Cannot get memory info.");
+            return false;
+        }
+
+        ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        if (activityManager == null) {
+            Log.w(LOGTAG, "No activity manager. Cannot get memory info.");
+            return false;
+        }
+
+        ActivityManager.MemoryInfo memInfo = new ActivityManager.MemoryInfo();
+        activityManager.getMemoryInfo(memInfo);
+        Log.d(LOGTAG, "Memory total: " + memInfo.totalMem + " avail: " + memInfo.availMem + " threshold: " + memInfo.threshold + " low: " + memInfo.lowMemory);
+        return memInfo.lowMemory;
     }
 
     public static RemoteWorkManager getRemoteWorkManager(Context context) {

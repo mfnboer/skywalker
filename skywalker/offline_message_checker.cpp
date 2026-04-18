@@ -258,6 +258,7 @@ int OffLineMessageChecker::check(const QString& did)
         qDebug() << "Attempt:" << i + 1 << did;
         QTimer::singleShot(0, &mPresence, [this, did]{ resumeSession(did); });
         exitStatus = startEventLoop();
+        qDebug() << "Event loop exit:" << exitStatus << "did:" << did;
 
         if (exitStatus == EXIT_OK)
             break;
@@ -389,7 +390,7 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
                 if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
                 {
                     mUserSettings.clearTokens(did);
-                    exit(EXIT_RETRY);
+                    exit(EXIT_FAILED);
                 }
                 else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
                 {
