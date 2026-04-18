@@ -1,3 +1,10 @@
+next
+====
+* OAuth support
+* Show session status on accounts page
+* Increase max image size to 2MB and 4000x4000 pixels
+* Bug fixes
+
 4.32
 ====
 * User interface polishing

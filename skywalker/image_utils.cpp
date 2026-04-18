@@ -56,6 +56,14 @@ ImageUtils::ImageUtils(QObject* parent) :
             });
 }
 
+QImage ImageUtils::scaledToSize(const QImage& img, int size)
+{
+    if (img.width() > img.height())
+        return img.scaledToWidth(size, Qt::SmoothTransformation);
+    else
+        return img.scaledToHeight(size, Qt::SmoothTransformation);
+}
+
 void ImageUtils::setInstalling(bool installing)
 {
     if (installing != mInstalling)

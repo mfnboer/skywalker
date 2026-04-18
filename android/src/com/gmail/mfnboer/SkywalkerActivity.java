@@ -160,13 +160,6 @@ public class SkywalkerActivity extends QtActivity {
         }
 
         Log.d(LOGTAG, "Link: " + uri);
-
-        // TODO: why getPath()? data.toString() gives the complet uri?
-        // Android helpfully strips off the beginning of the link. Since the QML link code
-        // expects the prefix, we just stick it back on here before sending it along.
-        // String path = "https://bsky.app" + data.getPath();
-        // Log.d(LOGTAG, "Handling the link: " + path);
-
         emitShowLink(uri.toString());
     }
 
