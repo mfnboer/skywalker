@@ -780,6 +780,7 @@ void PostUtils::continuePost(std::shared_ptr<QIODevice> ioDevice, const PostAtta
 
     Q_ASSERT(ioDevice);
 
+    qDebug() << "Upload video:" << QSize(video.mWidth, video.mHeight);
     bskyClient()->uploadVideo(ioDevice.get(),
         [this, presence=getPresence(), video, post, postFeedContext, ioDevice](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
             if (!presence)

@@ -1,0 +1,13 @@
+{
+    "client_id": "https://mfnboer.home.xs4all.nl/skywalker/oauth/client-metadata.json",
+    "client_name": "Skywalker",
+    "client_uri": "https://mfnboer.home.xs4all.nl/skywalker",
+    "application_type": "native",
+    "client_name": "Skywalker",
+    "dpop_bound_access_tokens": true,
+    "grant_types": ["authorization_code", "refresh_token"],
+    "redirect_uris": ["nl.xs4all.home.mfnboer:/oauth/callback", "http://127.0.0.1:1970/oauth/callback"],
+    "response_types": ["code"],
+    "token_endpoint_auth_method": "none",
+    "scope": "atproto transition:generic transition:chat.bsky transition:email include:app.bsky.authFullApp?aud=did:web:api.bsky.app#bsky_appview include:chat.bsky.authFullChatClient?aud=did:web:api.bsky.chat#bsky_chat"
+}

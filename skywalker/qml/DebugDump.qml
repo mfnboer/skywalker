@@ -19,7 +19,7 @@ SkyPage {
             anchors.right: parent.right
             anchors.rightMargin: 10
             text: "Copy"
-            onClicked: root.getSkywalker().copyToClipboard(dumpData)
+            onClicked: root.getSkywalker().getShareUtils().copyToClipboard(dumpData)
         }
     }
 

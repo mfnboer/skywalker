@@ -23,7 +23,7 @@ QJsonObject UriWithExpiry::toJson() const
 {
     QJsonObject json;
     json.insert("uri", mUri);
-    json.insert("expiry", mExpiry.toString(Qt::ISODateWithMs));
+    json.insert("expiry", mExpiry.toUTC().toString(Qt::ISODateWithMs));
     return json;
 }
 

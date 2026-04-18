@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "offline_message_checker.h"
 #include "notification.h"
+#include "oauth_controller.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 
@@ -58,11 +59,22 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
     // This makes networking work???
     // Somehow Qt fails to find this class if we don't do this lookup.
     QJniEnvironment jniEnv;
-    jclass javaClass = jniEnv.findClass("org/qtproject/qt/android/network/QtNetwork");
+    const char* qtNetworkClassName = "org/qtproject/qt/android/network/QtNetwork";
+    jclass qtNetworkClass = jniEnv.findClass(qtNetworkClassName);
 
-    if (!javaClass)
+    if (!qtNetworkClass)
     {
-        qWarning() << "Class loading failed";
+        qWarning() << "Cannot load:" << qtNetworkClassName;
+        return EXIT_OK;
+    }
+
+    // Need to load our own classes oursevers
+    const char* keystoreHelperClassName = "eu/thereforeiam/atproto/KeystoreHelper";
+    jclass keystoreHelperClass = jniEnv.findClass(keystoreHelperClassName);
+
+    if (!keystoreHelperClass)
+    {
+        qWarning() << "Cannot load:" << keystoreHelperClassName;
         return EXIT_OK;
     }
 
@@ -326,12 +338,14 @@ void OffLineMessageChecker::createNotification(const QString channelId, const Ba
 void OffLineMessageChecker::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     mUserSettings.saveSession(session);
+    mUserSettings.sync();
 }
 
 void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
 {
     qDebug() << "Resume session, retry:" << retry << "did:" << did;
     const auto session = mUserSettings.getSavedSession(did);
+    const bool useOAuth = mUserSettings.getOAuthEnabled(did);
 
     if (!session)
     {
@@ -351,57 +365,99 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
     mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
     mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
 
-    mBsky->resumeSession(*session,
-        [this] {
-            qDebug() << "Session resumed";
-            saveSession(*mBsky->getSession());
-            refreshSession();
-        },
-        [this, did, retry, session](const QString& error, const QString& msg){
-            qWarning() << "Session could not be resumed:" << error << " - " << msg;
+    if (useOAuth)
+    {
+#if defined(Q_OS_ANDROID)
+        const QString alias = mUserSettings.getOAuthDpopKeyAlias(did);
+        mBsky->oauthSetDpopKeyAlias(alias);
+#else
+        qWarning() << "Offline message checker only implemented for Android";
+        exit(EXIT_FAILED);
+        return;
+#endif
+        mBsky->oauthResumeSession(OAuthController::CLIENT_ID, *session,
+            [this] {
+                qDebug() << "Session resumed";
+                saveSession(*mBsky->getSession());
 
-            if (!retry && ATProto::ATProtoErrorMsg::isTokenFailure(error))
-            {
-                mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
-                mBsky->refreshSession(
-                    [this, did]{
-                        qDebug() << "Session refreshed";
-                        saveSession(*mBsky->getSession());
-                        resumeSession(did, true);
-                    },
-                    [this, did, session](const QString& error, const QString& msg){
-                        qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+                // Session has been refreshed already
+                getUserPreferences();
+            },
+            [this, did, session](const QString& error, const QString& msg, const QString& accessToken, const QString& refreshToken){
+                qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
-                        if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
-                        {
-                            mUserSettings.clearTokens(did);
-                            exit(EXIT_FAILED);
-                        }
-                        else
-                        {
-                            mUserSettings.saveTokens(did, "", session->mRefreshJwt);
-                        }
+                if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+                {
+                    mUserSettings.clearTokens(did);
+                    exit(EXIT_RETRY);
+                }
+                else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
+                {
+                    qWarning() << "PDS not found, network failure";
+                    mUserSettings.saveTokens(did, accessToken, refreshToken);
+                    exit(EXIT_NETWORK_FAILURE);
+                }
+                else
+                {
+                    mUserSettings.saveTokens(did, accessToken, refreshToken);
+                    exit(EXIT_RETRY);
+                }
+            });
+    }
+    else
+    {
+        mBsky->resumeSession(*session,
+            [this] {
+                qDebug() << "Session resumed";
+                saveSession(*mBsky->getSession());
+                refreshSession();
+            },
+            [this, did, retry, session](const QString& error, const QString& msg){
+                qWarning() << "Session could not be resumed:" << error << " - " << msg;
 
-                        exit(EXIT_RETRY);
-                    });
-            }
-            else if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
-            {
-                mUserSettings.saveTokens(did, "", session->mRefreshJwt);
-                exit(EXIT_RETRY);
-            }
-            else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
-            {
-                qWarning() << "PDS not found, network failure";
-                mUserSettings.saveTokens(did, session->mAccessJwt, session->mRefreshJwt);
-                exit(EXIT_NETWORK_FAILURE);
-            }
-            else
-            {
-                mUserSettings.saveTokens(did, session->mAccessJwt, session->mRefreshJwt);
-                exit(EXIT_RETRY);
-            }
-        });
+                if (!retry && ATProto::ATProtoErrorMsg::isTokenFailure(error))
+                {
+                    mBsky->setSession(std::make_shared<ATProto::ComATProtoServer::Session>(*session));
+                    mBsky->refreshSession(
+                        [this, did]{
+                            qDebug() << "Session refreshed";
+                            saveSession(*mBsky->getSession());
+                            resumeSession(did, true);
+                        },
+                        [this, did, session](const QString& error, const QString& msg){
+                            qDebug() << "Session could not be refreshed:" << error << " - " << msg;
+
+                            if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+                            {
+                                mUserSettings.clearTokens(did);
+                                exit(EXIT_FAILED);
+                            }
+                            else
+                            {
+                                mUserSettings.saveTokens(did, "", session->mRefreshJwt);
+                            }
+
+                            exit(EXIT_RETRY);
+                        });
+                }
+                else if (ATProto::ATProtoErrorMsg::isTokenFailure(error))
+                {
+                    mUserSettings.saveTokens(did, "", session->mRefreshJwt);
+                    exit(EXIT_RETRY);
+                }
+                else if (error == ATProto::ATProtoErrorMsg::PDS_NOT_FOUND)
+                {
+                    qWarning() << "PDS not found, network failure";
+                    mUserSettings.saveTokens(did, session->mAccessJwt, session->mRefreshJwt);
+                    exit(EXIT_NETWORK_FAILURE);
+                }
+                else
+                {
+                    mUserSettings.saveTokens(did, session->mAccessJwt, session->mRefreshJwt);
+                    exit(EXIT_RETRY);
+                }
+            });
+    }
 }
 
 void OffLineMessageChecker::refreshSession()

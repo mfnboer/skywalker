@@ -33,7 +33,7 @@ private:
     std::unique_ptr<VideoEncoder> mVideoEncoder;
     std::unique_ptr<QMovie> mGif;
     std::unique_ptr<QTemporaryFile> mVideoFile;
-    std::unique_ptr<QThread> mThread;
+    QThread* mThread = nullptr;
     bool mConversionDone = false;
     QAtomicInteger<bool> mCanceled = false;
 };

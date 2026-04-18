@@ -7,7 +7,6 @@
 #include "profile.h"
 #include "search_feed.h"
 #include "uri_with_expiry.h"
-#include <atproto/lib/client.h>
 #include <QObject>
 #include <QSettings>
 
@@ -140,6 +139,13 @@ public:
 
     Q_INVOKABLE void savePassword(const QString& did, const QString& password);
     Q_INVOKABLE QString getPassword(const QString& did) const;
+
+    Q_INVOKABLE void setOAuthEnabled(const QString& did, bool enable);
+    Q_INVOKABLE bool getOAuthEnabled(const QString& did) const;
+
+    void setOAuthDpopKeyAlias(const QString& did, const QString& alias);
+    QString getOAuthDpopKeyAlias(const QString& did) const;
+    void removeOAuthDpopKeyAlias(const QString& did);
 
     QString getHandle(const QString& did) const;
 

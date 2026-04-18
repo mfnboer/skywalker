@@ -107,17 +107,17 @@ void GifToVideoConverter::cancel()
 void GifToVideoConverter::startThread()
 {
     mCanceled = false;
-    QThread* thread = QThread::create([this]{ mConversionDone = pushFrames(); });
+    mThread = QThread::create([this]{ mConversionDone = pushFrames(); });
 
-    if (!thread)
+    if (!mThread)
     {
         qWarning() << "Failed to start thread";
         emit conversionFailed("Failed to start thread");
         return;
     }
 
-    mThread.reset(thread);
-    connect(thread, &QThread::finished, this, [this]{ finished(); }, Qt::SingleShotConnection);
+    mThread->setParent(this);
+    connect(mThread, &QThread::finished, this, [this]{ finished(); }, Qt::SingleShotConnection);
     mThread->start();
 }
 
@@ -125,7 +125,7 @@ void GifToVideoConverter::finished()
 {
     mVideoEncoder->close();
     mVideoEncoder = nullptr;
-    mThread->wait();
+    mThread->deleteLater();
     mThread = nullptr;
 
     if (mCanceled)

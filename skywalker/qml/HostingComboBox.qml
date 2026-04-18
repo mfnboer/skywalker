@@ -4,9 +4,10 @@ import QtQuick.Controls
 ComboBox {
     property string host
     property bool valid: true
+    readonly property string otherProvider: qsTr("<i>Type other provider</i>")
 
     id: hostField
-    model: ["bsky.social", "eurosky.social", "blacksky.app", "northsky.social"]
+    model: ["bsky.social", "eurosky.social", "blacksky.app", "northsky.social", otherProvider]
     editable: true
     editText: host
     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
@@ -15,6 +16,11 @@ ComboBox {
     Accessible.role: Accessible.ComboBox
     Accessible.name: qsTr(`Hosting provider ${editText}`)
     Accessible.description: qsTr("Choose hosting provider to sign into")
+
+    onEditTextChanged: {
+        if (editText === otherProvider)
+            editText = ""
+    }
 
     Rectangle {
         z: parent.z - 1
@@ -36,6 +42,6 @@ ComboBox {
         }
 
         model.push(host)
-        currentIndex = model.length - 1
+        currentIndex = model.length - 2
     }
 }

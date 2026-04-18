@@ -3,6 +3,7 @@
 #include "photo_picker.h"
 #include "atproto_image_provider.h"
 #include "file_utils.h"
+#include "image_utils.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include <QtGlobal>
@@ -22,7 +23,7 @@
 #endif
 
 namespace {
-constexpr int MAX_IMAGE_PIXEL_SIZE = 2000;
+constexpr int MAX_IMAGE_PIXEL_SIZE = 4000;
 }
 
 namespace Skywalker::PhotoPicker {
@@ -192,16 +193,11 @@ std::tuple<QString, QString> determineImageFormat(const QImage& img, const QStri
 
 std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStringList& extraFormats, const QString& name)
 {
+    static constexpr int MIN_IMAGE_PIXEL_SIZE = 1000;
     qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
 
     if (std::max(img.width(), img.height()) > MAX_IMAGE_PIXEL_SIZE)
-    {
-        if (img.width() > img.height())
-            img = img.scaledToWidth(MAX_IMAGE_PIXEL_SIZE, Qt::SmoothTransformation);
-        else
-            img = img.scaledToHeight(MAX_IMAGE_PIXEL_SIZE, Qt::SmoothTransformation);
-    }
-
+        img = ImageUtils::scaledToSize(img, MAX_IMAGE_PIXEL_SIZE);
 
     auto [format, mimeType] = determineImageFormat(img, extraFormats, name);
     int quality = 75;
@@ -226,14 +222,25 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
             blob.clear();
             quality -= 25;
 
-            if (quality <= 0 && mimeType == "image/png")
+            if (quality <= 0)
             {
-                // PNG compression does not compress well, fallback to webp or jpg
-                // Prefer webp as it supports transparency like png
-                const bool webpAvailable = extraFormats.contains("webp") && QImageWriter::supportedImageFormats().contains("webp");
-                format = webpAvailable ? "webp" : "jpg";
-                mimeType = webpAvailable ? "image/webp" : "image/jpeg";
-                quality = 75;
+                if (mimeType == "image/png")
+                {
+                    // PNG compression does not compress well, fallback to webp or jpg
+                    // Prefer webp as it supports transparency like png
+                    const bool webpAvailable = extraFormats.contains("webp") && QImageWriter::supportedImageFormats().contains("webp");
+                    format = webpAvailable ? "webp" : "jpg";
+                    mimeType = webpAvailable ? "image/webp" : "image/jpeg";
+                    quality = 75;
+                    qDebug() << "Switch to mime-type:" << mimeType;
+                }
+                else if (std::max(img.width(), img.height()) > MIN_IMAGE_PIXEL_SIZE)
+                {
+                    const int newSize = std::max(img.width(), img.height()) * 0.8;
+                    img = ImageUtils::scaledToSize(img, newSize);
+                    quality = 75;
+                    qDebug() << "Reduce size to:" << newSize;
+                }
             }
 
             continue;

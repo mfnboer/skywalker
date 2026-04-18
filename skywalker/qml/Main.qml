@@ -318,17 +318,28 @@ ApplicationWindow {
 
         onLoginOk: start()
 
-        onLoginFailed: (error, msg, host, handleOrDid, password) => {
+        onLoginFailed: (error, msg, useOAuth, host, handleOrDid, password) => {
+            closeLoginPage()
             closeStartupStatus()
 
             if (handleOrDid.startsWith("did:")) {
                 const did = handleOrDid
                 const userSettings = getUserSettings()
                 const user = userSettings.getUser(did)
-                loginUser(host, user.handle, did, error, msg, password)
+                loginUser(useOAuth, host, user.handle, did, error, msg, password)
             } else {
-                loginUser(host, handleOrDid, "", error, msg, password)
+                loginUser(useOAuth, host, handleOrDid, "", error, msg, password)
             }
+        }
+
+        onLoginOAuthRedirect: (url, host, user) => {
+            if (!Qt.openUrlExternally(url))
+                loginWithOAuthFailed("InternalError", qsTr("Could not redirect to login page"))
+        }
+
+        onLoginOAuthContinue: {
+            closeLoginPage()
+            showStartupStatus()
         }
 
         onResumeSessionOk: start()
@@ -1038,7 +1049,8 @@ ApplicationWindow {
                     else {
                         const userSettings = skywalker.getUserSettings()
                         const host = userSettings.getHost(profile.did)
-                        loginUser(host, profile.handle, profile.did)
+                        const useOAuth = userSettings.getOAuthEnabled(profile.did)
+                        loginUser(useOAuth, host, profile.handle, profile.did)
                     }
                 }
 
@@ -1269,6 +1281,13 @@ ApplicationWindow {
             item.updateRewindProgress(pages, timestamp)
     }
 
+    function closeLoginPage() {
+        let item = currentStackItem()
+
+        if (item instanceof Login)
+            popStack()
+    }
+
     function closeStartupStatus() {
         let item = currentStackItem()
 
@@ -1302,7 +1321,7 @@ ApplicationWindow {
         pushStack(page, StackView.Immediate)
     }
 
-    function loginUser(host, handle, did, error="", msg="", password="") {
+    function loginUser(useOAuth, host, handle, did, error="", msg="", password="") {
         console.debug("login, host:", host, "handle:", handle, "did:", did)
         let component = guiSettings.createComponent("Login.qml")
         let page = component.createObject(root, {
@@ -1311,17 +1330,23 @@ ApplicationWindow {
                 did: did,
                 errorCode: error,
                 errorMsg: msg,
-                password: password
+                password: password,
+                useOAuth: useOAuth
         })
         page.onCanceled.connect(() => {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword, authFactorToken,
+        page.onAccepted.connect((useOAuth, host, handle, password, did, rememberPassword, authFactorToken,
                                  setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
-                popStack()
+                // With OAuth the user gets redirected to the login web page.
+                // If the users pressed back, then we want to current login page to show, so
+                // do not pop it from the stack.
+                if (!useOAuth)
+                    popStack()
+
                 const user = did ? did : handle
-                skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+                skywalkerLogin(useOAuth, host, user, password, rememberPassword, authFactorToken,
                                setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
         pushStack(page)
@@ -1334,10 +1359,12 @@ ApplicationWindow {
                 popStack()
                 signIn()
         })
-        page.onAccepted.connect((host, handle, password, did, rememberPassword, _authFactorToken,
+        page.onAccepted.connect((useOAuth, host, handle, password, did, rememberPassword, _authFactorToken,
                                  setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
-                popStack()
-                skywalkerLogin(host, handle, password, rememberPassword, "",
+                if (!useOAuth)
+                    popStack()
+
+                skywalkerLogin(useOAuth, host, handle, password, rememberPassword, "",
                                setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
 
@@ -1378,11 +1405,12 @@ ApplicationWindow {
                     if (userSettings.getRememberPassword(profile.did)) {
                         const host = userSettings.getHost(profile.did)
                         const password = userSettings.getPassword(profile.did)
-                        skywalkerLogin(host, profile.did, password, true)
+                        skywalkerLogin(false, host, profile.did, password, true)
                     }
                     else {
                         const host = userSettings.getHost(profile.did)
-                        loginUser(host, profile.handle, profile.did)
+                        const useOAuth = userSettings.getOAuthEnabled(profile.did)
+                        loginUser(useOAuth, host, profile.handle, profile.did)
                     }
                 }
         })
@@ -1403,11 +1431,17 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(host, user, password, rememberPassword, authFactorToken,
+    function skywalkerLogin(useOAuth, host, user, password, rememberPassword, authFactorToken,
                             setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) {
-        showStartupStatus()
-        skywalker.login(host, user, password, rememberPassword, authFactorToken,
-                        setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
+        if (useOAuth) {
+            // For OAuth we only show the status page after login page tells us to continue.
+            skywalker.loginWithOAuth(host, user)
+        } else {
+            showStartupStatus()
+            skywalker.loginWithPassword(host, user, password, rememberPassword, authFactorToken,
+                                        setAdvancedSettings, serviceAppView, serviceChat,
+                                        serviceVideoHost, serviceVideoDid)
+        }
     }
 
     function  signOutCurrentUser() {

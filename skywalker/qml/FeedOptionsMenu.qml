@@ -45,7 +45,7 @@ SkyMenu {
         svg: SvgOutline.share
         popup: feedOptionsMenu
         visible: postFeedModel.feedType === QEnums.FEED_GENERATOR
-        onClicked: skywalker.shareFeed(feedOptionsMenu.feed)
+        onClicked: skywalker.getShareUtils().shareFeed(feedOptionsMenu.feed)
     }
 
     SkyMenuButton {

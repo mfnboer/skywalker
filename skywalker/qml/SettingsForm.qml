@@ -26,7 +26,7 @@ SkyPage {
 
         text: sideBarTitle
         visible: !root.showSideBar
-        onBack: closed()
+        onBack: saveAndClose()
 
         onHeightChanged: {
             if (prevHeight < 0)
@@ -217,12 +217,19 @@ SkyPage {
         }
     }
 
-    Component.onDestruction: {
+    function saveAndClose() {
         console.debug("Save settings")
         skywalker.saveUserPreferences()
 
         if (notificationsLoader.active)
             notificationtUtils.saveNotificationPrefs()
+
+        closed()
+    }
+
+    // The Android back-button should also save all changes
+    function cancel() {
+        saveAndClose()
     }
 
     Component.onCompleted: {

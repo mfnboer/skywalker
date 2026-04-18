@@ -39,10 +39,14 @@
 namespace Skywalker {
 
 class Chat;
+class OAuthController;
 class FocusHashtags;
+class ShareUtils;
 
 class Skywalker : public IFeedPager
 {
+    Q_MOC_INCLUDE("share_utils.h")
+
     Q_OBJECT
     Q_PROPERTY(QString APP_NAME MEMBER APP_NAME CONSTANT)
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
@@ -84,11 +88,20 @@ public:
     Ptr createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent = nullptr);
     void initNonActiveUser();
 
-    Q_INVOKABLE void login(const QString host, const QString user, QString password,
+    Q_INVOKABLE void loginWithPassword(const QString host, const QString user, QString password,
                            bool rememberPassword, const QString authFactorToken,
                            bool setAdvancedSettings = false, const QString serviceAppView = "",
                            const QString serviceChat = "", const QString serviceVideoHost = "",
                            const QString serviceVideoDid = "");
+    Q_INVOKABLE void loginWithOAuth(const QString host, const QString user,
+                                    bool setAdvancedSettings = false, const QString serviceAppView = "",
+                                    const QString serviceChat = "", const QString serviceVideoHost = "",
+                                    const QString serviceVideoDid = "");
+    Q_INVOKABLE void loginWithOAuthFailed(const QString code, const QString error, const QString host, const QString user);
+    void loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
+                                 bool setAdvancedSettings, const QString serviceAppView,
+                                 const QString serviceChat, const QString serviceVideoHost,
+                                 const QString serviceVideoDid, const QString& dpopKeyAlias);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
@@ -187,13 +200,6 @@ public:
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE Profile getUserProfile() const { return mUserProfile; }
     Q_INVOKABLE BasicProfile getUser() const;
-    Q_INVOKABLE void sharePost(const QString& postUri);
-    Q_INVOKABLE void shareFeed(const GeneratorView& feed);
-    Q_INVOKABLE void shareList(const ListView& list);
-    Q_INVOKABLE void shareStarterPack(const StarterPackViewBasic& starterPack);
-    Q_INVOKABLE void shareAuthor(const BasicProfile& author);
-    Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
-    Q_INVOKABLE void copyToClipboard(const QString& text);
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
     Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
@@ -223,6 +229,7 @@ public:
     const ATProto::UserPreferences& userPreferences() const { return mUserPreferences; }
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE SessionManager* getSessionManager() { return &mSessionManager; }
+    Q_INVOKABLE ShareUtils* getShareUtils();
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
     Q_INVOKABLE void clearStatusMessage();
 
@@ -278,7 +285,9 @@ signals:
     void skywalkerCreated(const QString& did, Skywalker* skywalker);
     void skywalkerDestroyed(const QString& did);
     void loginOk();
-    void loginFailed(QString error, QString msg, const QString host, QString handle, QString password);
+    void loginFailed(QString error, QString msg, bool useOAuth, const QString host, QString handle, QString password);
+    void loginOAuthRedirect(QUrl url, QString host, QString user);
+    void loginOAuthContinue();
     void resumeSessionOk();
     void resumeSessionFailed(QString error);
     void sessionDeleted();
@@ -390,7 +399,12 @@ private:
     void updateServiceChat(const QString& did);
     void updateServiceVideoHost(const QString& did);
     void updateServiceVideoDid(const QString& did);
+    void updateAdvancedSettings(const QString& did,
+                                bool setAdvancedSettings, const QString& serviceAppView,
+                                const QString& serviceChat, const QString& serviceVideoHost,
+                                const QString& serviceVideoDid);
     void updateGlobalFeedOrder();
+    void handleShowLink(const QString& url);
     ATProto::PostMaster* postMaster();
 
     template<typename ModelType>
@@ -448,6 +462,7 @@ private:
     NotificationListModel mMentionListModel; // Mentions only
     std::unique_ptr<Chat> mChat;
     std::unique_ptr<Bookmarks> mBookmarks;
+    std::unique_ptr<ShareUtils> mShareUtils;
 
     int mGetDetailedProfileInProgress = 0;
     int mUnreadNotificationCount = 0;
@@ -458,6 +473,7 @@ private:
     Anniversary mAnniversary;
     PostFeedModel mTimelineModel;
     bool mTimelineSynced = false;
+    std::unique_ptr<OAuthController> mOAuthController;
     bool mDebugLogging = false;
 };
 

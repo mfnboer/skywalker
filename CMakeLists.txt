@@ -16,6 +16,10 @@ include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Multimedia)
 message(STATUS "QT version: ${Qt6Core_VERSION}")
 
+if (NOT ANDROID)
+    find_package(Qt6 REQUIRED COMPONENTS HttpServer)
+endif()
+
 qt_standard_project_setup()
 
 add_compile_definitions(APP_VERSION="${APP_VERSION}")
@@ -30,6 +34,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DEBUG)
 endif()
 
+add_compile_definitions(USE_ANDROID_KEYSTORE)
 add_compile_options(-Wall -Wextra -Werror)
 
 message("BUILD TYPE: ${CMAKE_BUILD_TYPE}")
@@ -158,6 +163,12 @@ target_link_libraries(appskywalker
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Multimedia
 )
+
+if (NOT ANDROID)
+    target_link_libraries(libskywalker
+        PRIVATE Qt6::HttpServer
+    )
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS appskywalker

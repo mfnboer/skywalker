@@ -11,15 +11,16 @@
 #include "font_downloader.h"
 #include "jni_callback.h"
 #include "list_cache.h"
+#include "oauth_controller.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
 #include "post_thread_cache.h"
 #include "search_utils.h"
+#include "share_utils.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
 #include "utils.h"
 #include <atproto/lib/at_uri.h>
-#include <QClipboard>
 #include <QGuiApplication>
 #include <QLoggingCategory>
 
@@ -118,7 +119,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,
             [this]{ emit showDirectMessages(); });
     connect(&jniCallbackListener, &JNICallbackListener::showLink, this,
-            [this](const QString& uri) { emit showLinkReceived(uri); });
+            [this](const QString& uri){ emit handleShowLink(uri); });
 
     auto* app = (QGuiApplication*)QGuiApplication::instance();
     Q_ASSERT(app);
@@ -237,12 +238,13 @@ QString Skywalker::getUserAgentString()
 }
 
 // NOTE: user can be handle or DID
-void Skywalker::login(const QString host, const QString user, QString password,
-                      bool rememberPassword, const QString authFactorToken,
-                      bool setAdvancedSettings, const QString serviceAppView,
-                      const QString serviceChat, const QString serviceVideoHost,
-                      const QString serviceVideoDid)
+void Skywalker::loginWithPassword(const QString host, const QString user, QString password,
+                                  bool rememberPassword, const QString authFactorToken,
+                                  bool setAdvancedSettings, const QString serviceAppView,
+                                  const QString serviceChat, const QString serviceVideoHost,
+                                  const QString serviceVideoDid)
 {
+    qDebug() << "Login with password:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
@@ -254,23 +256,10 @@ void Skywalker::login(const QString host, const QString user, QString password,
             const auto* session = mBsky->getSession();
             const QString& did = session->mDid;
             updateUser(did, host);
+            updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
+                                   serviceVideoHost, serviceVideoDid);
 
-            if (setAdvancedSettings)
-            {
-                // These settings will trigger updates on mBsky
-                mUserSettings.setServiceAppView(did, serviceAppView);
-                mUserSettings.setServiceChat(did, serviceChat);
-                mUserSettings.setServiceVideoHost(did, serviceVideoHost);
-                mUserSettings.setServiceVideoDid(did, serviceVideoDid);
-            }
-            else
-            {
-                mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
-                mBsky->setServiceChat(mUserSettings.getServiceChat(did));
-                mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
-                mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
-            }
-
+            mUserSettings.setOAuthEnabled(did, false);
             mUserSettings.saveSession(*session);
             mUserSettings.setRememberPassword(did, rememberPassword); // this calls sync
 
@@ -286,8 +275,123 @@ void Skywalker::login(const QString host, const QString user, QString password,
         [this, host, user, password](const QString& error, const QString& msg){
             qDebug() << "Login" << user << "failed:" << error << " - " << msg;
             mUserSettings.setActiveUserDid({});
-            emit loginFailed(error, msg, host, user, password);
+            emit loginFailed(error, msg, false, host, user, password);
         });
+}
+
+void Skywalker::loginWithOAuth(const QString host, const QString user,
+                               bool setAdvancedSettings, const QString serviceAppView,
+                               const QString serviceChat, const QString serviceVideoHost,
+                               const QString serviceVideoDid)
+{
+    qDebug() << "Login with OAuth:" << user << "host:" << host;
+    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    xrpc->setUserAgent(Skywalker::getUserAgentString());
+    mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
+
+    mBsky->oauthLogin(user, OAuthController::CLIENT_ID, OAuthController::REDIRECT_URL, OAuthController::SCOPE,
+        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
+         serviceVideoDid](QUrl redirectUrl, QString dpopKeyAlias)
+        {
+            qDebug() << "Login" << user << "succeeded";
+            mOAuthController = std::make_unique<OAuthController>();
+
+            const bool started = mOAuthController->start(
+                [this, host, user, setAdvancedSettings, serviceAppView, serviceChat,
+                 serviceVideoHost, serviceVideoDid, dpopKeyAlias](QUrl url)
+                {
+                    loginWithOAuthContinue(url, host, user, setAdvancedSettings, serviceAppView,
+                                           serviceChat, serviceVideoHost, serviceVideoDid, dpopKeyAlias);
+                });
+
+            if (!started)
+            {
+                emit loginFailed("InternalError", "Could not setup OAuth redirect", true, host, user, "");
+                return;
+            }
+
+#ifdef Q_OS_ANDROID
+            getShareUtils()->openLinkInApp(redirectUrl.toString());
+#else
+            emit loginOAuthRedirect(redirectUrl, host, user);
+#endif
+        },
+        [this, host, user](const QString& error, const QString& msg){
+            qDebug() << "Login" << user << "failed:" << error << " - " << msg;
+            mUserSettings.setActiveUserDid({});
+            emit loginFailed(error, msg, true, host, user, "");
+        });
+}
+
+void Skywalker::loginWithOAuthFailed(const QString code, const QString error, const QString host, const QString user)
+{
+    qWarning() << "Login failed:" << code << "-" << error;
+    emit loginFailed(code, error, true, host, user, "");
+}
+
+void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
+                                        bool setAdvancedSettings, const QString serviceAppView,
+                                        const QString serviceChat, const QString serviceVideoHost,
+                                        const QString serviceVideoDid, const QString& dpopKeyAlias)
+{
+    qDebug() << "Continue login:" << url << "host:" << host << "user:" << user;
+    emit loginOAuthContinue();
+
+    mBsky->oauthLoginContinue(url,
+        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
+         serviceVideoDid, dpopKeyAlias](QString did, QString scope, QString accessToken, QString refreshToken){
+            qDebug() << "Got tokens, did:" << did << "scope:" << scope << "access:" << accessToken << "refresh:" << refreshToken;
+            mOAuthController.reset();
+            const auto* session = mBsky->getSession();
+            updateUser(did, host);
+            updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
+                                   serviceVideoHost, serviceVideoDid);
+
+            mUserSettings.setOAuthEnabled(did, true);
+            mUserSettings.saveSession(*session);
+            mUserSettings.sync();
+
+#ifdef Q_OS_ANDROID
+            mUserSettings.setOAuthDpopKeyAlias(did, dpopKeyAlias);
+#else
+            Q_UNUSED(dpopKeyAlias);
+            const QString path = OAuthController::getKeyStorageFilename(did);
+            mBsky->oauthSaveDpopKey(path, OAuthController::getTestPassPhrase());
+#endif
+            emit loginOk();
+
+            mSessionManager.insertSession(did, mBsky.get());
+            startRefreshTimers();
+            mSessionManager.resumeAndRefreshNonActiveUsers();
+        },
+        [this, host, user](const QString& error, const QString& msg){
+            qDebug() << "Login" << user << "failed:" << error << " - " << msg;
+            mOAuthController.reset();
+            mUserSettings.setActiveUserDid({});
+            emit loginFailed(error, msg, true, host, user, "");
+        });
+}
+
+void Skywalker::updateAdvancedSettings(const QString& did,
+                                       bool setAdvancedSettings, const QString& serviceAppView,
+                                       const QString& serviceChat, const QString& serviceVideoHost,
+                                       const QString& serviceVideoDid)
+{
+    if (setAdvancedSettings)
+    {
+        // These settings will trigger updates on mBsky
+        mUserSettings.setServiceAppView(did, serviceAppView);
+        mUserSettings.setServiceChat(did, serviceChat);
+        mUserSettings.setServiceVideoHost(did, serviceVideoHost);
+        mUserSettings.setServiceVideoDid(did, serviceVideoDid);
+    }
+    else
+    {
+        mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
+        mBsky->setServiceChat(mUserSettings.getServiceChat(did));
+        mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
+        mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+    }
 }
 
 bool Skywalker::autoLogin()
@@ -298,6 +402,12 @@ bool Skywalker::autoLogin()
     if (did.isEmpty())
     {
         qDebug() << "No active user";
+        return false;
+    }
+
+    if (mUserSettings.getOAuthEnabled(did))
+    {
+        qDebug() << "OAuth enabled";
         return false;
     }
 
@@ -315,7 +425,7 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    login(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
+    loginWithPassword(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
     return true;
 }
 
@@ -3975,150 +4085,6 @@ BasicProfile Skywalker::getUser() const
     return profile;
 }
 
-void Skywalker::sharePost(const QString& postUri)
-{
-    qDebug() << "Share post:" << postUri;
-    ATProto::ATUri atUri(postUri);
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("post");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Post link copied to clipboard"));
-#endif
-}
-
-void Skywalker::shareFeed(const GeneratorView& feed)
-{
-    qDebug() << "Share feed:" << feed.getDisplayName();
-    ATProto::ATUri atUri(feed.getUri());
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("feed");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Feed link copied to clipboard"));
-#endif
-}
-
-
-void Skywalker::shareList(const ListView& list)
-{
-    qDebug() << "Share list:" << list.getName();
-    ATProto::ATUri atUri(list.getUri());
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("list");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("List link copied to clipboard"));
-#endif
-}
-
-void Skywalker::shareStarterPack(const StarterPackViewBasic& starterPack)
-{
-    qDebug() << "Share starter pack:" << starterPack.getName();
-    ATProto::ATUri atUri(starterPack.getUri());
-
-    if (!atUri.isValid())
-        return;
-
-    const QString shareUri = atUri.toHttpsUri();
-    Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("starter pack");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Starter pack link copied to clipboard"));
-#endif
-}
-
-void Skywalker::shareAuthor(const BasicProfile& author)
-{
-    const QString& authorId = author.getDid();
-    const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("author profile");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    emit statusMessage(mUserDid, tr("Author link copied to clipboard"));
-#endif
-}
-
-void Skywalker::copyPostTextToClipboard(const QString& text)
-{
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(text);
-    emit statusMessage(mUserDid, tr("Post text copied to clipboard"));
-}
-
-void Skywalker::copyToClipboard(const QString& text)
-{
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(text);
-    emit statusMessage(mUserDid, tr("Copied to clipboard"));
-}
-
 ContentGroup Skywalker::getContentGroup(const QString& did, const QString& labelId) const
 {
     const auto* group = mContentFilter.getContentGroup(did, labelId);
@@ -4249,6 +4215,7 @@ ATProto::ProfileMaster& Skywalker::getProfileMaster()
 
 EditUserPreferences* Skywalker::getEditUserPreferences()
 {
+    qDebug() << "Get edit user preferences";
     Q_ASSERT(mBsky);
     const auto* session = mBsky->getSession();
     Q_ASSERT(session);
@@ -4528,6 +4495,17 @@ void Skywalker::shareVideo(const QString& contentUri, const QString& text)
     emit sharedVideoReceived(url, text);
 }
 
+ShareUtils* Skywalker::getShareUtils()
+{
+    if (!mShareUtils)
+    {
+        mShareUtils = std::make_unique<ShareUtils>(this);
+        mShareUtils->setSkywalker(this);
+    }
+
+    return mShareUtils.get();
+}
+
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)
 {
     emit statusMessage(mUserDid, msg, level, seconds);
@@ -4595,6 +4573,9 @@ void Skywalker::resumeApp()
 {
     qDebug() << "Resume app";
 
+    // Make sure any settings changed by the offline checker are reloaded!
+    mUserSettings.sync();
+
     if (mUserDid.isEmpty())
     {
         qDebug() << "No user active";
@@ -4622,7 +4603,6 @@ void Skywalker::resumeApp()
     mBsky->autoRefreshSession([this, pauseInterval, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, lastSyncIndex]{
         startRefreshTimers();
         startTimelineAutoUpdate();
-
         if (pauseInterval > 60s)
         {
             updateTimeline(5, 100, [this, lastSyncTimestamp, lastSyncCid, lastSyncOffsetY, lastSyncIndex](bool gapFilled){
@@ -4744,6 +4724,24 @@ void Skywalker::updateGlobalFeedOrder()
     {
         const QString name = model->getFeedName();
         model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, name));
+    }
+}
+
+void Skywalker::handleShowLink(const QString& url)
+{
+    if (url.startsWith(OAuthController::REDIRECT_URL))
+    {
+        qDebug() << "OAuth callback:" << url;
+
+        if (mOAuthController)
+            mOAuthController->redirect(url);
+        else
+            qWarning() << "No OAuth controller for callback:" << url;
+    }
+    else
+    {
+        qDebug() << "Show link:" << url;
+        emit showLinkReceived(url);
     }
 }
 

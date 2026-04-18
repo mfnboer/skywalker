@@ -11,6 +11,7 @@ SkyPage {
     property string errorCode
     property string errorMsg
     property string password
+    property bool useOAuth: false
     property bool setAdvancedSettings: false
     property string serviceAppView
     property string serviceChat
@@ -20,7 +21,8 @@ SkyPage {
     property UserSettings userSettings: skywalker.getUserSettings()
     readonly property string sideBarTitle: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
 
-    signal accepted(string host,
+    signal accepted(bool useOAuth,
+                    string host,
                     string handle,
                     string password,
                     string did,
@@ -45,173 +47,307 @@ SkyPage {
         onBack: loginPage.canceled()
     }
 
-    Flickable {
-        id: flick
-        anchors.fill: parent
-        clip: true
-        contentWidth: parent.width
-        contentHeight: okButton.y + okButton.height
-        flickableDirection: Flickable.VerticalFlick
-        boundsBehavior: Flickable.StopAtBounds
+    footer: Item {
+        width: loginPage.width
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0
+    }
 
-        ColumnLayout {
-            id: loginForm
-            width: parent.width
-            Accessible.role: Accessible.Pane
+    SkyTabBar {
+        id: authBar
+        width: parent.width
 
-            AccessibleText {
-                Layout.fillWidth: true
-                topPadding: 10
-                leftPadding: 10
-                font.bold: true
-                text: qsTr("Hosting provider")
-            }
+        AccessibleTabButton {
+            text: qsTr("App password")
+        }
+        AccessibleTabButton {
+            text: qsTr("Web (OAuth)")
+        }
+    }
 
-            HostingComboBox {
-                id: hostField
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                host: loginPage.host
-            }
+    SwipeView {
+        anchors.top: authBar.bottom
+        anchors.bottom: parent.bottom
+        width: parent.width
+        currentIndex: authBar.currentIndex
 
-            AccessibleText {
-                Layout.fillWidth: true
-                topPadding: 10
-                leftPadding: 10
-                font.bold: true
-                color: guiSettings.textColor
-                text: qsTr("Account")
-            }
+        onCurrentIndexChanged: authBar.setCurrentIndex(currentIndex)
 
-            SkyTextInput {
-                id: userField
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                parentFlick: flick
-                enabled: isNewAccount()
-                svgIcon: SvgOutline.atSign
-                initialText: user
-                placeholderText: qsTr("User name")
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                maximumLength: 253
-                validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
-            }
+        Flickable {
+            id: flick
+            contentHeight: okButton.y + okButton.height
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
 
-            SkyTextInput {
-                id: passwordField
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                parentFlick: flick
-                svgIcon: SvgFilled.lock
-                initialText: password
-                echoMode: TextInput.Password
-                placeholderText: qsTr("Password")
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                maximumLength: 255
+            ColumnLayout {
+                id: loginForm
+                width: parent.width
+                Accessible.role: Accessible.Pane
 
-                SkyButton {
-                    anchors.right: parent.right
-                    implicitHeight: 40
-                    textColor: guiSettings.linkColor
-                    Material.background: "transparent"
-                    text: qsTr("Forgot?")
-                    visible: passwordField.text.length === 0 && !isNewAccount()
-                    onClicked: forgotPassword()
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    font.bold: true
+                    text: qsTr("Hosting provider")
+                }
+
+                HostingComboBox {
+                    id: hostField
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    host: loginPage.host
+                }
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    font.bold: true
+                    color: guiSettings.textColor
+                    text: qsTr("Account")
+                }
+
+                SkyTextInput {
+                    id: userField
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    parentFlick: flick
+                    enabled: isNewAccount()
+                    svgIcon: SvgOutline.atSign
+                    initialText: user
+                    placeholderText: qsTr("User name")
+                    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
+                    maximumLength: 253
+                    validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
+                }
+
+                SkyTextInput {
+                    id: passwordField
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    parentFlick: flick
+                    svgIcon: SvgFilled.lock
+                    initialText: password
+                    echoMode: TextInput.Password
+                    placeholderText: qsTr("Password")
+                    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
+                    maximumLength: 255
+
+                    SkyButton {
+                        anchors.right: parent.right
+                        implicitHeight: 40
+                        textColor: guiSettings.linkColor
+                        Material.background: "transparent"
+                        text: qsTr("Forgot?")
+                        visible: passwordField.text.length === 0 && !isNewAccount()
+                        onClicked: forgotPassword()
+                    }
+                }
+
+                AccessibleCheckBox {
+                    id: rememberPasswordSwitch
+                    text: qsTr("Remember password")
+                    checked: !isNewAccount() && userSettings.getRememberPassword(did)
+                    onCheckedChanged: {
+                        if (!isNewAccount())
+                            userSettings.setRememberPassword(did, checked)
+                    }
+                }
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    font.bold: true
+                    color: guiSettings.textColor
+                    text: qsTr("2FA Confirmation")
+                    visible: authFactorTokenRequired()
+                }
+
+                SkyTextInput {
+                    id: authFactorTokenField
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    parentFlick: flick
+                    svgIcon: SvgOutline.confirmationCode
+                    placeholderText: qsTr("Confirmation code")
+                    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
+                    maximumLength: 253
+                    visible: authFactorTokenRequired()
+                }
+
+                AccessibleText {
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    Layout.fillWidth: true
+                    color: guiSettings.textColor
+                    wrapMode: Text.Wrap
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: qsTr("Check your email for a login code and enter it here.")
+                    visible: authFactorTokenRequired()
+                }
+
+                AccessibleLabel {
+                    id: msgLabel
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    Layout.fillWidth: true
+                    color: guiSettings.errorColor
+                    wrapMode: Text.Wrap
+                    text: "⚠️ " + errorMsg
+                    visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
+
+                    Accessible.role: Accessible.AlertMessage
+                    Accessible.name: text
+                    Accessible.description: Accessible.name
                 }
             }
 
-            AccessibleCheckBox {
-                id: rememberPasswordSwitch
-                text: qsTr("Remember password")
-                checked: !isNewAccount() && userSettings.getRememberPassword(did)
-                onCheckedChanged: {
-                    if (!isNewAccount())
-                        userSettings.setRememberPassword(did, checked)
+            AccessibleText {
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.top: loginForm.bottom
+                anchors.topMargin: 10
+                textFormat: Text.RichText
+                text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Advanced settings</a>`)
+                onLinkActivated: editAdvancedSettings()
+            }
+
+            SkyButton {
+                id: okButton
+                anchors.top: loginForm.bottom
+                anchors.right: loginForm.right
+                height: 40
+                text: qsTr("OK")
+                enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
+                onClicked: {
+                    const handle = autoCompleteHandle(userField.text, hostField.editText)
+                    loginPage.accepted(false,
+                                       hostField.editText,
+                                       handle, passwordField.text,
+                                       loginPage.did,
+                                       rememberPasswordSwitch.checked,
+                                       authFactorTokenField.text,
+                                       loginPage.setAdvancedSettings,
+                                       loginPage.serviceAppView,
+                                       loginPage.serviceChat,
+                                       loginPage.serviceVideoHost,
+                                       loginPage.serviceVideoDid)
+                }
+            }
+        }
+
+        Flickable {
+            id: oauthFlick
+            contentHeight: oauthOkButton.y + oauthOkButton.height
+            flickableDirection: Flickable.VerticalFlick
+            boundsBehavior: Flickable.StopAtBounds
+
+            ColumnLayout {
+                id: oauthLoginForm
+                width: parent.width
+                Accessible.role: Accessible.Pane
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    rightPadding: 10
+                    text: qsTr("Login via the web site of your provider")
+                }
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    font.bold: true
+                    text: qsTr("Hosting provider")
+                }
+
+                HostingComboBox {
+                    id: oauthHostField
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    host: loginPage.host
+                }
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    topPadding: 10
+                    leftPadding: 10
+                    font.bold: true
+                    color: guiSettings.textColor
+                    text: qsTr("Account")
+                }
+
+                SkyTextInput {
+                    id: oauthUserField
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    parentFlick: oauthFlick
+                    enabled: isNewAccount()
+                    svgIcon: SvgOutline.atSign
+                    initialText: user
+                    placeholderText: qsTr("User name")
+                    inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
+                    maximumLength: 253
+                    validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
+                }
+
+                AccessibleLabel {
+                    id: oauthMsgLabel
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    Layout.fillWidth: true
+                    color: guiSettings.errorColor
+                    wrapMode: Text.Wrap
+                    text: "⚠️ " + errorMsg
+                    visible: errorMsg
+
+                    Accessible.role: Accessible.AlertMessage
+                    Accessible.name: text
+                    Accessible.description: Accessible.name
                 }
             }
 
             AccessibleText {
-                Layout.fillWidth: true
-                topPadding: 10
-                leftPadding: 10
-                font.bold: true
-                color: guiSettings.textColor
-                text: qsTr("2FA Confirmation")
-                visible: authFactorTokenRequired()
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                anchors.top: oauthLoginForm.bottom
+                anchors.topMargin: 10
+                textFormat: Text.RichText
+                text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Advanced settings</a>`)
+                onLinkActivated: editAdvancedSettings()
             }
 
-            SkyTextInput {
-                id: authFactorTokenField
-                Layout.fillWidth: true
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                parentFlick: flick
-                svgIcon: SvgOutline.confirmationCode
-                placeholderText: qsTr("Confirmation code")
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
-                maximumLength: 253
-                visible: authFactorTokenRequired()
-            }
-
-            AccessibleText {
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                Layout.fillWidth: true
-                color: guiSettings.textColor
-                wrapMode: Text.Wrap
-                font.pointSize: guiSettings.scaledFont(7/8)
-                text: qsTr("Check your email for a login code and enter it here.")
-                visible: authFactorTokenRequired()
-            }
-
-            AccessibleLabel {
-                id: msgLabel
-                Layout.leftMargin: 10
-                Layout.rightMargin: 10
-                Layout.fillWidth: true
-                color: guiSettings.errorColor
-                wrapMode: Text.Wrap
-                text: "⚠️ " + errorMsg
-                visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
-
-                Accessible.role: Accessible.AlertMessage
-                Accessible.name: text
-                Accessible.description: Accessible.name
-            }
-        }
-
-        AccessibleText {
-            anchors.left: parent.left
-            anchors.leftMargin: 10
-            anchors.top: loginForm.bottom
-            anchors.topMargin: 10
-            textFormat: Text.RichText
-            text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">Advanced settings</a>`)
-            onLinkActivated: editAdvancedSettings()
-        }
-
-        SkyButton {
-            id: okButton
-            anchors.top: loginForm.bottom
-            anchors.right: parent.right
-            height: 40
-            text: qsTr("OK")
-            enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
-            onClicked: {
-                const handle = autoCompleteHandle(userField.text, hostField.editText)
-                loginPage.accepted(hostField.editText,
-                                   handle, passwordField.text,
-                                   loginPage.did,
-                                   rememberPasswordSwitch.checked,
-                                   authFactorTokenField.text,
-                                   loginPage.setAdvancedSettings,
-                                   loginPage.serviceAppView,
-                                   loginPage.serviceChat,
-                                   loginPage.serviceVideoHost,
-                                   loginPage.serviceVideoDid)
+            SkyButton {
+                id: oauthOkButton
+                anchors.top: oauthLoginForm.bottom
+                anchors.right: oauthLoginForm.right
+                height: 40
+                text: qsTr("OK")
+                enabled: oauthHostField.editText && oauthUserField.text
+                onClicked: {
+                    skywalker.showStatusMessage(qsTr("Redirecting to login page"), QEnums.STATUS_LEVEL_INFO)
+                    const handle = autoCompleteHandle(oauthUserField.text, oauthHostField.editText)
+                    loginPage.accepted(true,
+                                       oauthHostField.editText,
+                                       handle, "",
+                                       loginPage.did,
+                                       false,
+                                       "",
+                                       loginPage.setAdvancedSettings,
+                                       loginPage.serviceAppView,
+                                       loginPage.serviceChat,
+                                       loginPage.serviceVideoHost,
+                                       loginPage.serviceVideoDid)
+                }
             }
         }
     }
@@ -292,15 +428,20 @@ SkyPage {
 
     Component.onCompleted: {
         hostField.init()
+        oauthHostField.init()
 
-        if (authFactorTokenRequired())
-            authFactorTokenField.setFocus()
-        else if (isNewAccount())
-            userField.setFocus()
-        else
-            passwordField.setFocus()
+        if (useOAuth) {
+            authBar.setCurrentIndex(1)
+        } else {
+            if (authFactorTokenRequired())
+                authFactorTokenField.setFocus()
+            else if (isNewAccount())
+                userField.setFocus()
+            else
+                passwordField.setFocus()
 
-        if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
-            skywalker.showStatusMessage(errorMsg, QEnums.STATUS_LEVEL_ERROR)
+            if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
+                skywalker.showStatusMessage(errorMsg, QEnums.STATUS_LEVEL_ERROR)
+        }
     }
 }

@@ -339,7 +339,7 @@ Rectangle {
             text: qsTr("Share")
             svg: SvgOutline.share
             popup: moreMenu
-            onClicked: skywalker.shareList(list)
+            onClicked: skywalker.getShareUtils().shareList(list)
         }
 
         SkyMenuButton {

@@ -527,7 +527,7 @@ Rectangle {
                         root.bookmarkByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri)
                 }
 
-                onShare: skywalker.sharePost(postUri)
+                onShare: skywalker.getShareUtils().sharePost(postUri)
 
                 onViewThread: {
                     if (!postIsPlaceHolder && postUri)
@@ -549,7 +549,7 @@ Rectangle {
                 onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                 onEditPost: root.composePostEdit(videoPage.ListView.view.model, videoPage.index)
                 onDeletePost: confirmDelete()
-                onCopyPostText: skywalker.copyPostTextToClipboard(postPlainText)
+                onCopyPostText: skywalker.getShareUtils().copyPostTextToClipboard(postPlainText)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)
                 onTranslatePost: root.translateText(postPlainText)
                 onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)

@@ -472,7 +472,7 @@ private:
         {
             auto postTime = startTime - (i-1) * 1s;
             QString postData = QString(POST_TEMPLATE).arg(QString::number(mNextPostId++),
-                                                          postTime.toString(Qt::ISODateWithMs));
+                                                          postTime.toUTC().toString(Qt::ISODateWithMs));
             feedData += postData;
 
             if (i < numPosts)

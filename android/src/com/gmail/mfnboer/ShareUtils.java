@@ -18,19 +18,29 @@ import androidx.core.content.FileProvider;
 public class ShareUtils {
     private static final String LOGTAG = "ShareUtils";
 
-    public static void shareLink(String uriString, String subject) {
+    private static Uri parseUriString(String uriString) {
         Uri uri;
+
         try {
             uri = Uri.parse(uriString);
         } catch (Exception e) {
             Log.d(LOGTAG, "invalid uri");
-            return;
+            return null;
         }
 
         if (uri == null) {
             Log.d(LOGTAG, "invalid uri");
-            return;
+            return null;
         }
+
+        return uri;
+    }
+
+    public static void shareLink(String uriString, String subject) {
+        Uri uri = parseUriString(uriString);
+
+        if (uri == null)
+            return;
 
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);

@@ -16,6 +16,8 @@ class ImageUtils : public QObject
     QML_ELEMENT
 
 public:
+    static QImage scaledToSize(const QImage& img, int size);
+
     explicit ImageUtils(QObject* parent = nullptr);
 
     bool isInstalling() const { return mInstalling; }

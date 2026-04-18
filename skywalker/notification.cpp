@@ -227,7 +227,7 @@ QDateTime Notification::getTimestamp() const
         return mDirectMessage.getSentAt();
 
     if (!mLabelerWithNewLabels.isNull())
-        return QDateTime::currentDateTime();
+        return QDateTime::currentDateTimeUtc();
 
     return {};
 }

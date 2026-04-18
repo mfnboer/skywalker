@@ -24,6 +24,8 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import android.util.Log;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 // For EdgeToEdge
 import androidx.core.view.WindowCompat;
 
@@ -95,7 +97,7 @@ public class SkywalkerActivity extends QtActivity {
         if (intent == null)
             return;
 
-        Log.d(LOGTAG, "Intent action: " + intent.getAction() + ", type: " + intent.getType());
+        Log.d(LOGTAG, "Intent action: " + intent.getAction() + ", type: " + intent.getType() + ", ready: " + mIsReady);
         setIntent(intent);
 
         if (mIsReady)
@@ -151,17 +153,14 @@ public class SkywalkerActivity extends QtActivity {
     private void handleActionShowLink(Intent intent) {
         Log.d(LOGTAG, "Handle SHOW_LINK");
 
-        Uri data = intent.getData();
-        if (data == null) {
-            Log.d(LOGTAG, "Empty data received");
+        Uri uri = intent.getData();
+        if (uri == null) {
+            Log.d(LOGTAG, "Empty uri received");
             return;
         }
-        // Android helpfully strips off the beginning of the link. Since the QML link code
-        // expects the prefix, we just stick it back on here before sending it along.
-        String path = "https://bsky.app" + data.getPath();
-        Log.d(LOGTAG, "Handling the link: " + path);
 
-        emitShowLink(path);
+        Log.d(LOGTAG, "Link: " + uri);
+        emitShowLink(uri.toString());
     }
 
     private String getMimeType(Intent intent) {
@@ -308,5 +307,14 @@ public class SkywalkerActivity extends QtActivity {
 
     public void startContentChooser(Intent intent, String title) {
         startActivity(Intent.createChooser(intent, title));
+    }
+
+    public void openLinkInApp(String uriString)
+    {
+        Log.d(LOGTAG, "Open in-app: " + uriString);
+        Uri uri = Uri.parse(uriString);
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        CustomTabsIntent customTabsIntent = builder.build();
+        customTabsIntent.launchUrl(this, uri);
     }
 }

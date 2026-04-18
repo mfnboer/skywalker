@@ -5,6 +5,7 @@
 #include "definitions.h"
 #include "file_utils.h"
 #include "font_downloader.h"
+#include "oauth_controller.h"
 #include "unicode_fonts.h"
 #include <atproto/lib/at_uri.h>
 #include <atproto/lib/client.h>
@@ -184,7 +185,7 @@ QJsonObject UserSettings::toJson() const
             const QDateTime dateTime = value.toDateTime();
 
             if (dateTime.isValid())
-                json[key] = valueToJson(VALUE_TYPE_DATE_TIME, dateTime.toString(Qt::ISODateWithMs));
+                json[key] = valueToJson(VALUE_TYPE_DATE_TIME, dateTime.toUTC().toString(Qt::ISODateWithMs));
             else
                 json[key] = valueToJson(VALUE_TYPE_NULL, QString(""));
         }
@@ -449,6 +450,7 @@ void UserSettings::removeUser(const QString& did)
     clearCredentials(did);
 
     const auto activeUser = getActiveUserDid();
+
     if (did == activeUser)
         setActiveUserDid({});
 }
@@ -499,6 +501,51 @@ QString UserSettings::getPassword(const QString& did) const
         return {};
 
     return mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD);
+}
+
+void UserSettings::setOAuthEnabled(const QString& did, bool enable)
+{
+    mSettings.setValue(key(did, "oauthEnabled"), enable);
+
+    if (enable)
+    {
+        setRememberPassword(did, false);
+    }
+    else
+    {
+#if defined(Q_OS_ANDROID)
+        removeOAuthDpopKeyAlias(did);
+#else
+        const QString path = OAuthController::getKeyStorageFilename(did);
+        ATProto::JsonWebKey::deleteKey(path);
+#endif
+    }
+}
+
+bool UserSettings::getOAuthEnabled(const QString& did) const
+{
+    return mSettings.value(key(did, "oauthEnabled"), false).toBool();
+}
+
+void UserSettings::setOAuthDpopKeyAlias(const QString& did, const QString& alias)
+{
+    mSettings.setValue(key(did, "oauthDpopKeyAlias"), alias);
+}
+
+QString UserSettings::getOAuthDpopKeyAlias(const QString& did) const
+{
+    return mSettings.value(key(did, "oauthDpopKeyAlias")).toString();
+}
+
+void UserSettings::removeOAuthDpopKeyAlias(const QString& did)
+{
+    const QString alias = getOAuthDpopKeyAlias(did);
+
+    if (!alias.isEmpty())
+    {
+        ATProto::JsonWebKey::deleteKey(alias);
+        mSettings.remove(key(did, "oauthDpopKeyAlias"));
+    }
 }
 
 QString UserSettings::getHandle(const QString& did) const
@@ -625,7 +672,7 @@ void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session
     mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
     mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
-    qDebug() << "Session saved:" << session.mHandle;
+    qDebug() << "Session saved:" << session.mHandle << "access:" << session.mAccessJwt << "refresh:" << session.mRefreshJwt;
 }
 
 ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) const
@@ -661,7 +708,7 @@ std::optional<ATProto::ComATProtoServer::Session> UserSettings::getSavedSession(
 
 void UserSettings::saveTokens(const QString& did, const QString& accessJwt, const QString& refreshJwt)
 {
-    qDebug() << "Set tokens:" << did;
+    qDebug() << "Set tokens:" << did << "access:" << accessJwt << "refresh:" << refreshJwt;
     mSettings.setValue(key(did, "access"), accessJwt);
     mSettings.setValue(key(did, "refresh"), refreshJwt);
     sync();
@@ -681,6 +728,12 @@ void UserSettings::clearCredentials(const QString& did)
     setRememberPassword(did, false);
     mSettings.remove(key(did, "password"));
     clearTokens(did);
+
+#ifdef Q_OS_ANDROID
+    removeOAuthDpopKeyAlias(did);
+#else
+    ATProto::JsonWebKey::deleteKey(OAuthController::getKeyStorageFilename(did));
+#endif
 }
 
 void UserSettings::saveSyncTimestamp(const QString& did, QDateTime timestamp)
