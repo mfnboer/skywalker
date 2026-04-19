@@ -334,7 +334,7 @@ SkyPage {
                 text: qsTr("OK")
                 enabled: oauthHostField.editText && oauthUserField.text
                 onClicked: {
-                    skywalker.showStatusMessage(qsTr("Redirecting to login page"), QEnums.STATUS_LEVEL_INFO)
+                    skywalker.showStatusMessage(qsTr("Redirecting to login page"), QEnums.STATUS_LEVEL_INFO, 5)
                     const handle = autoCompleteHandle(oauthUserField.text, oauthHostField.editText)
                     loginPage.accepted(true,
                                        oauthHostField.editText,
