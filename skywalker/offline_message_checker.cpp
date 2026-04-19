@@ -356,10 +356,16 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
     }
 
     mUserDid = session->mDid;
+    const auto pdsDpopNonce = mUserSettings.getPdsDpopNonce(did);
 
     // Need a longer network transfer timeout for an Android background process.
-    auto xrpc = std::make_unique<Xrpc::Client>("", 30000);
+    auto xrpc = std::make_unique<Xrpc::Client>("", 30000, pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
+    connect(xrpc.get(), &Xrpc::Client::pdsDpopNonceChanged, this,
+        [this, did](const QString nonce){ mUserSettings.setPdsDpopNonce(did, std::move(nonce)); });
+    connect(xrpc.get(), &Xrpc::Client::authDpopNonceChanged, this,
+        [this, did](const QString nonce){ mUserSettings.setAuthDpopNonce(did, std::move(nonce)); });
+
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
     mBsky->setServiceAppView(mUserSettings.getServiceAppView(did));
     mBsky->setServiceChat(mUserSettings.getServiceChat(did));
@@ -376,6 +382,8 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
         exit(EXIT_FAILED);
         return;
 #endif
+        const auto authDpopNonce = mUserSettings.getAuthDpopNonce(did);
+
         mBsky->oauthResumeSession(OAuthController::CLIENT_ID, *session,
             [this] {
                 qDebug() << "Session resumed";
@@ -403,7 +411,8 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
                     mUserSettings.saveTokens(did, accessToken, refreshToken);
                     exit(EXIT_RETRY);
                 }
-            });
+            },
+            authDpopNonce);
     }
     else
     {

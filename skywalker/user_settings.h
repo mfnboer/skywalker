@@ -147,6 +147,12 @@ public:
     QString getOAuthDpopKeyAlias(const QString& did) const;
     void removeOAuthDpopKeyAlias(const QString& did);
 
+    void setPdsDpopNonce(const QString& did, const QString& nonce);
+    QString getPdsDpopNonce(const QString& did) const;
+
+    void setAuthDpopNonce(const QString& did, const QString& nonce);
+    QString getAuthDpopNonce(const QString& did) const;
+
     QString getHandle(const QString& did) const;
 
     void saveDisplayName(const QString& did, const QString& displayName);

@@ -46,7 +46,6 @@ public:
     static void setDraftPost(DraftPostData* data, const Post& post);
 
     explicit DraftPosts(QObject* parent = nullptr);
-    ~DraftPosts();
 
     bool hasDrafts() const;
 

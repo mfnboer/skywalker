@@ -548,6 +548,27 @@ void UserSettings::removeOAuthDpopKeyAlias(const QString& did)
     }
 }
 
+void UserSettings::setPdsDpopNonce(const QString& did, const QString& nonce)
+{
+    qDebug() << "nonce:" << nonce;
+    mSettings.setValue(key(did, "pdsDpopNonce"), nonce);
+}
+
+QString UserSettings::getPdsDpopNonce(const QString& did) const
+{
+    return mSettings.value(key(did, "pdsDpopNonce")).toString();
+}
+
+void UserSettings::setAuthDpopNonce(const QString& did, const QString& nonce)
+{
+    mSettings.setValue(key(did, "authDpopNonce"), nonce);
+}
+
+QString UserSettings::getAuthDpopNonce(const QString& did) const
+{
+    return mSettings.value(key(did, "authDpopNonce")).toString();
+}
+
 QString UserSettings::getHandle(const QString& did) const
 {
     return mSettings.value(key(did, "handle")).toString();

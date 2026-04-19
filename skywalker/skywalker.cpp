@@ -358,6 +358,11 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
             const QString path = OAuthController::getKeyStorageFilename(did);
             mBsky->oauthSaveDpopKey(path, OAuthController::getTestPassPhrase());
 #endif
+            connect(mBsky->getXrpcClient(), &Xrpc::Client::pdsDpopNonceChanged, this,
+                [this, did](const QString nonce){ mUserSettings.setPdsDpopNonce(did, std::move(nonce)); });
+            connect(mBsky->getXrpcClient(), &Xrpc::Client::authDpopNonceChanged, this,
+                [this, did](const QString nonce){ mUserSettings.setAuthDpopNonce(did, std::move(nonce)); });
+
             emit loginOk();
 
             mSessionManager.insertSession(did, mBsky.get());
@@ -442,8 +447,14 @@ bool Skywalker::resumeAndRefreshSession()
 
     qDebug() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
-    auto xrpc = std::make_unique<Xrpc::Client>();
+    const auto pdsDpopNonce = mUserSettings.getPdsDpopNonce(session->mDid);
+    auto xrpc = std::make_unique<Xrpc::Client>("", Xrpc::Client::DEFAULT_TIMEOUT_MS, pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
+    connect(xrpc.get(), &Xrpc::Client::pdsDpopNonceChanged, this,
+        [this, did=session->mDid](const QString nonce){ mUserSettings.setPdsDpopNonce(did, std::move(nonce)); });
+    connect(xrpc.get(), &Xrpc::Client::authDpopNonceChanged, this,
+        [this, did=session->mDid](const QString nonce){ mUserSettings.setAuthDpopNonce(did, std::move(nonce)); });
+
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
     mBsky->setServiceAppView(mUserSettings.getServiceAppView(session->mDid));
     mBsky->setServiceChat(mUserSettings.getServiceChat(session->mDid));

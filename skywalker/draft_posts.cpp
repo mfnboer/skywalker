@@ -2,7 +2,6 @@
 // License: GPLv3
 #include "draft_posts.h"
 #include "draft_posts_model.h"
-#include "atproto_image_provider.h"
 #include "content_filter.h"
 #include "file_utils.h"
 #include "gif_utils.h"
@@ -33,12 +32,6 @@ DraftPosts::DraftPosts(QObject* parent) :
     WrappedSkywalker(parent),
     Presence()
 {
-}
-
-DraftPosts::~DraftPosts()
-{
-    auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
-    imgProvider->clear();
 }
 
 void DraftPosts::setStorageType(StorageType storageType)

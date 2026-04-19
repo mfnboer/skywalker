@@ -86,9 +86,14 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     }
 
     qDebug() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
+    const auto pdsDpopNonce = mUserSettings->getPdsDpopNonce(did);
 
-    auto xrpc = std::make_unique<Xrpc::Client>();
+    auto xrpc = std::make_unique<Xrpc::Client>("", Xrpc::Client::DEFAULT_TIMEOUT_MS, pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
+    connect(xrpc.get(), &Xrpc::Client::pdsDpopNonceChanged, this,
+        [this, did](const QString nonce){ mUserSettings->setPdsDpopNonce(did, std::move(nonce)); });
+    connect(xrpc.get(), &Xrpc::Client::authDpopNonceChanged, this,
+        [this, did](const QString nonce){ mUserSettings->setAuthDpopNonce(did, std::move(nonce)); });
 
     auto rawBsky = std::make_unique<ATProto::Client>(std::move(xrpc), this);
     rawBsky->setServiceAppView(mUserSettings->getServiceAppView(did));
@@ -119,6 +124,8 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
         const QString path = OAuthController::getKeyStorageFilename(did);
         client->oauthLoadDpopKey(path, OAuthController::getTestPassPhrase());
 #endif
+        const auto authDpopNonce = mUserSettings->getAuthDpopNonce(did);
+
         client->oauthResumeSession(OAuthController::CLIENT_ID, session,
             [this, did, refreshDelayCount, successCb, errorCb]{
                 resumeAndRefreshSessionSuccess(did, refreshDelayCount, successCb, errorCb);
@@ -135,7 +142,8 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
 
                 if (errorCb)
                     errorCb(error, msg);
-            });
+            },
+            authDpopNonce);
     }
     else
     {
@@ -239,6 +247,10 @@ void SessionManager::updateTokens()
             session->mBsky->updateSessionTokens(savedSession.mAccessJwt, savedSession.mRefreshJwt);
         else
             qWarning() << "No tokens:" << did;
+
+        const QString pdsNonce = mUserSettings->getPdsDpopNonce(did);
+        const QString authNonce = mUserSettings->getAuthDpopNonce(did);
+        session->mBsky->setDpopNonces(pdsNonce, authNonce);
     }
 }
 

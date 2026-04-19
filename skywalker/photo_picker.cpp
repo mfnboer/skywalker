@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "photo_picker.h"
-#include "atproto_image_provider.h"
 #include "file_utils.h"
 #include "image_utils.h"
 #include "shared_image_provider.h"
@@ -119,12 +118,6 @@ QImage loadImage(const QString& imgName)
     else if (imgName.startsWith(QString("image://") + SharedImageProvider::SHARED_IMAGE))
     {
         auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
-        auto img = imgProvider->getImage(imgName);
-        return img;
-    }
-    else if (imgName.startsWith(QString("image://") + ATProtoImageProvider::DRAFT_IMAGE))
-    {
-        auto* imgProvider = ATProtoImageProvider::getProvider(ATProtoImageProvider::DRAFT_IMAGE);
         auto img = imgProvider->getImage(imgName);
         return img;
     }
