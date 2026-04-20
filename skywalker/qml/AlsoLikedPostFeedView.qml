@@ -61,6 +61,20 @@ SkyListView {
         }
     }
 
+    onMovementEnded: {
+        const firstVisibleIndex = getFirstVisibleIndex()
+        const lastVisibleIndex = getLastVisibleIndex()
+        const remaining = count - lastVisibleIndex
+
+        if (remaining < 10 && !model.getFeedInProgress)
+            skywalker.getAlsoLikedFeedNextPage(modelId)
+    }
+
+    onErrorChanged: {
+        if (error)
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
     FlickableRefresher {
         inProgress: model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
