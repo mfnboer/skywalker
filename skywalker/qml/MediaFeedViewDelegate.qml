@@ -456,6 +456,7 @@ Rectangle {
                 record: postRecord
                 recordWithMedia: postRecordWithMedia
                 feedAcceptsInteractions: videoPage.feedAcceptsInteractions
+                indexedSecondsAgo: postIndexedSecondsAgo
 
                 onReply: {
                     const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
@@ -559,6 +560,7 @@ Rectangle {
                 onShowEmojiNames: root.showEmojiNamesList(postPlainText)
                 onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
                 onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                onViewAlsoLiked: root.viewAlsoLikedPostFeed(postUri, userDid)
             }
         }
 

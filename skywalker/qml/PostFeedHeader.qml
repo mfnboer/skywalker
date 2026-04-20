@@ -9,6 +9,7 @@ Rectangle {
     property UserSettings userSettings: skywalker.getUserSettings()
     property bool reverseFeed: false
     required property string feedName
+    property string subTitle
     property SvgImage defaultSvg: SvgFilled.feed
     property string feedAvatar
     property int contentMode: QEnums.CONTENT_MODE_UNSPECIFIED
@@ -110,40 +111,54 @@ Rectangle {
             Accessible.name: header.feedName
             Accessible.onPressAction: clicked(Qt.point(0, 0))
         }
-        SkyCleanedTextLine {
-            id: headerTexts
-            Layout.fillWidth: true //!showAsHome
+
+        Column {
+            Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
-            leftPadding: header.feedAvatar ? 0 : 10
-            rightPadding: showAsHome ? expandFeedsButton.width : 0
-            elide: Text.ElideRight
-            font.bold: true
-            font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.headerTextColor
-            plainText: header.feedName
 
-            Accessible.role: Accessible.ButtonDropDown
-            Accessible.name: qsTr(`${header.feedName}, press to select other feed`)
-            Accessible.description: Accessible.name
-            Accessible.onPressAction: expandFeeds()
+            SkyCleanedTextLine {
+                id: headerTexts
+                width: parent.width
+                leftPadding: header.feedAvatar ? 0 : 10
+                rightPadding: showAsHome ? expandFeedsButton.width : 0
+                elide: Text.ElideRight
+                font.bold: true
+                font.pointSize: subTitle ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
+                color: guiSettings.headerTextColor
+                plainText: header.feedName
 
-            ExpandFeedsButton {
-                id: expandFeedsButton
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                skywalker: header.skywalker
-                Layout.alignment: Qt.AlignLeft
-                visible: showAsHome
+                Accessible.role: Accessible.ButtonDropDown
+                Accessible.name: qsTr(`${header.feedName}, press to select other feed`)
+                Accessible.description: Accessible.name
+                Accessible.onPressAction: expandFeeds()
+
+                ExpandFeedsButton {
+                    id: expandFeedsButton
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    skywalker: header.skywalker
+                    Layout.alignment: Qt.AlignLeft
+                    visible: showAsHome
+                }
+
+                SkyMouseArea {
+                    anchors.fill: parent
+                    onClicked: parent.expandFeeds()
+                }
+
+                function expandFeeds() {
+                    if (expandFeedsButton.visible)
+                        expandFeedsButton.clicked() // qmllint disable missing-property
+                }
             }
 
-            SkyMouseArea {
-                anchors.fill: parent
-                onClicked: parent.expandFeeds()
-            }
-
-            function expandFeeds() {
-                if (expandFeedsButton.visible)
-                    expandFeedsButton.clicked() // qmllint disable missing-property
+            AccessibleText {
+                width: parent.width
+                color: guiSettings.handleColor
+                font.pointSize: guiSettings.scaledFont(7/8)
+                elide: Text.ElideRight
+                text: subTitle
+                visible: subTitle
             }
         }
 

@@ -2,6 +2,7 @@ next
 ====
 * OAuth support
 * Show session status on accounts page
+* Also liked feed (powered by For You)
 * Increase max image size to 2MB and 4000x4000 pixels
 * Bug fixes
 

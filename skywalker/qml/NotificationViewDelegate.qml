@@ -379,6 +379,7 @@ Rectangle {
                         isQuotePost: Boolean(notificationPostRecord) || Boolean(notificationPostRecordWithMedia)
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
+                        indexedSecondsAgo: notificationSecondsAgo
 
                         function replyToNotification(postByDid = "") {
                             const lang = notificationPostLanguages.length > 0 ?
@@ -484,6 +485,7 @@ Rectangle {
                         onUnpin: root.unpinPost(notificationCid, owner.did)
                         onBlockAuthor: root.blockAuthor(notificationPostAuthor, owner.did)
                         onShowEmojiNames: root.showEmojiNamesList(notificationPostPlainText)
+                        onViewAlsoLiked: root.viewAlsoLikedPostFeed(notificationPostUri, owner.did)
                     }
                 }
             }

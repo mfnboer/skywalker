@@ -2156,6 +2156,16 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
+    function viewAlsoLikedPostFeed(postUri, viewByDid = "") {
+        const sw = getSkywalker(viewByDid)
+        const modelId = sw.createAlsoLikedPostFeedModel(postUri)
+        sw.getAlsoLikedFeed(modelId)
+        let component = guiSettings.createComponent("AlsoLikedPostFeedView.qml")
+        let view = component.createObject(root, { userDid: viewByDid, modelId: modelId })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        root.pushStack(view)
+    }
+
     function viewListByUri(listUri, viewPosts, viewByDid = "") {
         const gu = getGraphUtils(viewByDid)
         gu.getListView(listUri, viewPosts)

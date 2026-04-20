@@ -684,6 +684,10 @@ qt_add_qml_module(libskywalker
         SOURCES oauth_controller.cpp
         SOURCES share_utils.h
         SOURCES share_utils.cpp
+        SOURCES for_you.h
+        SOURCES for_you.cpp
+        QML_FILES qml/AlsoLikedPostFeedView.qml
+        QML_FILES qml/AlsoLikedLink.qml
 )
 
 target_link_libraries(libskywalker

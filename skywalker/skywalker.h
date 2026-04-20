@@ -41,6 +41,7 @@ namespace Skywalker {
 class Chat;
 class OAuthController;
 class FocusHashtags;
+class ForYou;
 class ShareUtils;
 
 class Skywalker : public IFeedPager
@@ -135,6 +136,8 @@ public:
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
     Q_INVOKABLE void getQuoteChain(int modelId);
     Q_INVOKABLE void getQuoteChainNextPage(int modelId);
+    Q_INVOKABLE void getAlsoLikedFeed(int modelId, const QString& cursor = {});
+    Q_INVOKABLE void getAlsoLikedFeedNextPage(int modelId);
     Q_INVOKABLE void getPostThread(const QString& uri, QEnums::PostThreadType postThreadType = QEnums::POST_THREAD_NORMAL);
     Q_INVOKABLE void addPostThread(const QString& uri, int modelId, int maxPages = 20);
     Q_INVOKABLE void addOlderPostThread(int modelId);
@@ -184,6 +187,7 @@ public:
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri);
     Q_INVOKABLE int createQuoteChainPostFeedModel(const QString& quoteUri);
+    Q_INVOKABLE int createAlsoLikedPostFeedModel(const QString& postUri);
     Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
@@ -406,6 +410,7 @@ private:
     void updateGlobalFeedOrder();
     void handleShowLink(const QString& url);
     ATProto::PostMaster* postMaster();
+    ForYou* getForYou();
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
@@ -414,6 +419,7 @@ private:
     ATProto::Client::SharedPtr mBsky;
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
+    std::unique_ptr<ForYou> mForYou;
 
     QString mUserDid;
     Profile mUserProfile;

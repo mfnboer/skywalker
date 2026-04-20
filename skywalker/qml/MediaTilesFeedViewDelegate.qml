@@ -266,6 +266,7 @@ Item {
                 feedbackTransient: postFeedbackTransient
                 isThread: postIsThread || postIsThreadReply
                 isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
+                indexedSecondsAgo: postIndexedSecondsAgo
                 showViewThread: true
                 record: postRecord
                 recordWithMedia: postRecordWithMedia

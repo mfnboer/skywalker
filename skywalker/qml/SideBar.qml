@@ -275,6 +275,11 @@ Pane {
                 sourceComponent: FeedAvatar {
                     avatarUrl: visible ? rootItem.sideBarFeedAvatarUrl : ""
                     visible: typeof rootItem?.sideBarFeedAvatarUrl == 'string'
+
+                    onClicked: {
+                        if (typeof rootItem.sideBarFeedUri == 'string')
+                            skywalker.getFeedGenerator(rootItem.sideBarFeedUri)
+                    }
                 }
             }
 

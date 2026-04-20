@@ -24,6 +24,7 @@ Item {
     required property bool bookmarkTransient
     required property bool isThread
     required property bool isQuotePost
+    required property double indexedSecondsAgo
     property UserSettings userSettings: skywalker.getUserSettings()
     property int feedback: QEnums.FEEDBACK_NONE
     property int feedbackTransient: QEnums.FEEDBACK_NONE
@@ -63,6 +64,7 @@ Item {
     signal showEmojiNames()
     signal showMoreLikeThis()
     signal showLessLikeThis()
+    signal viewAlsoLiked()
 
     id: postStats
     height: replyIcon.height + topPadding + (showMoreIconLoader.item ? showMoreIconLoader.item.height + topPadding : 0)
@@ -188,6 +190,13 @@ Item {
                     popup: moreMenu
                     visible: feedAcceptsInteractions
                     onClicked: emitShowLessLikeThis()
+                }
+                SkyMenuButton {
+                    text: qsTr("Also liked")
+                    svg: SvgOutline.like
+                    popup: moreMenu
+                    visible: likeCount > 0 && !isReply && indexedSecondsAgo < 30 * 24 * 3600
+                    onClicked: viewAlsoLiked()
                 }
                 SkyMenuButton {
                     text: qsTr("View thread")

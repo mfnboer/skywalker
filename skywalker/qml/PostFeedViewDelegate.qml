@@ -87,6 +87,7 @@ Rectangle {
     readonly property bool reverseFeed: ListView.view.model.reverseFeed
     readonly property bool isLastPost: reverseFeed ? index === 0 : index === ListView.view.count - 1
     property bool showRecord: true
+    property bool showAlsoLiked: false
     property bool unrollThread: false
     property var postThreadModel // provided when thread is unrolled
     property bool feedAcceptsInteractions: false
@@ -679,35 +680,59 @@ Rectangle {
                     active: ((postThreadType & QEnums.THREAD_ENTRY) && !postEntry.unrollThread) || (postEntry.unrollThread && postEntry.endOfFeed)
                     visible: status == Loader.Ready
 
-                    sourceComponent: Flow {
+                    sourceComponent: RowLayout {
                         width: parent.width
-                        topPadding: 10
-                        bottomPadding: 5
                         spacing: 10
 
-                        StatAuthors {
-                            userDid: postEntry.userDid
-                            atUri: postUri
-                            count: postRepostCount
-                            nameSingular: qsTr("repost")
-                            namePlural: qsTr("reposts")
-                            authorListType: QEnums.AUTHOR_LIST_REPOSTS
-                            authorListHeader: qsTr("Reposted by")
+                        Flow {
+                            Layout.fillWidth: true
+                            topPadding: 10
+                            bottomPadding: 5
+                            spacing: 10
+
+                            StatAuthors {
+                                userDid: postEntry.userDid
+                                atUri: postUri
+                                count: postRepostCount
+                                nameSingular: qsTr("repost")
+                                namePlural: qsTr("reposts")
+                                authorListType: QEnums.AUTHOR_LIST_REPOSTS
+                                authorListHeader: qsTr("Reposted by")
+                            }
+                            StatQuotes {
+                                userDid: postEntry.userDid
+                                atUri: postUri
+                                count: postQuoteCount
+                            }
+                            StatAuthors {
+                                userDid: postEntry.userDid
+                                atUri: postUri
+                                count: postLikeCount
+                                nameSingular: qsTr("like")
+                                namePlural: qsTr("likes")
+                                authorListType: QEnums.AUTHOR_LIST_LIKES
+                                authorListHeader: qsTr("Liked by")
+                            }
                         }
-                        StatQuotes {
+
+                        AlsoLikedLink {
+                            Layout.alignment: Qt.AlignBottom
                             userDid: postEntry.userDid
-                            atUri: postUri
-                            count: postQuoteCount
+                            postUri: postEntry.postUri
+                            visible: alsoLikedAvailable()
                         }
-                        StatAuthors {
-                            userDid: postEntry.userDid
-                            atUri: postUri
-                            count: postLikeCount
-                            nameSingular: qsTr("like")
-                            namePlural: qsTr("likes")
-                            authorListType: QEnums.AUTHOR_LIST_LIKES
-                            authorListHeader: qsTr("Liked by")
-                        }
+                    }
+                }
+
+                Loader {
+                    x: contentLeftMargin
+                    width: parent.width - contentLeftMargin - postEntry.margin
+                    active: showAlsoLiked && alsoLikedAvailable()
+
+                    sourceComponent: AlsoLikedLink {
+                        userDid: postEntry.userDid
+                        postUri: postEntry.postUri
+                        horizontalAlignment: Text.AlignRight
                     }
                 }
 
@@ -751,6 +776,7 @@ Rectangle {
                         record: postRecord
                         recordWithMedia: postRecordWithMedia
                         feedAcceptsInteractions: postEntry.feedAcceptsInteractions
+                        indexedSecondsAgo: postIndexedSecondsAgo
 
                         onReply: {
                             const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
@@ -852,6 +878,7 @@ Rectangle {
                         onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                         onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
                         onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
+                        onViewAlsoLiked: root.viewAlsoLikedPostFeed(postUri, userDid)
                     }
                 }
 
@@ -1162,6 +1189,10 @@ Rectangle {
 
     AccessibilityUtils {
         id: accessibilityUtils
+    }
+
+    function alsoLikedAvailable() {
+        return postLikeCount > 0 && !postIsReply && postIndexedSecondsAgo < 30 * 24 * 3600
     }
 
     function confirmDelete() {

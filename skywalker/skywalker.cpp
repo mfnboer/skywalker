@@ -9,6 +9,7 @@
 #include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"
 #include "font_downloader.h"
+#include "for_you.h"
 #include "jni_callback.h"
 #include "list_cache.h"
 #include "oauth_controller.h"
@@ -2024,6 +2025,81 @@ void Skywalker::setQuoteChainInModel(int modelId, std::deque<Post> quoteChain)
     model->addQuoteChain(std::move(quoteChain));
 }
 
+void Skywalker::getAlsoLikedFeed(int modelId, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get also-ilked feed model:" << modelId << "cursor:" << cursor;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const QString& postUri = model->getQuoteUri();
+    model->setGetFeedInProgress(true);
+
+    getForYou()->alsoLiked(postUri, Utils::makeOptionalString(cursor),
+        [this, modelId, cursor](auto feed){
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            model->setGetFeedInProgress(false);
+
+            if (cursor.isEmpty())
+                model->setFeed(std::move(feed));
+            else
+                model->addFeed(std::move(feed));
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qDebug() << "getQuotesFeed FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
+}
+
+void Skywalker::getAlsoLikedFeedNextPage(int modelId)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+    const QString& cursor = model->getLastCursor();
+    if (cursor.isEmpty())
+    {
+        qDebug() << "Last page reached, no more cursor";
+        return;
+    }
+
+    getAlsoLikedFeed(modelId, cursor);
+}
+
 void Skywalker::setAutoUpdateTimelineInProgress(bool inProgress)
 {
     mAutoUpdateTimelineInProgress = inProgress;
@@ -3213,6 +3289,18 @@ int Skywalker::createQuoteChainPostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote chain"), &feedVariant,
+                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
+                                                 mContentFilter, mMutedWords, *mFocusHashtags,
+                                                 mSeenHashtags, mUserPreferences, mUserSettings,
+                                                 mFollowsActivityStore, mBsky, this);
+    const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
+    return id;
+}
+
+int Skywalker::createAlsoLikedPostFeedModel(const QString& postUri)
+{
+    const PostFeedModel::FeedVariant feedVariant{postUri};
+    auto model = std::make_unique<PostFeedModel>(tr("Also liked"), &feedVariant,
                                                  mUserDid, mMutedReposts, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
@@ -4769,6 +4857,17 @@ ATProto::PostMaster* Skywalker::postMaster()
     }
 
     return mPostMaster.get();
+}
+
+ForYou* Skywalker::getForYou()
+{
+    if (!mForYou)
+    {
+        mForYou = std::make_unique<ForYou>(mNetwork);
+        mForYou->setSkywalker(this);
+    }
+
+    return mForYou.get();
 }
 
 void Skywalker::signOut()

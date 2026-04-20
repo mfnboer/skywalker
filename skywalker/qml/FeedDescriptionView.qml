@@ -152,6 +152,12 @@ SkyPage {
                 id: moreMenu
 
                 SkyMenuButton {
+                    text: qsTr("View posts")
+                    svg: SvgOutline.chat
+                    popup: moreMenu
+                    onClicked: root.viewPostFeed(feed, userDid)
+                }
+                SkyMenuButton {
                     text: isSavedFeed ? qsTr("Unsave feed") : qsTr("Save feed")
                     svg: isSavedFeed ? SvgOutline.remove : SvgOutline.add
                     popup: moreMenu
