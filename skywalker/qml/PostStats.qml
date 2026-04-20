@@ -60,6 +60,7 @@ Item {
     signal detachQuote(string uri, bool detach)
     signal pin()
     signal unpin()
+    signal muteAuthor()
     signal blockAuthor()
     signal showEmojiNames()
     signal showMoreLikeThis()
@@ -285,6 +286,13 @@ Item {
                     popup: moreMenu
                     visible: !authorIsUser && !isUnrolledThread
                     onClicked: reportPost()
+                }
+                SkyMenuButton {
+                    text: qsTr("Mute author")
+                    svg: SvgOutline.mute
+                    popup: moreMenu
+                    visible: !authorIsUser
+                    onClicked: muteAuthor()
                 }
                 SkyMenuButton {
                     text: qsTr("Block author")

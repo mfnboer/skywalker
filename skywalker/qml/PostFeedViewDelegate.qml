@@ -874,6 +874,7 @@ Rectangle {
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
                         onPin: root.pinPost(postUri, postCid, userDid)
                         onUnpin: root.unpinPost(postCid, userDid)
+                        onMuteAuthor: root.muteAuthor(author, userDid)
                         onBlockAuthor: root.blockAuthor(author, userDid)
                         onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                         onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)

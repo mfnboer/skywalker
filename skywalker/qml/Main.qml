@@ -1937,6 +1937,12 @@ ApplicationWindow {
         dialog.open()
     }
 
+    function muteAuthor(author, muteByDid = "") {
+        let gu = getGraphUtils(blockByDid)
+        let did = author.did
+        showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt), muteByDid)
+    }
+
     function blockAuthor(author, blockByDid = "") {
         let gu = getGraphUtils(blockByDid)
         let did = author.did

@@ -483,6 +483,7 @@ Rectangle {
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach, owner.did)
                         onPin: root.pinPost(notificationPostUri, notificationCid, owner.did)
                         onUnpin: root.unpinPost(notificationCid, owner.did)
+                        onMuteAuthor: root.muteAuthor(notificationPostAuthor, owner.did)
                         onBlockAuthor: root.blockAuthor(notificationPostAuthor, owner.did)
                         onShowEmojiNames: root.showEmojiNamesList(notificationPostPlainText)
                         onViewAlsoLiked: root.viewAlsoLikedPostFeed(notificationPostUri, owner.did)
