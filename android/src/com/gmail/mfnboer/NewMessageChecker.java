@@ -62,8 +62,7 @@ public class NewMessageChecker extends Worker {
         }
     }
 
-    public static native int checkNewMessages(String settingsFileName, String libDir);
-    public static native void emitStopped();
+    public native int checkNewMessages(String settingsFileName, String libDir);
 
     private Context mContext;
 
@@ -78,7 +77,7 @@ public class NewMessageChecker extends Worker {
     public Result doWork() {
         if (isStopped()) {
             Log.d(LOGTAG, "Worker is stopped");
-            return Result.success();
+            return Result.failure();
         }
 
         Log.d(LOGTAG, "Check for new messages");

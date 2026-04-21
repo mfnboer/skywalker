@@ -46,7 +46,7 @@ public:
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
     explicit OffLineMessageChecker(const QString& settingsFileName, QEventLoop* eventLoop);
 
-    int check();
+    int check(jobject newMessageChecker);
 
 private:
     // Values must be equal to the values in NewMessageNotifier.java
@@ -68,7 +68,8 @@ private:
     void reset();
     int startEventLoop();
     void exit(int exitCode);
-    int check(const QString& did);
+    int check(jobject newMessageChecker, const QString& did);
+    bool isStopped(jobject newMessageChecker);
     void resumeSession(const QString& did, bool retry = false);
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     void refreshSession();

@@ -32,7 +32,7 @@ constexpr int EXIT_NETWORK_FAILURE = -10;
 }
 
 #if defined(Q_OS_ANDROID)
-JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject, jstring jSettingsFileName, jstring jLibDir)
+JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(JNIEnv* env, jobject newMessageChecker, jstring jSettingsFileName, jstring jLibDir)
 {
     static QMutex mutex;
     QMutexLocker locker(&mutex);
@@ -102,7 +102,7 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
         checker = std::make_unique<Skywalker::OffLineMessageChecker>(settingsFileName, eventLoop.get());
     }
 
-    int exitCode = checker->check();
+    int exitCode = checker->check(newMessageChecker);
 
     (*env).ReleaseStringUTFChars(jSettingsFileName, settingsFileName);
     (*env).ReleaseStringUTFChars(jLibDir, libDir);
@@ -218,7 +218,7 @@ void OffLineMessageChecker::exit(int exitCode)
         mEventLoop->exit(exitCode);
 }
 
-int OffLineMessageChecker::check()
+int OffLineMessageChecker::check(jobject newMessageChecker)
 {
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
@@ -227,7 +227,7 @@ int OffLineMessageChecker::check()
     mUserSettings.setOfflineMessageCheckRunning(true);
 
     const QString activeDid = mUserSettings.getActiveUserDid();
-    int exitStatus = check(activeDid);
+    int exitStatus = check(newMessageChecker, activeDid);
 
     // The active user should succeed. If not, then most likely there is
     // a network issue. Do not try other accounts. Wait for task retry.
@@ -245,7 +245,7 @@ int OffLineMessageChecker::check()
         for (const auto& did : dids)
         {
             if (did != activeDid)
-                check(did);
+                check(newMessageChecker, did);
         }
     }
 
@@ -256,7 +256,7 @@ int OffLineMessageChecker::check()
     return EXIT_OK;
 }
 
-int OffLineMessageChecker::check(const QString& did)
+int OffLineMessageChecker::check(jobject newMessageChecker, const QString& did)
 {
     reset();
     int exitStatus = EXIT_OK;
@@ -265,6 +265,12 @@ int OffLineMessageChecker::check(const QString& did)
     // Retry few times.
     for (int i = 0; i < 8; ++i)
     {
+        if (isStopped(newMessageChecker))
+        {
+            qDebug() << "Worker is stopped";
+            return EXIT_FAILED;
+        }
+
         qDebug() << "Attempt:" << i + 1 << did;
         QTimer::singleShot(0, &mPresence, [this, did]{ resumeSession(did); });
         exitStatus = startEventLoop();
@@ -289,6 +295,18 @@ int OffLineMessageChecker::check(const QString& did)
     }
 
     return exitStatus;
+}
+
+bool OffLineMessageChecker::isStopped(jobject newMessageChecker)
+{
+#if defined(Q_OS_ANDROID)
+    QJniObject jNewMessageChecker(newMessageChecker);
+    const auto stopped = jNewMessageChecker.callMethod<jboolean>("isStopped", "()Z");
+    qDebug() << "Checker stopped:" << (bool)stopped;
+    return (bool)stopped;
+#else
+    return false;
+#endif
 }
 
 void OffLineMessageChecker::createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
@@ -1140,7 +1158,7 @@ void OffLineMessageChecker::waitForStop(const StoppedCb& stoppedCb)
     const auto now = QDateTime::currentDateTime();
     const auto period = now - lastCheck;
 
-    if (period > 30s)
+    if (period > 10s)
     {
         qWarning() << "Last message check:" << lastCheck << "assume check was killed";
         sUserSettings->setOfflineMessageCheckRunning(false);
