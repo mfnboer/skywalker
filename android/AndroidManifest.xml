@@ -71,7 +71,7 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="nl.xs4all.home.mfnboer" android:path="/oauth/callback"/>
+                <data android:scheme="eu.thereforeiam" android:path="/skywalker/oauth/callback"/>
             </intent-filter>
         </activity>
         <activity

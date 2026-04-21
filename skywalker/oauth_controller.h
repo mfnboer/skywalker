@@ -9,16 +9,15 @@
 
 namespace Skywalker {
 
-// TODO: move to skywalker.thereforeiam.eu
 class OAuthController
 {
 public:
     using RedirectCb = std::function<void(QUrl url)>;
 
     static constexpr int LISTEN_PORT = 1970;
-    static constexpr char const* CLIENT_ID = "https://mfnboer.home.xs4all.nl/skywalker/oauth/client-metadata.json";
+    static constexpr char const* CLIENT_ID = "https://thereforeiam.eu/skywalker/oauth/client-metadata.json";
 #ifdef Q_OS_ANDROID
-    static constexpr char const* REDIRECT_URL = "nl.xs4all.home.mfnboer:/oauth/callback";
+    static constexpr char const* REDIRECT_URL = "eu.thereforeiam:/skywalker/oauth/callback";
 #else
     static constexpr char const* REDIRECT_URL = "http://127.0.0.1:1970/oauth/callback";
 #endif
