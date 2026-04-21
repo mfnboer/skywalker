@@ -31,13 +31,16 @@ struct NotificationChannel
 class OffLineMessageChecker : public QObject
 {
 public:
+    using StoppedCb = std::function<void()>;
+
     static const std::vector<NotificationChannel> NOTIFCATION_CHANNELS;
 
     // Start background process that periodically checks for new messages.
     // checkNotificationPermission must have been called before.
     static void start(bool wifiOnly);
+    static void waitForStop(const StoppedCb& stoppedCb);
 
-    static void createNotificationChannels();
+    static void init(UserSettings* userSettings);
     static void checkNotificationPermission();
 
     explicit OffLineMessageChecker(const QString& settingsFileName, QCoreApplication* backgroundApp);
@@ -57,6 +60,9 @@ private:
         CHAT = 5,
         VERIFICATION = 6,
     };
+
+    static void createNotificationChannels();
+    static void stopWaiting();
 
     void initNetwork();
     void reset();
@@ -81,6 +87,9 @@ private:
     QString getNotificationText(const PostRecord& postRecord) const;
 
     static bool sNotificationPermissionGranted;
+    static UserSettings* sUserSettings;
+    static StoppedCb sStoppedCb;
+    static QTimer sWaitForStopTimer;
 
     QNetworkAccessManager* mNetwork;
     QCoreApplication* mBackgroundApp = nullptr;

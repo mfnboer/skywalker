@@ -424,6 +424,9 @@ public:
     void setOfflineMessageCheckTimestamp(QDateTime timestamp);
     QDateTime getOfflineMessageCheckTimestamp() const;
 
+    void setOfflineMessageCheckRunning(bool running);
+    bool isOfflineMessageCheckRunning() const;
+
     void setOffLineChatCheckRev(const QString& did, const QString& rev);
     QString getOffLineChatCheckRev(const QString& did) const;
 

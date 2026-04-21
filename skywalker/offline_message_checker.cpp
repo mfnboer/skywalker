@@ -115,6 +115,9 @@ JNIEXPORT int JNICALL Java_com_gmail_mfnboer_NewMessageChecker_checkNewMessages(
 namespace Skywalker {
 
 bool OffLineMessageChecker::sNotificationPermissionGranted = false;
+UserSettings* OffLineMessageChecker::sUserSettings = nullptr;
+OffLineMessageChecker::StoppedCb OffLineMessageChecker::sStoppedCb;
+QTimer OffLineMessageChecker::sWaitForStopTimer;
 
 const std::vector<NotificationChannel> OffLineMessageChecker::NOTIFCATION_CHANNELS = {
     {
@@ -220,26 +223,33 @@ int OffLineMessageChecker::check()
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
     qDebug() << "Previous check:" << timestamp;
 
+    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
+    mUserSettings.setOfflineMessageCheckRunning(true);
+
     const QString activeDid = mUserSettings.getActiveUserDid();
     int exitStatus = check(activeDid);
 
     // The active user should succeed. If not, then most likely there is
     // a network issue. Do not try other accounts. Wait for task retry.
     if (exitStatus != EXIT_OK)
-        return exitStatus;
-
-    mUserSettings.setOfflineMessageCheckTimestamp(QDateTime::currentDateTime());
-
-    if (!mUserSettings.getNotificationsForAllAccounts(activeDid))
-        return EXIT_OK;
-
-    const auto dids = mUserSettings.getUserDidList();
-
-    for (const auto& did : dids)
     {
-        if (did != activeDid)
-            check(did);
+        mUserSettings.setOfflineMessageCheckRunning(false);
+        return exitStatus;
     }
+
+    if (mUserSettings.getNotificationsForAllAccounts(activeDid))
+    {
+
+        const auto dids = mUserSettings.getUserDidList();
+
+        for (const auto& did : dids)
+        {
+            if (did != activeDid)
+                check(did);
+        }
+    }
+
+    mUserSettings.setOfflineMessageCheckRunning(false);
 
     // We don't care if the check for the other users failed.
     // If the active user check succeeded, we consider the task complete.
@@ -1064,6 +1074,8 @@ void OffLineMessageChecker::checkNotificationPermission()
 
 void OffLineMessageChecker::start(bool wifiOnly)
 {
+    stopWaiting();
+
 #if defined(Q_OS_ANDROID)
     // Do not peroform the permission check here. It seems that sometimes
     // crashes when the app is going into pause mode.
@@ -1084,6 +1096,76 @@ void OffLineMessageChecker::start(bool wifiOnly)
 #else
     Q_UNUSED(wifiOnly);
 #endif
+}
+
+void OffLineMessageChecker::waitForStop(const StoppedCb& stoppedCb)
+{
+    qDebug() << "Check if message checker stopped";
+
+    if (!stoppedCb)
+    {
+        qWarning() << "No callback set";
+        return;
+    }
+
+    if (!sUserSettings)
+    {
+        qWarning() << "User settings not initialized";
+        stoppedCb();
+        return;
+    }
+
+    // Reload settings
+    sUserSettings->sync();
+
+    if (!sUserSettings->isOfflineMessageCheckRunning())
+    {
+        qDebug() << "Message checker is not running";
+        stoppedCb();
+        return;
+    }
+
+    const auto lastCheck = sUserSettings->getOfflineMessageCheckTimestamp();
+
+    if (!lastCheck.isValid())
+    {
+        qWarning() << "Last check time is not set";
+        sUserSettings->setOfflineMessageCheckRunning(false);
+        stoppedCb();
+        return;
+    }
+
+    qDebug() << "Message checker is running since:" << lastCheck;
+
+    const auto now = QDateTime::currentDateTime();
+    const auto period = now - lastCheck;
+
+    if (period > 30s)
+    {
+        qWarning() << "Last message check:" << lastCheck << "assume check was killed";
+        sUserSettings->setOfflineMessageCheckRunning(false);
+        stoppedCb();
+        return;
+    }
+
+    sStoppedCb = stoppedCb;
+    sWaitForStopTimer.start(500ms);
+}
+
+void OffLineMessageChecker::stopWaiting()
+{
+    qDebug() << "Stop waiting";
+    sStoppedCb = {};
+    sWaitForStopTimer.stop();
+}
+
+void OffLineMessageChecker::init(UserSettings* userSettings)
+{
+    qDebug() << "Init";
+    sUserSettings = userSettings;
+    sWaitForStopTimer.setSingleShot(true);
+    sWaitForStopTimer.callOnTimeout([]{ waitForStop(sStoppedCb); });
+    createNotificationChannels();
 }
 
 void OffLineMessageChecker::createNotificationChannels()

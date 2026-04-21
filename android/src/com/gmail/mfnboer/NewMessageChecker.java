@@ -14,7 +14,6 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-import androidx.work.WorkManager;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.multiprocess.RemoteWorkManager;
 
@@ -64,6 +63,7 @@ public class NewMessageChecker extends Worker {
     }
 
     public static native int checkNewMessages(String settingsFileName, String libDir);
+    public static native void emitStopped();
 
     private Context mContext;
 

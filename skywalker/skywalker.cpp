@@ -104,7 +104,7 @@ Skywalker::Skywalker(QObject* parent) :
     AuthorCache::instance().setSkywalker(this);
     ListCache::instance().setSkywalker(this);
     PostThreadCache::instance().setSkywalker(this);
-    OffLineMessageChecker::createNotificationChannels();
+    OffLineMessageChecker::init(&mUserSettings);
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
@@ -4625,7 +4625,7 @@ void Skywalker::handleAppStateChange(Qt::ApplicationState state)
         pauseApp();
         break;
     case Qt::ApplicationActive:
-        resumeApp();
+        OffLineMessageChecker::waitForStop([this]{ resumeApp(); });
         break;
     default:
         break;

@@ -7,6 +7,9 @@ import QtQuick.Window
 import skywalker
 
 ApplicationWindow {
+    property bool appIsRunning: false
+    property bool appIsLoggedIn: false
+
     property double postButtonRelativeX: 1.0
     readonly property bool isPortrait: width < height
     readonly property bool showSideBar: mustShowSideBar()
@@ -59,6 +62,27 @@ ApplicationWindow {
     //         maxFrameMs = 0
     //     }
     // }
+
+    onAppIsRunningChanged: {
+        if (!appIsRunning)
+            return
+
+        if (appIsLoggedIn)
+            return
+
+        // Try to resume the previous session. If that fails, then ask the user to login.
+        if (skywalker.resumeAndRefreshSession()) {
+            console.debug("Resuming previous session")
+        } else if (skywalker.autoLogin()) {
+            console.debug("Auto login")
+        } else {
+            console.debug("Sign in")
+            closeStartupStatus()
+            signIn()
+        }
+
+        appIsLoggedIn = true
+    }
 
     onPostButtonRelativeXChanged: {
         let settings = root.getSkywalker().getUserSettings()
@@ -553,6 +577,7 @@ ApplicationWindow {
                 current.cover()
 
             getTimelineView().enabled = false
+            appIsRunning = false
         }
 
         onAppResumed: {
@@ -566,6 +591,7 @@ ApplicationWindow {
                 current.uncover()
 
             getTimelineView().enabled = true
+            appIsRunning = true
         }
 
         // Note for search feeds the feedUri is the search name
@@ -2691,19 +2717,14 @@ ApplicationWindow {
 
         initHandlers()
 
-        // Try to resume the previous session. If that fails, then ask the user to login.
-        if (skywalker.resumeAndRefreshSession())
-            showStartupStatus()
-        else if (skywalker.autoLogin())
-            showStartupStatus()
-        else
-            signIn()
-
         // NOTE: the user is not yet logged in, but global app settings are available.
         let settings = root.getSkywalker().getUserSettings()
         postButtonRelativeX = settings.getPostButtonRelativeX()
         rootSplitView.init()
 
         settings.onBackgroundColorChanged.connect(() => displayUtils.updateBackground() )
+
+        // Login or resume previous session is done in onAppIsRunningChanged
+        showStartupStatus()
     }
 }
