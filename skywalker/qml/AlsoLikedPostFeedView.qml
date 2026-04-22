@@ -46,6 +46,7 @@ SkyListView {
 
             AccessibleText {
                 id: alsoLikedText
+                leftPadding: guiSettings.threadColumnWidth
                 topPadding: 10
                 bottomPadding: 10
                 width: parent.width

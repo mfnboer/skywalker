@@ -162,6 +162,10 @@ QJsonObject UserSettings::toJson() const
         if (key.endsWith("/password") ||
             key.endsWith("/rememberPassword") ||
             key.endsWith("/access") ||
+            key.endsWith("/refresh") ||
+            key.endsWith("/oauthDpopKeyAlias") ||
+            key.endsWith("/pdsDpopNonce") ||
+            key.endsWith("/authDpopNonce") ||
             key == "activeUser")
         {
             continue;

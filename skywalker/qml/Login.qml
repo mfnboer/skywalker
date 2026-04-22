@@ -149,6 +149,7 @@ SkyPage {
 
                 AccessibleCheckBox {
                     id: rememberPasswordSwitch
+                    leftPadding: 10
                     text: qsTr("Remember password")
                     checked: !isNewAccount() && userSettings.getRememberPassword(did)
                     onCheckedChanged: {
@@ -221,6 +222,7 @@ SkyPage {
                 id: okButton
                 anchors.top: loginForm.bottom
                 anchors.right: loginForm.right
+                anchors.rightMargin: 10
                 height: 40
                 text: qsTr("OK")
                 enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
@@ -330,11 +332,13 @@ SkyPage {
                 id: oauthOkButton
                 anchors.top: oauthLoginForm.bottom
                 anchors.right: oauthLoginForm.right
+                anchors.rightMargin: 10
                 height: 40
                 text: qsTr("OK")
-                enabled: oauthHostField.editText && oauthUserField.text
+                enabled: oauthHostField.editText && oauthUserField.text && !redirectTimer.running
                 onClicked: {
                     skywalker.showStatusMessage(qsTr("Redirecting to login page"), QEnums.STATUS_LEVEL_INFO, 5)
+                    redirectTimer.start()
                     const handle = autoCompleteHandle(oauthUserField.text, oauthHostField.editText)
                     loginPage.accepted(true,
                                        oauthHostField.editText,
@@ -348,6 +352,11 @@ SkyPage {
                                        loginPage.serviceVideoHost,
                                        loginPage.serviceVideoDid)
                 }
+            }
+
+            Timer {
+                id: redirectTimer
+                interval: 5000
             }
         }
     }
