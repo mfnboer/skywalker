@@ -1,16 +1,16 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "presence.h"
 #include "tenor_category.h"
 #include "tenor_gif_overview_model.h"
+#include "web_service_base.h"
 #include "wrapped_skywalker.h"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
 namespace Skywalker {
 
-class Giphy : public WrappedSkywalker, public Presence
+class Giphy : public WrappedSkywalker, public WebServiceBase
 {
     Q_OBJECT
     Q_PROPERTY(TenorOverviewModel* overviewModel READ getOverviewModel CONSTANT FINAL)
@@ -49,8 +49,6 @@ signals:
     void categoriesLoadingChanged();
 
 private:
-    using Params = QList<QPair<QString, QString>>;
-
     struct Pagination
     {
         int mOffset;
@@ -60,7 +58,7 @@ private:
         static SharedPtr fromJson(const QJsonObject& json);
     };
 
-    QUrl buildUrl(const QString& endpoint, const Params& params) const;
+    virtual QUrl buildUrl(const QString& endpoint, const Params& params) const override;
     void getTrendingCategory();
     void setTrendingCategory(QNetworkReply* reply);
     void setTrendingCategory(const TenorGif& gif);
@@ -85,7 +83,6 @@ private:
     std::optional<int> mNextOffset;
     bool mSearchInProgress = false;
     bool mCategoriesLoading = false;
-    QNetworkAccessManager* mNetwork;
 };
 
 }

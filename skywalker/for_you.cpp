@@ -9,13 +9,14 @@ static constexpr char const* FOR_YOU_BASE_URL = "https://foryou.club/";
 QString ForYou::sAvatar;
 
 ForYou::ForYou(QObject* parent) :
-    WrappedSkywalker(parent)
+    WrappedSkywalker(parent),
+    WebServiceBase(FOR_YOU_BASE_URL, nullptr)
 {
 }
 
 ForYou::ForYou(QNetworkAccessManager* network, QObject* parent) :
     WrappedSkywalker(parent),
-    mNetwork(network)
+    WebServiceBase(FOR_YOU_BASE_URL, network)
 {
     Q_ASSERT(mNetwork);
 }
@@ -29,15 +30,10 @@ void ForYou::alsoLiked(const QString& postUri, const std::optional<QString>& cur
     if (cursor)
         params.append({"cursor", *cursor});
 
-    QNetworkRequest request(buildUrl("also-liked", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), postUri, cursor, reply, successCb, errorCb]{
-        if (!presence)
-            return;
-
-        continueAlsoLiked(reply, postUri, cursor, successCb, errorCb);
-    });
+    sendRequest("also-liked", params,
+        [this, postUri, cursor, successCb, errorCb](QNetworkReply* reply){
+            continueAlsoLiked(reply, postUri, cursor, successCb, errorCb);
+        });
 }
 
 void ForYou::continueAlsoLiked(QNetworkReply* reply, const QString& postUri, const std::optional<QString>& cursor,
@@ -95,18 +91,6 @@ void ForYou::continueAlsoLiked(QNetworkReply* reply, const QString& postUri, con
             successCb(output);
         },
         errorCb);
-}
-
-QUrl ForYou::buildUrl(const QString& endpoint, const Params& params) const
-{
-    QUrl url(FOR_YOU_BASE_URL + endpoint);
-    QUrlQuery query;
-
-    for (const auto& kv : params)
-        query.addQueryItem(kv.first, QUrl::toPercentEncoding(kv.second));
-
-    url.setQuery(query);
-    return url;
 }
 
 ForYou::AlsoLikedPost::SharedPtr ForYou::AlsoLikedPost::fromJson(const QJsonObject& json)

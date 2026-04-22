@@ -1,13 +1,13 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "presence.h"
+#include "web_service_base.h"
 #include "wrapped_skywalker.h"
 #include <QNetworkAccessManager>
 
 namespace Skywalker {
 
-class ForYou : public WrappedSkywalker, public Presence
+class ForYou : public WrappedSkywalker, public WebServiceBase
 {
     Q_OBJECT
     Q_PROPERTY(QString uri READ getUri CONSTANT FINAL)
@@ -32,8 +32,6 @@ signals:
     void avatarChanged();
 
 private:
-    using Params = QList<QPair<QString, QString>>;
-
     struct AlsoLikedPost
     {
         QString mPost;
@@ -52,12 +50,10 @@ private:
         static SharedPtr fromJson(const QJsonObject& json);
     };
 
-    QUrl buildUrl(const QString& endpoint, const Params& params) const;
     void continueAlsoLiked(QNetworkReply* reply, const QString& postUri, const std::optional<QString>& cursor,
                            const AlsoLikedSuccessCb& successCb, const ErrorCb& errorCb);
     void initAvatar();
 
-    QNetworkAccessManager* mNetwork = nullptr;
     static QString sAvatar;
     static constexpr char const* FOR_YOU_AT_URI = "at://did:plc:3guzzweuqraryl3rdkimjamk/app.bsky.feed.generator/for-you";
 };

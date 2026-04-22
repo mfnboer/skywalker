@@ -31,10 +31,9 @@ TenorGif toTenorGif(GiphyGif::SharedPtr giphyGif, const QString& query)
 
 Giphy::Giphy(QObject* parent) :
     WrappedSkywalker(parent),
-    Presence(),
+    WebServiceBase(GIPHY_BASE_URL, new QNetworkAccessManager(this)),
     mApiKey(GIPHY_API_KEY),
-    mOverviewModel(mWidth, mSpacing, this),
-    mNetwork(new QNetworkAccessManager(this))
+    mOverviewModel(mWidth, mSpacing, this)
 {
     QLocale locale;
     mLanguageCode = QLocale::languageToCode(locale.language());
@@ -90,25 +89,18 @@ void Giphy::getCategories()
     if (!mCachedCategories.empty())
         return;
 
-    QNetworkRequest request(buildUrl("gifs/categories", {}));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        categoriesFinished(reply, mCachedCategories);
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
-        qWarning() << "Categories error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [reply]{
-        qWarning() << "Categories SSL error:" <<  reply->request().url();
-    });
+    sendRequest("gifs/categories", {},
+        [this](QNetworkReply* reply){
+            categoriesFinished(reply, mCachedCategories);
+            allCategoriesRetrieved();
+        },
+        [](QNetworkReply* reply, auto errCode){
+            qWarning() << "Categories error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [](QNetworkReply* reply){
+            qWarning() << "Categories SSL error:" <<  reply->request().url();
+        });
 }
 
 void Giphy::addRecentGif(const TenorGif& gif)
@@ -156,37 +148,26 @@ void Giphy::searchTrendingGifs(int offset)
         Q_ASSERT(mTrendingSearch);
     }
 
+    setSearchInProgress(true);
+
     Params params{{"offset", QString::number(offset)},
                   {"rating", RATING},
                   {"fields", FIELDS_FILTER}};
 
-    QNetworkRequest request(buildUrl("gifs/trending", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        searchGifsFinished(reply, "");
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Posts SSL error:" <<  reply->request().url();
-    });
+    sendRequest("gifs/trending", params,
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            searchGifsFinished(reply, "");
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setSearchInProgress(false);
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+        });
 }
 
 void Giphy::searchRecentGifs()
@@ -211,34 +192,22 @@ void Giphy::searchRecentGifs()
     Params params{{"ids", gifIdList.join(',')}};
 
     setSearchInProgress(true);
-    QNetworkRequest request(buildUrl("gifs", params));
-    QNetworkReply* reply = mNetwork->get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        searchGifsFinished(reply, "");
-        mNextOffset.reset();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Posts SSL error:" <<  reply->request().url();
-    });
+    sendRequest("gifs", params,
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            searchGifsFinished(reply, "");
+            mNextOffset.reset();
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setSearchInProgress(false);
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+        });
 }
 
 void Giphy::searchGifs(const QString& query, int offset)
@@ -267,33 +236,21 @@ void Giphy::searchGifs(const QString& query, int offset)
                   {"fields", FIELDS_FILTER}};
 
     setSearchInProgress(true);
-    QNetworkRequest request(buildUrl("gifs/search", params));
-    QNetworkReply* reply = mNetwork->get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, query]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        searchGifsFinished(reply, query);
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Search error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Search SSL error:" <<  reply->request().url();
-    });
+    sendRequest("gifs/search", params,
+        [this, query](QNetworkReply* reply){
+            setSearchInProgress(false);
+            searchGifsFinished(reply, query);
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setSearchInProgress(false);
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+        });
 }
 
 void Giphy::getNextPage()
@@ -314,18 +271,13 @@ void Giphy::getNextPage()
 
 QUrl Giphy::buildUrl(const QString& endpoint, const Params& params) const
 {
-    QUrl url(GIPHY_BASE_URL + endpoint);
-    QUrlQuery query;
-    query.addQueryItem("api_key", QUrl::toPercentEncoding(mApiKey));
+    Params p(params);
+    p.push_back({"api_key", QUrl::toPercentEncoding(mApiKey)});
 
     if (!mLanguageCode.isEmpty())
-        query.addQueryItem("lang", QUrl::toPercentEncoding(mLanguageCode));
+        p.push_back({"lang", QUrl::toPercentEncoding(mLanguageCode)});
 
-    for (const auto& kv : params)
-        query.addQueryItem(kv.first, QUrl::toPercentEncoding(kv.second));
-
-    url.setQuery(query);
-    return url;
+    return WebServiceBase::buildUrl(endpoint, p);
 }
 
 void Giphy::getTrendingCategory()
@@ -340,33 +292,20 @@ void Giphy::getTrendingCategory()
                   {"rating", RATING},
                   {"fields", FIELDS_FILTER}};
 
-    QNetworkRequest request(buildUrl("gifs/trending", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setTrendingCategory(reply);
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        qWarning() << "Posts SSL error:" <<  reply->request().url();
-        allCategoriesRetrieved();
-    });
+    sendRequest("gifs/trending", params,
+        [this](QNetworkReply* reply){
+            setTrendingCategory(reply);
+            allCategoriesRetrieved();
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+            allCategoriesRetrieved();
+        },
+        [this](QNetworkReply* reply){
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+            allCategoriesRetrieved();
+        });
 }
 
 void Giphy::setTrendingCategory(QNetworkReply* reply)
@@ -430,38 +369,25 @@ void Giphy::getRecentCategory()
 
     Params params{{"ids", gifIds.front()}};
 
-    QNetworkRequest request(buildUrl("gifs", params));
-    QNetworkReply* reply = mNetwork->get(request);
+    sendRequest("gifs", params,
+        [this](QNetworkReply* reply){
+            setCategoriesLoading(false);
+            setRecentCategory(reply);
+            allCategoriesRetrieved();
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setCategoriesLoading(false);
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+            allCategoriesRetrieved();
+        },
+        [this](QNetworkReply* reply){
+            setCategoriesLoading(false);
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+            allCategoriesRetrieved();
+        });
 
     setCategoriesLoading(true);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setCategoriesLoading(false);
-        setRecentCategory(reply);
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setCategoriesLoading(false);
-        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setCategoriesLoading(false);
-        qWarning() << "Posts SSL error:" <<  reply->request().url();
-        allCategoriesRetrieved();
-    });
 }
 
 void Giphy::setRecentCategory(QNetworkReply* reply)
