@@ -55,6 +55,7 @@ Item {
     signal editPost()
     signal deletePost()
     signal copyPostText()
+    signal copyPostLink()
     signal reportPost()
     signal translatePost()
     signal detachQuote(string uri, bool detach)
@@ -169,6 +170,12 @@ Item {
                     svg: SvgOutline.copy
                     popup: moreMenu
                     onClicked: copyPostText()
+                }
+                SkyMenuButton {
+                    text: qsTr("Copy post link")
+                    svg: SvgOutline.link
+                    popup: moreMenu
+                    onClicked: copyPostLink()
                 }
                 SkyMenuButton {
                     text: qsTr("Share")

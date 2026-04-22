@@ -251,6 +251,12 @@ Rectangle {
                         onClicked: skywalker.getShareUtils().shareFeed(feed)
                     }
                     SkyMenuButton {
+                        text: qsTr("Copy feed link")
+                        svg: SvgOutline.link
+                        popup: moreMenu
+                        onClicked: skywalker.getShareUtils().copyUriToClipboard(feed.uri)
+                    }
+                    SkyMenuButton {
                         text: qsTr("Report feed")
                         svg: SvgOutline.report
                         popup: moreMenu

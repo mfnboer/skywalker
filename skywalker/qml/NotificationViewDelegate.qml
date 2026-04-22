@@ -478,6 +478,7 @@ Rectangle {
                         onThreadgate: root.gateRestrictions(notificationPostThreadgateUri, notificationPostIsReply ? notificationPostReplyRootUri : notificationPostUri, notificationPostIsReply ? notificationPostReplyRootCid : notificationCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies, owner.did)
                         onHideReply: root.hidePostReply(notificationPostThreadgateUri, notificationPostReplyRootUri, notificationPostReplyRootCid, notificationPostUri, notificationPostReplyRestriction, notificationPostReplyRestrictionLists, notificationPostHiddenReplies, owner.did)
                         onCopyPostText: skywalker.getShareUtils().copyPostTextToClipboard(notificationPostPlainText)
+                        onCopyPostLink: skywalker.getShareUtils().copyUriToClipboard(notificationPostUri)
                         onReportPost: root.reportPost(notificationPostUri, notificationCid, notificationPostText, notificationPostTimestamp, notificationAuthor, owner.did)
                         onTranslatePost: root.translateText(notificationPostPlainText)
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach, owner.did)

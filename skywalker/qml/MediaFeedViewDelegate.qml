@@ -551,6 +551,7 @@ Rectangle {
                 onEditPost: root.composePostEdit(videoPage.ListView.view.model, videoPage.index)
                 onDeletePost: confirmDelete()
                 onCopyPostText: skywalker.getShareUtils().copyPostTextToClipboard(postPlainText)
+                onCopyPostLink: skywalker.getShareUtils().copyUriToClipboard(postUri)
                 onReportPost: root.reportPost(postUri, postCid, postText, postIndexedDateTime, author, userDid)
                 onTranslatePost: root.translateText(postPlainText)
                 onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)

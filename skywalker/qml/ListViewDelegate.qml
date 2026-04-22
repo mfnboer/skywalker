@@ -343,6 +343,13 @@ Rectangle {
         }
 
         SkyMenuButton {
+            text: qsTr("Copy list link")
+            svg: SvgOutline.link
+            popup: moreMenu
+            onClicked: skywalker.getShareUtils().copyUriToClipboard(list.uri)
+        }
+
+        SkyMenuButton {
             text: qsTr("Report list")
             svg: SvgOutline.report
             popup: moreMenu

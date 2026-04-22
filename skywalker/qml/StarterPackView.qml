@@ -242,6 +242,12 @@ SkyPage {
                 onClicked: skywalker.getShareUtils().shareStarterPack(starterPack)
             }
             SkyMenuButton {
+                text: qsTr("Copy starter pack link")
+                svg: SvgOutline.link
+                popup: moreMenu
+                onClicked: skywalker.getShareUtils().copyUriToClipboard(starterPack.uri)
+            }
+            SkyMenuButton {
                 text: qsTr("Copy to list")
                 svg: SvgOutline.list
                 popup: moreMenu

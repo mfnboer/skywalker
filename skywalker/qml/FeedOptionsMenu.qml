@@ -49,6 +49,14 @@ SkyMenu {
     }
 
     SkyMenuButton {
+        text: qsTr("Copy feed link")
+        svg: SvgOutline.link
+        popup: feedOptionsMenu
+        visible: postFeedModel.feedType === QEnums.FEED_GENERATOR
+        onClicked: skywalker.getShareUtils().copyUriToClipboard(feedOptionsMenu.feed.uri)
+    }
+
+    SkyMenuButton {
         text: qsTr("Filtered posts")
         svg: SvgOutline.hideVisibility
         popup: feedOptionsMenu

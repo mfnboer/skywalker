@@ -17,11 +17,14 @@ public:
     Q_INVOKABLE void sharePost(const QString& postUri);
     Q_INVOKABLE void shareFeed(const GeneratorView& feed);
     Q_INVOKABLE void shareList(const ListView& list);
+    Q_INVOKABLE void shareListUri(const QString& listUri);
     Q_INVOKABLE void shareStarterPack(const StarterPackViewBasic& starterPack);
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
     void openLinkInApp(const QString& link);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);
+    Q_INVOKABLE void copyUriToClipboard(const QString& uri);
+    Q_INVOKABLE void copyAuthorLinkToClipboard(const BasicProfile& author);
 };
 
 }

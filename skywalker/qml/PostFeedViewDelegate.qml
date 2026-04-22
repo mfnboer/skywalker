@@ -869,6 +869,7 @@ Rectangle {
                         onEditPost: root.composePostEdit(postEntry.ListView.view.model, postEntry.index)
                         onDeletePost: confirmDelete()
                         onCopyPostText: skywalker.getShareUtils().copyPostTextToClipboard(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
+                        onCopyPostLink: skywalker.getShareUtils().copyUriToClipboard(postUri)
                         onReportPost: root.reportPost(postUri, postCid, postEntry.unrollThread ? postThreadModel?.getFirstUnrolledPostText() : postText, postIndexedDateTime, author, userDid)
                         onTranslatePost: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)

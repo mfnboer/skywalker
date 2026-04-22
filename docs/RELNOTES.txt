@@ -5,6 +5,7 @@ next
 * Also liked feed (powered by For You)
 * Increase max image size to 2MB and 4000x4000 pixels
 * Mute author option in post menu
+* Copy link option in post, feed, list and profile menus
 * Bug fixes
 
 4.32

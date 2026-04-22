@@ -71,16 +71,14 @@ SkyMenu {
         text: qsTr("Share")
         svg: SvgOutline.share
         popup: listFeedOptionsMenu
-        onClicked: {
-            const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
+        onClicked: skywalker.getShareUtils().shareListUri(listFeedOptionsMenu.list.uri)
+    }
 
-            if (favorite.isNull()) {
-                console.warn("List is not a favorite:" << listFeedOptionsMenu.list.uri)
-                return
-            }
-
-            skywalker.getShareUtils().shareList(favorite.listView)
-        }
+    SkyMenuButton {
+        text: qsTr("Copy list link")
+        svg: SvgOutline.link
+        popup: listFeedOptionsMenu
+        onClicked: skywalker.getShareUtils().copyUriToClipboard(listFeedOptionsMenu.list.uri)
     }
 
     SkyMenuButton {

@@ -11,6 +11,18 @@ ShareUtils::ShareUtils(QObject* parent) :
 {
 }
 
+void ShareUtils::copyUriToClipboard(const QString& uri)
+{
+    ATProto::ATUri atUri(uri);
+
+    if (!atUri.isValid())
+        return;
+
+    const QString shareUri = atUri.toHttpsUri();
+    Q_ASSERT(!shareUri.isEmpty());
+    copyToClipboard(shareUri);
+}
+
 void ShareUtils::sharePost(const QString& postUri)
 {
     qDebug() << "Share post:" << postUri;
@@ -65,11 +77,15 @@ void ShareUtils::shareFeed(const GeneratorView& feed)
 #endif
 }
 
-
 void ShareUtils::shareList(const ListView& list)
 {
     qDebug() << "Share list:" << list.getName();
-    ATProto::ATUri atUri(list.getUri());
+    shareListUri(list.getUri());
+}
+
+void ShareUtils::shareListUri(const QString& listUri)
+{
+    ATProto::ATUri atUri(listUri);
 
     if (!atUri.isValid())
         return;
@@ -139,6 +155,13 @@ void ShareUtils::shareAuthor(const BasicProfile& author)
     clipboard->setText(shareUri);
     mSkywalker->showStatusMessage(tr("Author link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
 #endif
+}
+
+void ShareUtils::copyAuthorLinkToClipboard(const BasicProfile& author)
+{
+    const QString& authorId = author.getDid();
+    const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
+    copyToClipboard(shareUri);
 }
 
 void ShareUtils::openLinkInApp(const QString& link)
