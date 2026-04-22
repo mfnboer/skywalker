@@ -107,20 +107,41 @@ Skywalker::Skywalker(QObject* parent) :
     OffLineMessageChecker::init(&mUserSettings);
 
     auto& jniCallbackListener = JNICallbackListener::getInstance();
+
     connect(&jniCallbackListener, &JNICallbackListener::sharedTextReceived, this,
-            [this](const QString& text){ emit sharedTextReceived(text); });
+            [this](const QString& text){
+                callWhenRunning([this, text]{ emit sharedTextReceived(text); });
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::sharedImageReceived, this,
-            [this](const QString& contentUri, const QString& text){ shareImage(contentUri, text); });
+            [this](const QString& contentUri, const QString& text){
+                callWhenRunning([this, contentUri, text]{ shareImage(contentUri, text); });
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::sharedVideoReceived, this,
-            [this](const QString& contentUri, const QString& text){ shareVideo(contentUri, text); });
+            [this](const QString& contentUri, const QString& text){
+                callWhenRunning([this, contentUri, text]{ shareVideo(contentUri, text); });
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::sharedDmTextReceived, this,
-            [this](const QString& text){ emit sharedDmTextReceived(text); });
+            [this](const QString& text){
+                callWhenRunning([this, text]{ emit sharedDmTextReceived(text); });
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::showNotifications, this,
-            [this]{ emit showNotifications(); });
+            [this]{
+                callWhenRunning([this]{ emit showNotifications(); });
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::showDirectMessages, this,
-            [this]{ emit showDirectMessages(); });
+            [this]{
+                callWhenRunning([this]{ emit showDirectMessages(); });
+            });
+
     connect(&jniCallbackListener, &JNICallbackListener::showLink, this,
-            [this](const QString& uri){ emit handleShowLink(uri); });
+            [this](const QString& uri){
+                callWhenRunning([this, uri]{ emit handleShowLink(uri); });
+            });
 
     auto* app = (QGuiApplication*)QGuiApplication::instance();
     Q_ASSERT(app);
@@ -4722,6 +4743,31 @@ void Skywalker::resumeApp()
 
         emit appResumed();
     });
+}
+
+bool Skywalker::appIsPaused() const
+{
+    return !mTimelineUpdatePaused.isNull();
+}
+
+// Waiting for app to resume avoids Invalid Token errors when the
+// token refreshes from the Offline Message Checker are not sync'ed yet.
+void Skywalker::callWhenRunning(const std::function<void()>& cb)
+{
+    if (!appIsPaused())
+    {
+        cb();
+        return;
+    }
+
+    qDebug() << "App is paused, wait till resumed.";
+
+    connect(this, &Skywalker::appResumed, this,
+        [cb]{
+            qDebug() << "App resumed. Callback now.";
+            cb();
+        },
+        Qt::SingleShotConnection);
 }
 
 void Skywalker::updateTimeline(int autoGapFill, int pageSize, const updateTimelineCb& cb)

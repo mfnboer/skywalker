@@ -396,6 +396,8 @@ private:
     void handleAppStateChange(Qt::ApplicationState state);
     void pauseApp();
     void resumeApp();
+    bool appIsPaused() const;
+    void callWhenRunning(const std::function<void()>& cb);
     void setAnniversaryDate();
     void checkAnniversary();
     void checkDraftOrphanedMedia();
