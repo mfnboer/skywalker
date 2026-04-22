@@ -218,6 +218,7 @@ void OffLineMessageChecker::exit(int exitCode)
         mEventLoop->exit(exitCode);
 }
 
+#if defined(Q_OS_ANDROID)
 int OffLineMessageChecker::check(jobject newMessageChecker)
 {
     const auto timestamp = mUserSettings.getOfflineMessageCheckTimestamp();
@@ -299,15 +300,12 @@ int OffLineMessageChecker::check(jobject newMessageChecker, const QString& did)
 
 bool OffLineMessageChecker::isStopped(jobject newMessageChecker)
 {
-#if defined(Q_OS_ANDROID)
     QJniObject jNewMessageChecker(newMessageChecker);
     const auto stopped = jNewMessageChecker.callMethod<jboolean>("isStopped", "()Z");
     qDebug() << "Checker stopped:" << (bool)stopped;
     return (bool)stopped;
-#else
-    return false;
-#endif
 }
+#endif
 
 void OffLineMessageChecker::createNotification(const QString channelId, const BasicProfile& author, const QString& msg, const QDateTime& when, IconType iconType)
 {

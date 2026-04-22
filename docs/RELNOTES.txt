@@ -6,6 +6,7 @@ next
 * Increase max image size to 2MB and 4000x4000 pixels
 * Mute author option in post menu
 * Copy link option in post, feed, list and profile menus
+* Upgraded to Qt6.10.3
 * Bug fixes
 
 4.32

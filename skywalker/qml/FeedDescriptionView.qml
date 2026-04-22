@@ -17,6 +17,7 @@ SkyPage {
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property bool showWarnedMedia: false
     property bool isVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
+    readonly property int postFeedModelId: skywalker.createPostFeedModel(feed)
     readonly property string sideBarTitle: isVideoFeed ? qsTr("Video feed") : qsTr("Feed")
     readonly property string sideBarFeedAvatarUrl: !contentVisible() ? "" : feed.avatar
 
@@ -43,11 +44,58 @@ SkyPage {
         onBack: closed()
     }
 
+    SwipeListView {
+        id: feedStack
+        width: parent.width
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        headerHeight: grid.height + feedsSeparator.height
+        headerScrollHeight: grid.height
+
+        SkyListView {
+            id: postListView
+            model: skywalker.getPostFeedModel(postFeedModelId)
+
+            header: PlaceholderHeader { height: feedStack.headerHeight }
+            headerPositioning: ListView.InlineHeader
+
+            delegate: PostFeedViewDelegate {
+                width: postListView.width
+            }
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
+                    cover()
+            }
+
+            FlickableRefresher {
+                inProgress: postListView.model && postListView.model.getFeedInProgress
+                topOvershootFun: () => skywalker.getFeed(postFeedModelId)
+                bottomOvershootFun: () => skywalker.getFeedNextPage(postFeedModelId)
+                topText: qsTr("Pull down to refresh feed")
+            }
+
+            EmptyListIndication {
+                y: feedStack.headerHeight
+                svg: SvgOutline.noPosts
+                text: qsTr("Feed is empty")
+                list: postListView
+            }
+
+            BusyIndicator {
+                id: busyIndicator
+                anchors.centerIn: parent
+                running: postListView.model && postListView.model.getFeedInProgress
+            }
+        }
+    }
+
     GridLayout {
         id: grid
         rowSpacing: 0
         columns: 3
         x: 10
+        y: Math.max(feedStack.headerTopMinY, feedStack.headerTopMaxY, -height)
         width: parent.width - 20
 
         Rectangle {
@@ -151,12 +199,6 @@ SkyPage {
             SkyMenu {
                 id: moreMenu
 
-                SkyMenuButton {
-                    text: qsTr("View posts")
-                    svg: SvgOutline.chat
-                    popup: moreMenu
-                    onClicked: root.viewPostFeed(feed, userDid)
-                }
                 SkyMenuButton {
                     text: isSavedFeed ? qsTr("Unsave feed") : qsTr("Save feed")
                     svg: isSavedFeed ? SvgOutline.remove : SvgOutline.add
@@ -324,6 +366,14 @@ SkyPage {
         }
     }
 
+    Rectangle {
+        id: feedsSeparator
+        anchors.top: grid.bottom
+        width: parent.width
+        height: 1
+        color: guiSettings.separatorColor
+    }
+
     FullImageViewLoader {
         id: fullImageLoader
         thumbImageViewList: [feedAvatar.getImage()]
@@ -387,7 +437,12 @@ SkyPage {
         return contentVisibility === QEnums.CONTENT_VISIBILITY_SHOW || showWarnedMedia
     }
 
+    Component.onDestruction: {
+        skywalker.removePostFeedModel(postFeedModelId)
+    }
+
     Component.onCompleted: {
         contentVisibility = skywalker.getContentVisibility(feed.labels)
+        skywalker.getFeed(postFeedModelId)
     }
 }
