@@ -13,6 +13,7 @@ ListView {
     property UserSettings userSettings: skywalker.getUserSettings()
 
     signal authorClicked(basicprofile profile)
+    signal authorPressAndHold(basicprofile profile)
     signal deleteClicked(basicprofile profile)
 
     id: searchList
@@ -65,6 +66,7 @@ ListView {
                     userDid: searchList.userDid
                     author: authorEntry.author
                     onClicked: authorClicked(author)
+                    onPressAndHold: authorPressAndHold(author)
                 }
             }
 
@@ -143,6 +145,7 @@ ListView {
             z: -1
             anchors.fill: parent
             onClicked: authorClicked(author)
+            onPressAndHold: authorPressAndHold(author)
         }
     }
 

@@ -744,6 +744,8 @@ void UserSettings::clearTokens(const QString& did)
     qDebug() << "Clear tokens:" << did;
     mSettings.remove(key(did, "access"));
     mSettings.remove(key(did, "refresh"));
+    mSettings.remove(key(did, "pdsDpopNonce"));
+    mSettings.remove(key(did, "authDpopNonce"));
     sync();
 }
 

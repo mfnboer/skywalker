@@ -182,7 +182,7 @@ public:
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession(const QString& did) const;
 
     void saveTokens(const QString& did, const QString& accessJwt, const QString& refreshJwt);
-    void clearTokens(const QString& did);
+    Q_INVOKABLE void clearTokens(const QString& did);
     void clearCredentials(const QString& did);
 
     void saveSyncTimestamp(const QString& did, QDateTime timestamp);
