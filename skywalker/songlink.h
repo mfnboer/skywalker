@@ -1,14 +1,14 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "presence.h"
 #include "songlink_links.h"
+#include "web_service_base.h"
 #include <QNetworkAccessManager>
 #include <QObject>
 
 namespace Skywalker {
 
-class Songlink : public QObject, public Presence
+class Songlink : public QObject, public WebServiceBase
 {
     Q_OBJECT
     Q_PROPERTY(bool inProgress READ isInProgress NOTIFY inProgressChanged FINAL)
@@ -29,13 +29,11 @@ signals:
 
 private:
     void init();
-    QUrl buildUrl(const QString& musicLink) const;
     void setInProgress(bool inProgress);
     void processGetLinksReply(QNetworkReply* reply, const QString& musicLink);
 
     bool mInProgress = false;
     QString mCountryCode;
-    QNetworkAccessManager* mNetwork = nullptr;
 };
 
 }

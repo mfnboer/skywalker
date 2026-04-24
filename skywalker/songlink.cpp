@@ -7,11 +7,13 @@
 #include <QUrlQuery>
 
 // API DOC: https://linktree.notion.site/API-d0ebe08a5e304a55928405eb682f6741
+static constexpr char const* SONGLINK_BASE_URL = "https://api.song.link/v1-alpha.1/";
 
 namespace Skywalker {
 
 Songlink::Songlink(QObject* parent) :
-    QObject(parent)
+    QObject(parent),
+    WebServiceBase(SONGLINK_BASE_URL, nullptr)
 {
 }
 
@@ -74,21 +76,6 @@ bool Songlink::isCached(const QString& link)
     return SonglinkCache::instance().contains(QUrl(link));
 }
 
-QUrl Songlink::buildUrl(const QString& musicLink) const
-{
-    const QUrl musicUrl(musicLink);
-
-    if (!musicUrl.isValid())
-        return {};
-
-    QUrl url("https://api.song.link/v1-alpha.1/links");
-    QUrlQuery query;
-    query.addQueryItem("url", musicUrl.toEncoded());
-    query.addQueryItem("userCountry", mCountryCode);
-    url.setQuery(query);
-    return url;
-}
-
 void Songlink::getLinks(const QString& musicLink)
 {
     if (mInProgress)
@@ -108,44 +95,37 @@ void Songlink::getLinks(const QString& musicLink)
         return;
     }
 
-    init();
-    const QUrl url = buildUrl(musicLink);
+    const QUrl musicUrl(musicLink);
 
-    if (!url.isValid())
+    if (!musicUrl.isValid())
     {
-        qWarning() << "Failed to build url for:" << musicLink;
+        qWarning() << "Invalid URL:" << musicLink;
         emit failure(tr("Could not get song links"));
         return;
     }
 
+    init();
     setInProgress(true);
-    QNetworkRequest request(url);
-    QNetworkReply* reply = mNetwork->get(request);
 
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, musicLink]{
-        if (!presence)
-            return;
+    Params params {
+        { "url", musicUrl.toEncoded() },
+        { "userCountry", mCountryCode }
+    };
 
-        setInProgress(false);
-        processGetLinksReply(reply, musicLink);
-    });
-
-        connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setInProgress(false);
-        qWarning() << "Get links error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setInProgress(false);
-        qWarning() << "Get links SSL error:" <<  reply->request().url();
-    });
+    sendRequest("links", params,
+        [this, musicLink](QNetworkReply* reply){
+            setInProgress(false);
+            processGetLinksReply(reply, musicLink);
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setInProgress(false);
+            qWarning() << "Get links error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [this](QNetworkReply* reply){
+            setInProgress(false);
+            qWarning() << "Get links SSL error:" <<  reply->request().url();
+        });
 }
 
 void Songlink::processGetLinksReply(QNetworkReply* reply, const QString& musicLink)
