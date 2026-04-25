@@ -576,7 +576,6 @@ ApplicationWindow {
             if (current && typeof current.cover === 'function')
                 current.cover()
 
-            getTimelineView().enabled = false
             appIsRunning = false
         }
 
@@ -590,7 +589,6 @@ ApplicationWindow {
             if (current && typeof current.uncover === 'function')
                 current.uncover()
 
-            getTimelineView().enabled = true
             appIsRunning = true
         }
 
@@ -663,6 +661,10 @@ ApplicationWindow {
         // 6.10.3 Added footer.height + footer.extraFooterMargin
         anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? root.footer.height + root.footer.extraFooterMargin : guiSettings.footerMargin)
 
+        // Disable everything when app is paused to avoid a token race between the background
+        // worker in the app.
+        enabled: appIsRunning
+
         onResizingChanged: {
             if (resizing)
                 return
@@ -698,6 +700,7 @@ ApplicationWindow {
             notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
             searchActive: rootContent.currentIndex === rootContent.searchIndex
             messagesActive: rootContent.currentIndex === rootContent.chatIndex
+
             onHomeClicked: {
                 if (homeActive)
                     favoritesSwipeView.currentView.moveToHome()
@@ -784,6 +787,11 @@ ApplicationWindow {
                 id: chatStack
             }
         }
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: !appIsRunning
     }
 
     // Left margin (navbar on Android)

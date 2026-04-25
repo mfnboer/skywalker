@@ -187,11 +187,6 @@ SkyPage {
         }
     }
 
-    BusyIndicator {
-        anchors.centerIn: parent
-        running: !parent.enabled
-    }
-
     function getHeaderHeight() {
         if (currentViewItem && typeof currentViewItem.getHeaderHeight == 'function')
             return currentViewItem.getHeaderHeight()
