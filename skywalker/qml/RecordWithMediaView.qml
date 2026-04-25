@@ -28,50 +28,8 @@ Item {
         spacing: 5
 
         // Images
-        LoaderImagePreview1 {
-            id: images1Loader
-            x: swipeMode ? -margin : 0
-            width: parent.width + (swipeMode ? 2 * margin : 0)
-            postImages: record.images
-            postContentVisibility: contentVisibility
-            postContentWarning: contentWarning
-            postContentLabeler: contentLabeler
-            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-            swipeMode: recordItem.swipeMode
-            moving: recordItem.moving
-
-            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-        }
-        LoaderImagePreview2 {
-            id: images2Loader
-            x: swipeMode ? -margin : 0
-            width: parent.width + (swipeMode ? 2 * margin : 0)
-            postImages: record.images
-            postContentVisibility: contentVisibility
-            postContentWarning: contentWarning
-            postContentLabeler: contentLabeler
-            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-            swipeMode: recordItem.swipeMode
-            moving: recordItem.moving
-
-            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-        }
-        LoaderImagePreview3 {
-            id: images3Loader
-            x: swipeMode ? -margin : 0
-            width: parent.width + (swipeMode ? 2 * margin : 0)
-            postImages: record.images
-            postContentVisibility: contentVisibility
-            postContentWarning: contentWarning
-            postContentLabeler: contentLabeler
-            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
-            swipeMode: recordItem.swipeMode
-            moving: recordItem.moving
-
-            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
-        }
-        LoaderImagePreview4 {
-            id: images4Loader
+        LoaderImageGridPreview {
+            id: imagesLoader
             x: swipeMode ? -margin : 0
             width: parent.width + (swipeMode ? 2 * margin : 0)
             postImages: record.images

@@ -3,51 +3,43 @@ import skywalker
 
 Loader {
     required property list<imageview> postImages
-    property int startImageIndex: 0
-    property int imageCount: 0
     required property int postContentVisibility // QEnums::PostContentVisibility
     required property string postContentWarning
     required property basicprofile postContentLabeler
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property bool swipeMode: false
     property bool postVisible: true
+    property bool moving: false
     property int maxImageHeight: guiSettings.maxImageHeight
 
     signal activateSwipe(int imgIndex, var previewImg)
-    signal showFullImage(int imgIndex, bool swipeMode)
 
-    id: images1Loader
-    height: calcHeight()
-    active: imageCount === 1 && postVisible
-    asynchronous: true
+    id: loader
+    height: calcHeight() + (postImages.length > guiSettings.maxPreviewImageGridSize ? guiSettings.appFontHeight + 20 : 0)
+    active: postImages.length > 0 && postVisible && !moving
 
-    sourceComponent: ImagePreview1 {
-        width: images1Loader.width
-        height: images1Loader.height
+    sourceComponent: ImageGridPreview {
         images: postImages
-        startImageIndex: images1Loader.startImageIndex
-        maskColor: bodyBackgroundColor
         contentVisibility: postContentVisibility
         contentWarning: postContentWarning
         contentLabeler: postContentLabeler
-        swipeMode: images1Loader.swipeMode
-        maxHeight: images1Loader.maxImageHeight
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: loader.swipeMode
+        postVisible: postVisible
 
-        onActivateSwipe: (imgIndex, previewImg) => images1Loader.activateSwipe(imgIndex, previewImg)
-        onShowFullImage: (imgIndex, swipeMode) => images1Loader.showFullImage(imgIndex, swipeMode)
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
 
     onStatusChanged: {
+        // Avoid unloading when moving becomes true again
         if (status == Loader.Ready)
             active = true
     }
 
-    LoaderCanvas {
-        backgroundColor: bodyBackgroundColor
-    }
-
     function calcHeight() {
-        if (imageCount !== 1)
+        const imgCount = postImages.length
+
+        if (imgCount === 0)
             return 0
 
         const filter = item ? item.getFilter() : null
@@ -55,6 +47,19 @@ Loader {
         if (filter && !filter.imageVisible())
             return filter.height
 
+        if (imgCount === 1)
+            return calcHeight1()
+
+        if (imgCount === 2)
+            return calcHeight2()
+
+        if (imgCount === 3)
+            return calcHeight3()
+
+        return calcHeight4()
+    }
+
+    function calcHeight1() {
         const image = postImages[0]
         const imgSizeKnown = image.width > 0 && image.height > 0
 
@@ -65,5 +70,20 @@ Loader {
         }
 
         return Math.min(width, maxImageHeight)
+    }
+
+    function calcHeight2() {
+        const maxWidth = maxImageHeight * 2
+        return Math.min(width, maxWidth) / 2
+    }
+
+    function calcHeight3() {
+        const maxWidth = maxImageHeight * 1.5
+        return Math.min(width, maxWidth) / 1.5
+    }
+
+    function calcHeight4() {
+        const maxWidth = maxImageHeight * 2
+        return Math.min(width, maxWidth)
     }
 }

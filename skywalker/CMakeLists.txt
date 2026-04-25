@@ -690,6 +690,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/AlsoLikedLink.qml
         SOURCES web_service_base.h
         SOURCES web_service_base.cpp
+        QML_FILES qml/ImageGridPreview.qml
+        QML_FILES qml/LoaderImageGridPreview.qml
 )
 
 target_link_libraries(libskywalker

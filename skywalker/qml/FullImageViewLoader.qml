@@ -6,6 +6,9 @@ Loader {
     required property list<var> thumbImageViewList
     property list<point> thumbImageOrigList
     property list<imageview> images
+    property int gridWidth: 0
+    property int startGridIndex: 0
+    property int startImageIndex: 0
     property int imageIndex: 0
     property bool swipeMode: false
     property bool reverse: false
@@ -14,9 +17,12 @@ Loader {
     property var videoView
     property bool isAnimatedImage: false
     property string animatedImageAlt
+    //readonly property int thumbImageIndex: Math.min(Math.max(0, imageIndex - startImageIndex), thumbImageViewList.length - 1)
+    readonly property int thumbImageIndex: imageIndex - startImageIndex
 
     signal started
-    signal finished
+    signal finished(int imgIndex)
+    signal goingBackTo(int imgIndex)
     signal activateSwipe(int imgIndex, var img)
 
     id: fullImageLoader
@@ -26,8 +32,8 @@ Loader {
         property var startCb: animationStartCb
 
         id: animation
-        thumbImage: thumbImageViewList[imageIndex]
-        thumbImageOrig: imageIndex < thumbImageOrigList.length ? thumbImageOrigList[imageIndex] : Qt.point(0, 0)
+        thumbImage: thumbImageViewList[thumbImageIndex]
+        thumbImageOrig: thumbImageIndex < thumbImageOrigList.length ? thumbImageOrigList[thumbImageIndex] : Qt.point(0, 0)
         imageAlt: isAnimatedImage ? animatedImageAlt : images[imageIndex].alt
         swipeMode: fullImageLoader.swipeMode
         reverse: fullImageLoader.reverse
@@ -51,7 +57,7 @@ Loader {
                 root.viewFullVideo(videoView, fullImg, imgAnimation.reverseRun)
             } else if (isAnimatedImage) {
                 let imgAnimation = animation
-                root.viewFullAnimatedImage(thumbImageViewList[imageIndex].url, animatedImageAlt, fullImg, imgAnimation.reverseRun)
+                root.viewFullAnimatedImage(thumbImageViewList[thumbImageIndex].url, animatedImageAlt, fullImg, imgAnimation.reverseRun)
             } else {
                 let imgAnimation = animation
                 root.viewFullImage(images, imageIndex, fullImg, imgAnimation.goBack)
@@ -59,11 +65,12 @@ Loader {
         }
 
         onReverseDone: {
-            finished()
+            finished(imageIndex)
             fullImageLoader.active = false
         }
 
         function goBack(imgIndex, closeCb) {
+            fullImageLoader.goingBackTo(imgIndex)
             startCb = closeCb
             imageIndex = imgIndex
             reverseRun()
@@ -73,13 +80,20 @@ Loader {
     function initThumbImages() {
         thumbImageOrigList = []
 
-        for (const thumbImage of thumbImageViewList) {
-            const orig = thumbImage.mapToItem(null, 0, 0)
+        // When the user scrolls through the full images, then the image to shrink
+        // can be on another grid than the grid from which the zoom started.
+        // We calculate the offset in the x-coordinate to make sure the image shrinks to
+        // the position of the new grid.
+        for (const [thumbIndex, thumbImage] of thumbImageViewList.entries()) {
+            const gridIndex = Math.floor(thumbIndex / guiSettings.maxPreviewImageGridSize)
+            const offset = gridWidth * (gridIndex - startGridIndex)
+            const orig = thumbImage.mapToItem(null, -offset, 0)
             thumbImageOrigList.push(orig)
         }
     }
 
     function show(index, swipe = false) {
+        console.debug("Show:", index)
         initThumbImages()
         imageIndex = index
         swipeMode = swipe

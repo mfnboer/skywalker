@@ -132,6 +132,7 @@ Item {
     readonly property real slowFlickVelocity: maxFlickVelocity / 10
     readonly property bool flickPixelAligned: false
     readonly property bool isAndroid: Qt.platform.os === "android"
+    readonly property int maxPreviewImageGridSize: 4
 
     // Identity
     readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"

@@ -263,54 +263,8 @@ Column {
         }
     }
 
-    // Images
-    LoaderImagePreview1 {
-        id: images1Loader
-        x: swipeMode ? -margin : 0
-        width: parent.width + (swipeMode ? 2 * margin : 0)
-        postImages: postBody.postImages
-        postContentVisibility: postBody.postContentVisibility
-        postContentWarning: postBody.postContentWarning
-        postContentLabeler: postBody.postContentLabeler
-        bodyBackgroundColor: postBody.bodyBackgroundColor
-        swipeMode: postBody.swipeMode
-        postVisible: postBody.postVisible()
-        moving: postBody.moving
-
-        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-    }
-    LoaderImagePreview2 {
-        id: images2Loader
-        x: swipeMode ? -margin : 0
-        width: parent.width + (swipeMode ? 2 * margin : 0)
-        postImages: postBody.postImages
-        postContentVisibility: postBody.postContentVisibility
-        postContentWarning: postBody.postContentWarning
-        postContentLabeler: postBody.postContentLabeler
-        bodyBackgroundColor: postBody.bodyBackgroundColor
-        swipeMode: postBody.swipeMode
-        postVisible: postBody.postVisible()
-        moving: postBody.moving
-
-        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-    }
-    LoaderImagePreview3 {
-        id: images3Loader
-        x: swipeMode ? -margin : 0
-        width: parent.width + (swipeMode ? 2 * margin : 0)
-        postImages: postBody.postImages
-        postContentVisibility: postBody.postContentVisibility
-        postContentWarning: postBody.postContentWarning
-        postContentLabeler: postBody.postContentLabeler
-        bodyBackgroundColor: postBody.bodyBackgroundColor
-        swipeMode: postBody.swipeMode
-        postVisible: postBody.postVisible()
-        moving: postBody.moving
-
-        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
-    }
-    LoaderImagePreview4 {
-        id: images4Loader
+    LoaderImageGridPreview {
+        id: imagesLoader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
         postImages: postBody.postImages
@@ -422,14 +376,8 @@ Column {
     }
 
     function closeMedia(mediaIndex, closeCb) {
-        if (images1Loader.item)
-            images1Loader.item.closeMedia(mediaIndex, closeCb)
-        else if (images2Loader.item)
-            images2Loader.item.closeMedia(mediaIndex, closeCb)
-        else if (images3Loader.item)
-            images3Loader.item.closeMedia(mediaIndex, closeCb)
-        else if (images4Loader.item)
-            images4Loader.item.closeMedia(mediaIndex, closeCb)
+        if (imagesLoader.item)
+            imagesLoader.item.closeMedia(mediaIndex, closeCb)
         else if (videoLoader.item)
             videoLoader.item.closeMedia(mediaIndex, closeCb)
         else

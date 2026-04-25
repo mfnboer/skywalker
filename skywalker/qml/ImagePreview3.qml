@@ -7,12 +7,15 @@ RoundCornerMask {
     required property string contentWarning
     required property basicprofile contentLabeler
     property list<imageview> images
+    property int startImageIndex: 0
     property int spacing: 4
     property bool swipeMode: false
     readonly property list<var> imgList: [img1, img2, img3]
-    readonly property int maxWidth: guiSettings.maxImageHeight * 1.5
+    property int maxHeight: guiSettings.maxImageHeight
+    readonly property int maxWidth: maxHeight * 1.5
 
     signal activateSwipe(int imgIndex, var previewImg)
+    signal showFullImage(int imgIndex, bool swipeMode)
 
     id: frame
     width: parent.width
@@ -37,7 +40,7 @@ RoundCornerMask {
                 id: img1
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
-                imageView: filter.getImage(0)
+                imageView: filter.getImage(startImageIndex)
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
@@ -54,7 +57,7 @@ RoundCornerMask {
                 id: img2
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
-                imageView: filter.getImage(1)
+                imageView: filter.getImage(startImageIndex + 1)
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
@@ -71,7 +74,7 @@ RoundCornerMask {
                 id: img3
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
-                imageView: filter.getImage(2)
+                imageView: filter.getImage(startImageIndex + 2)
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
@@ -97,7 +100,7 @@ RoundCornerMask {
             }
 
             if (index >= 0)
-                fullImageLoader.show(index, swipeMode)
+                showFullImage(startImageIndex + index, swipeMode)
         }
     }
 
@@ -111,22 +114,7 @@ RoundCornerMask {
         images: frame.images
     }
 
-    FullImageViewLoader {
-        id: fullImageLoader
-        thumbImageViewList: imgList
-        images: frame.images
-
-        onActivateSwipe: (imgIndex, previewImg) => frame.activateSwipe(imgIndex, previewImg)
-    }
-
     function getFilter() {
         return filter
-    }
-
-    function closeMedia(mediaIndex, closeCb) {
-        if (mediaIndex < 3)
-            fullImageLoader.hide(mediaIndex, swipeMode, closeCb)
-        else
-            closeCb()
     }
 }

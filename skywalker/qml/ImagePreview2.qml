@@ -7,11 +7,14 @@ RoundCornerMask {
     required property string contentWarning
     required property basicprofile contentLabeler
     property list<imageview> images
+    property int startImageIndex: 0
+    property int maxHeight: guiSettings.maxImageHeight
     property bool swipeMode: false
     readonly property list<var> imgList: [img1, img2]
-    readonly property int maxWidth: guiSettings.maxImageHeight * 2
+    readonly property int maxWidth: maxHeight * 2
 
     signal activateSwipe(int imgIndex, var previewImg)
+    signal showFullImage(int imgIndex, bool swipeMode)
 
     id: frame
     width: parent.width
@@ -36,7 +39,7 @@ RoundCornerMask {
                 id: img1
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
-                imageView: filter.getImage(0)
+                imageView: filter.getImage(startImageIndex)
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
@@ -51,7 +54,7 @@ RoundCornerMask {
                 id: img2
                 anchors.fill: parent
                 fillMode: Image.PreserveAspectCrop
-                imageView: filter.getImage(1)
+                imageView: filter.getImage(startImageIndex + 1)
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
@@ -77,7 +80,7 @@ RoundCornerMask {
             }
 
             if (index >= 0)
-                fullImageLoader.show(index, swipeMode)
+                showFullImage(startImageIndex + index, swipeMode)
         }
     }
 
@@ -91,22 +94,7 @@ RoundCornerMask {
         images: frame.images
     }
 
-    FullImageViewLoader {
-        id: fullImageLoader
-        thumbImageViewList: imgList
-        images: frame.images
-
-        onActivateSwipe: (imgIndex, previewImg) => frame.activateSwipe(imgIndex, previewImg)
-    }
-
     function getFilter() {
         return filter
-    }
-
-    function closeMedia(mediaIndex, closeCb) {
-        if (mediaIndex < 2)
-            fullImageLoader.hide(mediaIndex, swipeMode, closeCb)
-        else
-            closeCb()
     }
 }

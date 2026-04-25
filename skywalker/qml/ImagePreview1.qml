@@ -7,13 +7,16 @@ Item {
     required property string contentWarning
     required property basicprofile contentLabeler
     property list<imageview> images
-    readonly property int maxHeight: guiSettings.maxImageHeight
+    property int startImageIndex: 0
+    property int maxHeight: guiSettings.maxImageHeight
     property bool settingSize: false
     property bool swipeMode: false
     property string maskColor: guiSettings.backgroundColor
-    readonly property bool imgSizeKnown: images[0].width > 0 && images[0].height > 0
+    readonly property list<var> imgList: [img.item]
+    readonly property bool imgSizeKnown: images[startImageIndex].width > 0 && images[startImageIndex].height > 0
 
     signal activateSwipe(int imgIndex, var previewImg)
+    signal showFullImage(int imgIndex, bool swipeMode)
 
     id: preview
 
@@ -49,7 +52,7 @@ Item {
                 if (img.item && img.item.failedCanReload)
                     img.item.reload()
                 else
-                    fullImageLoader.show(0, swipeMode)
+                    showFullImage(startImageIndex, swipeMode)
             }
         }
 
@@ -64,21 +67,13 @@ Item {
         }
     }
 
-    FullImageViewLoader {
-        id: fullImageLoader
-        thumbImageViewList: [img.item]
-        images: preview.images
-
-        onActivateSwipe: (imgIndex, previewImg) => preview.activateSwipe(imgIndex, previewImg)
-    }
-
     Component {
         id: unknownSizeComp
 
         ThumbImageFixedSizeView {
             width: Math.min(preview.width, preview.maxHeight)
             height: width
-            image: images[0]
+            image: images[startImageIndex]
         }
     }
 
@@ -88,7 +83,7 @@ Item {
         ThumbImageKnownSizeView {
             maxWidth: preview.width
             maxHeight: preview.maxHeight
-            image: images[0]
+            image: images[startImageIndex]
             noCrop: true
         }
     }
@@ -116,12 +111,5 @@ Item {
             return img.item.height
 
         return Math.ceil(img.item.paintedHeight)
-    }
-
-    function closeMedia(mediaIndex, closeCb) {
-        if (mediaIndex < 1)
-            fullImageLoader.hide(mediaIndex, swipeMode, closeCb)
-        else
-            closeCb()
     }
 }
