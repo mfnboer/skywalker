@@ -2106,7 +2106,8 @@ QStringList UserSettings::getRecentGifs(const QString& did) const
             continue;
 
         const auto json = QJsonDocument::fromJson(s.toUtf8());
-        const ATProto::XJsonObject& xjson(json.object());
+        const auto jsonObject = json.object();
+        const ATProto::XJsonObject& xjson(jsonObject);
         const auto id = xjson.getOptionalString("id");
 
         if (id)

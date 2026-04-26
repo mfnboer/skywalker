@@ -1379,8 +1379,7 @@ ApplicationWindow {
                 if (!useOAuth)
                     popStack()
 
-                const user = did ? did : handle
-                skywalkerLogin(useOAuth, host, user, password, rememberPassword, authFactorToken,
+                skywalkerLogin(useOAuth, host, handle, did, password, rememberPassword, authFactorToken,
                                setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
         pushStack(page)
@@ -1398,7 +1397,7 @@ ApplicationWindow {
                 if (!useOAuth)
                     popStack()
 
-                skywalkerLogin(useOAuth, host, handle, password, rememberPassword, "",
+                skywalkerLogin(useOAuth, host, handle, "", password, rememberPassword, "",
                                setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid)
         })
 
@@ -1439,7 +1438,7 @@ ApplicationWindow {
                     if (userSettings.getRememberPassword(profile.did)) {
                         const host = userSettings.getHost(profile.did)
                         const password = userSettings.getPassword(profile.did)
-                        skywalkerLogin(false, host, profile.did, password, true)
+                        skywalkerLogin(false, host, profile.handle, profile.did, password, true)
                     }
                     else {
                         const host = userSettings.getHost(profile.did)
@@ -1465,13 +1464,16 @@ ApplicationWindow {
         pushStack(page)
     }
 
-    function skywalkerLogin(useOAuth, host, user, password, rememberPassword, authFactorToken,
+    function skywalkerLogin(useOAuth, host, handle, did, password, rememberPassword, authFactorToken,
                             setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) {
         if (useOAuth) {
             // For OAuth we only show the status page after login page tells us to continue.
-            skywalker.loginWithOAuth(host, user)
+            skywalker.loginWithOAuth(host, handle, did,
+                                     setAdvancedSettings, serviceAppView, serviceChat,
+                                     serviceVideoHost, serviceVideoDid)
         } else {
             showStartupStatus()
+            const user = did ? did : handle
             skywalker.loginWithPassword(host, user, password, rememberPassword, authFactorToken,
                                         setAdvancedSettings, serviceAppView, serviceChat,
                                         serviceVideoHost, serviceVideoDid)

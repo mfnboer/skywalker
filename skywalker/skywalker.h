@@ -94,7 +94,7 @@ public:
                            bool setAdvancedSettings = false, const QString serviceAppView = "",
                            const QString serviceChat = "", const QString serviceVideoHost = "",
                            const QString serviceVideoDid = "");
-    Q_INVOKABLE void loginWithOAuth(const QString host, const QString user,
+    Q_INVOKABLE void loginWithOAuth(const QString host, const QString handle, const QString& did,
                                     bool setAdvancedSettings = false, const QString serviceAppView = "",
                                     const QString serviceChat = "", const QString serviceVideoHost = "",
                                     const QString serviceVideoDid = "");

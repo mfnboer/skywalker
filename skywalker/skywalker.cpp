@@ -301,17 +301,18 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
         });
 }
 
-void Skywalker::loginWithOAuth(const QString host, const QString user,
+void Skywalker::loginWithOAuth(const QString host, QString handle, const QString& did,
                                bool setAdvancedSettings, const QString serviceAppView,
                                const QString serviceChat, const QString serviceVideoHost,
                                const QString serviceVideoDid)
 {
-    qDebug() << "Login with OAuth:" << user << "host:" << host;
+    qDebug() << "Login with OAuth:" << handle << "did:" << did << "host:" << host;
+    const QString user = did.isEmpty() ? handle : did;
     auto xrpc = std::make_unique<Xrpc::Client>(host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
-    mBsky->oauthLogin(user, OAuthController::CLIENT_ID, OAuthController::REDIRECT_URL, OAuthController::SCOPE,
+    mBsky->oauthLogin(handle, did, OAuthController::CLIENT_ID, OAuthController::REDIRECT_URL, OAuthController::SCOPE,
         [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
          serviceVideoDid](QUrl redirectUrl, QString dpopKeyAlias)
         {
@@ -360,7 +361,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
     emit loginOAuthContinue();
 
     mBsky->oauthLoginContinue(url,
-        [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
+        [this, host, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
          serviceVideoDid, dpopKeyAlias](QString did, QString scope, QString accessToken, QString refreshToken){
             qDebug() << "Got tokens, did:" << did << "scope:" << scope << "access:" << accessToken << "refresh:" << refreshToken;
             mOAuthController.reset();
