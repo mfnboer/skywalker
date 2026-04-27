@@ -288,7 +288,10 @@ void FavoriteFeeds::removeFeed(const GeneratorView& feed)
     pinFeed(feed, false);
 
     auto it = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), feed.getUri());
-    mSavedFeedsPref.mSaved.erase(it);
+
+    if (it != mSavedFeedsPref.mSaved.cend())
+        mSavedFeedsPref.mSaved.erase(it);
+
     removeFromSavedFeedsPrefsV2(feed.getUri());
     mSavedUris.erase(feed.getUri());
 
@@ -367,7 +370,10 @@ void FavoriteFeeds::unpinFeed(const GeneratorView& feed)
     }
 
     auto it = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), feed.getUri());
-    mSavedFeedsPref.mPinned.erase(it);
+
+    if (it != mSavedFeedsPref.mPinned.cend())
+        mSavedFeedsPref.mPinned.erase(it);
+
     pinToSavedFeedsPrefsV2(feed.getUri(), false);
     mPinnedUris.erase(feed.getUri());
 
@@ -421,7 +427,10 @@ void FavoriteFeeds::removeList(const ListView& list)
     pinList(list, false);
 
     auto it = std::find(mSavedFeedsPref.mSaved.cbegin(), mSavedFeedsPref.mSaved.cend(), list.getUri());
-    mSavedFeedsPref.mSaved.erase(it);
+
+    if (it != mSavedFeedsPref.mSaved.cend())
+        mSavedFeedsPref.mSaved.erase(it);
+
     removeFromSavedFeedsPrefsV2(list.getUri());
     mSavedUris.erase(list.getUri());
 
@@ -478,7 +487,10 @@ void FavoriteFeeds::unpinList(const ListView& list)
     }
 
     auto it = std::find(mSavedFeedsPref.mPinned.cbegin(), mSavedFeedsPref.mPinned.cend(), list.getUri());
-    mSavedFeedsPref.mPinned.erase(it);
+
+    if (it != mSavedFeedsPref.mPinned.cend())
+        mSavedFeedsPref.mPinned.erase(it);
+
     pinToSavedFeedsPrefsV2(list.getUri(), false);
     mPinnedUris.erase(list.getUri());
 

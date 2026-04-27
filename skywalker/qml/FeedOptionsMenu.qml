@@ -8,6 +8,9 @@ SkyMenu {
     property UserSettings userSettings: skywalker.getUserSettings()
     required property var postFeedModel
     required property var feed
+    property bool isPinnedFeed: postFeedModel.feedType === QEnums.FEED_GENERATOR ?
+                                    skywalker.favoriteFeeds.isPinnedFeed(feed.uri) :
+                                    skywalker.favoriteFeeds.isPinnedSearch(feed.name)
     property bool feedHideFollowing: false
     property bool feedSync: false
 
@@ -26,16 +29,17 @@ SkyMenu {
     }
 
     SkyMenuButton {
-        text: qsTr("Remove favorite")
-        svg: SvgFilled.star
-        svgColor: guiSettings.favoriteColor
+        text: isPinnedFeed ? qsTr("Remove favorite") : qsTr("Add favorite")
+        svg: isPinnedFeed ? SvgFilled.star : SvgOutline.star
+        svgColor: isPinnedFeed ? guiSettings.favoriteColor : guiSettings.textColor
         popup: feedOptionsMenu
         onClicked: {
             if (postFeedModel.feedType === QEnums.FEED_GENERATOR)
-                skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, false)
+                skywalker.favoriteFeeds.pinFeed(feedOptionsMenu.feed, !isPinnedFeed)
             else
-                skywalker.favoriteFeeds.pinSearch(feedOptionsMenu.feed, false)
+                skywalker.favoriteFeeds.pinSearch(feedOptionsMenu.feed, !isPinnedFeed)
 
+            isPinnedFeed = !isPinnedFeed
             skywalker.saveFavoriteFeeds()
         }
     }

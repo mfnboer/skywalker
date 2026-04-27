@@ -1290,10 +1290,12 @@ Rectangle {
     Component.onDestruction: {
         console.debug("Post destroyed:", index, "height:", height)
 
-        if (feedAcceptsInteractions && onScreen)
-            postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
+        if (ListView.view) {
+            if (feedAcceptsInteractions && onScreen)
+                postEntry.ListView.view.model.reportOffScreen(postUri, postFeedContext)
 
-        ListView.view.onContentMoved.disconnect(checkOnScreen)
+            ListView.view.onContentMoved.disconnect(checkOnScreen)
+        }
     }
 
     Component.onCompleted: {

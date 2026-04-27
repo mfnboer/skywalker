@@ -1,3 +1,7 @@
+next
+====
+* Bug fix for add/remove favorite feeds
+
 4.33
 ====
 * OAuth support

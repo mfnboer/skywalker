@@ -7,7 +7,8 @@ SkyMenu {
     property Skywalker skywalker: root.getSkywalker(userDid)
     property var userSettings: skywalker.getUserSettings()
     required property var postFeedModel
-    required property var list
+    required property listviewbasic list
+    property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
     property bool listHideFromTimeline: false
     property bool listHideReplies: false
     property bool listHideFollowing: false
@@ -27,24 +28,43 @@ SkyMenu {
     }
 
     SkyMenuButton {
-        text: qsTr("Remove favorite")
-        svg: SvgFilled.star
-        svgColor: guiSettings.favoriteColor
+        text: isPinnedList ? qsTr("Remove favorite") : qsTr("Add favorite")
+        svg: isPinnedList ? SvgFilled.star : SvgOutline.star
+        svgColor: isPinnedList ? guiSettings.favoriteColor : guiSettings.textColor
         popup: listFeedOptionsMenu
         onClicked: {
-            const favorite = skywalker.favoriteFeeds.getPinnedFeed(listFeedOptionsMenu.list.uri)
+            if (isPinnedList) {
+                const favorite = skywalker.favoriteFeeds.getPinnedFeed(list.uri)
 
-            if (favorite.isNull()) {
-                console.warn("List is not a favorite:" << listFeedOptionsMenu.list.uri)
-                return
+                if (favorite.listView.isNull()) {
+                    console.warn("List is not pinned:", list.uri)
+                    return
+                }
+
+                if (listFeedOptionsMenu.isOwnList())
+                    skywalker.favoriteFeeds.removeList(favorite.listView) // We never show own lists as saved
+                else
+                    skywalker.favoriteFeeds.pinList(favorite.listView, false)
+
+                isPinnedList = false
+                skywalker.saveFavoriteFeeds()
+            } else {
+                graphUtils.getListView(list.uri)
+            }
+        }
+
+        GraphUtils {
+            id: graphUtils
+            skywalker: listFeedOptionsMenu.skywalker
+
+            onGetListOk: (userDid, list, viewPosts) => {
+                console.debug("Pin List:", list.uri)
+                skywalker.favoriteFeeds.pinList(list, true)
+                isPinnedList = true
+                skywalker.saveFavoriteFeeds()
             }
 
-            if (listFeedOptionsMenu.isOwnList())
-                skywalker.favoriteFeeds.removeList(favorite.listView) // We never show own lists as saved
-            else
-                skywalker.favoriteFeeds.pinList(favorite.listView, false)
-
-            skywalker.saveFavoriteFeeds()
+            onGetListFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to add favorite: ${error}`), QEnums.STATUS_LEVEL_ERROR)
         }
     }
 
