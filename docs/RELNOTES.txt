@@ -1,5 +1,5 @@
-next
-====
+4.33.1
+======
 * Bug fix max image size is 1MB for avatars can linkcard preview image
 * Bug fix for mute reposts
 * Bug fix for add/remove favorite feeds
