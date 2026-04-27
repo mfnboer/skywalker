@@ -376,7 +376,8 @@ void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& na
         emit createListProgress(tr("Uploading avatar"));
 
         QByteArray blob;
-        const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, avatarImgSource, { "png" });
+        const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+            blob, ATProto::AppBskyGraph::List::MAX_BYTES_AVATAR, avatarImgSource, { "png" });
 
         if (blob.isEmpty())
         {
@@ -524,7 +525,8 @@ void GraphUtils::updateList(const QString& listUri, const QString& name,
         emit updateListProgress(tr("Uploading avatar"));
 
         QByteArray blob;
-        const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, avatarImgSource, { "png" });
+        const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+            blob, ATProto::AppBskyGraph::List::MAX_BYTES_AVATAR, avatarImgSource, { "png" });
 
         if (blob.isEmpty())
         {
@@ -969,23 +971,30 @@ bool GraphUtils::areRepostsMuted(const QString& did) const
 void GraphUtils::muteReposts(const BasicProfile& profile)
 {
     Q_ASSERT(mSkywalker);
-    ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+    const ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
 
     if (!mutedReposts.isListCreated())
     {
         if (!graphMaster())
             return;
 
+        if (mutedReposts.hasListInitFailed())
+        {
+            emit muteRepostsFailed(tr("Mute reposts failed"));
+            return;
+        }
+
         graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::MOD_LIST,
-            "Skywalker muted reposts",
+            LIST_NAME_MUTED_REPOSTS,
             "Used by Skywalker to keep track of muted reposts. Do not delete.",
-            {}, {}, RKEY_MUTED_REPOSTS,
+            {}, {}, "",
             [this, presence=getPresence(), profile](const QString& uri, const QString&){
                 if (!presence)
                     return;
 
-                Q_ASSERT(uri == mSkywalker->getMutedReposts().getListUri());
-                mSkywalker->getMutedReposts().setListCreated(true);
+                auto& mutedReposts = mSkywalker->getMutedReposts();
+                mutedReposts.setListUri(uri);
+                mutedReposts.setListCreated(true);
                 addListUser(uri, profile);
             },
             [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -1014,10 +1023,22 @@ void GraphUtils::unmuteReposts(const QString& did)
     removeListUser(mutedReposts.getListUri(), *listItemUri);
 }
 
-bool GraphUtils::isInternalList(const QString& listUri)
+void GraphUtils::findMutedRepostsList(const ListSuccessCb& successCb, const ErrorCb& errorCb)
 {
-    ATProto::ATUri atUri(listUri);
-    return atUri.isValid() && atUri.getRkey() == RKEY_MUTED_REPOSTS;
+    Q_ASSERT(mSkywalker);
+    graphMaster()->getListByName(mSkywalker->getUserDid(), LIST_NAME_MUTED_REPOSTS,
+                                 ATProto::AppBskyGraph::ListPurpose::MOD_LIST, {},
+                                 successCb, errorCb);
+}
+
+bool GraphUtils::isInternalList(const ATProto::AppBskyGraph::ListView& listView)
+{
+    const ATProto::ATUri atUri(listView.mUri);
+
+    if (atUri.isValid() && atUri.getRkey() == RKEY_MUTED_REPOSTS_DEPRECATED)
+        return true;
+
+    return listView.mName == LIST_NAME_MUTED_REPOSTS;
 }
 
 void GraphUtils::expireBlocks()

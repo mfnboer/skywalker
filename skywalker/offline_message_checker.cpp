@@ -800,7 +800,7 @@ void OffLineMessageChecker::getAvatars(const QStringList& urls)
     const bool validUrl = mImageReader.getImage(url,
         [this, url, remainingUrls](QImage image){
             QByteArray blob;
-            PhotoPicker::createBlob(blob, image, { "png" });
+            PhotoPicker::createBlob(blob, 250'000, image, { "png" });
 
             if (!blob.isNull())
                 mAvatars[url] = blob;

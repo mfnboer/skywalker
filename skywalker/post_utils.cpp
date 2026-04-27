@@ -588,7 +588,8 @@ void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBsk
 
     const auto& fileName = images.mFileNames[imgIndex];
     QByteArray blob;
-    const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, fileName);
+    const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+        blob, ATProto::AppBskyEmbed::Image::MAX_BYTES, fileName);
 
     if (blob.isEmpty())
     {
@@ -664,7 +665,10 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb,
 
     if (!thumb.isNull())
     {
-        const auto [imgMime, imgSize] = PhotoPicker::createBlob(blob, thumb, { "png", "webp" }, card.mLinkCard->getThumb());
+        const auto [imgMime, imgSize] = PhotoPicker::createBlob(
+            blob, ATProto::AppBskyEmbed::ExternalExternal::MAX_BYTES_THUMB, thumb, { "png", "webp" },
+            card.mLinkCard->getThumb());
+
         mimeType = imgMime;
     }
 

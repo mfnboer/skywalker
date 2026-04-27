@@ -410,8 +410,6 @@ public:
     Q_INVOKABLE void setThreadAutoSplit(bool autoSplit);
     Q_INVOKABLE bool getThreadAutoSplit() const;
 
-    Q_INVOKABLE QString getMutedRepostsListUri(const QString& did) const;
-
     void setUserHashtags(const QString& did, const QStringList& hashtags);
     QStringList getUserHashtags(const QString& did) const;
 

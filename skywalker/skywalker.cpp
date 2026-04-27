@@ -834,7 +834,7 @@ void Skywalker::loadContentFilterPolicies(QStringList uris)
         });
 }
 
-void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
+void Skywalker::loadMutedReposts()
 {
     Q_ASSERT(mBsky);
 
@@ -845,9 +845,18 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
         return;
     }
 
-    qDebug() << "Load muted reposts, maxPages:" << maxPages << "cursor:" << cursor;
+    mGraphUtils.findMutedRepostsList(
+        [this](const QString& uri, const QString&){
+            loadMutedRepostsContinue(uri);
+        },
+        [this](const QString& error, const QString& msg){
+            handleLoadMutedRepostsError(error, msg);
+        });
+}
 
-    const QString uri = mUserSettings.getMutedRepostsListUri(mUserDid);
+void Skywalker::loadMutedRepostsContinue(const QString& uri, int maxPages, const QString& cursor)
+{
+    qDebug() << "Load muted reposts:" << uri << "maxPages:" << maxPages << "cursor:" << cursor;
     mMutedReposts.setListUri(uri);
 
     if (maxPages <= 0)
@@ -864,7 +873,7 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
     }
 
     mBsky->getList(uri, 100, Utils::makeOptionalString(cursor),
-        [this, maxPages](auto output){
+        [this, uri, maxPages](auto output){
             mMutedReposts.setListCreated(true);
 
             for (const auto& item : output->mItems)
@@ -874,24 +883,30 @@ void Skywalker::loadMutedReposts(int maxPages, const QString& cursor)
             }
 
             if (output->mCursor)
-                loadMutedReposts(maxPages - 1, *output->mCursor);
+                loadMutedRepostsContinue(uri, maxPages - 1, *output->mCursor);
             else
                 loadTimelineHide();
         },
         [this](const QString& error, const QString& msg){
-            mMutedReposts.setListCreated(false);
-
-            if (ATProto::ATProtoErrorMsg::isListNotFound(error))
-            {
-                qDebug() << "No muted reposts list:" << error << " - " << msg;
-                loadTimelineHide();
-            }
-            else
-            {
-                qWarning() << "loadMutedReposts failed:" << error << " - " << msg;
-                emit getUserPreferencesFailed(tr("Failed to load muted reposts: %1").arg(msg));
-            }
+            handleLoadMutedRepostsError(error, msg);
         });
+}
+
+void Skywalker::handleLoadMutedRepostsError(const QString& error, const QString& msg)
+{
+    mMutedReposts.setListCreated(false);
+
+    if (ATProto::ATProtoErrorMsg::isListNotFound(error))
+    {
+        qDebug() << "No muted reposts list:" << error << " - " << msg;
+        loadTimelineHide();
+    }
+    else
+    {
+        qWarning() << "loadMutedReposts failed:" << error << " - " << msg;
+        mMutedReposts.setListInitFailed(true);
+        emit getUserPreferencesFailed(tr("Failed to load muted reposts: %1").arg(msg));
+    }
 }
 
 void Skywalker::initLabelers()
@@ -3784,6 +3799,10 @@ void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const Q
 {
     const auto* model = mAuthorListModels.get(modelId);
 
+    // HACK: for the muted reposts lists an empty URI is passed when it is not created yet.
+    if (atId.isEmpty())
+        return;
+
     if (model)
         (*model)->setGetFeedInProgress(true);
 
@@ -3805,9 +3824,7 @@ void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const Q
             if (model)
                 (*model)->setGetFeedInProgress(false);
 
-            // The muted reposts list may not have been created. Consider it as empty.
-            if (atId != mUserSettings.getMutedRepostsListUri(mUserDid))
-                emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
 

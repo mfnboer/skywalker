@@ -50,12 +50,15 @@ public:
     void setListUri(const QString& uri) { mListUri = uri; }
     bool isListCreated() const { return mListCreated; }
     void setListCreated(bool created) { mListCreated = created; }
+    bool hasListInitFailed() const { return mListInitFailed; }
+    void setListInitFailed(bool failed) { mListInitFailed = failed; }
 
 private:
     std::unordered_map<QString, QString> mDidListItemUriMap;
     std::unordered_map<QString, QString> mListItemUriDidMap;
     QString mListUri;
     bool mListCreated = false;
+    bool mListInitFailed = false;
 };
 
 class IndexedProfileStore : public ProfileStore

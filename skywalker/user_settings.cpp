@@ -1810,12 +1810,6 @@ QEnums::Script UserSettings::getScriptRecognition() const
     return QEnums::Script(script);
 }
 
-QString UserSettings::getMutedRepostsListUri(const QString& did) const
-{
-    const ATProto::ATUri uri(did, ATProto::ATUri::COLLECTION_GRAPH_LIST, RKEY_MUTED_REPOSTS);
-    return uri.toString();
-}
-
 void UserSettings::setAutoLinkCard(bool autoLinkCard)
 {
     mSettings.setValue("autoLinkCard", autoLinkCard);

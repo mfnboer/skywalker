@@ -22,7 +22,18 @@
 #endif
 
 namespace {
-constexpr int MAX_IMAGE_PIXEL_SIZE = 4000;
+
+int getMaxPixels(int maxBytes)
+{
+    if (maxBytes < 1'000'000)
+        return 1000;
+
+    if (maxBytes < 2'000'000)
+        return 2000;
+
+    return 4000;
+}
+
 }
 
 namespace Skywalker::PhotoPicker {
@@ -136,14 +147,14 @@ QImage cutRect(const QString& imgName, const QRect& rect)
     return img.copy(rect);
 }
 
-std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName, const QStringList& extraFormats)
+std::tuple<QString, QSize> createBlob(QByteArray& blob, int maxBytes, const QString& imgName, const QStringList& extraFormats)
 {
     QImage img = loadImage(imgName);
 
     if (img.isNull())
         return {};
 
-    return createBlob(blob, img, extraFormats, imgName);
+    return createBlob(blob, maxBytes, img, extraFormats, imgName);
 }
 
 // <extension, mimeType>
@@ -184,13 +195,14 @@ std::tuple<QString, QString> determineImageFormat(const QImage& img, const QStri
     return { format, mimeType };
 }
 
-std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStringList& extraFormats, const QString& name)
+std::tuple<QString, QSize> createBlob(QByteArray& blob, int maxBytes, QImage img, const QStringList& extraFormats, const QString& name)
 {
     static constexpr int MIN_IMAGE_PIXEL_SIZE = 1000;
+    const int maxPixels = getMaxPixels(maxBytes);
     qDebug() << "Original image:" << name << "geometry:" << img.size() << "bytes:" << img.sizeInBytes();
 
-    if (std::max(img.width(), img.height()) > MAX_IMAGE_PIXEL_SIZE)
-        img = ImageUtils::scaledToSize(img, MAX_IMAGE_PIXEL_SIZE);
+    if (std::max(img.width(), img.height()) > maxPixels)
+        img = ImageUtils::scaledToSize(img, maxPixels);
 
     auto [format, mimeType] = determineImageFormat(img, extraFormats, name);
     int quality = 75;
@@ -209,7 +221,7 @@ std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStrin
 
         qDebug() << "Blob created, bytes:" << blob.size() << "format:" << format << "mimetype:" << mimeType << "quality:" << quality;
 
-        if (blob.size() > ATProto::AppBskyEmbed::Image::MAX_BYTES)
+        if (blob.size() > maxBytes)
         {
             qDebug() << "Image too large:" << name << "blob bytes:" << blob.size();
             blob.clear();

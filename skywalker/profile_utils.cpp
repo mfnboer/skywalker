@@ -127,7 +127,8 @@ void ProfileUtils::updateProfile(const QString& did, const QString& name, const 
         emit updateProfileProgress(tr("Uploading avatar"));
 
         QByteArray blob;
-        const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, avatarImgSource, { "png" });
+        const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+            blob, ATProto::AppBskyActor::Profile::MAX_BYTES_AVATAR, avatarImgSource, { "png" });
 
         if (blob.isEmpty())
         {
@@ -168,7 +169,8 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         emit updateProfileProgress(tr("Uploading banner"));
 
         QByteArray blob;
-        const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, bannerImgSource, { "png" });
+        const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+            blob, ATProto::AppBskyActor::Profile::MAX_BYTES_BANNER, bannerImgSource, { "png" });
 
         if (blob.isEmpty())
         {
@@ -431,7 +433,8 @@ void ProfileUtils::continueUpdateStatus(const QString& did, const QString& uri, 
 {
     Q_ASSERT(!thumb.isNull());
     QByteArray blob;
-    const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, thumb, { "png", "webp" }, thumbUri);
+    const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+        blob, ATProto::AppBskyEmbed::ExternalExternal::MAX_BYTES_THUMB, thumb, { "png", "webp" }, thumbUri);
 
     if (blob.isEmpty())
     {

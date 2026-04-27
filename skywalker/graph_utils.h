@@ -20,6 +20,9 @@ class GraphUtils : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
+    using ListSuccessCb = std::function<void(const QString& uri, const QString& cid)>;
+    using ErrorCb = std::function<void(const QString& error, const QString& message)>;
+
     explicit GraphUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void follow(const BasicProfile& profile);
@@ -69,8 +72,10 @@ public:
     Q_INVOKABLE void muteReposts(const BasicProfile& profile);
     Q_INVOKABLE void unmuteReposts(const QString& did);
 
+    void findMutedRepostsList(const ListSuccessCb& successCb, const ErrorCb& errorCb);
+
     // Check if a list is a list internally used by Skywalker
-    static bool isInternalList(const QString& listUri);
+    static bool isInternalList(const ATProto::AppBskyGraph::ListView& listView);
 
     void startExpiryCheckTimer();
     void stopExpiryCheckTimer();

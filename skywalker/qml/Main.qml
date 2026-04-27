@@ -925,9 +925,7 @@ ApplicationWindow {
             }
 
             onMutedReposts: {
-                let userSettings = skywalker.getUserSettings()
-                let did = skywalker.getUserDid()
-                let listUri = userSettings.getMutedRepostsListUri(did)
+                let listUri = skywalker.getMutedRepostsListUri()
                 let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, listUri)
                 viewAuthorList(modelId, qsTr("Muted Reposts"),
                         qsTr("Reposts from these accounts are removed from your feed."),

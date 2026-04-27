@@ -17,12 +17,11 @@ QImage loadImage(const QString& imgName);
 
 // Create a binary blob (image/*) for uploading an image.
 // { mimetype, image size } is returned
-// If the width or height is larger than 2000 pixels, it will be scaled down to 2000 pixels.
 // The image will be rotated according to EXIF meta data.
 // EXIF meta data will be stripped from the blob.
 // imgName is "file://..." or "image://..."
-std::tuple<QString, QSize> createBlob(QByteArray& blob, const QString& imgName, const QStringList& extraFormats = { "png", "webp" });
-std::tuple<QString, QSize> createBlob(QByteArray& blob, QImage img, const QStringList& extraFormats = { "png", "webp" }, const QString& fileName = "");
+std::tuple<QString, QSize> createBlob(QByteArray& blob, int maxBytes, const QString& imgName, const QStringList& extraFormats = { "png", "webp" });
+std::tuple<QString, QSize> createBlob(QByteArray& blob, int maxBytes, QImage img, const QStringList& extraFormats = { "png", "webp" }, const QString& fileName = "");
 
 QImage cutRect(const QString& imgName, const QRect& rect);
 

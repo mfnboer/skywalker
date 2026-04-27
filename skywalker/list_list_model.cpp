@@ -271,7 +271,7 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
 
     for (auto&& listView : lists)
     {
-        if (mExcludeInternalLists && GraphUtils::isInternalList(listView->mUri))
+        if (mExcludeInternalLists && GraphUtils::isInternalList(*listView))
             continue;
 
         if (mPurpose == Purpose::LIST_PURPOSE_UNKNOWN &&

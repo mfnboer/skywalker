@@ -274,6 +274,7 @@ public:
     Following* getFollowing() { return &mFollowing; }
     Q_INVOKABLE FollowsActivityStore* getFollowsActivityStore() { return &mFollowsActivityStore; }
     ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
+    Q_INVOKABLE QString getMutedRepostsListUri() const { return mMutedReposts.getListUri(); }
     Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     ATProto::PlcDirectoryClient& getPlcDirectory() { return *mPlcDirectory; }
@@ -389,7 +390,9 @@ private:
     void loadTimelineHide(QStringList uris);
     void loadContentFilterPolicies();
     void loadContentFilterPolicies(QStringList uris);
-    void loadMutedReposts(int maxPages = 10, const QString& cursor = {});
+    void loadMutedReposts();
+    void loadMutedRepostsContinue(const QString& uri, int maxPages = 10, const QString& cursor = {});
+    void handleLoadMutedRepostsError(const QString& error, const QString& msg);
     void initLabelers();
     void loadLabelSettings();
     void removeLabelerSubscriptions(const std::unordered_set<QString>& dids);
