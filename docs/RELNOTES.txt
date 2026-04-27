@@ -1,5 +1,6 @@
 next
 ====
+* Bug fix for mute reposts
 * Bug fix for add/remove favorite feeds
 
 4.33
