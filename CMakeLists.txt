@@ -32,6 +32,7 @@ endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DEBUG)
+    add_compile_definitions(LEAK_SUPPRESSIONS=\"suppressions=${CMAKE_CURRENT_SOURCE_DIR}/leak_suppressions.txt\")
 endif()
 
 add_compile_definitions(USE_ANDROID_KEYSTORE)

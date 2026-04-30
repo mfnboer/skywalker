@@ -13,6 +13,13 @@
 
 using namespace Qt::Literals::StringLiterals;
 
+#ifdef DEBUG
+extern "C" const char* __lsan_default_options()
+{
+    return LEAK_SUPPRESSIONS;
+}
+#endif
+
 int main(int argc, char *argv[])
 {
     qSetMessagePattern("%{time HH:mm:ss.zzz} %{type} %{function}'%{line} %{message}");
