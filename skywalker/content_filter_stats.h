@@ -39,6 +39,8 @@ public:
     ContentFilterStats(const ContentFilterStats&) = default;
     ContentFilterStats& operator=(const ContentFilterStats&) = default;
 
+    void setEnabled(bool enabled);
+
     int total() const { return mPosts.size(); }
     int checkedPosts() const { return mCheckedPostCids.size(); }
 
@@ -140,6 +142,7 @@ private:
     std::deque<Post> mPosts;
     PostHideInfoMap mPostHideInfoMap;
     std::unordered_set<QString> mCheckedPostCids;
+    bool mEnabled = false;
 };
 
 }

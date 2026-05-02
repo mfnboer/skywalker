@@ -1240,6 +1240,20 @@ QStringList UserSettings::getContentLabelPrefListUris(const QString& did) const
     return QStringList{uriSet.begin(), uriSet.end()};
 }
 
+void UserSettings::setContentFilterStatsEnabled(bool enabled)
+{
+    if (getContentFilterStatsEnabled() == enabled)
+        return;
+
+    mSettings.setValue("contentFilterStatsEnabled", enabled);
+    emit contentFilterStatsEnabledChanged();
+}
+
+bool UserSettings::getContentFilterStatsEnabled()
+{
+    return mSettings.value("contentFilterStatsEnabled", false).toBool();
+}
+
 void UserSettings::setBookmarks(const QString& did, const QStringList& bookmarks)
 {
     mSettings.setValue(key(did, "bookmarks"), bookmarks);

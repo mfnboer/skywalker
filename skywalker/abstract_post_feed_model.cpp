@@ -62,6 +62,11 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
             [this](const QString& uri){ listAdded(uri); }, Qt::QueuedConnection);
 }
 
+void AbstractPostFeedModel::setContentFilterStatsEnabled(bool enabled)
+{
+    mContentFilterStats.setEnabled(enabled);
+}
+
 void AbstractPostFeedModel::setReverseFeed(bool reverse)
 {
     qDebug() << "Reverse feed:" << reverse << mModelId;

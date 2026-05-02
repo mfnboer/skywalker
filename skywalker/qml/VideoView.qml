@@ -31,7 +31,10 @@ Column {
     property string transcodedSource
 
     readonly property bool videoAutoPlay: isGif ? userSettings.gifAutoPlay : userSettings.videoAutoPlay
-    property bool autoLoad: (videoAutoPlay || userSettings.videoAutoLoad) && !swipeMode || isFullVideoFeedViewMode || streamingEnabled
+
+    // Do not autoLoad when streaming is enabled. This saves memory (no preloading of the stream).
+    property bool autoLoad: (videoAutoPlay || (userSettings.videoAutoLoad && !streamingEnabled)) && !swipeMode || isFullVideoFeedViewMode
+
     property bool autoPlay: (videoAutoPlay && !swipeMode) || isFullVideoFeedViewMode
     property bool loopPlay: userSettings.videoLoopPlay || isGif
     property double playbackRate: 1.0
@@ -279,6 +282,8 @@ Column {
                 audioOutput: audioOutput
                 playbackRate: videoStack.playbackRate
 
+                onMediaStatusChanged: console.debug("MEDIA STATUS:", mediaStatus)
+
                 onPlayingChanged: {
                     if (videoPlayer.playing) {
                         manualStop = false
@@ -381,7 +386,7 @@ Column {
             // inidcator will not restart anymore.
             BusyIndicator {
                 anchors.centerIn: parent
-                running: (videoPlayer.playing && videoPlayer.isLoading()) ||
+                running: (videoPlayer.isLoading()) ||
                          (m3u8Reader.loading && !autoLoad)
             }
             BusyIndicator {
@@ -805,6 +810,8 @@ Column {
 
             if (autoLoad)
                 transcodedSource = videoSource
+            else
+                m3u8Reader.getVideoStream(videoView.playlistUrl) // set duration
 
             if (autoPlay)
                 videoPlayer.start()

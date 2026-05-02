@@ -30,7 +30,7 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
 endif()
 
-set(ENABLE_ASAN ON)
+set(ENABLE_ASAN OFF)
 set(ENABLE_TEST_COVERAGE OFF)
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)

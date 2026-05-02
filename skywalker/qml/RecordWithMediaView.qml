@@ -75,6 +75,7 @@ Item {
         }
 
         Loader {
+            id: recordLoader
             width: parent.width
             active: !recordItem.swipeMode && recordItem.showRecord
 
@@ -88,7 +89,10 @@ Item {
     }
 
     function movedOffScreen() {
-        if (record.video && videoLoader.item)
+        if (videoLoader.item)
             videoLoader.item.pause()
+
+        if (recordLoader.item)
+            recordLoader.item.movedOffScreen()
     }
 }

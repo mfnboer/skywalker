@@ -413,6 +413,7 @@ private:
                                 const QString& serviceChat, const QString& serviceVideoHost,
                                 const QString& serviceVideoDid);
     void updateGlobalFeedOrder();
+    void updateContentFilterStats();
     void handleShowLink(const QString& url);
     ATProto::PostMaster* postMaster();
     ForYou* getForYou();

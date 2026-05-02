@@ -97,6 +97,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
     connect(&mUserSettings, &UserSettings::globalFeedOrderChanged, this, &Skywalker::updateGlobalFeedOrder);
+    connect(&mUserSettings, &UserSettings::contentFilterStatsEnabledChanged, this, & Skywalker::updateContentFilterStats);
 
     connect(&mContentFilterPolicies, &ListStore::listRemoved, this,
             [this](const QString& uri){ mUserSettings.removeContentLabelPrefList(mUserDid, uri); });
@@ -198,6 +199,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
     connect(&mUserSettings, &UserSettings::globalFeedOrderChanged, this, &Skywalker::updateGlobalFeedOrder);
+    connect(&mUserSettings, &UserSettings::contentFilterStatsEnabledChanged, this, & Skywalker::updateContentFilterStats);
 
     // The author and post caches are global. When multiple sessions are used
     // this will be mostly fine. The profiles and post content is good. Only
@@ -1016,6 +1018,7 @@ void Skywalker::dataMigration()
 
 void Skywalker::syncTimeline(int maxPages)
 {
+    mTimelineModel.setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
     mTimelineModel.setReverseFeed(mUserSettings.getReverseTimeline(mUserDid));
     const auto timestamp = mUserSettings.getSyncTimestamp(mUserDid);
 
@@ -3058,6 +3061,7 @@ int Skywalker::createSearchPostFeedModel(const QString& feedName)
     auto model = std::make_unique<SearchPostFeedModel>(
         feedName, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
+    model->setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
     model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, feedName));
     const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
@@ -3291,6 +3295,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
             mBsky, this);
     model->enableLanguageFilter(true);
+    model->setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
     model->setReverseFeed(mUserSettings.getFeedReverse(mUserDid, generatorView.getUri()));
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
@@ -3305,6 +3310,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
     model->enableLanguageFilter(true);
+    model->setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
     model->setReverseFeed(mUserSettings.getFeedReverse(mUserDid, listView.getUri()));
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
@@ -4888,6 +4894,18 @@ void Skywalker::updateGlobalFeedOrder()
         const QString name = model->getFeedName();
         model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, name));
     }
+}
+
+void Skywalker::updateContentFilterStats()
+{
+    const bool contentFilterStatsEnabled = mUserSettings.getContentFilterStatsEnabled();
+    mTimelineModel.setContentFilterStatsEnabled(contentFilterStatsEnabled);
+
+    for (auto& [_,model] : mPostFeedModels.items())
+        model->setContentFilterStatsEnabled(contentFilterStatsEnabled);
+
+    for (auto& [_,model] : mSearchPostFeedModels.items())
+        model->setContentFilterStatsEnabled(contentFilterStatsEnabled);
 }
 
 void Skywalker::handleShowLink(const QString& url)

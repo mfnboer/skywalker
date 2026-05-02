@@ -2316,6 +2316,13 @@ ApplicationWindow {
     }
 
     function viewContentFilterStats(postFeedModel) {
+        let userSettings = skywalker.getUserSettings()
+
+        if (!userSettings.contentFilterStatsEnabled) {
+            skywalker.showStatusMessage(qsTr("Filter posts tracking is disabled. Enable in Moderation menu."), QEnums.STATUS_LEVEL_INFO, 5)
+            return
+        }
+
         const statsModel = postFeedModel.createContentFilterStatsModel()
         let component = guiSettings.createComponent("ContentFilterStatsView.qml")
         let view = component.createObject(root, { model: statsModel, sideBarSubTitle: postFeedModel.feedName })

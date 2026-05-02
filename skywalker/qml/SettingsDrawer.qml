@@ -5,6 +5,8 @@ import skywalker
 SkyDrawer {
     property basicprofile user
     property int inviteCodeCount: 0
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings();
     readonly property int iconSize: 30
     readonly property real menuFontSize: guiSettings.scaledFont(10/8)
 
@@ -157,6 +159,13 @@ SkyDrawer {
                         svg: SvgOutline.focusHashtag
                         popup: moderationMenu
                         onClicked: focusHashtags()
+                    }
+                    MenuSeparator {}
+                    AccessibleMenuItem {
+                        text: qsTr("Track filtered posts")
+                        checkable: true
+                        checked: userSettings.contentFilterStatsEnabled
+                        onCheckedChanged: userSettings.contentFilterStatsEnabled = checked
                     }
                 }
             }

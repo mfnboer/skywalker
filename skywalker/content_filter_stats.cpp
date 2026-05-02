@@ -35,6 +35,15 @@ ContentFilterStats::ContentFilterStats(const IListStore& timelineHide) :
 {
 }
 
+void ContentFilterStats::setEnabled(bool enabled)
+{
+    if (!enabled)
+        clear();
+
+    mEnabled = enabled;
+    qDebug() << "Enabled:" << enabled;
+}
+
 void ContentFilterStats::clear()
 {
     mMutedAuthor = 0;
@@ -77,6 +86,9 @@ void ContentFilterStats::clear()
 
 void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideReason, const Details& details)
 {
+    if (!mEnabled)
+        return;
+
     if (mPostHideInfoMap.contains(post.getCid()))
     {
         qDebug() << "Post already reported:" << post.getUri() << post.getCid();
@@ -178,10 +190,14 @@ void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideRea
 
     mPostHideInfoMap[post.getCid()] = { hideReason, details };
     addPost(post);
+    qDebug() << "Posts:" << mPosts.size() << "Checked:" << mCheckedPostCids.size() << "HideInfoMap:" << mPostHideInfoMap.size() << "ProfileMap:" << mProfileMap.size() << "ListMap:" << mListMap.size();
 }
 
 void ContentFilterStats::reportChecked(const Post& post)
 {
+    if (!mEnabled)
+        return;
+
     mCheckedPostCids.insert(post.getCid());
 }
 

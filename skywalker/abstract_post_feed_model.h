@@ -153,6 +153,8 @@ public:
     void setModelId(int modelId) { mModelId = modelId; }
     Q_INVOKABLE int getModelId() const { return mModelId; }
 
+    void setContentFilterStatsEnabled(bool enabled);
+
     virtual void setReverseFeed(bool reverse);
     bool isReverseFeed() const { return mReverseFeed; }
 

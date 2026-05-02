@@ -523,6 +523,7 @@ ColumnLayout {
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
+        textFormat: Text.StyledText
         text: qsTr("Higher quality requires more network bandwidth (data).<br>High Definition (HD) is 1280x720 pixels.<br>Standard Definition (SD) is 640x360 pixels.<br>HD WiFi uses HD when you are connected to WiFi.")
         visible: !userSettings.videoStreamingEnabled
     }

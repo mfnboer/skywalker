@@ -66,6 +66,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
     Q_PROPERTY(double fontScale READ getFontScale WRITE setFontScale NOTIFY fontScaleChanged FINAL)
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
+    Q_PROPERTY(bool contentFilterStatsEnabled READ getContentFilterStatsEnabled WRITE setContentFilterStatsEnabled NOTIFY contentFilterStatsEnabledChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
     Q_PROPERTY(bool wrapLabels READ getWrapLabels WRITE setWrapLabels NOTIFY wrapLabelsChanged FINAL)
@@ -287,6 +288,9 @@ public:
     std::vector<std::tuple<QString, QString, QString>> getContentLabelPrefKeys(const QString& did) const override;
 
     QStringList getContentLabelPrefListUris(const QString& did) const override;
+
+    void setContentFilterStatsEnabled(bool enabled);
+    bool getContentFilterStatsEnabled();
 
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
@@ -568,6 +572,7 @@ signals:
     void threadColorChanged();
     void fontScaleChanged();
     void favoritesBarPositionChanged();
+    void contentFilterStatsEnabledChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();
     void wrapLabelsChanged();
