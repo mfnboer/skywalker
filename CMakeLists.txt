@@ -30,17 +30,23 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
 endif()
 
+set(ENABLE_ASAN ON)
+set(ENABLE_TEST_COVERAGE OFF)
+
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DEBUG)
     add_compile_definitions(LEAK_SUPPRESSIONS=\"suppressions=${CMAKE_CURRENT_SOURCE_DIR}/leak_suppressions.txt\")
 endif()
 
-add_compile_definitions(USE_ANDROID_KEYSTORE)
+if (ANDROID)
+    add_compile_definitions(USE_ANDROID_KEYSTORE)
+endif()
+
 add_compile_options(-Wall -Wextra -Werror)
 
 message("BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 
-if (NOT ANDROID AND NOT CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+if (NOT ANDROID AND NOT CMAKE_BUILD_TYPE MATCHES RelWithDebInfo AND ENABLE_ASAN)
     add_compile_options(-fsanitize=address)
     add_compile_options(-fno-omit-frame-pointer)
     add_link_options(-fsanitize=address)

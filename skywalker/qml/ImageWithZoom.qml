@@ -6,6 +6,7 @@ ImageAutoRetry {
 
     id: img
     transform: Translate { id: imgTranslation }
+    cache: false
 
     ZoomHandler {
         onScaleChanged: (delta) => {

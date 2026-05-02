@@ -146,6 +146,7 @@ SkyPage {
                     height: width * (bannerHeight / bannerWidth)
                     source: authorBanner
                     fillMode: Image.PreserveAspectFit
+                    cache: false
 
                     Accessible.role: Accessible.Button
                     Accessible.name: qsTr("change banner")

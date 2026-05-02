@@ -155,6 +155,7 @@ Item {
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
                 smooth: false
+                cache: false
 
                 Loader {
                     anchors.right: parent.right

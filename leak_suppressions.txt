@@ -1,6 +1,13 @@
 leak:wl_proxy_marshal_array_flags
 leak:libfontconfig.so
+leak:qfontconfigdatabase.cpp
+leak:qfontengine_ft.cpp
+leak:QFontEngine
 leak:qcollator.cpp
 leak:libicuuc.so
 leak:qlocale.cpp
 leak:qarraydata.cpp
+leak:harfbuzz
+leak:svg_filled.h
+leak:svg_outline.h
+leak:QV4::IdentifierHash

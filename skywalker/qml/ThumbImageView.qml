@@ -8,6 +8,7 @@ ImageAutoRetry {
 
     id: img
     source: imageView.thumbUrl
+    cache: false
     Accessible.role: Accessible.StaticText // Graphic role does not work??
     Accessible.name: qsTr(`picture: ${imageView.alt}`)
 

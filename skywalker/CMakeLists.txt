@@ -20,12 +20,16 @@ endif()
 add_compile_options(-Wall -Wextra -Werror)
 
 if (NOT ANDROID AND NOT CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    add_compile_options(-fsanitize=address)
-    add_compile_options(-fno-omit-frame-pointer)
-    add_link_options(-fsanitize=address)
+    if (ENABLE_ASAN)
+        add_compile_options(-fsanitize=address)
+        add_compile_options(-fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address)
+    endif()
 
-    add_compile_options(-fprofile-arcs -ftest-coverage)
-    add_link_options(-fprofile-arcs -ftest-coverage)
+    if (ENABLE_TEST_COVERAGE)
+        add_compile_options(-fprofile-arcs -ftest-coverage)
+        add_link_options(-fprofile-arcs -ftest-coverage)
+    endif()
 endif()
 
 set(QT_QML_GENERATE_QMLLS_INI "ON" CACHE STRING "qmlls.ini")
@@ -703,9 +707,13 @@ target_link_libraries(libskywalker
 )
 
 if (NOT ANDROID)
+    if (ENABLE_TEST_COVERAGE)
+        set(COVERAGE_LIB -lgcov)
+    endif()
+
     target_link_libraries(libskywalker
         PRIVATE Qt6::HttpServer
-        -lgcov
+        ${COVERAGE_LIB}
     )
 endif()
 

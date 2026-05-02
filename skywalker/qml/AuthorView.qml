@@ -145,6 +145,7 @@ SkyPage {
                     height: parent.width / 3
                     source: authorBanner
                     fillMode: Image.PreserveAspectCrop
+                    cache: false
                     indicateLoading: false
                     visible: authorBanner && contentVisible() && status === Image.Ready
 

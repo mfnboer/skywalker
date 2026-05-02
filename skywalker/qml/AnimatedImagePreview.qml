@@ -31,6 +31,8 @@ RoundCornerMask {
         height: aspectRatio > 0.0 ? width * aspectRatio : Math.min(width, guiSettings.maxImageHeight)
         Layout.fillWidth: true
         fillMode: Image.PreserveAspectFit
+        sourceSize.width: width * Screen.devicePixelRatio
+        sourceSize.height: height * Screen.devicePixelRatio
         url: filter.imageVisible() ? frame.url : ""
 
         onStatusChanged: {
