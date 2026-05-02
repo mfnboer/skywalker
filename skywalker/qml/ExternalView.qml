@@ -58,6 +58,7 @@ Item {
             height: gifLoader.height
             uri: postExternal.uri
             title: postExternal.title
+            description: postExternal.description
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
             contentLabeler: view.contentLabeler

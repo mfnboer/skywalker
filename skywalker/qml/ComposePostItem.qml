@@ -17,6 +17,7 @@ Item {
     property generatorview quoteFeed
     property listview quoteList
     property tenorgif gif
+    property string gifAltText: ""
     property var card: null
     property string language: ""
     property int languageSource: QEnums.LANGUAGE_SOURCE_NONE

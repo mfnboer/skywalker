@@ -6,6 +6,7 @@ import skywalker
 RoundCornerMask {
     required property string url
     property string title
+    property string description
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     required property basicprofile contentLabeler
@@ -13,6 +14,9 @@ RoundCornerMask {
     property size imgSize
     readonly property double aspectRatio: (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
     property alias status: img.status
+
+    // HACK: Alt text for a GIF is stored in the description iwth this prefix.
+    readonly property string altPrefix: "Alt: "
 
     id: frame
     width: filter.imageVisible() ? img.width : parent.width
@@ -34,6 +38,7 @@ RoundCornerMask {
         sourceSize.width: width * Screen.devicePixelRatio
         sourceSize.height: height * Screen.devicePixelRatio
         url: filter.imageVisible() ? frame.url : ""
+        showAlt: hasAlt()
 
         onStatusChanged: {
             if (status == Image.Ready)
@@ -74,11 +79,22 @@ RoundCornerMask {
         id: fullImageLoader
         thumbImageViewList: [img]
         isAnimatedImage: true
-        animatedImageAlt: title
+        animatedImageAlt: getAltText()
     }
 
     SkyImageUtils {
         id: imageUtils
+    }
+
+    function hasAlt() {
+        return description.startsWith(altPrefix)
+    }
+
+    function getAltText() {
+        if (hasAlt())
+            return description.slice(altPrefix.length)
+
+        return title
     }
 
     function getFilter() {

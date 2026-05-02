@@ -358,6 +358,7 @@ SkyPage {
                     property bool quoteFixed: false
                     property generatorview quoteFeed
                     property listview quoteList
+                    property string gifAltText
                     property bool cwSuggestive: false
                     property bool cwNudity: false
                     property bool cwPorn: false
@@ -388,6 +389,7 @@ SkyPage {
                         threadPosts.postList[index].quoteFeed = quoteFeed
                         threadPosts.postList[index].quoteList = quoteList
                         threadPosts.postList[index].gif = gifAttachment.gif
+                        threadPosts.postList[index].gifAltText = gifAltText
                         threadPosts.postList[index].card = linkCard.card
                         threadPosts.postList[index].cwSuggestive = cwSuggestive
                         threadPosts.postList[index].cwNudity = cwNudity
@@ -423,6 +425,8 @@ SkyPage {
                             gifAttachment.show(threadPosts.postList[index].gif)
                         else
                             gifAttachment.hide()
+
+                        gifAltText = threadPosts.postList[index].gifAltText
 
                         cwSuggestive = threadPosts.postList[index].cwSuggestive
                         cwNudity = threadPosts.postList[index].cwNudity
@@ -762,6 +766,7 @@ SkyPage {
                     // GIF attachment
                     AnimatedImage {
                         property tenorgif gif
+                        property alias altText: postItem.gifAltText
                         readonly property int gifWidth: gif ? (gif.smallSize.width > 0 ? gif.smallSize.width : 320) : 1
 
                         id: gifAttachment
@@ -785,6 +790,31 @@ SkyPage {
 
                         function hide() {
                             gifAttachment.gif = nullGif
+                            altText = ""
+                        }
+
+                        function hasAltText() {
+                            return Boolean(altText)
+                        }
+
+                        function editAltText() {
+                            let component = guiSettings.createComponent("AltTextEditor.qml")
+                            let altPage = component.createObject(page, {
+                                imgSource: gif.imageUrl,
+                                text: altText })
+                            altPage.onAltTextChanged.connect((text) => {
+                                altText = text
+                                root.popStack()
+                            })
+                            root.pushStack(altPage)
+                        }
+
+                        SkyButton {
+                            height: 34
+                            flat: gifAttachment.hasAltText()
+                            text: gifAttachment.hasAltText() ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
+                            onClicked: gifAttachment.editAltText()
+                            Accessible.name: gifAttachment.hasAltText() ? qsTr("edit alt text for GIF") : qsTr("add alt text to GIF")
                         }
 
                         SvgButton {

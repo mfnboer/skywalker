@@ -5,6 +5,7 @@ import skywalker
 Item {
     required property string uri
     required property string title
+    required property string description
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     required property basicprofile contentLabeler
@@ -18,6 +19,7 @@ Item {
         id: gifImage
         url: gifUtils.getGifUrl(view.uri)
         title: view.title
+        description: view.description
         contentVisibility: view.contentVisibility
         contentWarning: view.contentWarning
         contentLabeler: view.contentLabeler

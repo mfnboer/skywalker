@@ -24,6 +24,8 @@ SkyPage {
         id: previewLoader
         active: Boolean(previewImage)
 
+        // Do not disable cache or set sourceSize. That will cause a flicker
+        // between AnimateToFullImage and this view.
         sourceComponent: Image {
             parent: Overlay.overlay
             x: previewImage.relX

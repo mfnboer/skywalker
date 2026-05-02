@@ -15,7 +15,7 @@ VideoThumbnail {
         flat: videoAttachement.hasAltText()
         text: videoAttachement.hasAltText() ? qsTr("ALT") : qsTr("+ALT", "add alternative text button")
         onClicked: videoAttachement.editAltText()
-        Accessible.name: videoAttachement.hasAltText(index) ? qsTr(`edit alt text for picture ${(index + 1)}`) : qsTr(`add alt text to picture ${(index + 1)}`)
+        Accessible.name: videoAttachement.hasAltText() ? qsTr("edit alt text for video") : qsTr("add alt text to video")
     }
 
     SvgButton {
