@@ -71,22 +71,34 @@ QSize GifUtils::getGifSize(const QString& link) const
 
     const QUrlQuery query(url.query());
 
+    // URL in post has ww and hh as size tags.
+    const QSize sz = getGifSize(query, "ww", "hh");
+
+    if (sz.isValid())
+        return sz;
+
+    // URL in draft has gifwidth and gifHeight as tafgs
+    return getGifSize(query, "gifWidth", "gifHeight");
+}
+
+QSize GifUtils::getGifSize(const QUrlQuery& query, const QString& widthTag, const QString& heightTag) const
+{
     // These query parameters are available in Tenor links
-    if (!query.hasQueryItem("hh") || !query.hasQueryItem("ww"))
+    if (!query.hasQueryItem(heightTag) || !query.hasQueryItem(widthTag))
         return QSize{-1, -1};
 
-    const int width = query.queryItemValue("ww").toInt();
+    const int width = query.queryItemValue(widthTag).toInt();
 
     if (width <= 0)
         return QSize{-1, -1};
 
-    const int height = query.queryItemValue("hh").toInt();
+    const int height = query.queryItemValue(heightTag).toInt();
 
     if (height <= 0)
         return QSize{-1, -1};
 
     const auto sz = QSize{width, height};
-    qDebug() << "Size:" << sz << "GIF:" << link;
+    qDebug() << "Size:" << sz;
     return sz;
 }
 

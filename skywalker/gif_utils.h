@@ -26,6 +26,7 @@ private:
     QString getGiphyMediaUrl(const QString& link) const;
     QString getTenorViewGif(const QString& link) const;
     QString getTenorMediaGif(const QString& link) const;
+    QSize getGifSize(const QUrlQuery& query, const QString& widthTag, const QString& heightTag) const;
     QString convertGrayskyToTenor(const QString& link) const;
 };
 

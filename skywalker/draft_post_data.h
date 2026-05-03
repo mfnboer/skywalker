@@ -41,6 +41,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(GeneratorView quoteFeed READ quoteFeed WRITE setQuoteFeed NOTIFY quoteFeedChanged FINAL)
     Q_PROPERTY(ListView quoteList READ quoteList WRITE setQuoteList NOTIFY quoteListChanged FINAL)
     Q_PROPERTY(TenorGif gif READ gif WRITE setGif NOTIFY gifChanged FINAL)
+    Q_PROPERTY(QString gifAltText READ gifAltText WRITE setGifAltText NOTIFY gifAltTextChanged FINAL)
     Q_PROPERTY(QString externalLink READ externalLink WRITE setExternalLink NOTIFY externalLinkChanged FINAL)
     Q_PROPERTY(QStringList labels READ labels WRITE setLabels NOTIFY labelsChanged FINAL)
     Q_PROPERTY(QString language READ language WRITE setLanguage NOTIFY languageChanged FINAL)
@@ -108,6 +109,8 @@ public:
     void setQuoteList(const ListView& newQuoteList);
     const TenorGif& gif() const;
     void setGif(const TenorGif &newGif);
+    QString gifAltText() const;
+    void setGifAltText(const QString& gifAltText);
     const QString& externalLink() const;
     void setExternalLink(const QString& externalLink);
     QStringList labels() const;
@@ -154,6 +157,7 @@ signals:
     void quoteFeedChanged();
     void quoteListChanged();
     void gifChanged();
+    void gifAltTextChanged();
     void externalLinkChanged();
     void labelsChanged();
     void languageChanged();
@@ -192,6 +196,7 @@ private:
     GeneratorView mQuoteFeed;
     ListView mQuoteList;
     TenorGif mGif;
+    QString mGifAltText;
     QString mExternalLink;
     QStringList mLabels;
     QString mLanguage;
@@ -508,6 +513,19 @@ inline void DraftPostData::setGif(const TenorGif &newGif)
 {
     mGif = newGif;
     emit gifChanged();
+}
+
+inline QString DraftPostData::gifAltText() const
+{
+    return mGifAltText;
+}
+
+inline void DraftPostData::setGifAltText(const QString& gifAltText)
+{
+    if (mGifAltText == gifAltText)
+        return;
+    mGifAltText = gifAltText;
+    emit gifAltTextChanged();
 }
 
 inline const QString& DraftPostData::externalLink() const

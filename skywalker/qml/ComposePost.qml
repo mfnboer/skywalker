@@ -2466,15 +2466,20 @@ SkyPage {
                 tenor.registerShare(postItem.gif)
 
             const attribution = postItem.gif.isGiphy() ? "Powered by Giphy" : "via Tenor"
+
+            // HACK: Prefix "Alt: " is used to indicate an ALT-text
+            const description = postItem.gifAltText ? `Alt: ${postItem.gifAltText}` :
+                      qsTr("This GIF has been posted from Skywalker for Android. " +
+                           "Get Skywalker from Google Play.") +
+                           (`<br>Bluesky: ${guiSettings.skywalkerHandle}`)
+
             const gifAttachment = threadPosts.itemAt(postIndex).getGifAttachment()
             const gifSourceSize = gifAttachment.sourceSize
 
             let gifCard = linkCardReader.makeLinkCard(
                     postItem.gif.getUrlForPosting(gifSourceSize),
                     `${postItem.gif.description} (${attribution})\nPosted from Skywalker ${guiSettings.skywalkerHandle}`,
-                    qsTr("This GIF has been posted from Skywalker for Android. " +
-                         "Get Skywalker from Google Play.") +
-                         (`<br>Bluesky: ${guiSettings.skywalkerHandle}`),
+                    description,
                     postItem.gif.imageUrl)
 
             postUtils.post(postText, gifCard,
@@ -2485,11 +2490,13 @@ SkyPage {
                            labels, postItem.language,
                            postFeedContext)
         } else if (!postItem.gif.isNull() && postItem.gif.isGiphy() && postItem.gif.mp4Url) {
+            const altText = postItem.gifAltText ? postItem.gifAltText : postItem.gif.description
+
             // Upload Giphy GIF as MP4
             postUtils.checkVideoLimits(
                 () => postUtils.postVideo(postText, postItem.gif.mp4Url,
                         true, /* isGif */
-                        postItem.gif.description, /* alt */
+                        altText,
                         postItem.gif.size.width, postItem.gif.size.height,
                         parentUri, parentCid,
                         rootUri, rootCid,
@@ -2595,7 +2602,8 @@ SkyPage {
                         qUri, qCid, postItem.quoteAuthor, UnicodeFonts.toPlainText(postItem.quoteText),
                         postItem.quoteDateTime, postItem.quoteFixed,
                         postItem.quoteFeed, postItem.quoteList,
-                        postItem.gif, postItem.card, labels, postItem.language,
+                        postItem.gif, postItem.gifAltText,
+                        postItem.card, labels, postItem.language,
                         restrictReply, allowReplyMentioned, allowReplyFollower, allowReplyFollowing,
                         getReplyRestrictionListUris(), !allowQuoting)
 
@@ -2622,7 +2630,8 @@ SkyPage {
                                 qUriItem, qCidItem, threadItem.quoteAuthor, UnicodeFonts.toPlainText(threadItem.quoteText),
                                 threadItem.quoteDateTime, threadItem.quoteFixed,
                                 threadItem.quoteFeed, threadItem.quoteList,
-                                threadItem.gif, threadItem.card, labelsItem, threadItem.language,
+                                threadItem.gif, threadItem.gifAltText,
+                                threadItem.card, labelsItem, threadItem.language,
                                 false, false, false, false,
                                 [], false)
 
@@ -2756,6 +2765,7 @@ SkyPage {
             postItem.quoteList = draftData.quoteList
 
             postItem.gif = draftData.gif
+            postItem.gifAltText = draftData.gifAltText
 
             if (draftData.externalLink)
                 linkCardReader.getLink(j, draftData.externalLink)

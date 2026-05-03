@@ -77,7 +77,8 @@ DraftPostData* DraftPosts::createDraft(
     const BasicProfile& quoteAuthor, const QString& quoteText,
     const QDateTime& quoteDateTime, bool quoteFixed,
     const GeneratorView& quoteFeed, const ListView& quoteList,
-    const TenorGif gif, const LinkCard* card, const QStringList& labels,
+    const TenorGif gif, const QString& gifAltText,
+    const LinkCard* card, const QStringList& labels,
     const QString& language,
     bool restrictReplies, bool allowMention, bool allowFollower, bool allowFollowing,
     const QStringList& allowLists, bool embeddingDisabled,
@@ -123,6 +124,7 @@ DraftPostData* DraftPosts::createDraft(
     draft->setQuoteFeed(quoteFeed);
     draft->setQuoteList(quoteList);
     draft->setGif(gif);
+    draft->setGifAltText(gifAltText);
 
     if (card)
         draft->setExternalLink(card->getLink());
@@ -269,7 +271,7 @@ ATProto::AppBskyFeed::Record::Post::SharedPtr DraftPosts::createPost(const Draft
         return nullptr;
 
     if (!draftPost->gif().isNull())
-        addGifToPost(*post, draftPost->gif());
+        addGifToPost(*post, draftPost->gif(), draftPost->gifAltText());
     else if (!draftPost->externalLink().isEmpty())
         addExternalLinkToPost(*post, draftPost->externalLink());
 
@@ -404,6 +406,7 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
         const QString smallUrl = query.queryItemValue("smallUrl");
         const int smallWidth = query.queryItemValue("smallWidth").toInt();
         const int smallHeight = query.queryItemValue("smallHeight").toInt();
+        const QString mp4Url = query.queryItemValue("mp4Url");
 
         int gifWidth = -1;
         int gifHeight= -1;
@@ -414,14 +417,18 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
             gifHeight = query.queryItemValue("gifHeight").toInt();
         }
 
+        const QSize gifSize(gifWidth, gifHeight);
+
         // NOTE: The id is set to empty. This will avoid registration in Tenor::registerShare
         TenorGif gif("", externalView->getTitle(), "",
-                     uri.toString(QUrl::RemoveQuery), QSize(gifWidth, gifHeight),
+                     uri.toString(QUrl::RemoveQuery), gifSize,
                      smallUrl, QSize(smallWidth, smallHeight),
-                     externalView->getThumbUrl(), QSize(1, 1));
+                     externalView->getThumbUrl(), gifSize,
+                     mp4Url);
         gif.setIsGiphy(gifUtils.isGiphyLink(link));
         qDebug() << "GIF uri:" << uri << "url:" << gif.getUrl() << "size:" << gif.getSize() << "small:" << gif.getSmallUrl() << "size:" << gif.getSmallSize() << "image:" << gif.getImageUrl();
         data->setGif(gif);
+        data->setGifAltText(externalView->getDescription());
     }
     else
     {
@@ -1585,6 +1592,20 @@ ATProto::AppBskyEmbed::ExternalView::SharedPtr DraftPosts::createExternalView(co
     auto view = std::make_shared<ATProto::AppBskyEmbed::ExternalView>();
     view->mExternal = std::make_shared<ATProto::AppBskyEmbed::ExternalViewExternal>();
     view->mExternal->mUri = external.mUri;
+    ATProto::XJsonObject xjson(external.mJson);
+    view->mExternal->mDescription = xjson.getOptionalString(Lexicon::DRAFT_GIF_ALT_TEXT, "");
+
+    GifUtils gifUtils;
+    const QString link = external.mUri;
+
+    if (gifUtils.isTenorLink(link) || gifUtils.isGiphyLink(link))
+    {
+        // NOTE: in addGifToPost several gif properties are packed into the URI as query params
+        const QUrl uri(link);
+        const QUrlQuery query(uri.query());
+        view->mExternal->mThumb = query.queryItemValue("imageUrl");
+    }
+
     return view;
 }
 
@@ -2333,6 +2354,12 @@ ATProto::AppBskyDraft::DraftEmbedExternal::List DraftPosts::createDraftEmbedExte
         auto embedExternal = std::make_shared<ATProto::AppBskyDraft::DraftEmbedExternal>();
         const QUrl gifUrl = getGifUrl(draftPost->gif());
         embedExternal->mUri = gifUrl.toString();
+        embedExternal->mJson = embedExternal->toJson();
+        const QString gifAltText = draftPost->gifAltText();
+
+        if (!gifAltText.isEmpty())
+            embedExternal->mJson.insert(Lexicon::DRAFT_GIF_ALT_TEXT, gifAltText);
+
         return { embedExternal };
     }
     else if (!draftPost->externalLink().isEmpty())
@@ -2745,7 +2772,8 @@ QUrl DraftPosts::getGifUrl(const TenorGif& gif) const
         { "gifHeight", QString::number(gif.getSize().height()) },
         { "smallWidth", QString::number(gif.getSmallSize().width()) },
         { "smallHeight", QString::number(gif.getSmallSize().height()) },
-        { "smallUrl", gif.getSmallUrl() }
+        { "smallUrl", gif.getSmallUrl() },
+        { "mp4Url", gif.getMp4Url() }
     };
     QUrl gifUrl(gif.getUrl());
     gifUrl.setQuery(query);
@@ -2753,10 +2781,10 @@ QUrl DraftPosts::getGifUrl(const TenorGif& gif) const
     return gifUrl;
 }
 
-void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const
+void DraftPosts::addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif, const QString& altText) const
 {
     const QUrl gifUrl = getGifUrl(gif);
-    ATProto::PostMaster::addExternalToPost(post, gifUrl.toString(), gif.getDescription(), "", nullptr);
+    ATProto::PostMaster::addExternalToPost(post, gifUrl.toString(), gif.getDescription(), altText, nullptr);
 }
 
 void DraftPosts::addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const

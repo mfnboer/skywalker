@@ -19,5 +19,6 @@ constexpr char const* DRAFT_VIDEO_NEW_HEIGHT_FIELD = "eu.thereforeiam.skywalker.
 constexpr char const* DRAFT_VIDEO_PRESENTATION = "eu.thereforeiam.skywalker.videoPresentation";
 constexpr char const* DRAFT_REPPLY_TO = "eu.thereforeiam.skywalker.draftReplyTo";
 constexpr char const* DRAFT_REPPLY_REF = "eu.thereforeiam.skywalker.replyRef";
+constexpr char const* DRAFT_GIF_ALT_TEXT = "eu.thereforeiam.skywalker.gifAltText";
 
 }

@@ -67,7 +67,8 @@ public:
         const BasicProfile& quoteAuthor, const QString& quoteText,
         const QDateTime& quoteDateTime, bool quoteFixed,
         const GeneratorView& quoteFeed, const ListView& quoteList,
-        const TenorGif gif, const LinkCard* card, const QStringList& labels,
+        const TenorGif gif, const QString& gifAltText,
+        const LinkCard* card, const QStringList& labels,
         const QString& language,
         bool restrictReplies, bool allowMention, bool allowFollwer, bool allowFollowing,
         const QStringList& allowLists, bool embeddingDisabled,
@@ -163,7 +164,7 @@ private:
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::ExternalView::SharedPtr externalView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
 
     QUrl getGifUrl(const TenorGif& gif) const;
-    void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif) const;
+    void addGifToPost(ATProto::AppBskyFeed::Record::Post& post, const TenorGif& gif, const QString& altText) const;
     void addExternalLinkToPost(ATProto::AppBskyFeed::Record::Post& post, const QString& externalLink) const;
 
     void dropDraftMedia(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName);

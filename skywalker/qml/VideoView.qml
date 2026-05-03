@@ -393,6 +393,11 @@ Column {
                 anchors.centerIn: parent
                 running: videoUtils.transcoding && !autoLoad
             }
+
+            AltLabel {
+                backgroundColor: videoView.hasHtmlAlt() ? guiSettings.hideReasonLabelColor : "black"
+                visible: videoView.alt && !isFullViewMode
+            }
         }
 
         SkyMouseArea {
