@@ -1565,7 +1565,7 @@ void UserSettings::setPortraitSideBarWidth(int width)
 
 int UserSettings::getPortraitSideBarWidth() const
 {
-    return mSettings.value("portraitSideBarWidth", 200).toInt();
+    return mSettings.value("portraitSideBarWidth", SIDE_BAR_DEFAULT_WIDTH).toInt();
 }
 
 void UserSettings::setLandscapeSideBarWidth(int width)
@@ -1575,7 +1575,21 @@ void UserSettings::setLandscapeSideBarWidth(int width)
 
 int UserSettings::getLandscapeSideBarWidth() const
 {
-    return mSettings.value("landscapeSideBarWidth", 200).toInt();
+    return mSettings.value("landscapeSideBarWidth", SIDE_BAR_DEFAULT_WIDTH).toInt();
+}
+
+void UserSettings::setSideBarLocked(bool locked)
+{
+    if (locked == getSideBarLocked())
+        return;
+
+    mSettings.setValue("sideBarLocked", locked);
+    emit sideBarLockedChanged();
+}
+
+bool UserSettings::getSideBarLocked() const
+{
+    return mSettings.value("sideBarLocked", false).toBool();
 }
 
 void UserSettings::setSideBarType(QEnums::SideBarType sideBarType)

@@ -2,12 +2,15 @@ import QtQuick
 import QtQuick.Controls
 
 SplitView {
+    property bool locked: false
+
     id: splitView
 
     handle: Rectangle {
         id: handleItem
-        implicitWidth: SplitHandle.pressed ? 2 : 1
-        color: SplitHandle.pressed ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
+        implicitWidth: (SplitHandle.pressed && !locked) ? 2 : 1
+        color: (SplitHandle.pressed && !locked) ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
+        enabled: !locked
 
         containmentMask: Item {
             x: (handleItem.width - width) / 2
@@ -22,6 +25,7 @@ SplitView {
             width: 2
             height: 20
             color: guiSettings.separatorHighLightColor
+            visible: !locked
         }
     }
 }

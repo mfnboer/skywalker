@@ -5,7 +5,8 @@ import skywalker
 
 Pane {
     required property var timeline
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
     property bool homeActive: false
     property bool notificationsActive: false
     property bool searchActive: false
@@ -525,6 +526,32 @@ Pane {
         visible: isBasePage || rootItem instanceof AuthorView || (rootItem instanceof PostThreadView && !rootItem.isUnrolledThread)
 
         onAddConvoClicked: sideBar.addConvoClicked()
+    }
+
+    Item {
+        id: lockButton
+        anchors.right: parent.right
+        anchors.rightMargin: 20
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 20
+        width: 24
+        height: 24
+
+        SkySvg {
+            width: height
+            height: parent.height
+            svg: userSettings.sideBarLocked ? SvgFilled.lock : SvgFilled.lockOpen
+        }
+
+        SkyMouseArea {
+            anchors.fill: parent
+            onClicked: {
+                userSettings.sideBarLocked = !userSettings.sideBarLocked
+                skywalker.showStatusMessage(
+                    userSettings.sideBarLocked ? qsTr("Side bar size locked") : qsTr("Side bar size unlocked"),
+                    QEnums.STATUS_LEVEL_INFO)
+            }
+        }
     }
 
     function showFavoritesSorter() {

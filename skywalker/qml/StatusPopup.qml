@@ -8,7 +8,6 @@ Popup {
     property int level // QEnums::StatusLevel
 
     id: statusPopup
-    width: parent.width
     height: Math.max(statusText.height, closeButton.height)
     z: 200
 

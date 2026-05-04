@@ -166,8 +166,8 @@ ApplicationWindow {
 
     StatusPopup {
         id: statusPopup
-        x: rootContent.x
-        y: guiSettings.headerHeight + guiSettings.headerMargin // 6.10.3 added headerMargin
+        x: rootContent.x + guiSettings.leftMargin
+        y: guiSettings.headerHeight + guiSettings.headerMargin
         width: rootContent.width
     }
 
@@ -661,6 +661,8 @@ ApplicationWindow {
         // 6.10.3 Added footer.height + footer.extraFooterMargin
         anchors.bottomMargin: fullScreen ? 0 : (root.footer.visible ? root.footer.height + root.footer.extraFooterMargin : guiSettings.footerMargin)
 
+        locked: skywalker.getUserSettings().sideBarLocked
+
         // Disable everything when app is paused to avoid a token race between the background
         // worker in the app.
         enabled: appIsRunning
@@ -679,20 +681,33 @@ ApplicationWindow {
         }
 
         function init() {
-            let userSettings = skywalker.getUserSettings()
-
-            const w = isPortrait ? userSettings.getPortraitSideBarWidth() : userSettings.getLandscapeSideBarWidth()
+            const w = getSideBarWidth()
             console.debug("Init side bar width:", w, "portrait:", isPortrait)
             sideBar.SplitView.preferredWidth = w
+        }
+
+        function getSideBarWidth() {
+            let userSettings = skywalker.getUserSettings()
+            const w = isPortrait ? userSettings.getPortraitSideBarWidth() : userSettings.getLandscapeSideBarWidth()
+
+            if (w < guiSettings.sideBarMinWidth)
+                return guiSettings.sideBarMinWidth
+
+            const maxWidth = Math.max(width * 0.5, guiSettings.sideBarMinWidth)
+
+            if (w > maxWidth)
+                return maxWidth
+
+            return w
         }
 
         SideBar {
             property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
 
             id: sideBar
-            SplitView.minimumWidth: guiSettings.sideBarMinWidth
-            SplitView.preferredWidth: 200
-            SplitView.maximumWidth: Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth)
+            SplitView.minimumWidth: !rootSplitView.locked ? guiSettings.sideBarMinWidth : SplitView.preferredWidth
+            SplitView.preferredWidth: skywalker.getUserSettings().sideBarDefaultWidth
+            SplitView.maximumWidth: !rootSplitView.locked ? Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth) : SplitView.preferredWidth
             height: parent.height
             timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
             skywalker: root.getSkywalker()

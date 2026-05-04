@@ -73,6 +73,8 @@ class UserSettings : public QObject,
     Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
     Q_PROPERTY(bool showFeedbackButtons READ getShowFeedbackButtons WRITE setShowFeedbackButtons NOTIFY showFeedbackButtonsChanged FINAL)
+    Q_PROPERTY(int sideBarDefaultWidth MEMBER SIDE_BAR_DEFAULT_WIDTH CONSTANT)
+    Q_PROPERTY(bool sideBarLocked READ getSideBarLocked WRITE setSideBarLocked NOTIFY sideBarLockedChanged FINAL)
     Q_PROPERTY(QEnums::SideBarType sideBarType READ getSideBarType WRITE setSideBarType NOTIFY sideBarTypeChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
@@ -92,6 +94,8 @@ class UserSettings : public QObject,
     QML_ELEMENT
 
 public:
+    static constexpr int SIDE_BAR_DEFAULT_WIDTH = 200;
+
     void reset();
     QJsonObject toJson() const;
     void fromJson(const QJsonObject& json);
@@ -351,6 +355,9 @@ public:
     Q_INVOKABLE void setLandscapeSideBarWidth(int width);
     Q_INVOKABLE int getLandscapeSideBarWidth() const;
 
+    void setSideBarLocked(bool locked);
+    bool getSideBarLocked() const;
+
     void setSideBarType(QEnums::SideBarType sideBarType);
     QEnums::SideBarType getSideBarType() const;
 
@@ -579,6 +586,7 @@ signals:
     void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();
     void showFeedbackButtonsChanged();
+    void sideBarLockedChanged();
     void sideBarTypeChanged();
     void gifAutoPlayChanged();
     void videoSoundChanged();
