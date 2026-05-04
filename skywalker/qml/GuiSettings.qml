@@ -455,6 +455,15 @@ Item {
         }
     }
 
+    function getBlockTextForByBlockedAuthor(blockedAuthor) {
+        if (blockedAuthor.blockingByListUri)
+            return qsTr("🚫 Blocked by list")
+        else if (blockedAuthor.viewer.blocking)
+            return qsTr("🚫 Blocked by you")
+        else
+            return qsTr("🚫 Blocked")
+    }
+
     function threadStartColor(color) {
         return color
     }

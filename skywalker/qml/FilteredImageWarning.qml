@@ -48,7 +48,7 @@ Row {
                 color: Material.color(Material.Grey)
                 text: contentWarning + `<br><a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` +
                       (images.length === 1 || imageUrl ? showMsg : qsTr("Show pictures")) + "</a>"
-                onLinkActivated: showWarnedMedia = true;
+                onLinkActivated: showWarnedMedia = true
             }
             AccessibleText {
                 width: parent.width

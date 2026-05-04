@@ -97,6 +97,7 @@ Rectangle {
     property int extraHeaderHeight: 0
     property int extraFooterHeight: 0
     property bool threadBarVisible: !swipeMode
+    property bool showBlockDetails: false
     readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
                                                (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
     readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser || postHiddenPosts || postFoldedType === QEnums.FOLDED_POST_FIRST
@@ -458,7 +459,7 @@ Rectangle {
                         userDid: postEntry.userDid
                         author: postEntry.author
                         showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
-                        visible: (!postIsPlaceHolder || postBlockedByUser) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
+                        visible: (!postIsPlaceHolder || showBlockDetails) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
 
                         onClicked: skywalker.getDetailedProfile(author.did)
 
@@ -975,7 +976,7 @@ Rectangle {
                         userDid: postEntry.userDid
                         author: postBlockedAuthor.author
                         postIndexedSecondsAgo: -1
-                        visible: threadBarVisible
+                        visible: threadBarVisible && showBlockDetails
                     }
 
                     PostHeaderWithAvatar {
@@ -983,27 +984,25 @@ Rectangle {
                         userDid: postEntry.userDid
                         author: postBlockedAuthor.author
                         postIndexedSecondsAgo: -1
-                        visible: !threadBarVisible
+                        visible: !threadBarVisible && showBlockDetails
                     }
 
                     AccessibleText {
                         bottomPadding: 5
                         width: parent.width
                         elide: Text.ElideRight
-                        text: {
-                            if (postBlockedAuthor.blockingByListUri)
-                                return qsTr("🚫 Blocked by list")
-                            else if (postBlockedAuthor.viewer.blocking)
-                                return qsTr("🚫 Blocked by you")
-                            else
-                                return qsTr("🚫 Blocked")
-                        }
+                        text: guiSettings.getBlockTextForByBlockedAuthor(postBlockedAuthor)
+                    }
+
+                    ShowAuthorLink {
+                        visible: !showBlockDetails
+                        onLinkActivated: showBlockDetails = true
                     }
 
                     ListHeader {
                         width: parent.width
                         list: postBlockedAuthor.blockingByList
-                        visible: !postBlockedAuthor.blockingByList.isNull()
+                        visible: !postBlockedAuthor.blockingByList.isNull() && showBlockDetails
                     }
                 }
             }

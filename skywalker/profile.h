@@ -413,7 +413,7 @@ public:
     BlockedAuthor() = default;
     explicit BlockedAuthor(const ATProto::AppBskyFeed::BlockedAuthor::SharedPtr& blockedAuthor);
 
-    bool isNull() const;
+    Q_INVOKABLE bool isNull() const;
     QString getDid() const;
     BasicProfile getAuthor() const;
     ProfileViewerState getViewer() const;
