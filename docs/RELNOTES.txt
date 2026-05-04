@@ -1,5 +1,6 @@
 next
 ====
+* Hide author by default on blocked and muted posts
 * ALT text on GIF
 * Option to lock side bar size
 * Disable filtered post stats by default
