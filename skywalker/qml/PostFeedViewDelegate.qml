@@ -459,7 +459,10 @@ Rectangle {
                         userDid: postEntry.userDid
                         author: postEntry.author
                         showWarnedMedia: postEntry.filteredPostHideReason !== QEnums.HIDE_REASON_NONE
-                        visible: (!postIsPlaceHolder || showBlockDetails) && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE && (!unrollThread || postEntry.index == 0)
+                        visible: ((!postIsPlaceHolder && postBody.postIsShown) || showBlockDetails) &&
+                                 !postLocallyDeleted &&
+                                 postFoldedType === QEnums.FOLDED_POST_NONE &&
+                                 (!unrollThread || postEntry.index == 0)
 
                         onClicked: skywalker.getDetailedProfile(author.did)
 
@@ -541,12 +544,14 @@ Rectangle {
             Column {
                 id: postColumn
                 width: parent.width - threadColumnWidth
-                visible: !postIsPlaceHolder && !postLocallyDeleted && postFoldedType === QEnums.FOLDED_POST_NONE
+                visible: !postIsPlaceHolder &&
+                         !postLocallyDeleted &&
+                         postFoldedType === QEnums.FOLDED_POST_NONE
 
                 Loader {
                     x: contentLeftMargin
                     width: parent.width - contentLeftMargin - postEntry.margin
-                    active: threadBarVisible && (!unrollThread || postEntry.index == 0)
+                    active: threadBarVisible && (!unrollThread || postEntry.index == 0) && postBody.postIsShown
                     visible: status == Loader.Ready
 
                     sourceComponent: PostHeader {
@@ -561,7 +566,7 @@ Rectangle {
                 Loader {
                     x: contentLeftMargin
                     width: parent.width - contentLeftMargin - postEntry.margin
-                    active: !threadBarVisible && (!unrollThread || postEntry.index == 0)
+                    active: !threadBarVisible && (!unrollThread || postEntry.index == 0) && postBody.postIsShown
                     visible: status == Loader.Ready
 
                     sourceComponent: PostHeaderWithAvatar {

@@ -42,7 +42,7 @@ Item {
             userDid: recordView.userDid
             author: recordView.recordAuthor
             postIndexedSecondsAgo: (new Date() - record.postDateTime) / 1000
-            visible: record.available || showBlockDetails
+            visible: (record.available || showBlockDetails) && (!postBodyLoader.item || postBodyLoader.item.postIsShown)
         }
 
         // Reply to

@@ -34,6 +34,7 @@ Column {
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
+    readonly property bool postIsShown: postVisible()
     property string postHighlightColor: "transparent"
     property bool isDraft: false
     property bool swipeMode: false
@@ -200,6 +201,7 @@ Column {
             Column {
                 width: parent.width
                 anchors.verticalCenter: parent.verticalCenter
+                spacing: 5
                 visible: mutePost && postContentVisibility !== QEnums.CONTENT_VISIBILITY_HIDE_POST
 
                 AccessibleText {
@@ -207,11 +209,9 @@ Column {
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
                     textFormat: Text.RichText
-                    color: Material.color(Material.Grey)
                     text: getMuteText()
                 }
                 AccessibleText {
-                    topPadding: 20
                     width: parent.width
                     elide: Text.ElideRight
                     textFormat: Text.RichText
@@ -231,7 +231,6 @@ Column {
                     wrapMode: Text.Wrap
                     elide: Text.ElideRight
                     textFormat: Text.RichText
-                    color: Material.color(Material.Grey)
                     text: postContentWarning
                 }
                 AccessibleText {
@@ -267,7 +266,7 @@ Column {
         id: imagesLoader
         x: swipeMode ? -margin : 0
         width: parent.width + (swipeMode ? 2 * margin : 0)
-        postImages: postBody.postImages
+        postImages: postIsShown ? postBody.postImages : []
         postContentVisibility: postBody.postContentVisibility
         postContentWarning: postBody.postContentWarning
         postContentLabeler: postBody.postContentLabeler
@@ -283,7 +282,7 @@ Column {
     // HACK: somehow video leaves 1 empty pixel at each side. Add 2 pixels to fix it.
     LoaderVideoPreview {
         id: videoLoader
-        postVideo: postBody.postVideo
+        postVideo: postIsShown ? postBody.postVideo : null
         postContentVisibility: postBody.postContentVisibility
         postContentWarning: postBody.postContentWarning
         postContentLabeler: postBody.postContentLabeler
@@ -300,7 +299,7 @@ Column {
     LoaderExternal {
         width: parent.width
         userDid: postBody.userDid
-        postExternal: postBody.postExternal
+        postExternal: postIsShown ? postBody.postExternal : null
         postContentVisibility: postBody.postContentVisibility
         postContentWarning: postBody.postContentWarning
         postContentLabeler: postBody.postContentLabeler
