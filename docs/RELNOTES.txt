@@ -1,6 +1,7 @@
 next
 ====
 * ALT text on GIF
+* Option to lock side bar size
 * Disable filtered post stats by default
 * Reduce memory usage
 * Bug fixes
