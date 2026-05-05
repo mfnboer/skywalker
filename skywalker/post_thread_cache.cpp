@@ -77,19 +77,11 @@ bool PostThreadCache::putThread(const ATProto::AppBskyFeed::ThreadElement::Share
 
     const auto threadViewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(thread->mPost);
 
-    for (const auto& reply : threadViewPost->mReplies)
+    if (threadViewPost->mHasReplyFromPostAuthor)
     {
-        if (reply->mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
-            continue;
-
-        const auto replyThreadViewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply->mPost);
-
-        if (replyThreadViewPost->mPost->mAuthor->mDid == threadViewPost->mPost->mAuthor->mDid)
-        {
-            qDebug() << "Post is thread:" << threadViewPost->mPost->mUri;
-            put(threadViewPost->mPost->mUri, true);
-            return true;
-        }
+        qDebug() << "Post is thread:" << threadViewPost->mPost->mUri;
+        put(threadViewPost->mPost->mUri, true);
+        return true;
     }
 
     qDebug() << "Post is not a thread:" << threadViewPost->mPost->mUri;
