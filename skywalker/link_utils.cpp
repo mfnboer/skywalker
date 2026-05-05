@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "link_utils.h"
 #include "at_regex.h"
+#include "share_utils.h"
 #include "skywalker.h"
 #include <atproto/lib/at_regex.h>
 #include <atproto/lib/tlds.h>
@@ -141,6 +142,13 @@ void LinkUtils::openLink(const QString& link, const QString& containingText)
     bool hostPresent = url.isValid() && containingText.contains(url.host(), Qt::CaseInsensitive);
     qDebug() << "LinkUtils is emitting webLink with hostPresent: " << hostPresent;
     emit webLink(link, containingText, hostPresent);
+}
+
+void LinkUtils::openInAppBrowser(const QString& link)
+{
+    Q_ASSERT(mSkywalker);
+    ShareUtils* shareUtils = mSkywalker->getShareUtils();
+    shareUtils->openLinkInApp(link);
 }
 
 void LinkUtils::openLink(const ATProto::ATUri& atUri, const std::function<void(const QString& uri)>& openFun)

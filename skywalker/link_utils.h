@@ -26,6 +26,7 @@ public:
 
     Q_INVOKABLE QString toHttpsLink(const QString& atUri);
     Q_INVOKABLE void openLink(const QString& link, const QString& containingText = {});
+    Q_INVOKABLE void openInAppBrowser(const QString& link);
 
 signals:
     void webLink(QString uri, QString containingText, bool hostInContainingText);

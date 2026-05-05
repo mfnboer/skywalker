@@ -2465,7 +2465,7 @@ ApplicationWindow {
         const normalized = UnicodeFonts.normalizeToNFKD(text)
         const encoded = encodeURIComponent(normalized)
         const url = `https://translate.google.com/?hl=${lang}&sl=auto&tl=${lang}&text=${encoded}&op=translate`
-        Qt.openUrlExternally(url)
+        linkUtils.openInBroswer(url)
     }
 
     function getFavoritesSwipeView() {

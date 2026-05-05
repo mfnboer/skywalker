@@ -698,6 +698,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/LoaderImageGridPreview.qml
         QML_FILES qml/AltLabel.qml
         QML_FILES qml/ShowAuthorLink.qml
+        QML_FILES qml/SettingsExternalContent.qml
 )
 
 target_link_libraries(libskywalker

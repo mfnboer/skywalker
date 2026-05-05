@@ -182,6 +182,21 @@ SkyPage {
                 visible: allVisible
             }
 
+            SettingsExternalContent {
+                Layout.leftMargin: 10
+                Layout.rightMargin: 10
+                Layout.fillWidth: true
+                visible: allVisible
+            }
+
+            Rectangle {
+                Layout.topMargin: 10
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: guiSettings.separatorColor
+                visible: allVisible
+            }
+
             Loader {
                 id: notificationsLoader
                 Layout.leftMargin: 10

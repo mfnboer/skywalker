@@ -69,6 +69,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(bool contentFilterStatsEnabled READ getContentFilterStatsEnabled WRITE setContentFilterStatsEnabled NOTIFY contentFilterStatsEnabledChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
+    Q_PROPERTY(bool inAppBrowserEnabled READ getInAppBrowserEnabled WRITE setInAppBrowserEnabled NOTIFY inAppBrowserEnabledChanged FINAL)
     Q_PROPERTY(bool wrapLabels READ getWrapLabels WRITE setWrapLabels NOTIFY wrapLabelsChanged FINAL)
     Q_PROPERTY(bool showFollowsStatus READ getShowFollowsStatus WRITE setShowFollowsStatus NOTIFY showFollowsStatusChanged FINAL)
     Q_PROPERTY(bool showFollowsActiveStatus READ getShowFollowsActiveStatus WRITE setShowFollowsActiveStatus NOTIFY showFollowsActiveStatusChanged FINAL)
@@ -388,6 +389,9 @@ public:
     void setSonglinkEnabled(bool enabled);
     bool getSonglinkEnabled() const;
 
+    void setInAppBrowserEnabled(bool enabled);
+    bool getInAppBrowserEnabled() const;
+
     void setWrapLabels(bool wrap);
     bool getWrapLabels() const;
 
@@ -582,6 +586,7 @@ signals:
     void contentFilterStatsEnabledChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();
+    void inAppBrowserEnabledChanged();
     void wrapLabelsChanged();
     void showFollowsStatusChanged();
     void showFollowsActiveStatusChanged();

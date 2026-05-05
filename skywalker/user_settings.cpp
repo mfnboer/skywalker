@@ -1743,6 +1743,20 @@ bool UserSettings::getSonglinkEnabled() const
     return mSettings.value("songlinkEnabled", true).toBool();
 }
 
+void UserSettings::setInAppBrowserEnabled(bool enabled)
+{
+    if (enabled == getInAppBrowserEnabled())
+        return;
+
+    mSettings.setValue("inAppBrowserEnabled", enabled);
+    emit inAppBrowserEnabledChanged();
+}
+
+bool UserSettings::getInAppBrowserEnabled() const
+{
+    return mSettings.value("inAppBrowserEnabled", false).toBool();
+}
+
 void UserSettings::setWrapLabels(bool wrap)
 {
     if (wrap == getWrapLabels())
