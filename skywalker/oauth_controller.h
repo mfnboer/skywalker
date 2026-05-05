@@ -15,13 +15,14 @@ public:
     using RedirectCb = std::function<void(QUrl url)>;
 
     static constexpr int LISTEN_PORT = 1970;
-    static constexpr char const* CLIENT_ID = "https://thereforeiam.eu/skywalker/oauth/client-metadata.json";
 #ifdef Q_OS_ANDROID
     static constexpr char const* REDIRECT_URL = "eu.thereforeiam:/skywalker/oauth/callback";
 #else
     static constexpr char const* REDIRECT_URL = "http://127.0.0.1:1970/oauth/callback";
 #endif
-    static const QStringList SCOPE;
+
+    static QString getClientId();
+    static QStringList getScope();
 
 #ifndef Q_OS_ANDROID
     static QString getKeyStorageFilename(const QString& did);
@@ -32,6 +33,11 @@ public:
     void redirect(const QString& url);
 
 private:
+#ifdef DEBUG
+    static QString getTestClientId();
+    static QStringList getTestScope();
+#endif
+
     RedirectCb mRedirectCb;
 #ifndef Q_OS_ANDROID
     QHttpServer mHttpServer;

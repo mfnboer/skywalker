@@ -1,5 +1,6 @@
 next
 ====
+* Use narrow OAuth scope to only get access too bsky repo's and rpc's
 * Hide author by default on blocked and muted posts
 * ALT text on GIF
 * Option to lock side bar size

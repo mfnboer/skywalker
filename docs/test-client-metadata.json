@@ -1,5 +1,5 @@
 {
-    "client_id": "https://thereforeiam.eu/skywalker/oauth/client-metadata.json",
+    "client_id": "https://thereforeiam.eu/skywalker/oauth/test-client-metadata.json",
     "client_name": "Skywalker",
     "application_type": "native",
     "dpop_bound_access_tokens": true,

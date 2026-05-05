@@ -357,6 +357,8 @@ ApplicationWindow {
         }
 
         onLoginOAuthRedirect: (url, host, user) => {
+            console.debug("OAUth redirect:", url)
+
             if (!Qt.openUrlExternally(url))
                 loginWithOAuthFailed("InternalError", qsTr("Could not redirect to login page"))
         }

@@ -126,7 +126,7 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
 #endif
         const auto authDpopNonce = mUserSettings->getAuthDpopNonce(did);
 
-        client->oauthResumeSession(OAuthController::CLIENT_ID, session,
+        client->oauthResumeSession(OAuthController::getClientId(), session,
             [this, did, refreshDelayCount, successCb, errorCb]{
                 resumeAndRefreshSessionSuccess(did, refreshDelayCount, successCb, errorCb);
             },

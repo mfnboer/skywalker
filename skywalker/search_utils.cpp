@@ -831,7 +831,7 @@ void SearchUtils::getSuggestedFeeds()
     }
 
     model.setGetFeedInProgress(true);
-    bskyClient()->getSuggestedFeeds(MAX_SUGGESTIONS,
+    bskyClient()->getSuggestedFeeds(MAX_SUGGESTIONS, {},
         [this, presence=getPresence()](auto output){
             if (!presence)
                 return;

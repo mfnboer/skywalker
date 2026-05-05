@@ -314,11 +314,11 @@ void Skywalker::loginWithOAuth(const QString host, QString handle, const QString
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
-    mBsky->oauthLogin(handle, did, OAuthController::CLIENT_ID, OAuthController::REDIRECT_URL, OAuthController::SCOPE,
+    mBsky->oauthLogin(handle, did, OAuthController::getClientId(), OAuthController::REDIRECT_URL, OAuthController::getScope(),
         [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
          serviceVideoDid](QUrl redirectUrl, QString dpopKeyAlias)
         {
-            qDebug() << "Login" << user << "succeeded";
+            qDebug() << "Login" << user << "succeeded, redirectUrl:" << redirectUrl;
             mOAuthController = std::make_unique<OAuthController>();
 
             const bool started = mOAuthController->start(
