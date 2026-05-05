@@ -40,9 +40,11 @@ const QStringList SCOPE = {
     "rpc:app.bsky.actor.putPreferences?aud=*",
     "rpc:app.bsky.actor.searchActors?aud=*",
     "rpc:app.bsky.actor.searchActorsTypeahead?aud=*",
+
     "rpc:app.bsky.bookmark.createBookmark?aud=*",
     "rpc:app.bsky.bookmark.deleteBookmark?aud=*",
     "rpc:app.bsky.bookmark.getBookmarks?aud=*",
+
     "rpc:app.bsky.feed.getActorFeeds?aud=*",
     "rpc:app.bsky.feed.getActorLikes?aud=*",
     "rpc:app.bsky.feed.getAuthorFeed?aud=*",
@@ -59,6 +61,7 @@ const QStringList SCOPE = {
     "rpc:app.bsky.feed.getTimeline?aud=*",
     "rpc:app.bsky.feed.searchPosts?aud=*",
     "rpc:app.bsky.feed.sendInteractions?aud=*",
+
     "rpc:app.bsky.graph.getActorStarterPacks?aud=*",
     "rpc:app.bsky.graph.getBlocks?aud=*",
     "rpc:app.bsky.graph.getFollowers?aud=*",
@@ -80,7 +83,9 @@ const QStringList SCOPE = {
     "rpc:app.bsky.graph.unmuteActor?aud=*",
     "rpc:app.bsky.graph.unmuteActorList?aud=*",
     "rpc:app.bsky.graph.unmuteThread?aud=*",
+
     "rpc:app.bsky.labeler.getServices?aud=*",
+
     "rpc:app.bsky.notification.getPreferences?aud=*",
     "rpc:app.bsky.notification.getUnreadCount?aud=*",
     "rpc:app.bsky.notification.listActivitySubscriptions?aud=*",
@@ -89,10 +94,12 @@ const QStringList SCOPE = {
     "rpc:app.bsky.notification.putPreferences?aud=*",
     "rpc:app.bsky.notification.putPreferencesV2?aud=*",
     "rpc:app.bsky.notification.updateSeen?aud=*",
+
     "rpc:app.bsky.unspecced.getPopularFeedGenerators?aud=*",
     "rpc:app.bsky.unspecced.getSuggestedStarterPacks?aud=*",
     "rpc:app.bsky.unspecced.getSuggestedUsers?aud=*",
     "rpc:app.bsky.unspecced.getTrends?aud=*",
+
     "rpc:app.bsky.video.getJobStatus?aud=*",
     "rpc:app.bsky.video.getUploadLimits?aud=*",
     "rpc:app.bsky.video.uploadVideo?aud=*",
