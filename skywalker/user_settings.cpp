@@ -431,7 +431,8 @@ QString UserSettings::getActiveUserDid() const
 void UserSettings::addUser(const QString& did, const QString& host)
 {
     // Host may have been changed for an existing user.
-    mSettings.setValue(key(did, "host"), host);
+    if (!host.isEmpty())
+        mSettings.setValue(key(did, "host"), host);
 
     auto users = getUserDidList();
 

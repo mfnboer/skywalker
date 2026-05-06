@@ -59,6 +59,7 @@ const QStringList SCOPE = {
     "rpc:app.bsky.feed.getFeed?aud=*",
     "rpc:app.bsky.feed.getFeedGenerator?aud=*",
     "rpc:app.bsky.feed.getFeedGenerators?aud=*",
+    "rpc:app.bsky.feed.getFeedSkeleton?aud=*",
     "rpc:app.bsky.feed.getLikes?aud=*",
     "rpc:app.bsky.feed.getListFeed?aud=*",
     "rpc:app.bsky.feed.getPostThread?aud=*",

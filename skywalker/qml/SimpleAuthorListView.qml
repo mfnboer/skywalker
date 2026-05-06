@@ -150,10 +150,15 @@ ListView {
     }
 
     function getHostStatus(did) {
+        const sessionManager = skywalker.getSessionManager()
         const isActive = did === skywalker.getUserDid()
-        const hasSession = skywalker.getSessionManager().hasSession(did)
+        const hasSession = sessionManager.hasSession(did)
         const useOAuth = userSettings.getOAuthEnabled(did)
-        const host = userSettings.getHost(did)
+        let host = userSettings.getHost(did)
+
+        if (!host)
+            host = sessionManager.guessHostingProvider(did)
+
         let status = ""
 
         if (isActive) {

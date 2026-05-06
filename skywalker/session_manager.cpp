@@ -559,6 +559,27 @@ int SessionManager::getActiveUserUnreadNotificationCount() const
     return getUnreadNotificationCount(did);
 }
 
+QString SessionManager::guessHostingProvider(const QString& did) const
+{
+    auto* session = getSession(did);
+
+    if (!session)
+        return "";
+
+    const QString& pds = session->mBsky->getPDS();
+    const QUrl pdsUrl(pds);
+    const QString pdsHost = pdsUrl.host();
+    const QStringList hostParts = pdsHost.split('.');
+
+    if (hostParts.size() < 2)
+    {
+        qWarning() << "Invalid host:" << pds;
+        return "";
+    }
+
+    return hostParts.sliced(hostParts.size() - 2).join('.');
+}
+
 const NonActiveUser::List& SessionManager::getNonActiveNotifications() const
 {
     static const NonActiveUser::List EMPTY_LIST;

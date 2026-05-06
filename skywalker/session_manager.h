@@ -45,6 +45,7 @@ public:
     int getTotalUnreadNotificationCount() const;
     int getActiveUserUnreadNotificationCount() const;
 
+    Q_INVOKABLE QString guessHostingProvider(const QString& did) const;
     Q_INVOKABLE bool hasSession(const QString& did) const { return mDidSessionMap.contains(did); }
     Q_INVOKABLE bool hasNonActiveUsers() const { return !mNonActiveUsers.empty(); }
     const NonActiveUser::List& getNonActiveUsers() const { return mNonActiveUsers; }

@@ -89,6 +89,7 @@ SkyPage {
                     leftPadding: 10
                     font.bold: true
                     text: qsTr("Hosting provider")
+                    visible: host || errorCode === ATProtoErrorMsg.PDS_NOT_FOUND
                 }
 
                 HostingComboBox {
@@ -97,6 +98,17 @@ SkyPage {
                     Layout.leftMargin: 10
                     Layout.rightMargin: 10
                     host: loginPage.host
+                    visible: host || errorCode === ATProtoErrorMsg.PDS_NOT_FOUND
+                }
+
+                AccessibleLabel {
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    Layout.fillWidth: true
+                    color: guiSettings.errorColor
+                    wrapMode: Text.Wrap
+                    text: "⚠️ Failed to resolve your identity. Can you set your hosting provider?"
+                    visible: errorCode === ATProtoErrorMsg.PDS_NOT_FOUND
                 }
 
                 AccessibleText {
@@ -200,11 +212,7 @@ SkyPage {
                     color: guiSettings.errorColor
                     wrapMode: Text.Wrap
                     text: "⚠️ " + errorMsg
-                    visible: errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED
-
-                    Accessible.role: Accessible.AlertMessage
-                    Accessible.name: text
-                    Accessible.description: Accessible.name
+                    visible: errorMsg && mustShowError()
                 }
             }
 
@@ -225,11 +233,14 @@ SkyPage {
                 anchors.rightMargin: 10
                 height: 40
                 text: qsTr("OK")
-                enabled: hostField.editText && userField.text && passwordField.text && (!authFactorTokenRequired() || authFactorTokenField.text)
+                enabled: (!hostField.visible || hostField.editText) &&
+                         userField.text &&
+                         passwordField.text &&
+                         (!authFactorTokenRequired() || authFactorTokenField.text)
                 onClicked: {
                     const handle = autoCompleteHandle(userField.text, hostField.editText)
                     loginPage.accepted(false,
-                                       hostField.editText,
+                                       hostField.visible ? hostField.editText : "",
                                        handle, passwordField.text,
                                        loginPage.did,
                                        rememberPasswordSwitch.checked,
@@ -268,6 +279,7 @@ SkyPage {
                     leftPadding: 10
                     font.bold: true
                     text: qsTr("Hosting provider")
+                    visible: host || errorCode === ATProtoErrorMsg.PDS_NOT_FOUND
                 }
 
                 HostingComboBox {
@@ -276,6 +288,17 @@ SkyPage {
                     Layout.leftMargin: 10
                     Layout.rightMargin: 10
                     host: loginPage.host
+                    visible: host || errorCode === ATProtoErrorMsg.PDS_NOT_FOUND
+                }
+
+                AccessibleLabel {
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    Layout.fillWidth: true
+                    color: guiSettings.errorColor
+                    wrapMode: Text.Wrap
+                    text: "⚠️ Failed to resolve your identity. Can you set your hosting provider?"
+                    visible: errorCode === ATProtoErrorMsg.PDS_NOT_FOUND
                 }
 
                 AccessibleText {
@@ -310,7 +333,7 @@ SkyPage {
                     color: guiSettings.errorColor
                     wrapMode: Text.Wrap
                     text: "⚠️ " + errorMsg
-                    visible: errorMsg
+                    visible: errorMsg && mustShowError()
 
                     Accessible.role: Accessible.AlertMessage
                     Accessible.name: text
@@ -335,13 +358,15 @@ SkyPage {
                 anchors.rightMargin: 10
                 height: 40
                 text: qsTr("OK")
-                enabled: oauthHostField.editText && oauthUserField.text && !redirectTimer.running
+                enabled: (!oauthHostField.visible || oauthHostField.editText) &&
+                         oauthUserField.text &&
+                         !redirectTimer.running
                 onClicked: {
                     skywalker.showStatusMessage(qsTr("Redirecting to login page"), QEnums.STATUS_LEVEL_INFO, 5)
                     redirectTimer.start()
                     const handle = autoCompleteHandle(oauthUserField.text, oauthHostField.editText)
                     loginPage.accepted(true,
-                                       oauthHostField.editText,
+                                       oauthHostField.visible ? oauthHostField.editText : "",
                                        handle, "",
                                        loginPage.did,
                                        false,
@@ -417,6 +442,11 @@ SkyPage {
         return errorCode === ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED || errorCode === ATProtoErrorMsg.INVALID_TOKEN
     }
 
+    function mustShowError() {
+        return errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED &&
+                errorCode !== ATProtoErrorMsg.PDS_NOT_FOUND
+    }
+
     function editAdvancedSettings() {
         let component = guiSettings.createComponent("AdvancedSettingsForm.qml")
         let form = component.createObject(loginPage, { newUser: isNewAccount(), userDid: did })
@@ -448,9 +478,10 @@ SkyPage {
                 userField.setFocus()
             else
                 passwordField.setFocus()
-
-            if (errorMsg && errorCode !== ATProtoErrorMsg.AUTH_FACTOR_TOKEN_REQUIRED)
-                skywalker.showStatusMessage(errorMsg, QEnums.STATUS_LEVEL_ERROR)
         }
+
+
+        if (errorMsg && mustShowError())
+            skywalker.showStatusMessage(errorMsg, QEnums.STATUS_LEVEL_ERROR)
     }
 }
