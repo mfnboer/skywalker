@@ -33,6 +33,9 @@ const QStringList SCOPE = {
     "repo:app.bsky.notification.declaration",
     "repo:chat.bsky.actor.declaration",
 
+    "blob:image/*",
+    "blob:video/*",
+
     "rpc:app.bsky.actor.getPreferences?aud=*",
     "rpc:app.bsky.actor.getProfile?aud=*",
     "rpc:app.bsky.actor.getProfiles?aud=*",
@@ -44,6 +47,11 @@ const QStringList SCOPE = {
     "rpc:app.bsky.bookmark.createBookmark?aud=*",
     "rpc:app.bsky.bookmark.deleteBookmark?aud=*",
     "rpc:app.bsky.bookmark.getBookmarks?aud=*",
+
+    "rpc:app.bsky.draft.createDraft?aud=*",
+    "rpc:app.bsky.draft.deleteDraft?aud=*",
+    "rpc:app.bsky.draft.getDrafts?aud=*",
+    "rpc:app.bsky.draft.updateDraft?aud=*",
 
     "rpc:app.bsky.feed.getActorFeeds?aud=*",
     "rpc:app.bsky.feed.getActorLikes?aud=*",
@@ -116,7 +124,9 @@ const QStringList SCOPE = {
     "rpc:chat.bsky.convo.removeReaction?aud=*",
     "rpc:chat.bsky.convo.sendMessage?aud=*",
     "rpc:chat.bsky.convo.unmuteConvo?aud=*",
-    "rpc:chat.bsky.convo.updateRead?aud=*"
+    "rpc:chat.bsky.convo.updateRead?aud=*",
+
+    "rpc:com.atproto.repo.uploadBlob?aud=*"
 };
 
 QString OAuthController::getClientId()

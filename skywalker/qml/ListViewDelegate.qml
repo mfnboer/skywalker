@@ -254,7 +254,7 @@ Rectangle {
             text: qsTr("Delete")
             svg: SvgOutline.delete
             popup: moreMenu
-            visible: isOwnList()
+            visible: allowEdit && isOwnList()
             onClicked: deleteList(list)
         }
 
