@@ -44,24 +44,27 @@ SkyPage {
 
         onDisplayTextChanged: {
             page.isTyping = true
-            authorTypeaheadSearchTimer.start()
+            typeaheadView.startSearch()
         }
 
         onEditingFinished: {
             page.isTyping = false
-            authorTypeaheadSearchTimer.stop()
+            typeaheadView.stopSearch()
         }
     }
 
-    SimpleAuthorListView {
+    SimpleAuthorTypeaheadListView {
         id: typeaheadView
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: searchInput.bottom
         anchors.bottom: parent.bottom
-        model: searchUtils.authorTypeaheadList
+        searchText: searchInput.displayText
+        searchLimit: 100
+        canChatOnly: true
 
         onAuthorClicked: (profile) => selected(profile.did)
+        onCleared: resetAuthorTypeaheadList()
     }
 
     AccessibleText {
@@ -73,27 +76,9 @@ SkyPage {
         visible: typeaheadView.count === 0
     }
 
-    Timer {
-        id: authorTypeaheadSearchTimer
-        interval: 500
-        onTriggered: {
-            const text = searchInput.displayText
-
-            if (text.length > 0)
-                searchUtils.searchAuthorsTypeahead(text, 100, true)
-            else
-                resetAuthorTypeaheadList()
-        }
-    }
-
-    SearchUtils {
-        id: searchUtils
-        skywalker: page.skywalker // qmllint disable missing-type
-    }
-
-
     function resetAuthorTypeaheadList() {
-        searchUtils.authorTypeaheadList = skywalker.chat.getAllAcceptedConvoMembers()
+        const convoMembers = skywalker.chat.getAllAcceptedConvoMembers()
+        typeaheadView.reset(convoMembers)
     }
 
     Component.onCompleted: {

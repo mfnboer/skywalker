@@ -9,6 +9,7 @@ Rectangle {
     property bool showSearchButton: true
     property bool showBackButton: true
     property string prevDisplayText
+    readonly property alias displayText: searchText.displayText
 
     signal back
     signal searchTextChanged(string text)
@@ -107,10 +108,6 @@ Rectangle {
 
     function setSearchText(text) {
         searchText.text = text
-    }
-
-    function getDisplayText() {
-        return searchText.displayText
     }
 
     function hasFocus() {

@@ -29,21 +29,22 @@ SkyPage {
         inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
 
         onDisplayTextChanged: {
-            authorTypeaheadSearchTimer.start()
+            typeaheadView.startSearch()
         }
 
         onEditingFinished: {
-            authorTypeaheadSearchTimer.stop()
+            typeaheadView.stopSearch()
         }
     }
 
-    SimpleAuthorListView {
+    SimpleAuthorTypeaheadListView {
         id: typeaheadView
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: searchInput.bottom
         anchors.bottom: parent.bottom
-        model: searchUtils.authorTypeaheadList
+        searchText: searchInput.displayText
+        searchLimit: 100
 
         onAuthorClicked: (profile) => selected(profile)
     }
@@ -56,24 +57,6 @@ SkyPage {
         wrapMode: Text.Wrap
         text: qsTr("A user view shows posts from your timeline posted by a specific user.")
         visible: typeaheadView.count === 0
-    }
-
-    Timer {
-        id: authorTypeaheadSearchTimer
-        interval: 500
-        onTriggered: {
-            const text = searchInput.displayText
-
-            if (text.length > 0)
-                searchUtils.searchAuthorsTypeahead(text, 100)
-            else
-                searchUtils.authorTypeaheadList = []
-        }
-    }
-
-    SearchUtils {
-        id: searchUtils
-        skywalker: page.skywalker // qmllint disable missing-type
     }
 
     Component.onCompleted: {

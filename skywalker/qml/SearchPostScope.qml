@@ -59,14 +59,14 @@ SkyDialog {
                 if (textInput.displayText !== initialEditValue) {
                     searchPostScope.isTyping = true
                     authorTypeaheadView.textInputCombo = authorComboBox
-                    authorTypeaheadSearchTimer.start()
+                    authorTypeaheadView.startSearch()
                     otherAuthorHandle = textInput.displayText
                 }
             }
 
             onEditingFinished: (text) => {
                 searchPostScope.isTyping = false
-                authorTypeaheadSearchTimer.stop()
+                authorTypeaheadView.stopSearch()
                 otherAuthorHandle = text
             }
         }
@@ -98,14 +98,14 @@ SkyDialog {
                 if (textInput.displayText !== initialEditValue) {
                     searchPostScope.isTyping = true
                     authorTypeaheadView.textInputCombo = mentionsComboBox
-                    authorTypeaheadSearchTimer.start()
+                    authorTypeaheadView.startSearch()
                     otherMentionsHandle = textInput.displayText
                 }
             }
 
             onEditingFinished: (text) => {
                 searchPostScope.isTyping = false
-                authorTypeaheadSearchTimer.stop()
+                authorTypeaheadView.stopSearch()
                 otherMentionsHandle = text
             }
         }
@@ -248,7 +248,7 @@ SkyDialog {
         }
     }
 
-    SimpleAuthorListView {
+    SimpleAuthorTypeaheadListView {
         property var textInputCombo: authorComboBox
 
         id: authorTypeaheadView
@@ -256,29 +256,13 @@ SkyDialog {
         anchors.right: parent.right
         y: textInputCombo.y + textInputCombo.height
         height: 300
-        model: searchUtils.authorTypeaheadList
+        searchText: textInputCombo.contentItem.displayText
         visible: searchPostScope.isTyping
 
         onAuthorClicked: (profile) => {
             textInputCombo.contentItem.text = profile.handle
             searchPostScope.isTyping = false
         }
-    }
-
-    Timer {
-        id: authorTypeaheadSearchTimer
-        interval: 500
-        onTriggered: {
-            const text = authorTypeaheadView.textInputCombo.contentItem.displayText
-
-            if (text.length > 0)
-                searchUtils.searchAuthorsTypeahead(text)
-        }
-    }
-
-    SearchUtils {
-        id: searchUtils
-        skywalker: root.getSkywalker()
     }
 
     LanguageUtils {

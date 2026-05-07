@@ -1142,7 +1142,7 @@ SkyPage {
     }
 
     function getSearchText() {
-        return page.header.getDisplayText() // qmllint disable missing-property
+        return page.header.displayText
     }
 
     function getSearchPostScopeText() {

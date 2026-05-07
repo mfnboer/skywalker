@@ -22,18 +22,18 @@ SkyPage {
             page.isTyping = true
 
             if (text.length > 0) {
-                typeaheadSearchTimer.start()
+                typeaheadView.startSearch()
             } else {
-                typeaheadSearchTimer.stop()
-                searchUtils.authorTypeaheadList = []
+                typeaheadView.stopSearch()
+                typeaheadView.clear()
             }
         }
     }
 
-    SimpleAuthorListView {
+    SimpleAuthorTypeaheadListView {
         id: typeaheadView
         anchors.fill: parent
-        model: searchUtils.authorTypeaheadList
+        searchText: page.header.displayText
         onAuthorClicked: (profile) => page.authorClicked(profile)
 
         AccessibleText {
@@ -46,25 +46,7 @@ SkyPage {
         }
     }
 
-    Timer {
-        id: typeaheadSearchTimer
-        interval: 500
-        onTriggered: {
-            const text = page.header.getDisplayText()
-
-            if (text.length > 0)
-                searchUtils.searchAuthorsTypeahead(text)
-        }
-    }
-
-    SearchUtils {
-        id: searchUtils
-        skywalker: page.skywalker
-    }
-
-
     function forceDestroy() {
-        searchUtils.clearAllSearchResults();
         destroy()
     }
 
