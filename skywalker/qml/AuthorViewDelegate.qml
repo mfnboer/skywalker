@@ -152,6 +152,7 @@ Rectangle {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
+            inLayout: true
             width: parent.width
             font.italic: true
             font.pointSize: guiSettings.scaledFont(7/8)
@@ -164,6 +165,7 @@ Rectangle {
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
+            inLayout: true
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             textFormat: authorRect.formatDescription ? Text.RichText : Text.AutoText

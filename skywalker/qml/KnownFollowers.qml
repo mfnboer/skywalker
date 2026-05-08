@@ -39,6 +39,7 @@ RowLayout {
         elide: Text.ElideRight
         wrapMode: Text.Wrap
         textFormat: Text.RichText
+        inLayout: true
         maximumLineCount: 3
         color: guiSettings.linkColor
         plainText: qsTr(`Followed by ${getKnownFollowersText()}`)

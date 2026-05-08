@@ -5,6 +5,7 @@ import skywalker
 
 Text {
     required property string plainText
+    property bool inLayout: false
     property string elidedText
     property bool showEllipsis: true
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
@@ -20,7 +21,7 @@ Text {
     readonly property real advanceWidth: textMetrics.advanceWidth
 
     id: theText
-    height: mustElideRich && wrapMode !== Text.NoWrap ?
+    height: !inLayout && mustElideRich && wrapMode !== Text.NoWrap ?
         Math.min(contentHeight, capLineCount * fontMetrics.height) + topPadding + bottomPadding : undefined
     Layout.maximumHeight: mustElideRich && wrapMode !== Text.NoWrap ?
         capLineCount * fontMetrics.height + topPadding + bottomPadding : -1
