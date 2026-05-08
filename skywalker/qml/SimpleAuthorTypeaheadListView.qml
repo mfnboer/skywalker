@@ -5,6 +5,7 @@ SimpleAuthorListView {
     required property string searchText
     property int searchLimit: 20
     property bool canChatOnly: false
+    property bool publicSearch: false
     property Skywalker skywalker: root.getSkywalker()
 
     signal cleared
@@ -17,7 +18,10 @@ SimpleAuthorListView {
         interval: 500
         onTriggered: {
             if (searchText.length > 0) {
-                searchUtils.searchAuthorsTypeahead(searchText, searchLimit, canChatOnly)
+                if (publicSearch)
+                    searchUtils.publicSearchAuthorsTypeahead(searchText, searchLimit)
+                else
+                    searchUtils.searchAuthorsTypeahead(searchText, searchLimit, canChatOnly)
             } else {
                 clear()
                 cleared()

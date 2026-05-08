@@ -38,6 +38,11 @@ public:
 
     Q_INVOKABLE void removeModels();
     Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20, bool canChatOnly = false);
+
+    // The public search does not need a logged in session. It will no take people you
+    // follow in account.
+    Q_INVOKABLE void publicSearchAuthorsTypeahead(const QString& typed, int limit = 20);
+
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
 
     Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder,
@@ -128,6 +133,7 @@ private:
                          QDateTime tillTimestamp, const QString& cid,
                          int maxPages = 10, const QString& cursor = {});
     QString processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
+    ATProto::Client* publicBskyClient();
 
     BasicProfileList mAuthorTypeaheadList;
     QStringList mHashtagTypeaheadList;
@@ -143,6 +149,7 @@ private:
     TrendingTopicListModel::Ptr mTrendingTopicsListModel;
     QEnums::ContentVisibility mOVerrideAdultVisibility = QEnums::CONTENT_VISIBILITY_SHOW;
     std::optional<int> mSearchPageSize;
+    ATProto::Client::SharedPtr mPublicBsky;
 };
 
 }

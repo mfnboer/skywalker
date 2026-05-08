@@ -133,6 +133,36 @@ SkyPage {
                     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                     maximumLength: 253
                     validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
+
+                    onDisplayTextChanged: userTypeaheadView.startSearch()
+
+                    onEditingFinished: {
+                        userTypeaheadView.stopSearch()
+                        userTypeaheadView.clear()
+                    }
+
+                    textInput.onActiveFocusChanged: {
+                        if (!textInput.activeFocus) {
+                            userTypeaheadView.stopSearch()
+                            userTypeaheadView.clear()
+                        }
+                    }
+                }
+
+                SimpleAuthorTypeaheadListView {
+                    id: userTypeaheadView
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.min(5 * 3 * guiSettings.appFontHeight, contentHeight)
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    searchText: userField.displayText
+                    publicSearch: true
+
+                    onAuthorClicked: (profile) => {
+                        userField.text = profile.handle
+                        stopSearch()
+                        clear()
+                    }
                 }
 
                 SkyTextInput {
@@ -323,6 +353,36 @@ SkyPage {
                     inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText | Qt.ImhSensitiveData
                     maximumLength: 253
                     validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
+
+                    onDisplayTextChanged: oauthUserTypeaheadView.startSearch()
+
+                    onEditingFinished: {
+                        oauthUserTypeaheadView.stopSearch()
+                        oauthUserTypeaheadView.clear()
+                    }
+
+                    textInput.onActiveFocusChanged: {
+                        if (!textInput.activeFocus) {
+                            oauthUserTypeaheadView.stopSearch()
+                            oauthUserTypeaheadView.clear()
+                        }
+                    }
+                }
+
+                SimpleAuthorTypeaheadListView {
+                    id: oauthUserTypeaheadView
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.min(5 * 3 * guiSettings.appFontHeight, contentHeight)
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
+                    searchText: oauthUserField.displayText
+                    publicSearch: true
+
+                    onAuthorClicked: (profile) => {
+                        oauthUserField.text = profile.handle
+                        stopSearch()
+                        clear()
+                    }
                 }
 
                 AccessibleLabel {

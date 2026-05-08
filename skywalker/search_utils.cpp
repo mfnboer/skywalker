@@ -220,6 +220,24 @@ void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit, bool c
         });
 }
 
+void SearchUtils::publicSearchAuthorsTypeahead(const QString& typed, int limit)
+{
+    setAuthorTypeaheadList({});
+    publicBskyClient()->searchActorsTypeahead(typed, limit,
+        [this, presence=getPresence()](auto searchOutput){
+            if (!presence)
+                return;
+
+            addAuthorTypeaheadList(searchOutput->mActors);
+        },
+        [presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Type ahead search failed:" << error << " - " << msg;
+        });
+}
+
 void SearchUtils::searchHashtagsTypeahead(const QString& typed, int limit)
 {
     const auto& hashtags = mSkywalker->getUserHashtags();
@@ -1214,6 +1232,14 @@ SearchFeed SearchUtils::createSearchFeed(
         "mention:" << feed.getMentionHandle() << "since:" << feed.getSince() << "until:" << feed.getUntil() <<
         "lang:" << feed.getLanguage();
     return feed;
+}
+
+ATProto::Client* SearchUtils::publicBskyClient()
+{
+    if (!mPublicBsky)
+        mPublicBsky = ATProto::Client::createPublicApiClient(this);
+
+    return mPublicBsky.get();
 }
 
 }
