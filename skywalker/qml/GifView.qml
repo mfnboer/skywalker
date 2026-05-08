@@ -34,6 +34,19 @@ Item {
         running: gifImage.status === Image.Loading
     }
     Image {
+        id: klipyAttribution
+        anchors.left: gifImage.left
+        anchors.leftMargin: 5
+        anchors.bottom: gifImage.bottom
+        anchors.bottomMargin: 5
+        width: guiSettings.gifAttributionWidth
+        height: guiSettings.gifAttributionHeight
+        fillMode: Image.PreserveAspectFit
+        source: "/images/klipy_watermark.svg"
+        asynchronous: true
+        visible: gifUtils.isKlipyLink(view.uri)
+    }
+    Image {
         id: tenorAttribution
         anchors.right: gifImage.right
         anchors.top: gifImage.bottom

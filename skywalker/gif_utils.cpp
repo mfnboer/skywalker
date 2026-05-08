@@ -13,6 +13,8 @@ constexpr char const* GRAYSKY_PREFIX = "https://graysky.app/gif/";
 
 constexpr char const* GIPHY_GIFS_PREFIX = "https://giphy.com/gifs/";
 constexpr char const* GIPHY_DOMAIN = "giphy.com";
+
+constexpr char const* KLIPY_PREFIX = "https://static.klipy.com/";
 }
 
 GifUtils::GifUtils(QObject* parent) :
@@ -32,6 +34,11 @@ bool GifUtils::isGiphyLink(const QString& link) const
     return link.contains(GIPHY_DOMAIN);
 }
 
+bool GifUtils::isKlipyLink(const QString& link) const
+{
+    return link.startsWith(KLIPY_PREFIX);
+}
+
 Q_INVOKABLE bool GifUtils::isGif(const QString& link) const
 {
     return !getGifUrl(link).isEmpty();
@@ -39,6 +46,9 @@ Q_INVOKABLE bool GifUtils::isGif(const QString& link) const
 
 QString GifUtils::getGifUrl(const QString& link) const
 {
+    if (link.startsWith(KLIPY_PREFIX))
+        return getKlipyGifUrl(link);
+
     if (link.startsWith(GIPHY_GIFS_PREFIX))
         return getGiphyGifUrl(link);
 
@@ -102,11 +112,23 @@ QSize GifUtils::getGifSize(const QUrlQuery& query, const QString& widthTag, cons
     return sz;
 }
 
+QString GifUtils::getKlipyGifUrl(const QString& link) const
+{
+    const QUrl url(link);
+
+    if (!url.isValid())
+        return {};
+
+    const QString gifLink = url.toString(QUrl::RemoveQuery);
+    return gifLink.endsWith(".gif") ? gifLink : "";
+}
+
 // Example: https://giphy.com/gifs/ufc-sport-297-ufc297-ycTrWycYMLlUNoHl73
 // Result:  https://i.giphy.com/ycTrWycYMLlUNoHl73.gif
 QString GifUtils::getGiphyGifUrl(const QString& link) const
 {
     const QUrl url(link);
+
     if (!url.isValid())
         return {};
 
@@ -139,6 +161,7 @@ QString GifUtils::getGiphyMediaUrl(const QString& link) const
 QString GifUtils::getTenorViewGif(const QString& link) const
 {
     const QUrl url(link);
+
     if (!url.isValid())
         return {};
 

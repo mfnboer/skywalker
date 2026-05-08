@@ -72,6 +72,7 @@ qt_add_qml_module(appskywalker
         fonts/unicode.impact.ttf
         fonts/NotoSansMath-Regular.ttf
         images/skywalker.png
+        images/klipy_watermark.svg
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg
         images/giphy_logo.png

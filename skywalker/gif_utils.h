@@ -17,11 +17,13 @@ public:
 
     Q_INVOKABLE bool isTenorLink(const QString& link) const;
     Q_INVOKABLE bool isGiphyLink(const QString& link) const;
+    Q_INVOKABLE bool isKlipyLink(const QString& link) const;
     Q_INVOKABLE bool isGif(const QString& link) const;
     Q_INVOKABLE QString getGifUrl(const QString& link) const;
     Q_INVOKABLE QSize getGifSize(const QString& link) const;
 
 private:
+    QString getKlipyGifUrl(const QString& link) const;
     QString getGiphyGifUrl(const QString& link) const;
     QString getGiphyMediaUrl(const QString& link) const;
     QString getTenorViewGif(const QString& link) const;
