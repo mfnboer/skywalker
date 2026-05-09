@@ -1,4 +1,4 @@
-next
+4.34
 ====
 * Klipy GIFs
 * Use narrow OAuth scope to only get access too bsky repo's and rpc's
