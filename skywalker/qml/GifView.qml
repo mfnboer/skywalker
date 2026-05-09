@@ -13,7 +13,7 @@ Item {
 
     id: view
     width: parent.width
-    height: Math.max(gifImage.height + (tenorAttribution.visible ? tenorAttribution.height : 0) + (giphyAttribution.visible ? giphyAttribution.height : 0) + 5, gifLoadingIndicator.height)
+    height: Math.max(gifImage.height + (tenorAttribution.item ? tenorAttribution.item.height : 0) + (giphyAttribution.item ? giphyAttribution.item.height : 0), gifLoadingIndicator.height)
 
     AnimatedImagePreview {
         id: gifImage
@@ -33,42 +33,51 @@ Item {
         anchors.centerIn: parent
         running: gifImage.status === Image.Loading
     }
-    Image {
+    Loader {
         id: klipyAttribution
         anchors.left: gifImage.left
         anchors.leftMargin: 5
         anchors.bottom: gifImage.bottom
         anchors.bottomMargin: 5
-        width: guiSettings.gifAttributionWidth
-        height: guiSettings.gifAttributionHeight
-        fillMode: Image.PreserveAspectFit
-        source: "/images/klipy_watermark.svg"
-        asynchronous: true
-        visible: gifUtils.isKlipyLink(view.uri)
+        active: gifUtils.isKlipyLink(view.uri)
+
+        sourceComponent: Image {
+            width: guiSettings.gifAttributionWidth
+            height: guiSettings.gifAttributionHeight
+            fillMode: Image.PreserveAspectFit
+            source: "/images/klipy_watermark.svg"
+            asynchronous: true
+        }
     }
-    Image {
+    Loader {
         id: tenorAttribution
         anchors.right: gifImage.right
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
-        width: guiSettings.gifAttributionWidth
-        height: guiSettings.gifAttributionHeight
-        fillMode: Image.PreserveAspectFit
-        source: "/images/via_tenor_logo_blue.svg"
-        asynchronous: true
-        visible: gifUtils.isTenorLink(view.uri)
+        active: gifUtils.isTenorLink(view.uri)
+
+        sourceComponent: Image {
+            width: guiSettings.gifAttributionWidth
+            height: guiSettings.gifAttributionHeight
+            fillMode: Image.PreserveAspectFit
+            source: "/images/via_tenor_logo_blue.svg"
+            asynchronous: true
+        }
     }
-    Image {
+    Loader {
         id: giphyAttribution
         anchors.right: gifImage.right
         anchors.top: gifImage.bottom
         anchors.topMargin: 5
-        width: guiSettings.gifAttributionWidth
-        height: guiSettings.gifAttributionHeight
-        fillMode: Image.PreserveAspectFit
-        source: "/images/giphy_logo.png"
-        asynchronous: true
-        visible: gifUtils.isGiphyLink(view.uri)
+        active: gifUtils.isGiphyLink(view.uri)
+
+        sourceComponent: Image {
+            width: guiSettings.gifAttributionWidth
+            height: guiSettings.gifAttributionHeight
+            fillMode: Image.PreserveAspectFit
+            source: "/images/giphy_logo.png"
+            asynchronous: true
+        }
     }
 
     GifUtils {

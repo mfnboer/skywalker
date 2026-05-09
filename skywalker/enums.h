@@ -592,6 +592,14 @@ public:
         FEED_ORDER_LAST = FEED_ORDER_OLD_TO_NEW
     };
     Q_ENUM(FeedOrder)
+
+    enum GifProvider
+    {
+        GIF_PROVIDER_KLIPY,
+        GIF_PROVIDER_GIPHY,
+        GIF_PROVIDER_TENOR
+    };
+    Q_ENUM(GifProvider)
 };
 
 }

@@ -4,8 +4,12 @@ import QtQuick.Layouts
 import skywalker
 
 SkyPage {
+    property bool useKlipy: false
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
     readonly property string sideBarTitle: qsTr("Add GIF")
     readonly property SvgImage sideBarSvg: SvgOutline.addGif
+    readonly property var gifProvider: useKlipy ? klipy : tenor
 
     signal closed
     signal selected(tenorgif gif)
@@ -17,7 +21,7 @@ SkyPage {
 
     header: SearchHeader {
         minSearchTextLength: 2
-        placeHolderText: qsTr("Search Tenor")
+        placeHolderText: useKlipy ? qsTr("Search KLIPY") : qsTr("Search Tenor")
         showBackButton: !root.showSideBar
 
         onBack: cancel()
@@ -37,8 +41,19 @@ SkyPage {
             width: parent.width - 20
             height: parent.height - 20
             fillMode: Image.PreserveAspectFit
-            source: "/images/PB_tenor_logo_blue_horizontal.svg"
+            source: getLogo()
             asynchronous: true
+
+            function getLogo() {
+                if (useKlipy) {
+                    if (userSettings.getActiveDisplayMode() === QEnums.DISPLAY_MODE_LIGHT)
+                        return "/images/pb_klipy_light.svg"
+                    else
+                        return "/images/pb_klipy_dark.svg"
+                } else {
+                    return "/images/PB_tenor_logo_blue_horizontal.svg"
+                }
+            }
         }
     }
 
@@ -119,8 +134,8 @@ SkyPage {
         ListView {
             id: gifOverview
             width: parent.width
-            model: tenor.overviewModel
-            spacing: tenor.spacing
+            model: gifProvider.overviewModel
+            spacing: gifProvider.spacing
             clip: true
             flickDeceleration: guiSettings.flickDeceleration
             maximumFlickVelocity: guiSettings.maxFlickVelocity
@@ -153,7 +168,7 @@ SkyPage {
                         SkyMouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                tenor.addRecentGif(gif)
+                                gifProvider.addRecentGif(gif)
                                 selected(gif)
                             }
                         }
@@ -162,8 +177,8 @@ SkyPage {
             }
 
             FlickableRefresher {
-                inProgress: tenor.searchInProgress
-                bottomOvershootFun: () => tenor.getNextPage()
+                inProgress: gifProvider.searchInProgress
+                bottomOvershootFun: () => gifProvider.getNextPage()
             }
         }
 
@@ -190,20 +205,29 @@ SkyPage {
         onSearchGifsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    BusyIndicator {
-        anchors.centerIn: parent
-        running: tenor.searchInProgress
+    Klipy {
+        id: klipy
+        width: page.width
+        spacing: 4
+        skywalker: root.getSkywalker()
+
+        onCategories: (categoryList) => categoriesView.model = categoryList
+        onSearchGifsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: gifProvider.searchInProgress
+    }
 
     function searchTenor(text) {
-        tenor.searchGifs(text)
+        gifProvider.searchGifs(text)
         viewStack.showGifs()
     }
 
     function searchCategory(category) {
         if (category.isRecentCategory) {
-            tenor.searchRecentGifs()
+            gifProvider.searchRecentGifs()
             viewStack.showGifs()
         }
         else {
@@ -223,7 +247,7 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        tenor.getCategories()
+        gifProvider.getCategories()
         page.header.unfocus()
     }
 }

@@ -425,7 +425,14 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
                      smallUrl, QSize(smallWidth, smallHeight),
                      externalView->getThumbUrl(), gifSize,
                      mp4Url);
-        gif.setIsGiphy(gifUtils.isGiphyLink(link));
+
+        if (gifUtils.isKlipyLink(link))
+            gif.setGifProvider(QEnums::GIF_PROVIDER_KLIPY);
+        else if (gifUtils.isGiphyLink(link))
+            gif.setGifProvider(QEnums::GIF_PROVIDER_GIPHY);
+        else
+            gif.setGifProvider(QEnums::GIF_PROVIDER_TENOR);
+
         qDebug() << "GIF uri:" << uri << "url:" << gif.getUrl() << "size:" << gif.getSize() << "small:" << gif.getSmallUrl() << "size:" << gif.getSmallSize() << "image:" << gif.getImageUrl();
         data->setGif(gif);
         data->setGifAltText(externalView->getDescription());

@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -20,6 +21,7 @@ class TenorGif
     Q_PROPERTY(QSize imageSize READ getImageSize CONSTANT FINAL)
     Q_PROPERTY(QSize overviewSize READ getOverviewSize CONSTANT FINAL)
     Q_PROPERTY(QString mp4Url READ getMp4Url CONSTANT FINAL)
+    Q_PROPERTY(QString webmUrl READ getWebmUrl CONSTANT FINAL)
     QML_VALUE_TYPE(tenorgif)
 
 public:
@@ -35,7 +37,8 @@ public:
             const QString& url, QSize size,
             const QString& smallUrl, QSize smallSize,
             const QString& imageUrl, QSize imageSize,
-            const QString& mp4Url = {}) :
+            const QString& mp4Url = {},
+            const QString& webmUrl = {}) :
         mPrivate{std::make_shared<PrivateData>(
             id,
             description,
@@ -44,7 +47,8 @@ public:
             smallUrl, smallSize,
             imageUrl, imageSize,
             smallSize,
-            mp4Url)}
+            mp4Url,
+            webmUrl)}
     {}
 
     Q_INVOKABLE bool isNull() const { return mPrivate->mUrl.isEmpty(); }
@@ -55,13 +59,14 @@ public:
     const QString& getSearchTerm() const { return mPrivate->mSearchTerm; }
     const QString& getSmallUrl() const { return mPrivate->mSmallUrl; }
     const QString& getMp4Url() const { return mPrivate->mMp4Url; }
+    const QString& getWebmUrl() const { return mPrivate->mWebmUrl; }
     QSize getSize() const { return mPrivate->mSize; }
     QSize getSmallSize() const { return mPrivate->mSmallSize; }
     QSize getImageSize() const { return mPrivate->mImageSize; }
     QSize getOverviewSize() const { return mPrivate->mOverviewSize; }
     void setOverviewSize(QSize size) { mPrivate->mOverviewSize = size; }
-    Q_INVOKABLE bool isGiphy() const { return mPrivate->mIsGiphy; }
-    void setIsGiphy(bool isGiphy) { mPrivate->mIsGiphy = isGiphy; }
+    Q_INVOKABLE QEnums::GifProvider getGifProvider() const { return mPrivate->mGifProvider; }
+    void setGifProvider(QEnums::GifProvider gifProvider) { mPrivate->mGifProvider = gifProvider; }
 
     // Get a URL that is compatible with Bluesky
     Q_INVOKABLE const QString getUrlForPosting(QSize fallbackSize) const;
@@ -82,7 +87,8 @@ private:
         QSize mImageSize;
         QSize mOverviewSize;
         QString mMp4Url;
-        bool mIsGiphy = false;
+        QString mWebmUrl;
+        QEnums::GifProvider mGifProvider = QEnums::GIF_PROVIDER_TENOR;
     };
 
     std::shared_ptr<PrivateData> mPrivate;

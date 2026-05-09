@@ -134,7 +134,10 @@ SkyPage {
                     maximumLength: 253
                     validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
 
-                    onDisplayTextChanged: userTypeaheadView.startSearch()
+                    onDisplayTextChanged: {
+                        if (textInput.activeFocus)
+                            userTypeaheadView.startSearch()
+                    }
 
                     onEditingFinished: {
                         userTypeaheadView.stopSearch()
@@ -354,7 +357,10 @@ SkyPage {
                     maximumLength: 253
                     validator: RegularExpressionValidator { regularExpression: /([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?/ }
 
-                    onDisplayTextChanged: oauthUserTypeaheadView.startSearch()
+                    onDisplayTextChanged: {
+                        if (textInput.activeFocus)
+                            oauthUserTypeaheadView.startSearch()
+                    }
 
                     onEditingFinished: {
                         oauthUserTypeaheadView.stopSearch()

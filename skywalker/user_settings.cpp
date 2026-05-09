@@ -2180,6 +2180,16 @@ void UserSettings::setRecentGiphyGifs(const QString& did, const QStringList& gif
     mSettings.setValue(key(did, "recentGiphyGifs"), gifIds);
 }
 
+QStringList UserSettings::getRecentKlipyGifs(const QString& did) const
+{
+    return mSettings.value(key(did, "recentKlipyGifs")).toStringList();
+}
+
+void UserSettings::setRecentKlipyGifs(const QString& did, const QStringList& gifIds)
+{
+    mSettings.setValue(key(did, "recentKlipyGifs"), gifIds);
+}
+
 QStringList UserSettings::getLastSearches(const QString& did) const
 {
     return mSettings.value(key(did, "lastSearches")).toStringList();

@@ -20,6 +20,7 @@ protected:
     using ErrorOccurredCb = std::function<void(QNetworkReply*, QNetworkReply::NetworkError)>;
     using SslErrorsCb = std::function<void(QNetworkReply*)>;
 
+    void setBaseUrl(const QString& baseUrl) { mBaseUrl = baseUrl; }
     virtual QUrl buildUrl(const QString& endpoint, const Params& params) const;
     QNetworkReply* sendRequest(const QString& endpoint, const Params& params,
                      const FinishedCb& finishedCb,

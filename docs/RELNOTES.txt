@@ -1,5 +1,6 @@
 next
 ====
+* Klipy GIFs
 * Use narrow OAuth scope to only get access too bsky repo's and rpc's
 * No need to enter hosting provider anymore on login
 * Hide author by default on blocked and muted posts

@@ -8,8 +8,9 @@ namespace Skywalker {
 
 namespace {
 
+constexpr char const* KLIPY_BASE_URL = "https://api.klipy.com/v2/";
 constexpr char const* TENOR_BASE_URL = "https://tenor.googleapis.com/v2/";
-constexpr char const* MEDIA_FILTER = "tinygif,gif,gifpreview";
+constexpr char const* MEDIA_FILTER = "tinygif,gif,gifpreview,mp4,webm";
 constexpr char const* CONTENT_FILTER = "medium";
 constexpr int MAX_RECENT_GIFS = 50;
 
@@ -17,11 +18,10 @@ constexpr int MAX_RECENT_GIFS = 50;
 
 Tenor::Tenor(QObject* parent) :
     WrappedSkywalker(parent),
-    Presence(),
+    WebServiceBase(TENOR_BASE_URL, new QNetworkAccessManager(this)),
     mApiKey(TENOR_API_KEY),
     mClientKey("com.gmail.mfnboer.skywalker"),
-    mOverviewModel(mWidth, mSpacing, this),
-    mNetwork(new QNetworkAccessManager(this))
+    mOverviewModel(mWidth, mSpacing, this)
 {
     QLocale locale;
     mLocale = QString("%1_%2").arg(
@@ -64,19 +64,16 @@ void Tenor::setSearchInProgress(bool inProgress)
 
 QUrl Tenor::buildUrl(const QString& endpoint, const Params& params) const
 {
-    QUrl url(TENOR_BASE_URL + endpoint);
-    QUrlQuery query;
-    query.addQueryItem("key", QUrl::toPercentEncoding(mApiKey));
-    query.addQueryItem("client_key", QUrl::toPercentEncoding(mClientKey));
+    Params p(params);
+    p.push_back({"key", QUrl::toPercentEncoding(mApiKey)});
+
+    if (!mClientKey.isEmpty())
+        p.push_back({"client_key", QUrl::toPercentEncoding(mClientKey)});
 
     if (endpoint != "posts")
-        query.addQueryItem("locale", QUrl::toPercentEncoding(mLocale));
+        p.push_back({"locale", QUrl::toPercentEncoding(mLocale)});
 
-    for (const auto& kv : params)
-        query.addQueryItem(kv.first, QUrl::toPercentEncoding(kv.second));
-
-    url.setQuery(query);
-    return url;
+    return WebServiceBase::buildUrl(endpoint, p);
 }
 
 void Tenor::searchRecentGifs()
@@ -97,37 +94,26 @@ void Tenor::searchRecentGifs()
         return;
 
     Q_ASSERT(gifIdList.size() <= 50); // maximum allowed by Tenor
-    Params params{{"ids", gifIdList.join(',')},
-                  {"media_filter", MEDIA_FILTER}};
+    // NOTE: gifpreview and webm is not accepted in the filter by KLIPY
+    // Params params{{"ids", gifIdList.join(',')},
+    //               {"media_filter", MEDIA_FILTER}};
+    Params params{{"ids", gifIdList.join(',')}};
 
     setSearchInProgress(true);
-    QNetworkRequest request(buildUrl("posts", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        searchGifsFinished(reply, "");
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Posts SSL error:" <<  reply->request().url();
-    });
+    sendRequest("posts", params,
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            searchGifsFinished(reply, "");
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setSearchInProgress(false);
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+        });
 }
 
 void Tenor::searchGifs(const QString& query, const QString& pos)
@@ -149,6 +135,7 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
         Q_ASSERT(query == mQuery);
     }
 
+    // NOTE: here KLIPY accepts gifpreview and webm in the filter ???
     Params params{{"q", query},
                   {"media_filter", MEDIA_FILTER},
                   {"contentfilter", CONTENT_FILTER}};
@@ -157,33 +144,20 @@ void Tenor::searchGifs(const QString& query, const QString& pos)
         params.append({"pos", pos});
 
     setSearchInProgress(true);
-    QNetworkRequest request(buildUrl("search", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, query]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        searchGifsFinished(reply, query);
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Search error:" << reply->request().url() << "error:" <<
+    sendRequest("search", params,
+        [this, query](QNetworkReply* reply){
+            setSearchInProgress(false);
+            searchGifsFinished(reply, query);
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            setSearchInProgress(false);
+            qWarning() << "Search error:" << reply->request().url() << "error:" <<
                 errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setSearchInProgress(false);
-        qWarning() << "Search SSL error:" <<  reply->request().url();
-    });
+        },
+        [this](QNetworkReply* reply){
+            setSearchInProgress(false);
+            qWarning() << "Search SSL error:" <<  reply->request().url();
+        });
 }
 
 void Tenor::getNextPage()
@@ -225,29 +199,22 @@ void Tenor::getCategories(const QString& type, TenorCategoryList& categoryList, 
     }
 
     Params params{{"type", type}, {"contentfilter", CONTENT_FILTER}};
-    QNetworkRequest request(buildUrl("categories", params));
-    QNetworkReply* reply = mNetwork->get(request);
+    sendRequest("categories", params,
+        [this, &categoryList, getNext](QNetworkReply* reply){
+            categoriesFinished(reply, categoryList);
 
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply, &categoryList, getNext]{
-        if (!presence)
-            return;
-
-        categoriesFinished(reply, categoryList);
-
-        if (getNext)
-            getNext();
-        else
-            getRecentCategory();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
-        qWarning() << "Categories error:" << reply->request().url() << "error:" <<
+            if (getNext)
+                getNext();
+            else
+                getRecentCategory();
+        },
+        [](QNetworkReply* reply, auto errCode){
+            qWarning() << "Categories error:" << reply->request().url() << "error:" <<
             errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [reply]{
-        qWarning() << "Categories SSL error:" <<  reply->request().url();
-    });
+        },
+        [](QNetworkReply* reply){
+            qWarning() << "Categories SSL error:" <<  reply->request().url();
+        });
 }
 
 void Tenor::getRecentCategory()
@@ -266,36 +233,25 @@ void Tenor::getRecentCategory()
         return;
     }
 
-    Params params{{"ids", gifIds.front()},
-                  {"media_filter", MEDIA_FILTER}};
+    // NOTE: gifpreview and webm are not accepted in the filter by KLIPY
+    // Params params{{"ids", gifIds.front()},
+    //               {"media_filter", MEDIA_FILTER}};
+    Params params{{"ids", gifIds.front()}};
 
-    QNetworkRequest request(buildUrl("posts", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        setRecentCategory(reply);
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, presence=getPresence(), reply](auto errCode){
-        if (!presence)
-            return;
-
-        qWarning() << "Posts error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-        allCategoriesRetrieved();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [this, presence=getPresence(), reply]{
-        if (!presence)
-            return;
-
-        qWarning() << "Posts SSL error:" <<  reply->request().url();
-        allCategoriesRetrieved();
-    });
+    sendRequest("posts", params,
+        [this](QNetworkReply* reply){
+            setRecentCategory(reply);
+            allCategoriesRetrieved();
+        },
+        [this](QNetworkReply* reply, auto errCode){
+            qWarning() << "Posts error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+            allCategoriesRetrieved();
+        },
+        [this](QNetworkReply* reply){
+            qWarning() << "Posts SSL error:" <<  reply->request().url();
+            allCategoriesRetrieved();
+        });
 }
 
 void Tenor::setRecentCategory(QNetworkReply* reply)
@@ -344,7 +300,8 @@ TenorGif Tenor::toTenorGif(const QJsonValue& resultElem, const QString& query) c
     const ATProto::XJsonObject resultXJson(resultJson);
     const auto id = resultXJson.getRequiredString("id");
     const auto description = resultXJson.getOptionalString("content_description", "");
-    qDebug() << id << description;
+    const auto title = resultXJson.getOptionalString("title", "");
+    qDebug() << id << title << "description:" << description;
 
     const auto mediaFormatsJson = resultXJson.getRequiredJsonObject("media_formats");
     const ATProto::XJsonObject mediaFormatsXJson(mediaFormatsJson);
@@ -356,14 +313,32 @@ TenorGif Tenor::toTenorGif(const QJsonValue& resultElem, const QString& query) c
     // The mediumgif format seems to be better as it is smaller without
     // much loss of quality. However Bluesky only plays the gif format.
     const auto gifJson = mediaFormatsXJson.getRequiredJsonObject("gif");
-    const auto gifFormat =  mediaFormatFromJson(gifJson);
+    const auto gifFormat = mediaFormatFromJson(gifJson);
 
-    const TenorGif tenorGif(id, description, query,
+    const auto mp4Json = mediaFormatsXJson.getOptionalJsonObject("mp4");
+    const QString mp4Url = mp4Json ? mediaUrlFromJson(*mp4Json) : "";
+    const auto webmJson = mediaFormatsXJson.getOptionalJsonObject("webm");
+    const QString webmUrl = webmJson ? mediaUrlFromJson(*webmJson) : "";
+
+    const TenorGif tenorGif(id, description.isEmpty() ? title : description, query,
                             gifFormat.mUrl, gifFormat.mSize,
                             smallFormat.mUrl, smallFormat.mSize,
-                            imageFormat.mUrl, imageFormat.mSize);
+                            imageFormat.mUrl, imageFormat.mSize,
+                            mp4Url, webmUrl);
 
     return tenorGif;
+}
+
+void Tenor::setRecentGifs(const QString& did, const QStringList& gifIds)
+{
+    auto* settings = mSkywalker->getUserSettings();
+    settings->setRecentGifs(did, gifIds);
+}
+
+QStringList Tenor::getRecentGifs(const QString& did) const
+{
+    auto* settings = mSkywalker->getUserSettings();
+    return settings->getRecentGifs(did);
 }
 
 void Tenor::registerShare(const TenorGif& gif)
@@ -380,36 +355,31 @@ void Tenor::registerShare(const TenorGif& gif)
     if (!gif.getSearchTerm().isEmpty())
         params.push_back({"q", gif.getSearchTerm()});
 
-    QNetworkRequest request(buildUrl("registershare", params));
-    QNetworkReply* reply = mNetwork->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, [reply]{
-        if (reply->error() == QNetworkReply::NoError)
-        {
-            qDebug() << "Register Share OK";
-        }
-        else
-        {
-            qWarning() << "Register Share failed:" << reply->request().url() << "error:" <<
-                reply->error() << reply->errorString();
-        }
-    });
-
-    connect(reply, &QNetworkReply::errorOccurred, this, [reply](auto errCode){
-        qWarning() << "Register Share error:" << reply->request().url() << "error:" <<
-            errCode << reply->errorString();
-    });
-
-    connect(reply, &QNetworkReply::sslErrors, this, [reply]{
-        qWarning() << "Register Share SSL error:" <<  reply->request().url();
-    });
+    sendRequest("registershare", params,
+        [](QNetworkReply* reply){
+            if (reply->error() == QNetworkReply::NoError)
+            {
+                qDebug() << "Register Share OK";
+            }
+            else
+            {
+                qWarning() << "Register Share failed:" << reply->request().url() << "error:" <<
+                    reply->error() << reply->errorString();
+            }
+        },
+        [](QNetworkReply* reply, auto errCode){
+            qWarning() << "Register Share error:" << reply->request().url() << "error:" <<
+                errCode << reply->errorString();
+        },
+        [](QNetworkReply* reply){
+            qWarning() << "Register Share SSL error:" <<  reply->request().url();
+        });
 }
 
 void Tenor::addRecentGif(const TenorGif& gif)
 {
     const QString did = mSkywalker->getUserDid();
-    auto* settings = mSkywalker->getUserSettings();
-    QStringList gifIds = settings->getRecentGifs(did);
+    QStringList gifIds = getRecentGifs(did);
 
     for (auto it = gifIds.cbegin(); it != gifIds.cend(); ++it)
     {
@@ -426,7 +396,7 @@ void Tenor::addRecentGif(const TenorGif& gif)
         gifIds.pop_back();
 
     gifIds.push_front(gif.getId());
-    settings->setRecentGifs(did, gifIds);
+    setRecentGifs(did, gifIds);
     setRecentCategory(gif);
 }
 
@@ -489,6 +459,12 @@ Tenor::MediaFormat Tenor::mediaFormatFromJson(const QJsonObject& json) const
 
     qDebug() << mediaFormat.mUrl << mediaFormat.mSize;
     return mediaFormat;
+}
+
+QString Tenor::mediaUrlFromJson(const QJsonObject& json) const
+{
+    const ATProto::XJsonObject xjson(json);
+    return xjson.getRequiredString("url");
 }
 
 bool Tenor::categoriesFinished(QNetworkReply* reply, TenorCategoryList& categoryList)
@@ -565,9 +541,34 @@ void Tenor::allCategoriesRetrieved()
 QStringList Tenor::getRecentGifs()
 {
     const QString did = mSkywalker->getUserDid();
-    auto* settings = mSkywalker->getUserSettings();
-    QStringList gifIds = settings->getRecentGifs(did);
+    QStringList gifIds = getRecentGifs(did);
     return gifIds;
+}
+
+Klipy::Klipy(QObject* parent) : Tenor(parent)
+{
+    setBaseUrl(KLIPY_BASE_URL);
+    setApiKey(KLIPY_API_KEY);
+    setClientKey({});
+}
+
+TenorGif Klipy::toTenorGif(const QJsonValue& resultElem, const QString& query) const
+{
+    TenorGif gif = Tenor::toTenorGif(resultElem, query);
+    gif.setGifProvider(QEnums::GIF_PROVIDER_KLIPY);
+    return gif;
+}
+
+void Klipy::setRecentGifs(const QString& did, const QStringList& gifIds)
+{
+    auto* settings = mSkywalker->getUserSettings();
+    settings->setRecentKlipyGifs(did, gifIds);
+}
+
+QStringList Klipy::getRecentGifs(const QString& did) const
+{
+    auto* settings = mSkywalker->getUserSettings();
+    return settings->getRecentKlipyGifs(did);
 }
 
 }

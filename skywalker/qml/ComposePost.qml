@@ -1492,6 +1492,11 @@ SkyPage {
         running: false
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: postButton.isPosting
+    }
+
     ImageFileDialog {
         id: fileDialog
         onImageSelected: (fileUri) => photoPicked(fileUri)
@@ -1999,6 +2004,11 @@ SkyPage {
         skywalker: page.skywalker
     }
 
+    Klipy {
+        id: klipy
+        skywalker: page.skywalker
+    }
+
     MemeMaker {
         id: memeMaker
     }
@@ -2105,7 +2115,6 @@ SkyPage {
     }
 
     function postFailed(error) {
-        busyIndicator.running = false
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         // Delete posts already posted (in a thread, or on failed thread gate creation)
@@ -2124,8 +2133,6 @@ SkyPage {
     }
 
     function postProgress(msg) {
-        busyIndicator.running = true
-
         if (sendingThreadPost < 0)
             skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO, 300)
         else
@@ -2277,7 +2284,6 @@ SkyPage {
     }
 
     function finish() {
-        busyIndicator.running = false
         page.closed()
     }
 
@@ -2461,11 +2467,22 @@ SkyPage {
                            postItem.embeddedLinks,
                            labels, postItem.language,
                            postFeedContext)
-        } else if (!postItem.gif.isNull() && (!postItem.gif.isGiphy() || !postItem.gif.mp4Url)) {
-            if (!postItem.gif.isGiphy())
-                tenor.registerShare(postItem.gif)
+        } else if (!postItem.gif.isNull() && (postItem.gif.getGifProvider() !== QEnums.GIF_PROVIDER_GIPHY || !postItem.gif.mp4Url)) {
+            let attribution = ""
 
-            const attribution = postItem.gif.isGiphy() ? "Powered by Giphy" : "via Tenor"
+            switch (postItem.gif.getGifProvider()) {
+            case QEnums.GIF_PROVIDER_TENOR:
+                tenor.registerShare(postItem.gif)
+                attribution = "via Tenor"
+                break
+            case QEnums.GIF_PROVIDER_KLIPY:
+                klipy.registerShare(postItem.gif)
+                attribution = "Powered by KLIPY"
+                break
+            case QEnums.GIF_PROVIDER_GIPHY:
+                attribution = "Powered by Giphy"
+                break
+            }
 
             // HACK: Prefix "Alt: " is used to indicate an ALT-text
             const description = postItem.gifAltText ? `Alt: ${postItem.gifAltText}` :
@@ -2489,7 +2506,7 @@ SkyPage {
                            postItem.embeddedLinks,
                            labels, postItem.language,
                            postFeedContext)
-        } else if (!postItem.gif.isNull() && postItem.gif.isGiphy() && postItem.gif.mp4Url) {
+        } else if (!postItem.gif.isNull() && postItem.gif.getGifProvider() === QEnums.GIF_PROVIDER_GIPHY && postItem.gif.mp4Url) {
             const altText = postItem.gifAltText ? postItem.gifAltText : postItem.gif.description
 
             // Upload Giphy GIF as MP4

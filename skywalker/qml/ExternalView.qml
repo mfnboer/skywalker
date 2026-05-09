@@ -86,8 +86,11 @@ Item {
             const imgSize = gifUtils.getGifSize(postExternal.uri)
             const aspectRatio = (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
 
+            const attributionHeight = (gifUtils.isTenorLink(postExternal.uri) || gifUtils.isGiphyLink(postExternal.uri)) ?
+                                        guiSettings.gifAttributionHeight : 0
+
             if (aspectRatio <= 0.0)
-                return Math.min(width, guiSettings.maxImageHeight) + guiSettings.gifAttributionHeight + 5
+                return Math.min(width, guiSettings.maxImageHeight) + attributionHeight
 
             let w = Math.min(width, imgSize.width)
             const h = w * aspectRatio
@@ -95,7 +98,7 @@ Item {
             if (h > guiSettings.maxImageHeight)
                 w *= (guiSettings.maxImageHeight / h)
 
-            return w * aspectRatio + guiSettings.gifAttributionHeight + 5
+            return w * aspectRatio + attributionHeight
         }
     }
 

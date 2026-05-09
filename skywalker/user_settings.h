@@ -491,6 +491,9 @@ public:
     QStringList getRecentGiphyGifs(const QString& did) const; // Returns list of GIF id's
     void setRecentGiphyGifs(const QString& did, const QStringList& gifIds);
 
+    QStringList getRecentKlipyGifs(const QString& did) const; // Returns list of GIF id's
+    void setRecentKlipyGifs(const QString& did, const QStringList& gifIds);
+
     QStringList getLastSearches(const QString& did) const;
     void setLastSearches(const QString& did, const QStringList& lastSearches);
 

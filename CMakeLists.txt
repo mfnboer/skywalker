@@ -25,6 +25,7 @@ qt_standard_project_setup()
 add_compile_definitions(APP_VERSION="${APP_VERSION}")
 add_compile_definitions(TENOR_API_KEY="$ENV{TENOR_API_KEY}")
 add_compile_definitions(GIPHY_API_KEY="$ENV{GIPHY_API_KEY}")
+add_compile_definitions(KLIPY_API_KEY="$ENV{KLIPY_API_KEY}")
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_compile_definitions(QT_NO_DEBUG_OUTPUT)
@@ -73,6 +74,8 @@ qt_add_qml_module(appskywalker
         fonts/NotoSansMath-Regular.ttf
         images/skywalker.png
         images/klipy_watermark.svg
+        images/pb_klipy_dark.svg
+        images/pb_klipy_light.svg
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg
         images/giphy_logo.png

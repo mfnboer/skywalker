@@ -23,7 +23,7 @@ TenorGif toTenorGif(GiphyGif::SharedPtr giphyGif, const QString& query)
                  giphyGif->getFixedHeight()->getUrl(), giphyGif->getFixedHeight()->getSize(),
                  giphyGif->getOriginalStill()->getUrl(), giphyGif->getOriginalStill()->getSize(),
                  giphyGif->getOriginal()->getMp4Url());
-    gif.setIsGiphy(true);
+    gif.setGifProvider(QEnums::GIF_PROVIDER_GIPHY);
     return gif;
 }
 
