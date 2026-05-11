@@ -51,6 +51,14 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
         return;
     }
 
+    const auto* systemMessageView = std::get_if<ATProto::ChatBskyConvo::SystemMessageView::SharedPtr>(&msg);
+
+    if (systemMessageView)
+    {
+        init(*systemMessageView);
+        return;
+    }
+
     Q_ASSERT(false);
     qWarning() << "Should not get here";
 }
@@ -74,6 +82,15 @@ void MessageView::init(const ATProto::ChatBskyConvo::DeletedMessageView::SharedP
     mSenderDid = view->mSender->mDid;
     mSentAt = view->mSentAt;
     mDeleted = true;
+}
+
+void MessageView::init(const ATProto::ChatBskyConvo::SystemMessageView::SharedPtr& view)
+{
+    mId = view->mId;
+    mRev = view->mRev;
+    mSentAt = view->mSentAt;
+    mFormattedText = "SYSTEM MESSAGE";
+    // TODO
 }
 
 void MessageView::initReactions(const ATProto::ChatBskyConvo::ReactionView::List& reactions)
