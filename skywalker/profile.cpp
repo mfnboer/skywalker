@@ -526,29 +526,20 @@ void BasicProfile::setViewer(const QString& followingUri)
 
 ProfileViewerState& BasicProfile::getViewer()
 {
-    if (mPrivate)
-    {
-        if (mPrivate->mViewer)
-            return *mPrivate->mViewer;
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
 
+    if (!mPrivate->mViewer)
+    {
         if (mPrivate->mProfileBasicView)
             mPrivate->mViewer = mPrivate->mProfileBasicView->mViewer ? ProfileViewerState(mPrivate->mProfileBasicView->mViewer) : ProfileViewerState{};
+        else if (mProfileView)
+            mPrivate->mViewer = mProfileView->mViewer ? ProfileViewerState(mProfileView->mViewer) : ProfileViewerState{};
+        else if (mProfileDetailedView)
+            mPrivate->mViewer = mProfileDetailedView->mViewer ? ProfileViewerState(mProfileDetailedView->mViewer) : ProfileViewerState{};
         else
             mPrivate->mViewer = ProfileViewerState{};
-
-        return *mPrivate->mViewer;
     }
-    else
-    {
-        mPrivate = std::make_shared<PrivateData>();
-    }
-
-    if (mProfileView)
-        mPrivate->mViewer = mProfileView->mViewer ? ProfileViewerState(mProfileView->mViewer) : ProfileViewerState{};
-    else if (mProfileDetailedView)
-        mPrivate->mViewer = mProfileDetailedView->mViewer ? ProfileViewerState(mProfileDetailedView->mViewer) : ProfileViewerState{};
-    else
-        mPrivate->mViewer = ProfileViewerState{};
 
     return *mPrivate->mViewer;
 }
@@ -611,29 +602,20 @@ QDateTime BasicProfile::getCreatedAt() const
 
 VerificationState& BasicProfile::getVerificationState()
 {
-    if (mPrivate)
-    {
-        if (mPrivate->mVerificationState)
-            return *mPrivate->mVerificationState;
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
 
+    if (!mPrivate->mVerificationState)
+    {
         if (mPrivate->mProfileBasicView)
             mPrivate->mVerificationState = mPrivate->mProfileBasicView->mVerification ? VerificationState(*mPrivate->mProfileBasicView->mVerification) : VerificationState{};
+        else if (mProfileView)
+            mPrivate->mVerificationState = mProfileView->mVerification ? VerificationState(*mProfileView->mVerification) : VerificationState{};
+        else if (mProfileDetailedView)
+            mPrivate->mVerificationState = mProfileDetailedView->mVerification ? VerificationState(*mProfileDetailedView->mVerification) : VerificationState{};
         else
             mPrivate->mVerificationState = VerificationState{};
-
-        return *mPrivate->mVerificationState;
     }
-    else
-    {
-        mPrivate = std::make_shared<PrivateData>();
-    }
-
-    if (mProfileView)
-        mPrivate->mVerificationState = mProfileView->mVerification ? VerificationState(*mProfileView->mVerification) : VerificationState{};
-    else if (mProfileDetailedView)
-        mPrivate->mVerificationState = mProfileDetailedView->mVerification ? VerificationState(*mProfileDetailedView->mVerification) : VerificationState{};
-    else
-        mPrivate->mVerificationState = VerificationState{};
 
     return *mPrivate->mVerificationState;
 }
@@ -646,29 +628,20 @@ const VerificationState& BasicProfile::getVerificationState() const
 
 ActorStatusView& BasicProfile::getActorStatus()
 {
-    if (mPrivate)
-    {
-        if (mPrivate->mActorStatus)
-            return *mPrivate->mActorStatus;
+    if (!mPrivate)
+        mPrivate = std::make_shared<PrivateData>();
 
+    if (!mPrivate->mActorStatus)
+    {
         if (mPrivate->mProfileBasicView)
             mPrivate->mActorStatus = mPrivate->mProfileBasicView->mStatus ? ActorStatusView(*mPrivate->mProfileBasicView->mStatus) : ActorStatusView{};
+        else if (mProfileView)
+            mPrivate->mActorStatus = mProfileView->mStatus ? ActorStatusView(*mProfileView->mStatus) : ActorStatusView{};
+        else if (mProfileDetailedView)
+            mPrivate->mActorStatus = mProfileDetailedView->mStatus ? ActorStatusView(*mProfileDetailedView->mStatus) : ActorStatusView{};
         else
             mPrivate->mActorStatus = ActorStatusView{};
-
-        return *mPrivate->mActorStatus;
     }
-    else
-    {
-        mPrivate = std::make_shared<PrivateData>();
-    }
-
-    if (mProfileView)
-        mPrivate->mActorStatus = mProfileView->mStatus ? ActorStatusView(*mProfileView->mStatus) : ActorStatusView{};
-    else if (mProfileDetailedView)
-        mPrivate->mActorStatus = mProfileDetailedView->mStatus ? ActorStatusView(*mProfileDetailedView->mStatus) : ActorStatusView{};
-    else
-        mPrivate->mActorStatus = ActorStatusView{};
 
     return *mPrivate->mActorStatus;
 }
