@@ -19,13 +19,22 @@ SvgButton {
     SkyMenu {
         id: feedsMenu
         menuWidth: 250
+        currentIndex: 0
 
         MenuItem {
-            contentItem: AccessibleText {
-                verticalAlignment: Text.AlignVCenter
-                rightPadding: homeAvatar.width + 5
-                elide: Text.ElideRight
-                text: qsTr("Following", "timeline title")
+            contentItem: Row {
+                AccessibleText {
+                    id: homeText
+                    width: Math.min(parent.width - homeBadge.width - homeAvatar.width - 5, implicitWidth)
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: qsTr("Following", "timeline title")
+                }
+
+                BadgeCounter {
+                    id: homeBadge
+                    counter: 0
+                }
             }
 
             FeedAvatar {
@@ -42,7 +51,7 @@ SvgButton {
             onTriggered: { highlighted = false; root.viewHomeFeed() }
 
             Accessible.role: Accessible.MenuItem
-            Accessible.name: contentItem.text
+            Accessible.name: homeText.text
             Accessible.description: Accessible.name
             Accessible.onPressAction: triggered()
         }
@@ -51,15 +60,21 @@ SvgButton {
             id: menuInstantiator
             model: []
             delegate: MenuItem {
+                required property int index
                 required property favoritefeedview modelData
 
-                contentItem: SkyCleanedTextLine {
-                    verticalAlignment: Text.AlignVCenter
-                    rightPadding: feedAvatar.width + 5
-                    elide: Text.ElideRight
-                    plainText: modelData.name
+                contentItem: Row {
+                    SkyCleanedTextLine {
+                        width: Math.min(parent.width - badge.width - feedAvatar.width - 5, implicitWidth)
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        plainText: modelData.name
+                    }
 
-                    Accessible.ignored: true
+                    BadgeCounter {
+                        id: badge
+                        counter: root.getFavoritesTabBar().itemAt(index + 1).counter
+                    }
                 }
 
                 FeedAvatar {
@@ -81,7 +96,7 @@ SvgButton {
                 }
 
                 Accessible.role: Accessible.MenuItem
-                Accessible.name: contentItem.text
+                Accessible.name: modelData.name
                 Accessible.description: Accessible.name
                 Accessible.onPressAction: triggered()
             }
@@ -124,6 +139,10 @@ SvgButton {
         onAboutToShow: {
             if (!compareFavorites(favorites))
                 menuInstantiator.model = favorites
+
+            // Set home counter here, as it the view does not exists at
+            // creation of this QML instance
+            homeBadge.counter = root.getTimelineView().unreadPosts
         }
 
         function compareFavorites(favorites) {

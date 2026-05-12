@@ -21,6 +21,7 @@ SkyListView {
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
     readonly property var mediaTilesLoader: mediaTilesViewLoader
     readonly property int favoritesY: getFavoritesY()
+    readonly property string syncWarning: model?.syncWarning
 
     signal newPosts
 
@@ -252,7 +253,19 @@ SkyListView {
         connectModelHandlers()
     }
 
+    function clearSyncWarning() {
+        if (model)
+            model.syncWarning = ""
+    }
+
     function atStart() {
+        if (reverseFeed) {
+            if (mediaTilesLoader.item)
+                return mediaTilesLoader.item.atYEnd
+            else
+                return atYEnd
+        }
+
         if (mediaTilesLoader.item)
             return mediaTilesLoader.item.atYBeginning
         else

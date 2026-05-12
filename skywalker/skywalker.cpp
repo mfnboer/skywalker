@@ -1096,7 +1096,7 @@ void Skywalker::syncFeed(int modelId, int maxPages)
     }
 
     const auto timestamp = mUserSettings.getFeedSyncTimestamp(mUserDid, model->getFeedUri());
-    qDebug() << "Sync feed:" << model->getFeedUri() << timestamp;
+    qDebug() << "Sync feed:" << model->getFeedName() << "uri:" << model->getFeedUri() << timestamp;
 
     if (!timestamp.isValid())
     {
@@ -1164,7 +1164,7 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
     }
     else
     {
-        const auto contentMode = mUserSettings.getSearchFeedViewMode(mUserDid, model.getFeedUri());
+        const auto contentMode = mUserSettings.getFeedViewMode(mUserDid, model.getFeedUri());
         viewModel = &model.getViewModel(contentMode);
     }
 
@@ -1204,15 +1204,16 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
 
     if (maxPages == 1)
     {
-        qDebug() << "Max pages loaded, failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
+        qDebug() << "Max pages loaded:" << viewModel->getFeedName() << ", failed to sync till:" << tillTimestamp << "last:" << lastTimestamp;
 
         if (model.isHomeFeed())
             finishTimelineSync(model.lastRowIndex());
         else
             finishFeedSync(model.getModelId(), viewModel->lastRowIndex());
 
-        emit statusMessage(mUserDid, tr("Maximum rewind size reached.<br>Cannot rewind '%1' till: %2").arg(
-            viewModel->getFeedName(), tillTimestamp.toLocalTime().toString()), QEnums::STATUS_LEVEL_INFO, 10);
+        model.setFeedSyncWarning(
+            tr("Maximum rewind size reached.<br>Cannot rewind '%1' till: %2").arg(
+                viewModel->getFeedName(), tillTimestamp.toLocalTime().toString()));
 
         return {};
     }

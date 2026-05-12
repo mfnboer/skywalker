@@ -10,6 +10,7 @@ SkyPage {
     readonly property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
     readonly property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     readonly property bool reverseFeed: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.reverseFeed : false
+    readonly property string syncWarning: timelineView.syncWarning
     property int margin: 10
     property var userSettings: skywalker.getUserSettings()
     readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefined') ? currentViewItem.favoritesY : 0
@@ -197,6 +198,10 @@ SkyPage {
     function resetHeaderPosition() {
         if (currentViewItem)
             currentViewItem.resetHeaderPosition()
+    }
+
+    function clearSyncWarning() {
+        timelineView.clearSyncWarning()
     }
 
     function setInSync(index, offsetY = 0) {

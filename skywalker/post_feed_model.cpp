@@ -690,6 +690,14 @@ void PostFeedModel::setFeedError(const QString& error)
         filterModel->setFeedError(error);
 }
 
+void PostFeedModel::setFeedSyncWarning(const QString& warning)
+{
+    AbstractPostFeedModel::setFeedSyncWarning(warning);
+
+    for (auto& filterModel : mFilteredPostFeedModels)
+        filterModel->setFeedSyncWarning(warning);
+}
+
 void PostFeedModel::getFeed(IFeedPager* pager)
 {
     if (mIsHomeFeed)

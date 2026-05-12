@@ -172,7 +172,6 @@ ApplicationWindow {
     }
 
     FavoritesTabBar {
-        property var favoritesSwipeView
         property bool favoritesSwipeViewVisible: false
         property bool show: favoritesSwipeViewVisible && !sideBar.visible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
@@ -2553,6 +2552,10 @@ ApplicationWindow {
 
         if (currentItem)
             currentItem.forceActiveFocus()
+    }
+
+    function getFavoritesTabBar() {
+        return favoritesTabBar
     }
 
     function mustShowSideBar() {

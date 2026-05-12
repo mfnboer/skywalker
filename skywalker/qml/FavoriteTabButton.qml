@@ -4,6 +4,7 @@ import skywalker
 
 AccessibleTabButton {
     required property favoritefeedview favorite
+    property int counter: 0
 
     id: button
     implicitWidth: tabRow.implicitWidth + leftPadding + rightPadding
@@ -12,7 +13,6 @@ AccessibleTabButton {
     contentItem: Row {
         id: tabRow
         height: parent.height
-        spacing: 5
 
         FeedAvatar {
             id: avatar
@@ -27,10 +27,15 @@ AccessibleTabButton {
 
         Text {
             id: tabText
+            leftPadding: 5
             anchors.verticalCenter: parent.verticalCenter
             font: button.font
             color: button.checked ? guiSettings.accentColor : guiSettings.textColor
             text: button.text
+        }
+
+        BadgeCounter {
+            counter: button.counter
         }
     }
 }

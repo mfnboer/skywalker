@@ -47,6 +47,8 @@ public:
 
     void setGetFeedInProgress(bool inProgress) override;
     void setFeedError(const QString& error) override;
+    void setFeedSyncWarning(const QString& warning) override;
+
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
 

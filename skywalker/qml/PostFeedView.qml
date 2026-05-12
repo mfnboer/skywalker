@@ -9,7 +9,6 @@ PostListView {
     readonly property int extraFooterMargin: 0
     readonly property string feedName: underlyingModel ? underlyingModel.feedName : ""
 
-
     signal closed
 
     id: postFeedView

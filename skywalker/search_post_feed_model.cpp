@@ -64,6 +64,14 @@ void SearchPostFeedModel::setFeedError(const QString& error)
         filterModel->setFeedError(error);
 }
 
+void SearchPostFeedModel::setFeedSyncWarning(const QString& warning)
+{
+    AbstractPostFeedModel::setFeedSyncWarning(warning);
+
+    for (auto& filterModel : mFilteredPostFeedModels)
+        filterModel->setFeedSyncWarning(warning);
+}
+
 void SearchPostFeedModel::getFeed(IFeedPager*)
 {
     emit firstPage();

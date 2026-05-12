@@ -46,6 +46,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
+    Q_PROPERTY(QString syncWarning READ getFeedSyncWarning WRITE setFeedSyncWarning NOTIFY feedSyncWarningChanged)
     Q_PROPERTY(bool chronological READ isChronological NOTIFY chronologicalChanged FINAL)
     QML_ELEMENT
     QML_UNCREATABLE("only subclasses can be created")
@@ -197,12 +198,19 @@ public:
     Q_INVOKABLE QDateTime getPostTimelineTimestamp(int visibleIndex) const;
     Q_INVOKABLE QString getPostCid(int visibleIndex) const;
 
+    // NOTE: setFetFeedInProgress, setFeedError, setFeedSyncWarning are overridden
+    // in subclasses having filter models. They propagate the value changes to all
+    // filter models.
+
     virtual void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
     virtual void setFeedError(const QString& error);
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
+
+    virtual void setFeedSyncWarning(const QString& warning);
+    const QString& getFeedSyncWarning() const { return mFeedSyncWarning; }
 
     bool isFilteredPostFeed() const { return mPostHideInfoMap; }
     Q_INVOKABLE ContentFilterStatsModel* createContentFilterStatsModel();
@@ -215,6 +223,7 @@ signals:
     void endOfFeedChanged();
     void getFeedInProgressChanged();
     void feedErrorChanged();
+    void feedSyncWarningChanged();
     void chronologicalChanged();
 
 protected:
@@ -322,6 +331,7 @@ private:
     bool mEndOfFeed = false;
     bool mGetFeedInProgress = false;
     QString mFeedError;
+    QString mFeedSyncWarning;
     bool mChronological = true;
 };
 

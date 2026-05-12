@@ -400,6 +400,15 @@ void AbstractPostFeedModel::setFeedError(const QString& error)
     }
 }
 
+void AbstractPostFeedModel::setFeedSyncWarning(const QString& warning)
+{
+    if (warning != mFeedSyncWarning)
+    {
+        mFeedSyncWarning = warning;
+        emit feedSyncWarningChanged();
+    }
+}
+
 void AbstractPostFeedModel::reset()
 {
     beginResetModel();

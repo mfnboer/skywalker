@@ -24,6 +24,7 @@ class FavoriteFeeds : public QObject
     Q_PROPERTY(bool updateSavedListsModelInProgress READ getUpdateSavedListsModelInProgress NOTIFY updateSavedListsModelInProgressChanged FINAL)
     Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
     Q_PROPERTY(QList<FavoriteFeedView> userOrderedPinnedFeeds READ getUserOrderedPinnedFeeds WRITE setUserOrderedPinnedFeeds NOTIFY userOrderedPinnedFeedsChanged FINAL)
+    Q_PROPERTY(bool userOrderedPinnedFeedsInitialized READ getUserOrderedPinnedFeedsInitialized WRITE setUserOrderedPinnedFeedInitialized NOTIFY userOrderedPinnedFeedsInitializedChanged FINAL)
 
 public:
     explicit FavoriteFeeds(Skywalker* skywalker, QObject* parent = nullptr);
@@ -56,6 +57,9 @@ public:
     void setUserOrderedPinnedFeeds(const QList<FavoriteFeedView>& favorites);
     Q_INVOKABLE void clearUserOrderedPinnedFeed();
 
+    bool getUserOrderedPinnedFeedsInitialized() const { return mUserOrderedPinnedFeedsInitialized; }
+    void setUserOrderedPinnedFeedInitialized(bool initialized);
+
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
     Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& name) const;
 
@@ -87,6 +91,7 @@ signals:
     void updateSavedListsModelInProgressChanged();
     void pinnedFeedsChanged();
     void userOrderedPinnedFeedsChanged();
+    void userOrderedPinnedFeedsInitializedChanged();
 
 private:
     void addToSavedFeedsPrefsV2(const QString& uri, ATProto::AppBskyActor::SavedFeedType type);
