@@ -1114,6 +1114,18 @@ void OffLineMessageChecker::start(bool wifiOnly)
 #endif
 }
 
+void OffLineMessageChecker::forceStop()
+{
+#if defined(Q_OS_ANDROID)
+    qDebug() << "Force stop offline message checker";
+
+    QJniObject::callStaticMethod<void>(
+        "com/gmail/mfnboer/NewMessageChecker",
+        "stopChecker",
+        "()V");
+#endif
+}
+
 void OffLineMessageChecker::waitForStop(const StoppedCb& stoppedCb)
 {
     qDebug() << "Check if message checker stopped";

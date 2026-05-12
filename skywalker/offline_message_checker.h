@@ -38,6 +38,11 @@ public:
     // Start background process that periodically checks for new messages.
     // checkNotificationPermission must have been called before.
     static void start(bool wifiOnly);
+
+    // The background process should be stopped from SkywalkerActivity (Java) when the
+    // app starts/resumes. However if the app pause and resumes within 120ms, then the Android
+    // (Java) layer does not seem to have paused!!
+    static void forceStop();
     static void waitForStop(const StoppedCb& stoppedCb);
 
     static void init(UserSettings* userSettings);

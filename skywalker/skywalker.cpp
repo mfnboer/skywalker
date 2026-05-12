@@ -4671,6 +4671,7 @@ void Skywalker::handleAppStateChange(Qt::ApplicationState state)
         pauseApp();
         break;
     case Qt::ApplicationActive:
+        OffLineMessageChecker::forceStop();
         OffLineMessageChecker::waitForStop([this]{ resumeApp(); });
         break;
     default:
