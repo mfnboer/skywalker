@@ -140,9 +140,9 @@ SvgButton {
             if (!compareFavorites(favorites))
                 menuInstantiator.model = favorites
 
-            // Set home counter here, as it the view does not exists at
+            // Set home counter here, as the view does not exists at
             // creation of this QML instance
-            homeBadge.counter = root.getTimelineView().unreadPosts
+            homeBadge.counter = root.getFavoritesTabBar().itemAt(0).counter
         }
 
         function compareFavorites(favorites) {

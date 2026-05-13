@@ -612,6 +612,9 @@ signals:
     void mutesWithExpiryChanged();
     void notificationsForAllAccountsChanged();
     void globalFeedOrderChanged();
+    void syncFeedChanged(const QString& did, const QString& feedUri);
+    void syncSearchFeedChanged(const QString& did, const QString& searchQuery);
+    void rewindToLastSeenPostChanged(const QString& did);
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;

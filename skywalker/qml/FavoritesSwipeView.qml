@@ -15,6 +15,9 @@ SwipeView {
     interactive: userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
     TimelinePage {
+        property bool rewindEnabled: userSettings.getRewindToLastSeenPost(skywalker.getUserDid())
+
+        id: timelinePage
         skywalker: view.skywalker
 
         SwipeView.onIsCurrentItemChanged: {
@@ -48,6 +51,15 @@ SwipeView {
                 Qt.callLater(clearSyncWarning)
             }
         }
+
+        Connections {
+            target: userSettings
+
+            function onRewindToLastSeenPostChanged(did) {
+                if (did === skywalker.getUserDid())
+                    timelinePage.rewindEnabled = userSettings.getRewindToLastSeenPost(did)
+            }
+        }
     }
 
     Repeater {
@@ -57,10 +69,12 @@ SwipeView {
         Loader {
             required property int index
             required property var modelData
+            property int unreadPosts: 0
+            property bool rewindEnabled: mustSyncFeed(modelData)
 
             id: viewLoader
             sourceComponent: getComponent(modelData)
-            active: mustSyncFeed(modelData)
+            active: mustSyncFeed(modelData) // activate at startup if sync is enabled
 
             SwipeView.onIsCurrentItemChanged: {
                 if (SwipeView.isCurrentItem) {
@@ -119,6 +133,25 @@ SwipeView {
                         Qt.callLater(() => viewLoader.item.clearSyncWarning())
                     }
                 }
+
+                function onUnreadPostsChanged() {
+                    viewLoader.unreadPosts = viewLoader.item.unreadPosts
+                }
+            }
+
+            Connections {
+                target: userSettings
+
+                function onSyncFeedChanged(did, feedUri) {
+                    if (did === skywalker.getUserDid() && feedUri === modelData.uri)
+                        viewLoader.rewindEnabled = mustSyncFeed(modelData)
+                }
+
+                function onSyncSearchFeedChanged(did, searchQuery) {
+                    if (did === skywalker.getUserDid() && modelData.type === QEnums.FAVORITE_SEARCH &&
+                            searchQuery === modelData.searchFeed.searchQuery)
+                        viewLoader.rewindEnabled = mustSyncFeed(modelData)
+                }
             }
         }
     }
@@ -133,8 +166,6 @@ SwipeView {
             showAsHome: true
             showFavorites: true
             footer: null
-
-            onUnreadPostsChanged: view.unreadPostsChanged(index, unreadPosts, postFeedView)
 
             function saveAsLastViewedFeed() {
                 skywalker.saveLastViewedFeed(modelData.generatorView.uri)
@@ -159,8 +190,6 @@ SwipeView {
             showFavorites: true
             footer: null
 
-            onUnreadPostsChanged: view.unreadPostsChanged(index, unreadPosts, postFeedView)
-
             function saveAsLastViewedFeed() {
                 skywalker.saveLastViewedFeed(modelData.listView.uri)
             }
@@ -180,8 +209,6 @@ SwipeView {
             id: searchFeedView
             searchFeed: modelData.searchFeed
             showAsHome: true
-
-            onUnreadPostsChanged: view.unreadPostsChanged(index, unreadPosts, searchFeedView)
 
             function saveAsLastViewedFeed() {
                 skywalker.saveLastViewedFeed(modelData.searchFeed.name)

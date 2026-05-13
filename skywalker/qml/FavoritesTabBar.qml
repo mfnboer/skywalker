@@ -18,14 +18,26 @@ SkyTabBar {
         FavoriteTabButton {
             required property int index
             readonly property favoritefeedview favoriteFeed: index > 0 ? favoriteFeeds.userOrderedPinnedFeeds[index - 1] : homeFeed
+            readonly property var feedView: favoritesSwipeView && index >= 0 && index < favoritesSwipeView.count ? favoritesSwipeView.itemAt(index) : null
 
             width: implicitWidth
             favorite: favoriteFeed
-            counter: index === 0 && favoritesSwipeView ? favoritesSwipeView.itemAt(0).unreadPosts : 0
+            counter: (feedView && feedView.rewindEnabled) ? feedView.unreadPosts : 0
 
             onPressAndHold: {
                 if (pinnedFeedsCount > 1)
                     root.showFavoritesSorter()
+            }
+
+            function getCounter() {
+                if (!favoritesSwipeView)
+                    return 0
+
+                if (index < 0 || index >= favoritesSwipeView.count)
+                    return 0
+
+                const view = favoritesSwipeView.itemAt(index)
+                return view.rewindEnabled ? view.unreadPosts : 0
             }
         }
     }
@@ -33,23 +45,6 @@ SkyTabBar {
     SkySettingsTabButton {
         visible: pinnedFeedsCount > 1
         onActivated: root.showFavoritesSorter()
-    }
-
-    Connections {
-        target: favoritesSwipeView
-        ignoreUnknownSignals: true
-
-        function onUnreadPostsChanged(index, unread, view) {
-            let showCounter = false
-
-            if (view instanceof PostFeedView)
-                showCounter = userSettings.mustSyncFeed(skywalker.getUserDid(), view.feedUri)
-            else if (view instanceof SearchFeedView)
-                showCounter = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), view.searchFeed.searchQuery)
-
-            if (showCounter)
-                tabBar.itemAt(index + 1).counter = unread
-        }
     }
 
     function setCurrent(favorite) {

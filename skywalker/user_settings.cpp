@@ -866,15 +866,20 @@ int UserSettings::getSearchFeedSyncOffsetY(const QString& did, const QString& se
 
 void UserSettings::addSyncFeed(const QString& did, const QString& feedUri)
 {
-    getSyncFeeds(did);
+    if (mustSyncFeed(did, feedUri))
+        return;
+
     mSyncFeeds->insert(feedUri);
     const QStringList uris(mSyncFeeds->begin(), mSyncFeeds->end());
     mSettings.setValue(key(did, "syncFeeds"), uris);
+    emit syncFeedChanged(did, feedUri);
 }
 
 void UserSettings::removeSyncFeed(const QString& did, const QString& feedUri)
 {
-    getSyncFeeds(did);
+    if (!mustSyncFeed(did, feedUri))
+        return;
+
     mSyncFeeds->erase(feedUri);
     const QStringList uris(mSyncFeeds->begin(), mSyncFeeds->end());
     mSettings.setValue(key(did, "syncFeeds"), uris);
@@ -882,6 +887,7 @@ void UserSettings::removeSyncFeed(const QString& did, const QString& feedUri)
     mSettings.remove(uriKey(did, "syncFeedTimestamp", feedUri));
     mSettings.remove(uriKey(did, "syncFeedCid", feedUri));
     mSettings.remove(uriKey(did, "syncFeedOffsetY", feedUri));
+    emit syncFeedChanged(did, feedUri);
 }
 
 const std::unordered_set<QString>& UserSettings::getSyncFeeds(const QString& did) const
@@ -902,15 +908,20 @@ bool UserSettings::mustSyncFeed(const QString& did, const QString& feedUri) cons
 
 void UserSettings::addSyncSearchFeed(const QString& did, const QString& searchQuery)
 {
-    getSyncSearchFeeds(did);
+    if (mustSyncSearchFeed(did, searchQuery))
+        return;
+
     mSyncSearchFeeds->insert(searchQuery);
     const QStringList queries(mSyncSearchFeeds->begin(), mSyncSearchFeeds->end());
     mSettings.setValue(key(did, "syncSearchFeeds"), queries);
+    emit syncSearchFeedChanged(did, searchQuery);
 }
 
 void UserSettings::removeSyncSearchFeed(const QString& did, const QString& searchQuery)
 {
-    getSyncSearchFeeds(did);
+    if (!mustSyncSearchFeed(did, searchQuery))
+        return;
+
     mSyncSearchFeeds->erase(searchQuery);
     const QStringList queries(mSyncSearchFeeds->begin(), mSyncSearchFeeds->end());
     mSettings.setValue(key(did, "syncSearchFeeds"), queries);
@@ -918,6 +929,7 @@ void UserSettings::removeSyncSearchFeed(const QString& did, const QString& searc
     mSettings.remove(uriKey(did, "syncSearchFeedTimestamp", searchQuery));
     mSettings.remove(uriKey(did, "syncSearchFeedCid", searchQuery));
     mSettings.remove(uriKey(did, "syncSearchFeedOffsetY", searchQuery));
+    emit syncSearchFeedChanged(did, searchQuery);
 }
 
 const std::unordered_set<QString>& UserSettings::getSyncSearchFeeds(const QString& did) const
@@ -2114,7 +2126,11 @@ bool UserSettings::getRewindToLastSeenPost(const QString& did) const
 
 void UserSettings::setRewindToLastSeenPost(const QString& did, bool rewind)
 {
+    if (getRewindToLastSeenPost(did) == rewind)
+        return;
+
     mSettings.setValue(key(did, "rewindToLastSeenPost"), rewind);
+    emit rewindToLastSeenPostChanged(did);
 }
 
 bool UserSettings::getReverseTimeline(const QString& did) const

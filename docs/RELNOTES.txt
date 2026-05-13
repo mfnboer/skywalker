@@ -1,5 +1,6 @@
 next
 ====
+* Unread post counters in tab bar for feeds with rewinding enabled
 * Bug fixes
 
 4.34

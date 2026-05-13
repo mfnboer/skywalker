@@ -84,4 +84,13 @@ SkyMenu {
         enabled: userSettings.globalFeedOrder === QEnums.FEED_ORDER_PER_FEED
         onTriggered: newReverseFeed(true)
     }
+
+    MenuSeparator {}
+
+    AccessibleMenuItem {
+        text: qsTr("Rewind on startup")
+        checkable: true
+        checked: userSettings.getRewindToLastSeenPost(skywalker.getUserDid())
+        onCheckedChanged: userSettings.setRewindToLastSeenPost(skywalker.getUserDid(), checked)
+    }
 }
