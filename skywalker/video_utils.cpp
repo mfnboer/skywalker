@@ -4,6 +4,7 @@
 #include "file_utils.h"
 #include "jni_callback.h"
 #include "post_utils.h"
+#include "skywalker.h"
 #include "temp_file_holder.h"
 
 namespace Skywalker {
@@ -124,7 +125,7 @@ static QString createVideoFileName(QString extension)
 
 QString VideoUtils::getVideoFileNameForGallery(const QString& extension)
 {
-    const QString moviesPath = FileUtils::getMoviesPath();
+    const QString moviesPath = FileUtils::getMoviesPath(Skywalker::APP_NAME);
 
     if (moviesPath.isEmpty())
     {

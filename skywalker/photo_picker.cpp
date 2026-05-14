@@ -4,6 +4,7 @@
 #include "file_utils.h"
 #include "image_utils.h"
 #include "shared_image_provider.h"
+#include "skywalker.h"
 #include "temp_file_holder.h"
 #include <QtGlobal>
 #include <QBuffer>
@@ -22,6 +23,8 @@
 #endif
 
 namespace {
+
+
 
 int getMaxPixels(int maxBytes)
 {
@@ -286,7 +289,7 @@ void savePhoto(ImageReader* imageReader, const QString& sourceUrl, bool cache,
                     return;
                 }
 
-                picturesPath = FileUtils::getPicturesPath();
+                picturesPath = FileUtils::getPicturesPath(Skywalker::APP_NAME);
             }
 
             if (picturesPath.isEmpty())

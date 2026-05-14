@@ -29,6 +29,7 @@ public:
     static QString getPicturesPath();
     static QString getPicturesPath(const QString& subDir);
     static QString getMoviesPath();
+    static QString getMoviesPath(const QString& subDir);
     static QString getCachePath(const QString& subDir);
     static int openContentUri(const QString& contentUri, FileMode mode);
     static Q_INVOKABLE bool deleteContentUri(const QString& contentUri);

@@ -132,6 +132,12 @@ public class FileUtils {
         return path.getAbsolutePath();
     }
 
+    public static String getMoviesPath(String subDir) {
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        File subPath = new File(path, subDir);
+        return makePath(subPath);
+    }
+
     public static String getAppDataPath(String subDir) {
         Context context = SkywalkerApplication.getContext();
 

@@ -2,6 +2,7 @@ next
 ====
 * Unread post counters in tab bar for feeds with rewinding enabled
 * Auto update feeds with rewinding enabled
+* Save pictures and videos to a subdirectory "Skywalker"
 * Bug fixes
 
 4.34

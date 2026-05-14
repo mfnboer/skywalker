@@ -170,6 +170,38 @@ QString FileUtils::getMoviesPath()
 #endif
 }
 
+QString FileUtils::getMoviesPath(const QString& subDir)
+{
+    Q_ASSERT(!subDir.isEmpty());
+#if defined(Q_OS_ANDROID)
+    auto jsSubDir = QJniObject::fromString(subDir);
+    auto pathObj = QJniObject::callStaticMethod<jstring>(
+        "com/gmail/mfnboer/FileUtils",
+        "getMoviesPath",
+        "(Ljava/lang/String;)Ljava/lang/String;",
+        jsSubDir.object<jstring>());
+
+    if (!pathObj.isValid())
+    {
+        qWarning() << "Failed to create movies path:" << subDir;
+        return {};
+    }
+
+    const QString moviesPath = pathObj.toString();
+    qDebug() << "Movies path:" << moviesPath;
+#else
+    auto path = QStandardPaths::writableLocation(QStandardPaths::MoviesLocation);
+    QString moviesPath = path + "/" + subDir;
+
+    if (!QDir().mkpath(moviesPath))
+    {
+        qWarning() << "Failed to create movies path:" << moviesPath;
+        return {};
+    }
+#endif
+    return moviesPath;
+}
+
 QString FileUtils::getCachePath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
