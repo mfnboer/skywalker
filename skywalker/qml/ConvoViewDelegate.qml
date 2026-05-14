@@ -8,7 +8,7 @@ import skywalker
 Rectangle {
     required property convoview convo
     required property bool endOfList
-    property var skywalker: root.getSkywalker()
+    property Skywalker skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
     readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember, firstMember.labels)
     readonly property int margin: 10
@@ -167,6 +167,7 @@ Rectangle {
                         width: parent.width
                         active: convo.status === QEnums.CONVO_STATUS_REQUEST
                         sourceComponent: KnownFollowers {
+                            userDid: skywalker.getUserDid()
                             author: firstMember
                         }
                     }

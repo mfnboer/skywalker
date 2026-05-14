@@ -3,8 +3,9 @@ import QtQuick.Layouts
 import skywalker
 
 RowLayout {
-    property string userDid
+    required property string userDid
     required property basicprofile author
+    readonly property bool authorIsUser: userDid === author.did
 
     id: knownOthersRow
     spacing: 10
@@ -42,7 +43,7 @@ RowLayout {
         inLayout: true
         maximumLineCount: 3
         color: guiSettings.linkColor
-        plainText: qsTr(`Followed by ${getKnownFollowersText()}`)
+        plainText: authorIsUser ? qsTr(`Mutuals: ${getKnownFollowersText()}`) : qsTr(`Followed by ${getKnownFollowersText()}`)
         visible: author.viewer.knownFollowers.count > 0
 
         SkyMouseArea {
@@ -56,7 +57,7 @@ RowLayout {
         topPadding: 10
         wrapMode: Text.Wrap
         font.italic: true
-        text: qsTr("Not followed by anyone you follow")
+        text: authorIsUser ? qsTr("No mutuals") : qsTr("Not followed by anyone you follow")
         visible: author.viewer.knownFollowers.count === 0
     }
 
