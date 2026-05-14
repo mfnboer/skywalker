@@ -17,6 +17,7 @@ public:
     virtual bool isGetTimelineInProgress() const = 0;
     virtual void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) = 0;
     virtual void getTimelineNextPage(int maxPages = 20, int minEntries = 10) = 0;
+    virtual void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const updateTimelineCb& cb = {}) = 0;
     virtual void updateTimeline(int autoGapFill, int pageSize, const updateTimelineCb& cb = {}) = 0;
 
     virtual void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) = 0;

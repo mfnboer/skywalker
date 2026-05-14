@@ -132,6 +132,7 @@ private:
                          const QString& language,
                          QDateTime tillTimestamp, const QString& cid,
                          int maxPages = 10, const QString& cursor = {});
+    bool syncPageHasNewPosts(const ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr& feed, const SearchPostFeedModel& model) const;
     QString processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
     ATProto::Client* publicBskyClient();
 

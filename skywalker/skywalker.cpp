@@ -1139,12 +1139,36 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
         );
 }
 
+bool Skywalker::syncPageHasNewPosts(const ATProto::AppBskyFeed::OutputFeed::SharedPtr& feed, const PostFeedModel& model) const
+{
+    if (!model.empty() && !feed->mFeed.empty())
+    {
+        const auto& firstPost = model.firstPost();
+
+        if (firstPost.getCid() == feed->mFeed.front()->mPost->mCid)
+        {
+            // If the first posts are identical then no new search results are available.
+            // It could be that the first post got filtered out from the model. In that case
+            // the feed will still be process. No harm done.
+            qDebug() << "Identical first posts:" << model.getFeedName() << "cid:" << firstPost.getCid();
+            return false;
+        }
+    }
+
+    return true;
+}
+
 QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor, bool chronoCheck)
 {
     if (cursor.isEmpty())
-        model.setFeed(std::move(feed));
+    {
+        if (syncPageHasNewPosts(feed, model))
+            model.setFeed(std::move(feed));
+    }
     else
+    {
         model.addFeed(std::move(feed));
+    }
 
     if (model.isHomeFeed())
         setGetTimelineInProgress(false);
@@ -1155,7 +1179,14 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
     // Timeline and list feeds should be chronological. There can be minor deviations, but
     // the do not seem to break the syncrhonization in a major way.
     if (chronoCheck && !model.isChronological())
+    {
+        if (model.isHomeFeed())
+            finishTimelineSyncFailed();
+        else
+            finishFeedSyncFailed(model.getModelId());
+
         return {};
+    }
 
     AbstractPostFeedModel* viewModel = nullptr;
 
@@ -1507,8 +1538,8 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const updateTi
         return;
     }
 
-    setAutoUpdateTimelineInProgress(true);
     setGetTimelineInProgress(true);
+    setAutoUpdateTimelineInProgress(true);
 
     mBsky->getTimeline(pageSize, {},
         [this, autoGapFill, cb](auto feed){
@@ -1578,11 +1609,14 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
     qDebug() << "Set gap cursor:" << *cur;
 
     setGetTimelineInProgress(true);
+    setAutoUpdateTimelineInProgress(!userInitiated);
+
     mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur,
         [this, gapId, autoGapFill, userInitiated, cb](auto feed){
             mTimelineModel.clearLastInsertedRowIndex();
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
             setGetTimelineInProgress(false);
+            setAutoUpdateTimelineInProgress(false);
 
             if (userInitiated)
             {
@@ -1611,6 +1645,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
         [this](const QString& error, const QString& msg){
             qWarning() << "getTimelineForGap FAILED:" << error << " - " << msg;
             setGetTimelineInProgress(false);
+            setAutoUpdateTimelineInProgress(false);
             emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
         }
         );
@@ -1764,7 +1799,7 @@ void Skywalker::getFeedPrepend(int modelId, int autoGapFill, int limit)
     const QString& feedUri = model->getGeneratorView().getUri();
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     model->setGetFeedInProgress(true);
-    // TODO: need auto update progress indication?
+    model->setAutoUpdateInProgress(true);
 
     mBsky->getFeed(feedUri, limit, {}, langs,
         [this, modelId, autoGapFill](auto feed){
@@ -1777,6 +1812,8 @@ void Skywalker::getFeedPrepend(int modelId, int autoGapFill, int limit)
             }
 
             model->setGetFeedInProgress(false);
+            model->setAutoUpdateInProgress(false);
+
             const int gapId = model->prependFeed(std::move(feed));
             qDebug() << "Feed prepended:" << model->getFeedName() << "gapId:" << gapId;
 
@@ -1795,6 +1832,7 @@ void Skywalker::getFeedPrepend(int modelId, int autoGapFill, int limit)
             if (model)
             {
                 model->setGetFeedInProgress(false);
+                model->setAutoUpdateInProgress(false);
                 model->setFeedError(msg);
             }
             else
@@ -1843,6 +1881,7 @@ void Skywalker::getFeedForGap(int modelId, int gapId, int autoGapFill, bool user
     const QString& feedUri = model->getGeneratorView().getUri();
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     model->setGetFeedInProgress(true);
+    model->setAutoUpdateInProgress(!userInitiated);
 
     mBsky->getFeed(feedUri, FEED_GAP_FILL_SIZE, cur, langs,
         [this, modelId, gapId, autoGapFill, userInitiated](auto feed){
@@ -1855,12 +1894,17 @@ void Skywalker::getFeedForGap(int modelId, int gapId, int autoGapFill, bool user
             }
 
             model->setGetFeedInProgress(false);
+            model->setAutoUpdateInProgress(false);
+
             model->clearLastInsertedRowIndex();
             const int newGapId = model->gapFillFeed(std::move(feed), gapId);
 
             if (userInitiated)
             {
-                // TODO: feed must be positioned at end of gap
+                const int gapEndIndex = model->getLastInsertedRowIndex();
+
+                if (gapEndIndex >= 0)
+                    emit feedGapFilled(modelId, gapEndIndex);
             }
 
             if (newGapId > 0)
@@ -1878,6 +1922,7 @@ void Skywalker::getFeedForGap(int modelId, int gapId, int autoGapFill, bool user
             if (model)
             {
                 model->setGetFeedInProgress(false);
+                model->setAutoUpdateInProgress(false);
                 model->setFeedError(msg);
             }
             else
@@ -2034,7 +2079,7 @@ void Skywalker::getListFeedPrepend(int modelId, int autoGapFill, int limit)
     const QString& feedUri = model->getListView().getUri();
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     model->setGetFeedInProgress(true);
-    // TODO: need auto update progress indication?
+    model->setAutoUpdateInProgress(true);
 
     mBsky->getListFeed(feedUri, limit, {}, langs,
         [this, modelId, autoGapFill](auto feed){
@@ -2047,6 +2092,8 @@ void Skywalker::getListFeedPrepend(int modelId, int autoGapFill, int limit)
             }
 
             model->setGetFeedInProgress(false);
+            model->setAutoUpdateInProgress(false);
+
             const int gapId = model->prependFeed(std::move(feed));
             qDebug() << "Feed prepended:" << model->getFeedName() << "gapId:" << gapId;
 
@@ -2065,6 +2112,7 @@ void Skywalker::getListFeedPrepend(int modelId, int autoGapFill, int limit)
             if (model)
             {
                 model->setGetFeedInProgress(false);
+                model->setAutoUpdateInProgress(false);
                 model->setFeedError(msg);
             }
             else
@@ -2113,6 +2161,7 @@ void Skywalker::getListFeedForGap(int modelId, int gapId, int autoGapFill, bool 
     const QString& feedUri = model->getListView().getUri();
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     model->setGetFeedInProgress(true);
+    model->setAutoUpdateInProgress(!userInitiated);
 
     mBsky->getListFeed(feedUri, FEED_GAP_FILL_SIZE, cur, langs,
         [this, modelId, gapId, autoGapFill, userInitiated](auto feed){
@@ -2125,12 +2174,17 @@ void Skywalker::getListFeedForGap(int modelId, int gapId, int autoGapFill, bool 
             }
 
             model->setGetFeedInProgress(false);
+            model->setAutoUpdateInProgress(false);
+
             model->clearLastInsertedRowIndex();
             const int newGapId = model->gapFillFeed(std::move(feed), gapId);
 
             if (userInitiated)
             {
-                // TODO: feed must be positioned at end of gap
+                const int gapEndIndex = model->getLastInsertedRowIndex();
+
+                if (gapEndIndex >= 0)
+                    emit feedGapFilled(modelId, gapEndIndex);
             }
 
             if (newGapId > 0)
@@ -2148,6 +2202,7 @@ void Skywalker::getListFeedForGap(int modelId, int gapId, int autoGapFill, bool 
             if (model)
             {
                 model->setGetFeedInProgress(false);
+                model->setAutoUpdateInProgress(false);
                 model->setFeedError(msg);
             }
             else

@@ -1227,8 +1227,7 @@ Rectangle {
     }
 
     function getGapPosts() {
-        if (!skywalker.getTimelineInProgress)
-            skywalker.getTimelineForGap(postGapId, 3, true)
+        postEntry.ListView.view.model.getFeedForGap(skywalker, postGapId)
     }
 
     function performAccessiblePressAction() {

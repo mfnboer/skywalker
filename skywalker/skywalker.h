@@ -118,7 +118,7 @@ public:
     Q_INVOKABLE void stopTimelineAutoUpdate();
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) override;
     void getTimelinePrepend(int autoGapFill = 0, int pageSize = TIMELINE_PREPEND_PAGE_SIZE, const updateTimelineCb& cb = {});
-    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const updateTimelineCb& cb = {});
+    Q_INVOKABLE void getTimelineForGap(int gapId, int autoGapFill = 0, bool userInitiated = false, const updateTimelineCb& cb = {}) override;
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10) override;
     Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const updateTimelineCb& cb = {}) override;
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
@@ -315,6 +315,7 @@ signals:
     void feedSyncProgress(int modelId, int pages, QDateTime timestamp);
     void feedSyncOk(int modelId, int index, int offsetY);
     void feedSyncFailed(int modelId);
+    void feedGapFilled(int modelId, int gapEndIndex);
     void getUserProfileOK();
     void getUserProfileFailed(QString error);
     void getUserPreferencesOK();
@@ -374,6 +375,7 @@ private:
     void setQuoteChainInModel(int modelId, std::deque<Post> quoteChain);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user);
     void syncTimeline(QDateTime tillTimestamp, const QString& cid, int maxPages = 40, const QString& cursor = {});
+    bool syncPageHasNewPosts(const ATProto::AppBskyFeed::OutputFeed::SharedPtr& feed, const PostFeedModel& model) const;
     QString processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr feed, PostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor, bool chronoCheck = false);
     void finishTimelineSync(int index);
     void finishTimelineSyncFailed();

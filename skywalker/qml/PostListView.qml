@@ -258,20 +258,6 @@ SkyListView {
             model.syncWarning = ""
     }
 
-    function atStart() {
-        if (reverseFeed) {
-            if (mediaTilesLoader.item)
-                return mediaTilesLoader.item.atYEnd
-            else
-                return atYEnd
-        }
-
-        if (mediaTilesLoader.item)
-            return mediaTilesLoader.item.atYBeginning
-        else
-            return atYBeginning
-    }
-
     function rowsInsertedHandler(parent, start, end) {
         if (!inSync)
             return

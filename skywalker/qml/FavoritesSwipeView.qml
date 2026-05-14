@@ -89,7 +89,7 @@ SwipeView {
                                 item.clearSyncWarning()
                             }
 
-                            if (item.atStart()) {
+                            if (unreadPosts == 0) {
                                 console.debug("Reload feed:", modelData.name)
                                 item.refreshFeed()
                             }
@@ -126,7 +126,7 @@ SwipeView {
                     console.debug("Update feed:", modelData.name)
 
                     if (viewLoader.item)
-                        viewLoader.item.model.updateFeed(skywalker)
+                        viewLoader.item.updateFeed()
                 }
 
                 function getRandomDelayMs() {
@@ -194,6 +194,10 @@ SwipeView {
                 skywalker.syncFeed(modelId)
             }
 
+            function updateFeed() {
+                model.updateFeed(skywalker)
+            }
+
             Component.onCompleted: refreshFeed()
         }
     }
@@ -217,6 +221,10 @@ SwipeView {
                 skywalker.syncListFeed(modelId)
             }
 
+            function updateFeed() {
+                model.updateFeed(skywalker)
+            }
+
             Component.onCompleted: refreshFeed()
         }
     }
@@ -235,6 +243,13 @@ SwipeView {
 
             function refreshFeed() {
                 syncSearch()
+            }
+
+            function updateFeed() {
+                if (unreadPosts == 0)
+                    syncSearch()
+                else
+                    console.debug("There are unread posts:", unreadPosts, modelData.searchFeed.name)
             }
         }
     }

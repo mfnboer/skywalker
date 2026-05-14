@@ -221,7 +221,7 @@ GridView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: feedLoading && count > 0 && getBottomLeftVisibleIndex() >= 0
+        running: feedLoading && !model.autoUpdateInProgress && count > 0 && getBottomLeftVisibleIndex() >= 0
     }
 
     Rectangle {

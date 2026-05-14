@@ -682,6 +682,14 @@ void PostFeedModel::setGetFeedInProgress(bool inProgress)
         filterModel->setGetFeedInProgress(inProgress);
 }
 
+void PostFeedModel::setAutoUpdateInProgress(bool inProgress)
+{
+    AbstractPostFeedModel::setAutoUpdateInProgress(inProgress);
+
+    for (auto& filterModel : mFilteredPostFeedModels)
+        filterModel->setAutoUpdateInProgress(inProgress);
+}
+
 void PostFeedModel::setFeedError(const QString& error)
 {
     AbstractPostFeedModel::setFeedError(error);
@@ -758,6 +766,24 @@ void PostFeedModel::updateFeed(IFeedPager* pager)
     {
         qWarning() << "No view to update";
     }
+}
+
+void PostFeedModel::getFeedForGap(IFeedPager* pager, int gapId)
+{
+    if (mIsHomeFeed)
+    {
+        pager->getTimelineForGap(gapId, 3, true);
+        return;
+    }
+
+    Q_ASSERT(mModelId > -1);
+
+    if (!mGeneratorView.isNull())
+        pager->getFeedForGap(mModelId, 3, true);
+    else if (!mListView.isNull())
+        pager->getListFeedForGap(mModelId, 3, true);
+    else
+        qWarning() << "No view to fill gap";
 }
 
 FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
@@ -1759,94 +1785,6 @@ bool PostFeedModel::mustHideFilteredPost(
         return std::get<QString>(hideDetails) != std::get<QString>(postHideInfo.mDetails);
 
     return true;
-}
-
-std::tuple<std::optional<size_t>, bool> PostFeedModel::findOverlapStart(const Page& page, size_t feedIndex) const
-{
-    Q_ASSERT(mFeed.size() > feedIndex);
-    QString cidFirstStoredPost;
-    QDateTime timestampFirstStoredPost;
-    bool overlapDiscardedPost = false;
-
-    for (size_t i = feedIndex; i < mFeed.size(); ++i)
-    {
-        const auto& post = mFeed[i];
-
-        if (post.isPlaceHolder())
-            continue;
-
-        cidFirstStoredPost = post.getCid();
-        timestampFirstStoredPost = post.getTimelineTimestamp();
-        break;
-    }
-
-    if (cidFirstStoredPost.isEmpty())
-    {
-        qWarning() << "There are no real posts in the feed!";
-        return {};
-    }
-
-    if (!page.mOldestDiscaredTimestamp.isNull() && !timestampFirstStoredPost.isNull() &&
-        page.mOldestDiscaredTimestamp < timestampFirstStoredPost)
-    {
-        overlapDiscardedPost = true;
-    }
-
-    for (size_t i = 0; i < page.mFeed.size(); ++i)
-    {
-        const auto& post = page.mFeed[i];
-
-        // Check on timestamp because of repost.
-        // A repost will have the cid of the original post.
-        // We also put the parent/root of a reply in the timeline with the
-        // timestamp of the reply.
-        if (cidFirstStoredPost == post.getCid() && timestampFirstStoredPost == post.getTimelineTimestamp())
-        {
-            qDebug() << "Matching overlap index found:" << i;
-            return {i, overlapDiscardedPost};
-        }
-
-        if (timestampFirstStoredPost > post.getTimelineTimestamp())
-        {
-            qDebug() << "Overlap start on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
-            return {i, overlapDiscardedPost};
-        }
-    }
-
-    // NOTE: the gap may be empty when the last post in the page is the predecessor of
-    // the first post the stored feed. There is no way of knowing.
-    qDebug() << "No overlap found, there is a gap";
-    return {std::nullopt, overlapDiscardedPost};
-}
-
-std::optional<size_t> PostFeedModel::findOverlapEnd(const Page& page, size_t feedIndex) const
-{
-    Q_ASSERT(!page.mFeed.empty());
-    const auto& cidLastPagePost = page.mFeed.back().getCid();
-    const auto& timestampLastPagePost = page.mFeed.back().getTimelineTimestamp();
-
-    for (size_t i = feedIndex; i < mFeed.size(); ++ i)
-    {
-        const auto& post = mFeed[i];
-
-        if (post.isPlaceHolder())
-            continue;
-
-        if (cidLastPagePost == post.getCid() && timestampLastPagePost == post.getTimelineTimestamp())
-        {
-            qDebug() << "Last matching overlap index found:" << i;
-            return i;
-        }
-
-        if (timestampLastPagePost >= post.getTimelineTimestamp())
-        {
-            qDebug() << "Overlap end on timestamp found:" << i << timestampLastPagePost << post.getTimelineTimestamp();
-            return i;
-        }
-    }
-
-    qWarning() << "No overlap found, page exceeds end of stored feed";
-    return {};
 }
 
 void PostFeedModel::addToIndices(int offset, size_t startAtIndex)

@@ -529,15 +529,43 @@ void SearchUtils::syncSearchPosts(const QString& text,
         });
 }
 
+bool SearchUtils::syncPageHasNewPosts(const ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr& feed, const SearchPostFeedModel& model) const
+{
+    if (!model.empty() && !feed->mPosts.empty())
+    {
+        const auto& firstPost = model.firstPost();
+
+        if (firstPost.getCid() == feed->mPosts.front()->mCid)
+        {
+            // If the first posts are identical then no new search results are available.
+            // It could be that the first post got filtered out from the model. In that case
+            // the feed will still be process. No harm done.
+            qDebug() << "Identical first posts:" << model.getFeedName() << "cid:" << firstPost.getCid();
+            return false;
+        }
+    }
+
+    return true;
+}
+
 QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
 {
     if (cursor.isEmpty())
-        model.setFeed(std::move(feed));
+    {
+        if (syncPageHasNewPosts(feed, model))
+            model.setFeed(std::move(feed));
+    }
     else
+    {
         model.addFeed(std::move(feed));
+    }
 
     if (!model.isChronological())
+    {
+        qWarning() << "Feed is not chronological";
+        emit feedSyncFailed();
         return {};
+    }
 
     const QString& searchQuery = model.getFeedName();
     const auto* userSettings = mSkywalker->getUserSettings();

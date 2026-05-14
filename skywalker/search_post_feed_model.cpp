@@ -56,6 +56,14 @@ void SearchPostFeedModel::setGetFeedInProgress(bool inProgress)
         filterModel->setGetFeedInProgress(inProgress);
 }
 
+void SearchPostFeedModel::setAutoUpdateInProgress(bool inProgress)
+{
+    AbstractPostFeedModel::setAutoUpdateInProgress(inProgress);
+
+    for (auto& filterModel : mFilteredPostFeedModels)
+        filterModel->setAutoUpdateInProgress(inProgress);
+}
+
 void SearchPostFeedModel::setFeedError(const QString& error)
 {
     AbstractPostFeedModel::setFeedError(error);
@@ -80,11 +88,6 @@ void SearchPostFeedModel::getFeed(IFeedPager*)
 void SearchPostFeedModel::getFeedNextPage(IFeedPager*)
 {
     emit nextPage();
-}
-
-void SearchPostFeedModel::updateFeed(IFeedPager*)
-{
-    emit updatePages();
 }
 
 int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)

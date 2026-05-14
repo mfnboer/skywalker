@@ -116,7 +116,7 @@ PostListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: model && model.getFeedInProgress && !mediaTilesLoader.active
+        running: model && model.getFeedInProgress && !model.autoUpdateInProgress && !mediaTilesLoader.active
     }
 
     Loader {
@@ -363,6 +363,14 @@ PostListView {
         rewindStatus.updateRewindProgress(pages, timestamp)
     }
 
+    function handleFeedGapFilled(id, gapEndIndex) {
+        if (id !== modelId)
+            return
+
+        console.debug("Gap filled:", model.feedName, "end index:", gapEndIndex)
+        doMoveToPost(gapEndIndex)
+    }
+
     function forceDestroy() {
         if (modelId !== -1) {
             skywalker.removePostFeedModel(modelId)
@@ -376,6 +384,7 @@ PostListView {
         skywalker.onFeedSyncProgress.disconnect(handleSyncProgress)
         skywalker.onFeedSyncOk.disconnect(setInSync)
         skywalker.onFeedSyncFailed.disconnect(syncToHome)
+        skywalker.onFeedGapFilled.disconnect(handleFeedGapFilled)
 
         if (modelId !== -1)
             skywalker.removePostFeedModel(modelId)
@@ -386,6 +395,7 @@ PostListView {
         skywalker.onFeedSyncProgress.connect(handleSyncProgress)
         skywalker.onFeedSyncOk.connect(setInSync)
         skywalker.onFeedSyncFailed.connect(syncToHome)
+        skywalker.onFeedGapFilled.connect(handleFeedGapFilled)
 
         const viewMode = userSettings.getFeedViewMode(skywalker.getUserDid(), model.feedUri)
 

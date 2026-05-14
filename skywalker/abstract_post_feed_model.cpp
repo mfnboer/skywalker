@@ -12,6 +12,8 @@
 
 namespace Skywalker {
 
+static const Post NULL_POST;
+
 const QString AbstractPostFeedModel::NULL_STRING;
 const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
@@ -235,6 +237,95 @@ void AbstractPostFeedModel::preprocess(const Post& post)
     identifyThreadPost(post);
 }
 
+std::tuple<std::optional<size_t>, bool> AbstractPostFeedModel::findOverlapStart(const AbstractPage& page, size_t feedIndex) const
+{
+    Q_ASSERT(mFeed.size() > feedIndex);
+    QString cidFirstStoredPost;
+    QDateTime timestampFirstStoredPost;
+    bool overlapDiscardedPost = false;
+
+    for (size_t i = feedIndex; i < mFeed.size(); ++i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.isPlaceHolder())
+            continue;
+
+        cidFirstStoredPost = post.getCid();
+        timestampFirstStoredPost = post.getTimelineTimestamp();
+        break;
+    }
+
+    if (cidFirstStoredPost.isEmpty())
+    {
+        qWarning() << "There are no real posts in the feed!";
+        return {};
+    }
+
+    if (!page.mOldestDiscaredTimestamp.isNull() && !timestampFirstStoredPost.isNull() &&
+        page.mOldestDiscaredTimestamp < timestampFirstStoredPost)
+    {
+        overlapDiscardedPost = true;
+    }
+
+    for (size_t i = 0; i < page.mFeed.size(); ++i)
+    {
+        const auto& post = page.mFeed[i];
+
+        // Check on timestamp because of repost.
+        // A repost will have the cid of the original post.
+        // We also put the parent/root of a reply in the timeline with the
+        // timestamp of the reply.
+        if (cidFirstStoredPost == post.getCid() && timestampFirstStoredPost == post.getTimelineTimestamp())
+        {
+            qDebug() << "Matching overlap index found:" << i;
+            return {i, overlapDiscardedPost};
+        }
+
+        if (timestampFirstStoredPost > post.getTimelineTimestamp())
+        {
+            qDebug() << "Overlap start on timestamp found:" << i << timestampFirstStoredPost << post.getTimelineTimestamp();
+            return {i, overlapDiscardedPost};
+        }
+    }
+
+    // NOTE: the gap may be empty when the last post in the page is the predecessor of
+    // the first post the stored feed. There is no way of knowing.
+    qDebug() << "No overlap found, there is a gap";
+    return {std::nullopt, overlapDiscardedPost};
+}
+
+std::optional<size_t> AbstractPostFeedModel::findOverlapEnd(const AbstractPage& page, size_t feedIndex) const
+{
+    Q_ASSERT(!page.mFeed.empty());
+    const auto& cidLastPagePost = page.mFeed.back().getCid();
+    const auto& timestampLastPagePost = page.mFeed.back().getTimelineTimestamp();
+
+    for (size_t i = feedIndex; i < mFeed.size(); ++ i)
+    {
+        const auto& post = mFeed[i];
+
+        if (post.isPlaceHolder())
+            continue;
+
+        if (cidLastPagePost == post.getCid() && timestampLastPagePost == post.getTimelineTimestamp())
+        {
+            qDebug() << "Last matching overlap index found:" << i;
+            return i;
+        }
+
+        if (timestampLastPagePost >= post.getTimelineTimestamp())
+        {
+            qDebug() << "Overlap end on timestamp found:" << i << timestampLastPagePost << post.getTimelineTimestamp();
+            return i;
+        }
+    }
+
+    qWarning() << "No overlap found, page exceeds end of stored feed";
+    return {};
+}
+
+
 void AbstractPostFeedModel::setChronological(bool chronological)
 {
     if (mChronological != chronological)
@@ -267,10 +358,19 @@ void AbstractPostFeedModel::identifyThreadPost(const Post& post)
     }
 }
 
+const Post& AbstractPostFeedModel::firstPost() const
+{
+    if (mFeed.empty())
+    {
+        qWarning() << "Feed is empty:" << getFeedName();
+        return NULL_POST;
+    }
+
+    return mFeed.front();
+}
+
 const Post& AbstractPostFeedModel::getPost(int visibleIndex) const
 {
-    static const Post NULL_POST;
-
     if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
     {
         qWarning() << "Invalid index:" << visibleIndex << "size:" << mFeed.size() << "modelId:" << mModelId;
@@ -391,6 +491,15 @@ void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
     }
 }
 
+void AbstractPostFeedModel::setAutoUpdateInProgress(bool inProgress)
+{
+    if (inProgress != mAutoUpdateInProgress)
+    {
+        mAutoUpdateInProgress = inProgress;
+        emit autoUpdateInProgressChanged();
+    }
+}
+
 void AbstractPostFeedModel::setFeedError(const QString& error)
 {
     if (error != mFeedError)
@@ -413,6 +522,11 @@ void AbstractPostFeedModel::reset()
 {
     beginResetModel();
     endResetModel();
+}
+
+bool AbstractPostFeedModel::empty() const
+{
+    return mFeed.empty();
 }
 
 int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const

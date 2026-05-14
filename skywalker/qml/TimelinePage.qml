@@ -122,8 +122,7 @@ SkyPage {
 
     SkyTabBar {
         id: viewBar
-        // TODO before 6.10: y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height
-        y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height //- footerHeight
+        y: (position == TabBar.Header && currentViewItem && typeof currentViewItem.visibleHeaderHeight !== 'undefined') ? currentViewItem.visibleHeaderHeight : parent.height - height
         z: guiSettings.headerZLevel
         width: parent.width
         position: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP ? TabBar.Footer : TabBar.Header

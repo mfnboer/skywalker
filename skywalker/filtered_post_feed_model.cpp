@@ -193,6 +193,14 @@ void FilteredPostFeedModel::updateFeed(IFeedPager* pager)
         qWarning() << "No underlying model:" << getFeedName();
 }
 
+void FilteredPostFeedModel::getFeedForGap(IFeedPager* pager, int gapId)
+{
+    if (mUnderlyingModel)
+        mUnderlyingModel->getFeedForGap(pager, gapId);
+    else
+        qWarning() << "No underlying model:" << getFeedName();
+}
+
 void FilteredPostFeedModel::reportOnScreen(const QString& postUri)
 {
     if (mUnderlyingModel)

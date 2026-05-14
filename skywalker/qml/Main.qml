@@ -205,7 +205,6 @@ ApplicationWindow {
             if (position == TabBar.Header)
                 return guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
 
-            // TODO before 6.10: return parent.height - height
             return parent.height - height - footer.height
         }
 

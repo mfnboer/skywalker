@@ -45,6 +45,7 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_PROPERTY(bool reverseFeed READ isReverseFeed WRITE setReverseFeed NOTIFY reverseFeedChanged FINAL)
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+    Q_PROPERTY(bool autoUpdateInProgress READ isAutoUpdateInProgress NOTIFY autoUpdateInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
     Q_PROPERTY(QString syncWarning READ getFeedSyncWarning WRITE setFeedSyncWarning NOTIFY feedSyncWarningChanged)
     Q_PROPERTY(bool chronological READ isChronological NOTIFY chronologicalChanged FINAL)
@@ -172,6 +173,8 @@ public:
 
     Q_INVOKABLE void reset();
 
+    bool empty() const;
+
     // NOTE: QModelIndex is a visible index, i.e. an index in the ListView in the UI
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -179,10 +182,13 @@ public:
     virtual bool isEndOfFeed() const { return mEndOfFeed; }
     virtual void setEndOfFeed(bool endOfFeed);
 
+    // Get the first (newest) post
+    const Post& firstPost() const;
+
     const Post& getPost(int visibleIndex) const;
     Q_INVOKABLE void unfoldPosts(int startVisibleIndex);
 
-    // Get the timestamp of the last post in the feed
+    // Get the timestamp of the last (oldest) post in the feed
     QDateTime lastTimestamp() const;
 
     // Returns the visible index of the last post >= timestamp, 0 if no such post exists
@@ -205,6 +211,9 @@ public:
     virtual void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
+    virtual void setAutoUpdateInProgress(bool inProgress);
+    bool isAutoUpdateInProgress() const { return mAutoUpdateInProgress; }
+
     virtual void setFeedError(const QString& error);
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
@@ -222,6 +231,7 @@ signals:
     void reverseFeedChanged();
     void endOfFeedChanged();
     void getFeedInProgressChanged();
+    void autoUpdateInProgressChanged();
     void feedErrorChanged();
     void feedSyncWarningChanged();
     void chronologicalChanged();
@@ -233,6 +243,7 @@ protected:
     {
         TimelineFeed mFeed;
         bool mChronological = true;
+        QDateTime mOldestDiscaredTimestamp;
 
         void pushPost(const Post& post);
         void chronoCheck();
@@ -253,6 +264,12 @@ protected:
     void cleanupStoredCids();
     bool cidIsStored(const QString& cid) const { return mStoredCids.count(cid); }
     void preprocess(const Post& post);
+
+    // Returns an index in the page feed and a boolean indicating if there was an overlap on discarded posts.
+    std::tuple<std::optional<size_t>, bool> findOverlapStart(const AbstractPage& page, size_t feedIndex) const;
+
+    // Return an index in mFeed
+    std::optional<size_t> findOverlapEnd(const AbstractPage& page, size_t feedIndex) const;
 
     virtual std::pair<QEnums::HideReasonType, ContentFilterStats::Details> mustHideContent(const Post& post) const;
 
@@ -330,6 +347,7 @@ private:
     QString mOverrideLinkColor;
     bool mEndOfFeed = false;
     bool mGetFeedInProgress = false;
+    bool mAutoUpdateInProgress = false;
     QString mFeedError;
     QString mFeedSyncWarning;
     bool mChronological = true;
