@@ -148,6 +148,13 @@ void FontDownloader::downloadEmojiFontFile()
     }
 
     auto fontFile = FileUtils::createTempFile(fd, "ttf");
+
+    if (!fontFile)
+    {
+        qWarning() << "Cannot create tmp file";
+        return;
+    }
+
     sEmojiFontSource = "file://" + fontFile->fileName();
     TempFileHolder::instance().put(std::move(fontFile));
 

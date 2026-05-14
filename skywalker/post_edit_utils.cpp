@@ -403,6 +403,14 @@ void PostEditUtils::loadEditPostVideo(DraftPostData* data, int postThreadModelId
     Q_ASSERT(videoView);
 
     auto tmpFile = FileUtils::createTempFile(videoStream, "ts");
+
+    if (!tmpFile)
+    {
+        qWarning() << "Cannot create tmp file";
+        finishedLoadingEditPost(data, postThreadModelId, postData);
+        return;
+    }
+
     const QUrl url = QUrl::fromLocalFile(tmpFile->fileName());
     const bool isGif = videoView->getPresentation() == QEnums::VIDEO_PRESENTATION_GIF;
     VideoView draftVideo(url.toString(), isGif, videoView->getAlt(), 0, 0, false, videoView->getHeight());

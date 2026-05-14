@@ -44,7 +44,14 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
         return false;
     }
 
-    auto outputFile = FileUtils::makeTempFile("mp4", true);
+    std::unique_ptr<QTemporaryFile> outputFile = FileUtils::makeTempFile("mp4", true);
+
+    if (!outputFile)
+    {
+        qWarning() << "Cannot create tmp file";
+        return false;
+    }
+
     const QString outputFileName = outputFile->fileName();
     outputFile = nullptr;
 
