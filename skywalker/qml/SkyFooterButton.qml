@@ -12,6 +12,7 @@ Item {
     property string counterTextColor: guiSettings.badgeTextColor
 
     signal clicked
+    signal doubleClicked
 
     id: button
 
@@ -38,5 +39,6 @@ Item {
     SkyMouseArea {
         anchors.fill: button
         onClicked: button.clicked()
+        onDoubleClicked: button.doubleClicked()
     }
 }

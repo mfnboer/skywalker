@@ -15,6 +15,7 @@ Rectangle {
     signal homeClicked()
     signal notificationsClicked()
     signal searchClicked()
+    signal searchDoubleClicked()
     signal messagesClicked()
     signal addConvoClicked()
 
@@ -47,6 +48,7 @@ Rectangle {
             svg: isSearchActive() ? SvgFilled.search : SvgOutline.search
             Accessible.name: qsTr("search")
             onClicked: searchClicked()
+            onDoubleClicked: searchDoubleClicked()
         }
 
         Item {

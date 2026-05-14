@@ -92,6 +92,7 @@ SkyPage {
         searchView: page
         activePage: QEnums.UI_PAGE_SEARCH
         onHomeClicked: root.viewTimeline()
+        onSearchDoubleClicked: page.header.forceFocus()
         onNotificationsClicked: root.viewNotifications()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
