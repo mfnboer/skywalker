@@ -51,6 +51,7 @@ public:
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
+    Q_INVOKABLE void updateFeed(IFeedPager* pager);
 
     const QString& getCursorNextPage() const { return mCursorNextPage; }
 
@@ -70,6 +71,7 @@ signals:
     void filteredPostFeedModelsChanged();
     void firstPage();
     void nextPage();
+    void updatePages();
 
 private:
     struct Page : public AbstractPage

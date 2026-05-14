@@ -82,6 +82,11 @@ void SearchPostFeedModel::getFeedNextPage(IFeedPager*)
     emit nextPage();
 }
 
+void SearchPostFeedModel::updateFeed(IFeedPager*)
+{
+    emit updatePages();
+}
+
 int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed)
 {
     if (!mFeed.empty())

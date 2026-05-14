@@ -116,6 +116,25 @@ SwipeView {
                     return item.getHeaderHeight()
             }
 
+            Timer {
+                id: updateTimer
+                repeat: true
+                running: viewLoader.rewindEnabled && viewLoader.active
+                interval: 285000 + getRandomDelayMs()
+
+                onTriggered: {
+                    console.debug("Update feed:", modelData.name)
+
+                    if (viewLoader.item)
+                        viewLoader.item.model.updateFeed(skywalker)
+                }
+
+                function getRandomDelayMs() {
+                    const d = Math.floor(Math.random() * 300)
+                    return d * 100
+                }
+            }
+
             Connections {
                 target: viewLoader.item
                 ignoreUnknownSignals: true

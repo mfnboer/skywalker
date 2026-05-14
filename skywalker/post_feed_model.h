@@ -125,6 +125,7 @@ public:
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
+    Q_INVOKABLE void updateFeed(IFeedPager* pager);
 
     bool hasFilters() const { return !mFilteredPostFeedModels.empty(); }
     Q_INVOKABLE FilteredPostFeedModel* addAuthorFilter(const BasicProfile& profile);

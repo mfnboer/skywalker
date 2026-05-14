@@ -97,8 +97,8 @@ PostListView {
         reverseFeed: model && model.reverseFeed
         inProgress: model && model.getFeedInProgress
         verticalOvershoot: postFeedView.verticalOvershoot
-        topOvershootFun: reverseFeed ? () => model.getFeedNextPage(skywalker) : () => model.getFeed(skywalker)
-        bottomOvershootFun: reverseFeed ? () => model.getFeed(skywalker) : () => model.getFeedNextPage(skywalker)
+        topOvershootFun: reverseFeed ? () => model.getFeedNextPage(skywalker) : () => model.updateFeed(skywalker)
+        bottomOvershootFun: reverseFeed ? () => model.updateFeed(skywalker) : () => model.getFeedNextPage(skywalker)
         topText: reverseFeed ? qsTr("Pull up to refresh feed") : qsTr("Pull down to refresh feed")
         enableScrollToTop: !showAsHome
     }

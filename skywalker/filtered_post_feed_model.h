@@ -41,6 +41,7 @@ public:
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
+    Q_INVOKABLE void updateFeed(IFeedPager* pager);
 
     Q_INVOKABLE void reportOnScreen(const QString& postUri);
     Q_INVOKABLE void reportOffScreen(const QString& postUri, const QString& feedContext);

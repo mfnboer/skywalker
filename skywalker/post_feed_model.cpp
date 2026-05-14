@@ -734,6 +734,32 @@ void PostFeedModel::getFeedNextPage(IFeedPager* pager)
         qWarning() << "No view to get next page";
 }
 
+void PostFeedModel::updateFeed(IFeedPager* pager)
+{
+    if (mIsHomeFeed)
+    {
+        pager->updateTimeline(2, Skywalker::TIMELINE_PREPEND_PAGE_SIZE);
+        return;
+    }
+
+    Q_ASSERT(mModelId > -1);
+
+    if (!mGeneratorView.isNull())
+    {
+        if (!pager->updateFeed(mModelId, 2, Skywalker::FEED_PREPEND_PAGE_SIZE))
+            pager->syncFeed(mModelId);
+    }
+    else if (!mListView.isNull())
+    {
+        if (!pager->updateListFeed(mModelId, 2, Skywalker::FEED_PREPEND_PAGE_SIZE))
+            pager->syncListFeed(mModelId);
+    }
+    else
+    {
+        qWarning() << "No view to update";
+    }
+}
+
 FilteredPostFeedModel* PostFeedModel::addAuthorFilter(const BasicProfile& profile)
 {
     auto filter = std::make_unique<AuthorPostFilter>(profile);

@@ -42,6 +42,7 @@ static constexpr int TIMELINE_GAP_FILL_SIZE = 100;
 static constexpr int TIMELINE_SYNC_PAGE_SIZE = 100;
 static constexpr int TIMELINE_DELETE_SIZE = 100; // must not be smaller than add/sync
 static constexpr int FEED_ADD_PAGE_SIZE = 100;
+static constexpr int FEED_GAP_FILL_SIZE = 100;
 static constexpr int NOTIFICATIONS_ADD_PAGE_SIZE = 50;
 static constexpr int AUTHOR_FEED_ADD_PAGE_SIZE = 100; // Most posts are replies and are filtered
 static constexpr int AUTHOR_LIKES_ADD_PAGE_SIZE = 25;
@@ -1100,7 +1101,7 @@ void Skywalker::syncFeed(int modelId, int maxPages)
 
     if (!timestamp.isValid())
     {
-        qDebug() << "Do not rewind timeline";
+        qDebug() << "Do not rewind feed:" << model->getFeedName();
         getFeed(modelId);
         return;
     }
@@ -1740,6 +1741,174 @@ void Skywalker::getFeedNextPage(int modelId, int maxPages, int minEntries)
     getFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
 }
 
+void Skywalker::getFeedPrepend(int modelId, int autoGapFill, int limit)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get feed prepend model:" << modelId << "autoGapFill:" << autoGapFill << "limit:" << limit;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const QString& feedUri = model->getGeneratorView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    model->setGetFeedInProgress(true);
+    // TODO: need auto update progress indication?
+
+    mBsky->getFeed(feedUri, limit, {}, langs,
+        [this, modelId, autoGapFill](auto feed){
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            model->setGetFeedInProgress(false);
+            const int gapId = model->prependFeed(std::move(feed));
+            qDebug() << "Feed prepended:" << model->getFeedName() << "gapId:" << gapId;
+
+            if (gapId > 0)
+            {
+                if (autoGapFill > 0)
+                    getFeedForGap(modelId, gapId, autoGapFill - 1, false);
+                else
+                    qDebug() << "Gap created, no auto gap fill:" << model->getFeedName();
+            }
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qWarning() << "getFeed FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
+}
+
+void Skywalker::getFeedForGap(int modelId, int gapId, int autoGapFill, bool userInitiated)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get feed for gap model:" << modelId << "gapId:" << gapId << "autoGapFill:" << autoGapFill << "userInitiated:" << userInitiated;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const Post* post = model->getGapPlaceHolder(gapId);
+    if (!post || !post->isGap())
+    {
+        qWarning() << "NO GAP:" << model->getFeedName() << "gapId:" << gapId;
+        return;
+    }
+
+    std::optional<QString> cur = post->getGapCursor();
+    if (!cur || cur->isEmpty())
+    {
+        qWarning() << "NO CURSOR FOR GAP:" << model->getFeedName() << "gapId:" << gapId;
+        return;
+    }
+
+    qDebug() << "Set gap cursor:" << *cur;
+
+    const QString& feedUri = model->getGeneratorView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    model->setGetFeedInProgress(true);
+
+    mBsky->getFeed(feedUri, FEED_GAP_FILL_SIZE, cur, langs,
+        [this, modelId, gapId, autoGapFill, userInitiated](auto feed){
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            model->setGetFeedInProgress(false);
+            model->clearLastInsertedRowIndex();
+            const int newGapId = model->gapFillFeed(std::move(feed), gapId);
+
+            if (userInitiated)
+            {
+                // TODO: feed must be positioned at end of gap
+            }
+
+            if (newGapId > 0)
+            {
+                if (autoGapFill > 0)
+                    getFeedForGap(modelId, gapId, autoGapFill - 1, userInitiated);
+                else
+                    qDebug() << "Gap created, no auto gap fill:" << model->getFeedName();
+            }
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qWarning() << "getFeed FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
+}
+
+bool Skywalker::updateFeed(int modelId, int autoGapFill, int limit)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return false;
+    }
+
+    if (!mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
+    {
+        qDebug() << "Sync not enabled:" << model->getFeedName();
+        return false;
+    }
+
+    qDebug() << "Update feed:" << model->getFeedName() << "autoGapFill:" << autoGapFill << "limit:" << limit;
+    getFeedPrepend(modelId, autoGapFill, limit);
+    model->updatePostIndexedSecondsAgo();
+    return true;
+}
+
 void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -1840,6 +2009,174 @@ void Skywalker::getListFeedNextPage(int modelId, int maxPages, int minEntries)
     }
 
     getListFeed(modelId, FEED_ADD_PAGE_SIZE, maxPages, minEntries, cursor);
+}
+
+void Skywalker::getListFeedPrepend(int modelId, int autoGapFill, int limit)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get list feed prepend model:" << modelId << "autoGapFill:" << autoGapFill << "limit:" << limit;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const QString& feedUri = model->getListView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    model->setGetFeedInProgress(true);
+    // TODO: need auto update progress indication?
+
+    mBsky->getListFeed(feedUri, limit, {}, langs,
+        [this, modelId, autoGapFill](auto feed){
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            model->setGetFeedInProgress(false);
+            const int gapId = model->prependFeed(std::move(feed));
+            qDebug() << "Feed prepended:" << model->getFeedName() << "gapId:" << gapId;
+
+            if (gapId > 0)
+            {
+                if (autoGapFill > 0)
+                    getListFeedForGap(modelId, gapId, autoGapFill - 1, false);
+                else
+                    qDebug() << "Gap created, no auto gap fill:" << model->getFeedName();
+            }
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qWarning() << "getFeed FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
+}
+
+void Skywalker::getListFeedForGap(int modelId, int gapId, int autoGapFill, bool userInitiated)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get list feed for gap model:" << modelId << "gapId:" << gapId << "autoGapFill:" << autoGapFill << "userInitiated:" << userInitiated;
+
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return;
+    }
+
+
+    if (model->isGetFeedInProgress())
+    {
+        qDebug() << "Get feed still in progress";
+        return;
+    }
+
+    const Post* post = model->getGapPlaceHolder(gapId);
+    if (!post || !post->isGap())
+    {
+        qWarning() << "NO GAP:" << model->getFeedName() << "gapId:" << gapId;
+        return;
+    }
+
+    std::optional<QString> cur = post->getGapCursor();
+    if (!cur || cur->isEmpty())
+    {
+        qWarning() << "NO CURSOR FOR GAP:" << model->getFeedName() << "gapId:" << gapId;
+        return;
+    }
+
+    qDebug() << "Set gap cursor:" << *cur;
+
+    const QString& feedUri = model->getListView().getUri();
+    const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
+    model->setGetFeedInProgress(true);
+
+    mBsky->getListFeed(feedUri, FEED_GAP_FILL_SIZE, cur, langs,
+        [this, modelId, gapId, autoGapFill, userInitiated](auto feed){
+            auto* model = getPostFeedModel(modelId);
+
+            if (!model)
+            {
+                qWarning() << "Model does not exist:" << modelId;
+                return;
+            }
+
+            model->setGetFeedInProgress(false);
+            model->clearLastInsertedRowIndex();
+            const int newGapId = model->gapFillFeed(std::move(feed), gapId);
+
+            if (userInitiated)
+            {
+                // TODO: feed must be positioned at end of gap
+            }
+
+            if (newGapId > 0)
+            {
+                if (autoGapFill > 0)
+                    getListFeedForGap(modelId, gapId, autoGapFill - 1, userInitiated);
+                else
+                    qDebug() << "Gap created, no auto gap fill:" << model->getFeedName();
+            }
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qWarning() << "getFeed FAILED:" << error << " - " << msg;
+            auto* model = getPostFeedModel(modelId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+            else
+            {
+                qWarning() << "Model does not exist:" << modelId;
+            }
+        });
+}
+
+bool Skywalker::updateListFeed(int modelId, int autoGapFill, int limit)
+{
+    auto* model = getPostFeedModel(modelId);
+
+    if (!model)
+    {
+        qWarning() << "Model does not exist:" << modelId;
+        return false;
+    }
+
+    if (!mUserSettings.mustSyncFeed(mUserDid, model->getFeedUri()))
+    {
+        qDebug() << "Sync not enabled:" << model->getFeedName();
+        return false;
+    }
+
+    qDebug() << "Update feed:" << model->getFeedName() << "autoGapFill:" << autoGapFill << "limit:" << limit;
+    getListFeedPrepend(modelId, autoGapFill, limit);
+    model->updatePostIndexedSecondsAgo();
+    return true;
 }
 
 void Skywalker::getQuotesFeed(int modelId, int limit, int maxPages, int minEntries, const QString& cursor)
@@ -4800,6 +5137,9 @@ void Skywalker::updateTimeline(int autoGapFill, int pageSize, const updateTimeli
 {
     qDebug() << "Update timeline, autoGapFill:" << autoGapFill << "pageSize:" << pageSize;
     getTimelinePrepend(autoGapFill, pageSize, cb);
+
+    // Update age on all feeds, so even the feeds that do not auto update show
+    // reasonable post ages.
     updatePostIndexedSecondsAgo();
 }
 

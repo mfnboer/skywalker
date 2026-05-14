@@ -53,6 +53,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TIMELINE_NEXT_PAGE_THRESHOLD MEMBER TIMELINE_NEXT_PAGE_THRESHOLD CONSTANT)
+    Q_PROPERTY(int FEED_PREPEND_PAGE_SIZE MEMBER FEED_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int QUOTE_CHAIN_PAGE_SIZE MEMBER QUOTE_CHAIN_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TILE_VIEW_ROW_SIZE MEMBER TILE_VIEW_ROW_SIZE CONSTANT)
     Q_PROPERTY(PostFeedModel* timelineModel READ getTimelineModel CONSTANT FINAL)
@@ -80,6 +81,7 @@ public:
 
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 50;
     static constexpr int TIMELINE_NEXT_PAGE_THRESHOLD = 30; // Get next page when less posts till current end
+    static constexpr int FEED_PREPEND_PAGE_SIZE = 50;
     static constexpr int QUOTE_CHAIN_PAGE_SIZE = 10;
     static constexpr int TILE_VIEW_ROW_SIZE = 3;
 
@@ -129,8 +131,15 @@ public:
     // Repeating default values here for calls from QML
     Q_INVOKABLE void getFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) override;
     Q_INVOKABLE void getFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) override;
+    Q_INVOKABLE void getFeedPrepend(int modelId, int autoGapFill = 0, int limit = 50) override;
+    Q_INVOKABLE void getFeedForGap(int modelId, int gapId, int autoGapFill = 0, bool userInitiated = false) override;
+    Q_INVOKABLE bool updateFeed(int modelId, int autoGapFill, int limit) override;
+
     Q_INVOKABLE void getListFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {}) override;
     Q_INVOKABLE void getListFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10) override;
+    Q_INVOKABLE void getListFeedPrepend(int modelId, int autoGapFill = 0, int limit = 50) override;
+    Q_INVOKABLE void getListFeedForGap(int modelId, int gapId, int autoGapFill = 0, bool userInitiated = false) override;
+    Q_INVOKABLE bool updateListFeed(int modelId, int autoGapFill, int limit) override;
 
     Q_INVOKABLE void getQuotesFeed(int modelId, int limit = 50, int maxPages = 5, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getQuotesFeedNextPage(int modelId, int maxPages = 5, int minEntries = 10);
