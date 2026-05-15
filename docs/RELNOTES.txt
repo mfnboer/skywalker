@@ -1,4 +1,4 @@
-next
+4.35
 ====
 * Unread post counters in tab bar for feeds with rewinding enabled
 * Auto update feeds with rewinding enabled

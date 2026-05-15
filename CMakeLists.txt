@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(appskywalker VERSION 4.34 LANGUAGES CXX)
-set(VERSION_CODE 111)
+project(appskywalker VERSION 4.35 LANGUAGES CXX)
+set(VERSION_CODE 112)
 set(APP_VERSION ${PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 23)
