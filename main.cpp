@@ -5,6 +5,7 @@
 #include "sky_application.h"
 #include "skywalker.h"
 #include "temp_file_holder.h"
+#include <QAccessible>
 #include <QFont>
 #include <QGuiApplication>
 #include <QImageReader>
@@ -33,6 +34,11 @@ int main(int argc, char *argv[])
 #ifdef QT_NO_DEBUG_OUTPUT
     QLoggingCategory::setFilterRules("qml*.debug=false");
 #endif
+
+    // HACK
+    // Google Play dashboard often shows ANR issues with accessibility in the stacktrace.
+    // Disable till we properly add accessibility.
+    QAccessible::setActive(false);
 
 #ifdef DEBUG
     Skywalker::SkyApplication app(argc, argv);
