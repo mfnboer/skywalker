@@ -1,3 +1,8 @@
+next
+====
+* Upgrade to Qt6.11.1
+* Bug fixes
+
 4.35
 ====
 * Unread post counters in tab bar for feeds with rewinding enabled
