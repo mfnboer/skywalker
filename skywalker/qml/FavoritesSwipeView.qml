@@ -88,11 +88,6 @@ SwipeView {
                                 skywalker.showStatusMessage(item.syncWarning, QEnums.STATUS_LEVEL_INFO, 10)
                                 item.clearSyncWarning()
                             }
-
-                            if (unreadPosts == 0) {
-                                console.debug("Reload feed:", modelData.name)
-                                item.refreshFeed()
-                            }
                         }
                     }
                     else {
@@ -316,5 +311,9 @@ SwipeView {
 
     function getFooterHeight() {
         return root.footer.visible ? root.footer.height : 0
+    }
+
+    Component.onCompleted: {
+        contentItem.highlightMoveDuration = 200
     }
 }

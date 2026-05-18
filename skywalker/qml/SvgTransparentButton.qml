@@ -3,7 +3,6 @@ import QtQuick.Controls
 
 SkySvg {
     required property string accessibleName
-    property bool enabled: true
 
     signal clicked
 
