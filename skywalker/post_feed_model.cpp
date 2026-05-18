@@ -1561,6 +1561,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
                         page->addPost(replyRef->mRoot, false);
                         page->mFeed.back().setPostType(QEnums::POST_ROOT);
                         rootAdded = true;
+                        post.setPostType(QEnums::POST_LAST_REPLY);
                     }
                     else
                     {
