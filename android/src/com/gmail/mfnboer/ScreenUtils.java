@@ -257,7 +257,7 @@ public class ScreenUtils {
                 if (keepOn) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                     if (sWakeLock == null) {
-                        sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SpiralFunTag");
+                        sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SkywalkerTag");
                         sWakeLock.acquire();
                     }
                 } else {
