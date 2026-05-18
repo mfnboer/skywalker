@@ -950,6 +950,7 @@ Rectangle {
                 visible: status == Loader.Ready
 
                 sourceComponent: AccessibleText {
+                    leftPadding: 10
                     topPadding: 10
                     bottomPadding: 10
                     width: parent.width
