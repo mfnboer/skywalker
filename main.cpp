@@ -5,7 +5,6 @@
 #include "sky_application.h"
 #include "skywalker.h"
 #include "temp_file_holder.h"
-#include <QAccessible>
 #include <QFont>
 #include <QGuiApplication>
 #include <QImageReader>
@@ -18,6 +17,23 @@ using namespace Qt::Literals::StringLiterals;
 extern "C" const char* __lsan_default_options()
 {
     return LEAK_SUPPRESSIONS;
+}
+#endif
+
+#ifdef Q_OS_ANDROID
+// HACK
+// Google Play dashboard often shows ANR issues with accessibility in the stacktrace.
+// Disable till we properly add accessibility.
+// It disables all accessibility features. Copied from the following file
+// and modified to always return false:
+// c:\Qt6\6.10.1\Src\qtbase\src\plugins\platforms\android\qandroidplatformintegration.cpp
+extern "C" {
+    JNIEXPORT bool JNICALL
+    Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported(JNIEnv *, jobject)
+    {
+        qDebug() << "Disable accessibility";
+        return false;
+    }
 }
 #endif
 
@@ -34,11 +50,6 @@ int main(int argc, char *argv[])
 #ifdef QT_NO_DEBUG_OUTPUT
     QLoggingCategory::setFilterRules("qml*.debug=false");
 #endif
-
-    // HACK
-    // Google Play dashboard often shows ANR issues with accessibility in the stacktrace.
-    // Disable till we properly add accessibility.
-    QAccessible::setActive(false);
 
 #ifdef DEBUG
     Skywalker::SkyApplication app(argc, argv);

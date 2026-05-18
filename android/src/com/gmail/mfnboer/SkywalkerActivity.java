@@ -15,14 +15,16 @@ import org.qtproject.qt.android.QtNative;
 import org.qtproject.qt.android.bindings.QtActivity;
 
 import java.lang.String;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import java.util.ArrayList;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
+import android.view.View;
 
 import androidx.browser.customtabs.CustomTabsIntent;
 
@@ -54,6 +56,15 @@ public class SkywalkerActivity extends QtActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sActivity = this;
+
+        // HACK
+        // Google Play dashboard often shows ANR issues with accessibility in the stacktrace.
+        // Disable till we properly add accessibility.
+        // Disable the Qt accessibility delegate after Qt sets it up
+        View rootView = getWindow().getDecorView().getRootView();
+        rootView.setImportantForAccessibility(
+            View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        );
 
         // Enable EdgeToEdge mode, i.e. full screen.
         // WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
@@ -98,6 +109,11 @@ public class SkywalkerActivity extends QtActivity {
         // This will show them again.
         if (hasFocus)
             ScreenUtils.showSystemUI();
+    }
+
+    @Override
+    public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
+        return false; // suppress all accessibility events
     }
 
     @Override
