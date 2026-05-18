@@ -105,6 +105,13 @@ android {
         noCompress 'rcc'
     }
 
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
     defaultConfig {
         resConfig "en"
         applicationId "com.gmail.mfnboer.skywalker"
