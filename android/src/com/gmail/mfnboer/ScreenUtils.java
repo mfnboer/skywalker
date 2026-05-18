@@ -270,4 +270,25 @@ public class ScreenUtils {
             }
         });
     }
+
+    public static void showSystemUI() {
+        if (sActivity == null) {
+            Log.w(LOGTAG, "Acitivity not set");
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // API 30+
+            WindowInsetsController controller = sActivity.getWindow().getInsetsController();
+
+            if (controller != null)
+                controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+        } else {
+            // Below API 30
+            sActivity.getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            );
+        }
+    }
 }
