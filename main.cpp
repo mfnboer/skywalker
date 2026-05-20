@@ -31,7 +31,7 @@ extern "C" {
     JNIEXPORT bool JNICALL
     Java_org_qtproject_qt_android_QtNativeAccessibility_accessibilitySupported(JNIEnv *, jobject)
     {
-        qDebug() << "Disable accessibility";
+        qInfo() << "Disable accessibility";
         return false;
     }
 }

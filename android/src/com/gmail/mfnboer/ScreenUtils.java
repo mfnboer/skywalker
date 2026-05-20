@@ -20,6 +20,7 @@ import android.view.WindowInsetsController;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 public class ScreenUtils {
@@ -289,6 +290,7 @@ public class ScreenUtils {
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             );
+            WindowCompat.setDecorFitsSystemWindows(sActivity.getWindow(), false);
         }
     }
 }

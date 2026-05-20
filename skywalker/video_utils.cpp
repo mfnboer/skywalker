@@ -70,15 +70,22 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     jint jiEndMs = endMs;
     jboolean jbRemoveAudio = removeAudio;
 
-    activity.callMethod<void>(
+    const auto success = activity.callMethod<jboolean>(
         "transcodeVideo",
-        "(Ljava/lang/String;Ljava/lang/String;IIIZ)V",
+        "(Ljava/lang/String;Ljava/lang/String;IIIZ)Z",
         jsInputFileName.object<jstring>(),
         jsOutputFileName.object<jstring>(),
         jiHeight, jiStartMs, jiEndMs, jbRemoveAudio);
 
     setTranscoding(true);
     mTranscodingFileName = inputFileName;
+
+    if (!success)
+    {
+        qDebug() << "Cannot transcode video";
+        QFile::copy(inputFileName, outputFileName);
+        handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), -1, -1);
+    }
 #else
     Q_UNUSED(height)
     Q_UNUSED(startMs)

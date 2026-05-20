@@ -19,6 +19,7 @@ import androidx.media3.transformer.InAppMp4Muxer;
 import androidx.media3.transformer.Transformer;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import com.google.common.collect.ImmutableList;
@@ -28,14 +29,18 @@ public class VideoTranscoder {
     public static native void emitTranscodingOk(String inputFilePath, String outputFilePath, int outputWidth, int outputHeight);
     public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
-    public static void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
+    public static boolean transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
         Log.d(LOGTAG, "Transcode video, in: " + inputFilePath + " out: " + outputFilePath + " height: " + height + " start: " + startMs + " end: " + endMs + " remove audio: " + removeAudio);
+
+        // On older versions the media3 library throws java.lang.NoClassDefFoundError: Failed resolution of: Landroid/media/metrics/LogSessionId;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
+            return false;
 
         Context context = SkywalkerApplication.getContext();
 
         if (context == null) {
             Log.w(LOGTAG, "No context");
-            return;
+            return false;
         }
 
         Uri inputUri = Uri.fromFile(new File(inputFilePath));
@@ -62,8 +67,10 @@ public class VideoTranscoder {
 
         EditedMediaItem editedMediaItem = emiBuilder.build();
 
-        // NOTE: The InAppMuxer is needed to transfrom mpeg-ts to mp4. Without it the code crashes.
+        // NOTE:
+        // The InAppMuxer is needed to transfrom mpeg-ts to mp4. Without it the code crashes.
         Transformer transformer = new Transformer.Builder(context)
+                .setUsePlatformDiagnostics(false)
                 .setVideoMimeType(MimeTypes.VIDEO_H264)
                 .setAudioMimeType(MimeTypes.AUDIO_AAC)
                 .setMuxerFactory(new InAppMp4Muxer.Factory())
@@ -87,5 +94,6 @@ public class VideoTranscoder {
                 .build();
 
         transformer.start(editedMediaItem, outputFilePath);
+        return true;
     }
 }

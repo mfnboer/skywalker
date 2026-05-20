@@ -1476,7 +1476,13 @@ void Skywalker::finishFeedSyncFailed(int modelId)
 void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get timeline:" << cursor;
+    qDebug() << "Get timeline:" << limit << "maxPages:" << maxPages << "minEntries:" << minEntries << "cursor:" << cursor;
+
+    if (!mBsky)
+    {
+        qWarning() << "No client!!";
+        return;
+    }
 
     if (isGetTimelineInProgress())
     {

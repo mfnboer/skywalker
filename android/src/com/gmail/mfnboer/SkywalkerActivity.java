@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
@@ -113,6 +114,7 @@ public class SkywalkerActivity extends QtActivity {
 
     @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
+        // HACK
         return false; // suppress all accessibility events
     }
 
@@ -319,13 +321,19 @@ public class SkywalkerActivity extends QtActivity {
         moveTaskToBack(true);
     }
 
-    public void transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
+    public boolean transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
+        // On older versions the media3 library throws java.lang.NoClassDefFoundError: Failed resolution of: Landroid/media/metrics/LogSessionId;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
+            return false;
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 VideoTranscoder.transcodeVideo(inputFilePath, outputFilePath, height, startMs, endMs, removeAudio);
             }
         });
+
+        return true;
     }
 
     public static SkywalkerActivity getInstance() {
