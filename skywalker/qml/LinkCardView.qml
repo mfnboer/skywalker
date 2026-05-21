@@ -58,7 +58,6 @@ RoundCornerMask {
             asynchronous: true
 
             sourceComponent: ThumbImageFixedSizeView {
-                x: (externalColumn.width - width) / 2
                 width: imgLoader.width
                 height: imgLoader.height
                 canvasColor: cardBackground.color

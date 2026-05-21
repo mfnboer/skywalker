@@ -27,6 +27,7 @@ public class ScreenUtils {
     private static final String LOGTAG = "ScreenUtils";
     private static Activity sActivity;
     private static PowerManager.WakeLock sWakeLock = null;
+    private static boolean sStatusBarTransparent = false;
 
     // Must match QEnums::InsertsSide
     public static final int INSETS_SIDE_TOP = 0;
@@ -38,26 +39,24 @@ public class ScreenUtils {
         sActivity = activity;
     }
 
+    public static boolean mustEnableEdgeToEdge() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
+    }
+
     private static Insets getInsets(int insetType) {
         View rootView = ((ViewGroup)sActivity.findViewById(android.R.id.content)).getChildAt(0);
-        WindowInsetsCompat insets = ViewCompat.getRootWindowInsets(rootView);
-        return insets.getInsets(insetType);
-
-        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        //     Window window = sActivity.getWindow();
-        //     WindowInsets insets = window.getDecorView().getRootWindowInsets();
-
-        //     if (insets != null)
-        //         return insets.getInsets(insetType);
-        //     else
-        //         Log.w(LOGTAG, "Cannot get window insets controller");
-        // }
-
-        // return null;
+        WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(rootView);
+        Insets insets = windowInsets.getInsets(insetType);
+        Log.d(LOGTAG, "Insets: " + insetType + " top=" + insets.top + " bottom=" + insets.bottom + " left=" + insets.left + " right=" + insets.right);
+        return insets;
     }
 
     private static int getInsetsSide(Insets insets, int side) {
         if (insets == null)
+            return 0;
+
+        // NOTE: For interaction with QML, we return 0 when EdgeToEdge is not enabled.
+        if (!mustEnableEdgeToEdge() && !sStatusBarTransparent)
             return 0;
 
         switch (side) {
@@ -76,27 +75,32 @@ public class ScreenUtils {
     }
 
     public static int getNavigationBarSize(int side) {
+        Log.d(LOGTAG, "Insets: nav bar");
         Insets insets = getInsets(WindowInsetsCompat.Type.navigationBars());
         return getInsetsSide(insets, side);
     }
 
     public static int getImeSize(int side) {
+        Log.d(LOGTAG, "Insets: ime");
         Insets insets = getInsets(WindowInsetsCompat.Type.ime());
         return getInsetsSide(insets, side);
     }
 
     public static int getStatusBarSize(int side) {
+        Log.d(LOGTAG, "Insets: status bar");
         Insets insets = getInsets(WindowInsetsCompat.Type.statusBars());
         return getInsetsSide(insets, side);
     }
 
     public static int getDisplayCutoutSize(int side) {
+        Log.d(LOGTAG, "Insets: cutout");
         Insets insets = getInsets(WindowInsetsCompat.Type.displayCutout());
         return getInsetsSide(insets, side);
     }
 
     public static void setStatusBarTransparent(boolean transparent, int color, boolean isLightMode) {
         Log.d(LOGTAG, "Set status bar transparent: " + transparent + " color: " + color + " light: " + isLightMode);
+        sStatusBarTransparent = transparent;
         sActivity.runOnUiThread(new StatusBarSetter(sActivity, transparent, color, isLightMode));
     }
 
@@ -119,7 +123,7 @@ public class ScreenUtils {
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
                 window.setStatusBarColor(mTransparent ? Color.TRANSPARENT : mColor);
-                //window.setDecorFitsSystemWindows(!mTransparent);
+                WindowCompat.setDecorFitsSystemWindows(window, !mTransparent);
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -272,7 +276,7 @@ public class ScreenUtils {
         });
     }
 
-    public static void showSystemUI() {
+    public static void showSystemBars() {
         if (sActivity == null) {
             Log.w(LOGTAG, "Acitivity not set");
             return;
@@ -284,13 +288,8 @@ public class ScreenUtils {
 
             if (controller != null)
                 controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-        } else {
-            // Below API 30
-            sActivity.getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            );
-            WindowCompat.setDecorFitsSystemWindows(sActivity.getWindow(), false);
         }
+
+        // NOTE: on lower API levels, the problem with disappearing bars seems not to happen.
     }
 }

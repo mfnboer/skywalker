@@ -169,6 +169,7 @@ SkyListView {
     Component.onCompleted: {
         Screen.onPrimaryOrientationChanged.connect(orientationHandler) // qmllint disable missing-property
         setSystemBars()
+        orientationHandler()
         model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
 
         if (model.endOfFeed) {

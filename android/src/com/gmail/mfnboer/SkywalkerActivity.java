@@ -68,8 +68,12 @@ public class SkywalkerActivity extends QtActivity {
         );
 
         // Enable EdgeToEdge mode, i.e. full screen.
-        // WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        WindowCompat.enableEdgeToEdge(getWindow());
+        // Manual way, not needed anymore: WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        // Since Qt6.11.1 EdgeToEdge should only be enabled on Android15 and higher, otherwise
+        // the screen get shifted down by some margin??
+        // In Qt6.10 EdgeToEdge had to be enabled on all versions.
+        if (ScreenUtils.mustEnableEdgeToEdge())
+            WindowCompat.enableEdgeToEdge(getWindow());
 
         Log.d(LOGTAG, "onCreate");
         ScreenUtils.init(this);
@@ -109,7 +113,7 @@ public class SkywalkerActivity extends QtActivity {
         // In Qt6.11.1 the system bars disappear after starting the content chooser.
         // This will show them again.
         if (hasFocus)
-            ScreenUtils.showSystemUI();
+            ScreenUtils.showSystemBars();
     }
 
     @Override

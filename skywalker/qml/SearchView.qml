@@ -1286,5 +1286,6 @@ SkyPage {
         userSettings.onShowSuggestedFeedsChanged.connect(() => { if (userSettings.showSuggestedFeeds) firstSearch = true })
         userSettings.onShowSuggestedStarterPacksChanged.connect(() => { if (userSettings.showSuggestedStarterPacks) firstSearch = true })
         searchUtils.initLastSearchedProfiles()
+        header.unfocus()
     }
 }

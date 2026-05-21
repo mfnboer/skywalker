@@ -1,3 +1,7 @@
+4.36.1
+======
+* Fix for buttons hiding behind Adroid status bar on Android 11, 12, 13 and 14
+
 4.36
 ====
 * Performance improvements

@@ -1247,6 +1247,10 @@ ApplicationWindow {
         id: displayUtils
         skywalker: skywalker
 
+        onStatusBarColorChanged: {
+            guiSettings.updateScreenMargins()
+        }
+
         function updateBackground() {
             displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
             displayUtils.setStatusBarColor(guiSettings.headerColor)
@@ -2726,6 +2730,7 @@ ApplicationWindow {
         console.debug("Font pt:", Qt.application.font.pointSize) // qmllint disable missing-property
         console.debug("Font px:", Qt.application.font.pixelSize)
         console.debug(Qt.fontFamilies());
+        console.debug("Safe area:", SafeArea.margins.top, SafeArea.margins.bottom, SafeArea.margins.left, SafeArea.margins.right)
 
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
