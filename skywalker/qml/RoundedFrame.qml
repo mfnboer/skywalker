@@ -1,13 +1,11 @@
 import QtQuick
-import Qt5Compat.GraphicalEffects
+import QtQuick.Effects
 
-Rectangle {
+Item {
     required property QtObject objectToRound
+    property int radius: guiSettings.radius
 
     id: frame
-    color: "transparent"
-    radius: guiSettings.radius
-    height: objectToRound.height
 
     Rectangle {
         id: mask
@@ -15,11 +13,12 @@ Rectangle {
         height: objectToRound.height
         radius: frame.radius
         visible: false
+        layer.enabled: true
     }
-    OpacityMask {
-        id: content
-        anchors.fill: objectToRound
+    MultiEffect {
         source: objectToRound
+        anchors.fill: objectToRound
+        maskEnabled: true
         maskSource: mask
     }
 

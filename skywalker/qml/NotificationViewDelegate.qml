@@ -558,18 +558,20 @@ Rectangle {
                     }
                 }
 
-                RowLayout {
+                Row {
                     width: parent.width
 
                     AccessibleText {
-                        Layout.fillWidth: true
-                        textFormat: Text.RichText
+                        //Layout.fillWidth: true
+                        width: parent.width - durationLabel.width
+                        textFormat: Text.StyledText
                         wrapMode: Text.Wrap
                         color: guiSettings.textColor
                         text: authorsAndReasonText()
                     }
                     DurationLabel {
-                        Layout.alignment: Qt.AlignTop
+                        id: durationLabel
+                        //Layout.alignment: Qt.AlignTop
                         durationSeconds: (new Date() - notificationTimestamp) / 1000
                     }
                 }

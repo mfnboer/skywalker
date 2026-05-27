@@ -37,8 +37,9 @@ Item {
 
         ImageAutoRetry {
             id: avatarImg
-            width: parent.width
-            height: width
+            anchors.fill: parent
+            // width: parent.width
+            // height: width
             source: avatarUrl
             sourceSize.width: width * Screen.devicePixelRatio
             sourceSize.height: height * Screen.devicePixelRatio
