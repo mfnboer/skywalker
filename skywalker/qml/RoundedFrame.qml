@@ -2,27 +2,28 @@ import QtQuick
 import QtQuick.Effects
 
 Item {
-    required property QtObject objectToRound
+    required property var objectToRound
     property int radius: guiSettings.radius
 
     id: frame
 
     Rectangle {
         id: mask
-        width: objectToRound.width
-        height: objectToRound.height
+        anchors.fill: parent
         radius: frame.radius
         visible: false
         layer.enabled: true
     }
-    MultiEffect {
-        source: objectToRound
-        anchors.fill: objectToRound
-        maskEnabled: true
-        maskSource: mask
-    }
 
-    Component.onCompleted: {
-        objectToRound.visible = false
+    Loader {
+        anchors.fill: parent
+        active: objectToRound !== null
+
+        sourceComponent: MultiEffect {
+            source: objectToRound
+            anchors.fill: parent
+            maskEnabled: true
+            maskSource: mask
+        }
     }
 }

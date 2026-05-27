@@ -29,9 +29,8 @@ Item {
 
     RoundedFrame {
         id: avatarFrame
-        objectToRound: avatarImg
-        width: parent.width
-        height: width
+        objectToRound: avatarImg.status === Image.Ready ? avatarImg : null
+        anchors.fill: parent
         radius: parent.radius
         visible: avatarUrl && avatarImg.status === Image.Ready
 
@@ -44,6 +43,7 @@ Item {
             fillMode: Image.PreserveAspectFit
             maxRetry: 60
             indicateLoading: false
+            visible: false // for rounding
         }
     }
     Loader {
