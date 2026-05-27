@@ -51,6 +51,7 @@ class Skywalker : public IFeedPager
     Q_OBJECT
     Q_PROPERTY(QString APP_NAME MEMBER APP_NAME CONSTANT)
     Q_PROPERTY(QString VERSION MEMBER VERSION CONSTANT)
+    Q_PROPERTY(int NOTIFICATION_PAGE_SIZE MEMBER NOTIFICATION_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TIMELINE_PREPEND_PAGE_SIZE MEMBER TIMELINE_PREPEND_PAGE_SIZE CONSTANT)
     Q_PROPERTY(int TIMELINE_NEXT_PAGE_THRESHOLD MEMBER TIMELINE_NEXT_PAGE_THRESHOLD CONSTANT)
     Q_PROPERTY(int FEED_PREPEND_PAGE_SIZE MEMBER FEED_PREPEND_PAGE_SIZE CONSTANT)
@@ -79,6 +80,7 @@ public:
     static constexpr const char* VERSION = APP_VERSION;
     static QString getUserAgentString();
 
+    static constexpr int NOTIFICATION_PAGE_SIZE = 25;
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 50;
     static constexpr int TIMELINE_NEXT_PAGE_THRESHOLD = 30; // Get next page when less posts till current end
     static constexpr int FEED_PREPEND_PAGE_SIZE = 50;
@@ -154,7 +156,7 @@ public:
     Q_INVOKABLE PostThreadModel* getPostThreadModel(int id) const;
     Q_INVOKABLE void removePostThreadModel(int id);
     Q_INVOKABLE void updateNotificationPreferences(bool priority);
-    Q_INVOKABLE void getNotifications(int limit = 25, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
+    Q_INVOKABLE void getNotifications(int limit = NOTIFICATION_PAGE_SIZE, bool updateSeen = false, bool mentionsOnly = false, bool emitLoadedSignal = false, const QString& cursor = {});
     Q_INVOKABLE void getNotificationsNextPage(bool mentionsOnly);
     Q_INVOKABLE void getDetailedProfile(const QString& author, const QString& labelPrefsListUri = {});
 

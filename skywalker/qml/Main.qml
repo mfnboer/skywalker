@@ -2091,7 +2091,7 @@ ApplicationWindow {
         const unread = skywalker.getSessionManager().activeUserUnreadNotificationCount
 
         if (unread > 0) {
-            const loadCount = Math.min(100, Math.max(10, unread))
+            const loadCount = Math.min(100, Math.max(skywalker.NOTIFICATION_PAGE_SIZE, unread))
             skywalker.getNotifications(loadCount, true, false, true)
             skywalker.getNotifications(loadCount, false, true, true)
 
@@ -2100,10 +2100,10 @@ ApplicationWindow {
         }
         else {
             if (skywalker.notificationListModel.rowCount() === 0)
-                skywalker.getNotifications(10, false, false)
+                skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, false, false)
 
             if (skywalker.mentionListModel.rowCount() === 0)
-                skywalker.getNotifications(10, false, true)
+                skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, false, true)
 
             let view = getNotificationView()
             view.showFirstTabWithUnreadNotifications()

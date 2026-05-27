@@ -95,8 +95,8 @@ SkyPage {
                     cover()
                 } else {
                     if (sessionManager?.activeUserUnreadNotificationCount > 0) {
-                        skywalker.getNotifications(25, true, false)
-                        skywalker.getNotifications(25, false, true)
+                        skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, true, false)
+                        skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, false, true)
                     }
                 }
             }
@@ -113,8 +113,8 @@ SkyPage {
             FlickableRefresher {
                 inProgress: allList.model?.getFeedInProgress
                 topOvershootFun: () => {
-                    skywalker.getNotifications(25, true, false)
-                    skywalker.getNotifications(25, false, true)
+                    skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, true, false)
+                    skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, false, true)
                 }
                 bottomOvershootFun: () => skywalker.getNotificationsNextPage(false)
                 topText: qsTr("Pull down to refresh")
@@ -177,8 +177,8 @@ SkyPage {
             FlickableRefresher {
                 inProgress: mentionList.model?.getFeedInProgress
                 topOvershootFun: () => {
-                    skywalker.getNotifications(50, true, false)
-                    skywalker.getNotifications(50, false, true)
+                    skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE * 2, true, false)
+                    skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE * 2, false, true)
                 }
                 bottomOvershootFun: () => skywalker.getNotificationsNextPage(true)
                 topText: qsTr("Pull down to refresh")
@@ -229,9 +229,9 @@ SkyPage {
                         cover()
                     } else if (!modelData.sessionExpired) {
                         if (modelData.unreadNotificationCount > 0)
-                            modelData.getNotifications(25, true)
+                            modelData.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, true)
                         else if (nonActiveUserList.count === 0)
-                            modelData.getNotifications(25, false)
+                            modelData.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, false)
                     }
                 }
 
@@ -246,7 +246,7 @@ SkyPage {
 
                 FlickableRefresher {
                     inProgress: nonActiveUserList.model && nonActiveUserList.model.getFeedInProgress
-                    topOvershootFun: () => modelData.getNotifications(25, true)
+                    topOvershootFun: () => modelData.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, true)
                     bottomOvershootFun: () => modelData.getNotificationsNextPage()
                     topText: qsTr("Pull down to refresh")
                 }
