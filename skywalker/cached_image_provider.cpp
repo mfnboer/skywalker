@@ -171,6 +171,10 @@ CachedImageResponse::CachedImageResponse(const QString& providerName, const QStr
     loadImage(id);
 }
 
+CachedImageResponse::~CachedImageResponse()
+{
+}
+
 QQuickTextureFactory* CachedImageResponse::textureFactory() const
 {
     return QQuickTextureFactory::textureFactoryForImage(mImage);
@@ -189,6 +193,7 @@ void CachedImageResponse::loadImage(const QString& id)
     if (mRequestedSize.width() != mRequestedSize.height())
     {
         qDebug() << "Image is not square:" << id << "size:" << mRequestedSize << "provider:" << mProviderName;
+        handleDone(QImage(), {}, false);
         return;
     }
 
@@ -199,7 +204,7 @@ void CachedImageResponse::loadImage(const QString& id)
     if (!image.isNull())
     {
         qDebug() << "Got image from cache:" << id << "provider:" << mProviderName << "format:" << format;
-        QTimer::singleShot(0, this, [this, image, format]{ handleDone(image, format, true); });
+        handleDone(image, format, true);
         return;
     }
 
@@ -215,7 +220,7 @@ void CachedImageResponse::loadImage(const QString& id)
     if (!success)
     {
         qWarning() << "Invalid id:" << id << "provider:" << mProviderName;
-        QTimer::singleShot(0, this, [this]{ handleDone(QImage(), {}, false); });
+        handleDone(QImage(), {}, false);
         return;
     }
 }

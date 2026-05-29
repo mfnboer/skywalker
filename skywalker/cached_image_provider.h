@@ -42,6 +42,7 @@ class CachedImageResponse : public QQuickImageResponse
 {
 public:
     CachedImageResponse(const QString& providerName, const QString& id, const QSize& requestedSize, QThreadPool* pool);
+    ~CachedImageResponse();
 
     QQuickTextureFactory* textureFactory() const override;
 
