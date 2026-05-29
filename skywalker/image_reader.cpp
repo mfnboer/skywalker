@@ -37,10 +37,15 @@ bool ImageReader::getImage(const QString& urlString, const ImageCb& imageCb, con
         return true;
     }
 
-    return getImageFromWeb(urlString, imageCb, errorCb);
+    return getImageFromWeb(urlString,
+        [imageCb](QImage img, const QString&){
+            if (imageCb)
+                imageCb(img);
+        },
+        errorCb);
 }
 
-bool ImageReader::getImageFromWeb(const QString& urlString, const ImageCb& imageCb, const ErrorCb& errorCb)
+bool ImageReader::getImageFromWeb(const QString& urlString, const ImageAndFormatCb& imageCb, const ErrorCb& errorCb)
 {
     qDebug() << "Get image from web:" << urlString;
 
@@ -60,7 +65,7 @@ bool ImageReader::getImageFromWeb(const QString& urlString, const ImageCb& image
     return true;
 }
 
-void ImageReader::replyFinished(QNetworkReply* reply, const ImageCb& imageCb, const ErrorCb& errorCb)
+void ImageReader::replyFinished(QNetworkReply* reply, const ImageAndFormatCb& imageCb, const ErrorCb& errorCb)
 {
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -87,7 +92,11 @@ void ImageReader::replyFinished(QNetworkReply* reply, const ImageCb& imageCb, co
     }
 
     if (imageCb)
-        imageCb(img);
+    {
+        const QString format = reader.format();
+        qDebug() << "Image format:" << format << "url:" << reply->url();
+        imageCb(img, format);
+    }
 }
 
 }

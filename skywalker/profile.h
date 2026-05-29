@@ -284,7 +284,8 @@ public:
     const QString& getHandle() const;
     const QString& getPronouns() const;
     const QString& getAvatarUrl() const;
-    QString getAvatarThumbUrl() const;
+    QString getAvatarThumbUrl() const; // image-url
+    QString getAvatarThumbHttpUrl() const;
     ImageView getImageView() const;
     ProfileAssociated getAssociated() const;
     ProfileViewerState& getViewer();

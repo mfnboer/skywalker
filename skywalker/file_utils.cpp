@@ -442,6 +442,21 @@ void FileUtils::scanMediaFile(const QString& fileName)
 #endif
 }
 
+void FileUtils::updateModificationTime(const QString& fileName)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadWrite))
+    {
+        qWarning() << "Failed to open:" << fileName;
+        return;
+    }
+
+    if (!file.setFileTime(QDateTime::currentDateTime(), QFileDevice::FileModificationTime))
+        qWarning() << "Could not set file time:" << fileName;
+
+}
+
 QString FileUtils::getDeviceName()
 {
     QString deviceName;

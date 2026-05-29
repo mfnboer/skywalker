@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "profile.h"
 #include "author_cache.h"
+#include "cached_image_provider.h"
 #include "content_filter.h"
 #include "definitions.h"
 #include "list_cache.h"
@@ -485,6 +486,13 @@ const QString& BasicProfile::getAvatarUrl() const
 }
 
 QString BasicProfile::getAvatarThumbUrl() const
+{
+    const QString thumbUrl = getAvatarThumbHttpUrl();
+    auto* provider = CachedImageProvider::getProvider(CachedImageProvider::AVATAR);
+    return provider->createImageUrl(thumbUrl);
+}
+
+QString BasicProfile::getAvatarThumbHttpUrl() const
 {
     return ATProto::createAvatarThumbUrl(getAvatarUrl());
 }
