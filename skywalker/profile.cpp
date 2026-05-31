@@ -487,8 +487,8 @@ const QString& BasicProfile::getAvatarUrl() const
 
 QString BasicProfile::getAvatarThumbUrl() const
 {
+    static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::AVATAR);
     const QString thumbUrl = getAvatarThumbHttpUrl();
-    auto* provider = CachedImageProvider::getProvider(CachedImageProvider::AVATAR);
     return provider->createImageUrl(thumbUrl);
 }
 

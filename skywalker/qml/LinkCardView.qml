@@ -11,7 +11,9 @@ RoundCornerMask {
     property string description
     property bool descriptionIsHtml: false
     property string thumbUrl
+    property date createdAt
     property date updatedAt
+    readonly property date documentDate: isNaN(updatedAt.getTime()) ? createdAt : updatedAt
     property int readingTime: 0 // minutes
     property externalsource externalSource
     property list<basicprofile> associatedProfiles: []
@@ -119,7 +121,7 @@ RoundCornerMask {
             elide: descriptionIsHtml ? Text.ElideNone : Text.ElideRight
         }
         Loader {
-            active: !isNaN(card.updatedAt.getTime()) || card.readingTime > 0
+            active: !isNaN(card.documentDate.getTime()) || card.readingTime > 0
 
             sourceComponent: Row {
                 x: 5
@@ -129,8 +131,8 @@ RoundCornerMask {
                 AccessibleText {
                     color: guiSettings.messageTimeColor
                     font.pointSize: guiSettings.scaledFont(7/8)
-                    text: !isNaN(card.updatedAt.getTime()) ? card.updatedAt.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
-                    visible: !isNaN(card.updatedAt.getTime())
+                    text: !isNaN(card.documentDate.getTime()) ? card.documentDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+                    visible: !isNaN(card.documentDate.getTime())
                 }
 
                 AccessibleText {
@@ -164,6 +166,12 @@ RoundCornerMask {
                 Item {
                     width: parent.width
                     height: 10
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 1
+                    color: borderColor
                 }
 
                 LinkCardSource {

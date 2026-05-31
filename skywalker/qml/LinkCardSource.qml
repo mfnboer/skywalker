@@ -16,7 +16,7 @@ Rectangle {
         x: 5
         y: 5
         objectToRound: iconImg.status === Image.Ready ? iconImg : null
-        width: 60
+        width: 50
         height: width
         radius: guiSettings.radius
         visible: externalSource.icon && iconImg.status === Image.Ready
@@ -66,16 +66,16 @@ Rectangle {
 
             SkySvg {
                 id: icon
-                width: guiSettings.appFontHeight + 4
+                width: guiSettings.appFontHeight
                 height: width
                 svg: standardSitePublisherIcon
                 color: getAccentColor()
             }
 
             AccessibleText {
-                y: 2
                 width: parent.width - icon.width - parent.spacing
                 color: getAccentColor()
+                elide: Text.ElideRight
                 text: standardSitePublisher ? qsTr(`Subscribe on ${standardSitePublisher}`) :
                                               guiSettings.stripHttpFromLink(externalSource.uri)
             }

@@ -37,6 +37,7 @@ Item {
             description: postExternal.description
             descriptionIsHtml: postExternal.hasHtmlDescription()
             thumbUrl: postExternal.thumbUrl
+            createdAt: postExternal.createdAt
             updatedAt: postExternal.updateAt
             readingTime: postExternal.readingTime
             externalSource: postExternal.source
