@@ -224,6 +224,10 @@ RoundCornerMask {
 
     Rectangle {
         anchors.fill: parent
+
+        // HACK: without -1 the contents just peep out at the bottom ??
+        anchors.bottomMargin: -1
+
         border.width: 1
         border.color: borderColor
         radius: cornerRadius
