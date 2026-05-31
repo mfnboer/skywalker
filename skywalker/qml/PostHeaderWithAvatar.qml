@@ -6,8 +6,8 @@ import skywalker
 Column {
     property string userDid
     required property basicprofile author
-    required property double postIndexedSecondsAgo
-    property bool showPronouns
+    property double postIndexedSecondsAgo: -1
+    property bool showPronouns: false
     property contentlabel filteredContentLabel
     readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(author, author.labels, userDid)
 

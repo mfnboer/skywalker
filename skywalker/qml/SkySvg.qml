@@ -8,7 +8,7 @@ Shape {
     property string outlineColor: color
 
     id: shape
-    y: height
+    y: svg.offsetByHeight ? height : 0
 
     ShapePath {
         scale: Qt.size(shape.height / svg.width, shape.height / svg.height)

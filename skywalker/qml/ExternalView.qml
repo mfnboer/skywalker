@@ -37,6 +37,10 @@ Item {
             description: postExternal.description
             descriptionIsHtml: postExternal.hasHtmlDescription()
             thumbUrl: postExternal.thumbUrl
+            updatedAt: postExternal.updateAt
+            readingTime: postExternal.readingTime
+            externalSource: postExternal.source
+            associatedProfiles: postExternal.associatedProfiles ? postExternal.associatedProfiles : []
             contentVisibility: view.contentVisibility
             contentWarning: view.contentWarning
             contentLabeler: view.contentLabeler

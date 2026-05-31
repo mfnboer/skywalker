@@ -50,7 +50,7 @@ private:
     QString mRev;
     QString mText;
     QString mFormattedText;
-    ATProto::AppBskyEmbed::RecordView::SharedPtr mEmbed;
+    std::optional<ATProto::ChatBskyConvo::MessageView::EmbedType> mEmbed;
     QString mSenderDid;
     QDateTime mSentAt;
     bool mDeleted = false;

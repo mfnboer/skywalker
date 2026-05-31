@@ -542,7 +542,7 @@ Item {
         return displayUtils.getDisplayCutoutSize(side) / Screen.devicePixelRatio
     }
 
-    function toHtmlLink(link) {
+    function stripHttpFromLink(link) {
         let text = link
 
         if (text.startsWith("https://"))
@@ -550,6 +550,11 @@ Item {
         else if (text.startsWith("http://"))
             text = text.slice(7)
 
+        return text
+    }
+
+    function toHtmlLink(link) {
+        let text = stripHttpFromLink(link)
         return `<a href="${link}" style="color: ${guiSettings.linkColor}; text-decoration: none">${text}</a>`
     }
 

@@ -82,6 +82,13 @@ QString LinkUtils::getLinkWithScheme(const QString& link)
     return "https://" + value;
 }
 
+bool LinkUtils::equalLinks(const QString& link1, const QString& link2)
+{
+    const QString lhs = link1.endsWith('/') ? link1.chopped(1) : link1;
+    const QString rhs = link2.endsWith('/') ? link2.chopped(1) : link2;
+    return lhs == rhs;
+}
+
 QString LinkUtils::toHttpsLink(const QString& atUri)
 {
     ATProto::ATUri uri(atUri);

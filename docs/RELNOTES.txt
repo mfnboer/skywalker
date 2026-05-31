@@ -1,5 +1,6 @@
 next
 ====
+* Rich link cards for standard.site documents
 * Performance improvements
 
 4.36.1

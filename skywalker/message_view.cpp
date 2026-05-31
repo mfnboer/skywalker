@@ -128,7 +128,19 @@ const RecordView MessageView::getEmbed() const
     if (!mEmbed)
         return {};
 
-    RecordView recordView{*mEmbed};
+    // TODO: JoinLinkView
+    if (!std::holds_alternative<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed))
+        return {};
+
+    const auto view = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed);
+
+    if (!view)
+    {
+        qWarning() << "No record view";
+        return {};
+    }
+
+    RecordView recordView{*view};
     recordView.setContentVisibility(QEnums::CONTENT_VISIBILITY_SHOW);
     recordView.setContentWarning("");
     return recordView;

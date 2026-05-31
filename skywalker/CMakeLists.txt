@@ -702,6 +702,12 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SimpleAuthorTypeaheadListView.qml
         SOURCES cached_image_provider.h
         SOURCES cached_image_provider.cpp
+        SOURCES external_source_theme.h
+        SOURCES external_source_theme.cpp
+        SOURCES external_source.h
+        SOURCES external_source.cpp
+        QML_FILES qml/AuthorLineWithAvatar.qml
+        QML_FILES qml/LinkCardSource.qml
 )
 
 target_link_libraries(libskywalker

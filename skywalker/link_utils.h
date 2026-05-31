@@ -21,6 +21,7 @@ public:
     Q_INVOKABLE static bool isValidDid(const QString& did);
     Q_INVOKABLE static bool isValidService(const QString& service); // atproto-proxy header value
     Q_INVOKABLE static QString getLinkWithScheme(const QString& link);
+    Q_INVOKABLE static bool equalLinks(const QString& link1, const QString& link2);
 
     explicit LinkUtils(QObject* parent = nullptr);
 

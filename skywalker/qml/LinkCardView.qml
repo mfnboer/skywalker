@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Material
+import QtQuick.Layouts
 import skywalker
 
 RoundCornerMask {
@@ -10,6 +11,10 @@ RoundCornerMask {
     property string description
     property bool descriptionIsHtml: false
     property string thumbUrl
+    property date updatedAt
+    property int readingTime: 0 // minutes
+    property externalsource externalSource
+    property list<basicprofile> associatedProfiles: []
     required property int contentVisibility // QEnums::ContentVisibility
     required property string contentWarning
     property basicprofile contentLabeler
@@ -94,7 +99,6 @@ RoundCornerMask {
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
-            color: guiSettings.textColor
             plainText: card.title
             wrapMode: Text.Wrap
             maximumLineCount: 3
@@ -108,21 +112,79 @@ RoundCornerMask {
             leftPadding: 5
             rightPadding: 5
             bottomPadding: 5
-            color: guiSettings.textColor
             plainText: card.description ? card.description : card.uri
             wrapMode: Text.Wrap
             maximumLineCount: 8
             textFormat: descriptionIsHtml ? Text.RichText : Text.PlainText
             elide: descriptionIsHtml ? Text.ElideNone : Text.ElideRight
         }
+        Loader {
+            active: !isNaN(card.updatedAt.getTime()) || card.readingTime > 0
+
+            sourceComponent: Row {
+                x: 5
+                width: parent.width - 10
+                spacing: 10
+
+                AccessibleText {
+                    color: guiSettings.messageTimeColor
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: !isNaN(card.updatedAt.getTime()) ? card.updatedAt.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+                    visible: !isNaN(card.updatedAt.getTime())
+                }
+
+                AccessibleText {
+                    color: guiSettings.messageTimeColor
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: `🕓${card.readingTime}` + qsTr("m", "minutes")
+                    visible: card.readingTime > 0
+                }
+            }
+        }
+        Repeater {
+            model: associatedProfiles
+
+            // TODO: single line?
+            //PostHeaderWithAvatar {
+            AuthorLineWithAvatar {
+                required property var modelData
+
+                x: 5
+                width: externalColumn.width - 10
+                userDid: card.userDid
+                author: modelData
+            }
+        }
+        Loader {
+            active: !externalSource.isNull()
+
+            sourceComponent: Column {
+                width: externalColumn.width
+
+                Item {
+                    width: parent.width
+                    height: 10
+                }
+
+                LinkCardSource {
+                    width: parent.width
+                    userDid: card.userDid
+                    externalSource: card.externalSource
+                    isCardLink: root.getLinkUtils(userDid).equalLinks(card.uri, card.externalSource.uri)
+                }
+            }
+        }
+
         AccessibleText {
             id: linkText
             width: parent.width - 10
             leftPadding: 5
             rightPadding: 5
+            bottomPadding: 5
             text: card.uri ? new URL(card.uri).hostname : ""
             elide: Text.ElideRight
             color: guiSettings.linkColor
+            visible: externalSource.isNull()
         }
 
         SonglinkWidget {

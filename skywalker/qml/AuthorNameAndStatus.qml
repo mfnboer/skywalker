@@ -8,6 +8,9 @@ Rectangle {
     readonly property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
     readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
+    readonly property int verificationStatusWidth: (verificationStatusLoader.item ? verificationStatusLoader.item.width + 5 : 0) - (verifierStatusLoader.item ? verifierStatusLoader.item.width + 5 : 0)
+    readonly property real advanceWidth: nameText.advanceWidth + verificationStatusWidth
+    // TODO: factor out badge width
 
     id: nameRect
     height: nameText.height
@@ -15,7 +18,7 @@ Rectangle {
 
     SkyCleanedTextLine {
         id: nameText
-        width: parent.width - (verificationStatusLoader.item ? verificationStatusLoader.item.width + 5 : 0) - (verifierStatusLoader.item ? verifierStatusLoader.item.width + 5 : 0)
+        width: parent.width - verificationStatusWidth
         elide: Text.ElideRight
         font.bold: true
         font.pointSize: nameRect.pointSize
