@@ -708,6 +708,8 @@ qt_add_qml_module(libskywalker
         SOURCES external_source.cpp
         QML_FILES
         QML_FILES qml/LinkCardSource.qml
+        SOURCES strong_ref.h
+        SOURCES strong_ref.cpp
 )
 
 target_link_libraries(libskywalker

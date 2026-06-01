@@ -54,7 +54,7 @@ public:
 };
 
 LinkCardReader::LinkCardReader(QObject* parent):
-    QObject(parent),
+    WrappedSkywalker(parent),
     mNetwork(new QNetworkAccessManager(this)),
     mCardCache(100),
     mGifUtils(this)
@@ -227,6 +227,20 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(ogImageStr4)
     };
 
+    static const QString linkStandardSiteDocument(R"(<link [^>]*rel *= *[\"']site\.standard\.document[\"'] [^>]*href *= *%1(?<link>[^%1]+?)%1[^>]*>)");
+
+    static const std::vector<QRegularExpression> linkStandardSiteDocumentREs = {
+        QRegularExpression(linkStandardSiteDocument.arg('"')),
+        QRegularExpression(linkStandardSiteDocument.arg('\''))
+    };
+
+    static const QString linkStandardSitePublication(R"(<link [^>]*rel *= *[\"']site\.standard\.publication[\"'] [^>]*href *= *%1(?<link>[^%1]+?)%1[^>]*>)");
+
+    static const std::vector<QRegularExpression> linkStandardSitePublicationREs = {
+        QRegularExpression(linkStandardSitePublication.arg('"')),
+        QRegularExpression(linkStandardSitePublication.arg('\''))
+    };
+
     mInProgress = nullptr;
 
     if (reply->error() != QNetworkReply::NoError)
@@ -343,9 +357,26 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         return;
     }
 
+    std::vector<QString> associatedUris;
+    const QString documentUri = matchRegexes(linkStandardSiteDocumentREs, data, "link");
+
+    if (!documentUri.isEmpty())
+    {
+        qDebug() << "Standard site document:" << documentUri;
+        associatedUris.push_back(documentUri);
+    }
+
+    const QString publicationUri = matchRegexes(linkStandardSitePublicationREs, data, "link");
+
+    if (!publicationUri.isEmpty())
+    {
+        qDebug() << "Standard site publication:" << publicationUri;
+        associatedUris.push_back(publicationUri);
+    }
+
     card->setLink(url.toString());
     mCardCache.insert(url, card.get());
-    emit linkCard(card.release());
+    getEmbedExternalView(card.release(), associatedUris);
 }
 
 QString LinkCardReader::toPlainText(const QString& text)
@@ -356,6 +387,68 @@ QString LinkCardReader::toPlainText(const QString& text)
     QString plain(text);
     plain.replace("&amp;#", "&#");
     return UnicodeFonts::toPlainText(plain);
+}
+
+// NOTE: card is inside and owned by cache
+void LinkCardReader::getEmbedExternalView(LinkCard* card, const std::vector<QString> associatedUris)
+{
+    Q_ASSERT(mCardCache.contains(card->getLink()));
+    Q_ASSERT(bskyClient());
+
+    if (mEmbedExternalViewInProgress)
+    {
+        mCardCache.remove(card->getLink());
+        return;
+    }
+
+    qDebug() << "Get embed external view:" << card->getTitle();
+
+    if (associatedUris.empty())
+    {
+        emit linkCard(card);
+        return;
+    }
+
+    mEmbedExternalViewInProgress = true;
+
+    bskyClient()->getEmbedExternalView(card->getLink(), associatedUris,
+        [this, presence=getPresence(), card](ATProto::AppBskyEmbed::GetEmbedExternalViewOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            mEmbedExternalViewInProgress = false;
+            const auto refs = StrongRef::makeList(output->mAssociatedRefs);
+            card->setAssociatedRefs(refs);
+
+            if (output->mView && output->mView->mExternal)
+            {
+                const auto& external = output->mView->mExternal;
+                card->setCreatedAt(external->mCreatedAt.value_or(QDateTime{}));
+                card->setUpdatedAt(external->mUpdatedAt.value_or(QDateTime{}));
+                card->setReadingTime(external->mReadingTime.value_or(0));
+
+                if (external->mSource)
+                    card->setSource(ExternalSource(external->mSource));
+
+                const auto profiles = BasicProfile::makeList(external->mAssociatedProfiles);
+                card->setAssociatedProfiles(profiles);
+            }
+
+            emit linkCard(card);
+        },
+        [this, presence=getPresence(), card](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to get embed external view:" << error << " - " << msg;
+            mEmbedExternalViewInProgress = false;
+
+            // Take card from cache. If the user triggers another lookup, we do not want
+            // to serve an incomplete card from cache.
+            mCardCache.take(card->getLink());
+            card->setParent(this);
+            emit linkCard(card);
+        });
 }
 
 void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)

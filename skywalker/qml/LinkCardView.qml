@@ -71,7 +71,6 @@ RoundCornerMask {
                 dynamicCanvasColor: false
                 fillMode: Image.PreserveAspectCrop
                 image: imageUtils.createImageView(filter.imageVisible() ? card.thumbUrl : "", "")
-                indicateLoading: false
             }
 
             onStatusChanged: {

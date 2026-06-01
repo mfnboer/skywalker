@@ -6,6 +6,7 @@ import skywalker
 SkyDialog {
     property string uri
     property int duration: 60
+    property Skywalker skywalker: root.getSkywalker()
 
     id: dialog
     width: parent.width - 20
@@ -108,6 +109,7 @@ SkyDialog {
         property bool inProgress: false
 
         id: linkCardReader
+        skywalker: dialog.skywalker
 
         onLinkCard: (card) => {
             inProgress = false

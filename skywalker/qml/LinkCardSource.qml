@@ -5,8 +5,6 @@ Rectangle {
     property string userDid
     required property externalsource externalSource
     property bool isCardLink: false
-    readonly property string standardSitePublisher: externalSource.getStandardSitePublisher()
-    readonly property SvgImage standardSitePublisherIcon: externalSource.getStandardSitePublisherIcon()
 
     height: Math.max(iconFrame.height, sourceColumn.height) + 10
     color: getBackgroundColor()
@@ -68,7 +66,7 @@ Rectangle {
                 id: icon
                 width: guiSettings.appFontHeight
                 height: width
-                svg: standardSitePublisherIcon
+                svg: externalSource.standardSitePublisherIcon
                 color: getAccentColor()
             }
 
@@ -76,8 +74,9 @@ Rectangle {
                 width: parent.width - icon.width - parent.spacing
                 color: getAccentColor()
                 elide: Text.ElideRight
-                text: standardSitePublisher ? qsTr(`Subscribe on ${standardSitePublisher}`) :
-                                              guiSettings.stripHttpFromLink(externalSource.uri)
+                text: externalSource.standardSitePublisher ?
+                          qsTr(`Subscribe on ${externalSource.standardSitePublisher}`) :
+                          guiSettings.stripHttpFromLink(externalSource.uri)
             }
         }
     }

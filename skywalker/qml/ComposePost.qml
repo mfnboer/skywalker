@@ -836,6 +836,8 @@ SkyPage {
                     LinkCardView {
                         property var card: null
                         property bool linkFixed: false
+                        property date nullDate
+                        property externalsource nullSource
 
                         id: linkCard
                         x: page.margin
@@ -848,6 +850,11 @@ SkyPage {
                         title: card ? card.title : ""
                         description: card ? card.description : ""
                         thumbUrl: card ? card.thumb : ""
+                        createdAt: card ? card.createdAt : nullDate
+                        updatedAt: card ? card.updatedAt : nullDate
+                        readingTime: card ? card.readingTime : 0
+                        externalSource: card ? card.source : nullSource
+                        associatedProfiles: card ? card.associatedProfiles : []
                         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
                         contentWarning: ""
                         visible: card
@@ -1533,6 +1540,7 @@ SkyPage {
         property list<var> linksToGet: []
 
         id: linkCardReader
+        skywalker: page.skywalker
 
         onLinkCard: (card) => {
             busyIndicator.running = false

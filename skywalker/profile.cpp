@@ -294,6 +294,28 @@ ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssocia
 {
 }
 
+BasicProfile::List BasicProfile::makeList(const ATProto::AppBskyActor::ProfileViewBasic::List& profiles)
+{
+    BasicProfile::List profileList;
+    profileList.reserve(profiles.size());
+
+    for (const auto& profile : profiles)
+        profileList.push_back(BasicProfile(profile));
+
+    return profileList;
+}
+
+ATProto::AppBskyActor::ProfileViewBasic::List BasicProfile::toATProtoList(const List& profiles)
+{
+    ATProto::AppBskyActor::ProfileViewBasic::List list;
+    list.reserve(profiles.size());
+
+    for (const auto& profile : profiles)
+        list.push_back(profile.getProfileBasicView());
+
+    return list;
+}
+
 BasicProfile::BasicProfile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile) :
     mPrivate{std::make_shared<PrivateData>(profile)}
 {

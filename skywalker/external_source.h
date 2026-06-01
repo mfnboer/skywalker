@@ -16,10 +16,12 @@ class ExternalSource
     Q_PROPERTY(QString title READ getTitle FINAL)
     Q_PROPERTY(QString description READ getDescription FINAL)
     Q_PROPERTY(ExternalSourceTheme theme READ getTheme FINAL)
+    Q_PROPERTY(QString standardSitePublisher READ getStandardSitePublisher FINAL)
+    Q_PROPERTY(SvgImage* standardSitePublisherIcon READ getStandardSitePublisherIcon FINAL)
     QML_VALUE_TYPE(externalsource)
 
 public:
-    ExternalSource() = default;
+    ExternalSource();
     explicit ExternalSource(const ATProto::AppBskyEmbed::ViewExternalSource::SharedPtr& source);
 
     Q_INVOKABLE bool isNull() const { return mSource == nullptr; }
@@ -28,8 +30,9 @@ public:
     QString getTitle() const;
     QString getDescription() const;
     ExternalSourceTheme getTheme() const;
-    Q_INVOKABLE QString getStandardSitePublisher();
-    Q_INVOKABLE SvgImage* getStandardSitePublisherIcon();
+    ATProto::AppBskyEmbed::ViewExternalSource::SharedPtr getSource() const;
+    QString getStandardSitePublisher() const;
+    SvgImage* getStandardSitePublisherIcon() const;
 
 private:
     void initPublisher();

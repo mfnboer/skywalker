@@ -53,6 +53,8 @@ const QStringList SCOPE = {
     "rpc:app.bsky.draft.getDrafts?aud=*",
     "rpc:app.bsky.draft.updateDraft?aud=*",
 
+    "rpc:app.bsky.embed.getEmbedExternalView?aud=*",
+
     "rpc:app.bsky.feed.getActorFeeds?aud=*",
     "rpc:app.bsky.feed.getActorLikes?aud=*",
     "rpc:app.bsky.feed.getAuthorFeed?aud=*",

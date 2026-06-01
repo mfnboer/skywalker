@@ -5,9 +5,16 @@
 
 namespace Skywalker {
 
-ExternalSource::ExternalSource(const ATProto::AppBskyEmbed::ViewExternalSource::SharedPtr& source) :
-    mSource(source)
+ExternalSource::ExternalSource() :
+    mPublisherIcon{SvgOutline::instance()->sStandardSiteIcon}
 {
+}
+
+ExternalSource::ExternalSource(const ATProto::AppBskyEmbed::ViewExternalSource::SharedPtr& source) :
+    mSource(source),
+    mPublisherIcon{SvgOutline::instance()->sStandardSiteIcon}
+{
+    initPublisher();
 }
 
 QString ExternalSource::getUri() const
@@ -35,23 +42,23 @@ ExternalSourceTheme ExternalSource::getTheme() const
     return mSource ? ExternalSourceTheme{mSource->mTheme} : ExternalSourceTheme{};
 }
 
-QString ExternalSource::getStandardSitePublisher()
+ATProto::AppBskyEmbed::ViewExternalSource::SharedPtr ExternalSource::getSource() const
 {
-    initPublisher();
+    return mSource;
+}
+
+QString ExternalSource::getStandardSitePublisher() const
+{
     return mPublisher;
 }
 
-SvgImage* ExternalSource::getStandardSitePublisherIcon()
+SvgImage* ExternalSource::getStandardSitePublisherIcon() const
 {
-    initPublisher();
     return mPublisherIcon;
 }
 
 void ExternalSource::initPublisher()
 {
-    if (!mPublisher.isNull())
-        return;
-
     static const std::map<QString, std::pair<QString, SvgImage*>> STANDARD_SITE_PUBLISHERS = {
         { "leaflet.pub", { "Leaflet", SvgOutline::instance()->sLeafletIcon }},
         { "pckt.blog", { "pckt", SvgOutline::instance()->sPcktIcon }},
@@ -59,6 +66,10 @@ void ExternalSource::initPublisher()
     };
 
     const QString uri = getUri();
+
+    if (uri.isEmpty())
+        return;
+
     const QString cleanedUri = uri.endsWith('/') ? uri.chopped(1) : uri;
 
     for (const auto& [host, publisher] : STANDARD_SITE_PUBLISHERS)
@@ -70,9 +81,6 @@ void ExternalSource::initPublisher()
             return;
         }
     }
-
-    mPublisher = "";
-    mPublisherIcon = SvgOutline::instance()->sStandardSiteIcon;
 }
 
 }

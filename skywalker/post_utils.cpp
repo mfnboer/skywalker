@@ -677,9 +677,13 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb,
         if (!postMaster())
             return;
 
+        const auto associatedRefs = StrongRef::toATProtoList(card.mLinkCard->getAssociatedRefs());
+
         postMaster()->addExternalToPost(*post, card.mLinkCard->getLink(),
                                         card.mLinkCard->getTitle(),
-                                        card.mLinkCard->getDescription());
+                                        card.mLinkCard->getDescription(),
+                                        nullptr,
+                                        associatedRefs);
         continuePost(post, postFeedContext);
         return;
     }
@@ -697,10 +701,13 @@ void PostUtils::continuePost(const PostAttachmentLinkCard& card, QImage thumb,
             if (!postMaster())
                 return;
 
+            const auto associatedRefs = StrongRef::toATProtoList(card.mLinkCard->getAssociatedRefs());
+
             postMaster()->addExternalToPost(*post, card.mLinkCard->getLink(),
                                             card.mLinkCard->getTitle(),
                                             card.mLinkCard->getDescription(),
-                                            std::move(blob));
+                                            std::move(blob),
+                                            associatedRefs);
             continuePost(post, postFeedContext);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

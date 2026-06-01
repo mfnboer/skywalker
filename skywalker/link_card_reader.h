@@ -3,7 +3,10 @@
 #pragma once
 #include "link_card.h"
 #include "gif_utils.h"
+#include "presence.h"
 #include "tenor_gif.h"
+#include "wrapped_skywalker.h"
+
 #include <QCache>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -11,7 +14,7 @@
 
 namespace Skywalker {
 
-class LinkCardReader : public QObject
+class LinkCardReader : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     QML_ELEMENT
@@ -31,6 +34,7 @@ signals:
 private:
     QString toPlainText(const QString& text);
     void extractLinkCard(QNetworkReply* reply);
+    void getEmbedExternalView(LinkCard* card, const std::vector<QString> associatedUris);
     void requestFailed(QNetworkReply* reply, int errCode);
     void requestSslFailed(QNetworkReply* reply);
     void redirect(QNetworkReply* reply, const QUrl& redirectUrl);
@@ -38,6 +42,7 @@ private:
     QNetworkAccessManager* mNetwork;
     QCache<QUrl, LinkCard> mCardCache;
     QNetworkReply* mInProgress = nullptr;
+    bool mEmbedExternalViewInProgress = false;
     QUrl mPrevDestination;
     bool mRetry = false;
     bool mCookieSaveControl = false;

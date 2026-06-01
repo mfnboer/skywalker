@@ -2557,6 +2557,7 @@ void DraftPosts::getPostExternal(const Post& post, int index)
     }
 
     auto linkCardReader = std::make_shared<LinkCardReader>(this);
+    linkCardReader->setSkywalker(mSkywalker);
 
     connect(linkCardReader.get(), &LinkCardReader::linkCard, this,
         [this, linkCardReader, post, index](LinkCard* card){
@@ -2567,6 +2568,19 @@ void DraftPosts::getPostExternal(const Post& post, int index)
 
             if (!card->getThumb().isEmpty())
                 external->mThumb = card->getThumb();
+
+            if (card->getCreatedAt().isValid())
+                external->mCreatedAt = card->getCreatedAt();
+
+            if (card->getUpdatedAt().isValid())
+                external->mUpdatedAt = card->getUpdatedAt();
+
+            if (card->getReadingTime() > 0)
+                external->mReadingTime = card->getReadingTime();
+
+            external->mSource = card->getSource().getSource();
+            external->mAssociatedRefs = StrongRef::toATProtoList(card->getAssociatedRefs());
+            external->mAssociatedProfiles = BasicProfile::toATProtoList(card->getAssociatedProfiles());
 
             mDraftPostsModel->updatePostExternal(post, index);
         });

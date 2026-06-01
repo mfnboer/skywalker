@@ -263,7 +263,11 @@ class BasicProfile
     QML_VALUE_TYPE(basicprofile)
 
 public:
+    using List = QList<BasicProfile>;
+
     static QString typeName() { return "BasicProfile"; }
+    static List makeList(const ATProto::AppBskyActor::ProfileViewBasic::List& profiles);
+    static ATProto::AppBskyActor::ProfileViewBasic::List toATProtoList(const List& profiles);
 
     BasicProfile() = default;
     BasicProfile(const BasicProfile&) = default;
@@ -351,7 +355,7 @@ private:
     std::shared_ptr<PrivateData> mPrivate;
 };
 
-using BasicProfileList = QList<BasicProfile>;
+using BasicProfileList = BasicProfile::List;
 
 class Profile : public BasicProfile
 {
