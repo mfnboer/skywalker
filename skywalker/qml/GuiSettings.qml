@@ -330,6 +330,18 @@ Item {
         return wordSequence
     }
 
+    function toAuthorNameSequence(profileList) {
+        if (!profileList)
+            return ""
+
+        let nameList = []
+
+        for (const profile of profileList)
+            nameList.push(profile.name)
+
+        return toWordSequence(nameList)
+    }
+
     function listTypeName(purpose) {
         switch (purpose) {
         case QEnums.LIST_PURPOSE_MOD:

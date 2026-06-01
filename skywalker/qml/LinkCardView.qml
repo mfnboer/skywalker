@@ -122,10 +122,9 @@ RoundCornerMask {
         }
         Loader {
             active: !isNaN(card.documentDate.getTime()) || card.readingTime > 0
-
             sourceComponent: Row {
                 x: 5
-                width: parent.width - 10
+                width: externalColumn.width - 10
                 spacing: 10
 
                 AccessibleText {
@@ -143,29 +142,24 @@ RoundCornerMask {
                 }
             }
         }
-        Repeater {
-            model: associatedProfiles
-
-            // TODO: single line?
-            //PostHeaderWithAvatar {
-            AuthorLineWithAvatar {
-                required property var modelData
-
+        Loader {
+            active: associatedProfiles.length > 0
+            sourceComponent: SkyCleanedText {
                 x: 5
                 width: externalColumn.width - 10
-                userDid: card.userDid
-                author: modelData
+                font.italic: true
+                wrapMode: Text.Wrap
+                plainText: qsTr(`by ${guiSettings.toAuthorNameSequence(associatedProfiles)}`)
             }
         }
         Loader {
             active: !externalSource.isNull()
-
             sourceComponent: Column {
                 width: externalColumn.width
 
                 Item {
                     width: parent.width
-                    height: 10
+                    height: 5
                 }
 
                 Rectangle {

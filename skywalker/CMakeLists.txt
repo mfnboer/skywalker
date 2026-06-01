@@ -706,7 +706,7 @@ qt_add_qml_module(libskywalker
         SOURCES external_source_theme.cpp
         SOURCES external_source.h
         SOURCES external_source.cpp
-        QML_FILES qml/AuthorLineWithAvatar.qml
+        QML_FILES
         QML_FILES qml/LinkCardSource.qml
 )
 
