@@ -117,6 +117,7 @@ SkyPage {
     }
 
     SvgButton {
+        id: backButton
         x: guiSettings.leftMargin
         y: guiSettings.headerMargin
         iconColor: "white"
@@ -126,6 +127,15 @@ SkyPage {
         accessibleName: qsTr("go back")
         visible: showControls
         onClicked: page.closed(view.currentIndex)
+    }
+
+    PageIndicator {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: backButton.verticalCenter
+        Material.foreground: "white"
+        currentIndex: view.currentIndex
+        count: view.count
+        visible: view.count > 1 && showControls
     }
 
     SvgButton {

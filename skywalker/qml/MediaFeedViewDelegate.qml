@@ -214,16 +214,6 @@ Rectangle {
                                     verticalAlignment = Image.AlignVCenter
                             }
 
-                            SkyLabel {
-                                x: (parent.width - parent.paintedWidth) / 2 + parent.paintedWidth - width - 10
-                                y: parent.verticalAlignment == Image.AlignVCenter ? (parent.height - parent.paintedHeight) / 2 + 5 : optionsButton.y + optionsButton.height + 5
-                                backgroundColor: "black"
-                                backgroundOpacity: 0.6
-                                color: "white"
-                                text: `${index + 1}/${postOrRecordImages.length}`
-                                visible: postOrRecordImages.length > 1 && filter.imageVisible() && showDetails
-                            }
-
                             onStatusChanged: {
                                 if (status == Image.Ready && index == videoPage.startImageIndex) {
                                     imgSwipeView.currentIndex = videoPage.startImageIndex
@@ -265,6 +255,7 @@ Rectangle {
     }
 
     SvgButton {
+        id: backButton
         x: leftMarginWidth + 10
         y: headerHeight + 10
         iconColor: "white"
@@ -273,6 +264,19 @@ Rectangle {
         accessibleName: qsTr("go back")
         visible: mediaRect.showDetails
         onClicked: videoPage.closed()
+    }
+
+    Loader {
+        active: imageLoader.active
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: backButton.verticalCenter
+
+        sourceComponent: PageIndicator {
+            Material.foreground: "white"
+            currentIndex: imageLoader.item.currentIndex
+            count: imageLoader.item.count
+            visible: imageLoader.item.count > 1 && mediaRect.showDetails
+        }
     }
 
     SvgButton {
