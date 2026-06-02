@@ -5,6 +5,8 @@ package com.gmail.mfnboer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,7 +18,7 @@ import android.util.Log;
 import android.view.Surface;
 
 public class QVideoEncoder {
-    private static final String LOGTAG = "spiralfun.QVideoEncoder";
+    private static final String LOGTAG = "skywalker.QVideoEncoder";
     private static final String MIME_TYPE = "video/avc"; // H.264 Advanced Video Coding
     private static final int I_FRAME_INTERVAL = 5; // key frame interval, in seconds
 
@@ -31,6 +33,7 @@ public class QVideoEncoder {
     private int mFrameDurationUs;
     private int mPresentationTimeUs;
     private Bitmap mFrameBitmap;
+    private Queue<Integer> mFrameDurationQueue;
 
     public boolean init(String outputPath, int width, int height, int fps, int bitRate) {
         mWidth = width;
@@ -39,6 +42,7 @@ public class QVideoEncoder {
         mPresentationTimeUs = 0;
         mBufferInfo = new MediaCodec.BufferInfo();
         mFrameBitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.ARGB_8888);
+        mFrameDurationQueue = new ArrayDeque<Integer>();
 
         // Configure the output format
         MediaFormat outputFormat = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight);
@@ -106,7 +110,7 @@ public class QVideoEncoder {
         }
     }
 
-    public boolean addFrame(byte[] frameArray) {
+    public boolean addFrame(byte[] frameArray, int durationUs) {
         if (!drainEncoder(false))
             return false;
 
@@ -116,6 +120,7 @@ public class QVideoEncoder {
         Canvas canvas = mInputSurface.lockCanvas(null);
         canvas.drawBitmap(mFrameBitmap, 0, 0, null);
         mInputSurface.unlockCanvasAndPost(canvas);
+        mFrameDurationQueue.offer(durationUs);
 
         return true;
     }
@@ -188,7 +193,15 @@ public class QVideoEncoder {
                     }
 
                     mBufferInfo.presentationTimeUs = mPresentationTimeUs;
-                    mPresentationTimeUs += mFrameDurationUs;
+
+                    Integer durationUs = mFrameDurationQueue.poll();
+
+                    if (durationUs == null) {
+                        Log.w(LOGTAG, "No frame duration queued");
+                        mPresentationTimeUs += mFrameDurationUs;
+                    } else {
+                        mPresentationTimeUs += durationUs;
+                    }
 
                     // adjust the ByteBuffer values to match BufferInfo (not needed?)
                     encodedData.position(mBufferInfo.offset);

@@ -4,6 +4,7 @@ next
 * Show expiry date (if present) in detailed info for a label
 * Performance improvements
 * Removed Tenor GIF search
+* Fixed conversion of GIF with variable frame rate to video
 * Bug fixes
 
 4.36.1

@@ -29,6 +29,7 @@ private:
     void startThread();
     void finished();
     bool pushFrames();
+    int calcFps();
 
     std::unique_ptr<VideoEncoder> mVideoEncoder;
     std::unique_ptr<QMovie> mGif;

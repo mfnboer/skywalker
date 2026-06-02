@@ -15,7 +15,7 @@ class VideoEncoder
 public:
     bool open(const QString& fileName, int width, int height, int fps, int bitRate);
     bool close();
-    bool push(const QImage& frame);
+    bool push(const QImage& frame, int durationUs);
 
 private:
 #if defined(Q_OS_ANDROID)

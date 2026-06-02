@@ -49,7 +49,7 @@ bool VideoEncoder::close()
 #endif
 }
 
-bool VideoEncoder::push(const QImage& frame)
+bool VideoEncoder::push(const QImage& frame, int durationUs)
 {
 #if defined(Q_OS_ANDROID)
     Q_ASSERT(mWidth == frame.width());
@@ -59,11 +59,12 @@ bool VideoEncoder::push(const QImage& frame)
     auto jsFrame = env->NewByteArray(size);
     const uint8_t* frameBits = frame.constBits();
     env->SetByteArrayRegion(jsFrame, 0, size, (jbyte*)frameBits);
-    auto added = mEncoder->callMethod<jboolean>("addFrame", "([B)Z", jsFrame);
+    auto added = mEncoder->callMethod<jboolean>("addFrame", "([BI)Z", jsFrame, (jint)durationUs);
     env->DeleteLocalRef(jsFrame);
     return (bool)added;
 #else
     Q_UNUSED(frame);
+    Q_UNUSED(durationUs);
     qWarning() << "Video encoding not supported!";
     return false;
 #endif

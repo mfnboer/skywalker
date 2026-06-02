@@ -42,11 +42,15 @@ void GifToVideoConverter::convert(const QString& gifFileName)
     }
 
     qDebug() << "Frame count:" << mGif->frameCount();
+    const int fps = calcFps();
 
-    // Frames start at 0, but the delay between frame 0 and 1 seems not always right
+    if (fps < 0)
+    {
+        emit conversionFailed("Invalid duration");
+        return;
+    }
+
     mGif->jumpToFrame(0);
-    mGif->jumpToNextFrame();
-
     const QImage firstFrame = mGif->currentImage();
 
     if (firstFrame.isNull())
@@ -56,17 +60,6 @@ void GifToVideoConverter::convert(const QString& gifFileName)
         return;
     }
 
-    const int frameDelayMs = mGif->nextFrameDelay();
-    qDebug() << "Frame delay ms:" << frameDelayMs;
-
-    if (frameDelayMs <= 0)
-    {
-        qWarning() << "Invalid frame delay:" << frameDelayMs;
-        emit conversionFailed("Invalid frame delay");
-        return;
-    }
-
-    const int fps = std::max(1000 / frameDelayMs, 1);
     int width = firstFrame.width();
 
     // Resolution must be even for the video encoder
@@ -155,6 +148,7 @@ bool GifToVideoConverter::pushFrames()
     do {
         qDebug() << "Push frame:" << frameIndex << "/" << frameCount << "next frame delay:" << mGif->nextFrameDelay();
         QImage frame = mGif->currentImage();
+        const int frameDelayUs = mGif->nextFrameDelay() * 1000;
 
         if (frame.isNull())
         {
@@ -164,7 +158,7 @@ bool GifToVideoConverter::pushFrames()
 
         frame.convertTo(QImage::Format_RGBA8888); // must match format in QVideoEncoder.java
 
-        if (!mVideoEncoder->push(frame))
+        if (!mVideoEncoder->push(frame, frameDelayUs))
         {
             qWarning() << "Failed to push frame to video enoder:" << frameIndex;
             return false;
@@ -183,6 +177,39 @@ bool GifToVideoConverter::pushFrames()
 
     qDebug() << "All frames pushed";
     return true;
+}
+
+int GifToVideoConverter::calcFps()
+{
+    mGif->jumpToFrame(0);
+    int totalMs = 0;
+    int sampleCount = 0;
+
+    // NOTE: fps is a hint to the video encoder. We sample 25 frames to get
+    // an estimate of the average fps.
+    while (mGif->jumpToNextFrame() && mGif->currentFrameNumber() <= 25)
+    {
+        totalMs += mGif->nextFrameDelay();
+        ++sampleCount;
+    }
+
+    if (sampleCount <= 0)
+    {
+        qWarning() << "Invalid duration:" << totalMs;
+        return 0;
+    }
+
+    const int avgFrameMs = totalMs / sampleCount;
+
+    if (avgFrameMs <= 0)
+    {
+        qWarning() << "Invalid avg frame duration:" << avgFrameMs;
+        return 0;
+    }
+
+    const int fps = std::max(1000 / avgFrameMs, 1);
+    qDebug() << "fps:" << fps << "avgFrameMs:" << avgFrameMs << "samples:" << sampleCount << "tatalMs:" << totalMs;
+    return fps;
 }
 
 }
