@@ -256,7 +256,8 @@ void ContentFilter::addContentLabels(ContentLabelList& contentLabels, const Labe
     for (const auto& label : labels)
     {
         const ContentLabel contentLabel(label->mSrc, label->mUri, label->mCid.value_or(""),
-                                        label->mVal, label->mCreatedAt);
+                                        label->mVal, label->mCreatedAt,
+                                        label->mExpires.value_or(QDateTime{}));
 
         if (!label->mNeg)
         {

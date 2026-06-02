@@ -216,7 +216,7 @@ static ContentFilterStats::Details convertLabelDetails(const QVariantList& detai
 
     const QString& did = detailList.front().value<QString>();
     const QString labelId = detailList.size() > 1 ? detailList[1].value<QString>() : "";
-    return ContentLabel(did, "", "", labelId, {});
+    return ContentLabel(did, "", "", labelId, {}, {});
 }
 
 void ContentFilterStats::setFeed(PostFeedModel* model, QVariantList detailList) const

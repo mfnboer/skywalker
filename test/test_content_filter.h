@@ -229,7 +229,7 @@ private slots:
 
     void unknownLabel()
     {
-        ContentLabel labelFoobar{ FOO_LABELER_DID, "at:foobar", "cid-foobar", "foobar", {} };
+        ContentLabel labelFoobar{ FOO_LABELER_DID, "at:foobar", "cid-foobar", "foobar", {}, {} };
         const ContentLabelList labels{ labelFoobar };
         const auto [visibility, warning, index] = mContentFilter.getVisibilityAndWarning(mKant, labels);
         QCOMPARE(visibility, QEnums::CONTENT_VISIBILITY_SHOW);
@@ -396,6 +396,6 @@ private:
     BasicProfile mCamus{ "did:camus", "camus.stranger.fr", "Albert Camus", "" };
     BasicProfile mErnaux{ "did:ernaux", "ernaux.annees.fr", "Annie Ernaux", "" };
 
-    ContentLabel mLabelFoo{ FOO_LABELER_DID, "at:foo", "cid-foo", "foo", {} };
-    ContentLabel mLabelBar{ FOO_LABELER_DID, "at:bar", "cid-bar", "bar", {} };
+    ContentLabel mLabelFoo{ FOO_LABELER_DID, "at:foo", "cid-foo", "foo", {}, {} };
+    ContentLabel mLabelBar{ FOO_LABELER_DID, "at:bar", "cid-bar", "bar", {}, {} };
 };

@@ -86,12 +86,26 @@ SkyDialog {
                 }
             }
 
-            AccessibleText {
+            RowLayout {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
-                color: Material.color(Material.Grey)
-                font.pointSize: guiSettings.scaledFont(7/8)
-                text: label.createdAt.toLocaleString(Qt.locale(), Locale.ShortFormat)
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
+                    color: Material.color(Material.Grey)
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: label.createdAt.toLocaleString(Qt.locale(), Locale.ShortFormat)
+                }
+
+                AccessibleText {
+                    elide: Text.ElideRight
+                    color: Material.color(Material.Grey)
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: !isNaN(label.expiresAt.getTime()) ?
+                              qsTr(`till ${label.expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`) :
+                              ""
+                    visible: !isNaN(label.exiresAt.getTime())
+                }
             }
 
             AccessibleText {
