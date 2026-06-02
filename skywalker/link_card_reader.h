@@ -28,6 +28,7 @@ public:
 
 signals:
     void linkCard(LinkCard*);
+    void linkCardRichEmbedFailed(QString msg);
     void linkCardFailed();
     void linkGif(TenorGif);
 

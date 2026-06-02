@@ -447,6 +447,7 @@ void LinkCardReader::getEmbedExternalView(LinkCard* card, const std::vector<QStr
             // to serve an incomplete card from cache.
             mCardCache.take(card->getLink());
             card->setParent(this);
+            emit linkCardRichEmbedFailed(msg);
             emit linkCard(card);
         });
 }

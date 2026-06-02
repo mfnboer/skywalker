@@ -30,7 +30,8 @@ Item {
     RoundedFrame {
         id: avatarFrame
         objectToRound: avatarImg.status === Image.Ready ? avatarImg : null
-        anchors.fill: parent
+        width: avatarItem.width
+        height: width
         radius: parent.radius
         visible: avatarUrl && avatarImg.status === Image.Ready
 
@@ -63,6 +64,7 @@ Item {
             }
         }
     }
+
     Loader {
         id: liveLoader
         active: authorIsLive

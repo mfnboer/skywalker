@@ -129,6 +129,8 @@ const QStringList SCOPE = {
     "rpc:chat.bsky.convo.unmuteConvo?aud=*",
     "rpc:chat.bsky.convo.updateRead?aud=*",
 
+    "rpc:com.atproto.moderation.createReport?aud=*",
+
     "rpc:com.atproto.repo.uploadBlob?aud=*"
 };
 

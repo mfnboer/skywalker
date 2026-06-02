@@ -1577,6 +1577,10 @@ SkyPage {
             }
         }
 
+        onLinkCardRichEmbedFailed: (msg) => {
+            skywalker.showStatusMessage(qsTr(`Could not get rich card data: ${msg}`), QEnums.STATUS_LEVEL_ERROR)
+        }
+
         onLinkCardFailed: {
             busyIndicator.running = false
             console.debug("Failed to get link card")
