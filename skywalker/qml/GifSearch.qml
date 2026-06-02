@@ -23,9 +23,6 @@ SkyPage {
         AccessibleTabButton {
             text: qsTr("Giphy")
         }
-        AccessibleTabButton {
-            text: qsTr("Tenor")
-        }
     }
 
     SwipeView {
@@ -45,11 +42,6 @@ SkyPage {
         }
 
         GiphySearch {
-            onClosed: page.closed()
-            onSelected: (gif) => page.selected(gif)
-        }
-
-        TenorSearch {
             onClosed: page.closed()
             onSelected: (gif) => page.selected(gif)
         }

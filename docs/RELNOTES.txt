@@ -2,6 +2,7 @@ next
 ====
 * Rich link cards for standard.site documents
 * Performance improvements
+* Removed Tenor GIF search
 * Bug fixes
 
 4.36.1
