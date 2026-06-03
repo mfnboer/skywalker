@@ -365,7 +365,7 @@ void GraphUtils::setMuteBusy(bool busy)
 }
 
 void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& name,
-                const QString& description, const WebLink::List& embeddedLinks,
+                const QString& description, const NamedLink::List& embeddedLinks,
                 const QString& avatarImgSource)
 {
     if (!bskyClient())
@@ -407,11 +407,11 @@ void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& na
 }
 
 void GraphUtils::continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                        const QString& description,const WebLink::List& embeddedLinks,
+                        const QString& description,const NamedLink::List& embeddedLinks,
                         ATProto::Blob::SharedPtr blob)
 {
     emit createListProgress(tr("Creating list"));
-    const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+    const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
 
     graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose(purpose), name, description, embeddedFacets, std::move(blob), {},
         [this, presence=getPresence()](const QString& uri, const QString& cid){
@@ -514,7 +514,7 @@ void GraphUtils::continueCreateListFromStarterPack(const StarterPackView& starte
 }
 
 void GraphUtils::updateList(const QString& listUri, const QString& name,
-                const QString& description, const WebLink::List& embeddedLinks,
+                const QString& description, const NamedLink::List& embeddedLinks,
                 const QString& avatarImgSource, bool updateAvatar)
 {
     if (!bskyClient())
@@ -556,11 +556,11 @@ void GraphUtils::updateList(const QString& listUri, const QString& name,
 }
 
 void GraphUtils::continueUpdateList(const QString& listUri, const QString& name,
-                        const QString& description, const WebLink::List& embeddedLinks,
+                        const QString& description, const NamedLink::List& embeddedLinks,
                         ATProto::Blob::SharedPtr blob, bool updateAvatar)
 {
     emit updateListProgress(tr("Updating list"));
-    const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+    const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
 
     graphMaster()->updateList(listUri, name, description, embeddedFacets, std::move(blob), updateAvatar,
         [this, presence=getPresence()](const QString& uri, const QString& cid){
@@ -766,7 +766,7 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
 
 ListView GraphUtils::makeListView(const QString& uri, const QString& cid, const QString& name,
                     QEnums::ListPurpose purpose, const QString& avatar, const Profile& creator,
-                    const QString& description, const WebLink::List& embeddedLinks)
+                    const QString& description, const NamedLink::List& embeddedLinks)
 {
     return ListView(uri, cid, name, ATProto::AppBskyGraph::ListPurpose(purpose),
                     avatar, creator, description, embeddedLinks);

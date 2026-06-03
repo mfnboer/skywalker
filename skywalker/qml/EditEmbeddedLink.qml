@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import skywalker
 
 SkyDialog {
+    required property int linkType // QEnums::linkType
     required property string link
     property string name
     property string error
@@ -40,7 +42,7 @@ SkyDialog {
                 bottomPadding: 10
                 focus: true
                 initialText: page.name
-                placeholderText: qsTr("Display text for link")
+                placeholderText: qsTr(`Display text for ${getLinkTypeName()}`)
                 inputMethodHints: Qt.ImhNoAutoUppercase
                 singleLine: true
             }
@@ -57,7 +59,7 @@ SkyDialog {
         AccessibleText {
             topPadding: 10
             font.bold: true
-            text: qsTr("Link")
+            text: getLinkTypeName()
         }
 
         AccessibleText {
@@ -80,5 +82,16 @@ SkyDialog {
 
     function getName() {
         return nameField.text.trim()
+    }
+
+    function getLinkTypeName() {
+        switch (linkType) {
+        case QEnums.LINK_TYPE_WEB:
+            return qsTr("Link")
+        case QEnums.LINK_TYPE_MENTION:
+            return qsTr("Mention")
+        }
+
+        return "unknown link type"
     }
 }

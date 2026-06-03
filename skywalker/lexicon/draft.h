@@ -1,7 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "web_link.h"
+#include "named_link.h"
 #include <atproto/lib/lexicon/app_bsky_actor.h>
 #include <atproto/lib/lexicon/app_bsky_feed.h>
 #include <atproto/lib/lexicon/app_bsky_graph.h>
@@ -63,7 +63,7 @@ struct Quote
 
 struct EmbeddedLinks
 {
-    std::vector<WebLink::SharedPtr> mEmbeddedLinks;
+    std::vector<NamedLink::SharedPtr> mEmbeddedLinks;
 
     QJsonObject toJson() const;
 

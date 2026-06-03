@@ -186,7 +186,7 @@ void PostUtils::post(const QString& text, const PostAttachment& attachment,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
-                     const WebLink::List& embeddedLinks,
+                     const NamedLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language,
                      const PostFeedContext& postFeedContext)
 {
@@ -199,7 +199,7 @@ void PostUtils::post(const QString& text, const PostAttachment& attachment,
 
     if (replyToUri.isEmpty())
     {
-        const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+        const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
         postMaster()->createPost(text, language, nullptr, embeddedFacets,
             [this, presence=getPresence(), attachment, quoteUri, quoteCid, labels, postFeedContext](auto post){
                 if (presence)
@@ -215,7 +215,7 @@ void PostUtils::post(const QString& text, const PostAttachment& attachment,
                 return;
 
             auto replyRef = ATProto::PostMaster::createReplyRef(replyToUri, replyToCid, replyRootUri, replyRootCid);
-            const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+            const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
 
             if (!postMaster())
                 return;
@@ -239,7 +239,7 @@ void PostUtils::post(const QString& text, const QStringList& imageFileNames, con
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
-                     const WebLink::List& embeddedLinks,
+                     const NamedLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language,
                      const PostFeedContext& postFeedContext)
 {
@@ -252,7 +252,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
-                     const WebLink::List& embeddedLinks,
+                     const NamedLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language,
                      const PostFeedContext& postFeedContext)
 {
@@ -267,7 +267,7 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, boo
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
-                     const WebLink::List& embeddedLinks,
+                     const NamedLink::List& embeddedLinks,
                      const QStringList& labels, const QString& language,
                      const PostFeedContext& postFeedContext)
 {

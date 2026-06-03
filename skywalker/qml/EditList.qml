@@ -17,7 +17,7 @@ SkyPage {
 
     signal closed
     signal listCreated(listview list)
-    signal listUpdated(string cid, string name, string description, list<weblink> embeddedLinks, string avatar)
+    signal listUpdated(string cid, string name, string description, list<namedlink> embeddedLinks, string avatar)
 
     id: editListPage
     width: parent.width

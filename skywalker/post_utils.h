@@ -12,7 +12,7 @@
 #include "presence.h"
 #include "profile.h"
 #include "video_upload_limits.h"
-#include "web_link.h"
+#include "named_link.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <QImage>
@@ -46,14 +46,14 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
-                          const WebLink::List& embeddedLinks,
+                          const NamedLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language,
                           const PostFeedContext& postFeedContext);
     Q_INVOKABLE void post(const QString& text, const LinkCard* card,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
-                          const WebLink::List& embeddedLinks,
+                          const NamedLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language,
                           const PostFeedContext& postFeedContext);
     Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, bool isGif,
@@ -61,7 +61,7 @@ public:
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
-                          const WebLink::List& embeddedLinks,
+                          const NamedLink::List& embeddedLinks,
                           const QStringList& labels, const QString& language,
                           const PostFeedContext& postFeedContext);
 
@@ -159,7 +159,7 @@ private:
               const QString& replyToUri, const QString& replyToCid,
               const QString& replyRootUri, const QString& replyRootCid,
               const QString& quoteUri, const QString& quoteCid,
-              const WebLink::List& embeddedLinks,
+              const NamedLink::List& embeddedLinks,
               const QStringList& labels, const QString& language,
               const PostFeedContext& postFeedContext);
 

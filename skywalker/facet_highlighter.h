@@ -2,7 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "emoji_fix_highlighter.h"
-#include "web_link.h"
+#include "named_link.h"
 #include <atproto/lib/rich_text_master.h>
 
 namespace Skywalker {
@@ -15,7 +15,7 @@ public:
     explicit FacetHighlighter(QTextDocument* parent = nullptr);
     void setHighlightColor(const QString& colorName);
     void setErrorColor(const QString& colorName);
-    void setEmbeddedLinks(const WebLink::List* links);
+    void setEmbeddedLinks(const NamedLink::List* links);
 
 protected:
     void highlightBlock(const QString& text) override;
@@ -26,7 +26,7 @@ private:
 
     QTextCharFormat mHighlightFormat;
     QTextCharFormat mErrorFormat;
-    const WebLink::List* mEmbeddedLinks = nullptr;
+    const NamedLink::List* mEmbeddedLinks = nullptr;
 };
 
 }

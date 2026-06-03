@@ -6,7 +6,7 @@
 #include "presence.h"
 #include "enums.h"
 #include "wrapped_skywalker.h"
-#include "web_link.h"
+#include "named_link.h"
 
 namespace Skywalker {
 
@@ -25,10 +25,11 @@ class FacetUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(bool cursorInFirstFeedLink READ isCursorInFirstFeedLink WRITE setCursorInFirstFeedLink NOTIFY cursorInFirstFeedLinkChanged FINAL)
     Q_PROPERTY(QString firstListLink READ getFirstListLink WRITE setFirstListLink NOTIFY firstListLinkChanged FINAL)
     Q_PROPERTY(bool cursorInFirstListLink READ isCursorInFirstListLink WRITE setCursorInFirstListLink NOTIFY cursorInFirstListLinkChanged FINAL)
-    Q_PROPERTY(QStringList mentions READ getMentions WRITE setMentions NOTIFY mentionsChanged FINAL)
-    Q_PROPERTY(WebLink::List webLinks READ getWebLinks WRITE setWebLinks NOTIFY webLinksChanged FINAL)
+    Q_PROPERTY(NamedLink::List mentions READ getMentions WRITE setMentions NOTIFY mentionsChanged FINAL)
+    Q_PROPERTY(int cursorInMention READ getCursorInMention WRITE setCursorInMention NOTIFY cursorInMentionChanged FINAL)
+    Q_PROPERTY(NamedLink::List webLinks READ getWebLinks WRITE setWebLinks NOTIFY webLinksChanged FINAL)
     Q_PROPERTY(int cursorInWebLink READ getCursorInWebLink WRITE setCursorInWebLink NOTIFY cursorInWebLinkChanged FINAL)
-    Q_PROPERTY(WebLink::List embeddedLinks READ getEmbeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
+    Q_PROPERTY(NamedLink::List embeddedLinks READ getEmbeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
     Q_PROPERTY(int cursorInEmbeddedLink READ getCursorInEmbeddedLink WRITE setCursorInEmbeddedLink NOTIFY cursorInEmbeddedLinkChanged FINAL)
     QML_ELEMENT
 
@@ -41,9 +42,9 @@ public:
     Q_INVOKABLE void setHighLightMaxLength(int maxLength);
     Q_INVOKABLE void extractMentionsAndLinks(const QString& text,const QString& preeditText, int cursor);
     Q_INVOKABLE bool checkMisleadingEmbeddedLinks() const;
-    Q_INVOKABLE WebLink makeWebLink(const QString& name, const QString& link, int startIndex, int endIndex) const;
-    Q_INVOKABLE void addEmbeddedLink(const WebLink& link);
-    Q_INVOKABLE void updatedEmbeddedLink(int linkIndex, const WebLink& link);
+    Q_INVOKABLE NamedLink makeNamedLink(QEnums::LinkType linkType, const QString& name, const QString& link, int startIndex, int endIndex) const;
+    Q_INVOKABLE void addEmbeddedLink(const NamedLink& link);
+    Q_INVOKABLE void updatedEmbeddedLink(int linkIndex, const NamedLink& link);
     Q_INVOKABLE void removeEmbeddedLink(int linkIndex);
 
     // Make updates due to cursor moving to a new position
@@ -90,18 +91,20 @@ public:
     void setFirstListLink(const ATProto::RichTextMaster::ParsedMatch& linkMatch, int cursor);
     bool isCursorInFirstListLink() const { return mCursorInFirstListLink; }
     void setCursorInFirstListLink(bool inLink);
-    const QStringList& getMentions() const { return mMentions; }
-    void setMentions(const QStringList& mentions);
-    const WebLink::List& getWebLinks() const { return mWebLinks; }
-    void setWebLinks(const WebLink::List& webLinks);
+    const NamedLink::List& getMentions() const { return mMentions; }
+    void setMentions(const NamedLink::List& mentions);
+    int getCursorInMention() const { return mCursorInMention; }
+    void setCursorInMention(int index);
+    const NamedLink::List& getWebLinks() const { return mWebLinks; }
+    void setWebLinks(const NamedLink::List& webLinks);
     int getCursorInWebLink() const { return mCursorInWebLink; }
     void setCursorInWebLink(int index);
-    const WebLink::List& getEmbeddedLinks() const { return mEmbeddedLinks; }
-    void setEmbeddedLinks(const WebLink::List& embeddedLinks);
+    const NamedLink::List& getEmbeddedLinks() const { return mEmbeddedLinks; }
+    void setEmbeddedLinks(const NamedLink::List& embeddedLinks);
     int getCursorInEmbeddedLink() const { return mCursorInEmbeddedLink; }
     void setCursorInEmbeddedLink(int index);
 
-    static int getLinkIndexForCursor(const WebLink::List& links, int cursor);
+    static int getLinkIndexForCursor(const NamedLink::List& links, int cursor);
 
 signals:
     void textWithoutLinksChanged();
@@ -117,6 +120,7 @@ signals:
     void firstListLinkChanged();
     void cursorInFirstListLinkChanged();
     void mentionsChanged();
+    void cursorInMentionChanged();
     void webLinksChanged();
     void cursorInWebLinkChanged();
     void embeddedLinksChanged();
@@ -147,10 +151,12 @@ private:
     bool mCursorInFirstWebLink = false;
     int mLinkShorteningReduction = 0;
     QString mTextWithoutLinks;
-    QStringList mMentions; // handles without leading @
-    WebLink::List mWebLinks;
+    // QStringList mMentions; // handles without leading @
+    NamedLink::List mMentions;
+    int mCursorInMention = -1;
+    NamedLink::List mWebLinks;
     int mCursorInWebLink = -1;
-    WebLink::List mEmbeddedLinks;
+    NamedLink::List mEmbeddedLinks;
     int mCursorInEmbeddedLink = -1;
 
     FacetHighlighter mFacetHighlighter;

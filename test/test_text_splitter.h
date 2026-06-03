@@ -79,28 +79,28 @@ private slots:
     {
         QTest::addColumn<QString>("text");
         QTest::addColumn<int>("maxLength");
-        QTest::addColumn<WebLink::List>("links");
+        QTest::addColumn<NamedLink::List>("links");
         QTest::addColumn<TextSplitterPart::List>("output");
 
         QTest::newRow("split 1") << "aaaa bbbb cccc dddd" << 10
-            << WebLink::List{ WebLink{"bbbb cccc", 5, 14}, WebLink{"dddd", 15, 19} }
+            << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "bbbb cccc", 5, 14}, NamedLink{QEnums::LINK_TYPE_WEB, "dddd", 15, 19} }
             << TextSplitterPart::List{
                     TextSplitterPart{ "aaaa ", {} },
-                    TextSplitterPart{ "bbbb cccc ", { WebLink{"bbbb cccc", 0, 9} } },
-                    TextSplitterPart{ "dddd", { WebLink{"dddd", 0, 4} } }};
+                    TextSplitterPart{ "bbbb cccc ", { NamedLink{QEnums::LINK_TYPE_WEB, "bbbb cccc", 0, 9} } },
+                    TextSplitterPart{ "dddd", { NamedLink{QEnums::LINK_TYPE_WEB, "dddd", 0, 4} } }};
 
         QTest::newRow("split 2") << "aaaa bbbb cccc dddd" << 10
-            << WebLink::List{ WebLink{"dddd", 15, 19} }
+            << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "dddd", 15, 19} }
             << TextSplitterPart::List{
                     TextSplitterPart{ "aaaa bbbb ", {} },
-                    TextSplitterPart{ "cccc dddd", { WebLink{"dddd", 5, 9} } }};
+                    TextSplitterPart{ "cccc dddd", { NamedLink{QEnums::LINK_TYPE_WEB, "dddd", 5, 9} } }};
     }
 
     void splitTextWithLinks()
     {
         QFETCH(QString, text);
         QFETCH(int, maxLength);
-        QFETCH(WebLink::List, links);
+        QFETCH(NamedLink::List, links);
         QFETCH(TextSplitterPart::List, output);
 
         const auto parts = mTextSplitter.splitText(text, links, maxLength, 0);
@@ -119,35 +119,35 @@ private slots:
     void joinText_data()
     {
         QTest::addColumn<QString>("text1");
-        QTest::addColumn<WebLink::List>("links1");
+        QTest::addColumn<NamedLink::List>("links1");
         QTest::addColumn<QString>("text2");
-        QTest::addColumn<WebLink::List>("links2");
+        QTest::addColumn<NamedLink::List>("links2");
         QTest::addColumn<TextSplitterPart>("output");
 
-        QTest::newRow("empty") << "" << WebLink::List{} << "" << WebLink::List{} << TextSplitterPart{"", {}};
-        QTest::newRow("empty1") << "" << WebLink::List{}
-                                << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
-                                << TextSplitterPart{"foo", { WebLink{"foo", 0, 3} }};
-        QTest::newRow("empty2") << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
-                                << "" << WebLink::List{}
-                                << TextSplitterPart{"foo", { WebLink{"foo", 0, 3} }};
-        QTest::newRow("join1") << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
-                               << "bar" << WebLink::List{ WebLink{"bar", 0, 3} }
-                               << TextSplitterPart{"foo bar", { WebLink{"foo", 0, 3}, WebLink{"bar", 4, 7} }};
-        QTest::newRow("join2") << "foo " << WebLink::List{ WebLink{"foo", 0, 3} }
-                               << "bar" << WebLink::List{ WebLink{"bar", 0, 3} }
-                               << TextSplitterPart{"foo bar", { WebLink{"foo", 0, 3}, WebLink{"bar", 4, 7} }};
-        QTest::newRow("join3") << "foo" << WebLink::List{ WebLink{"foo", 0, 3} }
-                               << " bar" << WebLink::List{ WebLink{"bar", 1, 4} }
-                               << TextSplitterPart{"foo bar", { WebLink{"foo", 0, 3}, WebLink{"bar", 4, 7} }};
+        QTest::newRow("empty") << "" << NamedLink::List{} << "" << NamedLink::List{} << TextSplitterPart{"", {}};
+        QTest::newRow("empty1") << "" << NamedLink::List{}
+                                << "foo" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }
+                                << TextSplitterPart{"foo", { NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }};
+        QTest::newRow("empty2") << "foo" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }
+                                << "" << NamedLink::List{}
+                                << TextSplitterPart{"foo", { NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }};
+        QTest::newRow("join1") << "foo" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }
+                               << "bar" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "bar", 0, 3} }
+                               << TextSplitterPart{"foo bar", { NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3}, NamedLink{QEnums::LINK_TYPE_WEB, "bar", 4, 7} }};
+        QTest::newRow("join2") << "foo " << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }
+                               << "bar" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "bar", 0, 3} }
+                               << TextSplitterPart{"foo bar", { NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3}, NamedLink{QEnums::LINK_TYPE_WEB, "bar", 4, 7} }};
+        QTest::newRow("join3") << "foo" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3} }
+                               << " bar" << NamedLink::List{ NamedLink{QEnums::LINK_TYPE_WEB, "bar", 1, 4} }
+                               << TextSplitterPart{"foo bar", { NamedLink{QEnums::LINK_TYPE_WEB, "foo", 0, 3}, NamedLink{QEnums::LINK_TYPE_WEB, "bar", 4, 7} }};
     }
 
     void joinText()
     {
         QFETCH(QString, text1);
-        QFETCH(WebLink::List, links1);
+        QFETCH(NamedLink::List, links1);
         QFETCH(QString, text2);
-        QFETCH(WebLink::List, links2);
+        QFETCH(NamedLink::List, links2);
         QFETCH(TextSplitterPart, output);
 
         const auto part = mTextSplitter.joinText(text1, links1, text2, links2);

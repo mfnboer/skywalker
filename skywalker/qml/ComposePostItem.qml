@@ -3,7 +3,7 @@ import skywalker
 
 Item {
     property string text: ""
-    property list<weblink> embeddedLinks: []
+    property list<namedlink> embeddedLinks: []
     property list<string> images: []
     property list<string> altTexts: []
     property list<string> memeTopTexts: []

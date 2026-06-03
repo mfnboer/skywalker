@@ -6,7 +6,7 @@
 
 namespace Skywalker {
 
-TextSplitterPart::TextSplitterPart(const QString& text, const WebLink::List& embeddedLinks) :
+TextSplitterPart::TextSplitterPart(const QString& text, const NamedLink::List& embeddedLinks) :
     mText(text),
     mEmbeddedLinks(embeddedLinks)
 {
@@ -27,9 +27,9 @@ static void moveShortLineToNextPart(QString& part, int maxLength, int minSplitLi
         part = part.sliced(0, lastNewLine + 1);
 }
 
-static WebLink::List getLinksForPart(const WebLink::List& embeddedLinks, int partStartPos, int partSize)
+static NamedLink::List getLinksForPart(const NamedLink::List& embeddedLinks, int partStartPos, int partSize)
 {
-    WebLink::List partLinks;
+    NamedLink::List partLinks;
     const int partEndPos = partStartPos + partSize;
 
     for (const auto& link : embeddedLinks)
@@ -48,7 +48,7 @@ static WebLink::List getLinksForPart(const WebLink::List& embeddedLinks, int par
 }
 
 TextSplitterPart::List TextSplitter::splitText(
-        const QString& text, const WebLink::List& embeddedLinks,
+        const QString& text, const NamedLink::List& embeddedLinks,
         int maxLength, int minSplitLineLength, int maxParts) const
 {
     if (text.size() <= maxLength)
@@ -119,8 +119,8 @@ TextSplitterPart::List TextSplitter::splitText(
 }
 
 TextSplitterPart TextSplitter::joinText(
-    const QString& text1, const WebLink::List& embeddedLinks1,
-    const QString& text2, const WebLink::List& embeddedLinks2) const
+    const QString& text1, const NamedLink::List& embeddedLinks1,
+    const QString& text2, const NamedLink::List& embeddedLinks2) const
 {
     if (text1.isEmpty())
         return TextSplitterPart(text2, embeddedLinks2);
@@ -129,7 +129,7 @@ TextSplitterPart TextSplitter::joinText(
         return TextSplitterPart(text1, embeddedLinks1);
 
     QString joinedText = text1;
-    WebLink::List joinedLinks = embeddedLinks1;
+    NamedLink::List joinedLinks = embeddedLinks1;
 
     if (UnicodeFonts::hasPhraseEnding(text1) || UnicodeFonts::hasPhraseStarting(text2))
         joinedText += "\n\n";

@@ -63,7 +63,7 @@ bool DraftPosts::canSaveDraft() const
 
 DraftPostData* DraftPosts::createDraft(
     const QString& text,
-    const WebLink::List& embeddedLinks,
+    const NamedLink::List& embeddedLinks,
     const QStringList& imageFileNames, const QStringList& altTexts,
     const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
     const QString& videoFileName, bool videoIsGif, const QString& videoAltText,
@@ -766,14 +766,14 @@ ATProto::AppBskyActor::ProfileView::SharedPtr DraftPosts::createProfileView(cons
     return view;
 }
 
-Draft::EmbeddedLinks::SharedPtr DraftPosts::createEmbeddedLinks(const WebLink::List& links)
+Draft::EmbeddedLinks::SharedPtr DraftPosts::createEmbeddedLinks(const NamedLink::List& links)
 {
     auto embeddedLinks = std::make_shared<Draft::EmbeddedLinks>();
     embeddedLinks->mEmbeddedLinks.reserve(links.size());
 
     for (const auto& link : links)
     {
-        auto draftLink = std::make_shared<WebLink>(link);
+        auto draftLink = std::make_shared<NamedLink>(link);
         embeddedLinks->mEmbeddedLinks.push_back(draftLink);
     }
 

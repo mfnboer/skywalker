@@ -854,7 +854,7 @@ QString Chat::getLastReadMessageId(const ConvoView& convo) const
 
 void Chat::sendMessage(const QString& convoId, const QString& text,
                        const QString& quoteUri, const QString& quoteCid,
-                       const WebLink::List& embeddedLinks)
+                       const NamedLink::List& embeddedLinks)
 {
     qDebug() << "Send message:" << text;
 
@@ -863,7 +863,7 @@ void Chat::sendMessage(const QString& convoId, const QString& text,
 
     emit sendMessageProgress();
 
-    const auto embeddedFacets = WebLink::toFacetList(embeddedLinks);
+    const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
     chatMaster()->createMessage(text, embeddedFacets,
         [this, presence=*mPresence, convoId, quoteUri, quoteCid](auto message){
             if (!presence)

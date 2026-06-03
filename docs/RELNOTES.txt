@@ -1,6 +1,7 @@
 next
 ====
 * Rich link cards for standard.site documents
+* Embedded mentions
 * Show expiry date (if present) in detailed info for a label
 * Performance improvements
 * Removed Tenor GIF search

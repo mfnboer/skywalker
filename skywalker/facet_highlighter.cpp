@@ -22,7 +22,7 @@ void FacetHighlighter::setErrorColor(const QString& colorName)
     mErrorFormat.setForeground(color);
 }
 
-void FacetHighlighter::setEmbeddedLinks(const WebLink::List* links)
+void FacetHighlighter::setEmbeddedLinks(const NamedLink::List* links)
 {
     mEmbeddedLinks = links;
 }

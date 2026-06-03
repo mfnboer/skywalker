@@ -53,7 +53,7 @@ public:
 
     Q_INVOKABLE DraftPostData* createDraft(
         const QString& text,
-        const WebLink::List& embeddedLinks,
+        const NamedLink::List& embeddedLinks,
         const QStringList& imageFileNames, const QStringList& altTexts,
         const QStringList& memeTopTexts, const QStringList& memeBottomTexts,
         const QString& videoFileName, bool videoIsGif, const QString& videoAltText,
@@ -115,7 +115,7 @@ private:
     static ATProto::AppBskyActor::ProfileView::SharedPtr createProfileView(const Profile& author);
 
     ATProto::AppBskyFeed::Record::Post::SharedPtr createPost(const DraftPostData* draftPost, const QString& picBaseName);
-    Draft::EmbeddedLinks::SharedPtr createEmbeddedLinks(const WebLink::List& links);
+    Draft::EmbeddedLinks::SharedPtr createEmbeddedLinks(const NamedLink::List& links);
     Draft::ReplyToPost::SharedPtr createReplyToPost(const QString& replyToUri, const BasicProfile& author,
                                        const QString& text, const QDateTime& dateTime) const;
 

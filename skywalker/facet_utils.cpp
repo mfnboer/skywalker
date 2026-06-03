@@ -51,8 +51,9 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
     bool postLinkFound = false;
     bool feedLinkFound = false;
     bool listLinkFound = false;
-    QStringList mentions;
-    WebLink::List webLinks;
+    NamedLink::List mentions;
+    int cursorInMention = -1;
+    NamedLink::List webLinks;
     int cursorInWebLink = -1;
     mLinkShorteningReduction = 0;
     QString textWithoutLinks = "";
@@ -110,7 +111,7 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
                     else
                     {
                         qDebug() << "Web link:" << facet.mMatch;
-                        webLinks.push_back(WebLink(facet.mMatch, facet.mStartIndex, facet.mEndIndex));
+                        webLinks.push_back(NamedLink(QEnums::LINK_TYPE_WEB, facet.mMatch, facet.mStartIndex, facet.mEndIndex));
 
                         if (isCursorInMatch(cursor, facet))
                             cursorInWebLink = webLinks.size() - 1;
@@ -142,7 +143,11 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
                 editMentionFound = true;
             }
 
-            mentions.push_back(facet.mMatch.sliced(1));
+            mentions.push_back(NamedLink(QEnums::LINK_TYPE_MENTION, facet.mMatch, facet.mStartIndex, facet.mEndIndex));
+
+            if (isCursorInMatch(cursor, facet))
+                cursorInMention = mentions.size() - 1;
+
             textWithoutLinks += fullText.sliced(textIndex, facet.mStartIndex - textIndex);
             textIndex = facet.mEndIndex;
             break;
@@ -169,6 +174,7 @@ void FacetUtils::extractMentionsAndLinks(const QString& text, const QString& pre
     }
 
     setMentions(mentions);
+    setCursorInMention(cursorInMention);
     setWebLinks(webLinks);
     setCursorInWebLink(cursorInWebLink);
     textWithoutLinks += fullText.sliced(textIndex);
@@ -232,12 +238,12 @@ bool FacetUtils::checkMisleadingEmbeddedLinks() const
     return true;
 }
 
-WebLink FacetUtils::makeWebLink(const QString& name, const QString& link, int startIndex, int endIndex) const
+NamedLink FacetUtils::makeNamedLink(QEnums::LinkType linkType, const QString& name, const QString& link, int startIndex, int endIndex) const
 {
-    return WebLink(link, startIndex, endIndex, name);
+    return NamedLink(linkType, link, startIndex, endIndex, name);
 }
 
-void FacetUtils::addEmbeddedLink(const WebLink& link)
+void FacetUtils::addEmbeddedLink(const NamedLink& link)
 {
     qDebug() << "Add embedded link:" << link.getName() << "link:" << link.getLink() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
     Q_ASSERT(link.isValidEmbeddedLink());
@@ -255,7 +261,7 @@ void FacetUtils::addEmbeddedLink(const WebLink& link)
     signalEmbeddedLinksUpdated();
 }
 
-void FacetUtils::updatedEmbeddedLink(int linkIndex, const WebLink& link)
+void FacetUtils::updatedEmbeddedLink(int linkIndex, const NamedLink& link)
 {
     qDebug() << "Update embedded link:" << linkIndex << "name:" << link.getName() << "link:" << link.getLink() << "start:" << link.getStartIndex() << "end:" << link.getEndIndex();
     Q_ASSERT(linkIndex >= 0);
@@ -310,7 +316,7 @@ void FacetUtils::removeEmbeddedLinkNoSignal(int linkIndex)
     mEmbeddedLinks.remove(linkIndex);
 }
 
-int FacetUtils::getLinkIndexForCursor(const WebLink::List& links, int cursor)
+int FacetUtils::getLinkIndexForCursor(const NamedLink::List& links, int cursor)
 {
     for (int i = 0; i < (int)links.size(); ++i)
     {
@@ -326,6 +332,7 @@ int FacetUtils::getLinkIndexForCursor(const WebLink::List& links, int cursor)
 void FacetUtils::updateCursor(int cursor)
 {
     setCursorInWebLink(getLinkIndexForCursor(mWebLinks, cursor));
+    setCursorInMention(getLinkIndexForCursor(mMentions, cursor));
     setCursorInEmbeddedLink(getLinkIndexForCursor(mEmbeddedLinks, cursor));
 }
 
@@ -708,7 +715,7 @@ void FacetUtils::setCursorInFirstListLink(bool inLink)
     emit cursorInFirstListLinkChanged();
 }
 
-void FacetUtils::setMentions(const QStringList& mentions)
+void FacetUtils::setMentions(const NamedLink::List& mentions)
 {
     if (mentions == mMentions)
         return;
@@ -717,7 +724,16 @@ void FacetUtils::setMentions(const QStringList& mentions)
     emit mentionsChanged();
 }
 
-void FacetUtils::setWebLinks(const WebLink::List& webLinks)
+void FacetUtils::setCursorInMention(int index)
+{
+    if (index == mCursorInMention)
+        return;
+
+    mCursorInMention = index;
+    emit cursorInMentionChanged();
+}
+
+void FacetUtils::setWebLinks(const NamedLink::List& webLinks)
 {
     if (webLinks == mWebLinks)
         return;
@@ -735,7 +751,7 @@ void FacetUtils::setCursorInWebLink(int index)
     emit cursorInWebLinkChanged();
 }
 
-void FacetUtils::setEmbeddedLinks(const WebLink::List& embeddedLinks)
+void FacetUtils::setEmbeddedLinks(const NamedLink::List& embeddedLinks)
 {
     if (embeddedLinks == mEmbeddedLinks)
         return;

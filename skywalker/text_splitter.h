@@ -1,7 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #pragma once
-#include "web_link.h"
+#include "named_link.h"
 #include <qqmlintegration.h>
 #include <QObject>
 
@@ -11,22 +11,22 @@ class TextSplitterPart
 {
     Q_GADGET
     Q_PROPERTY(QString text READ getText CONSTANT FINAL)
-    Q_PROPERTY(WebLink::List embeddedLinks READ getEmbeddedLinks CONSTANT FINAL)
+    Q_PROPERTY(NamedLink::List embeddedLinks READ getEmbeddedLinks CONSTANT FINAL)
 
 public:
     using List = QList<TextSplitterPart>;
 
     TextSplitterPart() = default;
-    explicit TextSplitterPart(const QString& text, const WebLink::List& embeddedLinks);
+    explicit TextSplitterPart(const QString& text, const NamedLink::List& embeddedLinks);
 
     bool operator==(const TextSplitterPart&) const = default;
 
     const QString& getText() const { return mText; }
-    const WebLink::List& getEmbeddedLinks() const { return mEmbeddedLinks; }
+    const NamedLink::List& getEmbeddedLinks() const { return mEmbeddedLinks; }
 
 private:
     QString mText;
-    WebLink::List mEmbeddedLinks;
+    NamedLink::List mEmbeddedLinks;
 };
 
 class TextSplitter : public QObject
@@ -38,12 +38,12 @@ public:
     explicit TextSplitter(QObject* parent = nullptr);
 
     Q_INVOKABLE TextSplitterPart::List splitText(
-        const QString& text, const WebLink::List& embeddedLinks, int maxLength,
+        const QString& text, const NamedLink::List& embeddedLinks, int maxLength,
         int minSplitLineLength, int maxParts = 1000000) const;
 
     Q_INVOKABLE TextSplitterPart joinText(
-        const QString& text1, const WebLink::List& embeddedLinks1,
-        const QString& text2, const WebLink::List& embeddedLinks2) const;
+        const QString& text1, const NamedLink::List& embeddedLinks1,
+        const QString& text2, const NamedLink::List& embeddedLinks2) const;
 };
 
 }

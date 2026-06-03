@@ -258,10 +258,26 @@ void PostEditUtils::getEditPostDataContinue(int postThreadModelId, const Post& p
     data->setUri(post.getUri());
     data->setCid(post.getCid());
     DraftPosts::setDraftPost(data, post);
-    data->setEmbeddedLinks(post.getEmbeddedLinks());
     setGif(data, post);
     removePostThreadCounter(data);
 
+    NamedLink::List links = post.getEmbeddedLinks();
+    auto embeddedLinks = std::make_shared<NamedLink::List>(links);
+
+    emit editPostDataProgress(tr("Resolving links"));
+
+    NamedLink::resolveDidLinksToHandles(*embeddedLinks,
+        [this, presence=getPresence(), embeddedLinks, data, postThreadModelId, post, postData]{
+            if (!presence)
+                return;
+
+            data->setEmbeddedLinks(*embeddedLinks);
+            getEditPostDataContinue(data, postThreadModelId, post, postData);
+        });
+}
+
+void PostEditUtils::getEditPostDataContinue(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData)
+{
     if (postData.empty())
     {
         auto* model = mSkywalker->getPostThreadModel(postThreadModelId);

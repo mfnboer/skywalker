@@ -4,7 +4,7 @@
 
 namespace Skywalker {
 
-SplitTextBoundaryFinder::SplitTextBoundaryFinder(const QString& text, const WebLink::List& embeddedLinks) :
+SplitTextBoundaryFinder::SplitTextBoundaryFinder(const QString& text, const NamedLink::List& embeddedLinks) :
     mBoundaryFinder(QTextBoundaryFinder::Line, text),
     mEmbeddedLinks(embeddedLinks)
 {

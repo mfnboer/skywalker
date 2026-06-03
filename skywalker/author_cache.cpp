@@ -68,7 +68,7 @@ void AuthorCache::putProfile(const QString& did, const std::function<void()>& ad
             if (addedCb)
                 addedCb();
         },
-        [this, did](const QString& error, const QString& msg){
+        [this, did, addedCb](const QString& error, const QString& msg){
             qDebug() << "putProfile failed:" << did << error << " - " << msg;
 
             if (!mFailedDids.contains(did))
@@ -81,6 +81,9 @@ void AuthorCache::putProfile(const QString& did, const std::function<void()>& ad
                 qWarning() << "Failed to get DID for the second time:" << did << error << " - " << msg;
                 // Do not remove from mFetchingDids, so we will not try to get it again
             }
+
+            if (addedCb)
+                addedCb();
         });
 }
 

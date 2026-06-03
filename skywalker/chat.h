@@ -5,7 +5,7 @@
 #include "follows_activity_store.h"
 #include "message_list_model.h"
 #include "presence.h"
-#include "web_link.h"
+#include "named_link.h"
 #include <atproto/lib/chat_master.h>
 #include <atproto/lib/client.h>
 #include <atproto/lib/post_master.h>
@@ -70,7 +70,7 @@ public:
 
     Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text,
                                  const QString& quoteUri, const QString& quoteCid,
-                                 const WebLink::List& embeddedLinks);
+                                 const NamedLink::List& embeddedLinks);
     Q_INVOKABLE void deleteMessage(const QString& convoId, const QString& messageId);
 
     Q_INVOKABLE void addReaction(const QString& convoId, const QString& messageId, const QString& emoji);

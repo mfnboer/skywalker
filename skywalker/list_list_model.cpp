@@ -204,7 +204,7 @@ void ListListModel::prependList(const ListView& list)
 }
 
 ListView ListListModel::updateEntry(int index, const QString& cid, const QString& name,
-        const QString& description, const WebLink::List& embeddedLinks, const QString& avatar)
+        const QString& description, const NamedLink::List& embeddedLinks, const QString& avatar)
 {
     qDebug() << "Update entry:" << name << "index:" << index;
 

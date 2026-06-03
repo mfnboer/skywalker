@@ -345,7 +345,7 @@ SkyPage {
                 Item {
                     required property int index
                     property string text
-                    property list<weblink> embeddedLinks
+                    property list<namedlink> embeddedLinks
                     property list<string> images
                     property list<string> altTexts
                     property list<string> memeTopTexts
@@ -1453,14 +1453,16 @@ SkyPage {
             anchors.leftMargin: visible ? 3 : 0
             y: height + 5 + restrictionRow.height + footerSeparator.height
             width: visible ? height: 0
-            accessibleName: qsTr("embed web link")
+            accessibleName: qsTr("embed link")
             svg: SvgOutline.link
-            visible: getCursorInWebLink() >= 0 || getCursorInEmbeddedLink() >= 0
+            visible: getCursorInWebLink() >= 0 || getCursorInMention() >= 0 || getCursorInEmbeddedLink() >= 0
             onClicked: {
                 if (getCursorInWebLink() >= 0)
-                    page.addEmbeddedLink()
+                    page.addEmbeddedLink(QEnums.LINK_TYPE_WEB)
                 else if (getCursorInEmbeddedLink() >= 0)
                     page.updateEmbeddedLink()
+                else if (getCursorInMention() >= 0)
+                    page.addEmbeddedLink(QEnums.LINK_TYPE_MENTION)
             }
         }
 
@@ -1913,7 +1915,12 @@ SkyPage {
             if (!postItem)
                 return []
 
-            const postMentions = postItem.getPostText().mentions
+            const postMentionLinks = postItem.getPostText().mentions
+            let postMentions = []
+
+            for (const link of postMentionLinks)
+                postMentions.push(link.slice(1)) // slice off @
+
             console.debug("POST MENTIONS:", postMentions)
             return replyToMentions.filter((m) => !postMentions.includes(m))
         }
@@ -2041,7 +2048,7 @@ SkyPage {
 
     Timer {
         property string text
-        property list<weblink> embeddedLinks
+        property list<namedlink> embeddedLinks
         property int index
         property int cursorPosition
 
@@ -2928,25 +2935,28 @@ SkyPage {
         cwPage.open()
     }
 
-    function addEmbeddedLink() {
+    function addEmbeddedLink(linkType) {
         let postItem = currentPostItem()
 
         if (!postItem)
             return -1
 
         const postText = postItem.getPostText()
-        const webLinkIndex = postText.cursorInWebLink
+        const linkIndex = linkType === QEnums.LINK_TYPE_MENTION ? postText.cursorInMention : postText.cursorInWebLink
 
-        if (webLinkIndex < 0)
+        if (linkIndex < 0)
             return
 
-        console.debug("Web link index:", webLinkIndex, "size:", postText.webLinks.length)
-        const webLink = postText.webLinks[webLinkIndex]
-        console.debug("Web link:", webLink.link)
+        const namedLinks = linkType === QEnums.LINK_TYPE_MENTION ? postText.mentions : postText.webLinks
+
+        console.debug("Link index:", linkIndex, "size:", namedLinks.length)
+        const namedLink = namedLinks[linkIndex]
+        console.debug("Link:", namedLink.link)
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
         let linkPage = component.createObject(page, {
-                link: webLink.link,
-                canAddLinkCard: !Boolean(postItem.getLinkCard().card)
+                linkType: linkType,
+                link: namedLink.link,
+                canAddLinkCard: !Boolean(postItem.getLinkCard().card) && linkType === QEnums.LINK_TYPE_WEB
         })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
@@ -2954,10 +2964,10 @@ SkyPage {
                 linkPage.close()
 
                 if (name.length > 0)
-                    postText.addEmbeddedLink(webLinkIndex, name)
+                    postText.addEmbeddedLink(linkType, linkIndex, name)
 
                 if (addLinkCard)
-                    linkCardTimer.getLinkImmediate(currentPostIndex, webLink.link)
+                    linkCardTimer.getLinkImmediate(currentPostIndex, namedLink.link)
 
                 postText.forceActiveFocus()
         })
@@ -2988,10 +2998,11 @@ SkyPage {
 
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
         let linkPage = component.createObject(page, {
+                linkType: link.linkType,
                 link: link.link,
                 name: link.name,
                 error: error,
-                canAddLinkCard: !Boolean(postItem.getLinkCard().card)
+                canAddLinkCard: !Boolean(postItem.getLinkCard().card) && link.linkType === QEnums.LINK_TYPE_WEB
         })
         linkPage.onAccepted.connect(() => {
                 const name = linkPage.getName()
@@ -3022,6 +3033,15 @@ SkyPage {
             return -1
 
         return postItem.getPostText().cursorInWebLink
+    }
+
+    function getCursorInMention() {
+        let postItem = currentPostItem()
+
+        if (!postItem)
+            return -1
+
+        return postItem.getPostText().cursorInMention
     }
 
     function getCursorInEmbeddedLink() {

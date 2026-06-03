@@ -159,7 +159,7 @@ Quote::SharedPtr Quote::fromJson(const QJsonObject& json)
 QJsonObject EmbeddedLinks::toJson() const
 {
     QJsonObject json;
-    ATProto::XJsonObject::insertOptionalArray<WebLink>(json, "embeddedLinks", mEmbeddedLinks);
+    ATProto::XJsonObject::insertOptionalArray<NamedLink>(json, "embeddedLinks", mEmbeddedLinks);
     return json;
 }
 
@@ -167,7 +167,7 @@ EmbeddedLinks::SharedPtr EmbeddedLinks::fromJson(const QJsonObject& json)
 {
     const ATProto::XJsonObject xjson(json);
     auto links = std::make_shared<EmbeddedLinks>();
-    links->mEmbeddedLinks = xjson.getOptionalVector<WebLink>("embeddedLinks");
+    links->mEmbeddedLinks = xjson.getOptionalVector<NamedLink>("embeddedLinks");
     return links;
 }
 

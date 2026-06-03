@@ -5,7 +5,7 @@
 #include "enums.h"
 #include "presence.h"
 #include "starter_pack.h"
-#include "web_link.h"
+#include "named_link.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/graph_master.h>
 #include <QTimer>
@@ -41,10 +41,10 @@ public:
 
     // avatarImgSource must be a 'file://' or 'image://' reference.
     Q_INVOKABLE void createList(const QEnums::ListPurpose purpose, const QString& name,
-                                const QString& description, const WebLink::List& embeddedLinks,
+                                const QString& description, const NamedLink::List& embeddedLinks,
                                 const QString& avatarImgSource);
     Q_INVOKABLE void updateList(const QString& listUri, const QString& name,
-                                const QString& description, const WebLink::List& embeddedLinks,
+                                const QString& description, const NamedLink::List& embeddedLinks,
                                 const QString& avatarImgSource, bool updateAvatar);
     Q_INVOKABLE void deleteList(const QString& listUri);
     Q_INVOKABLE ListViewBasic getCachedListView(const QString& listUri);
@@ -56,7 +56,7 @@ public:
 
     Q_INVOKABLE ListView makeListView(const QString& uri, const QString& cid, const QString& name,
                     QEnums::ListPurpose purpose, const QString& avatar, const Profile& creator,
-                    const QString& description, const WebLink::List& embeddedLinks);
+                    const QString& description, const NamedLink::List& embeddedLinks);
 
     Q_INVOKABLE void blockList(const QString& listUri);
     Q_INVOKABLE void unblockList(const QString& listUri, const QString& blockingUri);
@@ -129,10 +129,10 @@ signals:
 
 private:
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
-                            const QString& description, const WebLink::List& embeddedLinks,
+                            const QString& description, const NamedLink::List& embeddedLinks,
                             ATProto::Blob::SharedPtr blob);
     void continueUpdateList(const QString& listUri, const QString& name,
-                            const QString& description, const WebLink::List& embeddedLinks,
+                            const QString& description, const NamedLink::List& embeddedLinks,
                             ATProto::Blob::SharedPtr blob, bool updateAvatar);
     void continueCreateListFromStarterPack(const StarterPackView& starterPack, const QString &listUri, const QString& listCid, int maxPages = 3, const std::optional<QString> cursor = {});
     void expireBlocks();

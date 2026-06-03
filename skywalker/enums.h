@@ -600,6 +600,13 @@ public:
         GIF_PROVIDER_TENOR
     };
     Q_ENUM(GifProvider)
+
+    enum LinkType
+    {
+        LINK_TYPE_WEB = 0,
+        LINK_TYPE_MENTION = 1,
+    };
+    Q_ENUM(LinkType)
 };
 
 }

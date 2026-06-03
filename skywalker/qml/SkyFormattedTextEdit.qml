@@ -23,10 +23,11 @@ TextEdit {
     property bool cursorInFirstFeedLink: false
     property string firstListLink
     property bool cursorInFirstListLink: false
-    property list<string> mentions
-    property list<weblink> webLinks
+    property list<namedlink> mentions
+    property int cursorInMention: -1
+    property list<namedlink> webLinks
     property int cursorInWebLink: -1
-    property list<weblink> embeddedLinks
+    property list<namedlink> embeddedLinks
     property int cursorInEmbeddedLink: -1
     property string prevText: ""
     property int prevTextLen: 0
@@ -382,6 +383,7 @@ TextEdit {
         onFirstListLinkChanged: editText.firstListLink = firstListLink
         onCursorInFirstListLinkChanged: editText.cursorInFirstListLink = cursorInFirstListLink
         onMentionsChanged: editText.mentions = mentions
+        onCursorInMentionChanged: editText.cursorInMention = cursorInMention
         onWebLinksChanged: editText.webLinks = webLinks
         onCursorInWebLinkChanged: editText.cursorInWebLink = cursorInWebLink
         onEmbeddedLinksChanged: editText.embeddedLinks = embeddedLinks
@@ -417,10 +419,10 @@ TextEdit {
     {
         const embedStart = oldLink.startIndex
         const embedEnd = embedStart + name.length
-        return facetUtils.makeWebLink(name, oldLink.link, embedStart, embedEnd)
+        return facetUtils.makeNamedLink(oldLink.linkType, name, oldLink.link, embedStart, embedEnd)
     }
 
-    function addEmbeddedLink(webLinkIndex, name) {
+    function addEmbeddedLink(linkType, linkIndex, name) {
         // Delay text updates
         // As links get replaced by names in the text, the text may exceed the maximum
         // length. That would trigger a split before the new link has been added.
@@ -428,9 +430,12 @@ TextEdit {
         // will cause link shifts.
         suppressTextUpdates = true
 
-        const webLink = facetUtils.webLinks[webLinkIndex]
-        replaceLinkWithName(webLink, name)
-        const embeddedLink = makeEmbeddedLink(name, webLink)
+        const link = linkType === QEnums.LINK_TYPE_MENTION ?
+                          facetUtils.mentions[linkIndex] :
+                          facetUtils.webLinks[linkIndex]
+
+        replaceLinkWithName(link, name)
+        const embeddedLink = makeEmbeddedLink(name, link)
         facetUtils.addEmbeddedLink(embeddedLink)
 
         suppressTextUpdates = false

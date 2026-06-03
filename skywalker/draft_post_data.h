@@ -7,7 +7,7 @@
 #include "profile.h"
 #include "tenor_gif.h"
 #include "video_view.h"
-#include "web_link.h"
+#include "named_link.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -20,7 +20,7 @@ class DraftPostData : public QObject
     Q_PROPERTY(QString uri READ uri WRITE setUri NOTIFY uriChanged FINAL)
     Q_PROPERTY(QString cid READ cid WRITE setCid NOTIFY cidChanged FINAL)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged FINAL)
-    Q_PROPERTY(WebLink::List embeddedLinks READ embeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
+    Q_PROPERTY(NamedLink::List embeddedLinks READ embeddedLinks WRITE setEmbeddedLinks NOTIFY embeddedLinksChanged FINAL)
     Q_PROPERTY(QList<ImageView> images READ images WRITE setImages NOTIFY imagesChanged FINAL)
     Q_PROPERTY(VideoView video READ video WRITE setVideo NOTIFY videoChanged FINAL)
     Q_PROPERTY(QDateTime indexedAt READ indexedAt WRITE setIndexedAt NOTIFY indexedAtChanged FINAL)
@@ -67,8 +67,8 @@ public:
     void setCid(const QString& cid);
     QString text() const;
     void setText(const QString &newText);
-    WebLink::List embeddedLinks() const;
-    void setEmbeddedLinks(const WebLink::List& links);
+    NamedLink::List embeddedLinks() const;
+    void setEmbeddedLinks(const NamedLink::List& links);
     QList<ImageView> images() const;
     void setImages(const QList<ImageView> &newImages);
     VideoView video() const;
@@ -175,7 +175,7 @@ private:
     QString mUri; // only for editing posts
     QString mCid; // only for editing posts
     QString mText;
-    WebLink::List mEmbeddedLinks;
+    NamedLink::List mEmbeddedLinks;
     QList<ImageView> mImages;
     VideoView mVideo;
     QDateTime mIndexedAt;
@@ -261,12 +261,12 @@ inline void DraftPostData::setText(const QString &newText)
     emit textChanged();
 }
 
-inline WebLink::List DraftPostData::embeddedLinks() const
+inline NamedLink::List DraftPostData::embeddedLinks() const
 {
     return mEmbeddedLinks;
 }
 
-inline void DraftPostData::setEmbeddedLinks(const WebLink::List& links)
+inline void DraftPostData::setEmbeddedLinks(const NamedLink::List& links)
 {
     if (links == mEmbeddedLinks)
         return;

@@ -241,12 +241,12 @@ TextMetaInfo Post::getTextMetaInfo() const
     return UnicodeFonts::getTextMetaInfo(text, !record->mFacets.empty());
 }
 
-WebLink::List Post::getDraftEmbeddedLinks() const
+NamedLink::List Post::getDraftEmbeddedLinks() const
 {
     if (!mPost)
         return {};
 
-    WebLink::List embeddedLinks;
+    NamedLink::List embeddedLinks;
 
     if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
     {
@@ -266,7 +266,7 @@ WebLink::List Post::getDraftEmbeddedLinks() const
     return embeddedLinks;
 }
 
-WebLink::List Post::getEmbeddedLinks() const
+NamedLink::List Post::getEmbeddedLinks() const
 {
     if (!mPost)
         return {};
@@ -276,7 +276,7 @@ WebLink::List Post::getEmbeddedLinks() const
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     const auto facets = ATProto::RichTextMaster::getEmbeddedLinks(record->mText, record->mFacets);
-    return WebLink::fromFacetList(facets);
+    return NamedLink::fromFacetList(facets);
 }
 
 BasicProfile Post::getAuthor() const

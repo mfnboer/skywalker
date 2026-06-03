@@ -489,8 +489,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ConvoRequestButtonRow.qml
         QML_FILES qml/FeedViewerState.qml
         QML_FILES qml/UnknownEmbedView.qml
-        SOURCES web_link.h
-        SOURCES web_link.cpp
+        SOURCES named_link.h
+        SOURCES named_link.cpp
         SOURCES text_differ.h
         SOURCES text_differ.cpp
         QML_FILES qml/EditEmbeddedLink.qml

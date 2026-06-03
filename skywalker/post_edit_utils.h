@@ -39,6 +39,7 @@ private:
     void getEditPostData(int postThreadModelId, const Post& entryPost);
     void getEditPostData(int postThreadModelId, const QList<DraftPostData*>& postData);
     void getEditPostDataContinue(int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
+    void getEditPostDataContinue(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
     void loadEditPostGate(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
     void loadEditPostImages(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData, int imageIndex = 0);
     void loadEditPostVideo(DraftPostData* data, int postThreadModelId, const Post& post, const QList<DraftPostData*>& postData);
