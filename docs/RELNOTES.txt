@@ -1,4 +1,4 @@
-next
+4.37
 ====
 * Rich link cards for standard.site documents
 * Embedded mentions
