@@ -586,10 +586,13 @@ void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBsk
 
     emit postProgress(tr("Uploading image #%1").arg(imgIndex + 1));
 
+    const int MAX_BYTES = images.mFileNames.size() <= ATProto::AppBskyEmbed::Images::MAX_IMAGES ?
+                              ATProto::AppBskyEmbed::Image::MAX_BYTES :
+                              ATProto::AppBskyEmbed::GalleryImage::MAX_BYTES;
+
     const auto& fileName = images.mFileNames[imgIndex];
     QByteArray blob;
-    const auto [mimeType, imgSize] = PhotoPicker::createBlob(
-        blob, ATProto::AppBskyEmbed::Image::MAX_BYTES, fileName);
+    const auto [mimeType, imgSize] = PhotoPicker::createBlob(blob, MAX_BYTES, fileName);
 
     if (blob.isEmpty())
     {
@@ -608,7 +611,11 @@ void PostUtils::continuePost(const PostAttachmentImages& images, ATProto::AppBsk
             if (!postMaster())
                 return;
 
-            postMaster()->addImageToPost(*post, std::move(blob), imgSize.width(), imgSize.height(), images.mAltTexts[imgIndex]);
+            if (images.mFileNames.size() <= ATProto::AppBskyEmbed::Images::MAX_IMAGES)
+                postMaster()->addImageToPost(*post, std::move(blob), imgSize.width(), imgSize.height(), images.mAltTexts[imgIndex]);
+            else
+                postMaster()->addGalleryImageToPost(*post, std::move(blob), imgSize.width(), imgSize.height(), images.mAltTexts[imgIndex]);
+
             continuePost(images, post, postFeedContext, imgIndex + 1);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

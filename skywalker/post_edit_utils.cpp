@@ -350,8 +350,8 @@ void PostEditUtils::loadEditPostImages(DraftPostData* data, int postThreadModelI
                 auto* imgProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);
                 const QString imgSource = imgProvider->addImage(img);
                 auto draftImages = data->images();
-                const ImageView draftImaage(imgSource, images[imageIndex].getAlt());
-                draftImages.push_back(draftImaage);
+                const ImageView draftImage(imgSource, images[imageIndex].getAlt());
+                draftImages.push_back(draftImage);
                 data->setImages(draftImages);
             }
 

@@ -1,3 +1,7 @@
+next
+====
+* Support displaying more than 4 images on a post
+
 4.37
 ====
 * Rich link cards for standard.site documents

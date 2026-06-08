@@ -173,7 +173,7 @@ Item {
         anchors.top: view.bottom
         padding: 10
         color: guiSettings.linkColor
-        text: qsTr("◂ more")
+        text: qsTr("← more")
         visible: view.currentIndex > 0
 
         SkyMouseArea {
@@ -182,13 +182,23 @@ Item {
         }
     }
 
+    PageIndicator {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: view.bottom
+        anchors.topMargin: 10
+        Material.foreground: guiSettings.textColor
+        currentIndex: view.currentIndex
+        count: view.count
+        visible: view.count > 1
+    }
+
     AccessibleText {
         id: moreRight
         anchors.right: parent.right
         anchors.top: view.bottom
         padding: 10
         color: guiSettings.linkColor
-        text: qsTr("more ▸")
+        text: qsTr("more →")
         visible: view.currentIndex < view.count - 1
 
         SkyMouseArea {

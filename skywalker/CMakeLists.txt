@@ -710,6 +710,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/LinkCardSource.qml
         SOURCES strong_ref.h
         SOURCES strong_ref.cpp
+        SOURCES image_view.cpp
 )
 
 target_link_libraries(libskywalker

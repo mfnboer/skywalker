@@ -6,6 +6,7 @@
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "songlink.h"
+#include <QImageReader>
 #include <QTransform>
 #include <QtGlobal>
 
@@ -62,6 +63,30 @@ QImage ImageUtils::scaledToSize(const QImage& img, int size)
         return img.scaledToWidth(size, Qt::SmoothTransformation);
     else
         return img.scaledToHeight(size, Qt::SmoothTransformation);
+}
+
+QSize ImageUtils::getImageSize(const QString& filePath)
+{
+    QImageReader reader(filePath);
+    const QSize size = reader.size();
+
+    if (!size.isValid())
+        qWarning() << "Cannot get image size:" << filePath;
+
+    return size;
+}
+
+ATProto::AppBskyEmbed::AspectRatio::SharedPtr ImageUtils::getImageAspectRatio(const QString& filePath, QSize defaultSize)
+{
+    auto size = getImageSize(filePath);
+
+    if (!size.isValid())
+        size = defaultSize;
+
+    auto ratio = std::make_shared<ATProto::AppBskyEmbed::AspectRatio>();
+    ratio->mWidth = size.width();
+    ratio->mHeight = size.height();
+    return ratio;
 }
 
 void ImageUtils::setInstalling(bool installing)

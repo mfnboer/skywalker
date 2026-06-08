@@ -582,19 +582,36 @@ QString Post::getUnknownEmbedType() const
 
 QList<ImageView> Post::getImages() const
 {
-    if (!mPost)
+    if (!mPost || !mPost->mEmbed)
         return {};
     
-    if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
-        return {};
+    if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
+    {
+        const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mPost->mEmbed->mEmbed);
+        QList<ImageView> images;
 
-    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mPost->mEmbed->mEmbed);
-    QList<ImageView> images;
+        for (const auto& img : imagesView->mImages)
+            images.push_back(ImageView(img));
 
-    for (const auto& img : imagesView->mImages)
-        images.push_back(ImageView(img));
+        return images;
+    }
+    else if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::GALLERY_VIEW)
+    {
+        const auto& galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(mPost->mEmbed->mEmbed);
+        QList<ImageView> images;
 
-    return images;
+        for (const auto& item : galleryView->mItems)
+        {
+            const auto* image = std::get_if<ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr>(&item);
+
+            if (image)
+                images.push_back(ImageView(*image));
+        }
+
+        return images;
+    }
+
+    return {};
 }
 
 bool Post::hasImages(bool includingRecordWithMedia) const
@@ -602,8 +619,11 @@ bool Post::hasImages(bool includingRecordWithMedia) const
     if (!mPost || !mPost->mEmbed)
         return false;
 
-    if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
+    if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW ||
+        mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::GALLERY_VIEW)
+    {
         return true;
+    }
 
     if (!includingRecordWithMedia)
         return false;
@@ -614,27 +634,52 @@ bool Post::hasImages(bool includingRecordWithMedia) const
 
 QList<ImageView> Post::getDraftImages() const
 {
-    if (!mPost)
+    if (!mPost || !mPost->mEmbed)
         return {};
 
-    if (!mPost->mEmbed || mPost->mEmbed->mType != ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
-        return {};
-
-    const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mPost->mEmbed->mEmbed);
-    QList<ImageView> images;
-
-    for (const auto& img : imagesView->mImages)
+    if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW)
     {
-        ImageView view(img);
-        const ATProto::XJsonObject xjson(img->mJson);
-        const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
-        const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
-        view.setMemeTopText(memeTopText);
-        view.setMemeBottomText(memeBottomText);
-        images.push_back(view);
+        const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(mPost->mEmbed->mEmbed);
+        QList<ImageView> images;
+
+        for (const auto& img : imagesView->mImages)
+        {
+            ImageView view(img);
+            const ATProto::XJsonObject xjson(img->mJson);
+            const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+            const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
+            view.setMemeTopText(memeTopText);
+            view.setMemeBottomText(memeBottomText);
+            images.push_back(view);
+        }
+
+        return images;
+    }
+    else if (mPost->mEmbed->mType == ATProto::AppBskyEmbed::EmbedViewType::GALLERY_VIEW)
+    {
+        const auto& galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(mPost->mEmbed->mEmbed);
+        QList<ImageView> images;
+
+        for (const auto& item : galleryView->mItems)
+        {
+            const auto* image = std::get_if<ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr>(&item);
+
+            if (!image)
+                continue;
+
+            ImageView view(*image);
+            const ATProto::XJsonObject xjson((*image)->mJson);
+            const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+            const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
+            view.setMemeTopText(memeTopText);
+            view.setMemeBottomText(memeBottomText);
+            images.push_back(view);
+        }
+
+        return images;
     }
 
-    return images;
+    return {};
 }
 
 VideoView::Ptr Post::getVideoView() const

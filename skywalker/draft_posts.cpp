@@ -5,6 +5,7 @@
 #include "content_filter.h"
 #include "file_utils.h"
 #include "gif_utils.h"
+#include "image_utils.h"
 #include "link_card_reader.h"
 #include "photo_picker.h"
 #include "skywalker.h"
@@ -981,6 +982,10 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
         view->mEmbed = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(embed->mEmbed).get());
         break;
+    case ATProto::AppBskyEmbed::EmbedType::GALLERY:
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::GALLERY_VIEW;
+        view->mEmbed = createGalleryView(std::get<ATProto::AppBskyEmbed::Gallery::SharedPtr>(embed->mEmbed).get());
+        break;
     case ATProto::AppBskyEmbed::EmbedType::VIDEO:
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
         view->mEmbed = createVideoView(std::get<ATProto::AppBskyEmbed::Video::SharedPtr>(embed->mEmbed).get());
@@ -1018,7 +1023,6 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
     if (!images || images->mImages.empty())
         return nullptr;
 
-    const QString did = mSkywalker->getUserDid();
     auto view = std::make_shared<ATProto::AppBskyEmbed::ImagesView>();
 
     for (const auto& image : images->mImages)
@@ -1030,15 +1034,16 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
 
         const QString path = createAbsPath(draftsPath, image->mImage->mRefLink);
         const QString imgSource = "file://" + path;
+        const auto aspectRatio = ImageUtils::getImageAspectRatio(path);
 
-        auto imgView = createImageView(image->mImage->mJson, imgSource, image->mAlt);
+        auto imgView = createImageView(image->mImage->mJson, imgSource, image->mAlt, aspectRatio);
         view->mImages.push_back(std::move(imgView));
     }
 
     return view;
 }
 
-ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr DraftPosts::createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt)
+ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr DraftPosts::createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt, const ATProto::AppBskyEmbed::AspectRatio::SharedPtr& aspectRatio)
 {
     const ATProto::XJsonObject xjson(imgJson);
     const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
@@ -1048,6 +1053,59 @@ ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr DraftPosts::createImageView(co
     imgView->mThumb = imgSource;
     imgView->mFullSize = imgSource;
     imgView->mAlt = alt;
+    imgView->mAspectRatio = aspectRatio;
+
+    if (!memeTopText.isEmpty())
+        imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+
+    if (!memeBottomText.isEmpty())
+        imgView->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+    return imgView;
+}
+
+ATProto::AppBskyEmbed::GalleryView::SharedPtr DraftPosts::createGalleryView(const ATProto::AppBskyEmbed::Gallery* gallery)
+{
+    if (!gallery || gallery->mItems.empty())
+        return nullptr;
+
+    qDebug() << "Create gallery view:" << gallery->mItems.size();
+    auto view = std::make_shared<ATProto::AppBskyEmbed::GalleryView>();
+
+    for (const auto& item : gallery->mItems)
+    {
+        const auto* image = std::get_if<ATProto::AppBskyEmbed::GalleryImage::SharedPtr>(&item);
+
+        if (!image)
+            continue;
+
+        const auto draftsPath = getPictureDraftsPath();
+
+        if (draftsPath.isEmpty())
+            return nullptr;
+
+        const QString path = createAbsPath(draftsPath, (*image)->mImage->mRefLink);
+        const QString imgSource = "file://" + path;
+        qDebug() << "Create gallery image:" << imgSource;
+
+        auto galleryViewImage = createGalleryViewImage((*image)->mImage->mJson, imgSource, (*image)->mAlt, (*image)->mAspectRatio);
+        view->mItems.push_back(std::move(galleryViewImage));
+    }
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr DraftPosts::createGalleryViewImage(const QJsonObject& imgJson, const QString& imgSource, const QString& alt, const ATProto::AppBskyEmbed::AspectRatio::SharedPtr& aspectRatio)
+{
+    const ATProto::XJsonObject xjson(imgJson);
+    const QString memeTopText = xjson.getOptionalString(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, "");
+    const QString memeBottomText = xjson.getOptionalString(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, "");
+
+    auto imgView = std::make_shared<ATProto::AppBskyEmbed::GalleryViewImage>();
+    imgView->mThumbnail = imgSource;
+    imgView->mFullSize = imgSource;
+    imgView->mAlt = alt;
+    imgView->mAspectRatio = aspectRatio;
 
     if (!memeTopText.isEmpty())
         imgView->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
@@ -1194,25 +1252,29 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record->mRecord.get(), std::move(quote));
 
-    switch (record->mMediaType)
+    if (auto* images = std::get_if<ATProto::AppBskyEmbed::Images::SharedPtr>(&record->mMedia); images)
     {
-    case ATProto::AppBskyEmbed::EmbedType::IMAGES:
-        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
-        view->mMedia = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(record->mMedia).get());
-        break;
-    case ATProto::AppBskyEmbed::EmbedType::EXTERNAL:
-        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
-        view->mMedia = createExternalView(std::get<ATProto::AppBskyEmbed::External::SharedPtr>(record->mMedia).get());
-        break;
-    case ATProto::AppBskyEmbed::EmbedType::VIDEO:
-        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
-        view->mMedia = createVideoView(std::get<ATProto::AppBskyEmbed::Video::SharedPtr>(record->mMedia).get());
-        break;
-    default:
-        qWarning() << "Invalid media type:" << (int)record->mMediaType;
-        view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN;
-        view->mRawMediaType = QString::number((int)record->mMediaType);
-        break;
+        view->mMedia.mVariant = createImagesView(images->get());
+        view->mMedia.mType = ATProto::AppBskyEmbed::ImagesView::TYPE;
+    }
+    else if (auto* external = std::get_if<ATProto::AppBskyEmbed::External::SharedPtr>(&record->mMedia); external)
+    {
+        view->mMedia.mVariant = createExternalView(external->get());
+        view->mMedia.mType = ATProto::AppBskyEmbed::ExternalView::TYPE;
+    }
+    else if (auto* gallery = std::get_if<ATProto::AppBskyEmbed::Gallery::SharedPtr>(&record->mMedia); gallery)
+    {
+        view->mMedia.mVariant = createGalleryView(gallery->get());
+        view->mMedia.mType = ATProto::AppBskyEmbed::GalleryView::TYPE;
+    }
+    else if (auto* video = std::get_if<ATProto::AppBskyEmbed::Video::SharedPtr>(&record->mMedia); video)
+    {
+        view->mMedia.mVariant = createVideoView(video->get());
+        view->mMedia.mType = ATProto::AppBskyEmbed::VideoView::TYPE;
+    }
+    else
+    {
+        qWarning() << "Invalid media type";
     }
 
     return view;
@@ -1300,6 +1362,10 @@ ATProto::AppBskyFeed::PostFeed DraftPosts::convertDraftToFeedViewPost(const ATPr
         view->mReply = createReplyRef(replyTo, postRecord->mReply);
 
         embedImagesCount += threadPost->mEmbedImages.size();
+
+        if (threadPost->mEmbedGallery)
+            embedImagesCount += threadPost->mEmbedGallery->mItems.size();
+
         embedVideoCount += threadPost->mEmbedVideos.size();
         postFeed.push_back(std::move(view));
     }
@@ -1446,6 +1512,7 @@ bool DraftPosts::hasEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) con
 bool DraftPosts::hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const
 {
     return !draftPost.mEmbedImages.empty() ||
+           draftPost.mEmbedGallery ||
            !draftPost.mEmbedVideos.empty();
 }
 
@@ -1470,6 +1537,22 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
             else
             {
                 qDebug() << "Failed to create images view";
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
+                view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
+            }
+        }
+        else if (draftPost.mEmbedGallery)
+        {
+            auto galleryView = createGalleryView(*draftPost.mEmbedGallery);
+
+            if (galleryView)
+            {
+                view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW;
+                view->mEmbed = createRecordWithMediaView(galleryView, *draftPost.mEmbedRecords.front());
+            }
+            else
+            {
+                qDebug() << "Failed to create gallery view";
                 view->mType = ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW;
                 view->mEmbed = createRecordView(*draftPost.mEmbedRecords.front());
             }
@@ -1506,6 +1589,11 @@ ATProto::AppBskyEmbed::EmbedView::SharedPtr DraftPosts::createEmbedView(const AT
     {
         view->mType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
         view->mEmbed = createImagesView(draftPost.mEmbedImages);
+    }
+    else if (draftPost.mEmbedGallery)
+    {
+        view->mType = ATProto::AppBskyEmbed::EmbedViewType::GALLERY_VIEW;
+        view->mEmbed = createGalleryView(*draftPost.mEmbedGallery);
     }
     else if (!draftPost.mEmbedVideos.empty())
     {
@@ -1551,7 +1639,8 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
         if (QFile::exists(path))
         {
             const QString imgSource = "file://" + path;
-            auto imgView = createImageView(image->mJson, imgSource, image->mAlt.value_or(""));
+            const auto aspectRatio = ImageUtils::getImageAspectRatio(path);
+            auto imgView = createImageView(image->mJson, imgSource, image->mAlt.value_or(""), aspectRatio);
             view->mImages.push_back(std::move(imgView));
         }
         else
@@ -1561,6 +1650,46 @@ ATProto::AppBskyEmbed::ImagesView::SharedPtr DraftPosts::createImagesView(const 
     }
 
     if (view->mImages.empty())
+        return nullptr;
+
+    return view;
+}
+
+ATProto::AppBskyEmbed::GalleryView::SharedPtr DraftPosts::createGalleryView(const ATProto::AppBskyDraft::DraftEmbedGallery& gallery)
+{
+    qDebug() << "Create gallery view";
+    const auto draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+        return nullptr;
+
+    auto view = std::make_shared<ATProto::AppBskyEmbed::GalleryView>();
+
+    for (const auto& item : gallery.mItems)
+    {
+        const auto* image = std::get_if<ATProto::AppBskyDraft::DraftEmbedImage::SharedPtr>(&item);
+
+        if (!image)
+            continue;
+
+        const QString path = createAbsPath(draftsPath, (*image)->mLocalRef->mPath);
+
+        // We explicitly test if the image exists on this device. Checking the deviceId is not
+        // reliable. deviceId changes on re-install, or may be copied to another device.
+        if (QFile::exists(path))
+        {
+            const QString imgSource = "file://" + path;
+            const auto aspectRatio = ImageUtils::getImageAspectRatio(path);
+            auto imgView = createGalleryViewImage((*image)->mJson, imgSource, (*image)->mAlt.value_or(""), aspectRatio);
+            view->mItems.push_back(std::move(imgView));
+        }
+        else
+        {
+            qDebug() << "File does not exist:" << path;
+        }
+    }
+
+    if (view->mItems.empty())
         return nullptr;
 
     return view;
@@ -1634,8 +1763,17 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
 {   
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record);
-    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::IMAGES_VIEW;
-    view->mMedia = imagesView;
+    view->mMedia.mVariant = imagesView;
+    view->mMedia.mType = ATProto::AppBskyEmbed::ImagesView::TYPE;
+    return view;
+}
+
+ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWithMediaView(const ATProto::AppBskyEmbed::GalleryView::SharedPtr galleryView, const ATProto::AppBskyDraft::DraftEmbedRecord& record)
+{
+    auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
+    view->mRecord = createRecordView(record);
+    view->mMedia.mVariant = galleryView;
+    view->mMedia.mType = ATProto::AppBskyEmbed::GalleryView::TYPE;
     return view;
 }
 
@@ -1643,8 +1781,8 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
 {
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record);
-    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::VIDEO_VIEW;
-    view->mMedia = videoView;
+    view->mMedia.mVariant = videoView;
+    view->mMedia.mType = ATProto::AppBskyEmbed::VideoView::TYPE;
     return view;
 }
 
@@ -1652,8 +1790,8 @@ ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr DraftPosts::createRecordWi
 {
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordWithMediaView>();
     view->mRecord = createRecordView(record);
-    view->mMediaType = ATProto::AppBskyEmbed::EmbedViewType::EXTERNAL_VIEW;
-    view->mMedia = externalView;
+    view->mMedia.mVariant = externalView;
+    view->mMedia.mType = ATProto::AppBskyEmbed::ExternalView::TYPE;
     return view;
 }
 
@@ -1830,7 +1968,11 @@ bool DraftPosts::addImagesToPost(ATProto::AppBskyFeed::Record::Post& post,
         }
 
         const QString& altText = images[i].getAlt();
-        ATProto::PostMaster::addImageToPost(post, std::move(blob), imgSize.width(), imgSize.height(), altText);
+
+        if (images.size() <= ATProto::AppBskyEmbed::Images::MAX_IMAGES)
+            ATProto::PostMaster::addImageToPost(post, std::move(blob), imgSize.width(), imgSize.height(), altText);
+        else
+            ATProto::PostMaster::addGalleryImageToPost(post, std::move(blob), imgSize.width(), imgSize.height(), altText);
     }
 
     return true;
@@ -2222,10 +2364,21 @@ ATProto::AppBskyDraft::DraftPost::SharedPtr DraftPosts::createBlueskyDraftPost(c
     if (!draftPost->images().empty())
     {
         const auto imageBaseName = createPicBaseName(baseName, threadIndex);
-        post->mEmbedImages = createDraftEmbedImages(draftPost, imageBaseName);
 
-        if (post->mEmbedImages.empty())
-            return {};
+        if (draftPost->images().size() <= ATProto::AppBskyEmbed::Images::MAX_IMAGES)
+        {
+            post->mEmbedImages = createDraftEmbedImages(draftPost, imageBaseName);
+
+            if (post->mEmbedImages.empty())
+                return {};
+        }
+        else
+        {
+            post->mEmbedGallery = createDraftEmbedGallery(draftPost, imageBaseName);
+
+            if (!post->mEmbedGallery || post->mEmbedGallery->mItems.empty())
+                return {};
+        }
     }
 
     if (!draftPost->video().isNull())
@@ -2297,6 +2450,56 @@ ATProto::AppBskyDraft::DraftEmbedImage::List DraftPosts::createDraftEmbedImages(
     }
 
     return embedImageList;
+}
+
+ATProto::AppBskyDraft::DraftEmbedGallery::SharedPtr DraftPosts::createDraftEmbedGallery(const DraftPostData* draftPost, const QString& baseName)
+{
+    const QString draftsPath = getPictureDraftsPath();
+
+    if (draftsPath.isEmpty())
+    {
+        emit saveDraftPostFailed(tr("Cannot create picture drafts path"));
+        return {};
+    }
+
+    auto embedGallery = std::make_shared<ATProto::AppBskyDraft::DraftEmbedGallery>();
+    const auto images = draftPost->images();
+    embedGallery->mItems.reserve(images.size());
+
+    for (int i = 0; i < images.size(); ++i)
+    {
+        const QString& imgName = images[i].getFullSizeUrl();
+        const QString& memeTopText = images[i].getMemeTopText();
+        const QString& memeBottomText = images[i].getMemeBottomText();
+        auto [blob, imgSize] = saveImage(imgName, memeTopText, memeBottomText, draftsPath, baseName, i);
+
+        if (!blob)
+        {
+            dropImages(draftsPath, baseName, i);
+            return {};
+        }
+
+        auto embedImage = std::make_shared<ATProto::AppBskyDraft::DraftEmbedImage>();
+        const QString& altText = images[i].getAlt();
+
+        if (!altText.isEmpty())
+            embedImage->mAlt = altText;
+
+        embedImage->mLocalRef = std::make_shared<ATProto::AppBskyDraft::DraftEmbedLocalRef>();
+        embedImage->mLocalRef->mPath = blob->mRefLink;
+
+        embedImage->mJson = embedImage->toJson();
+
+        if (!memeTopText.isEmpty())
+            embedImage->mJson.insert(Lexicon::DRAFT_MEME_TOP_TEXT_FIELD, memeTopText);
+
+        if (!memeBottomText.isEmpty())
+            embedImage->mJson.insert(Lexicon::DRAFT_MEME_BOTTOM_TEXT_FIELD, memeBottomText);
+
+        embedGallery->mItems.push_back(embedImage);
+    }
+
+    return embedGallery;
 }
 
 ATProto::AppBskyDraft::DraftEmbedVideo::List DraftPosts::createDraftEmbedVideos(const DraftPostData* draftPost, const QString& baseName)

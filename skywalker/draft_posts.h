@@ -136,7 +136,9 @@ private:
     ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
         const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
-    ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt);
+    ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt, const ATProto::AppBskyEmbed::AspectRatio::SharedPtr& aspectRatio);
+    ATProto::AppBskyEmbed::GalleryView::SharedPtr createGalleryView(const ATProto::AppBskyEmbed::Gallery* gallery);
+    ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr createGalleryViewImage(const QJsonObject& imgJson, const QString& imgSource, const QString& alt, const ATProto::AppBskyEmbed::AspectRatio::SharedPtr& aspectRatio);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyEmbed::Video* video);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const QJsonObject& videoJson, const QString& videoSource, const std::optional<QString>& alt, const std::optional<ATProto::AppBskyEmbed::VideoPresentation>& presentation);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyEmbed::External* external) const;
@@ -156,10 +158,12 @@ private:
     bool hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
     ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images);
+    ATProto::AppBskyEmbed::GalleryView::SharedPtr createGalleryView(const ATProto::AppBskyDraft::DraftEmbedGallery& gallery);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video);
     ATProto::AppBskyEmbed::ExternalView::SharedPtr createExternalView(const ATProto::AppBskyDraft::DraftEmbedExternal& external);
     ATProto::AppBskyEmbed::RecordView::SharedPtr createRecordView(const ATProto::AppBskyDraft::DraftEmbedRecord& record);
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
+    ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::GalleryView::SharedPtr galleryView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::VideoView::SharedPtr videoView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
     ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr createRecordWithMediaView(const ATProto::AppBskyEmbed::ExternalView::SharedPtr externalView, const ATProto::AppBskyDraft::DraftEmbedRecord& record);
 
@@ -200,6 +204,7 @@ private:
     ATProto::AppBskyDraft::Draft::SharedPtr createBlueskyDraft(const DraftPostData* draftPost, const QList<DraftPostData*>& draftThread, const QString& baseName);
     ATProto::AppBskyDraft::DraftPost::SharedPtr createBlueskyDraftPost(const DraftPostData* draftPost, const QString& baseName, int threadIndex);
     ATProto::AppBskyDraft::DraftEmbedImage::List createDraftEmbedImages(const DraftPostData* draftPost, const QString& baseName);
+    ATProto::AppBskyDraft::DraftEmbedGallery::SharedPtr createDraftEmbedGallery(const DraftPostData* draftPost, const QString& baseName);
     ATProto::AppBskyDraft::DraftEmbedVideo::List createDraftEmbedVideos(const DraftPostData* draftPost, const QString& baseName);
     ATProto::AppBskyDraft::DraftEmbedExternal::List createDraftEmbedExternals(const DraftPostData* draftPost);
     ATProto::AppBskyDraft::DraftEmbedRecord::List createDraftEmbedRecords(const DraftPostData* draftPost);

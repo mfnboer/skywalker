@@ -136,7 +136,7 @@ public:
     void setExternal(const ExternalView& external);
 
 private:
-    ATProto::AppBskyEmbed::EmbedView::SharedPtr getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const;
+    ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* getEmbedView() const;
     bool hasFacets() const;
 
     bool mValid = false;

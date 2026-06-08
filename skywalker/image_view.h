@@ -23,27 +23,16 @@ public:
     using Ptr = std::unique_ptr<ImageView>;
 
     ImageView() = default;
-    ImageView(const QString& fullSizeUrl, const QString& alt, const QString& memeTopText = "", const QString& memeBottomText = "") :
-        mFullSizeUrl(fullSizeUrl),
-        mAlt(alt),
-        mMemeTopText(memeTopText),
-        mMemeBottomText(memeBottomText)
-    {}
-    ImageView(const QString& fullSizeUrl, const QString& alt, int width, int height) :
-        mFullSizeUrl(fullSizeUrl),
-        mAlt(alt),
-        mWidth(width),
-        mHeight(height)
-    {}
-    ImageView(const ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr& viewImage) :
-        mViewImage(viewImage)
-    {}
+    ImageView(const QString& fullSizeUrl, const QString& alt, const QString& memeTopText = "", const QString& memeBottomText = "");
+    ImageView(const QString& fullSizeUrl, const QString& alt, int width, int height);
+    ImageView(const ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr& viewImage);
+    ImageView(const ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr& viewImage);
 
     Q_INVOKABLE bool isNull() const { return getFullSizeUrl().isEmpty(); }
-    QString getThumbUrl() const { return mViewImage ? mViewImage->mThumb : mFullSizeUrl; }
-    QString getFullSizeUrl() const { return mViewImage ? mViewImage->mFullSize : mFullSizeUrl; }
-    QString getAlt() const { return !mHtmlAlt.isEmpty() ? mHtmlAlt : (mViewImage ? mViewImage->mAlt : mAlt); }
-    const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mViewImage ? mViewImage->mAspectRatio.get() : nullptr; }
+    QString getThumbUrl() const;
+    QString getFullSizeUrl() const;
+    QString getAlt() const;
+    const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const;
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : mWidth;  }
     int getHeight() const { auto* r = getAspectRatio(); return r ? r->mHeight : mHeight;  }
     const QString& getMemeTopText() const { return mMemeTopText; }
@@ -55,7 +44,8 @@ public:
     void setHtmlAlt(const QString& htmlAlt) { mHtmlAlt = htmlAlt; }
 
 private:
-    ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr mViewImage;
+    std::variant<ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr,
+                 ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr> mViewImage;
 
     QString mFullSizeUrl;
     QString mAlt;

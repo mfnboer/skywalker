@@ -3,6 +3,7 @@
 #pragma once
 #include "enums.h"
 #include "image_view.h"
+#include <atproto/lib/lexicon/app_bsky_embed.h>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -17,6 +18,8 @@ class ImageUtils : public QObject
 
 public:
     static QImage scaledToSize(const QImage& img, int size);
+    static QSize getImageSize(const QString& filePath);
+    static ATProto::AppBskyEmbed::AspectRatio::SharedPtr getImageAspectRatio(const QString& filePath, QSize defaultSize = {1, 1});
 
     explicit ImageUtils(QObject* parent = nullptr);
 

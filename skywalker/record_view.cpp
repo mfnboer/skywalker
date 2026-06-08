@@ -199,33 +199,30 @@ QDateTime RecordView::getIndexedAt() const
     return {};
 }
 
-ATProto::AppBskyEmbed::EmbedView::SharedPtr RecordView::getEmbedView(ATProto::AppBskyEmbed::EmbedViewType embedViewType) const
+ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* RecordView::getEmbedView() const
 {
     if (!mPrivate->mRecord || mPrivate->mRecord->mEmbeds.empty())
         return nullptr;
 
     // There is a list of embeds; can there be more than 1?
-    const auto& embed = mPrivate->mRecord->mEmbeds[0];
-    if (embed->mType != embedViewType)
-        return nullptr;
-
-    return embed;
+    auto& embed = mPrivate->mRecord->mEmbeds[0];
+    return &embed;
 }
 
 bool RecordView::hasUnknownEmbed() const
 {
-    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN);
-    return embed != nullptr;
+    const auto* embed = getEmbedView();
+    return embed != nullptr && ATProto::isNullVariant(embed->mVariant);
 }
 
 QString RecordView::getUnknownEmbedType() const
 {
-    auto embed = getEmbedView(ATProto::AppBskyEmbed::EmbedViewType::UNKNOWN);
+    const auto* embed = getEmbedView();
 
-    if (!embed)
+    if (!embed || !ATProto::isNullVariant(embed->mVariant))
         return {};
 
-    return embed->mRawType;
+    return embed->mType;
 }
 
 QList<ImageView> RecordView::getImages() const
