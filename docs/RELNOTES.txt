@@ -1,8 +1,8 @@
-next
+4.38
 ====
 * Up to 10 images per post
 * Image preview settings: grid and/or carousel
-* Buf fixes
+* Bug fixes
 
 4.37
 ====
