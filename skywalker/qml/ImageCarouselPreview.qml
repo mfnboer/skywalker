@@ -51,6 +51,7 @@ Flickable {
                     backgroundColor: "black"
                     backgroundOpacity: 0.6
                     color: "white"
+                    font.pointSize: guiSettings.scaledFont(4.5/8)
                     text: `${index + 1}/${images.length}`
                 }
             }
