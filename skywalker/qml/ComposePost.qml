@@ -21,7 +21,7 @@ SkyPage {
     property int threadCountOffset: 0
     readonly property int maxThreadPosts: 50
     readonly property int minPostSplitLineLength: 30
-    readonly property int maxImages: 4 // per post
+    readonly property int maxImages: 10 // per post
     property bool pickingImage: false
     property bool editingVideo: false
 
@@ -737,6 +737,17 @@ SkyPage {
                         visible: !linkCard.visible && !gifAttachment.visible
 
                         onReturnFocus: currentPostItem().getPostText().forceActiveFocus()
+                    }
+
+                    AccessibleText {
+                        x: page.margin
+                        width: page.width - 2 * page.margin
+                        anchors.top: imageScroller.bottom
+                        anchors.topMargin: 10
+                        font.italic: true
+                        text: qsTr(`${postItem.images.length} images (max ${maxImages})`)
+                        elide: Text.ElideRight
+                        visible: imageScroller.visible && postItem.images.length > 1
                     }
 
                     VideoAttachment {

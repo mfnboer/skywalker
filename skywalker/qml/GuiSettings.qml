@@ -36,6 +36,7 @@ Item {
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
+    readonly property int maxImageCarouselHeight: 400
     readonly property int maxImageHeight: root.height - headerHeight - headerMargin - (root.isPortrait ? footerHeight + footerMargin + tabBarHeight : 0)
     readonly property int radius: 8
     readonly property int sideBarHeaderHeight: 44
@@ -48,6 +49,7 @@ Item {
     readonly property int verificationBadgeSize: 13
 
     // Aspect ratio (height / width)
+    readonly property double carouselImageRatio: 2.0 / 3.0
     readonly property double videoPreviewRatio: 2160.0 / 3840.0
 
     // Colors
@@ -133,6 +135,7 @@ Item {
     readonly property bool flickPixelAligned: false
     readonly property bool isAndroid: Qt.platform.os === "android"
     readonly property int maxPreviewImageGridSize: 4
+    readonly property int maxPreviewImageGridThreshold: 4
 
     // Identity
     readonly property string skywalkerHandle: "@skywalker.thereforeiam.eu"
@@ -568,6 +571,26 @@ Item {
     function toHtmlLink(link) {
         let text = stripHttpFromLink(link)
         return `<a href="${link}" style="color: ${guiSettings.linkColor}; text-decoration: none">${text}</a>`
+    }
+
+    function mustShowImageCarousel(imageCount) {
+        if (imageCount < 2)
+            return false
+
+        if (!userSettings)
+            return imageCount > guiSettings.maxPreviewImageGridThreshold
+
+        switch (userSettings.imagePreview) {
+        case QEnums.IMAGE_PREVIEW_GRID_AND_CAROUSEL:
+            return imageCount > guiSettings.maxPreviewImageGridThreshold
+        case QEnums.IMAGE_PREVIEW_GRID_PAGES:
+            return false
+        case QEnums.IMAGE_PREVIEW_CAROUSEL:
+            return true
+        }
+
+        console.warn("Unexpected image preview:", userSettings.imagePreview)
+        return imageCount > guiSettings.maxPreviewImageGridThreshold
     }
 
     Component.onDestruction: {

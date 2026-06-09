@@ -711,6 +711,10 @@ qt_add_qml_module(libskywalker
         SOURCES strong_ref.h
         SOURCES strong_ref.cpp
         SOURCES image_view.cpp
+        QML_FILES qml/ImageCarouselPreview.qml
+        QML_FILES qml/LoaderImageCarouselPreview.qml
+        QML_FILES
+        QML_FILES qml/ImagePreviewInCarousel.qml
 )
 
 target_link_libraries(libskywalker

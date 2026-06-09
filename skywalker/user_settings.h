@@ -66,6 +66,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
     Q_PROPERTY(double fontScale READ getFontScale WRITE setFontScale NOTIFY fontScaleChanged FINAL)
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
+    Q_PROPERTY(QEnums::ImagePreview imagePreview READ getImagePreview WRITE setImagePreview NOTIFY imagePreviewChanged FINAL)
     Q_PROPERTY(bool contentFilterStatsEnabled READ getContentFilterStatsEnabled WRITE setContentFilterStatsEnabled NOTIFY contentFilterStatsEnabledChanged FINAL)
     Q_PROPERTY(bool giantEmojis READ getGiantEmojis WRITE setGiantEmojis NOTIFY giantEmojisChanged FINAL)
     Q_PROPERTY(bool songlinkEnabled READ getSonglinkEnabled WRITE setSonglinkEnabled NOTIFY songlinkEnabledChanged FINAL)
@@ -347,6 +348,9 @@ public:
     void setFavoritesBarPosition(QEnums::FavoritesBarPosition position);
     QEnums::FavoritesBarPosition getFavoritesBarPosition() const;
 
+    void setImagePreview(QEnums::ImagePreview preview);
+    QEnums::ImagePreview getImagePreview() const;
+
     Q_INVOKABLE void setPostButtonRelativeX(double x);
     Q_INVOKABLE double getPostButtonRelativeX() const;
 
@@ -586,6 +590,7 @@ signals:
     void threadColorChanged();
     void fontScaleChanged();
     void favoritesBarPositionChanged();
+    void imagePreviewChanged();
     void contentFilterStatsEnabledChanged();
     void giantEmojisChanged();
     void songlinkEnabledChanged();

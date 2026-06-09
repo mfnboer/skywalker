@@ -15,8 +15,8 @@ Loader {
     signal activateSwipe(int imgIndex, var previewImg)
 
     id: loader
-    height: calcHeight() + (postImages.length > guiSettings.maxPreviewImageGridSize ? guiSettings.appFontHeight + 20 : 0)
-    active: postImages.length > 0 && postVisible && !moving
+    height: calcHeight()
+    active: postImages.length > 0 && !guiSettings.mustShowImageCarousel(postImages.length) && postVisible && !moving
 
     sourceComponent: ImageGridPreview {
         images: postImages
@@ -42,21 +42,28 @@ Loader {
         if (imgCount === 0)
             return 0
 
+        if (guiSettings.mustShowImageCarousel(imgCount))
+            return 0
+
+        let h = 0
         const filter = item ? item.getFilter() : null
 
         if (filter && !filter.imageVisible())
             return filter.height
 
         if (imgCount === 1)
-            return calcHeight1()
+            h = calcHeight1()
+        else if (imgCount === 2)
+            h = calcHeight2()
+        else if (imgCount === 3)
+            h = calcHeight3()
+        else
+            h = calcHeight4()
 
-        if (imgCount === 2)
-            return calcHeight2()
+        if (postImages.length > guiSettings.maxPreviewImageGridSize)
+            h += guiSettings.appFontHeight + 20
 
-        if (imgCount === 3)
-            return calcHeight3()
-
-        return calcHeight4()
+        return h
     }
 
     function calcHeight1() {

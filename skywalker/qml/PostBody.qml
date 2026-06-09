@@ -278,6 +278,22 @@ Column {
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
 
+    LoaderImageCarouselPreview {
+        id: imagesCarouselLoader
+        x: swipeMode ? -margin : 0
+        width: parent.width + (swipeMode ? 2 * margin : 0)
+        postImages: postIsShown ? postBody.postImages : []
+        postContentVisibility: postBody.postContentVisibility
+        postContentWarning: postBody.postContentWarning
+        postContentLabeler: postBody.postContentLabeler
+        bodyBackgroundColor: postBody.bodyBackgroundColor
+        swipeMode: postBody.swipeMode
+        postVisible: postBody.postVisible()
+        moving: postBody.moving
+
+        onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
+    }
+
     // Video
     // HACK: somehow video leaves 1 empty pixel at each side. Add 2 pixels to fix it.
     LoaderVideoPreview {
@@ -377,6 +393,8 @@ Column {
     function closeMedia(mediaIndex, closeCb) {
         if (imagesLoader.item)
             imagesLoader.item.closeMedia(mediaIndex, closeCb)
+        else if (imagesCarouselLoader.item)
+            imagesCarouselLoader.item.closeMedia(mediaIndex, closeCb)
         else if (videoLoader.item)
             videoLoader.item.closeMedia(mediaIndex, closeCb)
         else

@@ -290,6 +290,23 @@ ColumnLayout {
         AccessibleText {
             Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
+            text: qsTr("Image preview")
+        }
+
+        SkyComboBox {
+            Layout.fillWidth: true
+            model: ListModel {
+                ListElement { value: QEnums.SIDE_BAR_OFF; text: qsTr("Grid and carousel") }
+                ListElement { value: QEnums.SIDE_BAR_LANDSCAPE; text: qsTr("Grid pages") }
+                ListElement { value: QEnums.SIDE_BAR_PORTRAIT; text: qsTr("Carousel") }
+            }
+            currentIndex: userSettings.imagePreview
+            onCurrentValueChanged: userSettings.imagePreview = currentValue
+        }
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
             text: qsTr("Favorites bar")
         }
 

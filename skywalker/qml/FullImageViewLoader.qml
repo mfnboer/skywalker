@@ -7,6 +7,7 @@ Loader {
     property list<point> thumbImageOrigList
     property list<imageview> images
     property int gridWidth: 0
+    property int maxGridSize: guiSettings.maxPreviewImageGridSize
     property int startGridIndex: 0
     property int startImageIndex: 0
     property int imageIndex: 0
@@ -17,7 +18,6 @@ Loader {
     property var videoView
     property bool isAnimatedImage: false
     property string animatedImageAlt
-    //readonly property int thumbImageIndex: Math.min(Math.max(0, imageIndex - startImageIndex), thumbImageViewList.length - 1)
     readonly property int thumbImageIndex: imageIndex - startImageIndex
 
     signal started
@@ -85,7 +85,7 @@ Loader {
         // We calculate the offset in the x-coordinate to make sure the image shrinks to
         // the position of the new grid.
         for (const [thumbIndex, thumbImage] of thumbImageViewList.entries()) {
-            const gridIndex = Math.floor(thumbIndex / guiSettings.maxPreviewImageGridSize)
+            const gridIndex = Math.floor(thumbIndex / maxGridSize)
             const offset = gridWidth * (gridIndex - startGridIndex)
             const orig = thumbImage.mapToItem(null, -offset, 0)
             thumbImageOrigList.push(orig)

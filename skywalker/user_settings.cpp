@@ -1561,6 +1561,25 @@ QEnums::FavoritesBarPosition UserSettings::getFavoritesBarPosition() const
     return QEnums::FavoritesBarPosition(position);
 }
 
+void UserSettings::setImagePreview(QEnums::ImagePreview preview)
+{
+    if (getImagePreview() != preview)
+    {
+        mSettings.setValue("imagePreview", (int)preview);
+        emit imagePreviewChanged();
+    }
+}
+
+QEnums::ImagePreview UserSettings::getImagePreview() const
+{
+    const int preview = mSettings.value("imagePreview", (int)QEnums::IMAGE_PREVIEW_GRID_AND_CAROUSEL).toInt();
+
+    if (preview < 0 || preview > QEnums::IMAGE_PREVIEW_LAST)
+        return QEnums::IMAGE_PREVIEW_GRID_AND_CAROUSEL;
+
+    return QEnums::ImagePreview(preview);
+}
+
 void UserSettings::setPostButtonRelativeX(double x)
 {
     mSettings.setValue("postButtonRelativeX", x);

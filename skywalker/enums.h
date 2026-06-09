@@ -487,6 +487,16 @@ public:
     };
     Q_ENUM(FavoritesBarPosition)
 
+    enum ImagePreview
+    {
+        IMAGE_PREVIEW_GRID_AND_CAROUSEL,
+        IMAGE_PREVIEW_GRID_PAGES,
+        IMAGE_PREVIEW_CAROUSEL,
+
+        IMAGE_PREVIEW_LAST = IMAGE_PREVIEW_CAROUSEL
+    };
+    Q_ENUM(ImagePreview)
+
     enum VerifiedStatus
     {
         VERIFIED_STATUS_VALID = (int)ATProto::AppBskyActor::VerifiedStatus::VALID,

@@ -43,6 +43,21 @@ Item {
             onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
         }
 
+        LoaderImageCarouselPreview {
+            id: imagesCarouselLoader
+            x: swipeMode ? -margin : 0
+            width: parent.width + (swipeMode ? 2 * margin : 0)
+            postImages: record.images
+            postContentVisibility: contentVisibility
+            postContentWarning: contentWarning
+            postContentLabeler: contentLabeler
+            bodyBackgroundColor: backgroundColor == "transparent" ? guiSettings.backgroundColor : backgroundColor
+            swipeMode: recordItem.swipeMode
+            moving: recordItem.moving
+
+            onActivateSwipe: (imgIndex, previewImg) => recordItem.activateSwipe(imgIndex, previewImg)
+        }
+
         LoaderVideoPreview {
             id: videoLoader
             postVideo: record.video
