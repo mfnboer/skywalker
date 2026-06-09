@@ -537,7 +537,6 @@ Rectangle {
                             width: authorAvatar.width
                             userDid: owner.did
                             author: notificationOtherAuthors[index]
-                            showFollowingStatus: false
 
                             onClicked: skywalker.getDetailedProfile(notificationOtherAuthors[index].did)
 
@@ -562,7 +561,6 @@ Rectangle {
                     width: parent.width
 
                     AccessibleText {
-                        //Layout.fillWidth: true
                         width: parent.width - durationLabel.width
                         textFormat: Text.StyledText
                         wrapMode: Text.Wrap
@@ -571,7 +569,6 @@ Rectangle {
                     }
                     DurationLabel {
                         id: durationLabel
-                        //Layout.alignment: Qt.AlignTop
                         durationSeconds: (new Date() - notificationTimestamp) / 1000
                     }
                 }
