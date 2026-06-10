@@ -60,31 +60,51 @@ QList<ImageView> RecordWordIndex::getImages() const
         return mImages;
 
     ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView;
-    auto* embed = getEmbedView(ATProto::AppBskyEmbed::ImagesView::TYPE);
+    ATProto::AppBskyEmbed::GalleryView::SharedPtr galleryView;
+    auto* imagesEmbed = getEmbedView(ATProto::AppBskyEmbed::ImagesView::TYPE);
+    auto* galleryEmbed = getEmbedView(ATProto::AppBskyEmbed::GalleryView::TYPE);
 
-    if (embed)
+    if (imagesEmbed)
     {
-        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(embed->mVariant);
+        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(imagesEmbed->mVariant);
+    }
+    else if (galleryEmbed)
+    {
+        galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(galleryEmbed->mVariant);
     }
     else
     {
-        embed = getEmbedView(ATProto::AppBskyEmbed::RecordWithMediaView::TYPE);
+        auto* recordWithMediaEmbed = getEmbedView(ATProto::AppBskyEmbed::RecordWithMediaView::TYPE);
 
-        if (!embed)
-            return {};
+        if (recordWithMediaEmbed)
+        {
+            const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(recordWithMediaEmbed->mVariant);
 
-        const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mVariant);
-
-        if (!std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
-            return {};
-
-        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia.mVariant);
+            if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
+                imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia.mVariant);
+            else if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
+                galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia.mVariant);
+        }
     }
 
     QList<ImageView> images;
 
-    for (const auto& img : imagesView->mImages)
-        images.append(ImageView(img));
+    if (imagesView)
+    {
+        for (const auto& img : imagesView->mImages)
+            images.append(ImageView(img));
+    }
+
+    if (galleryView)
+    {
+        for (const auto& item : galleryView->mItems)
+        {
+            const auto* viewImage = std::get_if<ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr>(&item);
+
+            if (viewImage)
+                images.append(ImageView(*viewImage));
+        }
+    }
 
     return images;
 }

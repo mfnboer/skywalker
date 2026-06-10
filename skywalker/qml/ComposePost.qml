@@ -740,10 +740,11 @@ SkyPage {
                     }
 
                     AccessibleText {
+                        id: maxImagesText
                         x: page.margin
                         width: page.width - 2 * page.margin
                         anchors.top: imageScroller.bottom
-                        anchors.topMargin: 10
+                        anchors.topMargin: 5
                         font.italic: true
                         text: qsTr(`${postItem.images.length} images (max ${maxImages})`)
                         elide: Text.ElideRight
@@ -763,7 +764,7 @@ SkyPage {
                         x: page.margin
                         width: Math.min(height * 1.777, page.width - 2 * page.margin)
                         height: visible ? guiSettings.draftImageHeight : 0
-                        anchors.top: imageScroller.bottom
+                        anchors.top: maxImagesText.visible ? maxImagesText.bottom : imageScroller.bottom
                         anchors.topMargin: visible ? 10 : 0
                         videoSource: video
                         videoStartMs: startMs

@@ -19,6 +19,7 @@ Item {
     id: recordView
     width: parent.width
     height: recordColumn.height + 20
+    clip: guiSettings.mustShowImageCarousel(record.images.length)
 
     Accessible.role: Accessible.Button
     Accessible.name: getSpeech()
