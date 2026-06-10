@@ -518,9 +518,19 @@ void AbstractPostFeedModel::setFeedSyncWarning(const QString& warning)
     }
 }
 
-void AbstractPostFeedModel::reset()
+void AbstractPostFeedModel::backupAndClearFeed()
 {
     beginResetModel();
+    mBackupFeed.clear();
+    mFeed.swap(mBackupFeed);
+    endResetModel();
+}
+
+void AbstractPostFeedModel::restoreFeed()
+{
+    beginResetModel();
+    mFeed.clear();
+    mFeed.swap(mBackupFeed);
     endResetModel();
 }
 
@@ -1354,6 +1364,7 @@ void AbstractPostFeedModel::removeEndOfFeedPlaceHolder()
 void AbstractPostFeedModel::flipPostsOrder()
 {
     qDebug() << "Flip feed order, current reverse:" << mReverseFeed;
+    beginResetModel();
 
     const int endIndex = mFeed.size() - 1;
     int threadStartIndex = -1;
@@ -1386,7 +1397,7 @@ void AbstractPostFeedModel::flipPostsOrder()
     }
 
     mReverseFeed = !mReverseFeed;
-    reset();
+    endResetModel();
 }
 
 void AbstractPostFeedModel::reversePosts(int startPhysicalIndex, int endPhysicalIndex)

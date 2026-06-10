@@ -171,7 +171,8 @@ public:
     Q_INVOKABLE void setOverrideLinkColor(const QString& color);
     Q_INVOKABLE void clearOverrideLinkColor();
 
-    Q_INVOKABLE void reset();
+    Q_INVOKABLE void backupAndClearFeed();
+    Q_INVOKABLE void restoreFeed();
 
     bool empty() const;
 
@@ -304,6 +305,7 @@ protected:
     void changeData(const QList<int>& roles) override;
 
     TimelineFeed mFeed;
+    TimelineFeed mBackupFeed;
     bool mReverseFeed = false;
 
     const QString& mUserDid;

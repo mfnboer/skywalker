@@ -246,11 +246,15 @@ SkyListView {
         // Resetting the model before changing is needed since Qt6.10.1
         // Without resetting, the code will crash
         if (model)
-            model.reset()
+            model.backupAndClearFeed()
 
-        disonnectModelHandlers()
+        disconnectModelHandlers()
+        const oldModel = model
         model = newModel
         connectModelHandlers()
+
+        if (oldModel)
+            oldModel.restoreFeed();
     }
 
     function clearSyncWarning() {
@@ -338,7 +342,7 @@ SkyListView {
         return (lastVisibleIndex >= index - 1 && lastVisibleIndex <= index + 1)
     }
 
-    function disonnectModelHandlers() {
+    function disconnectModelHandlers() {
         if (!model)
             return
 
@@ -359,7 +363,7 @@ SkyListView {
     }
 
     Component.onDestruction: {
-        disonnectModelHandlers()
+        disconnectModelHandlers()
     }
 
     Component.onCompleted: {
