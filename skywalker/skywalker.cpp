@@ -76,7 +76,10 @@ Skywalker::Skywalker(QObject* parent) :
 {
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
-    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
+    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork,
+                                                    ATProto::PlcDirectoryClient::PLC_DIRECTORY_PRIMARY_HOST,
+                                                    ATProto::PlcDirectoryClient::PLC_DIRECTORY_SECONDARY_HOST,
+                                                    this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mContentFilterPolicies.setSkywalker(this);
@@ -190,7 +193,10 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     Q_ASSERT(!mUserSettings.getUser(did).isNull());
     mNetwork->setAutoDeleteReplies(true);
     mNetwork->setTransferTimeout(10000);
-    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork, ATProto::PlcDirectoryClient::PLC_DIRECTORY_HOST, this);
+    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork,
+                                                    ATProto::PlcDirectoryClient::PLC_DIRECTORY_PRIMARY_HOST,
+                                                    ATProto::PlcDirectoryClient::PLC_DIRECTORY_SECONDARY_HOST,
+                                                    this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mContentFilterPolicies.setSkywalker(this);
