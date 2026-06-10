@@ -44,7 +44,6 @@ QString CachedImageProvider::createImageUrl(const QString& webUrl) const
 
     const QString noScheme = url.toString(QUrl::RemoveScheme).sliced(2); // slice off "//"
     const QString imageUrl = QString("image://%1/%2").arg(mName, noScheme);
-    qDebug() << "Convert:" << webUrl << "to:" << imageUrl;
     return imageUrl;
 }
 
@@ -182,8 +181,6 @@ QQuickTextureFactory* CachedImageResponse::textureFactory() const
 
 void CachedImageResponse::loadImage(const QString& id)
 {   
-    qDebug() << "Load image:" << id << "size:" << mRequestedSize << "provider:" << mProviderName;
-
     if (mRequestedSize.isEmpty())
     {
         handleDone(QImage(), {}, false);
@@ -203,7 +200,6 @@ void CachedImageResponse::loadImage(const QString& id)
 
     if (!image.isNull())
     {
-        qDebug() << "Got image from cache:" << id << "provider:" << mProviderName << "format:" << format;
         handleDone(image, format, true);
         return;
     }
