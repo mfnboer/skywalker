@@ -112,6 +112,17 @@ public class SkywalkerActivity extends QtActivity {
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        // WORK AROUND:
+        // In Qt6.11.1 the system bars disappear after starting the content chooser.
+        // This will show them again.
+        if (hasFocus)
+            ScreenUtils.showSystemBars();
+    }
+
+    @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
         // HACK
         return false; // suppress all accessibility events

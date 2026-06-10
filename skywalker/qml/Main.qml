@@ -35,6 +35,10 @@ ApplicationWindow {
     title: skywalker.APP_NAME // qmllint disable missing-property
     color: guiSettings.backgroundColor
 
+    // According to documentation this flag should be set in edge-to-edge mode.
+    // But it seems to break geometry in floating window mode (Android)
+    // flags: Qt.ExpandedClientAreaHint
+
     // Added for Qt6.9 to make all the changes for full screen display in Android 15
     // work. Instead of those changes, using the SafeArea option may be nicer.
     topPadding: 0

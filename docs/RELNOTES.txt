@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.38
 ====
 * Up to 10 images per post

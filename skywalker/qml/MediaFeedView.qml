@@ -10,10 +10,10 @@ SkyListView {
     property int previewIndex: 0
     property var previewImage
     readonly property int closeTransition: StackView.Immediate
-    property int headerHeight: guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
-    property int footerHeight: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
-    property int leftMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
-    property int rightMarginWidth: guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
+    property int headerHeight: root.SafeArea.margins.top // guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
+    property int footerHeight: root.SafeArea.margins.bottom // guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
+    property int leftMarginWidth: root.SafeArea.margins.left // guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
+    property int rightMarginWidth: root.SafeArea.margins.right // guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
     readonly property bool noSideBar: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false
@@ -138,13 +138,6 @@ SkyListView {
         displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
     }
 
-    function orientationHandler() {
-        headerHeight = guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
-        footerHeight = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
-        leftMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
-        rightMarginWidth = guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
-    }
-
     function endOfFeedHandler() {
         console.debug("End of feed:", model.endOfFeed, model.feedName)
 
@@ -153,7 +146,6 @@ SkyListView {
     }
 
     Component.onDestruction: {
-        Screen.onPrimaryOrientationChanged.disconnect(orientationHandler) // qmllint disable missing-property
         resetSystemBars()
 
         if (model) {
@@ -167,9 +159,7 @@ SkyListView {
     }
 
     Component.onCompleted: {
-        Screen.onPrimaryOrientationChanged.connect(orientationHandler) // qmllint disable missing-property
         setSystemBars()
-        orientationHandler()
         model.setOverrideLinkColor(guiSettings.linkColorDarkMode)
 
         if (model.endOfFeed) {
