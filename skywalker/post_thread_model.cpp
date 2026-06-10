@@ -405,6 +405,11 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
                                            bool directReply, bool firstDirectReply, int indentLevel)
 {
     auto threadPost = Post::createPost(reply, mPostFeedModel.mThreadgateView);
+
+    // We don't want to display a blocked post place holder.
+    if (threadPost.isBlocked())
+        return;
+
     threadPost.addThreadType(QEnums::THREAD_CHILD);
     threadPost.setThreadIndentLevel(indentLevel);
 
@@ -699,7 +704,8 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
         post.addThreadType(QEnums::THREAD_LEAF);
     }
 
-    page->addPost(post);
+    if (!post.isBlocked())
+        page->addPost(post);
 
     if (viewPost)
     {
@@ -733,7 +739,8 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
                 parent = nullptr;
             }
 
-            page->prependPost(parentPost);
+            if (!parentPost.isBlocked())
+                page->prependPost(parentPost);
         }
 
         // The entry post is now at the end of the feed

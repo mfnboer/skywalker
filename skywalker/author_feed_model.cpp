@@ -118,7 +118,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
             {
                 auto replyRef = post.getViewPostReplyRef();
 
-                if (replyRef)
+                if (replyRef && !replyRef->mParent.isBlocked())
                 {
                     page->addPost(replyRef->mParent);
                     post.setPostType(QEnums::POST_LAST_REPLY);

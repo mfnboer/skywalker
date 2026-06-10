@@ -1,5 +1,6 @@
 next
 ====
+* Don't show blocked post place holders in a post thread
 * Use Eurosky's DID PLC directory as secondary when the primary is down
 * Fix: more than 4 images in quoted post were not shown
 * Bug fixes
