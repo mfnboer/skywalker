@@ -133,8 +133,9 @@ private:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(Draft::Draft& draft) const;
     ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
     ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const;
-    ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(
-        const ATProto::AppBskyEmbed::Embed* embed, Draft::Quote::SharedPtr quote);
+    std::optional<ATProto::AppBskyEmbed::EmbedViewUnion> createEmbedView(
+        const std::optional<ATProto::AppBskyFeed::Record::Post::EmbedType>& embed,
+        Draft::Quote::SharedPtr quote);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyEmbed::Images* images);
     ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr createImageView(const QJsonObject& imgJson, const QString& imgSource, const QString& alt, const ATProto::AppBskyEmbed::AspectRatio::SharedPtr& aspectRatio);
     ATProto::AppBskyEmbed::GalleryView::SharedPtr createGalleryView(const ATProto::AppBskyEmbed::Gallery* gallery);
@@ -156,7 +157,7 @@ private:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(const ATProto::AppBskyFeed::ThreadgateRules& threadgateRules, const QString& recordUri, QDateTime createdAt) const;
     bool hasEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
     bool hasMediaEmbed(const ATProto::AppBskyDraft::DraftPost& draftPost) const;
-    ATProto::AppBskyEmbed::EmbedView::SharedPtr createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost);
+    std::optional<ATProto::AppBskyEmbed::EmbedViewUnion> createEmbedView(const ATProto::AppBskyDraft::DraftPost& draftPost);
     ATProto::AppBskyEmbed::ImagesView::SharedPtr createImagesView(const ATProto::AppBskyDraft::DraftEmbedImage::List& images);
     ATProto::AppBskyEmbed::GalleryView::SharedPtr createGalleryView(const ATProto::AppBskyDraft::DraftEmbedGallery& gallery);
     ATProto::AppBskyEmbed::VideoView::SharedPtr createVideoView(const ATProto::AppBskyDraft::DraftEmbedVideo& video);

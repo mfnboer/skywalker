@@ -139,7 +139,7 @@ bool PostRecord::isReply() const
 
 bool PostRecord::hasEmbeddedContent() const
 {
-    return mRecord ? mRecord->mEmbed != nullptr : false;
+    return mRecord && mRecord->mEmbed;
 }
 
 ATProto::AppBskyEmbed::Images::SharedPtr PostRecord::getImages() const
@@ -147,7 +147,7 @@ ATProto::AppBskyEmbed::Images::SharedPtr PostRecord::getImages() const
     if (!hasEmbeddedContent())
         return nullptr;
 
-    auto* images = std::get_if<ATProto::AppBskyEmbed::Images::SharedPtr>(&mRecord->mEmbed->mEmbed);
+    auto* images = std::get_if<ATProto::AppBskyEmbed::Images::SharedPtr>(&mRecord->mEmbed.value());
     return images ? *images : nullptr;
 }
 
@@ -156,7 +156,7 @@ ATProto::AppBskyEmbed::Video::SharedPtr PostRecord::getVideo() const
     if (!hasEmbeddedContent())
         return nullptr;
 
-    auto* video = std::get_if<ATProto::AppBskyEmbed::Video::SharedPtr>(&mRecord->mEmbed->mEmbed);
+    auto* video = std::get_if<ATProto::AppBskyEmbed::Video::SharedPtr>(&mRecord->mEmbed.value());
     return video ? *video : nullptr;
 }
 
@@ -165,7 +165,7 @@ ATProto::AppBskyEmbed::External::SharedPtr PostRecord::getExternal() const
     if (!hasEmbeddedContent())
         return nullptr;
 
-    auto* external = std::get_if<ATProto::AppBskyEmbed::External::SharedPtr>(&mRecord->mEmbed->mEmbed);
+    auto* external = std::get_if<ATProto::AppBskyEmbed::External::SharedPtr>(&mRecord->mEmbed.value());
     return external ? *external : nullptr;
 }
 

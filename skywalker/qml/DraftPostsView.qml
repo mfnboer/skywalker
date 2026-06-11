@@ -12,6 +12,7 @@ SkyListView {
     id: view
     model: draftPosts.getDraftPostsModel()
     boundsBehavior: Flickable.StopAtBounds
+    clip: true
 
     delegate: DraftPostViewDelegate {
         required property int index

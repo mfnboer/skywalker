@@ -469,7 +469,7 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
                 return;
             }
 
-            const auto& embed = postViewList[0]->mEmbed;
+            const std::optional<ATProto::AppBskyEmbed::EmbedViewUnion>& embed = postViewList[0]->mEmbed;
 
             if (!embed)
             {
@@ -480,22 +480,19 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
 
             RecordView::SharedPtr recordView;
 
-            switch (embed->mType)
+            if (std::holds_alternative<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*embed))
             {
-            case ATProto::AppBskyEmbed::EmbedViewType::RECORD_VIEW:
-            {
-                auto protoRecordView = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(embed->mEmbed);
+                auto protoRecordView = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*embed);
                 recordView = std::make_shared<RecordView>(*protoRecordView);
-                break;
             }
-            case ATProto::AppBskyEmbed::EmbedViewType::RECORD_WITH_MEDIA_VIEW:
+            else if (std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed))
             {
-                auto protoRecordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mEmbed);
+                auto protoRecordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed);
                 recordView = std::make_shared<RecordView>(*protoRecordWithMediaView->mRecord);
-                break;
             }
-            default:
-                qWarning() << "Unexpected embed type:" << (int)embed->mType;
+            else
+            {
+                qWarning() << "Unexpected embed type";
                 emit detachQuoteFailed("Could not load quote.");
                 return;
             }
@@ -869,9 +866,9 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post,
 
             if (post->mEmbed)
             {
-                if (post->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::RECORD)
+                if (std::holds_alternative<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed))
                 {
-                    const auto& record = std::get<ATProto::AppBskyEmbed::Record::SharedPtr>(post->mEmbed->mEmbed);
+                    const auto& record = std::get<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed);
                     Q_ASSERT(record);
                     Q_ASSERT(record->mRecord);
 
@@ -888,9 +885,9 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                             record->mRecord->mUri, postFeedContext.getQuoteFeedContext());
                     }
                 }
-                else if (post->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA)
+                else if (std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed))
                 {
-                    const auto& recordWithMedia = std::get<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(post->mEmbed->mEmbed);
+                    const auto& recordWithMedia = std::get<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed);
                     Q_ASSERT(recordWithMedia);
                     Q_ASSERT(recordWithMedia->mRecord);
                     Q_ASSERT(recordWithMedia->mRecord->mRecord);

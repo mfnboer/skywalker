@@ -61,29 +61,29 @@ QList<ImageView> RecordWordIndex::getImages() const
 
     ATProto::AppBskyEmbed::ImagesView::SharedPtr imagesView;
     ATProto::AppBskyEmbed::GalleryView::SharedPtr galleryView;
-    auto* imagesEmbed = getEmbedView(ATProto::AppBskyEmbed::ImagesView::TYPE);
-    auto* galleryEmbed = getEmbedView(ATProto::AppBskyEmbed::GalleryView::TYPE);
+    auto* imagesEmbed = getEmbedView<ATProto::AppBskyEmbed::ImagesView::SharedPtr>();
+    auto* galleryEmbed = getEmbedView<ATProto::AppBskyEmbed::GalleryView::SharedPtr>();
 
     if (imagesEmbed)
     {
-        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(imagesEmbed->mVariant);
+        imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*imagesEmbed);
     }
     else if (galleryEmbed)
     {
-        galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(galleryEmbed->mVariant);
+        galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*galleryEmbed);
     }
     else
     {
-        auto* recordWithMediaEmbed = getEmbedView(ATProto::AppBskyEmbed::RecordWithMediaView::TYPE);
+        auto* recordWithMediaEmbed = getEmbedView<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>();
 
         if (recordWithMediaEmbed)
         {
-            const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(recordWithMediaEmbed->mVariant);
+            const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*recordWithMediaEmbed);
 
-            if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
-                imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia.mVariant);
-            else if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
-                galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia.mVariant);
+            if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia))
+                imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia);
+            else if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia))
+                galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia);
         }
     }
 
@@ -114,25 +114,25 @@ VideoView::Ptr RecordWordIndex::getVideoView() const
     if (!mVideo.isNull())
         return  std::make_unique<VideoView>(mVideo);
 
-    auto* embed = getEmbedView(ATProto::AppBskyEmbed::VideoView::TYPE);
+    auto* embed = getEmbedView<ATProto::AppBskyEmbed::VideoView::SharedPtr>();
 
     if (embed)
     {
-        const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(embed->mVariant);
+        const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(*embed);
         return std::make_unique<VideoView>(videoView);
     }
 
-    embed = getEmbedView(ATProto::AppBskyEmbed::RecordWithMediaView::TYPE);
+    embed = getEmbedView<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>();
 
     if (!embed)
         return {};
 
-    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mVariant);
+    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed);
 
-    if (!std::holds_alternative<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
+    if (!std::holds_alternative<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia))
         return {};
 
-    const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia.mVariant);
+    const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia);
     return std::make_unique<VideoView>(videoView);
 }
 
@@ -141,25 +141,25 @@ ExternalView::Ptr RecordWordIndex::getExternalView() const
     if (!mExternal.isNull())
         return std::make_unique<ExternalView>(mExternal);
 
-    auto* embed = getEmbedView(ATProto::AppBskyEmbed::ExternalView::TYPE);
+    auto* embed = getEmbedView<ATProto::AppBskyEmbed::ExternalView::SharedPtr>();
 
     if (embed)
     {
-        const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(embed->mVariant)->mExternal;
+        const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*embed)->mExternal;
         return std::make_unique<ExternalView>(external);
     }
 
-    embed = getEmbedView(ATProto::AppBskyEmbed::RecordWithMediaView::TYPE);
+    embed = getEmbedView<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>();
 
     if (!embed)
         return {};
 
-    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(embed->mVariant);
+    const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed);
 
-    if (!std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia.mVariant))
+    if (!std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia))
         return {};
 
-    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia.mVariant)->mExternal;
+    const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia)->mExternal;
     return std::make_unique<ExternalView>(external);
 }
 
@@ -231,9 +231,9 @@ std::vector<QString> RecordWordIndex::getWebLinks() const
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
     auto links = ATProto::RichTextMaster::getFacetLinks(*recordValue);
 
-    if (recordValue->mEmbed && recordValue->mEmbed->mType == ATProto::AppBskyEmbed::EmbedType::EXTERNAL)
+    if (recordValue->mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::External::SharedPtr>(*recordValue->mEmbed))
     {
-        const auto& external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(recordValue->mEmbed->mEmbed);
+        const auto& external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*recordValue->mEmbed);
         Q_ASSERT(external);
         Q_ASSERT(external->mExternal);
 
@@ -244,7 +244,8 @@ std::vector<QString> RecordWordIndex::getWebLinks() const
     return links;
 }
 
-ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* RecordWordIndex::getEmbedView(const QString& embedViewType) const
+template <typename ViewType>
+ATProto::AppBskyEmbed::EmbedViewUnion* RecordWordIndex::getEmbedView() const
 {
     if (!mRecord || mRecord->mEmbeds.empty())
         return nullptr;
@@ -252,7 +253,7 @@ ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* RecordWordIndex
     // There is a list of embeds; can there be more than 1?
     auto& embed = mRecord->mEmbeds[0];
 
-    if (embed.mType != embedViewType)
+    if (!std::holds_alternative<ViewType>(embed))
         return nullptr;
 
     return &embed;

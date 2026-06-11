@@ -41,7 +41,6 @@ SkyPage {
         anchors.bottom: parent.bottom
         width: parent.width
         currentIndex: tabBar.currentIndex
-        clip: true
 
         onCurrentIndexChanged: tabBar.setCurrentIndex(currentIndex)
 

@@ -30,7 +30,8 @@ public:
     void setExternal(const ExternalView& external) { mExternal = external; }
 
 private:
-    ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* getEmbedView(const QString& embedViewType) const;
+    template <typename ViewType>
+    ATProto::AppBskyEmbed::EmbedViewUnion* getEmbedView() const;
 
     ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr mRecord;
     QList<ImageView> mImages;

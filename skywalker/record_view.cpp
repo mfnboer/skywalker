@@ -199,7 +199,7 @@ QDateTime RecordView::getIndexedAt() const
     return {};
 }
 
-ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* RecordView::getEmbedView() const
+ATProto::AppBskyEmbed::EmbedViewUnion* RecordView::getEmbedView() const
 {
     if (!mPrivate->mRecord || mPrivate->mRecord->mEmbeds.empty())
         return nullptr;
@@ -212,17 +212,16 @@ ATProto::VariantWithType<ATProto::AppBskyEmbed::EmbedViewUnion>* RecordView::get
 bool RecordView::hasUnknownEmbed() const
 {
     const auto* embed = getEmbedView();
-    return embed != nullptr && ATProto::isNullVariant(embed->mVariant);
+    return embed != nullptr && std::holds_alternative<ATProto::UnknownVariant::SharedPtr>(*embed);
 }
 
 QString RecordView::getUnknownEmbedType() const
 {
-    const auto* embed = getEmbedView();
-
-    if (!embed || !ATProto::isNullVariant(embed->mVariant))
+    if (!hasUnknownEmbed())
         return {};
 
-    return embed->mType;
+    const auto* embed = getEmbedView();
+    return std::get<ATProto::UnknownVariant::SharedPtr>(*embed)->mType;
 }
 
 QList<ImageView> RecordView::getImages() const
@@ -322,16 +321,8 @@ bool RecordView::isQuote() const
     if (!post->mEmbed)
         return false;
 
-    switch (post->mEmbed->mType)
-    {
-    case ATProto::AppBskyEmbed::EmbedType::RECORD:
-    case ATProto::AppBskyEmbed::EmbedType::RECORD_WITH_MEDIA:
-        return true;
-    default:
-        break;
-    }
-
-    return false;
+    return std::holds_alternative<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed) ||
+           std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed);
 }
 
 QEnums::TripleBool RecordView::isThread() const
