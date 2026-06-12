@@ -129,7 +129,7 @@ const RecordView MessageView::getEmbed() const
         return {};
 
     // TODO: JoinLinkView
-    if (!std::holds_alternative<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed))
+    if (!ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed))
         return {};
 
     const auto view = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed);

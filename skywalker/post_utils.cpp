@@ -480,12 +480,12 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
 
             RecordView::SharedPtr recordView;
 
-            if (std::holds_alternative<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*embed))
+            if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*embed))
             {
                 auto protoRecordView = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*embed);
                 recordView = std::make_shared<RecordView>(*protoRecordView);
             }
-            else if (std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed))
+            else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed))
             {
                 auto protoRecordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed);
                 recordView = std::make_shared<RecordView>(*protoRecordWithMediaView->mRecord);
@@ -866,7 +866,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post,
 
             if (post->mEmbed)
             {
-                if (std::holds_alternative<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed))
+                if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed))
                 {
                     const auto& record = std::get<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed);
                     Q_ASSERT(record);
@@ -885,7 +885,7 @@ void PostUtils::continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                             record->mRecord->mUri, postFeedContext.getQuoteFeedContext());
                     }
                 }
-                else if (std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed))
+                else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed))
                 {
                     const auto& recordWithMedia = std::get<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed);
                     Q_ASSERT(recordWithMedia);

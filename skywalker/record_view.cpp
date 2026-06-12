@@ -212,7 +212,7 @@ ATProto::AppBskyEmbed::EmbedViewUnion* RecordView::getEmbedView() const
 bool RecordView::hasUnknownEmbed() const
 {
     const auto* embed = getEmbedView();
-    return embed != nullptr && std::holds_alternative<ATProto::UnknownVariant::SharedPtr>(*embed);
+    return embed != nullptr && ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(*embed);
 }
 
 QString RecordView::getUnknownEmbedType() const
@@ -321,8 +321,8 @@ bool RecordView::isQuote() const
     if (!post->mEmbed)
         return false;
 
-    return std::holds_alternative<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed) ||
-           std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed);
+    return ATProto::holdsNonNull<ATProto::AppBskyEmbed::Record::SharedPtr>(*post->mEmbed) ||
+           ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*post->mEmbed);
 }
 
 QEnums::TripleBool RecordView::isThread() const

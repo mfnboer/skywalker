@@ -977,17 +977,17 @@ std::optional<ATProto::AppBskyEmbed::EmbedViewUnion> DraftPosts::createEmbedView
 
     ATProto::AppBskyEmbed::EmbedViewUnion view;
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::Images::SharedPtr>(*embed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::Images::SharedPtr>(*embed))
         view = createImagesView(std::get<ATProto::AppBskyEmbed::Images::SharedPtr>(*embed).get());
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::Gallery::SharedPtr>(*embed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::Gallery::SharedPtr>(*embed))
         view =  createGalleryView(std::get<ATProto::AppBskyEmbed::Gallery::SharedPtr>(*embed).get());
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::Video::SharedPtr>(*embed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::Video::SharedPtr>(*embed))
         view = createVideoView(std::get<ATProto::AppBskyEmbed::Video::SharedPtr>(*embed).get());
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::External::SharedPtr>(*embed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::External::SharedPtr>(*embed))
         view = createExternalView(std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*embed).get());
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::Record::SharedPtr>(*embed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::Record::SharedPtr>(*embed))
         view = createRecordView(std::get<ATProto::AppBskyEmbed::Record::SharedPtr>(*embed).get(), std::move(quote));
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*embed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*embed))
         view = createRecordWithMediaView(std::get<ATProto::AppBskyEmbed::RecordWithMedia::SharedPtr>(*embed).get(), std::move(quote));
     else
         qWarning() << "Unknown embed type";
@@ -2800,7 +2800,7 @@ void DraftPosts::updatePostRecord(const Post& post, int index, const ATProto::Ap
         return;
     }
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*feedViewPost->mPost->mEmbed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*feedViewPost->mPost->mEmbed))
     {
         auto embed = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*feedViewPost->mPost->mEmbed);
         embed->mRecord = createRecordView(record, quote);

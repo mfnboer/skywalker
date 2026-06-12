@@ -321,7 +321,7 @@ QDateTime Post::getRepostTimestamp() const
 
 bool Post::isRepost() const
 {
-    return mFeedViewPost && mFeedViewPost->mReason && std::holds_alternative<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason);
+    return mFeedViewPost && mFeedViewPost->mReason && ATProto::holdsNonNull<ATProto::AppBskyFeed::ReasonRepost::SharedPtr>(*mFeedViewPost->mReason);
 }
 
 std::optional<BasicProfile> Post::getRepostedBy() const
@@ -566,7 +566,7 @@ QString Post::getFeedContext() const
 
 bool Post::hasUnknownEmbed() const
 {
-    return mPost && mPost->mEmbed && std::holds_alternative<ATProto::UnknownVariant::SharedPtr>(*mPost->mEmbed);
+    return mPost && mPost->mEmbed && ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(*mPost->mEmbed);
 }
 
 QString Post::getUnknownEmbedType() const
@@ -583,7 +583,7 @@ QList<ImageView> Post::getImages() const
     if (!mPost || !mPost->mEmbed)
         return {};
     
-    if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed))
     {
         const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed);
         QList<ImageView> images;
@@ -593,7 +593,7 @@ QList<ImageView> Post::getImages() const
 
         return images;
     }
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed))
     {
         const auto& galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed);
         QList<ImageView> images;
@@ -617,8 +617,8 @@ bool Post::hasImages(bool includingRecordWithMedia) const
     if (!mPost || !mPost->mEmbed)
         return false;
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed) ||
-        std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed) ||
+        ATProto::holdsNonNull<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed))
     {
         return true;
     }
@@ -635,7 +635,7 @@ QList<ImageView> Post::getDraftImages() const
     if (!mPost || !mPost->mEmbed)
         return {};
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed))
     {
         const auto& imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(*mPost->mEmbed);
         QList<ImageView> images;
@@ -653,7 +653,7 @@ QList<ImageView> Post::getDraftImages() const
 
         return images;
     }
-    else if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed))
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed))
     {
         const auto& galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(*mPost->mEmbed);
         QList<ImageView> images;
@@ -685,7 +685,7 @@ VideoView::Ptr Post::getVideoView() const
     if (!mPost)
         return {};
 
-    if (!mPost->mEmbed || !std::holds_alternative<ATProto::AppBskyEmbed::VideoView::SharedPtr>(*mPost->mEmbed))
+    if (!mPost->mEmbed || !ATProto::holdsNonNull<ATProto::AppBskyEmbed::VideoView::SharedPtr>(*mPost->mEmbed))
         return {};
 
     const auto& video = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(*mPost->mEmbed);
@@ -697,7 +697,7 @@ bool Post::hasVideo(bool includingRecordWithMedia) const
     if (!mPost || !mPost->mEmbed)
         return false;
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::VideoView::SharedPtr>(*mPost->mEmbed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::VideoView::SharedPtr>(*mPost->mEmbed))
         return true;
 
     if (!includingRecordWithMedia)
@@ -737,7 +737,7 @@ ExternalView::Ptr Post::getExternalView() const
     if (!mPost)
         return {};
     
-    if (!mPost->mEmbed || !std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*mPost->mEmbed))
+    if (!mPost->mEmbed || !ATProto::holdsNonNull<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*mPost->mEmbed))
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*mPost->mEmbed)->mExternal;
@@ -746,7 +746,7 @@ ExternalView::Ptr Post::getExternalView() const
 
 bool Post::hasExternal() const
 {
-    return mPost && mPost->mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*mPost->mEmbed);
+    return mPost && mPost->mEmbed && ATProto::holdsNonNull<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(*mPost->mEmbed);
 }
 
 RecordView::Ptr Post::getRecordView() const
@@ -754,7 +754,7 @@ RecordView::Ptr Post::getRecordView() const
     if (!mPost)
         return {};
     
-    if (!mPost->mEmbed || !std::holds_alternative<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mPost->mEmbed))
+    if (!mPost->mEmbed || !ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mPost->mEmbed))
         return {};
 
     const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mPost->mEmbed);
@@ -766,7 +766,7 @@ RecordWithMediaView::Ptr Post::getRecordWithMediaView() const
     if (!mPost)
         return {};
     
-    if (!mPost->mEmbed || !std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*mPost->mEmbed))
+    if (!mPost->mEmbed || !ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*mPost->mEmbed))
         return {};
 
     const auto& recordView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*mPost->mEmbed);
@@ -796,8 +796,8 @@ bool Post::isQuotePost() const
     if (!mPost->mEmbed)
         return {};
 
-    return std::holds_alternative<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mPost->mEmbed) ||
-           std::holds_alternative<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*mPost->mEmbed);
+    return ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mPost->mEmbed) ||
+           ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*mPost->mEmbed);
 }
 
 int Post::getReplyCount() const

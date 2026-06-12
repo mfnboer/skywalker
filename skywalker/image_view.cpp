@@ -31,10 +31,10 @@ QString ImageView::getThumbUrl() const
     if (ATProto::isNullVariant(mViewImage))
         return mFullSizeUrl;
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr>(mViewImage))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr>(mViewImage))
         return std::get<ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr>(mViewImage)->mThumb;
 
-    if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr>(mViewImage))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr>(mViewImage))
         return std::get<ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr>(mViewImage)->mThumbnail;
 
     qWarning() << "Unknown variant";

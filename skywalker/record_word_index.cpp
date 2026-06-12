@@ -80,9 +80,9 @@ QList<ImageView> RecordWordIndex::getImages() const
         {
             const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*recordWithMediaEmbed);
 
-            if (std::holds_alternative<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia))
+            if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia))
                 imagesView = std::get<ATProto::AppBskyEmbed::ImagesView::SharedPtr>(recordWithMediaView->mMedia);
-            else if (std::holds_alternative<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia))
+            else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia))
                 galleryView = std::get<ATProto::AppBskyEmbed::GalleryView::SharedPtr>(recordWithMediaView->mMedia);
         }
     }
@@ -129,7 +129,7 @@ VideoView::Ptr RecordWordIndex::getVideoView() const
 
     const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed);
 
-    if (!std::holds_alternative<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia))
+    if (!ATProto::holdsNonNull<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia))
         return {};
 
     const auto& videoView = std::get<ATProto::AppBskyEmbed::VideoView::SharedPtr>(recordWithMediaView->mMedia);
@@ -156,7 +156,7 @@ ExternalView::Ptr RecordWordIndex::getExternalView() const
 
     const auto& recordWithMediaView = std::get<ATProto::AppBskyEmbed::RecordWithMediaView::SharedPtr>(*embed);
 
-    if (!std::holds_alternative<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia))
+    if (!ATProto::holdsNonNull<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia))
         return {};
 
     const auto& external = std::get<ATProto::AppBskyEmbed::ExternalView::SharedPtr>(recordWithMediaView->mMedia)->mExternal;
@@ -231,7 +231,7 @@ std::vector<QString> RecordWordIndex::getWebLinks() const
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
     auto links = ATProto::RichTextMaster::getFacetLinks(*recordValue);
 
-    if (recordValue->mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::External::SharedPtr>(*recordValue->mEmbed))
+    if (recordValue->mEmbed && ATProto::holdsNonNull<ATProto::AppBskyEmbed::External::SharedPtr>(*recordValue->mEmbed))
     {
         const auto& external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*recordValue->mEmbed);
         Q_ASSERT(external);
@@ -253,7 +253,7 @@ ATProto::AppBskyEmbed::EmbedViewUnion* RecordWordIndex::getEmbedView() const
     // There is a list of embeds; can there be more than 1?
     auto& embed = mRecord->mEmbeds[0];
 
-    if (!std::holds_alternative<ViewType>(embed))
+    if (!ATProto::holdsNonNull<ViewType>(embed))
         return nullptr;
 
     return &embed;

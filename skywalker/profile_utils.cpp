@@ -548,7 +548,7 @@ void ProfileUtils::getStatus(const QString& did)
 
             QString uri;
 
-            if (status->mEmbed && std::holds_alternative<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed))
+            if (status->mEmbed && ATProto::holdsNonNull<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed))
             {
                 auto external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed);
                 uri = external->mExternal->mUri;
