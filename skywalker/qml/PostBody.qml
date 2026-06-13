@@ -102,7 +102,7 @@ Column {
             maximumLineCount: maxTextLines
             textFormat: isSimpleText() ? Text.StyledText : Text.RichText
             font.pointSize: getPostFontSize()
-            text: displayText
+            text: postTextMetaInfo.hasFullHtml ? UnicodeFonts.scaleHtmlImgTags(displayText, width) : displayText
             bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
 
             LinkCatcher {

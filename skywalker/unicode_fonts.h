@@ -48,6 +48,7 @@ public:
     Q_INVOKABLE static bool isCashtag(const QString& text);
     Q_INVOKABLE static bool isHashCashtag(const QString& text);
     Q_INVOKABLE static QString turnLastThreadSymbolIntoLink(const QString& text);
+    Q_INVOKABLE static QString scaleHtmlImgTags(const QString& text, int width);
 
     static bool isEmojiCodePoint(uint c); // heuristic
     static bool isEmoji(const QString& grapheme);

@@ -606,4 +606,52 @@ std::vector<QString> UnicodeFonts::extractHashtags(const QString& text)
     return tags;
 }
 
+QString UnicodeFonts::scaleHtmlImgTags(const QString& text, int width)
+{
+    static const QRegularExpression IMG_RE(R"(<img [^>]*width=[\"'](?<width>[0-9]+?)[\"'] [^>]*height=[\"'](?<height>[0-9]+?)[\"'][^>]*/>)");
+
+    int prevPos = 0;
+    QString newText;
+
+    for (const auto &match : IMG_RE.globalMatch(text))
+    {
+        if (!match.hasMatch())
+            continue;
+
+        QString imgWidthStr = match.captured("width");
+        QString imgHeightStr = match.captured("height");
+
+        if (imgWidthStr.isEmpty() || imgHeightStr.isEmpty())
+            continue;
+
+        int imgWidth = imgWidthStr.toInt();
+        int imgHeight = imgHeightStr.toInt();
+
+        if (imgWidth <= width)
+            continue;
+
+        if (imgHeight <= 0)
+            continue;
+
+        int newHeight = ((double)imgHeight / imgWidth) * width;
+        qDebug() << "imgWidth:" << imgWidth << "imgHeight:" << imgHeight << "width:" << width << "height:" << newHeight;
+        int widthStart = match.capturedStart("width");
+        int widthEnd = match.capturedEnd("width");
+        int heightStart = match.capturedStart("height");
+        int heightEnd = match.capturedEnd("height");
+        int imgEnd = match.capturedEnd();
+
+        newText += text.sliced(prevPos, widthStart - prevPos) +
+                   QString::number(width) +
+                   text.sliced(widthEnd, heightStart - widthEnd) +
+                   QString::number(newHeight) +
+                   text.sliced(heightEnd, imgEnd - heightEnd);
+
+        prevPos = imgEnd;
+    }
+
+    newText += text.sliced(prevPos);
+    return newText;
+}
+
 }

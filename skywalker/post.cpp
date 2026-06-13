@@ -238,7 +238,10 @@ TextMetaInfo Post::getTextMetaInfo() const
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     const QString text = getText();
-    return UnicodeFonts::getTextMetaInfo(text, !record->mFacets.empty());
+    auto metaInfo = UnicodeFonts::getTextMetaInfo(text, !record->mFacets.empty());
+    metaInfo.setHasFullHtml(record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty());
+
+    return metaInfo;
 }
 
 NamedLink::List Post::getDraftEmbeddedLinks() const

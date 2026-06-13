@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.38.1
 ======
 * Don't show blocked post placeholders in a post thread
