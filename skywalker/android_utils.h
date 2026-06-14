@@ -12,6 +12,9 @@ public:
     static bool checkPermission(const QString& permission);
     static bool sendAppToBackground();
 
+    static void showSystemBars();
+    static void hideSystemBars();
+
     static void setNavigationBarColor(QColor color, QEnums::DisplayMode displayMode);
     static void setNavigationBarColorAndMode(QColor color, bool isLightMode);
     static int getNavigationBarSize(QEnums::InsetsSide side);

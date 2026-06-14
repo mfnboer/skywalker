@@ -134,6 +134,13 @@ Rectangle {
         height: root.height
         color: "transparent"
 
+        onShowDetailsChanged: {
+            if (showDetails)
+                displayUtils.showSystemBars()
+            else
+                displayUtils.hideSystemBars()
+        }
+
         Loader {
             id: videoLoader
             active: Boolean(postOrRecordVideo)

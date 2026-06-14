@@ -63,6 +63,20 @@ bool AndroidUtils::sendAppToBackground()
 #endif
 }
 
+void AndroidUtils::showSystemBars()
+{
+#ifdef Q_OS_ANDROID
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ScreenUtils", "showSystemBars");
+#endif
+}
+
+void AndroidUtils::hideSystemBars()
+{
+#ifdef Q_OS_ANDROID
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ScreenUtils", "hideSystemBars");
+#endif
+}
+
 void AndroidUtils::setNavigationBarColor(QColor color, QEnums::DisplayMode displayMode)
 {
     const bool isLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);

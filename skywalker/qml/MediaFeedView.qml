@@ -147,6 +147,7 @@ SkyListView {
 
     Component.onDestruction: {
         resetSystemBars()
+        displayUtils.showSystemBars()
 
         if (model) {
             model.clearOverrideLinkColor()

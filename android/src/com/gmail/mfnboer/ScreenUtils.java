@@ -22,6 +22,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 public class ScreenUtils {
     private static final String LOGTAG = "ScreenUtils";
@@ -282,14 +283,19 @@ public class ScreenUtils {
             return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // API 30+
-            WindowInsetsController controller = sActivity.getWindow().getInsetsController();
+        WindowInsetsControllerCompat windowInsetsController =
+                WindowCompat.getInsetsController(sActivity.getWindow(), sActivity.getWindow().getDecorView());
+        windowInsetsController.show(WindowInsetsCompat.Type.systemBars());
+    }
 
-            if (controller != null)
-                controller.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+    public static void hideSystemBars() {
+        if (sActivity == null) {
+            Log.w(LOGTAG, "Acitivity not set");
+            return;
         }
 
-        // NOTE: on lower API levels, the problem with disappearing bars seems not to happen.
+        WindowInsetsControllerCompat windowInsetsController =
+                WindowCompat.getInsetsController(sActivity.getWindow(), sActivity.getWindow().getDecorView());
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
     }
 }

@@ -21,6 +21,8 @@ public:
 
     Q_INVOKABLE ScopedHandle* keepScreenOn();
     Q_INVOKABLE static bool sendAppToBackground();
+    Q_INVOKABLE static void showSystemBars();
+    Q_INVOKABLE static void hideSystemBars();
     Q_INVOKABLE void setNavigationBarColor(QColor color) const;
     Q_INVOKABLE static void setNavigationBarColorAndMode(QColor color, bool isLightMode);
     Q_INVOKABLE static int getNavigationBarSize(QEnums::InsetsSide side);

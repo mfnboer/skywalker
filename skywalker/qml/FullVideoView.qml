@@ -52,6 +52,13 @@ SkyPage {
         isFullViewMode: true
 
         onThumbImageLoaded: previewLoader.active = false
+
+        onShowPlayControlsChanged: {
+            if (showPlayControls)
+                displayUtils.showSystemBars()
+            else
+                displayUtils.hideSystemBars()
+        }
     }
 
     Rectangle {
@@ -173,6 +180,7 @@ SkyPage {
 
     Component.onDestruction: {
         resetSystemBarsColor()
+        displayUtils.showSystemBars()
     }
 
     Component.onCompleted: {

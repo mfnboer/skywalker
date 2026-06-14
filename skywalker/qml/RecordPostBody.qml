@@ -30,6 +30,7 @@ Column {
     property bool detailedView: false
     property int initialShowMaxTextLines: 25
     property int maxTextLines: 10000
+    readonly property int minInitialMax: Math.min(initialShowMaxTextLines, maxTextLines)
     property string bodyBackgroundColor: guiSettings.backgroundColor
     property bool showWarnedPost: false
     property bool mutePost: postMuted !== QEnums.MUTED_POST_NONE
@@ -55,10 +56,12 @@ Column {
 
     id: postBody
 
+    // HACK: the number of new lines is a guess to determine if we need the expensive SkyCleanedText
+    // minInitialMax < 10 => always uses SkyCleneadText as number of new lines is probably off.
     Loader {
         width: parent.width
         Layout.fillWidth: true
-        active: postVisible() && displayText && (postTextMetaInfo.isNull() || postTextMetaInfo.newLineCount >= initialShowMaxTextLines)
+        active: postVisible() && displayText && (postTextMetaInfo.isNull() || postTextMetaInfo.newLineCount >= minInitialMax || minInitialMax < 10)
 
         SkyCleanedText {
             wrapMode: Text.Wrap
@@ -94,7 +97,7 @@ Column {
     Loader {
         width: parent.width
         Layout.fillWidth: true
-        active: postVisible() && displayText && !postTextMetaInfo.isNull() && postTextMetaInfo.newLineCount < initialShowMaxTextLines
+        active: postVisible() && displayText && !postTextMetaInfo.isNull() && postTextMetaInfo.newLineCount < minInitialMax && minInitialMax >= 10
 
         sourceComponent: AccessibleText {
             wrapMode: Text.Wrap

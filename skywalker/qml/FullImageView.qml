@@ -20,6 +20,13 @@ SkyPage {
     height: parent.height
     background: Rectangle { color: guiSettings.fullScreenColor }
 
+    onShowControlsChanged: {
+        if (showControls)
+            displayUtils.showSystemBars()
+        else
+            displayUtils.hideSystemBars()
+    }
+
     Loader {
         id: previewLoader
         active: Boolean(previewImage)
@@ -197,6 +204,7 @@ SkyPage {
 
     Component.onDestruction: {
         resetSystemBarsColor()
+        displayUtils.showSystemBars()
     }
 
     Component.onCompleted: {

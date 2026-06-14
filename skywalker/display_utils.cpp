@@ -37,6 +37,16 @@ bool DisplayUtils::sendAppToBackground()
     return AndroidUtils::sendAppToBackground();
 }
 
+void DisplayUtils::showSystemBars()
+{
+    AndroidUtils::showSystemBars();
+}
+
+void DisplayUtils::hideSystemBars()
+{
+    AndroidUtils::hideSystemBars();
+}
+
 void DisplayUtils::setNavigationBarColor(QColor color) const
 {
     Q_ASSERT(mSkywalker);
