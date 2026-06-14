@@ -40,7 +40,10 @@ Rectangle {
                 y: rowPadding + 2
                 width: parent.width - 12
                 author: reactionRect.author
-                onClicked: skywalker.getDetailedProfile(author.did)
+                onClicked: {
+                    if (!author.isNull())
+                        skywalker.getDetailedProfile(author.did)
+                }
             }
         }
 
@@ -121,5 +124,21 @@ Rectangle {
 
     EmojiNames {
         id: emojiNames
+    }
+
+    Loader {
+        id: profileLoader
+        active: author.isNull()
+
+        sourceComponent: ProfileUtils {
+            skywalker: reactionRect.skywalker
+
+            onBasicProfileOk: (profile) => reactionRect.author = profile
+        }
+
+        onStatusChanged: {
+            if (status == Loader.Ready)
+                item.getBasicProfile(reaction.senderDid)
+        }
     }
 }

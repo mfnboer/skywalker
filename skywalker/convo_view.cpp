@@ -7,6 +7,7 @@ namespace Skywalker {
 ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& userDid) :
     mId(convo.mId),
     mRev(convo.mRev),
+    mKind((convo.mKind && ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo.mKind)) ? QEnums::CONVO_KIND_GROUP : QEnums::CONVO_KIND_DIRECT),
     mMuted(convo.mMuted),
     mStatus(convo.mStatus ? QEnums::ConvoStatus(*convo.mStatus) : QEnums::CONVO_STATUS_UNKNOWN),
     mUnreadCount(convo.mUnreadCount)

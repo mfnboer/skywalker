@@ -34,6 +34,7 @@ Item {
     }
 
     // Geometry
+    readonly property int avatarSmallWidth: 25
     readonly property int draftImageHeight: 180
     readonly property int draftImageWidth: 240
     readonly property int footerHeight: 50

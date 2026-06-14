@@ -379,6 +379,13 @@ public:
     };
     Q_ENUM(ConvoStatus)
 
+    enum ConvoKind
+    {
+        CONVO_KIND_DIRECT,
+        CONVO_KIND_GROUP
+    };
+    Q_ENUM(ConvoKind)
+
     enum ThreadStyle
     {
         THREAD_STYLE_BAR,

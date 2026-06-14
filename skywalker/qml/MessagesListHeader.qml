@@ -79,7 +79,7 @@ Rectangle {
                     Avatar {
                         required property chatbasicprofile modelData
 
-                        width: 25
+                        width: guiSettings.avatarSmallWidth
                         author: modelData.basicProfile
                         showFollowingStatus: false
                     }

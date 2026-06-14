@@ -14,6 +14,7 @@ class ConvoView
     Q_GADGET
     Q_PROPERTY(QString id READ getId FINAL)
     Q_PROPERTY(QString rev READ getRev FINAL)
+    Q_PROPERTY(QEnums::ConvoKind kind READ getKind FINAL)
     Q_PROPERTY(ChatBasicProfileList members READ getMembers FINAL)
     Q_PROPERTY(QString memberNames READ getMemberNames FINAL)
     Q_PROPERTY(bool muted READ isMuted FINAL)
@@ -31,6 +32,7 @@ public:
     const QString& getId() const { return mId; }
     const QString& getRev() const { return mRev; }
     const QString& getRevIncludingReactions() const;
+    QEnums::ConvoKind getKind() const { return mKind; }
     const ChatBasicProfileList& getMembers() const { return mMembers; }
     const QString getMemberNames() const { return mMemberNames.join(", "); }
     bool isMuted() const { return mMuted; }
@@ -50,6 +52,7 @@ public:
 private:
     QString mId;
     QString mRev;
+    QEnums::ConvoKind mKind;
     ChatBasicProfileList mMembers; // all others than the user
     bool mMuted = false;
     QEnums::ConvoStatus mStatus = QEnums::CONVO_STATUS_UNKNOWN;

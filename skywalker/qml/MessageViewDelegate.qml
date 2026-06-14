@@ -14,8 +14,10 @@ Rectangle {
     required property bool sameDateAsPrevious
     required property bool endOfList
     property Skywalker skywalker: root.getSkywalker()
-    readonly property basicprofile author: senderIsUser ? skywalker.user : convo.getMember(message.senderDid).basicProfile
-    property int maxTextWidth: viewWidth - 80
+    property basicprofile author: senderIsUser ? skywalker.user : convo.getMember(message.senderDid).basicProfile
+    readonly property bool isGroupConvo: convo.kind === QEnums.CONVO_KIND_GROUP
+    readonly property int messageIndent: isGroupConvo ? guiSettings.avatarSmallWidth + 10 : 0
+    property int maxTextWidth: viewWidth - 80 - messageIndent
     property int maxTextLines: 1000
     readonly property int margin: 10
 
@@ -53,10 +55,43 @@ Rectangle {
         visible: !sameDateAsPrevious
     }
 
+    Loader {
+        x: margin
+        anchors.bottom: messageRect.bottom
+        width: guiSettings.avatarSmallWidth
+        height: width
+        active: isGroupConvo && !senderIsUser && !sameSenderAsNext
+
+        sourceComponent:  Avatar {
+            author: view.author
+
+            onClicked: {
+                if (!view.author.isNull())
+                    skywalker.getDetailedProfile(view.author.did)
+            }
+        }
+    }
+
+    Loader {
+        id: senderName
+        x: margin + messageIndent
+        anchors.top: messageDateText.bottom
+        active: isGroupConvo && !senderIsUser && !sameSenderAsPrevious
+
+        sourceComponent: SkyCleanedTextLine {
+            topPadding: 10
+            width: maxTextWidth
+            elide: Text.ElideRight
+            color: Material.color(Material.Grey)
+            font.pointSize: guiSettings.scaledFont(7/8)
+            plainText: view.author.name
+        }
+    }
+
     Rectangle {
         id: messageRect
-        x: senderIsUser ? viewWidth - margin - width : margin
-        anchors.top: messageDateText.bottom;
+        x: senderIsUser ? viewWidth - margin - width : margin + messageIndent
+        anchors.top: senderName.bottom
         anchors.topMargin: 5
         width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0)
         height: messageText.height + (embed.visible ? embed.height + 10 : 0)
@@ -64,7 +99,6 @@ Rectangle {
         color: senderIsUser ? guiSettings.messageUserBackgroundColor :
                               guiSettings.messageOtherBackgroundColor
 
-        // TODO: show ava/name for multi-person chat
         SkyCleanedText {
             // Note: textMetrics.boundingRect.width gave a wrong width when the text
             // ended with an emoji VARIATION SELECTOR-16 (U+FE0F)
@@ -72,7 +106,7 @@ Rectangle {
             readonly property string deletedText: qsTr("message deleted")
 
             id: messageText
-            width: Math.min(textWidth + 5 + leftPadding + rightPadding, maxTextWidth)
+            width: Math.min(textWidth + 5 + leftPadding + rightPadding, maxTextWidth - messageIndent)
             leftPadding: 10
             rightPadding: 10
             topPadding: 5
@@ -125,7 +159,7 @@ Rectangle {
         RecordView {
             id: embed
             x: 10
-            width: maxTextWidth - 20
+            width: maxTextWidth - 20 - messageIndent
             anchors.top: messageText.bottom
             record: message.embed
             visible: !message.embed.isNull()
@@ -249,6 +283,22 @@ Rectangle {
                          (reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom)
     }
 
+    Loader {
+        id: profileLoader
+        active: author.isNull()
+
+        sourceComponent: ProfileUtils {
+            skywalker: view.skywalker
+
+            onBasicProfileOk: (profile) => view.author = profile
+        }
+
+        onStatusChanged: {
+            if (status == Loader.Ready)
+                item.getBasicProfile(message.senderDid)
+        }
+    }
+
     function getMessageDateIndication() {
         if (guiSettings.isToday(message.sentAt))
             return qsTr("Today")
@@ -276,6 +326,4 @@ Rectangle {
 
         return UnicodeFonts.onlyEmojis(message.text)
     }
-
-
 }
