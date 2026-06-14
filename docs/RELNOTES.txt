@@ -1,5 +1,6 @@
 next
 ====
+* Click on search icon on search page to set focus on text input
 * Bug fixes
 
 4.38.1
