@@ -715,6 +715,12 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/LoaderImageCarouselPreview.qml
         QML_FILES
         QML_FILES qml/ImagePreviewInCarousel.qml
+        SOURCES group_convo.h
+        SOURCES group_convo.cpp
+        QML_FILES qml/AllowIncomingChat.qml
+        QML_FILES qml/MessageViewReply.qml
+        QML_FILES qml/MessageText.qml
+        QML_FILES qml/QuoteMessage.qml
 )
 
 target_link_libraries(libskywalker

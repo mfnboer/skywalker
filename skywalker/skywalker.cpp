@@ -4785,7 +4785,10 @@ EditUserPreferences* Skywalker::getEditUserPreferences()
     mEditUserPreferences->setUserPreferences(mUserPreferences);
 
     if (mChat)
+    {
         mEditUserPreferences->setAllowIncomingChat(mChat->getAllowIncomingChat());
+        mEditUserPreferences->setAllowGroupInvites(mChat->getAllowGroupInvites());
+    }
 
     if (session->getPDS())
     {
@@ -4815,8 +4818,10 @@ void Skywalker::saveUserPreferences()
     saveAutomatedAccount();
 
     const auto allowIncomingChat = mEditUserPreferences->getAllowIncomingChat();
-    if (allowIncomingChat != mChat->getAllowIncomingChat())
-        mChat->updateSettings(allowIncomingChat);
+    const auto allowGroupInvites = mEditUserPreferences->getAllowGroupInvites();
+
+    if (allowIncomingChat != mChat->getAllowIncomingChat() || allowGroupInvites != mChat->getAllowGroupInvites())
+        mChat->updateSettings(allowIncomingChat, allowGroupInvites);
 
     if (!mEditUserPreferences->isModified())
     {

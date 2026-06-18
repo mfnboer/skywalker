@@ -18,6 +18,7 @@ class TextMetaInfo
 
 public:
     Q_INVOKABLE bool isNull() const { return mNewLineCount < 0; }
+    Q_INVOKABLE bool isSimpleText() const { return !mHasFacets && !mHasCombinedEmoji && !mHasContinuousWhitespace; }
     int getNewLineCount() const { return mNewLineCount; }
     bool hasContinuousWhitespace() const { return mHasContinuousWhitespace; }
     bool hasFacets() const { return mHasFacets; }

@@ -13,7 +13,8 @@ SkyPage {
     readonly property int margin: 10
     property var skywalker: root.getSkywalker()
     property int textInputToolbarHeight: (keyboardHandler.keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
-    property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height : 0
+    readonly property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height + margin : 0
+    readonly property int replyToContentHeight: replyToColumn.visible ? replyToColumn.height + margin : 0
     property int lastIndex: -1
     readonly property alias sideBarAuthor: page.firstMember
     readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
@@ -40,9 +41,9 @@ SkyPage {
     SkyListView {
         id: messagesView
         width: parent.width
-        height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.padding - newMessageText.bottomPadding
+        height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.topPadding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
-        cacheBuffer: Screen.height * 6
+        cacheBuffer: Screen.height * 3
         boundsMovement: Flickable.StopAtBounds
         clip: true
 
@@ -53,6 +54,7 @@ SkyPage {
 
             viewWidth: messagesView.width
             convo: page.convo
+            onReplyToMessage: (msg, msgAuthor) => page.replyToMessage(msg, msgAuthor)
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
             onOpeningEmbed: page.lastIndex = index
@@ -107,7 +109,7 @@ SkyPage {
 
         id: flick
         width: parent.width
-        height: Math.min(newMessageText.height - newMessageText.padding - newMessageText.bottomPadding, maxInputTextHeight)
+        height: Math.min(newMessageText.height - newMessageText.topPadding - newMessageText.bottomPadding, maxInputTextHeight)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: newMessageText.bottomPadding
         clip: true
@@ -140,11 +142,15 @@ SkyPage {
             property bool quoteFixed: false
             property generatorview nullFeed
             property generatorview quoteFeed
+            property messageview nullMessage
+            property messageview replyTo
+            property basicprofile replyToAuthor
 
             id: newMessageText
             x: page.margin
             width: parent.width - sendButton.width - 3 * page.margin
             padding: page.margin
+            topPadding: page.margin + replyToContentHeight
             bottomPadding: 2 * page.margin + textInputToolbarHeight + quotedContentHeight
             bottomOffset: -bottomPadding // NOTE: the fick only covers the text content
             parentPage: page
@@ -205,6 +211,7 @@ SkyPage {
             function reset() {
                 clear()
                 fixQuoteLink(false)
+                replyTo = nullMessage
             }
         }
     }
@@ -223,15 +230,41 @@ SkyPage {
 
     Rectangle {
         x: page.margin
-        y: flick.y - newMessageText.padding
+        y: flick.y - newMessageText.topPadding
         z: -1
         width: newMessageText.width
-        height: flick.height + newMessageText.bottomPadding
+        height: replyToContentHeight + flick.height + newMessageText.bottomPadding
         radius: guiSettings.radius
         color: guiSettings.messageNewBackgroundColor
         border.width: newMessageText.activeFocus ? 1 : 0
         border.color: guiSettings.buttonColor
         visible: convoAccepted
+
+        // Reply-to message
+        Rectangle {
+            radius: guiSettings.radius
+            anchors.fill: replyToColumn
+            border.width: 1
+            border.color: guiSettings.borderHighLightColor
+            color: guiSettings.postHighLightColor
+            visible: replyToColumn.visible
+        }
+        QuoteMessage {
+            id: replyToColumn
+            x: page.margin
+            width: parent.width - 2 * page.margin
+            anchors.top: parent.top
+            anchors.topMargin: page.margin
+            convo: page.convo
+            message: newMessageText.replyTo
+            author: newMessageText.replyToAuthor
+            visible: !newMessageText.replyTo.isNull()
+
+            onCloseClicked: {
+                newMessageText.replyTo = newMessageText.nullMessage
+                newMessageText.forceActiveFocus()
+            }
+        }
 
         // Quote post
         Rectangle {
@@ -247,6 +280,7 @@ SkyPage {
             x: page.margin
             width: parent.width - 2 * page.margin
             anchors.bottom: fontSelector.visible ? fontSelector.top : parent.bottom
+            anchors.bottomMargin: page.margin
             author: newMessageText.quoteAuthor
             postText: newMessageText.quoteText
             postDateTime: newMessageText.quoteDateTime
@@ -274,6 +308,7 @@ SkyPage {
             x: page.margin
             width: parent.width - 2 * page.margin
             anchors.bottom: fontSelector.visible ? fontSelector.top : parent.bottom
+            anchors.bottomMargin: page.margin
             feed: newMessageText.quoteFeed
             visible: !newMessageText.quoteFeed.isNull()
         }
@@ -386,11 +421,12 @@ SkyPage {
             return
 
         isSending = true
+        const replyToId = newMessageText.replyTo.id
         const qUri = newMessageText.getQuoteUri()
         const qCid = newMessageText.getQuoteCid()
-        let msgText = newMessageText.text
+        const msgText = newMessageText.text
         console.debug("Send message:", convo.id, msgText)
-        chat.sendMessage(convo.id, msgText, qUri, qCid, newMessageText.embeddedLinks)
+        chat.sendMessage(convo.id, msgText, replyToId, qUri, qCid, newMessageText.embeddedLinks)
     }
 
     function addReaction(messageId, emoji) {
@@ -399,6 +435,11 @@ SkyPage {
 
     function deleteReaction(messageId, emoji) {
         chat.deleteReaction(convo.id, messageId, emoji)
+    }
+
+    function replyToMessage(message, author) {
+        newMessageText.replyTo = message
+        newMessageText.replyToAuthor = author
     }
 
     function deleteMessage(messageId) {
@@ -554,9 +595,6 @@ SkyPage {
         let lastVisibleIndex = messagesView.getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", messagesView.count)
         messagesView.positionViewAtIndex(Math.max(index, 0), ListView.End)
-
-        firstVisibleIndex = messagesView.getFirstVisibleIndex()
-        lastVisibleIndex = messagesView.getLastVisibleIndex()
         return (lastVisibleIndex >= index && firstVisibleIndex <= index)
     }
 

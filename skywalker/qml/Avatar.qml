@@ -14,6 +14,7 @@ Item {
     readonly property bool showThumb: width < 90 // from bsky client code
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
     property bool showModeratorIcon: true
+    property bool showGroupIcon: false
     readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author)
     readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
     readonly property bool isActive: activityStatus ? activityStatus.active : false
@@ -136,6 +137,29 @@ Item {
                 y: height - height * 0.2
                 width: parent.width * 0.6
                 height: width
+            }
+        }
+    }
+
+    Loader {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: avatarItem.width * 0.4
+        height: width
+        active: showGroupIcon
+
+        sourceComponent: Rectangle {
+            radius: width / 2
+            color: guiSettings.groupIconColor
+            border.color: guiSettings.backgroundColor
+
+            SkySvg {
+                x: 3
+                y: parent.height - 3
+                width: parent.width - 6
+                height: width
+                color: "white"
+                svg: SvgFilled.group
             }
         }
     }

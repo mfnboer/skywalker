@@ -131,9 +131,7 @@ Column {
             }
 
             function isSimpleText() {
-                return !postTextMetaInfo.hasFacets &&
-                        !postTextMetaInfo.hasCombinedEmoji &&
-                        !postTextMetaInfo.hasContinuousWhitespace &&
+                return postTextMetaInfo.isSimpleText() &&
                         !replaceThreadIndicator &&
                         !showThreadIndicator
             }

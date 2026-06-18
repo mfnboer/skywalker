@@ -47,6 +47,7 @@ Rectangle {
                 y: parent.y + 5
                 width: parent.width - 13
                 author: firstMember
+                showGroupIcon: convo.kind === QEnums.CONVO_KIND_GROUP
                 onClicked: skywalker.getDetailedProfile(firstMember.did)
 
                 BadgeCounter {
@@ -70,7 +71,7 @@ Rectangle {
                     elide: Text.ElideRight
                     font.bold: true
                     color: guiSettings.textColor
-                    plainText: convo.memberNames
+                    plainText: convo.title
                 }
 
                 SkySvg {

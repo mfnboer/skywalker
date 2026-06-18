@@ -50,6 +50,7 @@ void Chat::reset()
     setStartConvoInProgress(false);
     setMessagesInProgress(false);
     mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+    mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
     mChatMaster = nullptr;
     mPostMaster = nullptr;
     mPresence = std::make_unique<Presence>();
@@ -69,7 +70,9 @@ void Chat::initSettings()
                 return;
 
             mAllowIncomingChat = (QEnums::AllowIncomingChat)declaration->mAllowIncoming;
-            qDebug() << "Allow incoming chat:" << mAllowIncomingChat;
+            mAllowGroupInvites = (QEnums::AllowIncomingChat)declaration->mAllowGroupInvites.value_or(declaration->mAllowIncoming);
+
+            qDebug() << "Allow incoming chat:" << mAllowIncomingChat << "group:" << mAllowGroupInvites;
         },
         [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
@@ -77,10 +80,11 @@ void Chat::initSettings()
 
             qWarning() << "Failed to get chat settings:" << error << "-" << msg;
             mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+            mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
         });
 }
 
-void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming)
+void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming, QEnums::AllowIncomingChat allowGroupInvites)
 {
     qDebug() << "Update settings";
     Q_ASSERT(mBsky);
@@ -90,14 +94,16 @@ void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming)
 
     ATProto::ChatBskyActor::Declaration declaration;
     declaration.mAllowIncoming = (ATProto::AppBskyActor::AllowIncomingType)allowIncoming;
+    declaration.mAllowGroupInvites = (ATProto::AppBskyActor::AllowIncomingType)allowGroupInvites;
 
     chatMaster()->updateDeclaration(mUserDid, declaration,
-        [this, presence=*mPresence, allowIncoming]{
+        [this, presence=*mPresence, allowIncoming, allowGroupInvites]{
             if (!presence)
                 return;
 
             mAllowIncomingChat = allowIncoming;
-            qDebug() << "Allow incoming chat:" << mAllowIncomingChat;
+            mAllowGroupInvites = allowGroupInvites;
+            qDebug() << "Allow incoming chat:" << mAllowIncomingChat << "group:" << mAllowGroupInvites;
         },
         [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
@@ -853,6 +859,7 @@ QString Chat::getLastReadMessageId(const ConvoView& convo) const
 }
 
 void Chat::sendMessage(const QString& convoId, const QString& text,
+                       const QString& replyToMessageId,
                        const QString& quoteUri, const QString& quoteCid,
                        const NamedLink::List& embeddedLinks)
 {
@@ -865,9 +872,12 @@ void Chat::sendMessage(const QString& convoId, const QString& text,
 
     const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
     chatMaster()->createMessage(text, embeddedFacets,
-        [this, presence=*mPresence, convoId, quoteUri, quoteCid](auto message){
+        [this, presence=*mPresence, convoId, replyToMessageId, quoteUri, quoteCid](auto message){
             if (!presence)
                 return;
+
+            if (!replyToMessageId.isEmpty())
+                chatMaster()->addReplyToRefToMessage(*message, replyToMessageId);
 
             continueSendMessage(convoId, message, quoteUri, quoteCid);
         });

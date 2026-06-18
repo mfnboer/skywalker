@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "chat_profile.h"
+#include "group_convo.h"
 #include "message_view.h"
 #include "message_and_reaction_view.h"
 #include <atproto/lib/lexicon/chat_bsky_convo.h>
@@ -23,6 +24,8 @@ class ConvoView
     Q_PROPERTY(MessageView lastMessage READ getLastMessage FINAL)
     Q_PROPERTY(MessageAndReactionView lastReaction READ getLastReaction FINAL)
     Q_PROPERTY(QDateTime lastMessageDate READ getLastMessageDate FINAL)
+    Q_PROPERTY(GroupConvo group READ getGroupConvo FINAL)
+    Q_PROPERTY(QString title READ getTitle FINAL)
     QML_VALUE_TYPE(convoview)
 
 public:
@@ -34,13 +37,15 @@ public:
     const QString& getRevIncludingReactions() const;
     QEnums::ConvoKind getKind() const { return mKind; }
     const ChatBasicProfileList& getMembers() const { return mMembers; }
-    const QString getMemberNames() const { return mMemberNames.join(", "); }
+    QString getMemberNames() const { return mMemberNames.join(", "); }
     bool isMuted() const { return mMuted; }
     QEnums::ConvoStatus getStatus() const { return mStatus; }
     int getUnreadCount() const { return mUnreadCount; }
     const MessageView& getLastMessage() const { return mLastMessage; }
     const MessageAndReactionView& getLastReaction() const { return mLastReaction; }
     QDateTime getLastMessageDate() const;
+    const GroupConvo& getGroupConvo() const { return mGroupConvo; }
+    QString getTitle() const;
 
     Q_INVOKABLE ChatBasicProfile getMember(const QString& did) const;
 
@@ -61,6 +66,7 @@ private:
     MessageAndReactionView mLastReaction;
     QStringList mMemberNames;
     std::unordered_map<QString, int> mDidMemberMap; // DID -> index in mMembers
+    GroupConvo mGroupConvo;
 };
 
 }

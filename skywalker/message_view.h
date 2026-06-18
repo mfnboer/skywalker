@@ -3,6 +3,7 @@
 #pragma once
 #include "reaction_view.h"
 #include "record_view.h"
+#include "text_meta_info.h"
 #include <atproto/lib/lexicon/chat_bsky_convo.h>
 
 namespace Skywalker {
@@ -14,11 +15,14 @@ class MessageView
     Q_PROPERTY(QString rev READ getRev FINAL)
     Q_PROPERTY(QString text READ getText FINAL)
     Q_PROPERTY(QString formattedText READ getFormattedText FINAL)
+    Q_PROPERTY(TextMetaInfo textMetaInfo READ getTextMetaInfo FINAL)
     Q_PROPERTY(RecordView embed READ getEmbed FINAL)
     Q_PROPERTY(QString senderDid READ getSenderDid FINAL)
     Q_PROPERTY(QDateTime sentAt READ getSentAt FINAL)
     Q_PROPERTY(bool deleted READ isDeleted FINAL)
     Q_PROPERTY(ReactionView::List reactions READ getReactions FINAL)
+    Q_PROPERTY(bool isReply READ isReply FINAL)
+    Q_PROPERTY(MessageView replyTo READ getReplyTo FINAL)
     QML_VALUE_TYPE(messageview)
 
 public:
@@ -31,11 +35,14 @@ public:
     const QString& getRev() const { return mRev; }
     const QString& getText() const { return mText; }
     const QString& getFormattedText() const { return mFormattedText; }
+    const TextMetaInfo& getTextMetaInfo() const { return mTextMetaInfo; }
     const RecordView getEmbed() const;
     const QString& getSenderDid() const { return mSenderDid; }
     const QDateTime getSentAt() const { return mSentAt; }
     bool isDeleted() const { return mDeleted; }
     const ReactionView::List& getReactions() const { return mReactions; }
+    bool isReply() const { return mReplyTo.has_value(); }
+    MessageView getReplyTo() const;
 
     Q_INVOKABLE bool isNull() const { return mId.isEmpty(); }
     Q_INVOKABLE ReactionView::List getUniqueReactions(int maxReactions) const;
@@ -50,11 +57,13 @@ private:
     QString mRev;
     QString mText;
     QString mFormattedText;
+    TextMetaInfo mTextMetaInfo;
     std::optional<ATProto::ChatBskyConvo::MessageView::EmbedType> mEmbed;
     QString mSenderDid;
     QDateTime mSentAt;
     bool mDeleted = false;
     ReactionView::List mReactions;
+    std::optional<ATProto::ChatBskyConvo::MessageView::ReplyType> mReplyTo;
 };
 
 using MessageViewList = QList<MessageView>;

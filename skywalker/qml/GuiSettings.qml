@@ -85,6 +85,7 @@ Item {
     readonly property string favoriteColor: "gold"
     readonly property string fullScreenColor: "black"
     readonly property string footerColor: backgroundColor
+    readonly property string groupIconColor: "lightgrey"
     readonly property string handleColor: Material.color(Material.Grey)
     readonly property string headerColor: backgroundColor
     readonly property string headerTextColor: textColor

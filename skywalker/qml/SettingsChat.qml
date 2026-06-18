@@ -20,34 +20,26 @@ ColumnLayout {
         text: qsTr("Allow new messages from:")
     }
 
-    SkyRoundRadioButton {
-        Layout.leftMargin: 10
-        padding: 0
-        checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_ALL
-        text: qsTr("Everyone")
-        onCheckedChanged: {
-            if (checked)
-                userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_ALL
-        }
+    AllowIncomingChat {
+        x: 10
+        Layout.preferredWidth: parent.width - 20
+        allowIncomingChat: userPrefs.allowIncomingChat
+
+        onAllowIncomingChatChanged: userPrefs.allowIncomingChat = allowIncomingChat
     }
-    SkyRoundRadioButton {
-        Layout.leftMargin: 10
-        padding: 0
-        checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
-        text: qsTr("Users I follow")
-        onCheckedChanged: {
-            if (checked)
-                userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_FOLLOWING
-        }
+
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        color: guiSettings.textColor
+        text: qsTr("Allow group invites from:")
     }
-    SkyRoundRadioButton {
-        Layout.leftMargin: 10
-        padding: 0
-        checked: userPrefs.allowIncomingChat === QEnums.ALLOW_INCOMING_CHAT_NONE
-        text: qsTr("No one")
-        onCheckedChanged: {
-            if (checked)
-                userPrefs.allowIncomingChat = QEnums.ALLOW_INCOMING_CHAT_NONE
-        }
+
+    AllowIncomingChat {
+        x: 10
+        Layout.preferredWidth: parent.width - 20
+        allowIncomingChat: userPrefs.allowGroupInvites
+
+        onAllowIncomingChatChanged: userPrefs.allowGroupInvites = allowIncomingChat
     }
 }

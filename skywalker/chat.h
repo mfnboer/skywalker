@@ -28,8 +28,9 @@ public:
 
     void reset();
     void initSettings();
-    void updateSettings(QEnums::AllowIncomingChat allowIncoming);
+    void updateSettings(QEnums::AllowIncomingChat allowIncoming, QEnums::AllowIncomingChat allowGroupInvites);
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
+    QEnums::AllowIncomingChat getAllowGroupInvites() const { return mAllowGroupInvites; }
     QString getLastRev() const;
 
     Q_INVOKABLE void getAllConvos();
@@ -69,6 +70,7 @@ public:
     Q_INVOKABLE void updateRead(const QString& convoId);
 
     Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text,
+                                 const QString& replyToMessageId,
                                  const QString& quoteUri, const QString& quoteCid,
                                  const NamedLink::List& embeddedLinks);
     Q_INVOKABLE void deleteMessage(const QString& convoId, const QString& messageId);
@@ -144,6 +146,7 @@ private:
     QTimer mAcceptedConvosUpdateTimer;
     QTimer mRequestConvosUpdateTimer;
     QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+    QEnums::AllowIncomingChat mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 };
 
 }

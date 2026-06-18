@@ -82,6 +82,8 @@ Text {
             font.bold: theText.fontInfo.bold
             font.italic: theText.fontInfo.italic
             font.pointSize: theText.fontInfo.pointSize
+            elide: theText.elide
+            elideWidth: theText.width
             text: theText.plainText
         }
     }

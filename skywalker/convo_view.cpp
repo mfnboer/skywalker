@@ -10,7 +10,8 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
     mKind((convo.mKind && ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo.mKind)) ? QEnums::CONVO_KIND_GROUP : QEnums::CONVO_KIND_DIRECT),
     mMuted(convo.mMuted),
     mStatus(convo.mStatus ? QEnums::ConvoStatus(*convo.mStatus) : QEnums::CONVO_STATUS_UNKNOWN),
-    mUnreadCount(convo.mUnreadCount)
+    mUnreadCount(convo.mUnreadCount),
+    mGroupConvo(mKind == QEnums::CONVO_KIND_GROUP ? std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo.mKind) : nullptr)
 {    
     mMembers.reserve(convo.mMembers.size());
     mMemberNames.reserve(convo.mMembers.size());
@@ -65,6 +66,14 @@ const QString& ConvoView::getRevIncludingReactions() const
 
     const QString& lastReactionRev = mLastReaction.getMessageView().getRev();
     return std::max(mRev, lastReactionRev);
+}
+
+QString ConvoView::getTitle() const
+{
+    if (mKind == QEnums::CONVO_KIND_GROUP && !mGroupConvo.getName().isEmpty())
+        return mGroupConvo.getName();
+
+    return getMemberNames();
 }
 
 }

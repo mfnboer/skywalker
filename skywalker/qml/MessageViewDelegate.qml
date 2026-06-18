@@ -17,10 +17,11 @@ Rectangle {
     property basicprofile author: senderIsUser ? skywalker.user : convo.getMember(message.senderDid).basicProfile
     readonly property bool isGroupConvo: convo.kind === QEnums.CONVO_KIND_GROUP
     readonly property int messageIndent: isGroupConvo ? guiSettings.avatarSmallWidth + 10 : 0
-    property int maxTextWidth: viewWidth - 80 - messageIndent
+    property int maxTextWidth: viewWidth - 80
     property int maxTextLines: 1000
     readonly property int margin: 10
 
+    signal replyToMessage(messageview message, basicprofile author)
     signal deleteMessage(string messageId)
     signal reportMessage(messageview message)
     signal openingEmbed
@@ -62,7 +63,7 @@ Rectangle {
         height: width
         active: isGroupConvo && !senderIsUser && !sameSenderAsNext
 
-        sourceComponent:  Avatar {
+        sourceComponent: Avatar {
             author: view.author
 
             onClicked: {
@@ -83,6 +84,7 @@ Rectangle {
             width: maxTextWidth
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
+            font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
             plainText: view.author.name
         }
@@ -93,58 +95,41 @@ Rectangle {
         x: senderIsUser ? viewWidth - margin - width : margin + messageIndent
         anchors.top: senderName.bottom
         anchors.topMargin: 5
-        width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0)
-        height: messageText.height + (embed.visible ? embed.height + 10 : 0)
+        width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0, replyToLoader.item ? replyToLoader.item.width + 20 : 0)
+        height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) + messageText.height + (embed.visible ? embed.height + 10 : 0)
         radius: guiSettings.radius
         color: senderIsUser ? guiSettings.messageUserBackgroundColor :
                               guiSettings.messageOtherBackgroundColor
 
-        SkyCleanedText {
-            // Note: textMetrics.boundingRect.width gave a wrong width when the text
-            // ended with an emoji VARIATION SELECTOR-16 (U+FE0F)
-            readonly property alias textWidth: textMetrics.advanceWidth
-            readonly property string deletedText: qsTr("message deleted")
+        Loader {
+            id: replyToLoader
+            x: 10
+            y: 5
+            active: message.isReply
 
+            sourceComponent: MessageViewReply {
+                maxWidth: maxTextWidth - 20
+                minWidth: messageText.width
+                convo: view.convo
+                replyTo: message.replyTo
+            }
+        }
+
+        MessageText {
             id: messageText
-            width: Math.min(textWidth + 5 + leftPadding + rightPadding, maxTextWidth - messageIndent)
-            leftPadding: 10
-            rightPadding: 10
+            y: replyToLoader.item ? replyToLoader.item.height + replyToLoader.y : 0
+            maxWidth: maxTextWidth - messageIndent
+            convo: view.convo
+            message: view.message
+            author: view.author
             topPadding: 5
             bottomPadding: 5
-            wrapMode: Text.Wrap
             initialShowMaxLineCount: Math.min(maxTextLines, 25)
             maximumLineCount: maxTextLines
             ellipsisBackgroundColor: messageRect.color
-            elide: Text.ElideRight
-            textFormat: Text.RichText
-            font.italic: message.deleted
-            font.pointSize: getMessageFontSize()
             color: senderIsUser ? guiSettings.messageUserTextColor : guiSettings.messageOtherTextColor
-            plainText: getMessageDisplayText()
 
-            function getMessageDisplayText() {
-                if (message.deleted)
-                    return deletedText
-
-                // Something fishy with this profile, make links not clickable
-                if (convo.getMember(message.senderDid).basicProfile.hasInvalidHandle())
-                    return message.text
-
-                return message.formattedText
-            }
-
-            TextMetrics {
-                id: textMetrics
-                font: messageText.font
-                text: !message.deleted ? message.text : messageText.deletedText
-            }
-
-            LinkCatcher {
-                z: parent.z - 1
-                containingText: message.text
-                author: view.author
-                onLongPress: moreMenu.open()
-            }
+            onLongPress: moreMenu.open()
         }
 
         Rectangle {
@@ -156,6 +141,7 @@ Rectangle {
             visible: !sameSenderAsNext
         }
 
+        // TODO: loader
         RecordView {
             id: embed
             x: 10
@@ -177,6 +163,12 @@ Rectangle {
             id: moreMenu
             modal: false
 
+            SkyMenuButton {
+                text: qsTr("Reply to")
+                svg: SvgOutline.reply
+                popup: moreMenu
+                onClicked: replyToMessage(message, author)
+            }
             SkyMenuButton {
                 text: qsTr("Translate")
                 svg: SvgOutline.googleTranslate

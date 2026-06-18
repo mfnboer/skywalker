@@ -24,6 +24,7 @@ class EditUserPreferences : public QObject
     Q_PROPERTY(bool hideReposts READ getHideReposts WRITE setHideReposts NOTIFY hideRepostsChanged FINAL)
     Q_PROPERTY(bool hideQuotePosts READ getHideQuotePosts WRITE setHideQuotePosts NOTIFY hideQuotePostsChanged FINAL)
     Q_PROPERTY(QEnums::AllowIncomingChat allowIncomingChat READ getAllowIncomingChat WRITE setAllowIncomingChat NOTIFY allowIncomingChatChanged FINAL)
+    Q_PROPERTY(QEnums::AllowIncomingChat allowGroupInvites READ getAllowGroupInvites WRITE setAllowGroupInvites NOTIFY allowGroupInvitesChanged FINAL)
     Q_PROPERTY(bool hideVerificationBadges READ getHideVerificationBadges WRITE setHideVerificationBadges NOTIFY hideVerificationBadgesChanged FINAL)
     QML_ELEMENT
 
@@ -76,6 +77,9 @@ public:
     QEnums::AllowIncomingChat getAllowIncomingChat() const { return mAllowIncomingChat; }
     void setAllowIncomingChat(QEnums::AllowIncomingChat allowIncomingChat);
 
+    QEnums::AllowIncomingChat getAllowGroupInvites() const { return mAllowGroupInvites; }
+    void setAllowGroupInvites(QEnums::AllowIncomingChat allowGroupInvites);
+
 signals:
     void automatedAccountChanged();
     void loggedOutVisibilityChanged();
@@ -84,6 +88,7 @@ signals:
     void hideRepostsChanged();
     void hideQuotePostsChanged();
     void allowIncomingChatChanged();
+    void allowGroupInvitesChanged();
     void hideVerificationBadgesChanged();
 
 private:
@@ -99,6 +104,7 @@ private:
     ATProto::UserPreferences::FeedViewPref mHomeFeedPref;
     ATProto::UserPreferences::VerificationPrefs mVerificationPrefs;
     QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+    QEnums::AllowIncomingChat mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 
     // Content filtering
     bool mAdultContent = false;

@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "message_view.h"
+#include "unicode_fonts.h"
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
 
@@ -11,9 +12,11 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::MessageView& msg) :
     mRev(msg.mRev),
     mText(msg.mText),
     mFormattedText(ATProto::RichTextMaster::getFormattedMessageText(msg, UserSettings::getCurrentLinkColor())),
+    mTextMetaInfo(UnicodeFonts::getTextMetaInfo(mText, !msg.mFacets.empty())),
     mEmbed(msg.mEmbed),
     mSenderDid(msg.mSender->mDid),
-    mSentAt(msg.mSentAt)
+    mSentAt(msg.mSentAt),
+    mReplyTo(msg.mReplyTo)
 {
     initReactions(msg.mReactions);
 }
@@ -69,9 +72,12 @@ void MessageView::init(const ATProto::ChatBskyConvo::MessageView::SharedPtr& vie
     mRev = view->mRev;
     mText = view->mText;
     mFormattedText = ATProto::RichTextMaster::getFormattedMessageText(*view, UserSettings::getCurrentLinkColor());
+    mTextMetaInfo = UnicodeFonts::getTextMetaInfo(mText, !view->mFacets.empty());
     mEmbed = view->mEmbed;
     mSenderDid = view->mSender->mDid;
     mSentAt = view->mSentAt;
+    mEmbed = view->mEmbed;
+    mReplyTo = view->mReplyTo;
     initReactions(view->mReactions);
 }
 
@@ -144,6 +150,14 @@ const RecordView MessageView::getEmbed() const
     recordView.setContentVisibility(QEnums::CONTENT_VISIBILITY_SHOW);
     recordView.setContentWarning("");
     return recordView;
+}
+
+MessageView MessageView::getReplyTo() const
+{
+    if (!mReplyTo)
+        return {};
+
+    return std::visit([](auto&& view){ return MessageView(*view); }, *mReplyTo);
 }
 
 }

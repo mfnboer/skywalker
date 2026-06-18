@@ -109,4 +109,13 @@ void EditUserPreferences::setAllowIncomingChat(QEnums::AllowIncomingChat allowIn
     }
 }
 
+void EditUserPreferences::setAllowGroupInvites(QEnums::AllowIncomingChat allowGroupInvites)
+{
+    if (allowGroupInvites != mAllowGroupInvites)
+    {
+        mAllowGroupInvites = allowGroupInvites;
+        emit allowGroupInvitesChanged();
+    }
+}
+
 }

@@ -39,6 +39,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter
             width: parent.height - 10
             author: firstMember
+            showGroupIcon: convo.kind === QEnums.CONVO_KIND_GROUP
             visible: !isSideBar
             onClicked: skywalker.getDetailedProfile(firstMember.did)
         }
@@ -46,18 +47,19 @@ Rectangle {
         Column {
             id: convoColumn
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignVCenter
+            Layout.alignment: Qt.AlignTop
             Layout.leftMargin: 5
             Layout.rightMargin: margin
             spacing: 0
 
             SkyCleanedTextLine {
                 width: parent.width
+                topPadding: 3
                 Layout.fillHeight: true
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.headerTextColor
-                plainText: convo.memberNames
+                plainText: convo.title
             }
 
             AccessibleText {
@@ -82,6 +84,7 @@ Rectangle {
                         width: guiSettings.avatarSmallWidth
                         author: modelData.basicProfile
                         showFollowingStatus: false
+                        onClicked: skywalker.getDetailedProfile(author.did)
                     }
                 }
 
