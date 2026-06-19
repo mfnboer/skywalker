@@ -25,7 +25,6 @@ Rectangle {
     signal replyToMessage(messageview message, basicprofile author)
     signal deleteMessage(string messageId)
     signal reportMessage(messageview message)
-    signal openingEmbed
     signal addEmoji(string messageId, string emoji)
     signal pickEmoji(string messageId)
     signal showReactions(messageview message)
@@ -102,8 +101,8 @@ Rectangle {
         x: senderIsUser ? viewWidth - margin - width : margin + messageIndent
         anchors.top: senderName.bottom
         anchors.topMargin: 5
-        width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0, replyToLoader.item ? replyToLoader.item.width + 20 : 0)
-        height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) + messageText.height + (embed.visible ? embed.height + 10 : 0)
+        width: Math.max(messageText.width, embed.item ? embed.item.width + 20 : 0, replyToLoader.item ? replyToLoader.item.width + 20 : 0)
+        height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) + messageText.height + (embed.item ? embed.item.height + 10 : 0)
         radius: guiSettings.radius
         color: backgroundColor
 
@@ -149,16 +148,16 @@ Rectangle {
             visible: !sameSenderAsNext
         }
 
-        // TODO: loader
-        RecordView {
+        Loader {
             id: embed
             x: 10
-            width: maxTextWidth - 20 - messageIndent
             anchors.top: messageText.bottom
-            record: message.embed
-            visible: !message.embed.isNull()
+            active: !message.embed.isNull()
 
-            onOpening: openingEmbed()
+            sourceComponent: RecordView {
+                width: maxTextWidth - 20 - messageIndent
+                record: message.embed
+            }
         }
 
         SkyMouseArea {

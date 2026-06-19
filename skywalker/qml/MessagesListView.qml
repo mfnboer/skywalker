@@ -16,6 +16,7 @@ SkyPage {
     readonly property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height + margin : 0
     readonly property int replyToContentHeight: replyToColumn.visible ? replyToColumn.height + margin : 0
     property int lastIndex: -1
+    property int lastOffsetY: 0
     readonly property alias sideBarAuthor: page.firstMember
     readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
@@ -47,7 +48,17 @@ SkyPage {
         boundsMovement: Flickable.StopAtBounds
         clip: true
 
-        onHeightChanged: moveToEnd()
+        // The height changes when editing a messages, but also when leaving the page
+        // (e.g. view profile) and then turn back. The list seems to move to some arbitrary
+        // position in that case. We move it back to the last known position.
+        onHeightChanged: {
+            moveToMessage(page.lastIndex, ListView.End, () => { contentY -= page.lastOffsetY })
+        }
+
+        onMovementEnded: {
+            page.lastIndex = getLastVisibleIndex()
+            page.lastOffsetY = calcVisibleOffsetY(page.lastIndex)
+        }
 
         delegate: MessageViewDelegate {
             required property int index
@@ -57,7 +68,6 @@ SkyPage {
             onReplyToMessage: (msg, msgAuthor) => page.replyToMessage(msg, msgAuthor)
             onDeleteMessage: (messageId) => page.deleteMessage(messageId)
             onReportMessage: (msg) => page.reportDirectMessage(msg)
-            onOpeningEmbed: page.lastIndex = index
             onAddEmoji: (messageId, emoji) => page.addReaction(messageId, emoji)
             onPickEmoji: (messageId) => utils.pickEmoji(messageId)
             onShowReactions: (msg) => page.showReactionList(msg)
@@ -83,11 +93,7 @@ SkyPage {
 
         function moveToEnd() {
             positionViewAtEnd()
-
-            // HACK
-            // positionViewAtEnd not always gets completely to the end...
-            // This seems to fix it...
-            contentY = Math.max(originY, originY + contentHeight - height)
+            moveToMessage(-1)
         }
     }
 
