@@ -12,6 +12,8 @@ Rectangle {
     property string borderColor: guiSettings.isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     property Skywalker skywalker: root.getSkywalker()
 
+    signal clicked
+
     id: view
     width: Math.max(viewColumn.width, minWidth)
     height: viewColumn.height + 20
@@ -19,6 +21,11 @@ Rectangle {
     border.color: view.borderColor
     color: view.backgroundColor
     radius: guiSettings.radius
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: view.clicked()
+    }
 
     Column {
         id: viewColumn

@@ -39,11 +39,12 @@ public:
     bool isEndOfList() const { return mCursor.isEmpty(); }
     const MessageView* getLastMessage() const;
 
+    Q_INVOKABLE int getMessageIndexById(const QString& id) const;
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    int getMessageIndexById(const QString& id) const;
     void rebuildIndex();
     void changeData(const QList<int>& roles, int begin = 0, int end = -1);
     void reportActivity(const MessageView& message);

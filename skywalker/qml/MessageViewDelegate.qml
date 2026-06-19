@@ -16,7 +16,8 @@ Rectangle {
     property Skywalker skywalker: root.getSkywalker()
     property basicprofile author: senderIsUser ? skywalker.user : convo.getMember(message.senderDid).basicProfile
     readonly property bool isGroupConvo: convo.kind === QEnums.CONVO_KIND_GROUP
-    readonly property int messageIndent: isGroupConvo ? guiSettings.avatarSmallWidth + 10 : 0
+    readonly property int avatarWidth: 30
+    readonly property int messageIndent: isGroupConvo ? avatarWidth + 10 : 0
     property int maxTextWidth: viewWidth - 80
     property int maxTextLines: 1000
     readonly property int margin: 10
@@ -28,6 +29,7 @@ Rectangle {
     signal addEmoji(string messageId, string emoji)
     signal pickEmoji(string messageId)
     signal showReactions(messageview message)
+    signal replyClicked(string messageId)
 
     id: view
     width: viewWidth
@@ -59,7 +61,7 @@ Rectangle {
     Loader {
         x: margin
         anchors.bottom: messageRect.bottom
-        width: guiSettings.avatarSmallWidth
+        width: avatarWidth
         height: width
         active: isGroupConvo && !senderIsUser && !sameSenderAsNext
 
@@ -91,6 +93,11 @@ Rectangle {
     }
 
     Rectangle {
+        readonly property color backgroundColor: senderIsUser ?
+                                                     guiSettings.messageUserBackgroundColor :
+                                                     guiSettings.messageOtherBackgroundColor
+
+
         id: messageRect
         x: senderIsUser ? viewWidth - margin - width : margin + messageIndent
         anchors.top: senderName.bottom
@@ -98,8 +105,7 @@ Rectangle {
         width: Math.max(messageText.width, embed.visible ? embed.width + 20 : 0, replyToLoader.item ? replyToLoader.item.width + 20 : 0)
         height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) + messageText.height + (embed.visible ? embed.height + 10 : 0)
         radius: guiSettings.radius
-        color: senderIsUser ? guiSettings.messageUserBackgroundColor :
-                              guiSettings.messageOtherBackgroundColor
+        color: backgroundColor
 
         Loader {
             id: replyToLoader
@@ -112,6 +118,8 @@ Rectangle {
                 minWidth: messageText.width
                 convo: view.convo
                 replyTo: message.replyTo
+
+                onClicked: view.replyClicked(message.replyTo.id)
             }
         }
 
@@ -212,6 +220,21 @@ Rectangle {
             onMoreEmoji: {
                 moreMenu.close()
                 pickEmoji(message.id)
+            }
+        }
+
+        Loader {
+            id: blinkLoader
+            active: false
+
+            sourceComponent: SequentialAnimation {
+                loops: 1
+                running: true
+
+                ColorAnimation { target: messageRect; property: "color"; from: messageRect.backgroundColor; to: "yellow"; duration: 500 }
+                ColorAnimation { target: messageRect; property: "color"; from: "yellow"; to: messageRect.backgroundColor; duration: 500 }
+
+                onStopped: blinkLoader.active = false
             }
         }
     }
@@ -317,5 +340,9 @@ Rectangle {
             return false
 
         return UnicodeFonts.onlyEmojis(message.text)
+    }
+
+    function flash() {
+        blinkLoader.active = true
     }
 }

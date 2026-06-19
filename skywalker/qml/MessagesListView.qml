@@ -61,6 +61,7 @@ SkyPage {
             onAddEmoji: (messageId, emoji) => page.addReaction(messageId, emoji)
             onPickEmoji: (messageId) => utils.pickEmoji(messageId)
             onShowReactions: (msg) => page.showReactionList(msg)
+            onReplyClicked: (messageId) => page.moveToMessageId(messageId)
         }
 
         FlickableRefresher {
@@ -590,11 +591,11 @@ SkyPage {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    function doMoveToMessage(index) {
+    function doMoveToMessage(index, positionMode = ListView.End) {
         let firstVisibleIndex = messagesView.getFirstVisibleIndex()
         let lastVisibleIndex = messagesView.getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", messagesView.count)
-        messagesView.positionViewAtIndex(Math.max(index, 0), ListView.End)
+        messagesView.positionViewAtIndex(Math.max(index, 0), positionMode)
         return (lastVisibleIndex >= index && firstVisibleIndex <= index)
     }
 
@@ -610,7 +611,7 @@ SkyPage {
         id: moveToMessageTimer
         interval: 200
 
-        onTriggered: page.moveToMessage(msgIndex, () => { messagesView.contentY -= msgOffset })
+        onTriggered: page.moveToMessage(msgIndex, ListView.End, () => { messagesView.contentY -= msgOffset })
 
         function moveTo(index, offset) {
             msgIndex = index
@@ -619,9 +620,18 @@ SkyPage {
         }
     }
 
-    function moveToMessage(index, afterMoveCb = () => {}) {
+    function moveToMessageId(messageId) {
+        const index = messagesView.model.getMessageIndexById(messageId)
+
+        if (index >= 0) {
+            moveToMessage(index, ListView.Contain)
+            messagesView.itemAtIndex(index).flash()
+        }
+    }
+
+    function moveToMessage(index, positionMode = ListView.End, afterMoveCb = () => {}) {
         const destination = index >= 0 ? index : messagesView.count - 1
-        messagesView.moveToIndex(destination, doMoveToMessage, afterMoveCb)
+        messagesView.moveToIndex(destination, (idx) => { doMoveToMessage(idx, positionMode) }, afterMoveCb)
     }
 
     function rowsInsertedHandler(parent, start, end) {
