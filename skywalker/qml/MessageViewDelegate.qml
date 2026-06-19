@@ -238,48 +238,52 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        id: reactionsRect
-        x: messageRect.x + (senderIsUser ? messageRect.width - 5 - width : 5);
+    Loader {
+        id: reactionsLoader
+        active: message.reactions.length > 0
         anchors.top: messageRect.bottom
         anchors.topMargin: -3
-        width: reactionsRow.width + 6
-        height: reactionsRow.height
-        radius: height / 2
-        color: guiSettings.backgroundColor
-        visible: message.reactions.length > 0
 
-        Row {
-            property var uniqueReactions: message.getUniqueReactions(5)
+        sourceComponent: Rectangle {
+            id: reactionsRect
+            x: messageRect.x + (senderIsUser ? messageRect.width - 5 - width : 5);
+            width: reactionsRow.width + 6
+            height: reactionsRow.height
+            radius: height / 2
+            color: guiSettings.backgroundColor
 
-            id: reactionsRow
-            anchors.centerIn: parent
+            Row {
+                property var uniqueReactions: message.getUniqueReactions(5)
 
-            Repeater {
-                model: parent.uniqueReactions
+                id: reactionsRow
+                anchors.centerIn: parent
+
+                Repeater {
+                    model: parent.uniqueReactions
+
+                    AccessibleText {
+                        font.family: UnicodeFonts.getEmojiFontFamily()
+                        text: modelData.emoji
+                    }
+                }
 
                 AccessibleText {
-                    font.family: UnicodeFonts.getEmojiFontFamily()
-                    text: modelData.emoji
+                    text: ` ${message.reactions.length} `
+                    visible: parent.uniqueReactions.length < message.reactions.length
                 }
             }
 
-            AccessibleText {
-                text: ` ${message.reactions.length} `
-                visible: parent.uniqueReactions.length < message.reactions.length
+            SkyMouseArea {
+                anchors.fill: parent
+                onClicked: showReactions(message)
             }
-        }
-
-        SkyMouseArea {
-            anchors.fill: parent
-            onClicked: showReactions(message)
         }
     }
 
     AccessibleText {
         id: messageTimeText
         anchors.left: messageRect.left
-        anchors.top: reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom
+        anchors.top: reactionsLoader.item ? reactionsLoader.bottom : messageRect.bottom
         anchors.topMargin: visible ? 5 : 0
         width: messageRect.width
         height: visible ? contentHeight : 0
@@ -294,7 +298,7 @@ Rectangle {
         id: endMarker
         anchors.top: messageTimeText.visible ?
                          messageTimeText.bottom :
-                         (reactionsRect.visible ? reactionsRect.bottom : messageRect.bottom)
+                         (reactionsLoader.item ? reactionsLoader.bottom : messageRect.bottom)
     }
 
     Loader {
