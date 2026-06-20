@@ -3,6 +3,7 @@
 #pragma once
 #include "svg_image.h"
 #include <QObject>
+#include <QQmlEngine>
 #include <QtQmlIntegration>
 
 namespace Skywalker {
@@ -45,9 +46,25 @@ class SvgFilled : public QObject
     QML_SINGLETON
 
 public:
-    explicit SvgFilled(QObject* parent = nullptr) : QObject(parent) {}
+    static SvgFilled* create(QQmlEngine*, QJSEngine*)
+    {
+        if (!sInstance)
+            sInstance = new SvgFilled();
+
+        return sInstance;
+    }
+
+    static SvgFilled* instance()
+    {
+        return create(nullptr, nullptr);
+    }
 
 private:
+    explicit SvgFilled(QObject* parent = nullptr) : QObject(parent) {}
+
+    inline static SvgFilled* sInstance = nullptr;
+
+public:
     // fonts.google.com weight=100, grade=0, optical size=24px
     SvgImage* sBookmark = new SvgImage{"M252-198v-530q0-26 17-43t43-17h336q26 0 43 17t17 43v530l-228-98-228 98Z", this};
     SvgImage* sFavorite = new SvgImage{"m480-190-22-20q-97-89-160.5-152t-100-110.5Q161-520 146.5-558T132-634q0-71 48.5-119.5T300-802q53 0 99 28.5t81 83.5q35-55 81-83.5t99-28.5q71 0 119.5 48.5T828-634q0 38-14.5 76t-51 85.5Q726-425 663-362T502-210l-22 20Z", this};

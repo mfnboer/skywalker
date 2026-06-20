@@ -95,8 +95,7 @@ void MessageView::init(const ATProto::ChatBskyConvo::SystemMessageView::SharedPt
     mId = view->mId;
     mRev = view->mRev;
     mSentAt = view->mSentAt;
-    mFormattedText = "SYSTEM MESSAGE";
-    // TODO
+    mSystemMessageView = view;
 }
 
 void MessageView::initReactions(const ATProto::ChatBskyConvo::ReactionView::List& reactions)

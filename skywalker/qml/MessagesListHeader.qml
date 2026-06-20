@@ -76,7 +76,8 @@ Rectangle {
                 spacing: 3
 
                 Repeater {
-                    model: convo.members.slice(1)
+                    id: activeMembers
+                    model: convo.members.slice(1, 6) // Show 5 max
 
                     Avatar {
                         required property chatbasicprofile modelData
@@ -86,6 +87,11 @@ Rectangle {
                         showFollowingStatus: false
                         onClicked: skywalker.getDetailedProfile(author.did)
                     }
+                }
+                AccessibleText {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: `+${(convo.group.memberCount - activeMembers.count - 1 )}`
+                    visible: convo.group.memberCount > activeMembers.count + 1
                 }
 
                 visible: convo.members.length > 1

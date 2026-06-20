@@ -721,6 +721,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/MessageViewReply.qml
         QML_FILES qml/MessageText.qml
         QML_FILES qml/QuoteMessage.qml
+        SOURCES system_message_utils.h
+        SOURCES system_message_utils.cpp
 )
 
 target_link_libraries(libskywalker

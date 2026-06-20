@@ -23,6 +23,7 @@ class MessageView
     Q_PROPERTY(ReactionView::List reactions READ getReactions FINAL)
     Q_PROPERTY(bool isReply READ isReply FINAL)
     Q_PROPERTY(MessageView replyTo READ getReplyTo FINAL)
+    Q_PROPERTY(bool isSystemMessage READ isSystemMessage FINAL)
     QML_VALUE_TYPE(messageview)
 
 public:
@@ -43,6 +44,8 @@ public:
     const ReactionView::List& getReactions() const { return mReactions; }
     bool isReply() const { return mReplyTo.has_value(); }
     MessageView getReplyTo() const;
+    bool isSystemMessage() const { return mSystemMessageView != nullptr; }
+    const ATProto::ChatBskyConvo::SystemMessageView::SharedPtr& getSystemMessage() const { return mSystemMessageView; }
 
     Q_INVOKABLE bool isNull() const { return mId.isEmpty(); }
     Q_INVOKABLE ReactionView::List getUniqueReactions(int maxReactions) const;
@@ -64,6 +67,7 @@ private:
     bool mDeleted = false;
     ReactionView::List mReactions;
     std::optional<ATProto::ChatBskyConvo::MessageView::ReplyType> mReplyTo;
+    ATProto::ChatBskyConvo::SystemMessageView::SharedPtr mSystemMessageView;
 };
 
 using MessageViewList = QList<MessageView>;

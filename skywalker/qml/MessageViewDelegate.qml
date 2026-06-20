@@ -62,7 +62,7 @@ Rectangle {
         anchors.bottom: messageRect.bottom
         width: avatarWidth
         height: width
-        active: isGroupConvo && !senderIsUser && !sameSenderAsNext
+        active: isGroupConvo && !senderIsUser && !sameSenderAsNext && !message.isSystemMessage
 
         sourceComponent: Avatar {
             author: view.author
@@ -78,7 +78,7 @@ Rectangle {
         id: senderName
         x: margin + messageIndent
         anchors.top: messageDateText.bottom
-        active: isGroupConvo && !senderIsUser && !sameSenderAsPrevious
+        active: isGroupConvo && !senderIsUser && !sameSenderAsPrevious && !message.isSystemMessage
 
         sourceComponent: SkyCleanedTextLine {
             topPadding: 10
@@ -105,6 +105,7 @@ Rectangle {
         height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) + messageText.height + (embed.item ? embed.item.height + 10 : 0)
         radius: guiSettings.radius
         color: backgroundColor
+        visible: !message.isSystemMessage
 
         Loader {
             id: replyToLoader
@@ -280,6 +281,54 @@ Rectangle {
         }
     }
 
+    Loader {
+        id: systemMessage
+        x: margin
+        anchors.top: messageRect.top
+        anchors.topMargin: 5
+        active: message.isSystemMessage
+
+        sourceComponent: Column {
+            width: view.width - 2 * margin
+
+            Row {
+                anchors.horizontalCenter: parent.horizontalCenter
+                spacing: 10
+
+                SkySvg {
+                    id: systemIcon
+                    width: guiSettings.appFontHeight * 7/8
+                    height: width
+                    color: guiSettings.messageTimeColor
+                    svg: SvgOutline.chat
+                }
+
+                AccessibleText {
+                    color: guiSettings.messageTimeColor
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
+                }
+            }
+
+            AccessibleText {
+                id: systemText
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+                elide: Text.ElideRight
+            }
+
+            function setMessage(icon, text) {
+                systemIcon.svg = icon
+                systemText.text = text
+            }
+        }
+
+        function setMessage(icon, text) {
+            if (item)
+                item.setMessage(icon, text)
+        }
+    }
+
     AccessibleText {
         id: messageTimeText
         anchors.left: messageRect.left
@@ -291,14 +340,16 @@ Rectangle {
         color: guiSettings.messageTimeColor
         font.pointSize: guiSettings.scaledFont(6/8)
         text: Qt.locale().toString(message.sentAt, Qt.locale().timeFormat(Locale.ShortFormat))
-        visible: !sameSenderAsNext || !sameTimeAsNext
+        visible: (!sameSenderAsNext || !sameTimeAsNext) && !message.isSystemMessage
     }
 
     Item {
         id: endMarker
         anchors.top: messageTimeText.visible ?
-                         messageTimeText.bottom :
-                         (reactionsLoader.item ? reactionsLoader.bottom : messageRect.bottom)
+                messageTimeText.bottom :
+                (reactionsLoader.item ?
+                     reactionsLoader.bottom :
+                     messageRect.visible ? messageRect.bottom : systemMessage.bottom)
     }
 
     Loader {
@@ -314,6 +365,20 @@ Rectangle {
         onStatusChanged: {
             if (status == Loader.Ready)
                 item.getBasicProfile(message.senderDid)
+        }
+    }
+
+    Loader {
+        id: systemMessageUtils
+        active: message.isSystemMessage
+
+        sourceComponent: SystemMessageUtils {
+            onMessage: (icon, text) => systemMessage.setMessage(icon, text)
+        }
+
+        function getMessage(msg) {
+            if (item)
+                item.getMessage(msg)
         }
     }
 
@@ -347,5 +412,10 @@ Rectangle {
 
     function flash() {
         blinkLoader.active = true
+    }
+
+    Component.onCompleted: {
+        if (message.isSystemMessage)
+            systemMessageUtils.getMessage(message)
     }
 }
