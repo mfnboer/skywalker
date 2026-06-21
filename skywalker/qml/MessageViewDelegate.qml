@@ -231,8 +231,8 @@ Rectangle {
                 loops: 1
                 running: true
 
-                ColorAnimation { target: messageRect; property: "color"; from: messageRect.backgroundColor; to: "yellow"; duration: 500 }
-                ColorAnimation { target: messageRect; property: "color"; from: "yellow"; to: messageRect.backgroundColor; duration: 500 }
+                ColorAnimation { target: messageRect; property: "color"; from: messageRect.backgroundColor; to: guiSettings.accentColor; duration: 500 }
+                ColorAnimation { target: messageRect; property: "color"; from: guiSettings.accentColor; to: messageRect.backgroundColor; duration: 500 }
 
                 onStopped: blinkLoader.active = false
             }

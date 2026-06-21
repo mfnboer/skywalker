@@ -54,6 +54,7 @@ private:
     void init(const ATProto::ChatBskyConvo::MessageView::SharedPtr& view);
     void init(const ATProto::ChatBskyConvo::DeletedMessageView::SharedPtr& view);
     void init(const ATProto::ChatBskyConvo::SystemMessageView::SharedPtr& view);
+    void init(const ATProto::UnknownVariant::SharedPtr& view);
     void initReactions(const ATProto::ChatBskyConvo::ReactionView::List& reactions);
 
     QString mId;

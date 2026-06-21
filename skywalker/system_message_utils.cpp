@@ -195,6 +195,13 @@ void SystemMessageUtils::resolve(ATProto::ChatBskyConvo::SystemMessageDataDisabl
     emit message(icon, text);
 }
 
+void SystemMessageUtils::resolve(ATProto::UnknownVariant::SharedPtr msg)
+{
+    auto* icon = SvgOutline::instance()->sWarning;
+    const QString text = tr("Unknown message: %1").arg(msg->mType);
+    emit message(icon, text);
+}
+
 template <typename Msg>
 std::function<void()> SystemMessageUtils::tryResolveAgain(SvgImage* image, const Msg& msg)
 {

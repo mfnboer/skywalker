@@ -179,17 +179,19 @@ Rectangle {
                         }
                     }
 
+                    // TODO: loaders
                     // Last message
                     SkyCleanedText {
-                        readonly property string deletedText: qsTr("message deleted")
-                        readonly property bool sentByUser: convo.lastMessage.senderDid === skywalker.getUserDid()
+                        property string senderName: showLastReaction ? "" : getLastMessageSender()
+                        property string messageText: getLastMessageText()
 
+                        id: lastMessage
                         width: parent.width
                         topPadding: 10
                         elide: Text.ElideRight
                         textFormat: Text.RichText
-                        font.italic: convo.lastMessage.deleted
-                        plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}${(!convo.lastMessage.deleted ? convo.lastMessage.text : deletedText)}`)
+                        font.italic: convo.lastMessage.deleted || convo.lastMessage.isSystemMessage
+                        plainText: (senderName ? `<i>${senderName}: </i>` : "") + messageText
                         visible: !showLastReaction
                     }
 
@@ -199,12 +201,13 @@ Rectangle {
                         visible: showLastReaction
 
                         SkyCleanedText {
-                            readonly property bool sentByUser: convo.lastReaction.reaction.senderDid === skywalker.getUserDid()
+                            property string senderName: showLastReaction ? getLastReactionSender() : ""
 
+                            id: lastReaction
                             topPadding: 10
                             textFormat: Text.RichText
                             inLayout: true
-                            plainText: qsTr(`${(sentByUser ? "<i>You: </i>" : "")}<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `)
+                            plainText: (senderName ? `<i>${senderName} - </i>` : "") + qsTr(`<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `)
                         }
                         SkyCleanedText {
                             Layout.fillWidth: true
@@ -291,6 +294,58 @@ Rectangle {
         visible: endOfList
     }
 
+    Loader {
+        property bool lastReactionSender: false
+
+        id: profileLoader
+        active: false
+
+        sourceComponent: ProfileUtils {
+            skywalker: convoRect.skywalker
+
+            onBasicProfileOk: (profile) => {
+                if (profileLoader.lastReactionSender)
+                    lastReaction.senderName = profile.name
+                else
+                    lastMessage.senderName = profile.name
+            }
+        }
+
+        onStatusChanged: {
+            if (status != Loader.Ready)
+                return
+
+            if (lastReactionSender)
+                item.getBasicProfile(convo.lastReaction.reaction.senderDid)
+            else
+                item.getBasicProfile(convo.lastMessage.senderDid)
+        }
+
+        function getLastMessageSender() {
+            lastReactionSender = false
+            active = true
+        }
+
+        function getLastReactionSender() {
+            lastReactionSender = true
+            active = true
+        }
+    }
+
+    Loader {
+        id: systemMessageUtils
+        active: false
+
+        sourceComponent: SystemMessageUtils {
+            onMessage: (icon, text) => lastMessage.messageText = text
+        }
+
+        onStatusChanged: {
+            if (status == Loader.Ready)
+                item.getMessage(convo.lastMessage)
+        }
+    }
+
     function getConvoTimeIndication() {
         if (guiSettings.isToday(convo.lastMessageDate))
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().timeFormat(Locale.ShortFormat))
@@ -298,5 +353,53 @@ Rectangle {
             return qsTr("Yesterday")
         else
             return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
+    }
+
+    function getLastMessageSender() {
+        if (convo.lastMessage.isNull())
+            return ""
+
+        if (convo.lastMessage.isSystemMessage)
+            return ""
+
+        if (convo.lastMessage.senderDid === skywalker.getUserDid())
+            return qsTr("You");
+
+        if (convo.kind === QEnums.CONVO_KIND_GROUP) {
+            Qt.callLater(() => { profileLoader.getLastMessageSender() })
+            return ""
+        }
+
+        return "";
+    }
+
+    function getLastMessageText() {
+        if (convo.lastMessage.isNull())
+            return ""
+
+        if (convo.lastMessage.isSystemMessage) {
+            Qt.callLater(() => { systemMessageUtils.active = true })
+            return ""
+        }
+
+        if (convo.lastMessage.deleted)
+            return qsTr("message deleted")
+
+        return convo.lastMessage.text
+    }
+
+    function getLastReactionSender() {
+        if (convo.lastReaction.reaction.isNull())
+            return ""
+
+        if (convo.lastReaction.reaction.senderDid === skywalker.getUserDid())
+            return qsTr("You")
+
+        if (convo.kind === QEnums.CONVO_KIND_GROUP) {
+            Qt.callLater(() => { profileLoader.getLastReactionSender() })
+            return ""
+        }
+
+        return "";
     }
 }

@@ -62,6 +62,14 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
         return;
     }
 
+    const auto* unknownView = std::get_if<ATProto::UnknownVariant::SharedPtr>(&msg);
+
+    if (unknownView)
+    {
+        init(*unknownView);
+        return;
+    }
+
     Q_ASSERT(false);
     qWarning() << "Should not get here";
 }
@@ -96,6 +104,16 @@ void MessageView::init(const ATProto::ChatBskyConvo::SystemMessageView::SharedPt
     mRev = view->mRev;
     mSentAt = view->mSentAt;
     mSystemMessageView = view;
+}
+
+void MessageView::init(const ATProto::UnknownVariant::SharedPtr& view)
+{
+    ATProto::XJsonObject xjson(view->mJson);
+    mId = xjson.getOptionalString("id", "");
+    mRev = xjson.getOptionalString("rev", "");
+    mSentAt = xjson.getOptionalDateTime("sentAt", QDateTime{});
+    mText = QString("Unknown message: %1").arg(view->mType);
+    mFormattedText = ATProto::RichTextMaster::plainToHtml(mText);
 }
 
 void MessageView::initReactions(const ATProto::ChatBskyConvo::ReactionView::List& reactions)

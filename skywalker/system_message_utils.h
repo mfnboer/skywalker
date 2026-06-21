@@ -34,6 +34,7 @@ private:
     void resolve(ATProto::ChatBskyConvo::SystemMessageDataEditJoinLink::SharedPtr msg);
     void resolve(ATProto::ChatBskyConvo::SystemMessageDataEnableJoinLink::SharedPtr msg);
     void resolve(ATProto::ChatBskyConvo::SystemMessageDataDisableJoinLink::SharedPtr msg);
+    void resolve(ATProto::UnknownVariant::SharedPtr msg);
 
     template <typename Msg>
     std::function<void()> tryResolveAgain(SvgImage* image, const Msg& msg);
