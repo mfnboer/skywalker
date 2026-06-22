@@ -57,7 +57,7 @@ public:
 private:
     QString mId;
     QString mRev;
-    QEnums::ConvoKind mKind;
+    QEnums::ConvoKind mKind = QEnums::CONVO_KIND_DIRECT;
     ChatBasicProfileList mMembers; // all others than the user
     bool mMuted = false;
     QEnums::ConvoStatus mStatus = QEnums::CONVO_STATUS_UNKNOWN;

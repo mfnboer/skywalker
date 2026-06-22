@@ -67,10 +67,12 @@ Rectangle {
                 Layout.preferredHeight: visible ? implicitHeight : 0
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
+                elide: Text.ElideRight
                 text: `@${firstMember.handle}`
                 visible: convo.members.length <= 1
             }
 
+            // TODO: sidebar
             Row {
                 width: parent.width
                 spacing: 3

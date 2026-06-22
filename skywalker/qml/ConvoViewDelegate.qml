@@ -16,6 +16,7 @@ Rectangle {
 
     signal viewConvo(convoview convo)
     signal deleteConvo(convoview convo)
+    signal leaveConvo(convoview convo)
     signal muteConvo(convoview convo)
     signal unmuteConvo(convoview convo)
     signal blockAuthor(basicprofile author)
@@ -235,7 +236,15 @@ Rectangle {
                             text: qsTr("Delete")
                             svg: SvgOutline.delete
                             popup: moreMenu
+                            visible: convo.kind !== QEnums.CONVO_KIND_GROUP
                             onClicked: deleteConvo(convo)
+                        }
+                        SkyMenuButton {
+                            text: qsTr("Leave")
+                            svg: SvgOutline.signOut
+                            popup: moreMenu
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP
+                            onClicked: leaveConvo(convo)
                         }
                         SkyMenuButton {
                             text: convo.muted ? qsTr("Unmute") : qsTr("Mute")

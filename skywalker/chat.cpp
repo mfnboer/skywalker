@@ -12,11 +12,17 @@ static constexpr auto MESSAGES_UPDATE_INTERVAL = 9s;
 static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
 static constexpr char const* DM_ACCESS_ERROR = "Your APP password does not allow access to your direct messages. Create a new APP password that allows access.";
 
-Chat::Chat(ATProto::Client::SharedPtr& bsky, const QString& userDid, FollowsActivityStore& followsActivityStore, QObject* parent) :
+Chat::Chat(ATProto::Client::SharedPtr& bsky, const QString& userDid,
+           const IProfileStore& mutedReposts, const IProfileStore& timelineHide,
+           const ContentFilter& contentFilter,
+           FollowsActivityStore& followsActivityStore, QObject* parent) :
     QObject(parent),
     mPresence(std::make_unique<Presence>()),
     mBsky(bsky),
     mUserDid(userDid),
+    mMutedReposts(mutedReposts),
+    mTimelineHide(timelineHide),
+    mContentFilter(contentFilter),
     mFollowsActivityStore(followsActivityStore),
     mAcceptedConvoListModel(userDid, mFollowsActivityStore, this),
     mRequestConvoListModel(userDid, mFollowsActivityStore, this)
@@ -609,27 +615,139 @@ void Chat::setMessagesInProgress(bool inProgress)
     }
 }
 
+ChatAuthorListModel* Chat::getConvoMemberListModel(const QString& convoId)
+{
+    const auto* convo = getConvo(convoId);
+
+    if (!convo)
+    {
+        qWarning() << "Cannot find convo:" << convoId;
+        mConvoMemberListModels.erase(convoId);
+        return nullptr;
+    }
+
+    auto& model = mConvoMemberListModels[convoId];
+
+    if (!model)
+    {
+        qDebug() << "Create convo member list model for convo:" << convoId;
+        model = std::make_unique<ChatAuthorListModel>(
+            QEnums::CHAT_AUTHOR_LIST_MEMBERS, mMutedReposts, mTimelineHide, mContentFilter, this);
+    }
+
+    return model.get();
+}
+
+void Chat::removeConvoMemberListModel(const QString& convoId)
+{
+    qDebug() << "Delete convo member list model for convo:" << convoId;
+    mConvoMemberListModels.erase(convoId);
+}
+
+void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Get convo members, convoId:" << convoId << "cursor:" << cursor;
+
+    if (mGetConvoMembersInProgress)
+    {
+        qDebug() << "Get convo members still in progress";
+        return;
+    }
+
+    setConvoMembersInProgress(true);
+    mBsky->getConvoMembers(convoId, {}, Utils::makeOptionalString(cursor),
+        [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetConvoMembersOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto* model = getConvoMemberListModel(convoId);
+
+            if (model)
+            {
+                if (cursor.isEmpty())
+                    model->clear();
+
+                model->addAuthors(output->mMembers, output->mCursor.value_or(""));
+            }
+            else
+            {
+                qDebug() << "Model already closed for convo:" << convoId;
+            }
+
+            setConvoMembersInProgress(false);
+            emit getConvoMembersOk(cursor);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "getConvoMembers FAILED:" << error << " - " << msg;
+            setConvoMembersInProgress(false);
+            emit getConvoMembersFailed(msg);
+        }
+    );
+}
+
+void Chat::getConvoMembersNextPage(const QString& convoId)
+{
+    auto* model = getConvoMemberListModel(convoId);
+
+    if (!model)
+    {
+        qDebug() << "Model already closed for convo:" << convoId;
+        return;
+    }
+
+    const QString& cursor = model->getCursor();
+
+    if(cursor.isEmpty())
+    {
+        qDebug() << "Last page reached";
+        return;
+    }
+
+    getConvoMembers(convoId, cursor);
+}
+
+void Chat::setConvoMembersInProgress(bool inProgress)
+{
+    if (inProgress != mGetConvoMembersInProgress)
+    {
+        mGetConvoMembersInProgress = inProgress;
+        emit getConvoMembersInProgressChanged();
+    }
+}
+
 void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)
 {
     mAcceptedConvoListModel.updateBlockingUri(did, blockingUri);
     mRequestConvoListModel.updateBlockingUri(did, blockingUri);
 }
 
+void Chat::makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update)
+{
+    for (auto& [_, model] : mConvoMemberListModels)
+        update(model.get());
+}
+
 MessageListModel* Chat::getMessageListModel(const QString& convoId)
 {
+    const auto* convo = getConvo(convoId);
+
+    if (!convo)
+    {
+        qWarning() << "Cannot find convo:" << convoId;
+        return nullptr;
+    }
+
     auto& model = mMessageListModels[convoId];
 
     if (!model)
     {
         qDebug() << "Create message list model for convo:" << convoId;
-        const auto* convo = getConvo(convoId);
         ChatBasicProfileList profiles;
-
-        if (convo)
-            profiles = convo->getMembers();
-        else
-            qWarning() << "Cannot find convo:" << convoId;
-
+        profiles = convo->getMembers();
         model = std::make_unique<MessageListModel>(mUserDid, profiles, mFollowsActivityStore, this);
         startMessagesUpdateTimer();
     }

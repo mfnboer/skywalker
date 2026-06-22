@@ -31,6 +31,57 @@ SkyPage {
         convo: page.convo
         visible: !root.showSideBar
         onBack: page.closed()
+
+        SvgPlainButton {
+            id: moreButton
+            anchors.right: parent.right
+            anchors.top: parent.top
+            svg: SvgOutline.moreVert
+            accessibleName: qsTr("options")
+            visible: convo.kind === QEnums.CONVO_KIND_GROUP
+            onClicked: showMoreMenu(page.header, Qt.point(x, y))
+
+            SkyMenu {
+                id: moreMenu
+
+                SkyMenuButton {
+                    text: qsTr("Members")
+                    svg: SvgOutline.group
+                    popup: moreMenu
+                }
+
+                SkyMenuButton {
+                    text: qsTr("Add members")
+                    svg: SvgOutline.addUser
+                    popup: moreMenu
+                }
+
+                SkyMenuButton {
+                    text: qsTr("Invite link")
+                    svg: SvgOutline.link
+                    popup: moreMenu
+                }
+
+                SkyMenuButton {
+                    text: qsTr("Edit name")
+                    svg: SvgOutline.edit
+                    popup: moreMenu
+                }
+
+                SkyMenuButton {
+                    text: qsTr("Lock")
+                    svg: SvgOutline.lock
+                    popup: moreMenu
+                }
+
+                SkyMenuButton {
+                    text: qsTr("Leave")
+                    svg: SvgOutline.signOut
+                    popup: moreMenu
+                    onClicked: page.leaveConvo()
+                }
+            }
+        }
     }
 
     footer: Rectangle {
@@ -562,6 +613,16 @@ SkyPage {
         root.pushStack(view)
     }
 
+    function showMoreMenu(mouseView, clickPoint) {
+        const mousePoint = clickPoint ?
+            mouseView.mapToItem(moreButton, clickPoint) :
+            mouseView.mapToItem(moreButton, 0, 0)
+
+        moreMenu.x = mousePoint.x
+        moreMenu.y = mousePoint.y
+        moreMenu.open()
+    }
+
     function sendMessageOkHandler() {
         isSending = false
         busyIndicator.running = false
@@ -638,6 +699,15 @@ SkyPage {
     function moveToMessage(index, positionMode = ListView.End, afterMoveCb = () => {}) {
         const destination = index >= 0 ? index : messagesView.count - 1
         messagesView.moveToIndex(destination, (idx) => { doMoveToMessage(idx, positionMode) }, afterMoveCb)
+    }
+
+    function leaveConvo(parentPage = page) {
+        guiSettings.askYesNoQuestion(parentPage,
+                qsTr(`Do you want to leave the group <b>${convo.group.name}</b>?`),
+                () => {
+                    chat.leaveConvo(convo.id)
+                    page.closed()
+                })
     }
 
     function rowsInsertedHandler(parent, start, end) {

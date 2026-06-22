@@ -173,6 +173,12 @@ public:
     };
     Q_ENUM(AuthorListType)
 
+    enum ChatAuthorListType
+    {
+        CHAT_AUTHOR_LIST_MEMBERS = 0
+    };
+    Q_ENUM(ChatAuthorListType)
+
     enum ContentVisibility
     {
         CONTENT_VISIBILITY_SHOW = 0,
@@ -379,12 +385,30 @@ public:
     };
     Q_ENUM(ConvoStatus)
 
+    // TODO: unknown
     enum ConvoKind
     {
         CONVO_KIND_DIRECT,
         CONVO_KIND_GROUP
     };
     Q_ENUM(ConvoKind)
+
+    enum ConvoMemberKind
+    {
+        CONVO_MEMBER_KIND_DIRECT,
+        CONVO_MEMBER_KIND_GROUP,
+        CONVO_MEMBER_KIND_PAST_GROUP,
+        CONVO_MEMBER_KIND_UNKNOWN
+    };
+    Q_ENUM(ConvoMemberKind)
+
+    enum ConvoMemberRole
+    {
+        CONVO_MEMBER_ROLE_OWNER = (int)ATProto::ChatBskyActor::MemberRole::OWNER,
+        CONVO_MEMBER_ROLE_STANDARD = (int)ATProto::ChatBskyActor::MemberRole::STANDARD,
+        CONVO_MEMBER_ROLE_UNKNOWN = (int)ATProto::ChatBskyActor::MemberRole::UNKNOWN
+    };
+    Q_ENUM(ConvoMemberRole)
 
     enum ThreadStyle
     {

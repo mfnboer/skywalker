@@ -723,6 +723,10 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/QuoteMessage.qml
         SOURCES system_message_utils.h
         SOURCES system_message_utils.cpp
+        SOURCES group_convo_member.h
+        SOURCES chat_author_list_model.h
+        SOURCES chat_author_list_model.cpp
+        SOURCES group_convo_member.cpp
 )
 
 target_link_libraries(libskywalker

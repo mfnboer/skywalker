@@ -65,7 +65,8 @@ Skywalker::Skywalker(QObject* parent) :
     mGraphUtils(this),
     mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
     mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
-    mChat(std::make_unique<Chat>(mBsky, mUserDid, mFollowsActivityStore, this)),
+    mChat(std::make_unique<Chat>(mBsky, mUserDid, mMutedReposts, mTimelineHide,
+                                 mContentFilter, mFollowsActivityStore, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
@@ -2973,6 +2974,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalAuthorModelCh
 {
     for (auto& [_, model] : mAuthorListModels.items())
         update(model.get());
+
+    if (mChat)
+        mChat->makeLocalModelChange(update);
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update)

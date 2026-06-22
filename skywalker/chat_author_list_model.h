@@ -1,0 +1,85 @@
+// Copyright (C) 2026 Michel de Boer
+// License: GPLv3
+#pragma once
+#include "base_list_model.h"
+#include "chat_profile.h"
+#include "content_filter.h"
+#include "enums.h"
+#include "local_author_model_changes.h"
+#include "profile_store.h"
+#include <QAbstractListModel>
+#include <deque>
+
+namespace Skywalker {
+
+class ChatAuthorListModel : public QAbstractListModel,
+                            public BaseListModel,
+                            public LocalAuthorModelChanges
+{
+    Q_OBJECT
+    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+
+public:
+    enum class Role {
+        Author = Qt::UserRole + 1,
+        FollowingUri,
+        BlockingUri,
+        AuthorMuted,
+        MutedReposts,
+        HideFromTimeline,
+        EndOfList
+    };
+
+    using Type = QEnums::ChatAuthorListType;
+    using Ptr = std::unique_ptr<ChatAuthorListModel>;
+
+    ChatAuthorListModel(Type type, const IProfileStore& mutedReposts,
+                        const IProfileStore& timelineHide,
+                        const ContentFilter& contentFilter, QObject* parent = nullptr);
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+    Q_INVOKABLE void clear();
+    void addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::List authors, const QString& cursor);
+
+    const QString& getCursor() const { return mCursor; }
+    bool isEndOfList() const { return mCursor.isEmpty(); }
+
+    Type getType() const { return mType; }
+
+    void setGetFeedInProgress(bool inProgress);
+    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+
+signals:
+    void getFeedInProgressChanged();
+
+protected:
+    QHash<int, QByteArray> roleNames() const override;
+
+    virtual void blockingUriChanged() override;
+    virtual void followingUriChanged() override;
+    virtual void activitySubscriptionChanged() override {}
+    virtual void mutedChanged() override;
+    virtual void mutedRepostsChanged() override;
+    virtual void hideFromTimelineChanged() override;
+
+private:
+    using AuthorList = std::deque<ChatBasicProfile>;
+
+    AuthorList filterAuthors(const ATProto::ChatBskyActor::ProfileViewBasic::List& authors) const;
+    void changeData(const QList<int>& roles) override;
+
+    Type mType;
+    const IProfileStore& mMutedReposts;
+    const IProfileStore& mTimelineHide;
+    const ContentFilter& mContentFilter;
+
+    AuthorList mList;
+    std::deque<ATProto::ChatBskyActor::ProfileViewBasic::List> mRawLists;
+
+    QString mCursor;
+    bool mGetFeedInProgress = false;
+};
+
+}

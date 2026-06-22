@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "chat_author_list_model.h"
 #include "convo_list_model.h"
 #include "follows_activity_store.h"
 #include "message_list_model.h"
@@ -22,9 +23,13 @@ class Chat : public QObject
     Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
     Q_PROPERTY(bool leaveConvoInProgress READ isLeaveConvoInProgress NOTIFY leaveConvoInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
+    Q_PROPERTY(bool getConvoMembersInProgress READ isGetConvoMembersInProgress NOTIFY getConvoMembersInProgressChanged FINAL)
 
 public:
-    explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid, FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
+    explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid,
+                  const IProfileStore& mutedReposts, const IProfileStore& timelineHide,
+                  const ContentFilter& contentFilter,
+                  FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
 
     void reset();
     void initSettings();
@@ -81,7 +86,16 @@ public:
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
 
+    Q_INVOKABLE ChatAuthorListModel* getConvoMemberListModel(const QString& convoId);
+    Q_INVOKABLE void removeConvoMemberListModel(const QString& convoId);
+    Q_INVOKABLE void getConvoMembers(const QString& convoId, const QString& cursor = "");
+    Q_INVOKABLE void getConvoMembersNextPage(const QString& convoId);
+
+    bool isGetConvoMembersInProgress() const { return mGetConvoMembersInProgress; }
+    void setConvoMembersInProgress(bool inProgress);
+
     void updateBlockingUri(const QString& did, const QString& blockingUri);
+    void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
 
     void pause();
     void resume();
@@ -103,6 +117,9 @@ signals:
     void sendMessageOk();
     void deleteMessageFailed(QString error);
     void deleteMessageOk();
+    void getConvoMembersInProgressChanged();
+    void getConvoMembersOk(QString cursor);
+    void getConvoMembersFailed(QString error);
     void settingsFailed(QString error);
     void failure(QString error);
 
@@ -132,13 +149,18 @@ private:
     std::unique_ptr<ATProto::ChatMaster> mChatMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     const QString& mUserDid;
+    const IProfileStore& mMutedReposts;
+    const IProfileStore& mTimelineHide;
+    const ContentFilter& mContentFilter;
     FollowsActivityStore& mFollowsActivityStore;
     ConvoListModel mAcceptedConvoListModel;
     ConvoListModel mRequestConvoListModel;
     int mUnreadCount = 0;
     std::unordered_map<QString, MessageListModel::Ptr> mMessageListModels; // convoId -> model
+    std::unordered_map<QString, ChatAuthorListModel::Ptr> mConvoMemberListModels; // convoId -> model
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
+    bool mGetConvoMembersInProgress = false;
     bool mStartConvoInProgress = false;
     bool mAcceptConvoInProgress = false;
     bool mLeaveConvoInProgress = false;

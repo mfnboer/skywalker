@@ -91,6 +91,7 @@ SkyPage {
                 width: page.width
                 onViewConvo: (convo) => page.viewMessages(convo)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
+                onLeaveConvo: (convo) => page.leaveGroupConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) => chat.unmuteConvo(convo.id)
                 onBlockAuthor: (author) => root.blockAuthor(author)
@@ -129,6 +130,7 @@ SkyPage {
                 width: page.width
                 onViewConvo: (convo) => page.viewMessages(convo)
                 onDeleteConvo: (convo) => page.deleteConvo(convo)
+                onLeaveConvo: (convo) => page.leaveGroupConvo(convo)
                 onMuteConvo: (convo) => chat.muteConvo(convo.id)
                 onUnmuteConvo: (convo) =>chat.unmuteConvo(convo.id)
                 onBlockAuthor: (author) => root.blockAuthor(author)
@@ -233,6 +235,15 @@ SkyPage {
                 () => {
                     chat.leaveConvo(convo.id)
                     yesCb()
+                })
+    }
+
+    function leaveGroupConvo(convo, parentPage = page) {
+        guiSettings.askYesNoQuestion(parentPage,
+                qsTr(`Do you want to leave the group <b>${convo.group.name}</b>?`),
+                () => {
+                    chat.leaveConvo(convo.id)
+                    page.closed()
                 })
     }
 
