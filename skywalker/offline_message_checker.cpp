@@ -745,7 +745,7 @@ void OffLineMessageChecker::getChatNotifications()
 
     // We used to list only unread convos, but that will not get convos with
     // new reactions.
-    mBsky->listConvos({}, false, {}, {},
+    mBsky->listConvos({}, false, {}, {}, {}, {},
         [this](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             const QString lastRev = mUserSettings.getOffLineChatCheckRev(mUserDid);
             const QString rev = mNotificationListModel.addNotifications(std::move(output), lastRev, mUserDid);

@@ -175,7 +175,7 @@ void Chat::getConvos(QEnums::ConvoStatus status, const QString& cursor)
 
     startConvosUpdateTimer(status);
     model->setGetConvosInProgress(true);
-    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus(status), Utils::makeOptionalString(cursor),
+    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus(status), {}, {}, Utils::makeOptionalString(cursor),
         [this, presence=*mPresence, status, cursor](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             if (!presence)
                 return;
@@ -277,7 +277,7 @@ void Chat::updateConvos(QEnums::ConvoStatus status)
     Q_ASSERT(mBsky);
     qDebug() << "Update convos:" << status;
 
-    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus(status), {},
+    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus(status), {}, {}, {},
         [this, presence=*mPresence, status](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             if (!presence)
                 return;
