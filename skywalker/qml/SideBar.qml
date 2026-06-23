@@ -154,12 +154,23 @@ Pane {
                 height: undefined
                 Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
+                rightPadding: messagesHeaderButton.visible ? messagesHeaderButton.width : 0
                 color: guiSettings.sideBarColor
                 convo: visible ? messagesListView.convo : nullConvo
                 isSideBar: true
                 visible: Boolean(messagesListView)
 
                 onBack: rootItem.closed()
+
+                SvgPlainButton {
+                    id: messagesHeaderButton
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    svg: visible ? rootItem.sideBarButtonSvg : SvgOutline.info
+                    accessibleName: typeof rootItem?.sideBarButtonName == 'string' ? rootItem.sideBarButtonName : ""
+                    visible: typeof rootItem?.sideBarButtonSvg != 'undefined'
+                    onClicked: typeof rootItem?.sideBarButtonClicked == 'function' ? rootItem.sideBarButtonClicked(simpleHeader, Qt.point(x, y)) : () => {}
+                }
             }
 
             SimpleHeader {
@@ -242,6 +253,7 @@ Pane {
                     property basicprofile nullAuthor
 
                     author: visible ? rootItem.sideBarAuthor : nullAuthor
+                    showGroupIcon: rootItem instanceof MessagesListView && rootItem.convo.kind === QEnums.CONVO_KIND_GROUP
                     visible: typeof rootItem?.sideBarAuthor != 'undefined'
 
                     onClicked: {

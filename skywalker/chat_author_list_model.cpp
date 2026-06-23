@@ -1,7 +1,6 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "chat_author_list_model.h"
-#include "author_cache.h"
 
 namespace Skywalker {
 
@@ -36,7 +35,7 @@ QVariant ChatAuthorListModel::data(const QModelIndex& index, int role) const
 
     switch (Role(role))
     {
-    case Role::Author:
+    case Role::ChatAuthor:
         return QVariant::fromValue(chatAuthor);
     case Role::FollowingUri:
         return change && change->mFollowingUri ? *change->mFollowingUri : author.getViewer().getFollowing();
@@ -84,6 +83,75 @@ void ChatAuthorListModel::addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::L
 
     mRawLists.push_back(std::forward<ATProto::ChatBskyActor::ProfileViewBasic::List>(authors));
     qDebug() << "New list size:" << mList.size();
+    setEndOfList();
+}
+
+void ChatAuthorListModel::prependAuthor(const ATProto::ChatBskyActor::ProfileViewBasic& author)
+{
+    qDebug() << "Preprend author:" << author.mHandle;
+    const ChatBasicProfile profile(author);
+
+    beginInsertRows({}, 0, 0);
+    mList.push_front(profile);
+    endInsertRows();
+
+    qDebug() << "New list size:" << mList.size();
+
+    if (mList.size() == 1)
+        setEndOfList();
+}
+
+void ChatAuthorListModel::deleteAuthor(const QString& did)
+{
+    qDebug() << "Delete author:" << did;
+    int index = -1;
+
+    for (int i = 0; i < (int)mList.size(); ++ i)
+    {
+        const ChatBasicProfile& chatProfile = mList[i];
+
+        if (chatProfile.getBasicProfile().getDid() == did)
+        {
+            qDebug() << "Author found:" << chatProfile.getBasicProfile().getName();
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1)
+    {
+        qDebug() << "Author not found:" << did;
+        return;
+    }
+
+    deleteEntry(index);
+}
+
+void ChatAuthorListModel::deleteEntry(int index)
+{
+    qDebug() << "Delete entry:" << index;
+
+    if (index < 0 || (size_t)index >= mList.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
+        return;
+    }
+
+    beginRemoveRows({}, index, index);
+    mList.erase(mList.begin() + index);
+    endRemoveRows();
+
+    if (index == (int)mList.size())
+        setEndOfList();
+}
+
+void ChatAuthorListModel::setEndOfList()
+{
+    if (isEndOfList() && !mList.empty())
+    {
+        const auto index = createIndex(mList.size() - 1, 0);
+        emit dataChanged(index, index, { int(Role::EndOfList) });
+    }
 }
 
 ChatAuthorListModel::AuthorList ChatAuthorListModel::filterAuthors(const ATProto::ChatBskyActor::ProfileViewBasic::List& authors) const
@@ -102,7 +170,6 @@ ChatAuthorListModel::AuthorList ChatAuthorListModel::filterAuthors(const ATProto
             continue;
         }
 
-        AuthorCache::instance().put(profile.getBasicProfile());
         list.push_back(profile);
     }
 
@@ -114,13 +181,25 @@ void ChatAuthorListModel::setGetFeedInProgress(bool inProgress)
     if (inProgress != mGetFeedInProgress) {
         mGetFeedInProgress = inProgress;
         emit getFeedInProgressChanged();
+
+        if (mGetFeedInProgress)
+            clearFeedError();
+    }
+}
+
+void ChatAuthorListModel::setFeedError(const QString& error)
+{
+    if (error != mFeedError)
+    {
+        mFeedError = error;
+        emit feedErrorChanged();
     }
 }
 
 QHash<int, QByteArray> ChatAuthorListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
-        { int(Role::Author), "author" },
+        { int(Role::ChatAuthor), "chatAuthor" },
         { int(Role::FollowingUri), "followingUri" },
         { int(Role::BlockingUri), "blockingUri" },
         { int(Role::AuthorMuted), "authorMuted" },

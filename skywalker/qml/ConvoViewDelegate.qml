@@ -233,6 +233,13 @@ Rectangle {
                         id: moreMenu
 
                         SkyMenuButton {
+                            text: qsTr("Members")
+                            svg: SvgOutline.group
+                            popup: moreMenu
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP
+                            onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
+                        }
+                        SkyMenuButton {
                             text: qsTr("Delete")
                             svg: SvgOutline.delete
                             popup: moreMenu

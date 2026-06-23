@@ -23,7 +23,6 @@ class Chat : public QObject
     Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
     Q_PROPERTY(bool leaveConvoInProgress READ isLeaveConvoInProgress NOTIFY leaveConvoInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
-    Q_PROPERTY(bool getConvoMembersInProgress READ isGetConvoMembersInProgress NOTIFY getConvoMembersInProgressChanged FINAL)
 
 public:
     explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid,
@@ -91,8 +90,8 @@ public:
     Q_INVOKABLE void getConvoMembers(const QString& convoId, const QString& cursor = "");
     Q_INVOKABLE void getConvoMembersNextPage(const QString& convoId);
 
-    bool isGetConvoMembersInProgress() const { return mGetConvoMembersInProgress; }
-    void setConvoMembersInProgress(bool inProgress);
+    Q_INVOKABLE void removeMember(const QString& convoId, const QString& did);
+    Q_INVOKABLE void addMember(const QString& convoId, const QString& did);
 
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
@@ -109,6 +108,8 @@ signals:
     void acceptConvoOk(ConvoView convo);
     void leaveConvoInProgressChanged();
     void leaveConvoOk();
+    void convoUpdated(ConvoView convo);
+    void removeMemberFailed(QString error);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void getMessagesOk(QString cursor);
@@ -117,9 +118,6 @@ signals:
     void sendMessageOk();
     void deleteMessageFailed(QString error);
     void deleteMessageOk();
-    void getConvoMembersInProgressChanged();
-    void getConvoMembersOk(QString cursor);
-    void getConvoMembersFailed(QString error);
     void settingsFailed(QString error);
     void failure(QString error);
 
@@ -160,7 +158,6 @@ private:
     std::unordered_map<QString, ChatAuthorListModel::Ptr> mConvoMemberListModels; // convoId -> model
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
-    bool mGetConvoMembersInProgress = false;
     bool mStartConvoInProgress = false;
     bool mAcceptConvoInProgress = false;
     bool mLeaveConvoInProgress = false;

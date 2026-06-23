@@ -18,10 +18,11 @@ class ChatAuthorListModel : public QAbstractListModel,
 {
     Q_OBJECT
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+    Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
 
 public:
     enum class Role {
-        Author = Qt::UserRole + 1,
+        ChatAuthor = Qt::UserRole + 1,
         FollowingUri,
         BlockingUri,
         AuthorMuted,
@@ -42,6 +43,10 @@ public:
 
     Q_INVOKABLE void clear();
     void addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::List authors, const QString& cursor);
+    void prependAuthor(const ATProto::ChatBskyActor::ProfileViewBasic& author);
+
+    void deleteAuthor(const QString& did);
+    void deleteEntry(int index);
 
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
@@ -51,8 +56,13 @@ public:
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
+    virtual void setFeedError(const QString& error);
+    void clearFeedError() { setFeedError({}); }
+    const QString& getFeedError() const { return mFeedError; }
+
 signals:
     void getFeedInProgressChanged();
+    void feedErrorChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -67,6 +77,7 @@ protected:
 private:
     using AuthorList = std::deque<ChatBasicProfile>;
 
+    void setEndOfList();
     AuthorList filterAuthors(const ATProto::ChatBskyActor::ProfileViewBasic::List& authors) const;
     void changeData(const QList<int>& roles) override;
 
@@ -80,6 +91,7 @@ private:
 
     QString mCursor;
     bool mGetFeedInProgress = false;
+    QString mFeedError;
 };
 
 }

@@ -14,6 +14,8 @@ class AuthorCache : public WrappedSkywalker
     Q_OBJECT
 
 public:
+    using AddedCb = std::function<void()>;
+
     class Entry : public QObject
     {
     public:
@@ -30,7 +32,7 @@ public:
 
     void clear();
     void put(const BasicProfile& author);
-    void putProfile(const QString& did, const std::function<void()>& addedCb = {});
+    void putProfile(const QString& did, const AddedCb& addedCb = {});
     const BasicProfile* get(const QString& did) const;
     bool contains(const QString& did) const;
 
@@ -48,8 +50,9 @@ private:
     QCache<QString, Entry> mCache; // key is did
     std::unordered_set<const IProfileStore*> mProfileStores;
     BasicProfile mUser;
-    std::unordered_set<QString> mFetchingDids;
+    std::unordered_map<QString, std::vector<AddedCb>> mFetchingDids;
     std::unordered_set<QString> mFailedDids;
+    std::unordered_set<QString> mPermanentlyFailedDids;
 
     static std::unique_ptr<AuthorCache> sInstance;
 };

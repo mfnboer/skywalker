@@ -36,8 +36,13 @@ public:
     const QString& getRev() const { return mRev; }
     const QString& getRevIncludingReactions() const;
     QEnums::ConvoKind getKind() const { return mKind; }
+
+    // NOTE:
+    // For direct convos, members does not contain the active user
+    // For group convos, members contain all users
     const ChatBasicProfileList& getMembers() const { return mMembers; }
     QString getMemberNames() const { return mMemberNames.join(", "); }
+
     bool isMuted() const { return mMuted; }
     QEnums::ConvoStatus getStatus() const { return mStatus; }
     int getUnreadCount() const { return mUnreadCount; }

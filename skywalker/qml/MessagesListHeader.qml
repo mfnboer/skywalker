@@ -8,6 +8,7 @@ Rectangle {
     property var skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
     property bool isSideBar: false
+    property int rightPadding: 0
     readonly property int margin: 10
 
     signal back
@@ -22,7 +23,7 @@ Rectangle {
 
     RowLayout {
         id: convoRow
-        width: parent.width
+        width: parent.width - headerRect.rightPadding
         height: parent.height
         spacing: 5
 
@@ -72,14 +73,14 @@ Rectangle {
                 visible: convo.members.length <= 1
             }
 
-            // TODO: sidebar
             Row {
                 width: parent.width
                 spacing: 3
+                clip: true
 
                 Repeater {
                     id: activeMembers
-                    model: convo.members.slice(1, 6) // Show 5 max
+                    model: convo.members.slice(1, 1 + parent.calcNumAvatars())
 
                     Avatar {
                         required property chatbasicprofile modelData
@@ -97,6 +98,15 @@ Rectangle {
                 }
 
                 visible: convo.members.length > 1
+
+                function calcNumAvatars() {
+                    const maxAvatars = parent.width / (guiSettings.avatarSmallWidth + spacing)
+
+                    if (convo.group.memberCount - 1 <= maxAvatars)
+                        return maxAvatars
+
+                    return maxAvatars - 1 // leavespace for "+N"
+                }
             }
         }
     }

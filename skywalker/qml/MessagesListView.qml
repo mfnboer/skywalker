@@ -18,6 +18,8 @@ SkyPage {
     property int lastIndex: -1
     property int lastOffsetY: 0
     readonly property alias sideBarAuthor: page.firstMember
+    readonly property var sideBarButtonSvg: convo.kind === QEnums.CONVO_KIND_GROUP ? SvgOutline.moreVert : undefined
+    readonly property string sideBarButtonName: qsTr("options")
     readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
     signal closed
@@ -29,6 +31,7 @@ SkyPage {
 
     header: MessagesListHeader {
         convo: page.convo
+        rightPadding: moreButton.visible ? moreButton.width : 0
         visible: !root.showSideBar
         onBack: page.closed()
 
@@ -37,9 +40,9 @@ SkyPage {
             anchors.right: parent.right
             anchors.top: parent.top
             svg: SvgOutline.moreVert
-            accessibleName: qsTr("options")
+            accessibleName: sideBarButtonName
             visible: convo.kind === QEnums.CONVO_KIND_GROUP
-            onClicked: showMoreMenu(page.header, Qt.point(x, y))
+            onClicked: sideBarButtonClicked(page.header, Qt.point(x, y))
 
             SkyMenu {
                 id: moreMenu
@@ -48,12 +51,7 @@ SkyPage {
                     text: qsTr("Members")
                     svg: SvgOutline.group
                     popup: moreMenu
-                }
-
-                SkyMenuButton {
-                    text: qsTr("Add members")
-                    svg: SvgOutline.addUser
-                    popup: moreMenu
+                    onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
                 }
 
                 SkyMenuButton {
@@ -465,6 +463,15 @@ SkyPage {
         id: keyboardHandler
     }
 
+    Connections {
+        target: skywalker.chat
+
+        function onConvoUpdated(convo) {
+            if (convo.id === page.convo.id)
+                page.convo = convo
+        }
+    }
+
     function addMessage(msgText) {
         Qt.inputMethod.commit() // qmllint disable missing-property
         newMessageText.insert(newMessageText.length, msgText)
@@ -613,7 +620,7 @@ SkyPage {
         root.pushStack(view)
     }
 
-    function showMoreMenu(mouseView, clickPoint) {
+    function sideBarButtonClicked(mouseView, clickPoint) {
         const mousePoint = clickPoint ?
             mouseView.mapToItem(moreButton, clickPoint) :
             mouseView.mapToItem(moreButton, 0, 0)

@@ -14,9 +14,15 @@ Row {
     property bool hideFromTimeline: false
     property bool showActivitySubscription: false
     property activitysubscription activitySubscription
+    property int convoMemberRole: QEnums.CONVO_MEMBER_KIND_UNKNOWN
 
     spacing: 5
 
+    SkyLabel {
+        font.bold: true
+        text: qsTr("owner")
+        visible: convoMemberRole === QEnums.CONVO_MEMBER_ROLE_OWNER
+    }
     SkyLabel {
         text: "🔔 post"
         visible: showActivitySubscription && activitySubscription.post

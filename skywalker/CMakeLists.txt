@@ -727,6 +727,8 @@ qt_add_qml_module(libskywalker
         SOURCES chat_author_list_model.h
         SOURCES chat_author_list_model.cpp
         SOURCES group_convo_member.cpp
+        QML_FILES qml/ChatAuthorListView.qml
+        QML_FILES qml/ChatAuthorViewDelegate.qml
 )
 
 target_link_libraries(libskywalker

@@ -38,9 +38,11 @@ ChatBasicProfile::ChatBasicProfile(const ATProto::ChatBskyActor::ProfileViewBasi
     {
         mMemberKind = QEnums::CONVO_MEMBER_KIND_UNKNOWN;
     }
-
-    qWarning() << "Unexpected kind";
-    mMemberKind = QEnums::CONVO_MEMBER_KIND_UNKNOWN;
+    else
+    {
+        qWarning() << "Unexpected kind";
+        mMemberKind = QEnums::CONVO_MEMBER_KIND_UNKNOWN;
+    }
 }
 
 const GroupConvoMember& ChatBasicProfile::getGroupMember() const

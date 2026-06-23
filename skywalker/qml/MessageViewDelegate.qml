@@ -315,6 +315,7 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width
                 elide: Text.ElideRight
+                wrapMode: Text.Wrap
             }
 
             function setMessage(icon, text) {
@@ -324,6 +325,8 @@ Rectangle {
         }
 
         function setMessage(icon, text) {
+            console.debug("SYSTEM:", text)
+
             if (item)
                 item.setMessage(icon, text)
         }

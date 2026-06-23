@@ -165,6 +165,9 @@ void AuthorListModel::prependAuthor(const Profile& author, const QString& listIt
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();
+
+    if (mList.size() == 1)
+        setEndOfList();
 }
 
 void AuthorListModel::deleteEntry(int index)

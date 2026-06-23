@@ -18,7 +18,7 @@ void SystemMessageUtils::getMessage(const MessageView& view)
 
     if (!view.isSystemMessage())
     {
-        qWarning() << "Not as system message:" << view.getId() << "text:" << view.getText();
+        qWarning() << "Not a system message:" << view.getId() << "text:" << view.getText();
         return;
     }
 

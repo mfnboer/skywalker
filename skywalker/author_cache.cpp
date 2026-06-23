@@ -42,7 +42,7 @@ void AuthorCache::put(const BasicProfile& author)
     mCache.insert(did, entry);
 }
 
-void AuthorCache::putProfile(const QString& did, const std::function<void()>& addedCb)
+void AuthorCache::putProfile(const QString& did, const AddedCb& addedCb)
 {
     if (contains(did))
     {
@@ -50,26 +50,41 @@ void AuthorCache::putProfile(const QString& did, const std::function<void()>& ad
         return;
     }
 
-    if (mFetchingDids.contains(did))
+    if (mPermanentlyFailedDids.contains(did))
         return;
+
+    if (mFetchingDids.contains(did))
+    {
+        if (addedCb)
+            mFetchingDids[did].push_back(addedCb);
+
+        return;
+    }
 
     if (!bskyClient())
         return;
 
-    mFetchingDids.insert(did);
+    if (addedCb)
+        mFetchingDids.insert({did, {addedCb}});
+    else
+        mFetchingDids.insert({did, {}});
 
     bskyClient()->getProfile(did,
-        [this, addedCb](auto profile){
+        [this](auto profile){
+            const auto callbacks = mFetchingDids[profile->mDid];
             mFetchingDids.erase(profile->mDid);
             mFailedDids.erase(profile->mDid);
             put(BasicProfile(profile));
             emit profileAdded(profile->mDid);
 
-            if (addedCb)
-                addedCb();
+            for (const auto& cb : callbacks)
+                cb();
+
+
         },
-        [this, did, addedCb](const QString& error, const QString& msg){
+        [this, did](const QString& error, const QString& msg){
             qDebug() << "putProfile failed:" << did << error << " - " << msg;
+            const auto callbacks = mFetchingDids[did];
 
             if (!mFailedDids.contains(did))
             {
@@ -79,11 +94,12 @@ void AuthorCache::putProfile(const QString& did, const std::function<void()>& ad
             else
             {
                 qWarning() << "Failed to get DID for the second time:" << did << error << " - " << msg;
-                // Do not remove from mFetchingDids, so we will not try to get it again
+                mFetchingDids.erase(did);
+                mPermanentlyFailedDids.insert(did);
             }
 
-            if (addedCb)
-                addedCb();
+            for (const auto& cb : callbacks)
+                cb();
         });
 }
 

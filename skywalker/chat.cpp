@@ -622,7 +622,6 @@ ChatAuthorListModel* Chat::getConvoMemberListModel(const QString& convoId)
     if (!convo)
     {
         qWarning() << "Cannot find convo:" << convoId;
-        mConvoMemberListModels.erase(convoId);
         return nullptr;
     }
 
@@ -649,13 +648,21 @@ void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
     Q_ASSERT(mBsky);
     qDebug() << "Get convo members, convoId:" << convoId << "cursor:" << cursor;
 
-    if (mGetConvoMembersInProgress)
+    auto* model = getConvoMemberListModel(convoId);
+
+    if (!model)
+    {
+        qWarning() << "No model";
+        return;
+    }
+
+    if (model->isGetFeedInProgress())
     {
         qDebug() << "Get convo members still in progress";
         return;
     }
 
-    setConvoMembersInProgress(true);
+    model->setGetFeedInProgress(true);
     mBsky->getConvoMembers(convoId, {}, Utils::makeOptionalString(cursor),
         [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetConvoMembersOutput::SharedPtr output){
             if (!presence)
@@ -669,22 +676,26 @@ void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
                     model->clear();
 
                 model->addAuthors(output->mMembers, output->mCursor.value_or(""));
+                model->setGetFeedInProgress(false);
             }
             else
             {
                 qDebug() << "Model already closed for convo:" << convoId;
             }
-
-            setConvoMembersInProgress(false);
-            emit getConvoMembersOk(cursor);
         },
-        [this, presence=*mPresence](const QString& error, const QString& msg){
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "getConvoMembers FAILED:" << error << " - " << msg;
-            setConvoMembersInProgress(false);
-            emit getConvoMembersFailed(msg);
+
+            auto* model = getConvoMemberListModel(convoId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
         }
     );
 }
@@ -710,13 +721,77 @@ void Chat::getConvoMembersNextPage(const QString& convoId)
     getConvoMembers(convoId, cursor);
 }
 
-void Chat::setConvoMembersInProgress(bool inProgress)
+void Chat::removeMember(const QString& convoId, const QString& did)
 {
-    if (inProgress != mGetConvoMembersInProgress)
+    // TODO: rename
+    if (mLeaveConvoInProgress)
     {
-        mGetConvoMembersInProgress = inProgress;
-        emit getConvoMembersInProgressChanged();
+        qDebug() << "Removing in progress";
+        return;
     }
+
+    setLeaveConvoInProgress(true);
+
+    mBsky->removeMembers(convoId, {did},
+        [this, presence=*mPresence, convoId, did](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            if (mConvoMemberListModels.contains(convoId))
+            {
+                auto& model = mConvoMemberListModels[convoId];
+                model->deleteAuthor(did);
+            }
+
+            setLeaveConvoInProgress(false);
+            mAcceptedConvoListModel.updateConvo(*output->mConvo);
+            emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
+        },
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "removeMember FAILED:" << error << " - " << msg;
+            setLeaveConvoInProgress(false);
+            emit removeMemberFailed(msg);
+        });
+}
+
+void Chat::addMember(const QString& convoId, const QString& did)
+{
+    if (mLeaveConvoInProgress)
+    {
+        qDebug() << "Adding in progress";
+        return;
+    }
+
+    setLeaveConvoInProgress(true);
+
+    mBsky->addMembers(convoId, {did},
+        [this, presence=*mPresence, convoId, did](ATProto::ChatBskyGroup::AddMembersOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            if (mConvoMemberListModels.contains(convoId))
+            {
+                auto& model = mConvoMemberListModels[convoId];
+
+                for (const auto& member : output->mAddedMebers)
+                    model->prependAuthor(*member);
+            }
+
+            setLeaveConvoInProgress(false);
+            mAcceptedConvoListModel.updateConvo(*output->mConvo);
+            emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
+        },
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "addMember FAILED:" << error << " - " << msg;
+            setLeaveConvoInProgress(false);
+            emit removeMemberFailed(msg);
+        });
 }
 
 void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)

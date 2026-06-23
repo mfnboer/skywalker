@@ -18,7 +18,7 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
 
     for (const auto& member : convo.mMembers)
     {
-        if (member->mDid != userDid)
+        if (member->mDid != userDid || mKind == QEnums::CONVO_KIND_GROUP)
         {
             mMembers.emplaceBack(*member);
             mMemberNames.push_back(mMembers.back().getBasicProfile().getName());

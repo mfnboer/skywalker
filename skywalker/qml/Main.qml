@@ -2304,6 +2304,16 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function viewChatAuthorList(convo, viewedByDid = "") {
+        let component = guiSettings.createComponent("ChatAuthorListView.qml")
+        let view = component.createObject(root, {
+                userDid: viewedByDid,
+                convo: convo
+        })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(view)
+    }
+
     function viewUserLists(modelId) {
         let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {
