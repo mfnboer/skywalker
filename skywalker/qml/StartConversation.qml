@@ -61,7 +61,7 @@ SkyPage {
         anchors.bottom: parent.bottom
         searchText: searchInput.displayText
         searchLimit: 100
-        canChatOnly: true
+        searchFilter: QEnums.AUTHOR_SEARCH_FILTER_CHAT_ONLY
 
         onAuthorClicked: (profile) => selected(profile.did)
         onCleared: resetAuthorTypeaheadList()
@@ -77,7 +77,7 @@ SkyPage {
     }
 
     function resetAuthorTypeaheadList() {
-        const convoMembers = skywalker.chat.getAllAcceptedConvoMembers()
+        const convoMembers = skywalker.chat.getAcceptedConvoMembers()
         typeaheadView.reset(convoMembers)
     }
 

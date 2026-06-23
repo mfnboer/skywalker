@@ -194,11 +194,21 @@ void SearchUtils::addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileVie
     emit authorTypeaheadListChanged();
 }
 
-void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit, bool canChatOnly)
+void SearchUtils::searchAuthorsTypeahead(const QString& typed, int limit, QEnums::AuthorSearchFilter filter)
 {
-    const IProfileMatcher* matcher = canChatOnly ?
-            &static_cast<IProfileMatcher&>(mCanChatProfileMatcher) :
-            &static_cast<IProfileMatcher&>(mAnyProfileMatcher);
+    IProfileMatcher* matcher = &static_cast<IProfileMatcher&>(mAnyProfileMatcher);
+
+    switch (filter)
+    {
+    case QEnums::AUTHOR_SEARCH_FILTER_CHAT_ONLY:
+        matcher = &static_cast<IProfileMatcher&>(mCanChatProfileMatcher);
+        break;
+    case QEnums::AUTHOR_SEARCH_FILTER_GROUP_CHAT_ONLY:
+        matcher = &static_cast<IProfileMatcher&>(mCanGroupChatProfileMatcher);
+        break;
+    case QEnums::AUTHOR_SEARCH_FILTER_NONE:
+        break;
+    }
 
     localSearchAuthorsTypeahead(typed, limit, *matcher);
 

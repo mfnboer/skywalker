@@ -127,7 +127,11 @@ SkyListView {
 
     function addMember() {
         let component = guiSettings.createComponent("SearchAuthor.qml")
-        let searchPage = component.createObject(authorListView, { skywalker: skywalker })
+        let searchPage = component.createObject(authorListView, {
+                skywalker: skywalker,
+                presetTypeaheadList: skywalker.chat.getAcceptedConvoMembers(),
+                searchFilter: QEnums.AUTHOR_SEARCH_FILTER_GROUP_CHAT_ONLY
+        })
         searchPage.onAuthorClicked.connect((profile) => { // qmllint disable missing-property
             skywalker.chat.addMember(convo.id, profile.did)
             root.popStack()

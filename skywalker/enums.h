@@ -648,6 +648,14 @@ public:
         LINK_TYPE_MENTION = 1,
     };
     Q_ENUM(LinkType)
+
+    enum AuthorSearchFilter
+    {
+        AUTHOR_SEARCH_FILTER_NONE,
+        AUTHOR_SEARCH_FILTER_CHAT_ONLY,
+        AUTHOR_SEARCH_FILTER_GROUP_CHAT_ONLY
+    };
+    Q_ENUM(AuthorSearchFilter)
 };
 
 }

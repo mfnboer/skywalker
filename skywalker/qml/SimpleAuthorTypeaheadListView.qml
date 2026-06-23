@@ -4,7 +4,7 @@ import skywalker
 SimpleAuthorListView {
     required property string searchText
     property int searchLimit: 20
-    property bool canChatOnly: false
+    property int searchFilter: QEnums.AUTHOR_SEARCH_FILTER_NONE
     property bool publicSearch: false
     property Skywalker skywalker: root.getSkywalker()
 
@@ -21,10 +21,9 @@ SimpleAuthorListView {
                 if (publicSearch)
                     searchUtils.publicSearchAuthorsTypeahead(searchText, searchLimit)
                 else
-                    searchUtils.searchAuthorsTypeahead(searchText, searchLimit, canChatOnly)
+                    searchUtils.searchAuthorsTypeahead(searchText, searchLimit, searchFilter)
             } else {
                 clear()
-                cleared()
             }
         }
     }
@@ -44,6 +43,7 @@ SimpleAuthorListView {
 
     function clear() {
         searchUtils.authorTypeaheadList = []
+        cleared()
     }
 
     function reset(authorList) {

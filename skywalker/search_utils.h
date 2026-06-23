@@ -37,7 +37,7 @@ public:
     ~SearchUtils();
 
     Q_INVOKABLE void removeModels();
-    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20, bool canChatOnly = false);
+    Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20, QEnums::AuthorSearchFilter filter = QEnums::AUTHOR_SEARCH_FILTER_NONE);
 
     // The public search does not need a logged in session. It will no take people you
     // follow in account.
@@ -147,6 +147,7 @@ private:
     int mSuggestedStarterPacksModelId = -1;
     AnyProfileMatcher mAnyProfileMatcher;
     CanChatProfileMatcher mCanChatProfileMatcher;
+    CanGroupChatProfileMatcher mCanGroupChatProfileMatcher;
     TrendingTopicListModel::Ptr mTrendingTopicsListModel;
     QEnums::ContentVisibility mOVerrideAdultVisibility = QEnums::CONTENT_VISIBILITY_SHOW;
     std::optional<int> mSearchPageSize;

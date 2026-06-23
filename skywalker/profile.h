@@ -192,6 +192,7 @@ public:
     explicit ProfileAssociatedChat(const ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr& associated);
 
     QEnums::AllowIncomingChat getAllowIncoming() const;
+    QEnums::AllowIncomingChat getAllowGroupInvites() const;
 
 private:
     ATProto::AppBskyActor::ProfileAssociatedChat::SharedPtr mAssociated;
@@ -319,6 +320,7 @@ public:
 
     Q_INVOKABLE bool isFixedLabeler() const;
     Q_INVOKABLE bool canSendDirectMessage() const;
+    Q_INVOKABLE bool canGroupChat() const;
     Q_INVOKABLE bool allowsActivitySubscriptions() const;
 
     // Check if communication is blocked either due to the user blocking it

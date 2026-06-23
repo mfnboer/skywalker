@@ -344,7 +344,7 @@ void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOu
     setUnreadCount(unread);
 }
 
-BasicProfileList ConvoListModel::getAllConvoMembers() const
+BasicProfileList ConvoListModel::getAllConvoMembers(std::optional<int> max) const
 {
     std::unordered_set<QString> usedDids;
     usedDids.insert(mUserDid);
@@ -361,6 +361,10 @@ BasicProfileList ConvoListModel::getAllConvoMembers() const
             if (!usedDids.contains(profile.getDid()))
             {
                 allConvoMembers.push_back(profile);
+
+                if (max && allConvoMembers.size() >= max)
+                    return allConvoMembers;
+
                 usedDids.insert(profile.getDid());
             }
         }

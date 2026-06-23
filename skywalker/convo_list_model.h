@@ -40,7 +40,7 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
     QString getLastRevIncludingReactions() const;
-    BasicProfileList getAllConvoMembers() const;
+    BasicProfileList getAllConvoMembers(std::optional<int> max = {}) const;
 
     void setGetConvosInProgress(bool inProgress);
     bool isGetConvosInProgress() const { return mGetConvosInProgress; }

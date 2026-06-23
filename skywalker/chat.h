@@ -47,7 +47,7 @@ public:
     Q_INVOKABLE void leaveConvo(const QString& convoId);
     Q_INVOKABLE void muteConvo(const QString& convoId);
     Q_INVOKABLE void unmuteConvo(const QString& convoId);
-    Q_INVOKABLE BasicProfileList getAllAcceptedConvoMembers() const { return mAcceptedConvoListModel.getAllConvoMembers(); }
+    Q_INVOKABLE BasicProfileList getAcceptedConvoMembers() const { return mAcceptedConvoListModel.getAllConvoMembers(50); }
     Q_INVOKABLE bool convosLoaded(QEnums::ConvoStatus status) const;
     bool convosLoaded() const;
 

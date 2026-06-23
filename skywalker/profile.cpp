@@ -276,6 +276,14 @@ QEnums::AllowIncomingChat ProfileAssociatedChat::getAllowIncoming() const
     return mAssociated ? (QEnums::AllowIncomingChat)mAssociated->mAllowIncoming : QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 }
 
+QEnums::AllowIncomingChat ProfileAssociatedChat::getAllowGroupInvites() const
+{
+    if (!mAssociated || !mAssociated->mAllowGroupInvites)
+        return getAllowIncoming();
+
+    return (QEnums::AllowIncomingChat)*mAssociated->mAllowGroupInvites;
+}
+
 
 ProfileAssociatedActivitySubscription::ProfileAssociatedActivitySubscription(const ATProto::AppBskyActor::ProfileAssociatedActivitySubscription::SharedPtr& associated) :
     mAssociated(associated)
@@ -752,6 +760,24 @@ bool BasicProfile::canSendDirectMessage() const
     }
 
     qWarning() << "Unknown allow incoming value:" << allowIncoming;
+    return false;
+}
+
+bool BasicProfile::canGroupChat() const
+{
+    const auto allowGroupInvites = getAssociated().getChat().getAllowGroupInvites();
+    
+    switch (allowGroupInvites)
+    {
+    case QEnums::ALLOW_INCOMING_CHAT_NONE:
+        return false;
+    case QEnums::ALLOW_INCOMING_CHAT_ALL:
+        return true;
+    case QEnums::ALLOW_INCOMING_CHAT_FOLLOWING:
+        return !getViewer().getFollowedBy().isEmpty();
+    }
+    
+    qWarning() << "Unknown allow group invites value:" << allowGroupInvites;
     return false;
 }
 

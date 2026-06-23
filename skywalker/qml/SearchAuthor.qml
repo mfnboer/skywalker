@@ -5,6 +5,8 @@ import skywalker
 
 SkyPage {
     required property var skywalker
+    property list<basicprofile> presetTypeaheadList: []
+    property int searchFilter: QEnums.AUTHOR_SEARCH_FILTER_NONE
     property bool isTyping: true
 
     signal closed
@@ -34,7 +36,10 @@ SkyPage {
         id: typeaheadView
         anchors.fill: parent
         searchText: page.header.displayText
+        searchFilter: page.searchFilter
+
         onAuthorClicked: (profile) => page.authorClicked(profile)
+        onCleared: resetAuthorTypeaheadList()
 
         AccessibleText {
             topPadding: 10
@@ -56,5 +61,13 @@ SkyPage {
 
     function show() {
         page.header.forceFocus()
+    }
+
+    function resetAuthorTypeaheadList() {
+        typeaheadView.reset(presetTypeaheadList)
+    }
+
+    Component.onCompleted: {
+        resetAuthorTypeaheadList()
     }
 }
