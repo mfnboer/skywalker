@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include <atproto/lib/lexicon/chat_bsky_convo.h>
 
 namespace Skywalker {
@@ -12,6 +13,7 @@ class GroupConvo
     Q_PROPERTY(int memberCount READ getMemberCount FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(int memberLimit READ getMemberLimit FINAL)
+    Q_PROPERTY(QEnums::ConvoLockStatus lockStatus READ getLockStatus FINAL)
     QML_VALUE_TYPE(groupconvo)
 
 public:
@@ -23,6 +25,8 @@ public:
     int getMemberCount() const { return mGroupConvo ? mGroupConvo->mMemberCount : 0; }
     QDateTime getCreatedAt() const { return mGroupConvo ? mGroupConvo->mCreatedAt : QDateTime{}; }
     int getMemberLimit() const { return mGroupConvo ? mGroupConvo->mMemberLimit : 0; }
+    QEnums::ConvoLockStatus getLockStatus() const { return mGroupConvo ? (QEnums::ConvoLockStatus)mGroupConvo->mLockStatus : QEnums::CONVO_LOCK_STATUS_UNLOCKED; }
+    Q_INVOKABLE bool isLocked() const;
 
 private:
     ATProto::ChatBskyConvo::GroupConvo::SharedPtr mGroupConvo;

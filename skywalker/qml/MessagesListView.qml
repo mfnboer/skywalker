@@ -70,6 +70,7 @@ SkyPage {
                     text: qsTr("Lock")
                     svg: SvgOutline.lock
                     popup: moreMenu
+                    onClicked: root.lockGroupConvo(convo.id)
                 }
 
                 SkyMenuButton {
@@ -173,7 +174,7 @@ SkyPage {
         contentHeight: newMessageText.contentHeight + page.margin
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
-        visible: convoAccepted
+        visible: convoAccepted && !convo.group.isLocked()
 
         onContentYChanged: {
             if (contentYUpdating)
@@ -280,7 +281,7 @@ SkyPage {
         svg: SvgFilled.send
         accessibleName: qsTr("send message")
         enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
-        visible: convoAccepted
+        visible: convoAccepted && !convo.group.isLocked()
         onClicked: sendMessage()
     }
 
@@ -294,7 +295,7 @@ SkyPage {
         color: guiSettings.messageNewBackgroundColor
         border.width: newMessageText.activeFocus ? 1 : 0
         border.color: guiSettings.buttonColor
-        visible: convoAccepted
+        visible: convoAccepted && !convo.group.isLocked()
 
         // Reply-to message
         Rectangle {

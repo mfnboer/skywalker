@@ -94,6 +94,8 @@ public:
     Q_INVOKABLE void addMember(const QString& convoId, const QString& did);
 
     Q_INVOKABLE void createGroupConvo(const QString& name);
+    Q_INVOKABLE void lockGroupConvo(const QString& convoId);
+    Q_INVOKABLE void unlockGroupConvo(const QString& convoId);
 
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);

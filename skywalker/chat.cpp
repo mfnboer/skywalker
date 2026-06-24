@@ -834,6 +834,64 @@ void Chat::createGroupConvo(const QString& name)
         });
 }
 
+void Chat::lockGroupConvo(const QString& convoId)
+{
+    if (mLeaveConvoInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setLeaveConvoInProgress(true);
+
+    mBsky->lockConvo(convoId,
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setLeaveConvoInProgress(false);
+            mAcceptedConvoListModel.updateConvo(*output->mConvo);
+            emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
+        },
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "lockConvo FAILED:" << error << " - " << msg;
+            setLeaveConvoInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::unlockGroupConvo(const QString& convoId)
+{
+    if (mLeaveConvoInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setLeaveConvoInProgress(true);
+
+    mBsky->unlockConvo(convoId,
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setLeaveConvoInProgress(false);
+            mAcceptedConvoListModel.updateConvo(*output->mConvo);
+            emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
+        },
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "unlockConvo FAILED:" << error << " - " << msg;
+            setLeaveConvoInProgress(false);
+            emit failure(msg);
+        });
+}
+
 void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)
 {
     mAcceptedConvoListModel.updateBlockingUri(did, blockingUri);

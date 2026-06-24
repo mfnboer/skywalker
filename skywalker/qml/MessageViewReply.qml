@@ -42,6 +42,7 @@ Rectangle {
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
             plainText: view.author.name
+            visible: replyTo.senderDid
         }
 
         MessageText {
@@ -58,7 +59,7 @@ Rectangle {
 
     Loader {
         id: profileLoader
-        active: author.isNull()
+        active: author.isNull() && replyTo.senderDid
 
         sourceComponent: ProfileUtils {
             skywalker: view.skywalker

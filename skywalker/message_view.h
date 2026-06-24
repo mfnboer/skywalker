@@ -30,6 +30,8 @@ public:
     MessageView() = default;
     explicit MessageView(const ATProto::ChatBskyConvo::MessageView& msg);
     explicit MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg);
+    explicit MessageView(const ATProto::ChatBskyConvo::MessageBeforeUserJoinedGroupView& msg);
+    explicit MessageView(const ATProto::UnknownVariant& msg);
     explicit MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageType& msg);
 
     const QString& getId() const { return mId; }
@@ -54,7 +56,7 @@ private:
     void init(const ATProto::ChatBskyConvo::MessageView::SharedPtr& view);
     void init(const ATProto::ChatBskyConvo::DeletedMessageView::SharedPtr& view);
     void init(const ATProto::ChatBskyConvo::SystemMessageView::SharedPtr& view);
-    void init(const ATProto::UnknownVariant::SharedPtr& view);
+    void init(const ATProto::UnknownVariant& view);
     void initReactions(const ATProto::ChatBskyConvo::ReactionView::List& reactions);
 
     QString mId;

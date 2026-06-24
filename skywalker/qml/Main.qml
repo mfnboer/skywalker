@@ -2314,6 +2314,13 @@ ApplicationWindow {
         pushStack(view)
     }
 
+    function lockGroupConvo(convoId) {
+        guiSettings.askYesNoQuestion(
+            root,
+            qsTr("Locking a group chat will prohibit members to send new messages. They can still read the chat history. Do you want to lock the group chat?"),
+            () => skywalker.chat.lockGroupConvo(convoId))
+    }
+
     function viewUserLists(modelId) {
         let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {

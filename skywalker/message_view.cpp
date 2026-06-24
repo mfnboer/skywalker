@@ -30,6 +30,17 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::DeletedMessageView& msg) 
 {
 }
 
+MessageView::MessageView(const ATProto::ChatBskyConvo::MessageBeforeUserJoinedGroupView&) :
+    mText(QObject::tr("Message from before you joined")),
+    mFormattedText(ATProto::RichTextMaster::plainToHtml(mText))
+{
+}
+
+MessageView::MessageView(const ATProto::UnknownVariant& msg)
+{
+    init(msg);
+}
+
 MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageType& msg)
 {
     if (ATProto::isNullVariant(msg))
@@ -66,7 +77,7 @@ MessageView::MessageView(const ATProto::ChatBskyConvo::GetMessagesOutput::Messag
 
     if (unknownView)
     {
-        init(*unknownView);
+        init(**unknownView);
         return;
     }
 
@@ -106,13 +117,13 @@ void MessageView::init(const ATProto::ChatBskyConvo::SystemMessageView::SharedPt
     mSystemMessageView = view;
 }
 
-void MessageView::init(const ATProto::UnknownVariant::SharedPtr& view)
+void MessageView::init(const ATProto::UnknownVariant& view)
 {
-    ATProto::XJsonObject xjson(view->mJson);
+    ATProto::XJsonObject xjson(view.mJson);
     mId = xjson.getOptionalString("id", "");
     mRev = xjson.getOptionalString("rev", "");
     mSentAt = xjson.getOptionalDateTime("sentAt", QDateTime{});
-    mText = QString("Unknown message: %1").arg(view->mType);
+    mText = QString("Unknown message: %1").arg(view.mType);
     mFormattedText = ATProto::RichTextMaster::plainToHtml(mText);
 }
 

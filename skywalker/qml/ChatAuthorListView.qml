@@ -45,7 +45,7 @@ SkyListView {
         height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
         color: guiSettings.backgroundColor
-        visible: userIsOwner
+        visible: userIsOwner && !convo.group.isLocked()
 
         SvgButton {
             anchors.horizontalCenter: parent.horizontalCenter

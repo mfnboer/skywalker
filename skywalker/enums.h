@@ -385,6 +385,15 @@ public:
     };
     Q_ENUM(ConvoStatus)
 
+    enum ConvoLockStatus
+    {
+        CONVO_LOCK_STATUS_UNLOCKED = (int)ATProto::ChatBskyConvo::ConvoLockStatus::UNLOCKED,
+        CONVO_LOCK_STATUS_LOCKED = (int)ATProto::ChatBskyConvo::ConvoLockStatus::LOCKED,
+        CONVO_LOCK_STATUS_LOCKED_PERMANENTLY = (int)ATProto::ChatBskyConvo::ConvoLockStatus::LOCKED_PERMANENTLY,
+        CONVO_LOCK_STATUS_UNKNOWN = (int)ATProto::ChatBskyConvo::ConvoLockStatus::UNKNOWN,
+    };
+    Q_ENUM(ConvoLockStatus)
+
     // TODO: unknown
     enum ConvoKind
     {

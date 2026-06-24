@@ -193,13 +193,13 @@ Rectangle {
                         textFormat: Text.RichText
                         font.italic: convo.lastMessage.deleted || convo.lastMessage.isSystemMessage
                         plainText: (senderName ? `<i>${senderName}: </i>` : "") + messageText
-                        visible: !showLastReaction
+                        visible: !showLastReaction && !convo.group.isLocked()
                     }
 
                     // Last reaction
                     RowLayout {
                         width: parent.width
-                        visible: showLastReaction
+                        visible: showLastReaction && !convo.group.isLocked()
 
                         SkyCleanedText {
                             property string senderName: showLastReaction ? getLastReactionSender() : ""
@@ -217,6 +217,31 @@ Rectangle {
                             textFormat: Text.RichText
                             inLayout: true
                             plainText: `${convo.lastReaction.message.text}`
+                        }
+                    }
+
+                    // Locked
+                    Row {
+                        width: parent.width
+                        visible: convo.group.isLocked()
+
+                        SkySvg {
+                            id: lockImg
+                            y: height + 10
+                            width: parent.visible ? guiSettings.appFontHeight : 0
+                            height: width
+                            svg: SvgOutline.lock
+                        }
+
+                        AccessibleText {
+                            topPadding: 10
+                            width: parent.width - lockImg.width
+                            anchors.verticalCenter: parent.verticalCenter
+                            font.italic: true
+                            elide: Text.ElideRight
+                            text: convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED ?
+                                      qsTr("This chat is locked") :
+                                      qsTr("This chat is locked permanently")
                         }
                     }
                 }
@@ -238,6 +263,20 @@ Rectangle {
                             popup: moreMenu
                             visible: convo.kind === QEnums.CONVO_KIND_GROUP
                             onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
+                        }
+                        SkyMenuButton {
+                            text: qsTr("Lock")
+                            svg: SvgOutline.lock
+                            popup: moreMenu
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_UNLOCKED
+                            onClicked: root.lockGroupConvo(convo.id)
+                        }
+                        SkyMenuButton {
+                            text: qsTr("unlock")
+                            svg: SvgOutline.lock
+                            popup: moreMenu
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED
+                            onClicked: skywalker.chat.unlockGroupConvo(convo.id)
                         }
                         SkyMenuButton {
                             text: qsTr("Delete")
