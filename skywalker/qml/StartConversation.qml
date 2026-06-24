@@ -35,11 +35,21 @@ SkyPage {
         }
     }
 
+    AccessibleText {
+        id: groupLink
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}">New group chat</a>`)
+        textFormat: Text.RichText
+        onLinkActivated: newGroupChat()
+    }
+
     SkyTextInput {
         id: searchInput
+        anchors.top: groupLink.bottom
+        anchors.topMargin: 15
         width: parent.width
         svgIcon: SvgOutline.user
-        placeholderText: qsTr("Search user")
+        placeholderText: qsTr("Search user for a 1-1 chat")
         inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
 
         onDisplayTextChanged: {
@@ -79,6 +89,24 @@ SkyPage {
     function resetAuthorTypeaheadList() {
         const convoMembers = skywalker.chat.getAcceptedConvoMembers()
         typeaheadView.reset(convoMembers)
+    }
+
+    function newGroupChat() {
+        let component = guiSettings.createComponent("NewGroupChatDialog.qml")
+        let dialog = component.createObject(page)
+
+        dialog.onAccepted.connect(() => {
+            const name = dialog.getText()
+
+            if (name)
+                skywalker.chat.createGroupConvo(name)
+
+            dialog.close()
+            page.closed()
+        })
+
+        dialog.onRejected.connect(() => dialog.close())
+        dialog.open()
     }
 
     Component.onCompleted: {

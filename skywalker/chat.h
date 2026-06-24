@@ -93,6 +93,8 @@ public:
     Q_INVOKABLE void removeMember(const QString& convoId, const QString& did);
     Q_INVOKABLE void addMember(const QString& convoId, const QString& did);
 
+    Q_INVOKABLE void createGroupConvo(const QString& name);
+
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
 
@@ -110,6 +112,7 @@ signals:
     void leaveConvoOk();
     void convoUpdated(ConvoView convo);
     void removeMemberFailed(QString error);
+    void createGroupConvoOk(ConvoView convo);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void getMessagesOk(QString cursor);

@@ -150,7 +150,7 @@ Item {
 
         sourceComponent: Rectangle {
             radius: width / 2
-            color: guiSettings.groupIconColor
+            color: guiSettings.accentColor
             border.color: guiSettings.backgroundColor
 
             SkySvg {

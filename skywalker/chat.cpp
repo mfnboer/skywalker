@@ -794,6 +794,46 @@ void Chat::addMember(const QString& convoId, const QString& did)
         });
 }
 
+void Chat::createGroupConvo(const QString& name)
+{
+    if (mStartConvoInProgress)
+    {
+        qDebug() << "Starting convo in progress";
+        return;
+    }
+
+    setStartConvoInProgress(true);
+
+    mBsky->createGroup({}, name,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setStartConvoInProgress(false);
+            ConvoView convo(*output->mConvo, mUserDid);
+            convo.setStatus(QEnums::CONVO_STATUS_ACCEPTED);
+            auto* model = getConvoListModel(convo.getStatus());
+
+            if (model)
+                model->insertConvo(convo);
+
+            auto* membersModel = getConvoMemberListModel(convo.getId());
+
+            if (membersModel && !output->mConvo->mMembers.empty())
+                membersModel->prependAuthor(*output->mConvo->mMembers.front());
+
+            emit createGroupConvoOk(convo);
+        },
+        [this, presence=*mPresence, name](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "create group convo FAILED:" << error << " - " << msg;
+            setStartConvoInProgress(false);
+            emit failure(tr("Could not create group %1: %2").arg(name, msg));
+        });
+}
+
 void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)
 {
     mAcceptedConvoListModel.updateBlockingUri(did, blockingUri);

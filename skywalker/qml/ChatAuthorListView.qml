@@ -149,6 +149,7 @@ SkyListView {
     }
 
     Component.onCompleted: {
-        skywalker.chat.getConvoMembers(convo.id)
+        if (count <= 0)
+            skywalker.chat.getConvoMembers(convo.id)
     }
 }

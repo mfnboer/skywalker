@@ -273,7 +273,7 @@ const ConvoView* ConvoListModel::getConvo(const QString& convoId) const
 
     if (it == mConvoIdIndexMap.end())
     {
-        qWarning() << "Cannot find convo:" << convoId;
+        qDebug() << "Cannot find convo:" << convoId;
         return nullptr;
     }
 

@@ -189,7 +189,7 @@ SkyPage {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: chat.leaveConvoInProgress
+        running: chat.leaveConvoInProgress || chat.startConvoInProgress
     }
 
     GraphUtils {
@@ -240,7 +240,7 @@ SkyPage {
 
     function leaveGroupConvo(convo, parentPage = page) {
         guiSettings.askYesNoQuestion(parentPage,
-                qsTr(`Do you want to leave the group <b>${convo.group.name}</b>?`),
+                qsTr(`Do you want to leave the group <b>${convo.group.name}</b>? Your messages will be deleted for you, but not for the other participants.`),
                 () => {
                     chat.leaveConvo(convo.id)
                     page.closed()
@@ -286,6 +286,10 @@ SkyPage {
         skywalker.showStatusMessage(qsTr("Conversation deleted"), QEnums.STATUS_LEVEL_INFO)
     }
 
+    function createGroupConvoOkHandler(convo) {
+        root.viewChatAuthorList(convo, skywalker.getUserDid())
+    }
+
     function failureHandler(error) {
         if (root.currentStackIsChat())
             skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
@@ -294,12 +298,14 @@ SkyPage {
     function initHandlers() {
         chat.onAcceptConvoOk.connect(acceptConvoOkHandler)
         chat.onLeaveConvoOk.connect(leaveConvoOkHandler)
+        chat.onCreateGroupConvoOk.connect(createGroupConvoOkHandler)
         chat.onFailure.connect(failureHandler)
     }
 
     function destroyHandlers() {
         chat.onAcceptConvoOk.disconnect(acceptConvoOkHandler)
         chat.onLeaveConvoOk.disconnect(leaveConvoOkHandler)
+        chat.onCreateGroupConvoOk.disconnect(createGroupConvoOkHandler)
         chat.onFailure.disconnect(failureHandler)
     }
 
