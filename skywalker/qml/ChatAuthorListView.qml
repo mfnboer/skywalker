@@ -109,7 +109,7 @@ SkyListView {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: skywalker.chat.leaveConvoInProgress
+        running: skywalker.chat.convoUpdateInProgress
     }
 
     Connections {

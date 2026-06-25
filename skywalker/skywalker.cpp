@@ -3037,7 +3037,7 @@ void Skywalker::updateNotificationPreferences(bool priority)
 void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, bool emitLoadedSignal, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get notifications:" << cursor << "mentionsOnly:" << mentionsOnly;
+    qDebug() << "Get notifications:" << cursor << "mentionsOnly:" << mentionsOnly << "limit:" << limit;
     auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;
 
     if (model.isGetFeedInProgress())

@@ -13,7 +13,7 @@ SkyPage {
     id: page
 
     header: SimpleHeader {
-        text: qsTr("Conversations")
+        text: qsTr("Chats")
         visible: !root.showSideBar
         onBack: page.closed()
     }
@@ -189,7 +189,7 @@ SkyPage {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: chat.leaveConvoInProgress || chat.startConvoInProgress
+        running: chat.convoUpdateInProgress || chat.startConvoInProgress
     }
 
     GraphUtils {
@@ -231,7 +231,7 @@ SkyPage {
 
     function deleteConvo(convo, parentPage = page, yesCb = () => {}) {
         guiSettings.askYesNoQuestion(parentPage,
-                qsTr(`Do you want to delete the conversation with <b>${convo.memberNames}</b>? Your messages will be deleted for you, but not for the other participant.`),
+                qsTr(`Do you want to delete the chat with <b>${convo.memberNames}</b>? Your messages will be deleted for you, but not for the other participant.`),
                 () => {
                     chat.leaveConvo(convo.id)
                     yesCb()
@@ -249,7 +249,7 @@ SkyPage {
 
     function blockAndDeleteConvo(convo, author, parentPage = page, yesCb = () => {}) {
         guiSettings.askYesNoQuestion(parentPage,
-                qsTr(`Do you want to block <b>@${author.handle}</b> and delete the conversation?`),
+                qsTr(`Do you want to block <b>@${author.handle}</b> and delete the chat?`),
                 () => {
                     graphUtils.block(author.did)
                     chat.leaveConvo(convo.id)
@@ -278,12 +278,12 @@ SkyPage {
     }
 
     function acceptConvoOkHandler(convo) {
-        skywalker.showStatusMessage(qsTr("Conversation accepted"), QEnums.STATUS_LEVEL_INFO)
+        skywalker.showStatusMessage(qsTr("Chat accepted"), QEnums.STATUS_LEVEL_INFO)
         viewMessages(convo)
     }
 
     function leaveConvoOkHandler() {
-        skywalker.showStatusMessage(qsTr("Conversation deleted"), QEnums.STATUS_LEVEL_INFO)
+        skywalker.showStatusMessage(qsTr("Chat deleted"), QEnums.STATUS_LEVEL_INFO)
     }
 
     function createGroupConvoOkHandler(convo) {

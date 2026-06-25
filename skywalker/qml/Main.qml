@@ -2321,6 +2321,24 @@ ApplicationWindow {
             () => skywalker.chat.lockGroupConvo(convoId))
     }
 
+    function editGroupName(convo) {
+        let component = guiSettings.createComponent("NewGroupChatDialog.qml")
+        let dialog = component.createObject(root, { convo: convo })
+
+        dialog.onAccepted.connect(() => {
+            const name = dialog.getText()
+
+            if (name && name !== convo.name)
+                skywalker.chat.editGroupConvo(convo.id, name)
+
+            dialog.close()
+            page.closed()
+        })
+
+        dialog.onRejected.connect(() => dialog.close())
+        dialog.open()
+    }
+
     function viewUserLists(modelId) {
         let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {

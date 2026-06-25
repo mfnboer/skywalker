@@ -35,19 +35,39 @@ Rectangle {
     color: guiSettings.backgroundColor
     height: endMarker.y
 
-    AccessibleText {
+    Loader {
         id: conversationStartText
-        width: viewWidth
-        topPadding: 10
-        horizontalAlignment: Text.AlignHCenter
-        font.italic: true
-        text: qsTr("Start of conversation")
-        visible: endOfList
+        active: endOfList
+
+        sourceComponent: Column {
+            x: 10
+            width: viewWidth - 20
+            spacing: 10
+
+            AccessibleText {
+                width: parent.width
+                topPadding: 10
+                horizontalAlignment: Text.AlignHCenter
+                font.italic: true
+                elide: Text.ElideRight
+                text: isGroupConvo ? qsTr("Start of group chat") : qsTr("Start of chat")
+            }
+
+            AccessibleText {
+                width: parent.width
+                horizontalAlignment: Text.AlignHCenter
+                font.bold: true
+                font.pointSize: guiSettings.scaledFont(10/8)
+                wrapMode: Text.Wrap
+                text: convo.group.name
+                visible: isGroupConvo
+            }
+        }
     }
 
     AccessibleText {
         id: messageDateText
-        y: conversationStartText.y + (conversationStartText.visible ? conversationStartText.height : 0)
+        y: conversationStartText.y + (conversationStartText.active ? conversationStartText.height : 0)
         width: viewWidth
         height: visible ? contentHeight + padding : 0
         padding: 10

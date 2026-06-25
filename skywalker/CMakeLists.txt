@@ -730,6 +730,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ChatAuthorListView.qml
         QML_FILES qml/ChatAuthorViewDelegate.qml
         QML_FILES qml/NewGroupChatDialog.qml
+        QML_FILES qml/ConvoMembersRow.qml
 )
 
 target_link_libraries(libskywalker

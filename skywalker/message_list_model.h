@@ -36,7 +36,7 @@ public:
     void updateMessages(const ATProto::ChatBskyConvo::GetMessagesOutput::MessageList& messages, const QString& cursor);
     void updateMessage(const MessageView& msg);
     const QString& getCursor() const { return mCursor; }
-    bool isEndOfList() const { return mCursor.isEmpty(); }
+    Q_INVOKABLE bool isEndOfList() const { return mCursor.isEmpty(); }
     const MessageView* getLastMessage() const;
 
     Q_INVOKABLE int getMessageIndexById(const QString& id) const;

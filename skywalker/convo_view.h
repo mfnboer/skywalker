@@ -32,6 +32,7 @@ public:
     ConvoView() = default;
     explicit ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& userDid);
 
+    Q_INVOKABLE bool isNull() const { return mId.isEmpty(); }
     const QString& getId() const { return mId; }
     const QString& getRev() const { return mRev; }
     const QString& getRevIncludingReactions() const;

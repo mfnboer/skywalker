@@ -1,17 +1,19 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import skywalker
 
 SkyPage {
     required property var chat
     required property convoview convo
+    property Skywalker skywalker: root.getSkywalker()
     readonly property bool convoAccepted: convo.status === QEnums.CONVO_STATUS_ACCEPTED
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
+    readonly property bool userIsOwner: convo.getMember(skywalker.getUserDid()).groupMember.role === QEnums.CONVO_MEMBER_ROLE_OWNER
     property bool isSending: false
     property int maxInputTextHeight
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
-    property var skywalker: root.getSkywalker()
     property int textInputToolbarHeight: (keyboardHandler.keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
     readonly property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height + margin : 0
     readonly property int replyToContentHeight: replyToColumn.visible ? replyToColumn.height + margin : 0
@@ -61,9 +63,11 @@ SkyPage {
                 }
 
                 SkyMenuButton {
-                    text: qsTr("Edit name")
+                    text: qsTr("Edit group name")
                     svg: SvgOutline.edit
                     popup: moreMenu
+                    visible: userIsOwner
+                    onClicked: root.editGroupName(convo)
                 }
 
                 SkyMenuButton {
@@ -71,6 +75,15 @@ SkyPage {
                     svg: SvgOutline.lock
                     popup: moreMenu
                     onClicked: root.lockGroupConvo(convo.id)
+                    visible: userIsOwner
+                }
+
+                SkyMenuButton {
+                    text: qsTr("unlock")
+                    svg: SvgOutline.lockOpen
+                    popup: moreMenu
+                    visible: userIsOwner && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED
+                    onClicked: skywalker.chat.unlockGroupConvo(convo.id)
                 }
 
                 SkyMenuButton {
@@ -95,7 +108,6 @@ SkyPage {
         height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.topPadding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
         cacheBuffer: Screen.height * 3
-        boundsMovement: Flickable.StopAtBounds
         clip: true
 
         // The height changes when editing a messages, but also when leaving the page
@@ -108,6 +120,18 @@ SkyPage {
         onMovementEnded: {
             page.lastIndex = getLastVisibleIndex()
             page.lastOffsetY = calcVisibleOffsetY(page.lastIndex)
+        }
+
+        onContentMoved: {
+            const remaining = getFirstVisibleIndex()
+
+            if (remaining < 0)
+                return
+
+            if (remaining < 20 && !chat.getMessagesInProgress && !model.isEndOfList()) {
+                console.debug("Get next messages page, remaining:", remaining)
+                chat.getMessagesNextPage(convo.id)
+            }
         }
 
         delegate: MessageViewDelegate {
@@ -159,6 +183,71 @@ SkyPage {
         onAcceptConvo: page.acceptConvo(convo)
         onDeleteConvo: page.deleteConvo(convo)
         onBlockAndDeleteConvo: page.blockAndDeleteConvo(convo, firstMember)
+    }
+
+    Loader {
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: margin
+        active: convo.group.isLocked()
+
+        sourceComponent: Rectangle {
+            x: margin
+            width: page.width - 2 * margin
+            height: lockStatusRow.height + 2 * margin
+            radius: guiSettings.radius
+            color: guiSettings.messageNewBackgroundColor
+            visible: convo.group.isLocked()
+
+            RowLayout {
+                id: lockStatusRow
+                x: margin
+                y: margin
+                width: parent.width - 2 * margin
+
+                Item {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredWidth: 30
+                    Layout.preferredHeight: width
+
+                    SkySvg {
+                        width: 30
+                        height: width
+                        svg: SvgOutline.lock
+                    }
+                }
+
+                Column {
+                    Layout.fillWidth:  true
+
+                    AccessibleText {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        color: guiSettings.messageNewTextColor
+                        text: guiSettings.getChatLockedText(convo)
+                    }
+                    AccessibleText {
+                        width: parent.width
+                        elide: Text.ElideRight
+                        font.pointSize: guiSettings.scaledFont(7/8)
+                        color: guiSettings.messageNewTextColor
+                        text: qsTr("No one can send messages")
+                    }
+                }
+
+                AccessibleText {
+                    Layout.alignment: Qt.AlignVCenter
+                    elide: Text.ElideRight
+                    color: guiSettings.linkColor
+                    text: qsTr("Unlock")
+                    visible: userIsOwner && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: skywalker.chat.unlockGroupConvo(convo.id)
+                    }
+                }
+            }
+        }
     }
 
     Flickable {
@@ -719,8 +808,13 @@ SkyPage {
     }
 
     function rowsInsertedHandler(parent, start, end) {
+        const firstVisible = messagesView.getFirstVisibleIndex()
+        console.debug("INSERTED, start:", start, "end:", end, "count:", messagesView.count, "first:", firstVisible)
+
         if (end === messagesView.count - 1)
-            moveToMessage(-1)
+            moveToMessage(end)
+        else if (firstVisible === 0)
+            moveToMessage(end, ListView.Beginning)
     }
 
     function initHandlers() {

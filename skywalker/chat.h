@@ -16,15 +16,20 @@ namespace Skywalker {
 class Chat : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int MAX_CREATE_GROUP_NAME_LEN MEMBER MAX_CREATE_GROUP_NAME_LEN CONSTANT)
+    Q_PROPERTY(int MAX_EDIT_GROUP_NAME_LEN MEMBER MAX_EDIT_GROUP_NAME_LEN CONSTANT)
     Q_PROPERTY(ConvoListModel* acceptedConvoListModel READ getAcceptedConvoListModel CONSTANT FINAL)
     Q_PROPERTY(ConvoListModel* requestConvoListModel READ getRequestConvoListModel CONSTANT FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
     Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
     Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
-    Q_PROPERTY(bool leaveConvoInProgress READ isLeaveConvoInProgress NOTIFY leaveConvoInProgressChanged FINAL)
+    Q_PROPERTY(bool convoUpdateInProgress READ isConvoUpdateInProgress NOTIFY convoUpdateInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
+    static constexpr int MAX_CREATE_GROUP_NAME_LEN = ATProto::Client::MAX_CREATE_GRAPHEMES_GROUP_NAME;
+    static constexpr int MAX_EDIT_GROUP_NAME_LEN = ATProto::Client::MAX_EDIT_GRAPHEMES_GROUP_NAME;
+
     explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid,
                   const IProfileStore& mutedReposts, const IProfileStore& timelineHide,
                   const ContentFilter& contentFilter,
@@ -61,8 +66,8 @@ public:
     bool isAcceptConvoInProgress() const { return mAcceptConvoInProgress; }
     void setAcceptConvoInProgress(bool inProgress);
 
-    bool isLeaveConvoInProgress() const { return mLeaveConvoInProgress; }
-    void setLeaveConvoInProgress(bool inProgress);
+    bool isConvoUpdateInProgress() const { return mConvoUpdateInProgress; }
+    void seConvoUpdateInProgress(bool inProgress);
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
@@ -94,6 +99,7 @@ public:
     Q_INVOKABLE void addMember(const QString& convoId, const QString& did);
 
     Q_INVOKABLE void createGroupConvo(const QString& name);
+    Q_INVOKABLE void editGroupConvo(const QString& convoId, const QString& name);
     Q_INVOKABLE void lockGroupConvo(const QString& convoId);
     Q_INVOKABLE void unlockGroupConvo(const QString& convoId);
 
@@ -110,7 +116,7 @@ signals:
     void startConvoInProgressChanged();
     void acceptConvoInProgressChanged();
     void acceptConvoOk(ConvoView convo);
-    void leaveConvoInProgressChanged();
+    void convoUpdateInProgressChanged();
     void leaveConvoOk();
     void convoUpdated(ConvoView convo);
     void removeMemberFailed(QString error);
@@ -165,7 +171,7 @@ private:
     bool mGetMessagesInProgress = false;
     bool mStartConvoInProgress = false;
     bool mAcceptConvoInProgress = false;
-    bool mLeaveConvoInProgress = false;
+    bool mConvoUpdateInProgress = false;
     QTimer mMessagesUpdateTimer;
     QTimer mAcceptedConvosUpdateTimer;
     QTimer mRequestConvosUpdateTimer;

@@ -4,7 +4,7 @@ import skywalker
 SkyPage {
     property var skywalker: root.getSkywalker()
     property bool isTyping: false
-    readonly property string sideBarTitle: qsTr("Start conversation")
+    readonly property string sideBarTitle: qsTr("Start chat")
     readonly property SvgImage sideBarSvg: SvgOutline.directMessage
 
     signal closed
@@ -38,7 +38,7 @@ SkyPage {
     AccessibleText {
         id: groupLink
         anchors.horizontalCenter: parent.horizontalCenter
-        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}">New group chat</a>`)
+        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}">Create group chat</a>`)
         textFormat: Text.RichText
         onLinkActivated: newGroupChat()
     }

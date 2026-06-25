@@ -10,6 +10,7 @@ Rectangle {
     required property bool endOfList
     property Skywalker skywalker: root.getSkywalker()
     property basicprofile firstMember: convo.members.length > 0 ? convo.members[0].basicProfile : skywalker.getUserProfile()
+    readonly property bool userIsOwner: convo.getMember(skywalker.getUserDid()).groupMember.role === QEnums.CONVO_MEMBER_ROLE_OWNER
     readonly property list<contentlabel> labelsToShow: guiSettings.filterContentLabelsToShow(firstMember, firstMember.labels)
     readonly property int margin: 10
     readonly property bool showLastReaction: !convo.lastReaction.isNull() && convo.lastReaction.reaction.createdAt > convo.lastMessageDate
@@ -109,30 +110,9 @@ Rectangle {
                         visible: convo.members.length <= 1
                     }
 
-                    Row {
+                    ConvoMembersRow {
                         width: parent.width
-                        spacing: 3
-
-                        Repeater {
-                            id: activeMembers
-                            model: convo.members.slice(1, 6) // Show 5 max
-
-                            Avatar {
-                                required property chatbasicprofile modelData
-
-                                width: guiSettings.avatarSmallWidth
-                                author: modelData.basicProfile
-                                showFollowingStatus: false
-                                onClicked: viewConvo(convo)
-                            }
-                        }
-                        AccessibleText {
-                            anchors.verticalCenter: parent.verticalCenter
-                            text: `+${(convo.group.memberCount - activeMembers.count - 1 )}`
-                            visible: convo.group.memberCount > activeMembers.count + 1
-                        }
-
-                        visible: convo.members.length > 1
+                        convo: convoRect.convo
                     }
 
                     Item {
@@ -239,9 +219,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             font.italic: true
                             elide: Text.ElideRight
-                            text: convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED ?
-                                      qsTr("This chat is locked") :
-                                      qsTr("This chat is locked permanently")
+                            text: guiSettings.getChatLockedText(convo)
                         }
                     }
                 }
@@ -265,17 +243,24 @@ Rectangle {
                             onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
                         }
                         SkyMenuButton {
+                            text: qsTr("Edit group name")
+                            svg: SvgOutline.edit
+                            popup: moreMenu
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && userIsOwner
+                            onClicked: root.editGroupName(convo)
+                        }
+                        SkyMenuButton {
                             text: qsTr("Lock")
                             svg: SvgOutline.lock
                             popup: moreMenu
-                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_UNLOCKED
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_UNLOCKED && userIsOwner
                             onClicked: root.lockGroupConvo(convo.id)
                         }
                         SkyMenuButton {
                             text: qsTr("unlock")
-                            svg: SvgOutline.lock
+                            svg: SvgOutline.lockOpen
                             popup: moreMenu
-                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED && userIsOwner
                             onClicked: skywalker.chat.unlockGroupConvo(convo.id)
                         }
                         SkyMenuButton {
@@ -344,7 +329,7 @@ Rectangle {
         bottomPadding: 100
         elide: Text.ElideRight
         color: guiSettings.textColor
-        text: qsTr("End of conversations")
+        text: qsTr("End of chats")
         font.italic: true
         visible: endOfList
     }
