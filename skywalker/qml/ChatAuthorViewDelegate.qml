@@ -142,10 +142,27 @@ Rectangle {
             Layout.rightMargin: authorRect.margin
             inLayout: true
             width: parent.width
+            elide: Text.ElideRight
             font.italic: true
             font.pointSize: guiSettings.scaledFont(7/8)
             plainText: author.pronouns
             visible: Boolean(author.pronouns)
+        }
+
+        SkyCleanedText {
+            readonly property chatbasicprofile addedBy: chatAuthor.groupMember.addedBy
+
+            rightPadding: 10 + authorRect.textRightPadding
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
+            inLayout: true
+            width: parent.width
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            plainText: qsTr(`Added by ${addedBy.isNull() ? "invite link" : addedBy.basicProfile.name}`)
+            visible: chatAuthor.groupMember.role !== QEnums.CONVO_MEMBER_ROLE_OWNER
         }
 
         Rectangle {

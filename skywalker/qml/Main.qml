@@ -2339,6 +2339,37 @@ ApplicationWindow {
         dialog.open()
     }
 
+    function createOrEditJoinLink(convo, showLinkAfter = true) {
+        let component = guiSettings.createComponent("NewInviteLink.qml")
+        let dialog = component.createObject(root, { convo: convo })
+
+        dialog.onAccepted.connect(() => {
+            const group = dialog.convo.group
+            const joinLink = group.joinLinkView
+
+            if (joinLink.enabledStatus === QEnums.JOIN_LINK_ENABLED_STATUS_DISABLED)
+                skywalker.chat.createJoinLink(convo.id, dialog.joinRule, dialog.requireApproval)
+            else
+                skywalker.chat.editJoinLink(convo.id, dialog.joinRule, dialog.requireApproval)
+
+            dialog.close()
+
+            if (showLinkAfter)
+                showJoinLink(convo)
+        })
+
+        dialog.onRejected.connect(() => dialog.close())
+        dialog.open()
+    }
+
+    function showJoinLink(convo) {
+        let component = guiSettings.createComponent("InviteLink.qml")
+        let dialog = component.createObject(root, { convo: convo })
+
+        dialog.onRejected.connect(() => dialog.close())
+        dialog.open()
+    }
+
     function viewUserLists(modelId) {
         let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {

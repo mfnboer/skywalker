@@ -60,6 +60,13 @@ SkyPage {
                     text: qsTr("Invite link")
                     svg: SvgOutline.link
                     popup: moreMenu
+                    visible: userIsOwner || convo.group.joinLinkView.enabledStatus === QEnums.JOIN_LINK_ENABLED_STATUS_ENABLED
+                    onClicked: {
+                        if (convo.group.joinLinkView.isNull())
+                            root.createOrEditJoinLink(convo)
+                        else
+                            root.showJoinLink(convo)
+                    }
                 }
 
                 SkyMenuButton {
@@ -74,8 +81,8 @@ SkyPage {
                     text: qsTr("Lock")
                     svg: SvgOutline.lock
                     popup: moreMenu
-                    onClicked: root.lockGroupConvo(convo.id)
                     visible: userIsOwner
+                    onClicked: root.lockGroupConvo(convo.id)
                 }
 
                 SkyMenuButton {

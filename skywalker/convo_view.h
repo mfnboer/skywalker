@@ -53,7 +53,11 @@ public:
     const GroupConvo& getGroupConvo() const { return mGroupConvo; }
     QString getTitle() const;
 
+    // Returns null profile for direct convo
+    Q_INVOKABLE ChatBasicProfile getOwner() const;
+
     Q_INVOKABLE ChatBasicProfile getMember(const QString& did) const;
+    Q_INVOKABLE QString getInviteLinkUrl() const;
 
     void setRev(const QString& rev) { mRev = rev; }
     void setStatus(QEnums::ConvoStatus status) { mStatus = status; }
@@ -64,7 +68,7 @@ private:
     QString mId;
     QString mRev;
     QEnums::ConvoKind mKind = QEnums::CONVO_KIND_DIRECT;
-    ChatBasicProfileList mMembers; // all others than the user
+    ChatBasicProfileList mMembers;
     bool mMuted = false;
     QEnums::ConvoStatus mStatus = QEnums::CONVO_STATUS_UNKNOWN;
     int mUnreadCount = 0;

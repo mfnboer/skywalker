@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "convo_view.h"
 #include "generator_view.h"
 #include "list_view.h"
 #include "starter_pack.h"
@@ -20,6 +21,7 @@ public:
     Q_INVOKABLE void shareListUri(const QString& listUri);
     Q_INVOKABLE void shareStarterPack(const StarterPackViewBasic& starterPack);
     Q_INVOKABLE void shareAuthor(const BasicProfile& author);
+    Q_INVOKABLE void shareConvo(const ConvoView& convo);
     void openLinkInApp(const QString& link);
     Q_INVOKABLE void copyPostTextToClipboard(const QString& text);
     Q_INVOKABLE void copyToClipboard(const QString& text);

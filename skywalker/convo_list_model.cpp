@@ -82,22 +82,27 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoView::List& co
 
 void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
 {
-    const auto* oldConvo = getConvo(convo.mId);
+    updateConvo(ConvoView{convo, mUserDid});
+}
+
+void ConvoListModel::updateConvo(const ConvoView& convo)
+{
+    const auto* oldConvo = getConvo(convo.getId());
 
     if (!oldConvo)
         return;
 
-    Q_ASSERT(oldConvo->getId() == convo.mId);
+    Q_ASSERT(oldConvo->getId() == convo.getId());
 
-    if (oldConvo->getId() != convo.mId)
+    if (oldConvo->getId() != convo.getId())
     {
-        qWarning() << "Non-matching convo:" << oldConvo->getId() << convo.mId;
+        qWarning() << "Non-matching convo:" << oldConvo->getId() << convo.getId();
         return;
     }
 
-    auto it = mConvoIdIndexMap.find(convo.mId);
+    auto it = mConvoIdIndexMap.find(convo.getId());
     const int index = it->second;
-    mConvos[index] = ConvoView{convo, mUserDid};
+    mConvos[index] = convo;
     addConvoToDidMap(mConvos[index]);
     reportActivity(mConvos[index]);
     changeData({ int(Role::Convo) }, index, index);

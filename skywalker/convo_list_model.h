@@ -32,6 +32,7 @@ public:
     void clear();
     void addConvos(const ATProto::ChatBskyConvo::ConvoView::List& convos, const QString& cursor);
     void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
+    void updateConvo(const ConvoView& convo);
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void insertConvo(const ConvoView& convo);
     void deleteConvo(const QString& convoId);

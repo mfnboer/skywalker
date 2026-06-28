@@ -16,19 +16,18 @@ namespace Skywalker {
 class Chat : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int MAX_CREATE_GROUP_NAME_LEN MEMBER MAX_CREATE_GROUP_NAME_LEN CONSTANT)
-    Q_PROPERTY(int MAX_EDIT_GROUP_NAME_LEN MEMBER MAX_EDIT_GROUP_NAME_LEN CONSTANT)
+    Q_PROPERTY(int MAX_GROUP_NAME_LEN MEMBER MAX_GROUP_NAME_LEN CONSTANT)
     Q_PROPERTY(ConvoListModel* acceptedConvoListModel READ getAcceptedConvoListModel CONSTANT FINAL)
     Q_PROPERTY(ConvoListModel* requestConvoListModel READ getRequestConvoListModel CONSTANT FINAL)
     Q_PROPERTY(int unreadCount READ getUnreadCount NOTIFY unreadCountChanged FINAL)
     Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
     Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
     Q_PROPERTY(bool convoUpdateInProgress READ isConvoUpdateInProgress NOTIFY convoUpdateInProgressChanged FINAL)
+    Q_PROPERTY(bool joinLinkUpdateInProgress READ isJoinLinkUpdateInProgress NOTIFY joinLinkUpdateInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
-    static constexpr int MAX_CREATE_GROUP_NAME_LEN = ATProto::Client::MAX_CREATE_GRAPHEMES_GROUP_NAME;
-    static constexpr int MAX_EDIT_GROUP_NAME_LEN = ATProto::Client::MAX_EDIT_GRAPHEMES_GROUP_NAME;
+    static constexpr int MAX_GROUP_NAME_LEN = ATProto::Client::MAX_GRAPHEMES_GROUP_NAME;
 
     explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid,
                   const IProfileStore& mutedReposts, const IProfileStore& timelineHide,
@@ -67,7 +66,10 @@ public:
     void setAcceptConvoInProgress(bool inProgress);
 
     bool isConvoUpdateInProgress() const { return mConvoUpdateInProgress; }
-    void seConvoUpdateInProgress(bool inProgress);
+    void setConvoUpdateInProgress(bool inProgress);
+
+    bool isJoinLinkUpdateInProgress() const { return mJoinLinkUpdateInProgress; }
+    void setJoinLinkUpdateInProgress(bool inProgress);
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
@@ -103,6 +105,11 @@ public:
     Q_INVOKABLE void lockGroupConvo(const QString& convoId);
     Q_INVOKABLE void unlockGroupConvo(const QString& convoId);
 
+    Q_INVOKABLE void createJoinLink(const QString& convoId, QEnums::JoinRule joinRule, bool requireApproval);
+    Q_INVOKABLE void editJoinLink(const QString& convoId, QEnums::JoinRule joinRule, bool requireApproval);
+    Q_INVOKABLE void disableJoinLink(const QString& convoId);
+    Q_INVOKABLE void enableJoinLink(const QString& convoId);
+
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
 
@@ -121,6 +128,8 @@ signals:
     void convoUpdated(ConvoView convo);
     void removeMemberFailed(QString error);
     void createGroupConvoOk(ConvoView convo);
+    void joinLinkUpdateInProgressChanged();
+    void joinLinkUpdated(JoinLinkView joinLink);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void getMessagesOk(QString cursor);
@@ -152,6 +161,7 @@ private:
     void setMessagesUpdating(const QString& convoId, bool updating);
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message, const QString& quoteUri, const QString& quoteCid);
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message);
+    void joinLinkUpdatedOk(const QString& convoId, ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output);
 
     std::unique_ptr<Presence> mPresence;
     ATProto::Client::SharedPtr& mBsky;
@@ -172,6 +182,7 @@ private:
     bool mStartConvoInProgress = false;
     bool mAcceptConvoInProgress = false;
     bool mConvoUpdateInProgress = false;
+    bool mJoinLinkUpdateInProgress = false; // TODO: need this?
     QTimer mMessagesUpdateTimer;
     QTimer mAcceptedConvosUpdateTimer;
     QTimer mRequestConvosUpdateTimer;

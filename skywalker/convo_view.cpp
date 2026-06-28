@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "convo_view.h"
+#include "group_convo_member.h"
 
 namespace Skywalker {
 
@@ -33,10 +34,53 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
         mLastReaction = MessageAndReactionView{*convo.mLastReaction};
 }
 
+ChatBasicProfile ConvoView::getOwner() const
+{
+    if (mKind != QEnums::CONVO_KIND_GROUP)
+        return {};
+
+    for (const auto& member : mMembers)
+    {
+        const auto& groupMember = member.getGroupMember();
+
+        if (groupMember.getRole() == QEnums::CONVO_MEMBER_ROLE_OWNER)
+            return member;
+    }
+
+    return {};
+}
+
 ChatBasicProfile ConvoView::getMember(const QString& did) const
 {
     auto it = mDidMemberMap.find(did);
     return it != mDidMemberMap.end() ? mMembers[it->second] : ChatBasicProfile{};
+}
+
+QString ConvoView::getInviteLinkUrl() const
+{
+    if (mGroupConvo.isNull())
+    {
+        qWarning() << "Not a group convo:" << mId;;
+        return {};
+    }
+
+    const auto joinLink = mGroupConvo.getJoinLinkView();
+
+    if (joinLink.isNull())
+    {
+        qWarning() << "No join link:" << mId;
+        return {};
+    }
+
+    const QString code = joinLink.getCode();
+
+    if (code.isEmpty())
+    {
+        qWarning() << "No join code:" << mId;
+        return {};
+    }
+
+    return QString("https://bsky.app/chat/%1").arg(mGroupConvo.getJoinLinkView().getCode());
 }
 
 QDateTime ConvoView::getLastMessageDate() const

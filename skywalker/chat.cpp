@@ -439,7 +439,7 @@ void Chat::leaveConvo(const QString& convoId)
         return;
     }
 
-    seConvoUpdateInProgress(true);
+    setConvoUpdateInProgress(true);
 
     mBsky->leaveConvo(convoId,
         [this, presence=*mPresence](ATProto::ChatBskyConvo::LeaveConvoOutput::SharedPtr output){
@@ -447,7 +447,7 @@ void Chat::leaveConvo(const QString& convoId)
                 return;
 
             qDebug() << "Left convo:" << output->mConvoId;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             mAcceptedConvoListModel.deleteConvo(output->mConvoId);
             mRequestConvoListModel.deleteConvo(output->mConvoId);
             emit leaveConvoOk();
@@ -457,7 +457,7 @@ void Chat::leaveConvo(const QString& convoId)
                 return;
 
             qDebug() << "leaveConvo FAILED:" << error << " - " << msg;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             emit failure(msg);
         });
 }
@@ -597,12 +597,21 @@ void Chat::setAcceptConvoInProgress(bool inProgress)
     }
 }
 
-void Chat::seConvoUpdateInProgress(bool inProgress)
+void Chat::setConvoUpdateInProgress(bool inProgress)
 {
     if (inProgress != mConvoUpdateInProgress)
     {
         mConvoUpdateInProgress = inProgress;
         emit convoUpdateInProgressChanged();
+    }
+}
+
+void Chat::setJoinLinkUpdateInProgress(bool inProgress)
+{
+    if (inProgress != mJoinLinkUpdateInProgress)
+    {
+        mJoinLinkUpdateInProgress = inProgress;
+        emit joinLinkUpdateInProgressChanged();
     }
 }
 
@@ -729,7 +738,7 @@ void Chat::removeMember(const QString& convoId, const QString& did)
         return;
     }
 
-    seConvoUpdateInProgress(true);
+    setConvoUpdateInProgress(true);
 
     mBsky->removeMembers(convoId, {did},
         [this, presence=*mPresence, convoId, did](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
@@ -742,16 +751,16 @@ void Chat::removeMember(const QString& convoId, const QString& did)
                 model->deleteAuthor(did);
             }
 
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             mAcceptedConvoListModel.updateConvo(*output->mConvo);
             emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
         },
-        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "removeMember FAILED:" << error << " - " << msg;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             emit removeMemberFailed(msg);
         });
 }
@@ -764,7 +773,7 @@ void Chat::addMember(const QString& convoId, const QString& did)
         return;
     }
 
-    seConvoUpdateInProgress(true);
+    setConvoUpdateInProgress(true);
 
     mBsky->addMembers(convoId, {did},
         [this, presence=*mPresence, convoId, did](ATProto::ChatBskyGroup::AddMembersOutput::SharedPtr output){
@@ -779,16 +788,16 @@ void Chat::addMember(const QString& convoId, const QString& did)
                     model->prependAuthor(*member);
             }
 
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             mAcceptedConvoListModel.updateConvo(*output->mConvo);
             emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
         },
-        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "addMember FAILED:" << error << " - " << msg;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             emit removeMemberFailed(msg);
         });
 }
@@ -841,23 +850,23 @@ void Chat::editGroupConvo(const QString& convoId, const QString& name)
         return;
     }
 
-    seConvoUpdateInProgress(true);
+    setConvoUpdateInProgress(true);
 
     mBsky->editGroup(convoId, name,
         [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             mAcceptedConvoListModel.updateConvo(*output->mConvo);
             emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
         },
-        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "edit group convo FAILED:" << error << " - " << msg;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             emit failure(msg);
         });
 }
@@ -870,23 +879,23 @@ void Chat::lockGroupConvo(const QString& convoId)
         return;
     }
 
-    seConvoUpdateInProgress(true);
+    setConvoUpdateInProgress(true);
 
     mBsky->lockConvo(convoId,
         [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             mAcceptedConvoListModel.updateConvo(*output->mConvo);
             emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
         },
-        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "lockConvo FAILED:" << error << " - " << msg;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             emit failure(msg);
         });
 }
@@ -899,25 +908,171 @@ void Chat::unlockGroupConvo(const QString& convoId)
         return;
     }
 
-    seConvoUpdateInProgress(true);
+    setConvoUpdateInProgress(true);
 
     mBsky->unlockConvo(convoId,
         [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             mAcceptedConvoListModel.updateConvo(*output->mConvo);
             emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
         },
-        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "unlockConvo FAILED:" << error << " - " << msg;
-            seConvoUpdateInProgress(false);
+            setConvoUpdateInProgress(false);
             emit failure(msg);
         });
+}
+
+void Chat::createJoinLink(const QString& convoId, QEnums::JoinRule joinRule, bool requireApproval)
+{
+    qDebug() << "Create join link:" << convoId << "rule:" << joinRule << "approval:" << requireApproval;
+
+    if (mConvoUpdateInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->createJoinLink(convoId, requireApproval, ATProto::ChatBskyGroup::JoinRule(joinRule),
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            joinLinkUpdatedOk(convoId, output);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "createJoinLink FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::editJoinLink(const QString& convoId, QEnums::JoinRule joinRule, bool requireApproval)
+{
+    qDebug() << "Edit join link:" << convoId << "rule:" << joinRule << "approval:" << requireApproval;
+
+    if (mConvoUpdateInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->editJoinLink(convoId, requireApproval, ATProto::ChatBskyGroup::JoinRule(joinRule),
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            joinLinkUpdatedOk(convoId, output);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "editJoinLink FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::disableJoinLink(const QString& convoId)
+{
+    qDebug() << "Disable join link:" << convoId;
+
+    if (mConvoUpdateInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->disableJoinLink(convoId,
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            joinLinkUpdatedOk(convoId, output);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "disableJoinLink FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::enableJoinLink(const QString& convoId)
+{
+    qDebug() << "Enable join link:" << convoId;
+
+    if (mConvoUpdateInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->enableJoinLink(convoId,
+        [this, presence=*mPresence, convoId](ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            joinLinkUpdatedOk(convoId, output);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "disableJoinLink FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::joinLinkUpdatedOk(const QString& convoId, ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output)
+{
+    qDebug() << "Join link updated:" << (QEnums::JoinRule)output->mJoinLink->mJoinRule << "approval:" << output->mJoinLink->mRequireApproval;
+    auto* convo = mAcceptedConvoListModel.getConvo(convoId);
+
+    if (convo)
+    {
+        auto atprotoGroupConvo = convo->getGroupConvo().getATProtoGroupConvo();
+
+        if (atprotoGroupConvo)
+        {
+            atprotoGroupConvo->mJoinLink = output->mJoinLink;
+            mAcceptedConvoListModel.updateConvo(*convo);
+            emit convoUpdated(*convo);
+        }
+        else
+        {
+            qWarning() << "Missing group convo:" << convo->getId();
+        }
+    }
+    else
+    {
+        qWarning() << "Convo not found:" << convoId;
+    }
 }
 
 void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)

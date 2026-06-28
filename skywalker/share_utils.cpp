@@ -157,6 +157,26 @@ void ShareUtils::shareAuthor(const BasicProfile& author)
 #endif
 }
 
+void ShareUtils::shareConvo(const ConvoView& convo)
+{
+    const QString shareUri = convo.getInviteLinkUrl();
+
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(shareUri);
+    QJniObject jSubject = QJniObject::fromString("invite link");
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(shareUri);
+    mSkywalker->showStatusMessage(tr("Invite link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
+#endif
+}
+
 void ShareUtils::copyAuthorLinkToClipboard(const BasicProfile& author)
 {
     const QString& authorId = author.getDid();

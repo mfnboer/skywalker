@@ -18,7 +18,7 @@ SkyDialog {
         width: parent.width
         placeholderText: qsTr("Name of group")
         initialText: convo.group.name
-        maximumLength: convo.isNull() ? skywalker.chat.MAX_CREATE_GROUP_NAME_LEN : skywalker.chat.MAX_EDIT_GROUP_NAME_LEN
+        maximumLength: skywalker.chat.MAX_GROUP_NAME_LEN
     }
 
     function getText() {

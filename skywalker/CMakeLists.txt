@@ -731,6 +731,13 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ChatAuthorViewDelegate.qml
         QML_FILES qml/NewGroupChatDialog.qml
         QML_FILES qml/ConvoMembersRow.qml
+        SOURCES join_link_view.h
+        SOURCES join_link_view.cpp
+        QML_FILES qml/NewInviteLink.qml
+        QML_FILES qml/InviteLink.qml
+        QML_FILES qml/TextAndSvgRow.qml
+        SOURCES join_link_preview.h
+        SOURCES join_link_preview.cpp
 )
 
 target_link_libraries(libskywalker

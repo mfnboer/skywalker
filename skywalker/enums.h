@@ -419,6 +419,22 @@ public:
     };
     Q_ENUM(ConvoMemberRole)
 
+    enum JoinLinkEnabledStatus
+    {
+        JOIN_LINK_ENABLED_STATUS_ENABLED = (int)ATProto::ChatBskyGroup::LinkEnabledStatus::ENABLED,
+        JOIN_LINK_ENABLED_STATUS_DISABLED = (int)ATProto::ChatBskyGroup::LinkEnabledStatus::DISABLED,
+        JOIN_LINK_ENABLED_STATUS_UKNOWN = (int)ATProto::ChatBskyGroup::LinkEnabledStatus::UNKNOWN
+    };
+    Q_ENUM(JoinLinkEnabledStatus)
+
+    enum JoinRule
+    {
+        JOIN_RULE_ANYONE = (int)ATProto::ChatBskyGroup::JoinRule::ANYONE,
+        JOIN_RULE_FOLLOWED_BY_OWNER = (int)ATProto::ChatBskyGroup::JoinRule::FOLLOWED_BY_OWNER,
+        JOIN_RULE_UNKNOWN = (int)ATProto::ChatBskyGroup::JoinRule::UNKNOWN
+    };
+    Q_ENUM(JoinRule)
+
     enum ThreadStyle
     {
         THREAD_STYLE_BAR,

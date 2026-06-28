@@ -243,6 +243,20 @@ Rectangle {
                             onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
                         }
                         SkyMenuButton {
+                            text: qsTr("Invite link")
+                            svg: SvgOutline.link
+                            popup: moreMenu
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP &&
+                                     (userIsOwner || convo.group.joinLinkView.enabledStatus === QEnums.JOIN_LINK_ENABLED_STATUS_ENABLED)
+
+                            onClicked: {
+                                if (convo.group.joinLinkView.isNull())
+                                    root.createOrEditJoinLink(convo)
+                                else
+                                    root.showJoinLink(convo)
+                            }
+                        }
+                        SkyMenuButton {
                             text: qsTr("Edit group name")
                             svg: SvgOutline.edit
                             popup: moreMenu
