@@ -15,6 +15,7 @@ Item {
     property string avatarUrl: !contentVisible() ? "" : (showThumb ? author.avatarThumbUrl : author.avatarUrl)
     property bool showModeratorIcon: true
     property bool showGroupIcon: false
+    property string backgroundColor: guiSettings.backgroundColor
     readonly property ActivityStatus activityStatus: skywalker.getFollowsActivityStore().getActivityStatus(author)
     readonly property date lastActive: activityStatus ? activityStatus.lastActive : new Date(undefined)
     readonly property bool isActive: activityStatus ? activityStatus.active : false
@@ -137,6 +138,7 @@ Item {
                 y: height - height * 0.2
                 width: parent.width * 0.6
                 height: width
+                outlineColor: avatarItem.backgroundColor
             }
         }
     }
@@ -151,7 +153,6 @@ Item {
         sourceComponent: Rectangle {
             radius: width / 2
             color: guiSettings.accentColor
-            border.color: guiSettings.backgroundColor
 
             SkySvg {
                 x: 3

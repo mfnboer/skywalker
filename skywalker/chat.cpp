@@ -1075,6 +1075,77 @@ void Chat::joinLinkUpdatedOk(const QString& convoId, ATProto::ChatBskyGroup::Joi
     }
 }
 
+// TODO: cache
+void Chat::getJoinLinkPreview(const QString& code)
+{
+    qDebug() << "Get join link preview:" << code;
+
+    mBsky->getJoinLinkPreviews({code},
+        [this, presence=*mPresence](ATProto::ChatBskyGroup::JoinLinkPreviewsOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            if (output->mJoinLinkPreviews.size() != 1)
+            {
+                qWarning() << "Invalid join link previes:" << output->mJoinLinkPreviews.size();
+                return;
+            }
+
+            const JoinLinkPreview preview =
+                std::visit([](auto&& x){ return JoinLinkPreview(*x); }, output->mJoinLinkPreviews.front());
+
+            emit joinLinkPreviewOk(preview);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "getJoinLinkPreview FAILED:" << error << " - " << msg;
+            emit failure(msg);
+        });
+}
+
+QString Chat::getJoinLinkCodeFromUri(const QString& uri)
+{
+    const QUrl url(uri);
+
+    if (!url.isValid())
+    {
+        qWarning() << "Invalid url:" << uri;
+        return {};
+    }
+
+    if (url.host() != "bsky.app")
+    {
+        qDebug() << "Not a join link:" << uri;
+        return {};
+    }
+
+    const QString path = url.path();
+
+    if (!path.startsWith("/chat/"))
+    {
+        qDebug() << "Not a join link:" << uri;
+        return {};
+    }
+
+    const auto& pathSegments = path.split("/", Qt::SkipEmptyParts);
+
+    if (pathSegments.size() != 2)
+    {
+        qDebug() << "Not a join link:" << uri;
+        return {};
+    }
+
+    return pathSegments.back();
+}
+
+bool Chat::isJoinLinkUri(const QString& uri)
+{
+    const QString code = getJoinLinkCodeFromUri(uri);
+    return (!code.isEmpty());
+}
+
 void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)
 {
     mAcceptedConvoListModel.updateBlockingUri(did, blockingUri);

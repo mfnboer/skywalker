@@ -12,8 +12,11 @@ JoinLinkPreview::JoinLinkPreview(const ATProto::ChatBskyGroup::JoinLinkPreviewVi
     mMemberCount(view.mMemberCount),
     mMemberLimit(view.mMemberLimit),
     mRequireApproval(view.mRequireApproval),
-    mJoinRule((QEnums::JoinRule)view.mJoinRule)
+    mJoinRule((QEnums::JoinRule)view.mJoinRule),
+    mUserIsMember(view.mConvo != nullptr)
 {
+    if (view.mViewer && view.mViewer->mRequestedAt)
+        mRequestedAt = *view.mViewer->mRequestedAt;
 }
 
 JoinLinkPreview::JoinLinkPreview(const ATProto::ChatBskyGroup::DisabledJoinLinkPreviewView& view) :

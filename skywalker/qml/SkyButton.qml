@@ -22,6 +22,7 @@ RoundButton {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         color: textColor
+        wrapMode: Text.Wrap
         font: button.font
         text: button.text
     }

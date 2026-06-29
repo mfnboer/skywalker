@@ -18,6 +18,9 @@ class JoinLinkPreview
     Q_PROPERTY(int memberLimit READ getMemberLimit FINAL)
     Q_PROPERTY(bool requireApproval READ requireApproval FINAL)
     Q_PROPERTY(QEnums::JoinRule joinRule READ getJoinRule FINAL)
+    Q_PROPERTY(bool userIsMember READ userIsMember FINAL)
+    Q_PROPERTY(bool requestPending READ isRequestPending FINAL)
+    Q_PROPERTY(QDateTime requestedAt READ getRequestedAt FINAL)
     Q_PROPERTY(bool disabled READ isDisabled FINAL)
     Q_PROPERTY(bool invalid READ isInvalid FINAL)
     QML_VALUE_TYPE(joinlinkpreview)
@@ -38,6 +41,10 @@ public:
     int getMemberLimit() const { return mMemberLimit; }
     bool requireApproval() const { return mRequireApproval; }
     QEnums::JoinRule getJoinRule() const { return mJoinRule; }
+    bool userIsMember() const { return mUserIsMember; }
+    bool isRequestPending() const { return mRequestedAt.has_value(); }
+    QDateTime getRequestedAt() const { return mRequestedAt.value_or(QDateTime{}); }
+
     bool isDisabled() const { return mDisabled; }
     bool isInvalid() const { return mInvalid; }
 
@@ -50,6 +57,8 @@ private:
     int mMemberLimit = 0;
     bool mRequireApproval = false;
     QEnums::JoinRule mJoinRule;
+    bool mUserIsMember = false;
+    std::optional<QDateTime> mRequestedAt;
     bool mDisabled = false;
     bool mInvalid = false;
 };

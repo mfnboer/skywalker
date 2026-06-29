@@ -9,12 +9,14 @@ Item {
     property externalview postExternal
     property bool highlight: false
     property string maskColor: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
+    property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
+    readonly property bool isJoinLink: skywalker.chat.isJoinLinkUri(postExternal.uri)
     property bool moving: false
 
     id: view
     width: parent.width
-    height: isGif ? gifLoader.height : cardLoader.cardHeight
+    height: calcHeight()
 
     Accessible.role: Accessible.Link
     Accessible.name: getSpeech()
@@ -25,7 +27,7 @@ Item {
 
         id: cardLoader
         width: parent.width
-        active: !isGif
+        active: !isGif && !isJoinLink
         visible: status == Loader.Ready
 
         sourceComponent: LinkCardView {
@@ -107,6 +109,21 @@ Item {
         }
     }
 
+    Loader {
+        id: joinLinkLoader
+        width: parent.width
+        active: isJoinLink
+
+        sourceComponent: JoinLinkPreview {
+            userDid: view.userDid
+            width: parent.width
+            uri: postExternal.uri
+            title: postExternal.title
+            description: postExternal.description
+            maskColor: view.maskColor
+        }
+    }
+
     SkyMouseArea {
         anchors.fill: parent
         z: -1
@@ -118,8 +135,18 @@ Item {
         id: gifUtils
     }
 
+    function calcHeight() {
+        if (isGif)
+            return gifLoader.height
+
+        if (isJoinLink)
+            return joinLinkLoader.height
+
+        return cardLoader.cardHeight
+    }
+
     function isLinkEnabled() {
-        return !isGif
+        return !isGif && !isJoinLink
     }
 
     function openExternalLink() {

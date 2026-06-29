@@ -5,6 +5,7 @@ Rectangle {
     property string userDid
     required property basicprofile author
     property double pointSize: guiSettings.scaledFont(1)
+    property string textColor: guiSettings.textColor
     readonly property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
     readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
@@ -21,6 +22,7 @@ Rectangle {
         elide: Text.ElideRight
         font.bold: true
         font.pointSize: nameRect.pointSize
+        color: nameRect.textColor
         plainText: author.name
     }
 

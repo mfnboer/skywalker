@@ -72,7 +72,6 @@ Rectangle {
                     width: parent.width - mutedImg.width - timeText.width - parent.spacing * (convo.muted ? 2 : 1)
                     elide: Text.ElideRight
                     font.bold: true
-                    color: guiSettings.textColor
                     plainText: convo.title
                 }
 

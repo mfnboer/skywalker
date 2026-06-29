@@ -4,6 +4,7 @@
 #include "chat_author_list_model.h"
 #include "convo_list_model.h"
 #include "follows_activity_store.h"
+#include "join_link_preview.h"
 #include "message_list_model.h"
 #include "presence.h"
 #include "named_link.h"
@@ -109,6 +110,9 @@ public:
     Q_INVOKABLE void editJoinLink(const QString& convoId, QEnums::JoinRule joinRule, bool requireApproval);
     Q_INVOKABLE void disableJoinLink(const QString& convoId);
     Q_INVOKABLE void enableJoinLink(const QString& convoId);
+    Q_INVOKABLE void getJoinLinkPreview(const QString& code);
+    Q_INVOKABLE QString getJoinLinkCodeFromUri(const QString& uri);
+    Q_INVOKABLE bool isJoinLinkUri(const QString& uri);
 
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
@@ -130,6 +134,7 @@ signals:
     void createGroupConvoOk(ConvoView convo);
     void joinLinkUpdateInProgressChanged();
     void joinLinkUpdated(JoinLinkView joinLink);
+    void joinLinkPreviewOk(JoinLinkPreview preview);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void getMessagesOk(QString cursor);
