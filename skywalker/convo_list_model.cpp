@@ -80,6 +80,62 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoView::List& co
     qDebug() << "New convos size:" << mConvos.size();
 }
 
+void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoRequestListOutput::RequestList& convoRequests, const QString& cursor)
+{
+    qDebug() << "Add convo requests:" << convoRequests.size() << "cursor:" << cursor;
+    mCursor = cursor;
+
+    if (convoRequests.empty())
+    {
+        qDebug() << "No new convo requests";
+        return;
+    }
+
+    int countConvoRequests = 0;
+
+    for (const auto& request : convoRequests)
+    {
+        if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(request))
+        {
+            const auto& unknownRequest = std::get<ATProto::UnknownVariant::SharedPtr>(request);
+            qWarning() << "Unknown convo request type:" << unknownRequest->mType;
+        }
+        else
+        {
+            ++countConvoRequests;
+        }
+    }
+
+    const size_t newRowCount = mConvos.size() + countConvoRequests;
+    beginInsertRows({}, mConvos.size(), newRowCount - 1);
+    mConvos.reserve(newRowCount);
+
+    for (const auto& request : convoRequests)
+    {
+        if (ATProto::holdsNonNull<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request))
+        {
+            const auto& convo = std::get<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request);
+            qDebug() << "New convo, id:" << convo->mId << "rev:" << convo->mRev;
+            mConvos.emplace_back(*convo, mUserDid);
+            mConvoIdIndexMap[convo->mId] = mConvos.size() - 1;
+            addConvoToDidMap(mConvos.back());
+            reportActivity(mConvos.back());
+        }
+        else if (ATProto::holdsNonNull<ATProto::ChatBskyGroup::JoinRequestConvoView::SharedPtr>(request))
+        {
+            const auto& joinRequest = std::get<ATProto::ChatBskyGroup::JoinRequestConvoView::SharedPtr>(request);
+            qDebug() << "New join request, id:" << joinRequest->mConvoId;
+            mConvos.emplace_back(*joinRequest);
+            mConvoIdIndexMap[joinRequest->mConvoId] = mConvos.size() - 1;
+            addConvoToDidMap(mConvos.back());
+        }
+    }
+
+    endInsertRows();
+    changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
+    qDebug() << "New convos size:" << mConvos.size();
+}
+
 void ConvoListModel::updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo)
 {
     updateConvo(ConvoView{convo, mUserDid});
@@ -132,6 +188,7 @@ void ConvoListModel::updateBlockingUri(const QString& did, const QString& blocki
 void ConvoListModel::insertConvo(const ConvoView& convo)
 {
     qDebug() << "Insert convo:" << convo.getId() << "rev:" << convo.getRev();
+    Q_ASSERT(!convo.isRequestToJoin());
 
     if (hasConvo(convo.getId()))
     {
@@ -143,6 +200,10 @@ void ConvoListModel::insertConvo(const ConvoView& convo)
     for (; insertIndex < (int)mConvos.size(); ++insertIndex)
     {
         const auto& otherConvo = mConvos[insertIndex];
+
+        // Join requests do not have rev
+        if (convo.getRev().isEmpty())
+            continue;
 
         if (convo.getRev() >= otherConvo.getRev())
         {
@@ -344,6 +405,24 @@ void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOu
     {
         if (!convo->mMuted)
             unread += convo->mUnreadCount;
+    }
+
+    setUnreadCount(unread);
+}
+
+void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoRequestListOutput& output)
+{
+    int unread = mUnreadCount;
+
+    for (const auto& request : output.mRequests)
+    {
+        if (ATProto::holdsNonNull<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request))
+        {
+            const auto& convo = std::get<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request);
+
+            if (!convo->mMuted)
+                unread += convo->mUnreadCount;
+        }
     }
 
     setUnreadCount(unread);

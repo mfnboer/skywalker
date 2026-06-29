@@ -181,13 +181,30 @@ void Chat::getConvos(QEnums::ConvoStatus status, const QString& cursor)
 
     startConvosUpdateTimer(status);
     model->setGetConvosInProgress(true);
-    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus(status), {}, {}, Utils::makeOptionalString(cursor),
-        [this, presence=*mPresence, status, cursor](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
+
+    switch (status)
+    {
+    case QEnums::CONVO_STATUS_ACCEPTED:
+        getAcceptedConvos(cursor);
+        break;
+    case QEnums::CONVO_STATUS_REQUEST:
+        getRequestedConvos(cursor);
+        break;
+    case QEnums::CONVO_STATUS_UNKNOWN:
+        qWarning() << "Unknown convo status";
+        break;
+    }
+}
+
+void Chat::getAcceptedConvos(const QString& cursor)
+{
+    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus::ACCEPTED, {}, {}, Utils::makeOptionalString(cursor),
+        [this, presence=*mPresence, cursor](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            qDebug() << "Get convos ok:" << status;
-            auto* model = getConvoListModel(status);
+            qDebug() << "Get accepted convos ok";
+            auto* model = getConvoListModel(QEnums::CONVO_STATUS_ACCEPTED);
 
             if (!model)
                 return;
@@ -195,19 +212,19 @@ void Chat::getConvos(QEnums::ConvoStatus status, const QString& cursor)
             if (cursor.isEmpty())
             {
                 model->clear();
-                setUnreadCount(status, 0);
+                setUnreadCount(QEnums::CONVO_STATUS_ACCEPTED, 0);
             }
 
             model->addConvos(output->mConvos, output->mCursor.value_or(""));
-            updateUnreadCount(status, *output);
+            updateUnreadCount(QEnums::CONVO_STATUS_ACCEPTED, *output);
             model->setLoaded(true);
             model->setGetConvosInProgress(false);
         },
-        [this, presence=*mPresence, status](const QString& error, const QString& msg){
+        [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            auto* model = getConvoListModel(status);
+            auto* model = getConvoListModel(QEnums::CONVO_STATUS_ACCEPTED);
 
             if (!model)
                 return;
@@ -217,7 +234,56 @@ void Chat::getConvos(QEnums::ConvoStatus status, const QString& cursor)
 
             if (error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
             {
-                stopConvosUpdateTimer(status);
+                stopConvosUpdateTimer(QEnums::CONVO_STATUS_ACCEPTED);
+                emit failure(DM_ACCESS_ERROR);
+            }
+            else
+            {
+                emit failure(msg);
+            }
+        }
+    );
+}
+
+void Chat::getRequestedConvos(const QString& cursor)
+{
+    mBsky->listConvoRequests({}, Utils::makeOptionalString(cursor),
+        [this, presence=*mPresence, cursor](ATProto::ChatBskyConvo::ConvoRequestListOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            qDebug() << "Get accepted convos ok";
+            auto* model = getConvoListModel(QEnums::CONVO_STATUS_REQUEST);
+
+            if (!model)
+                return;
+
+            if (cursor.isEmpty())
+            {
+                model->clear();
+                setUnreadCount(QEnums::CONVO_STATUS_REQUEST, 0);
+            }
+
+            model->addConvos(output->mRequests, output->mCursor.value_or(""));
+            updateUnreadCount(QEnums::CONVO_STATUS_REQUEST, *output);
+            model->setLoaded(true);
+            model->setGetConvosInProgress(false);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            auto* model = getConvoListModel(QEnums::CONVO_STATUS_REQUEST);
+
+            if (!model)
+                return;
+
+            qDebug() << "getConvos FAILED:" << error << " - " << msg;
+            model->setGetConvosInProgress(false);
+
+            if (error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
+            {
+                stopConvosUpdateTimer(QEnums::CONVO_STATUS_REQUEST);
                 emit failure(DM_ACCESS_ERROR);
             }
             else
@@ -570,6 +636,16 @@ void Chat::setUnreadCount(QEnums::ConvoStatus status, int unread)
 }
 
 void Chat::updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output)
+{
+    auto* model = getConvoListModel(status);
+
+    if (!model)
+        return;
+
+    model->updateUnreadCount(output);
+}
+
+void Chat::updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoRequestListOutput& output)
 {
     auto* model = getConvoListModel(status);
 

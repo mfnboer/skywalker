@@ -31,6 +31,7 @@ public:
 
     void clear();
     void addConvos(const ATProto::ChatBskyConvo::ConvoView::List& convos, const QString& cursor);
+    void addConvos(const ATProto::ChatBskyConvo::ConvoRequestListOutput::RequestList& convoRequests, const QString& cursor);
     void updateConvo(const ATProto::ChatBskyConvo::ConvoView& convo);
     void updateConvo(const ConvoView& convo);
     void updateBlockingUri(const QString& did, const QString& blockingUri);
@@ -50,6 +51,7 @@ public:
 
     void setUnreadCount(int unread);
     void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output);
+    void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoRequestListOutput& output);
     int getUnreadCount() const { return mUnreadCount; }
 
 signals:

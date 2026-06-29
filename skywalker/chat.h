@@ -151,10 +151,13 @@ private:
     ATProto::PostMaster* postMaster();
     const ConvoView* getConvo(const QString& convoId) const;
     ConvoListModel* getConvoListModel(QEnums::ConvoStatus status) const;
+    void getAcceptedConvos(const QString& cursor);
+    void getRequestedConvos(const QString& cursor);
     void updateConvoInModel(const ATProto::ChatBskyConvo::ConvoView& convo);
     void updateTotalUnreadCount();
     void setUnreadCount(QEnums::ConvoStatus status, int unread);
     void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output);
+    void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoRequestListOutput& output);
     QString getLastReadMessageId(const ConvoView& convo) const;
     QString getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatBskyConvo::ConvoView::List& convos);
     void updateMessages();

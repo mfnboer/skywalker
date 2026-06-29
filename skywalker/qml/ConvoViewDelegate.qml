@@ -152,10 +152,31 @@ Rectangle {
 
                     Loader {
                         width: parent.width
-                        active: convo.status === QEnums.CONVO_STATUS_REQUEST
+                        active: convo.status === QEnums.CONVO_STATUS_REQUEST && !convo.isRequestToJoin
                         sourceComponent: KnownFollowers {
                             userDid: skywalker.getUserDid()
                             author: firstMember
+                        }
+                    }
+
+                    Loader {
+                        width: parent.width
+                        active: convo.isRequestToJoin
+                        sourceComponent: Column {
+                            spacing: 5
+
+                            AccessibleText {
+                                width: parent.width
+                                elide: Text.ElideRight
+                                font.pointSize: guiSettings.scaledFont(7/8)
+                                text: qsTr(`Group chat ${convo.group.memberCount}/${convo.group.memberLimit} members`)
+                            }
+                            AccessibleText {
+                                width: parent.width
+                                elide: Text.ElideRight
+                                font.italic: true
+                                text: qsTr("You requested to join")
+                            }
                         }
                     }
 
@@ -169,34 +190,30 @@ Rectangle {
                         width: parent.width
                         topPadding: 10
                         elide: Text.ElideRight
-                        textFormat: Text.RichText
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 2
+                        textFormat: Text.StyledText
                         font.italic: convo.lastMessage.deleted || convo.lastMessage.isSystemMessage
                         plainText: (senderName ? `<i>${senderName}: </i>` : "") + messageText
                         visible: !showLastReaction && !convo.group.isLocked()
                     }
 
                     // Last reaction
-                    RowLayout {
+                    SkyCleanedText {
+                        property string senderName: showLastReaction ? getLastReactionSender() : ""
+
+                        id: lastReaction
                         width: parent.width
+                        topPadding: 10
+                        elide: Text.ElideRight
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 2
+                        textFormat: Text.StyledText
+                        inLayout: true
+                        plainText: (senderName ? `<i>${senderName} </i>` : "") +
+                                   qsTr(`reacted <span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `) +
+                                   `${convo.lastReaction.message.text}`
                         visible: showLastReaction && !convo.group.isLocked()
-
-                        SkyCleanedText {
-                            property string senderName: showLastReaction ? getLastReactionSender() : ""
-
-                            id: lastReaction
-                            topPadding: 10
-                            textFormat: Text.RichText
-                            inLayout: true
-                            plainText: (senderName ? `<i>${senderName} - </i>` : "") + qsTr(`<span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `)
-                        }
-                        SkyCleanedText {
-                            Layout.fillWidth: true
-                            topPadding: 10
-                            elide: Text.ElideRight
-                            textFormat: Text.RichText
-                            inLayout: true
-                            plainText: `${convo.lastReaction.message.text}`
-                        }
                     }
 
                     // Locked
@@ -238,14 +255,14 @@ Rectangle {
                             text: qsTr("Members")
                             svg: SvgOutline.group
                             popup: moreMenu
-                            visible: convo.kind === QEnums.CONVO_KIND_GROUP
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && !convo.isRequestToJoin
                             onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
                         }
                         SkyMenuButton {
                             text: qsTr("Invite link")
                             svg: SvgOutline.link
                             popup: moreMenu
-                            visible: convo.kind === QEnums.CONVO_KIND_GROUP &&
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && !convo.isRequestToJoin &&
                                      (userIsOwner || convo.group.joinLinkView.enabledStatus === QEnums.JOIN_LINK_ENABLED_STATUS_ENABLED)
 
                             onClicked: {
@@ -287,20 +304,21 @@ Rectangle {
                             text: qsTr("Leave")
                             svg: SvgOutline.signOut
                             popup: moreMenu
-                            visible: convo.kind === QEnums.CONVO_KIND_GROUP
+                            visible: convo.kind === QEnums.CONVO_KIND_GROUP && !convo.isRequestToJoin
                             onClicked: leaveConvo(convo)
                         }
                         SkyMenuButton {
                             text: convo.muted ? qsTr("Unmute") : qsTr("Mute")
                             svg: convo.muted ? SvgOutline.notifications : SvgOutline.notificationsOff
                             popup: moreMenu
+                            visible: !convo.isRequestToJoin
                             onClicked: convo.muted ? unmuteConvo(convo) : muteConvo(convo)
                         }
                         SkyMenuButton {
                             text: firstMember.viewer.blocking ? qsTr("Unblock account") : qsTr("Block account")
                             svg: firstMember.viewer.blocking ? SvgOutline.unblock : SvgOutline.block
                             popup: moreMenu
-                            visible: !root.isActiveUser(firstMember.did)
+                            visible: !root.isActiveUser(firstMember.did) && !convo.isRequestToJoin
                             onClicked: {
                                 if (firstMember.viewer.blocking)
                                     unblockAuthor(firstMember)
@@ -308,13 +326,20 @@ Rectangle {
                                     blockAuthor(firstMember)
                             }
                         }
+                        SkyMenuButton {
+                            text: qsTr("Cancel request")
+                            svg: SvgOutline.cancel
+                            popup: moreMenu
+                            visible: convo.isRequestToJoin
+                            // TODO
+                        }
                     }
                 }
             }
 
             Loader {
                 width: parent.width - margin
-                active: convo.status === QEnums.CONVO_STATUS_REQUEST
+                active: convo.status === QEnums.CONVO_STATUS_REQUEST && !convo.isRequestToJoin
                 sourceComponent: ConvoRequestButtonRow {
                     author: firstMember
 
@@ -329,6 +354,7 @@ Rectangle {
     SkyMouseArea {
         z: -2
         anchors.fill: parent
+        enabled: !convo.isRequestToJoin
         onClicked: viewConvo(convo)
     }
 
@@ -400,12 +426,19 @@ Rectangle {
     }
 
     function getConvoTimeIndication() {
-        if (guiSettings.isToday(convo.lastMessageDate))
-            return Qt.locale().toString(convo.lastMessageDate, Qt.locale().timeFormat(Locale.ShortFormat))
-        else if (guiSettings.isYesterday(convo.lastMessageDate))
+        if (convo.isRequestToJoin)
+            return getTimeIndication(convo.joinRequestedAt)
+
+        return getTimeIndication(convo.lastMessageDate)
+    }
+
+    function getTimeIndication(date) {
+        if (guiSettings.isToday(date))
+            return Qt.locale().toString(date, Qt.locale().timeFormat(Locale.ShortFormat))
+        else if (guiSettings.isYesterday(date))
             return qsTr("Yesterday")
         else
-            return Qt.locale().toString(convo.lastMessageDate, Qt.locale().dateFormat(Locale.ShortFormat))
+            return Qt.locale().toString(date, Qt.locale().dateFormat(Locale.ShortFormat))
     }
 
     function getLastMessageSender() {

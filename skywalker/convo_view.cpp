@@ -34,6 +34,29 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
         mLastReaction = MessageAndReactionView{*convo.mLastReaction};
 }
 
+ConvoView::ConvoView(const ATProto::ChatBskyGroup::JoinRequestConvoView& joinRequest) :
+    mId(joinRequest.mConvoId),
+    mKind(QEnums::CONVO_KIND_GROUP),
+    mStatus(QEnums::CONVO_STATUS_REQUEST),
+    mIsRequestToJoin(true)
+{
+    ChatBasicProfile profile(*joinRequest.mOwner);
+    mMembers.emplaceBack(profile);
+    const auto basicProfile = profile.getBasicProfile();
+    mMemberNames.push_back(basicProfile.getName());
+    mDidMemberMap[basicProfile.getDid()] = 0;
+
+    auto group = std::make_shared<ATProto::ChatBskyConvo::GroupConvo>();
+    group->mName = joinRequest.mName;
+    group->mMemberLimit = joinRequest.mMemberLimit;
+    group->mMemberCount = joinRequest.mMemberCount;
+
+    if (joinRequest.mViewer && joinRequest.mViewer->mRequestedAt)
+        group->mCreatedAt = *joinRequest.mViewer->mRequestedAt;
+
+    mGroupConvo = GroupConvo(group);
+}
+
 ChatBasicProfile ConvoView::getOwner() const
 {
     if (mKind != QEnums::CONVO_KIND_GROUP)
@@ -118,6 +141,14 @@ QString ConvoView::getTitle() const
         return mGroupConvo.getName();
 
     return getMemberNames();
+}
+
+QDateTime ConvoView::getJoinRequestedAt() const
+{
+    if (!isRequestToJoin())
+        return {};
+
+    return mGroupConvo.getCreatedAt();
 }
 
 }

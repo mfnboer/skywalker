@@ -26,11 +26,14 @@ class ConvoView
     Q_PROPERTY(QDateTime lastMessageDate READ getLastMessageDate FINAL)
     Q_PROPERTY(GroupConvo group READ getGroupConvo FINAL)
     Q_PROPERTY(QString title READ getTitle FINAL)
+    Q_PROPERTY(bool isRequestToJoin READ isRequestToJoin FINAL)
+    Q_PROPERTY(QDateTime joinRequestedAt READ getJoinRequestedAt FINAL)
     QML_VALUE_TYPE(convoview)
 
 public:
     ConvoView() = default;
     explicit ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& userDid);
+    explicit ConvoView(const ATProto::ChatBskyGroup::JoinRequestConvoView& joinRequest);
 
     Q_INVOKABLE bool isNull() const { return mId.isEmpty(); }
     const QString& getId() const { return mId; }
@@ -52,6 +55,8 @@ public:
     QDateTime getLastMessageDate() const;
     const GroupConvo& getGroupConvo() const { return mGroupConvo; }
     QString getTitle() const;
+    bool isRequestToJoin() const { return mIsRequestToJoin; }
+    QDateTime getJoinRequestedAt() const;
 
     // Returns null profile for direct convo
     Q_INVOKABLE ChatBasicProfile getOwner() const;
@@ -77,6 +82,7 @@ private:
     QStringList mMemberNames;
     std::unordered_map<QString, int> mDidMemberMap; // DID -> index in mMembers
     GroupConvo mGroupConvo;
+    bool mIsRequestToJoin = false;
 };
 
 }
