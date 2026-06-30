@@ -4,6 +4,12 @@
 
 namespace Skywalker {
 
+ChatAuthorListModel::ListEntry::ListEntry(const ChatBasicProfile& profile, QDateTime joinRequestedAt) :
+    mProfile(profile),
+    mJoinRequestedAt(joinRequestedAt)
+{
+}
+
 ChatAuthorListModel::ChatAuthorListModel(Type type,
                                  const IProfileStore& mutedReposts,
                                  const IProfileStore& timelineHide,
@@ -29,7 +35,8 @@ QVariant ChatAuthorListModel::data(const QModelIndex& index, int role) const
     if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& chatAuthor = mList[index.row()];
+    const auto& listEntry = mList[index.row()];
+    const auto& chatAuthor = listEntry.mProfile;
     const auto& author = chatAuthor.getBasicProfile();
     const auto* change = getLocalChange(author.getDid());
 
@@ -37,6 +44,8 @@ QVariant ChatAuthorListModel::data(const QModelIndex& index, int role) const
     {
     case Role::ChatAuthor:
         return QVariant::fromValue(chatAuthor);
+    case Role::JoinRequestedAt:
+        return listEntry.mJoinRequestedAt;
     case Role::FollowingUri:
         return change && change->mFollowingUri ? *change->mFollowingUri : author.getViewer().getFollowing();
     case Role::BlockingUri:
@@ -67,6 +76,7 @@ void ChatAuthorListModel::clear()
 
     mCursor.clear();
     mRawLists.clear();
+    mRawRequestLists.clear();
 }
 
 void ChatAuthorListModel::addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::List authors, const QString& cursor)
@@ -86,13 +96,35 @@ void ChatAuthorListModel::addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::L
     setEndOfList();
 }
 
+void ChatAuthorListModel::addJoinRequests(ATProto::ChatBskyGroup::JoinRequestView::List joinRequests, const QString& cursor)
+{
+    qDebug() << "Add join requests:" << joinRequests.size() << "cursor:" << cursor;
+    mCursor = cursor;
+
+    const size_t newRowCount = mList.size() + joinRequests.size();
+
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+
+    for (const auto& request : joinRequests)
+    {
+        ListEntry entry(ChatBasicProfile(*request->mRequestedBy), request->mRequestedAt);
+        mList.push_back(entry);
+    }
+
+    endInsertRows();
+
+    mRawRequestLists.push_back(std::forward<ATProto::ChatBskyGroup::JoinRequestView::List>(joinRequests));
+    qDebug() << "New list size:" << mList.size();
+    setEndOfList();
+}
+
 void ChatAuthorListModel::prependAuthor(const ATProto::ChatBskyActor::ProfileViewBasic& author)
 {
     qDebug() << "Preprend author:" << author.mHandle;
     const ChatBasicProfile profile(author);
 
     beginInsertRows({}, 0, 0);
-    mList.push_front(profile);
+    mList.push_front(ListEntry{profile});
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();
@@ -108,7 +140,7 @@ void ChatAuthorListModel::deleteAuthor(const QString& did)
 
     for (int i = 0; i < (int)mList.size(); ++ i)
     {
-        const ChatBasicProfile& chatProfile = mList[i];
+        const ChatBasicProfile& chatProfile = mList[i].mProfile;
 
         if (chatProfile.getBasicProfile().getDid() == did)
         {
@@ -170,7 +202,7 @@ ChatAuthorListModel::AuthorList ChatAuthorListModel::filterAuthors(const ATProto
             continue;
         }
 
-        list.push_back(profile);
+        list.push_back(ListEntry{profile});
     }
 
     return list;
@@ -200,6 +232,7 @@ QHash<int, QByteArray> ChatAuthorListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::ChatAuthor), "chatAuthor" },
+        { int(Role::JoinRequestedAt), "joinRequestedAt" },
         { int(Role::FollowingUri), "followingUri" },
         { int(Role::BlockingUri), "blockingUri" },
         { int(Role::AuthorMuted), "authorMuted" },

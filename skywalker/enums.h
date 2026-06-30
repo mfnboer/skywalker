@@ -175,7 +175,8 @@ public:
 
     enum ChatAuthorListType
     {
-        CHAT_AUTHOR_LIST_MEMBERS = 0
+        CHAT_AUTHOR_LIST_MEMBERS = 0,
+        CHAT_AUTHOR_LIST_JOIN_REQUESTS
     };
     Q_ENUM(ChatAuthorListType)
 

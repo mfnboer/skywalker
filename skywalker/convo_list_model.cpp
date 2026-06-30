@@ -403,8 +403,16 @@ void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOu
 
     for (const auto& convo : output.mConvos)
     {
-        if (!convo->mMuted)
-            unread += convo->mUnreadCount;
+        if (convo->mMuted)
+            continue;
+
+        unread += convo->mUnreadCount;
+
+        if (convo->mKind && ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind))
+        {
+            const auto& group = std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind);
+            unread += group->mUnreadJoinRequestCount.value_or(0);
+        }
     }
 
     setUnreadCount(unread);
@@ -420,8 +428,16 @@ void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoReques
         {
             const auto& convo = std::get<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request);
 
-            if (!convo->mMuted)
-                unread += convo->mUnreadCount;
+            if (convo->mMuted)
+                continue;
+
+            unread += convo->mUnreadCount;
+
+            if (convo->mKind && ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind))
+            {
+                const auto& group = std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind);
+                unread += group->mUnreadJoinRequestCount.value_or(0);
+            }
         }
     }
 

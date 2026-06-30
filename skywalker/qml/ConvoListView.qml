@@ -287,7 +287,12 @@ SkyPage {
     }
 
     function createGroupConvoOkHandler(convo) {
-        root.viewChatAuthorList(convo, skywalker.getUserDid())
+        root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_MEMBERS, convo, skywalker.getUserDid())
+    }
+
+    function statusMessageHandler(msg) {
+        if (root.currentStackIsChat())
+            skywalker.showStatusMessage(msg, QEnums.STATUS_LEVEL_INFO)
     }
 
     function failureHandler(error) {
@@ -299,6 +304,7 @@ SkyPage {
         chat.onAcceptConvoOk.connect(acceptConvoOkHandler)
         chat.onLeaveConvoOk.connect(leaveConvoOkHandler)
         chat.onCreateGroupConvoOk.connect(createGroupConvoOkHandler)
+        chat.onStatusMessage.connect(statusMessageHandler)
         chat.onFailure.connect(failureHandler)
     }
 
@@ -306,6 +312,7 @@ SkyPage {
         chat.onAcceptConvoOk.disconnect(acceptConvoOkHandler)
         chat.onLeaveConvoOk.disconnect(leaveConvoOkHandler)
         chat.onCreateGroupConvoOk.disconnect(createGroupConvoOkHandler)
+        chat.onStatusMessage.disconnect(statusMessageHandler)
         chat.onFailure.disconnect(failureHandler)
     }
 

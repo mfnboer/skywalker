@@ -54,6 +54,7 @@ public:
     const MessageAndReactionView& getLastReaction() const { return mLastReaction; }
     QDateTime getLastMessageDate() const;
     const GroupConvo& getGroupConvo() const { return mGroupConvo; }
+    GroupConvo& getGroupConvo() { return mGroupConvo; }
     QString getTitle() const;
     bool isRequestToJoin() const { return mIsRequestToJoin; }
     QDateTime getJoinRequestedAt() const;

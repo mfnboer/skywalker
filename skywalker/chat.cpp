@@ -700,7 +700,7 @@ void Chat::setMessagesInProgress(bool inProgress)
     }
 }
 
-ChatAuthorListModel* Chat::getConvoMemberListModel(const QString& convoId)
+ChatAuthorListModel* Chat::getConvoAuthorListModel(QEnums::ChatAuthorListType type, const QString& convoId)
 {
     const auto* convo = getConvo(convoId);
 
@@ -710,22 +710,59 @@ ChatAuthorListModel* Chat::getConvoMemberListModel(const QString& convoId)
         return nullptr;
     }
 
-    auto& model = mConvoMemberListModels[convoId];
+    auto& model = mConvoAuthorListModels[{type, convoId}];
 
     if (!model)
     {
-        qDebug() << "Create convo member list model for convo:" << convoId;
+        qDebug() << "Create convo author list model for convo:" << convoId << "type:" << type;
         model = std::make_unique<ChatAuthorListModel>(
-            QEnums::CHAT_AUTHOR_LIST_MEMBERS, mMutedReposts, mTimelineHide, mContentFilter, this);
+            type, mMutedReposts, mTimelineHide, mContentFilter, this);
     }
 
     return model.get();
 }
 
-void Chat::removeConvoMemberListModel(const QString& convoId)
+void Chat::removeConvoAuthorListModel(QEnums::ChatAuthorListType type, const QString& convoId)
 {
-    qDebug() << "Delete convo member list model for convo:" << convoId;
-    mConvoMemberListModels.erase(convoId);
+    qDebug() << "Delete convo author list model for convo:" << convoId << "type:" << type;
+    mConvoAuthorListModels.erase({type, convoId});
+}
+
+void Chat::getConvoAuthors(QEnums::ChatAuthorListType type, const QString& convoId, const QString& cursor)
+{
+    switch (type)
+    {
+    case QEnums::CHAT_AUTHOR_LIST_MEMBERS:
+        getConvoMembers(convoId, cursor);
+        return;
+    case QEnums::CHAT_AUTHOR_LIST_JOIN_REQUESTS:
+        getJoinRequests(convoId, cursor);
+        return;
+    }
+
+    Q_ASSERT(false);
+    qWarning() << "Unexpected type:" << type;
+}
+
+void Chat::getConvoAuthorsNextPage(QEnums::ChatAuthorListType type, const QString& convoId)
+{
+    auto* model = getConvoAuthorListModel(type, convoId);
+
+    if (!model)
+    {
+        qDebug() << "Model already closed for convo:" << convoId;
+        return;
+    }
+
+    const QString& cursor = model->getCursor();
+
+    if(cursor.isEmpty())
+    {
+        qDebug() << "Last page reached:" << type;
+        return;
+    }
+
+    getConvoAuthors(type, convoId, cursor);
 }
 
 void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
@@ -733,7 +770,7 @@ void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
     Q_ASSERT(mBsky);
     qDebug() << "Get convo members, convoId:" << convoId << "cursor:" << cursor;
 
-    auto* model = getConvoMemberListModel(convoId);
+    auto* model = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId);
 
     if (!model)
     {
@@ -748,12 +785,13 @@ void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
     }
 
     model->setGetFeedInProgress(true);
+
     mBsky->getConvoMembers(convoId, {}, Utils::makeOptionalString(cursor),
         [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetConvoMembersOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            auto* model = getConvoMemberListModel(convoId);
+            auto* model = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId);
 
             if (model)
             {
@@ -774,7 +812,7 @@ void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
 
             qDebug() << "getConvoMembers FAILED:" << error << " - " << msg;
 
-            auto* model = getConvoMemberListModel(convoId);
+            auto* model = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId);
 
             if (model)
             {
@@ -785,25 +823,62 @@ void Chat::getConvoMembers(const QString& convoId, const QString& cursor)
     );
 }
 
-void Chat::getConvoMembersNextPage(const QString& convoId)
+void Chat::getJoinRequests(const QString& convoId, const QString& cursor)
 {
-    auto* model = getConvoMemberListModel(convoId);
+    Q_ASSERT(mBsky);
+    qDebug() << "Get join requests, convoId:" << convoId << "cursor:" << cursor;
+
+    auto* model = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_JOIN_REQUESTS, convoId);
 
     if (!model)
     {
-        qDebug() << "Model already closed for convo:" << convoId;
+        qWarning() << "No model";
         return;
     }
 
-    const QString& cursor = model->getCursor();
-
-    if(cursor.isEmpty())
+    if (model->isGetFeedInProgress())
     {
-        qDebug() << "Last page reached";
+        qDebug() << "Get join requests still in progress";
         return;
     }
 
-    getConvoMembers(convoId, cursor);
+    model->setGetFeedInProgress(true);
+
+    mBsky->listJoinRequests(convoId, {}, Utils::makeOptionalString(cursor),
+        [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyGroup::JoinRequestsOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            auto* model = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_JOIN_REQUESTS, convoId);
+
+            if (model)
+            {
+                if (cursor.isEmpty())
+                    model->clear();
+
+                model->addJoinRequests(output->mRequests, output->mCursor.value_or(""));
+                model->setGetFeedInProgress(false);
+            }
+            else
+            {
+                qDebug() << "Model already closed for convo:" << convoId;
+            }
+        },
+        [this, presence=*mPresence, convoId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "getJoinRequests FAILED:" << error << " - " << msg;
+
+            auto* model = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_JOIN_REQUESTS, convoId);
+
+            if (model)
+            {
+                model->setGetFeedInProgress(false);
+                model->setFeedError(msg);
+            }
+        }
+    );
 }
 
 void Chat::removeMember(const QString& convoId, const QString& did)
@@ -821,9 +896,9 @@ void Chat::removeMember(const QString& convoId, const QString& did)
             if (!presence)
                 return;
 
-            if (mConvoMemberListModels.contains(convoId))
+            if (mConvoAuthorListModels.contains({ QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId }))
             {
-                auto& model = mConvoMemberListModels[convoId];
+                auto& model = mConvoAuthorListModels[{ QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId }];
                 model->deleteAuthor(did);
             }
 
@@ -856,9 +931,9 @@ void Chat::addMember(const QString& convoId, const QString& did)
             if (!presence)
                 return;
 
-            if (mConvoMemberListModels.contains(convoId))
+            if (mConvoAuthorListModels.contains({ QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId }))
             {
-                auto& model = mConvoMemberListModels[convoId];
+                auto& model = mConvoAuthorListModels[{ QEnums::CHAT_AUTHOR_LIST_MEMBERS, convoId }];
 
                 for (const auto& member : output->mAddedMebers)
                     model->prependAuthor(*member);
@@ -901,7 +976,7 @@ void Chat::createGroupConvo(const QString& name)
             if (model)
                 model->insertConvo(convo);
 
-            auto* membersModel = getConvoMemberListModel(convo.getId());
+            auto* membersModel = getConvoAuthorListModel(QEnums::CHAT_AUTHOR_LIST_MEMBERS, convo.getId());
 
             if (membersModel && !output->mConvo->mMembers.empty())
                 membersModel->prependAuthor(*output->mConvo->mMembers.front());
@@ -958,7 +1033,7 @@ void Chat::lockGroupConvo(const QString& convoId)
     setConvoUpdateInProgress(true);
 
     mBsky->lockConvo(convoId,
-        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -987,7 +1062,7 @@ void Chat::unlockGroupConvo(const QString& convoId)
     setConvoUpdateInProgress(true);
 
     mBsky->unlockConvo(convoId,
-        [this, presence=*mPresence, convoId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -1181,6 +1256,136 @@ void Chat::getJoinLinkPreview(const QString& code)
         });
 }
 
+void Chat::updateJoinRequestsRead(const QString& convoId)
+{
+    qDebug() << "Update join requests read convo:" << convoId;
+    auto* convo = mAcceptedConvoListModel.getConvo(convoId);
+
+    if (!convo)
+    {
+        qWarning() << "No convo:" << convoId;
+        return;
+    }
+
+    if (convo->getGroupConvo().getUnreadJoinRequestCount() == 0)
+    {
+        qDebug() << "No unread join requests:" << convoId;
+        return;
+    }
+
+    mBsky->updateJoinRequestsRead(convoId,
+        [this, presence=*mPresence, convoId]{
+            if (!presence)
+                return;
+
+            auto* convo = mAcceptedConvoListModel.getConvo(convoId);
+
+            if (!convo)
+                return;
+
+            const int newUnreadCount = mAcceptedConvoListModel.getUnreadCount() - convo->getGroupConvo().getUnreadJoinRequestCount();
+            ConvoView updatedConvo(*convo);
+            updatedConvo.getGroupConvo().clearUnreadJoinRequestCount();
+            mAcceptedConvoListModel.updateConvo(updatedConvo);
+
+            if (!updatedConvo.isMuted())
+                setUnreadCount(QEnums::CONVO_STATUS_ACCEPTED, newUnreadCount);
+
+            emit convoUpdated(updatedConvo);
+        },
+        [](const QString& error, const QString& msg){
+            qDebug() << "updateJoinRequestsRead FAILED:" << error << " - " << msg;
+        }
+    );
+}
+
+void Chat::approveJoinRequest(const QString& convoId, const ChatBasicProfile& member)
+{
+    const QString& did = member.getBasicProfile().getDid();
+    qDebug() << "Approve join request:" << convoId << "did:" << did;
+
+    if (mConvoUpdateInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->approveJoinRequest(convoId, did,
+        [this, presence=*mPresence, member](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            const ConvoAuthorListKey key{QEnums::CHAT_AUTHOR_LIST_JOIN_REQUESTS, output->mConvo->mId};
+
+            if (mConvoAuthorListModels.contains(key))
+                mConvoAuthorListModels[key]->deleteAuthor(member.getBasicProfile().getDid());
+
+            mAcceptedConvoListModel.updateConvo(*output->mConvo);
+            emit convoUpdated(ConvoView(*output->mConvo, mUserDid));
+
+            const QString msg = tr("Added: %1").arg(member.getBasicProfile().getName());
+            emit statusMessage(msg);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "approveJoinRequest FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::rejectJoinRequest(const QString& convoId, const ChatBasicProfile& member)
+{
+    const QString& did = member.getBasicProfile().getDid();
+    qDebug() << "Reject join request:" << convoId << "did:" << did;
+
+    if (mConvoUpdateInProgress)
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->rejectJoinRequest(convoId, did,
+        [this, presence=*mPresence, convoId, member]{
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            const ConvoAuthorListKey key{QEnums::CHAT_AUTHOR_LIST_JOIN_REQUESTS, convoId};
+
+            if (mConvoAuthorListModels.contains(key))
+                mConvoAuthorListModels[key]->deleteAuthor(member.getBasicProfile().getDid());
+
+            auto* convo = mAcceptedConvoListModel.getConvo(convoId);
+
+            if (convo)
+            {
+                ConvoView updatedConvo(*convo);
+                updatedConvo.getGroupConvo().decrementJoinRequestCount();
+                mAcceptedConvoListModel.updateConvo(updatedConvo);
+                emit convoUpdated(updatedConvo);
+            }
+
+            const QString msg = tr("Rejected: %1").arg(member.getBasicProfile().getName());
+            emit statusMessage(msg);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "rejectJoinRequest FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
 QString Chat::getJoinLinkCodeFromUri(const QString& uri)
 {
     const QUrl url(uri);
@@ -1230,7 +1435,7 @@ void Chat::updateBlockingUri(const QString& did, const QString& blockingUri)
 
 void Chat::makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update)
 {
-    for (auto& [_, model] : mConvoMemberListModels)
+    for (auto& [_, model] : mConvoAuthorListModels)
         update(model.get());
 }
 

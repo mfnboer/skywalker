@@ -7,7 +7,10 @@ Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     property PostUtils postUtils: root.getPostUtils(userDid)
+    required property int listType // QEnums::ChatAuthorListType
+    required property convoview convo
     required property chatbasicprofile chatAuthor
+    required property date joinRequestedAt
     readonly property basicprofile author: chatAuthor.basicProfile
     required property string followingUri
     required property string blockingUri
@@ -46,7 +49,7 @@ Rectangle {
         // Avatar
         Rectangle {
             id: avatar
-            Layout.rowSpan: 3
+            Layout.rowSpan: 4
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             Layout.minimumHeight: guiSettings.threadColumnWidth
@@ -162,7 +165,42 @@ Rectangle {
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             plainText: qsTr(`Added by ${addedBy.isNull() ? "invite link" : addedBy.basicProfile.name}`)
-            visible: chatAuthor.groupMember.role !== QEnums.CONVO_MEMBER_ROLE_OWNER
+            visible: chatAuthor.groupMember.role !== QEnums.CONVO_MEMBER_ROLE_OWNER && listType === QEnums.CHAT_AUTHOR_LIST_MEMBERS
+        }
+
+        Loader {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
+            active: listType === QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS
+
+            sourceComponent: Column {
+                spacing: 10
+
+                AccessibleText {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: qsTr(`Requested to join: ${guiSettings.dateTimeIndication(joinRequestedAt)}`)
+                }
+
+                RowLayout {
+                    width: parent.width
+
+                    SkyButton {
+                        Layout.fillWidth: true
+                        height: 40
+                        text: qsTr("Approve")
+                        onClicked: skywalker.chat.approveJoinRequest(convo.id, chatAuthor)
+                    }
+                    SkyButton {
+                        Layout.fillWidth: true
+                        height: 40
+                        text: qsTr("Reject")
+                        onClicked: confirmJoinRequestReject()
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -205,6 +243,13 @@ Rectangle {
                     authorRect,
                     qsTr(`Do you really want to remove: @${author.handle} ?`),
                     () => deleteItem(author.did))
+    }
+
+    function confirmJoinRequestReject() {
+        guiSettings.askYesNoQuestion(
+                    authorRect,
+                    qsTr(`Do you really want to reject: @${author.handle} ?`),
+                    () => skywalker.chat.rejectJoinRequest(convo.id, chatAuthor))
     }
 
     function authorVisible() {

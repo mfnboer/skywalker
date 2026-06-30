@@ -16,6 +16,8 @@ class GroupConvo
     Q_PROPERTY(int memberLimit READ getMemberLimit FINAL)
     Q_PROPERTY(QEnums::ConvoLockStatus lockStatus READ getLockStatus FINAL)
     Q_PROPERTY(JoinLinkView joinLinkView READ getJoinLinkView FINAL)
+    Q_PROPERTY(int joinRequestCount READ getJoinRequestCount FINAL)
+    Q_PROPERTY(int unreadJoinRequestCount READ getUnreadJoinRequestCount FINAL)
     QML_VALUE_TYPE(groupconvo)
 
 public:
@@ -30,7 +32,12 @@ public:
     QEnums::ConvoLockStatus getLockStatus() const { return mGroupConvo ? (QEnums::ConvoLockStatus)mGroupConvo->mLockStatus : QEnums::CONVO_LOCK_STATUS_UNLOCKED; }
     Q_INVOKABLE bool isLocked() const;
     JoinLinkView getJoinLinkView() const { return mGroupConvo ? JoinLinkView{mGroupConvo->mJoinLink} : JoinLinkView{}; }
+    int getJoinRequestCount() const { return mGroupConvo ? mGroupConvo->mJoinRequestCount.value_or(0) : 0; }
+    int getUnreadJoinRequestCount() const { return mGroupConvo ? mGroupConvo->mUnreadJoinRequestCount.value_or(0) : 0; }
     ATProto::ChatBskyConvo::GroupConvo::SharedPtr getATProtoGroupConvo() const { return mGroupConvo; };
+
+    void clearUnreadJoinRequestCount();
+    void decrementJoinRequestCount();
 
 private:
     ATProto::ChatBskyConvo::GroupConvo::SharedPtr mGroupConvo;

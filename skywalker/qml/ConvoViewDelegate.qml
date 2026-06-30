@@ -216,6 +216,27 @@ Rectangle {
                         visible: showLastReaction && !convo.group.isLocked() && !convo.isRequestToJoin
                     }
 
+                    // Join requests to approve
+                    Loader {
+                        width: parent.width
+                        active: convo.group.joinRequestCount > 0
+
+                        sourceComponent: AccessibleText {
+                            topPadding: 10
+                            wrapMode: Text.Wrap
+                            font.bold: convo.group.unreadJoinRequestCount > 0
+                            color: guiSettings.accentColor
+                            text: convo.group.joinRequestCount === 1 ?
+                                      qsTr("1 join request pending") :
+                                      qsTr(`${convo.group.joinRequestCount} join requests pending`)
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS, convo, skywalker.getUserDid())
+                            }
+                        }
+                    }
+
                     // Locked
                     Loader {
                         width: parent.width
@@ -254,11 +275,18 @@ Rectangle {
                         id: moreMenu
 
                         SkyMenuButton {
+                            text: qsTr("Join requests")
+                            svg: SvgOutline.enter
+                            popup: moreMenu
+                            visible: convo.group.joinRequestCount > 0
+                            onClicked: root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS, convo, skywalker.getUserDid())
+                        }
+                        SkyMenuButton {
                             text: qsTr("Members")
                             svg: SvgOutline.group
                             popup: moreMenu
                             visible: convo.kind === QEnums.CONVO_KIND_GROUP && !convo.isRequestToJoin
-                            onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
+                            onClicked: root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_MEMBERS, convo, skywalker.getUserDid())
                         }
                         SkyMenuButton {
                             text: qsTr("Invite link")

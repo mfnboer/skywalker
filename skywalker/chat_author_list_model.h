@@ -7,6 +7,7 @@
 #include "enums.h"
 #include "local_author_model_changes.h"
 #include "profile_store.h"
+#include <atproto/lib/lexicon/chat_bsky_group.h>
 #include <QAbstractListModel>
 #include <deque>
 
@@ -23,12 +24,21 @@ class ChatAuthorListModel : public QAbstractListModel,
 public:
     enum class Role {
         ChatAuthor = Qt::UserRole + 1,
+        JoinRequestedAt,
         FollowingUri,
         BlockingUri,
         AuthorMuted,
         MutedReposts,
         HideFromTimeline,
         EndOfList
+    };
+
+    struct ListEntry
+    {
+        ChatBasicProfile mProfile;
+        QDateTime mJoinRequestedAt; // only set for a list of join requests
+
+        explicit ListEntry(const ChatBasicProfile& profile, QDateTime joinRequestedAt = {});
     };
 
     using Type = QEnums::ChatAuthorListType;
@@ -43,6 +53,7 @@ public:
 
     Q_INVOKABLE void clear();
     void addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::List authors, const QString& cursor);
+    void addJoinRequests(ATProto::ChatBskyGroup::JoinRequestView::List joinRequests, const QString& cursor);
     void prependAuthor(const ATProto::ChatBskyActor::ProfileViewBasic& author);
 
     void deleteAuthor(const QString& did);
@@ -75,7 +86,7 @@ protected:
     virtual void hideFromTimelineChanged() override;
 
 private:
-    using AuthorList = std::deque<ChatBasicProfile>;
+    using AuthorList = std::deque<ListEntry>;
 
     void setEndOfList();
     AuthorList filterAuthors(const ATProto::ChatBskyActor::ProfileViewBasic::List& authors) const;
@@ -88,6 +99,7 @@ private:
 
     AuthorList mList;
     std::deque<ATProto::ChatBskyActor::ProfileViewBasic::List> mRawLists;
+    std::deque<ATProto::ChatBskyGroup::JoinRequestView::List> mRawRequestLists;
 
     QString mCursor;
     bool mGetFeedInProgress = false;

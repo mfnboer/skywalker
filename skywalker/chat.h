@@ -93,10 +93,10 @@ public:
     bool isGetMessagesInProgress() const { return mGetMessagesInProgress; }
     void setMessagesInProgress(bool inProgress);
 
-    Q_INVOKABLE ChatAuthorListModel* getConvoMemberListModel(const QString& convoId);
-    Q_INVOKABLE void removeConvoMemberListModel(const QString& convoId);
-    Q_INVOKABLE void getConvoMembers(const QString& convoId, const QString& cursor = "");
-    Q_INVOKABLE void getConvoMembersNextPage(const QString& convoId);
+    Q_INVOKABLE ChatAuthorListModel* getConvoAuthorListModel(QEnums::ChatAuthorListType type, const QString& convoId);
+    Q_INVOKABLE void removeConvoAuthorListModel(QEnums::ChatAuthorListType type, const QString& convoId);
+    Q_INVOKABLE void getConvoAuthors(QEnums::ChatAuthorListType type, const QString& convoId, const QString& cursor = "");
+    Q_INVOKABLE void getConvoAuthorsNextPage(QEnums::ChatAuthorListType type, const QString& convoId);
 
     Q_INVOKABLE void removeMember(const QString& convoId, const QString& did);
     Q_INVOKABLE void addMember(const QString& convoId, const QString& did);
@@ -111,6 +111,9 @@ public:
     Q_INVOKABLE void disableJoinLink(const QString& convoId);
     Q_INVOKABLE void enableJoinLink(const QString& convoId);
     Q_INVOKABLE void getJoinLinkPreview(const QString& code);
+    Q_INVOKABLE void updateJoinRequestsRead(const QString& convoId);
+    Q_INVOKABLE void approveJoinRequest(const QString& convoId, const ChatBasicProfile& member);
+    Q_INVOKABLE void rejectJoinRequest(const QString& convoId, const ChatBasicProfile& member);
     Q_INVOKABLE QString getJoinLinkCodeFromUri(const QString& uri);
     Q_INVOKABLE bool isJoinLinkUri(const QString& uri);
 
@@ -144,6 +147,7 @@ signals:
     void deleteMessageFailed(QString error);
     void deleteMessageOk();
     void settingsFailed(QString error);
+    void statusMessage(QString msg);
     void failure(QString error);
 
 private:
@@ -153,6 +157,8 @@ private:
     ConvoListModel* getConvoListModel(QEnums::ConvoStatus status) const;
     void getAcceptedConvos(const QString& cursor);
     void getRequestedConvos(const QString& cursor);
+    void getConvoMembers(const QString& convoId, const QString& cursor);
+    void getJoinRequests(const QString& convoId, const QString& cursor);
     void updateConvoInModel(const ATProto::ChatBskyConvo::ConvoView& convo);
     void updateTotalUnreadCount();
     void setUnreadCount(QEnums::ConvoStatus status, int unread);
@@ -184,7 +190,14 @@ private:
     ConvoListModel mRequestConvoListModel;
     int mUnreadCount = 0;
     std::unordered_map<QString, MessageListModel::Ptr> mMessageListModels; // convoId -> model
-    std::unordered_map<QString, ChatAuthorListModel::Ptr> mConvoMemberListModels; // convoId -> model
+
+    using ConvoAuthorListKey = std::pair<QEnums::ChatAuthorListType, QString>;
+    struct ConvoAuthorListKeyHash
+    {
+        size_t operator()(const ConvoAuthorListKey& key) const { return qHash(key, 1325); }
+    };
+    std::unordered_map<ConvoAuthorListKey, ChatAuthorListModel::Ptr, ConvoAuthorListKeyHash> mConvoAuthorListModels; // (type, convoId) -> model
+
     std::unordered_set<QString> mConvoIdUpdatingMessages;
     bool mGetMessagesInProgress = false;
     bool mStartConvoInProgress = false;

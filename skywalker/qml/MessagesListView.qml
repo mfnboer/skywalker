@@ -50,10 +50,18 @@ SkyPage {
                 id: moreMenu
 
                 SkyMenuButton {
+                    text: qsTr("Join requests")
+                    svg: SvgOutline.enter
+                    popup: moreMenu
+                    visible: convo.group.joinRequestCount > 0
+                    onClicked: root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS, convo, skywalker.getUserDid())
+                }
+
+                SkyMenuButton {
                     text: qsTr("Members")
                     svg: SvgOutline.group
                     popup: moreMenu
-                    onClicked: root.viewChatAuthorList(convo, skywalker.getUserDid())
+                    onClicked: root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_MEMBERS, convo, skywalker.getUserDid())
                 }
 
                 SkyMenuButton {

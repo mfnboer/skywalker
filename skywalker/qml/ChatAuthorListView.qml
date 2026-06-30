@@ -6,13 +6,14 @@ import skywalker
 SkyListView {
     property string userDid
     required property convoview convo
+    required property int type // QEnums.ChatAuthorListType
     property Skywalker skywalker: root.getSkywalker(userDid)
     property bool showFollow: true
     property bool showActivitySubscription: false
     readonly property bool userIsOwner: convo.getMember(userDid).groupMember.role === QEnums.CONVO_MEMBER_ROLE_OWNER
-    property bool allowDeleteItem: userIsOwner
+    property bool allowDeleteItem: userIsOwner && type === QEnums.CHAT_AUTHOR_LIST_MEMBERS
     readonly property string sideBarTitle: convo.group.name
-    readonly property string sideBarSubTitle: qsTr(`Members (${convo.group.memberCount}/${convo.group.memberLimit})`)
+    readonly property string sideBarSubTitle: getSubTitle()
     readonly property SvgImage sideBarSvg: SvgOutline.group
 
     signal closed
@@ -20,7 +21,7 @@ SkyListView {
     id: authorListView
     width: parent.width
     height: parent.height
-    model: skywalker.chat.getConvoMemberListModel(convo.id)
+    model: skywalker.chat.getConvoAuthorListModel(type, convo.id)
 
     Accessible.role: Accessible.List
 
@@ -45,7 +46,7 @@ SkyListView {
         height: guiSettings.footerHeight
         z: guiSettings.footerZLevel
         color: guiSettings.backgroundColor
-        visible: userIsOwner && !convo.group.isLocked()
+        visible: userIsOwner && !convo.group.isLocked() && type === QEnums.CHAT_AUTHOR_LIST_MEMBERS
 
         SvgButton {
             anchors.horizontalCenter: parent.horizontalCenter
@@ -67,6 +68,8 @@ SkyListView {
 
         width: authorListView.width
         userDid: authorListView.userDid
+        convo: authorListView.convo
+        listType: authorListView.type
         showFollow: authorListView.showFollow
         allowDeleteItem: authorListView.allowDeleteItem
 
@@ -82,8 +85,8 @@ SkyListView {
 
     FlickableRefresher {
         inProgress: authorListView.model?.getFeedInProgress
-        topOvershootFun: () => skywalker.chat.getConvoMembers(convo.id)
-        bottomOvershootFun: () => skywalker.chat.getConvoMembersNextPage(convo.id)
+        topOvershootFun: () => skywalker.chat.getConvoAuthors(type, convo.id)
+        bottomOvershootFun: () => skywalker.chat.getConvoAuthorsNextPage(type, convo.id)
         topText: qsTr("Refresh")
     }
 
@@ -144,12 +147,26 @@ SkyListView {
         skywalker.chat.removeMember(convo.id, did)
     }
 
+    function getSubTitle() {
+        switch (type) {
+        case QEnums.CHAT_AUTHOR_LIST_MEMBERS:
+            return qsTr(`Members (${convo.group.memberCount}/${convo.group.memberLimit})`)
+        case QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS:
+            return qsTr("Join requests")
+        }
+
+        return `Unknow list type: ${type}`
+    }
+
     Component.onDestruction: {
-        skywalker.chat.removeConvoMemberListModel(convo.id)
+        if (type === QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS)
+            skywalker.chat.updateJoinRequestsRead(convo.id)
+
+        skywalker.chat.removeConvoAuthorListModel(type, convo.id)
     }
 
     Component.onCompleted: {
         if (count <= 0)
-            skywalker.chat.getConvoMembers(convo.id)
+            skywalker.chat.getConvoAuthors(type, convo.id)
     }
 }

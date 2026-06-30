@@ -29,4 +29,29 @@ bool GroupConvo::isLocked() const
     return false;
 }
 
+void GroupConvo::clearUnreadJoinRequestCount()
+{
+    if (!mGroupConvo)
+        return;
+
+    // Don't change the existing group convo. It may be used elsewhere.
+    auto newGroupConvo = std::make_shared<ATProto::ChatBskyConvo::GroupConvo>(*mGroupConvo);
+    newGroupConvo->mUnreadJoinRequestCount = 0;
+    mGroupConvo = newGroupConvo;
+}
+
+void GroupConvo::decrementJoinRequestCount()
+{
+    if (!mGroupConvo)
+        return;
+
+    // Don't change the existing group convo. It may be used elsewhere.
+    auto newGroupConvo = std::make_shared<ATProto::ChatBskyConvo::GroupConvo>(*mGroupConvo);
+
+    if (newGroupConvo->mJoinRequestCount.value_or(0) > 0)
+        --(*newGroupConvo->mJoinRequestCount);
+
+    mGroupConvo = newGroupConvo;
+}
+
 }

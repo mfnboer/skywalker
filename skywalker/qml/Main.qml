@@ -2304,11 +2304,12 @@ ApplicationWindow {
         pushStack(view)
     }
 
-    function viewChatAuthorList(convo, viewedByDid = "") {
+    function viewConvoAuthorList(chatAuthorListType, convo, viewedByDid = "") {
         let component = guiSettings.createComponent("ChatAuthorListView.qml")
         let view = component.createObject(root, {
                 userDid: viewedByDid,
-                convo: convo
+                convo: convo,
+                type: chatAuthorListType
         })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
