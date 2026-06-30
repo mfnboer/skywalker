@@ -54,6 +54,7 @@ Rectangle {
             maximumLineCount: 3
             ellipsisBackgroundColor: view.backgroundColor
             font.pointSize: guiSettings.scaledFont(7/8)
+            showEmbedTextIfMessageIsEmpty: true
         }
     }
 

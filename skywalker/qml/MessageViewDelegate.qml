@@ -121,8 +121,14 @@ Rectangle {
         x: senderIsUser ? viewWidth - margin - width : margin + messageIndent
         anchors.top: senderName.bottom
         anchors.topMargin: 5
-        width: Math.max(messageText.width, embed.item ? embed.item.width + 20 : 0, replyToLoader.item ? replyToLoader.item.width + 20 : 0)
-        height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) + messageText.height + (embed.item ? embed.item.height + 10 : 0)
+        width: Math.max(messageText.width,
+                        embedRecord.item ? embedRecord.item.width + 20 : 0,
+                        embedJoinLink.item ? embedJoinLink.item.width + 20 : 0,
+                        replyToLoader.item ? replyToLoader.item.width + 20 : 0)
+        height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) +
+                messageText.height +
+                (embedRecord.item ? embedRecord.item.height + 10 : 0) +
+                (embedJoinLink.item ? embedJoinLink.item.height + 10 : 0)
         radius: guiSettings.radius
         color: backgroundColor
         visible: !message.isSystemMessage
@@ -170,14 +176,26 @@ Rectangle {
         }
 
         Loader {
-            id: embed
+            id: embedRecord
             x: 10
             anchors.top: messageText.bottom
-            active: !message.embed.isNull()
+            active: message.embedType === QEnums.MESSAGE_EMBED_RECORD
 
             sourceComponent: RecordView {
                 width: maxTextWidth - 20 - messageIndent
-                record: message.embed
+                record: message.embedRecord
+            }
+        }
+
+        Loader {
+            id: embedJoinLink
+            x: 10
+            anchors.top: messageText.bottom
+            active: message.embedType === QEnums.MESSAGE_EMBED_JOIN_LINK
+
+            sourceComponent: JoinLinkPreview {
+                width: maxTextWidth - 20 - messageIndent
+                joinLink: message.embedJoinLink
             }
         }
 

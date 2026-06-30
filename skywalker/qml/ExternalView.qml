@@ -119,7 +119,6 @@ Item {
             width: parent.width
             uri: postExternal.uri
             title: postExternal.title
-            description: postExternal.description
             maskColor: view.maskColor
         }
     }

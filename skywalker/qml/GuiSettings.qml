@@ -500,6 +500,23 @@ Item {
         }
     }
 
+    function getChatMessageQuoteText(message, showEmbedIfEmpty = false) {
+        if (message.deleted)
+            return qsTr("(message deleted)")
+
+        if (message.text || !showEmbedIfEmpty)
+            return message.formattedText
+
+        switch (message.embedType) {
+        case QEnums.MESSAGE_EMBED_RECORD:
+            return `Post from @${message.embedRecord.author.handle}: ${message.embedRecord.postTextFormatted}`
+        case QEnums.MESSAGE_EMBED_JOIN_LINK:
+            return qsTr(`(chat invite link: ${message.embedJoinLink.name})`)
+        }
+
+        return "";
+    }
+
     function threadStartColor(color) {
         return color
     }

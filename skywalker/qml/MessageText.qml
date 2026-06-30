@@ -6,11 +6,11 @@ SkyCleanedText {
     required property convoview convo
     required property messageview message
     required property basicprofile author
+    property bool showEmbedTextIfMessageIsEmpty: false
 
     // Note: textMetrics.boundingRect.width gave a wrong width when the text
     // ended with an emoji VARIATION SELECTOR-16 (U+FE0F)
     readonly property alias textWidth: textMetrics.advanceWidth
-    readonly property string deletedText: qsTr("message deleted")
 
     signal longPress
 
@@ -25,20 +25,13 @@ SkyCleanedText {
     plainText: getMessageDisplayText()
 
     function getMessageDisplayText() {
-        if (message.deleted)
-            return deletedText
-
-        // Something fishy with this profile, make links not clickable
-        if (author.hasInvalidHandle())
-            return message.text
-
-        return message.formattedText
+        return guiSettings.getChatMessageQuoteText(message, showEmbedTextIfMessageIsEmpty)
     }
 
     TextMetrics {
         id: textMetrics
         font: messageText.font
-        text: !message.deleted ? message.text : message.deletedText
+        text: getMessageDisplayText()
     }
 
     LinkCatcher {

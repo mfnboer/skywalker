@@ -7,8 +7,7 @@ RoundCornerMask {
     property string userDid
     property string uri
     property string title
-    property string description
-    readonly property string code: skywalker.chat.getJoinLinkCodeFromUri(uri)
+    property string code: uri ? skywalker.chat.getJoinLinkCodeFromUri(uri) : ""
     property joinlinkpreview joinLink
     readonly property basicprofile owner: joinLink.owner.basicProfile
     property Skywalker skywalker: root.getSkywalker()
@@ -60,7 +59,7 @@ RoundCornerMask {
                     elide: Text.ElideRight
                     font.bold: true
                     color: guiSettings.messageUserTextColor
-                    plainText: joinLink.name
+                    plainText: joinLink.isNull() ? title : joinLink.name
                 }
 
                 AccessibleText {
@@ -151,7 +150,6 @@ RoundCornerMask {
         }
     }
 
-    // TODO: pending request
     function getButtonText() {
         if (joinLink.userIsMember)
             return qsTr("Open chat")

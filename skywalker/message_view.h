@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "join_link_preview.h"
 #include "reaction_view.h"
 #include "record_view.h"
 #include "text_meta_info.h"
@@ -16,7 +17,9 @@ class MessageView
     Q_PROPERTY(QString text READ getText FINAL)
     Q_PROPERTY(QString formattedText READ getFormattedText FINAL)
     Q_PROPERTY(TextMetaInfo textMetaInfo READ getTextMetaInfo FINAL)
-    Q_PROPERTY(RecordView embed READ getEmbed FINAL)
+    Q_PROPERTY(QEnums::MessageEmbedType embedType READ getEmbedType FINAL)
+    Q_PROPERTY(RecordView embedRecord READ getEmbedRecord FINAL)
+    Q_PROPERTY(JoinLinkPreview embedJoinLink READ getEmbedJoinLink FINAL)
     Q_PROPERTY(QString senderDid READ getSenderDid FINAL)
     Q_PROPERTY(QDateTime sentAt READ getSentAt FINAL)
     Q_PROPERTY(bool deleted READ isDeleted FINAL)
@@ -39,7 +42,9 @@ public:
     const QString& getText() const { return mText; }
     const QString& getFormattedText() const { return mFormattedText; }
     const TextMetaInfo& getTextMetaInfo() const { return mTextMetaInfo; }
-    const RecordView getEmbed() const;
+    QEnums::MessageEmbedType getEmbedType() const;
+    const RecordView getEmbedRecord() const;
+    const JoinLinkPreview getEmbedJoinLink() const;
     const QString& getSenderDid() const { return mSenderDid; }
     const QDateTime getSentAt() const { return mSentAt; }
     bool isDeleted() const { return mDeleted; }

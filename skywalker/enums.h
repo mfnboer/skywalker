@@ -435,6 +435,14 @@ public:
     };
     Q_ENUM(JoinRule)
 
+    enum MessageEmbedType
+    {
+        MESSAGE_EMBED_NONE,
+        MESSAGE_EMBED_RECORD,
+        MESSAGE_EMBED_JOIN_LINK
+    };
+    Q_ENUM(MessageEmbedType)
+
     enum ThreadStyle
     {
         THREAD_STYLE_BAR,

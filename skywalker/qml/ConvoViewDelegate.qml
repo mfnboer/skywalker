@@ -184,7 +184,7 @@ Rectangle {
                     // Last message
                     SkyCleanedText {
                         property string senderName: showLastReaction ? "" : getLastMessageSender()
-                        property string messageText: getLastMessageText()
+                        property string messageText: getLastMessageText(convo.lastMessage)
 
                         id: lastMessage
                         width: parent.width
@@ -201,6 +201,7 @@ Rectangle {
                     // Last reaction
                     SkyCleanedText {
                         property string senderName: showLastReaction ? getLastReactionSender() : ""
+                        property string messageText: getLastMessageText(convo.lastReaction.message)
 
                         id: lastReaction
                         width: parent.width
@@ -212,7 +213,7 @@ Rectangle {
                         inLayout: true
                         plainText: (senderName ? `<i>${senderName} </i>` : "") +
                                    qsTr(`reacted <span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `) +
-                                   `${convo.lastReaction.message.text}`
+                                   `${messageText}`
                         visible: showLastReaction && !convo.group.isLocked()
                     }
 
@@ -459,19 +460,16 @@ Rectangle {
         return "";
     }
 
-    function getLastMessageText() {
-        if (convo.lastMessage.isNull())
-            return ""
+    function getLastMessageText(lastMessage) {
+        if (lastMessage.isNull())
+            return qsTr("(no messages)")
 
-        if (convo.lastMessage.isSystemMessage) {
+        if (lastMessage.isSystemMessage) {
             Qt.callLater(() => { systemMessageUtils.active = true })
             return ""
         }
 
-        if (convo.lastMessage.deleted)
-            return qsTr("message deleted")
-
-        return convo.lastMessage.text
+        return guiSettings.getChatMessageQuoteText(lastMessage, true)
     }
 
     function getLastReactionSender() {

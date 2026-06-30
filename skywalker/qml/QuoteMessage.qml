@@ -54,6 +54,7 @@ Column {
             convo: quoteColumn.convo
             message: quoteColumn.message
             author: quoteColumn.author
+            showEmbedTextIfMessageIsEmpty: true
         }
     }
 

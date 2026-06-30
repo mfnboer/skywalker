@@ -157,13 +157,25 @@ ReactionView::List MessageView::getUniqueReactions(int maxReactions) const
     return result;
 }
 
-const RecordView MessageView::getEmbed() const
+QEnums::MessageEmbedType MessageView::getEmbedType() const
 {
     if (!mEmbed)
-        return {};
+        return QEnums::MESSAGE_EMBED_NONE;
 
-    // TODO: JoinLinkView
-    if (!ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed))
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed))
+        return QEnums::MESSAGE_EMBED_RECORD;
+
+    if (ATProto::holdsNonNull<ATProto::ChatBskyEmbed::JoinLinkView::SharedPtr>(*mEmbed))
+        return QEnums::MESSAGE_EMBED_JOIN_LINK;
+
+    qWarning() << "Unknown embed type";
+    Q_ASSERT(false);
+    return QEnums::MESSAGE_EMBED_NONE;
+}
+
+const RecordView MessageView::getEmbedRecord() const
+{
+    if (getEmbedType() != QEnums::MESSAGE_EMBED_RECORD)
         return {};
 
     const auto view = std::get<ATProto::AppBskyEmbed::RecordView::SharedPtr>(*mEmbed);
@@ -178,6 +190,25 @@ const RecordView MessageView::getEmbed() const
     recordView.setContentVisibility(QEnums::CONTENT_VISIBILITY_SHOW);
     recordView.setContentWarning("");
     return recordView;
+}
+
+const JoinLinkPreview MessageView::getEmbedJoinLink() const
+{
+    if (getEmbedType() != QEnums::MESSAGE_EMBED_JOIN_LINK)
+        return {};
+
+    const auto view = std::get<ATProto::ChatBskyEmbed::JoinLinkView::SharedPtr>(*mEmbed);
+
+    if (!view)
+    {
+        qWarning() << "No join link view";
+        return {};
+    }
+
+    const JoinLinkPreview joinLink =
+        std::visit([](auto&& x){ return JoinLinkPreview(*x); }, view->mJoinLinkPreview);
+
+    return joinLink;
 }
 
 MessageView MessageView::getReplyTo() const
