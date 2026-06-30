@@ -180,7 +180,6 @@ Rectangle {
                         }
                     }
 
-                    // TODO: loaders
                     // Last message
                     SkyCleanedText {
                         property string senderName: showLastReaction ? "" : getLastMessageSender()
@@ -195,7 +194,7 @@ Rectangle {
                         textFormat: Text.StyledText
                         font.italic: convo.lastMessage.deleted || convo.lastMessage.isSystemMessage
                         plainText: (senderName ? `<i>${senderName}: </i>` : "") + messageText
-                        visible: !showLastReaction && !convo.group.isLocked()
+                        visible: !showLastReaction && !convo.group.isLocked() && !convo.isRequestToJoin
                     }
 
                     // Last reaction
@@ -214,29 +213,31 @@ Rectangle {
                         plainText: (senderName ? `<i>${senderName} </i>` : "") +
                                    qsTr(`reacted <span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `) +
                                    `${messageText}`
-                        visible: showLastReaction && !convo.group.isLocked()
+                        visible: showLastReaction && !convo.group.isLocked() && !convo.isRequestToJoin
                     }
 
                     // Locked
-                    Row {
+                    Loader {
                         width: parent.width
-                        visible: convo.group.isLocked()
+                        active: convo.group.isLocked()
 
-                        SkySvg {
-                            id: lockImg
-                            y: height + 10
-                            width: parent.visible ? guiSettings.appFontHeight : 0
-                            height: width
-                            svg: SvgOutline.lock
-                        }
+                        sourceComponent: Row {
+                            SkySvg {
+                                id: lockImg
+                                y: height + 10
+                                width: guiSettings.appFontHeight
+                                height: width
+                                svg: SvgOutline.lock
+                            }
 
-                        AccessibleText {
-                            topPadding: 10
-                            width: parent.width - lockImg.width
-                            anchors.verticalCenter: parent.verticalCenter
-                            font.italic: true
-                            elide: Text.ElideRight
-                            text: guiSettings.getChatLockedText(convo)
+                            AccessibleText {
+                                topPadding: 10
+                                width: parent.width - lockImg.width
+                                anchors.verticalCenter: parent.verticalCenter
+                                font.italic: true
+                                elide: Text.ElideRight
+                                text: guiSettings.getChatLockedText(convo)
+                            }
                         }
                     }
                 }
