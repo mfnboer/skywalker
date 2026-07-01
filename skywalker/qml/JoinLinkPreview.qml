@@ -217,6 +217,10 @@ RoundCornerMask {
     }
 
     function getButtonText() {
+        // Preview is disabled when it is shown in the post or message composer
+        if (!preview.enabled)
+            return qsTr("Join chat")
+
         if (joinLink.userIsMember)
             return qsTr("Open chat")
 

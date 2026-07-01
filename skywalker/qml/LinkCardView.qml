@@ -21,11 +21,12 @@ RoundCornerMask {
     required property string contentWarning
     property basicprofile contentLabeler
     property string borderColor: guiSettings.isLightMode ? Qt.darker(cardBackground.color, 1.1) : Qt.lighter(cardBackground.color, 1.6)
-    property int columnHeight: externalColumn.height
+    property int columnHeight: joinLinkLoader.item ? joinLinkLoader.item.height : externalColumn.height
     property bool showSonglinkWidget: false
     property bool isLiveExternal: false
     property date liveExpiresAt
     property bool moving: false
+    property bool uriIsChatJoinLink: false
 
     id: card
     height: columnHeight
@@ -41,6 +42,7 @@ RoundCornerMask {
         id: externalColumn
         width: parent.width
         spacing: 3
+        visible: !uriIsChatJoinLink
 
         FilteredImageWarning {
             id: filter
@@ -225,6 +227,21 @@ RoundCornerMask {
         border.color: borderColor
         radius: cornerRadius
         color: "transparent"
+        visible: !uriIsChatJoinLink
+    }
+
+    Loader {
+        id: joinLinkLoader
+        width: parent.width
+        active: uriIsChatJoinLink
+
+        sourceComponent: JoinLinkPreview {
+            userDid: card.userDid
+            uri: card.uri
+            title: card.title
+            maskColor: card.maskColor
+            enabled: false
+        }
     }
 
     ImageUtils {

@@ -869,6 +869,7 @@ SkyPage {
                         associatedProfiles: card ? card.associatedProfiles : []
                         contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
                         contentWarning: ""
+                        uriIsChatJoinLink: card ? skywalker.chat.isJoinLinkUri(card.link) : false
                         visible: card
 
                         onCardChanged: threadPosts.postList[index].card = card
