@@ -39,6 +39,7 @@ private:
     void requestFailed(QNetworkReply* reply, int errCode);
     void requestSslFailed(QNetworkReply* reply);
     void redirect(QNetworkReply* reply, const QUrl& redirectUrl);
+    void getJoinRequestLinkCard(const QUrl& url);
 
     QNetworkAccessManager* mNetwork;
     QCache<QUrl, LinkCard> mCardCache;

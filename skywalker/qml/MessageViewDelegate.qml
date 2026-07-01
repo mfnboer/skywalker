@@ -196,6 +196,7 @@ Rectangle {
             sourceComponent: JoinLinkPreview {
                 width: maxTextWidth - 20 - messageIndent
                 joinLink: message.embedJoinLink
+                maskColor: messageRect.backgroundColor
             }
         }
 

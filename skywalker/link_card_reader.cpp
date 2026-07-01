@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "link_card_reader.h"
+#include "chat.h"
 #include "definitions.h"
 #include "skywalker.h"
 #include "unicode_fonts.h"
@@ -120,6 +121,13 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSav
             emit linkCardFailed();
         }
 
+        return;
+    }
+
+    if (Chat::isJoinLinkUri(url.toString()))
+    {
+        qDebug() << "Chat join link:" << link;
+        getJoinRequestLinkCard(url);
         return;
     }
 
@@ -511,6 +519,54 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
     cookieJar->setCookiesFromReply(*reply);
 
     mPrevDestination = redirectUrl;
+}
+
+void LinkCardReader::getJoinRequestLinkCard(const QUrl& url)
+{
+    Q_ASSERT(bskyClient());
+
+    if (!bskyClient())
+        return;
+
+    const QString link = url.toString();
+    const QString code = Chat::getJoinLinkCodeFromUri(link);
+
+    if (code.isEmpty())
+    {
+        qWarning() << "Cannot get join link code:" << link;
+        emit linkCardFailed();
+        return;
+    }
+
+    bskyClient()->getJoinLinkPreviews({code},
+        [this, presence=getPresence(), link](ATProto::ChatBskyGroup::JoinLinkPreviewsOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            if (output->mJoinLinkPreviews.size() != 1)
+            {
+                qWarning() << "Invalid join link previews:" << output->mJoinLinkPreviews.size();
+                emit linkCardFailed();
+                return;
+            }
+
+            const JoinLinkPreview preview =
+                std::visit([](auto&& x){ return JoinLinkPreview(*x); }, output->mJoinLinkPreviews.front());
+
+            const QString description = tr("Group chat by @%1\n%2/%3 members")
+                    .arg(preview.getOwner().getBasicProfile().getHandle())
+                    .arg(preview.getMemberCount())
+                    .arg(preview.getMemberLimit());
+            auto* card = makeLinkCard(link, preview.getName(), description, {});
+            emit linkCard(card);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to get join link:" << error << " - " << msg;
+            emit linkCardFailed();
+        });
 }
 
 }

@@ -382,6 +382,7 @@ SkyPage {
         console.debug("Web link:", descriptionField.link)
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
         let linkPage = component.createObject(editListPage, {
+                linkType: QEnums.LINK_TYPE_WEB,
                 link: webLink.link,
                 canAddLinkCard: false
         })
@@ -390,7 +391,7 @@ SkyPage {
                 linkPage.close()
 
                 if (name.length > 0)
-                    descriptionField.addEmbeddedLink(webLinkIndex, name)
+                    descriptionField.addEmbeddedLink(QEnums.LINK_TYPE_WEB, webLinkIndex, name)
 
                 descriptionField.forceActiveFocus()
         })
@@ -415,6 +416,7 @@ SkyPage {
 
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
         let linkPage = component.createObject(editListPage, {
+                linkType: QEnums.LINK_TYPE_WEB,
                 link: link.link,
                 name: link.name,
                 error: error,

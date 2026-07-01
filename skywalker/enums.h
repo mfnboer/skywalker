@@ -395,7 +395,6 @@ public:
     };
     Q_ENUM(ConvoLockStatus)
 
-    // TODO: unknown
     enum ConvoKind
     {
         CONVO_KIND_DIRECT,

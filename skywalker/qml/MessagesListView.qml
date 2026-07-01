@@ -15,7 +15,7 @@ SkyPage {
     readonly property int maxMessageLength: 1000
     readonly property int margin: 10
     property int textInputToolbarHeight: (keyboardHandler.keyboardVisible || !guiSettings.isAndroid) ? 24 : 0
-    readonly property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height + margin : 0
+    readonly property int quotedContentHeight: quoteColumn.visible ? quoteColumn.height + margin : (joinLinkPreview.visible ? joinLinkPreview.height + margin : 0)
     readonly property int replyToContentHeight: replyToColumn.visible ? replyToColumn.height + margin : 0
     property int lastIndex: -1
     property int lastOffsetY: 0
@@ -265,6 +265,7 @@ SkyPage {
         }
     }
 
+    // Message composer
     Flickable {
         property bool contentYUpdating: false
 
@@ -301,6 +302,7 @@ SkyPage {
             property string quoteText
             property date quoteDateTime
             property bool quoteFixed: false
+            property string quoteInviteLink
             property generatorview nullFeed
             property generatorview quoteFeed
             property messageview nullMessage
@@ -348,9 +350,42 @@ SkyPage {
                     postUtils.getQuoteFeed(firstFeedLink)
             }
 
+            onFirstWebLinkChanged: {
+                if (quoteFixed)
+                    return
+
+                if (firstPostLink || firstFeedLink)
+                    return
+
+                if (chat.isJoinLinkUri(firstWebLink)) {
+                    quoteUri = ""
+                    quoteFeed = nullFeed
+                    quoteInviteLink = firstWebLink
+
+                    // Call later such that all properties list cursorInFirstWebLink are changed
+                    Qt.callLater(() => {
+                        if (!cursorInFirstWebLink)
+                            fixQuoteLink(true)
+                        else
+                            newMessageText.cutLinkIfJustAdded(firstWebLink, () => fixQuoteLink(true))
+                    })
+
+                    const code = chat.getJoinLinkCodeFromUri(quoteInviteLink)
+                    chat.getJoinLinkPreview(code)
+                }
+            }
+
+            onCursorInFirstWebLinkChanged: {
+                if (!cursorInFirstWebLink && quoteInviteLink)
+                    fixQuoteLink(true)
+            }
+
             function getQuoteUri() {
                 if (quoteUri)
                     return quoteUri
+
+                if (quoteInviteLink)
+                    return quoteInviteLink
 
                 return quoteFeed.uri
             }
@@ -365,8 +400,10 @@ SkyPage {
             function fixQuoteLink(fix) {
                 quoteFixed = fix
 
-                if (!fix)
+                if (!fix) {
                     quoteUri = ""
+                    quoteInviteLink = ""
+                }
             }
 
             function reset() {
@@ -423,6 +460,35 @@ SkyPage {
 
             onCloseClicked: {
                 newMessageText.replyTo = newMessageText.nullMessage
+                newMessageText.forceActiveFocus()
+            }
+        }
+
+        JoinLinkPreview {
+            id: joinLinkPreview
+            x: page.margin
+            width: parent.width - 2 * page.margin
+            anchors.bottom: fontSelector.visible ? fontSelector.top : parent.bottom
+            anchors.bottomMargin: page.margin
+            userDid: skywalker.getUserDid()
+            uri: newMessageText.quoteInviteLink
+            maskColor: guiSettings.messageNewBackgroundColor
+            enabled: false
+            visible: newMessageText.quoteInviteLink
+        }
+        SvgButton {
+            anchors.top: joinLinkPreview.top
+            anchors.topMargin: 10
+            anchors.right: joinLinkPreview.right
+            anchors.rightMargin: 10
+            width: 34
+            height: width
+            svg: SvgOutline.close
+            accessibleName: qsTr("remove invite link")
+            focusPolicy: Qt.NoFocus
+            visible: joinLinkPreview.visible && newMessageText.quoteFixed
+            onClicked: {
+                newMessageText.fixQuoteLink(false)
                 newMessageText.forceActiveFocus()
             }
         }
@@ -648,6 +714,7 @@ SkyPage {
         console.debug("Web link:", newMessageText.link)
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
         let linkPage = component.createObject(page, {
+                linkType: QEnums.LINK_TYPE_WEB,
                 link: webLink.link,
                 canAddLinkCard: false
         })
@@ -656,7 +723,7 @@ SkyPage {
                 linkPage.close()
 
                 if (name.length > 0)
-                    newMessageText.addEmbeddedLink(webLinkIndex, name)
+                    newMessageText.addEmbeddedLink(QEnums.LINK_TYPE_WEB, webLinkIndex, name)
 
                 newMessageText.forceActiveFocus()
         })
@@ -681,6 +748,7 @@ SkyPage {
 
         let component = guiSettings.createComponent("EditEmbeddedLink.qml")
         let linkPage = component.createObject(page, {
+                linkType: QEnums.LINK_TYPE_WEB,
                 link: link.link,
                 name: link.name,
                 error: error,

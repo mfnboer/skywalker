@@ -699,15 +699,6 @@ void Chat::setConvoUpdateInProgress(bool inProgress)
     }
 }
 
-void Chat::setJoinLinkUpdateInProgress(bool inProgress)
-{
-    if (inProgress != mJoinLinkUpdateInProgress)
-    {
-        mJoinLinkUpdateInProgress = inProgress;
-        emit joinLinkUpdateInProgressChanged();
-    }
-}
-
 void Chat::setMessagesInProgress(bool inProgress)
 {
     if (inProgress != mGetMessagesInProgress)
@@ -1255,7 +1246,7 @@ void Chat::getJoinLinkPreview(const QString& code)
 
             if (output->mJoinLinkPreviews.size() != 1)
             {
-                qWarning() << "Invalid join link previes:" << output->mJoinLinkPreviews.size();
+                qWarning() << "Invalid join link previews:" << output->mJoinLinkPreviews.size();
                 return;
             }
 
@@ -1867,6 +1858,17 @@ void Chat::continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::M
 {
     if (quoteUri.isEmpty())
     {
+        continueSendMessage(convoId, message);
+        return;
+    }
+
+    if (isJoinLinkUri(quoteUri))
+    {
+        if (!chatMaster())
+            return;
+
+        const QString code = getJoinLinkCodeFromUri(quoteUri);
+        chatMaster()->addJoinLinkCodeToMessage(*message, code);
         continueSendMessage(convoId, message);
         return;
     }

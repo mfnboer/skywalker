@@ -24,7 +24,6 @@ class Chat : public QObject
     Q_PROPERTY(bool startConvoInProgress READ isStartConvoInProgress NOTIFY startConvoInProgressChanged FINAL)
     Q_PROPERTY(bool acceptConvoInProgress READ isAcceptConvoInProgress NOTIFY acceptConvoInProgressChanged FINAL)
     Q_PROPERTY(bool convoUpdateInProgress READ isConvoUpdateInProgress NOTIFY convoUpdateInProgressChanged FINAL)
-    Q_PROPERTY(bool joinLinkUpdateInProgress READ isJoinLinkUpdateInProgress NOTIFY joinLinkUpdateInProgressChanged FINAL)
     Q_PROPERTY(bool getMessagesInProgress READ isGetMessagesInProgress NOTIFY getMessagesInProgressChanged FINAL)
 
 public:
@@ -69,9 +68,6 @@ public:
 
     bool isConvoUpdateInProgress() const { return mConvoUpdateInProgress; }
     void setConvoUpdateInProgress(bool inProgress);
-
-    bool isJoinLinkUpdateInProgress() const { return mJoinLinkUpdateInProgress; }
-    void setJoinLinkUpdateInProgress(bool inProgress);
 
     Q_INVOKABLE MessageListModel* getMessageListModel(const QString& convoId);
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
@@ -118,8 +114,8 @@ public:
     Q_INVOKABLE void requestJoin(const JoinLinkPreview& joinLink);
     Q_INVOKABLE void withdrawJoinRequest(const QString convoId);
     Q_INVOKABLE void withdrawJoinRequest(const JoinLinkPreview& joinLink);
-    Q_INVOKABLE QString getJoinLinkCodeFromUri(const QString& uri);
-    Q_INVOKABLE bool isJoinLinkUri(const QString& uri);
+    Q_INVOKABLE static QString getJoinLinkCodeFromUri(const QString& uri);
+    Q_INVOKABLE static bool isJoinLinkUri(const QString& uri);
 
     void updateBlockingUri(const QString& did, const QString& blockingUri);
     void makeLocalModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
@@ -214,7 +210,6 @@ private:
     bool mStartConvoInProgress = false;
     bool mAcceptConvoInProgress = false;
     bool mConvoUpdateInProgress = false;
-    bool mJoinLinkUpdateInProgress = false; // TODO: need this?
     std::unordered_set<QString> mRequestJoinInProgess; // set of join codes
     QTimer mMessagesUpdateTimer;
     QTimer mAcceptedConvosUpdateTimer;

@@ -112,7 +112,10 @@ SkyDialog {
                     Layout.fillWidth: true
                     text: qsTr("Share")
                     visible: joinLink.enabledStatus === QEnums.JOIN_LINK_ENABLED_STATUS_ENABLED
-                    onClicked: skywalker.getShareUtils().shareConvo(convo)
+                    onClicked: {
+                        skywalker.getShareUtils().shareConvo(convo)
+                        dialog.reject()
+                    }
                 }
             }
         }
