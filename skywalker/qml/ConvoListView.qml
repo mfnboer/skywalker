@@ -257,7 +257,10 @@ SkyPage {
                 })
     }
 
-    function viewMessages(convo) {
+    function viewMessages(convo, insertIfNotPresent = false) {
+        if (insertIfNotPresent)
+            chat.startConvoIfNotPresent(convo)
+
         let component = guiSettings.createComponent("MessagesListView.qml")
         let view = component.createObject(page, { chat: chat, convo: convo })
         view.onClosed.connect(() => {

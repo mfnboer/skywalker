@@ -71,6 +71,12 @@ ImageReader* ProfileUtils::imageReader()
 
 void ProfileUtils::getBasicProfile(const QString& did)
 {
+    if (did.isEmpty())
+    {
+        qWarning() << "No DID";
+        return;
+    }
+
     const auto* profile = AuthorCache::instance().get(did);
 
     if (profile)

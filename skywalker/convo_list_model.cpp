@@ -56,18 +56,29 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoView::List& co
     qDebug() << "Add convos:" << convos.size() << "cursor:" << cursor;
     mCursor = cursor;
 
-    if (convos.empty())
+    size_t newConvosSize = 0;
+
+    for (const auto& convo : convos)
+    {
+        if (!hasConvo(convo->mId))
+            ++newConvosSize;
+    }
+
+    if (newConvosSize == 0)
     {
         qDebug() << "No new convos";
         return;
     }
 
-    const size_t newRowCount = mConvos.size() + convos.size();
+    const size_t newRowCount = mConvos.size() + newConvosSize;
     beginInsertRows({}, mConvos.size(), newRowCount - 1);
     mConvos.reserve(newRowCount);
 
     for (const auto& convo : convos)
     {
+        if (hasConvo(convo->mId))
+            continue;
+
         qDebug() << "New convo, id:" << convo->mId << "rev:" << convo->mRev;
         mConvos.emplace_back(*convo, mUserDid);
         mConvoIdIndexMap[convo->mId] = mConvos.size() - 1;
@@ -85,12 +96,6 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoRequestListOut
     qDebug() << "Add convo requests:" << convoRequests.size() << "cursor:" << cursor;
     mCursor = cursor;
 
-    if (convoRequests.empty())
-    {
-        qDebug() << "No new convo requests";
-        return;
-    }
-
     int countConvoRequests = 0;
 
     for (const auto& request : convoRequests)
@@ -99,11 +104,38 @@ void ConvoListModel::addConvos(const ATProto::ChatBskyConvo::ConvoRequestListOut
         {
             const auto& unknownRequest = std::get<ATProto::UnknownVariant::SharedPtr>(request);
             qWarning() << "Unknown convo request type:" << unknownRequest->mType;
+            continue;
         }
-        else
+
+        if (ATProto::holdsNonNull<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request))
         {
-            ++countConvoRequests;
+            const auto& view = std::get<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request);
+
+            if (hasConvo(view->mId))
+            {
+                qDebug() << "Convo already exists:" << view->mId;
+                continue;
+            }
         }
+
+        if (ATProto::holdsNonNull<ATProto::ChatBskyGroup::JoinRequestConvoView::SharedPtr>(request))
+        {
+            const auto& view = std::get<ATProto::ChatBskyGroup::JoinRequestConvoView::SharedPtr>(request);
+
+            if (hasConvo(view->mConvoId))
+            {
+                qDebug() << "Join request already exists:" << view->mConvoId;
+                continue;
+            }
+        }
+
+        ++countConvoRequests;
+    }
+
+    if (countConvoRequests == 0)
+    {
+        qDebug() << "No new convo requests";
+        return;
     }
 
     const size_t newRowCount = mConvos.size() + countConvoRequests;

@@ -2129,6 +2129,11 @@ ApplicationWindow {
         getChatView().addConvo(text)
     }
 
+    function openConvo(convo) {
+        viewChat()
+        getChatView().viewMessages(convo, true)
+    }
+
     function createSearchView() {
         let searchComponent = guiSettings.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
@@ -2320,6 +2325,13 @@ ApplicationWindow {
             root,
             qsTr("Locking a group chat will prohibit members to send new messages. They can still read the chat history. Do you want to lock the group chat?"),
             () => skywalker.chat.lockGroupConvo(convoId))
+    }
+
+    function cancelJoinRequest(convo) {
+        guiSettings.askYesNoQuestion(
+            root,
+            qsTr(`Do you want to cancel your request to join ${convo.group.name} ?`),
+            () => skywalker.chat.withdrawJoinRequest(convo.id))
     }
 
     function editGroupName(convo) {

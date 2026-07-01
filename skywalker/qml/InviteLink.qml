@@ -80,6 +80,7 @@ SkyDialog {
 
             RowLayout {
                 width: parent.width
+                spacing: 0
 
                 SkyButton {
                     Layout.fillWidth: true
@@ -100,7 +101,7 @@ SkyDialog {
                 }
                 SkyButton {
                     Layout.fillWidth: true
-                    text: qsTr("Post link")
+                    text: qsTr("Post")
                     visible: joinLink.enabledStatus === QEnums.JOIN_LINK_ENABLED_STATUS_ENABLED
                     onClicked: {
                         root.composePost(convo.getInviteLinkUrl())

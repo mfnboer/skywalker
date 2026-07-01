@@ -226,13 +226,22 @@ Rectangle {
                             wrapMode: Text.Wrap
                             font.bold: convo.group.unreadJoinRequestCount > 0
                             color: guiSettings.accentColor
-                            text: convo.group.joinRequestCount === 1 ?
-                                      qsTr("1 join request pending") :
-                                      qsTr(`${convo.group.joinRequestCount} join requests pending`)
+                            text: getRequestsText()
 
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: root.viewConvoAuthorList(QEnums.CHAT_AUTHOR_LIST_JOIN_REQUESTS, convo, skywalker.getUserDid())
+                            }
+
+                            function getRequestsText() {
+                                if (convo.group.unreadJoinRequestCount === 1)
+                                    return qsTr("1 unread join request")
+                                if (convo.group.unreadJoinRequestCount > 1)
+                                    return qsTr(`${convo.group.unreadJoinRequestCount} unread join requests`)
+                                if (convo.group.joinRequestCount === 1)
+                                    return qsTr("1 join request pending")
+
+                                return qsTr(`${convo.group.joinRequestCount} join requests pending`)
                             }
                         }
                     }
@@ -256,7 +265,7 @@ Rectangle {
                                 width: parent.width - lockImg.width
                                 anchors.verticalCenter: parent.verticalCenter
                                 font.italic: true
-                                elide: Text.ElideRight
+                                wrapMode: Text.Wrap
                                 text: guiSettings.getChatLockedText(convo)
                             }
                         }
@@ -361,7 +370,7 @@ Rectangle {
                             svg: SvgOutline.cancel
                             popup: moreMenu
                             visible: convo.isRequestToJoin
-                            // TODO
+                            onClicked: root.cancelJoinRequest(convo)
                         }
                     }
                 }
@@ -424,10 +433,13 @@ Rectangle {
             if (status != Loader.Ready)
                 return
 
-            if (lastReactionSender)
-                item.getBasicProfile(convo.lastReaction.reaction.senderDid)
-            else
-                item.getBasicProfile(convo.lastMessage.senderDid)
+            if (lastReactionSender) {
+                if (convo.lastReaction.reaction.senderDid)
+                    item.getBasicProfile(convo.lastReaction.reaction.senderDid)
+            } else {
+                if (convo.lastMessage.senderDid)
+                    item.getBasicProfile(convo.lastMessage.senderDid)
+            }
         }
 
         function getLastMessageSender() {

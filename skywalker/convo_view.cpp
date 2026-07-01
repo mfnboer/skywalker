@@ -13,7 +13,8 @@ ConvoView::ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QStri
     mStatus(convo.mStatus ? QEnums::ConvoStatus(*convo.mStatus) : QEnums::CONVO_STATUS_UNKNOWN),
     mUnreadCount(convo.mUnreadCount),
     mGroupConvo(mKind == QEnums::CONVO_KIND_GROUP ? std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo.mKind) : nullptr)
-{    
+{
+    Q_ASSERT(mKind == QEnums::CONVO_KIND_GROUP || !userDid.isEmpty());
     mMembers.reserve(convo.mMembers.size());
     mMemberNames.reserve(convo.mMembers.size());
 

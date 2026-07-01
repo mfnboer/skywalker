@@ -446,6 +446,23 @@ void Chat::startConvoForMember(const QString& did, const QString& msg)
     startConvoForMembers(dids, msg);
 }
 
+void Chat::startConvoIfNotPresent(ConvoView convo)
+{
+    qDebug() << "Start convo if not present:" << convo.getId();
+    const auto* existingConvo = getConvo(convo.getId());
+
+    if (existingConvo && existingConvo->getStatus() == QEnums::CONVO_STATUS_ACCEPTED)
+    {
+        qDebug() << "Convo already exists:" << convo.getId();
+        return;
+    }
+
+    qDebug() << "Insert convo as accepted:" << convo.getId();
+    mRequestConvoListModel.deleteConvo(convo.getId());
+    convo.setStatus(QEnums::CONVO_STATUS_ACCEPTED);
+    mAcceptedConvoListModel.insertConvo(convo);
+}
+
 void Chat::acceptConvo(const ConvoView& convo)
 {
     Q_ASSERT(mBsky);
@@ -1383,6 +1400,143 @@ void Chat::rejectJoinRequest(const QString& convoId, const ChatBasicProfile& mem
             qDebug() << "rejectJoinRequest FAILED:" << error << " - " << msg;
             setConvoUpdateInProgress(false);
             emit failure(msg);
+        });
+}
+
+bool Chat::isRequestJoinInProgress(const QString& code) const
+{
+    return mRequestJoinInProgess.contains(code);
+}
+
+void Chat::setRequestJoinInProgress(const QString& code, bool inProgress)
+{
+    if (inProgress)
+        mRequestJoinInProgess.insert(code);
+    else
+        mRequestJoinInProgess.erase(code);
+}
+
+void Chat::requestJoin(const JoinLinkPreview& joinLink)
+{
+    const QString& code = joinLink.getCode();
+    qDebug() << "Request join:" << code << "name:" << joinLink.getName();
+
+    if (isRequestJoinInProgress(code))
+    {
+        qDebug() << "Request join in progress:" << code;
+        return;
+    }
+
+    setRequestJoinInProgress(code, true);
+
+    mBsky->requestJoin(code,
+        [this, presence=*mPresence, joinLink](ATProto::ChatBskyGroup::RequestJoinOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            const QString& code = joinLink.getCode();
+            setRequestJoinInProgress(code, false);
+
+            switch (output->mStatus)
+            {
+            case ATProto::ChatBskyGroup::RequestJoinStatus::PENDING:
+            {
+                JoinLinkPreview pendingJoinLink(joinLink);
+                pendingJoinLink.setRequestedAtToNow();
+                emit requestJoinPending(pendingJoinLink);
+                break;
+            }
+            case ATProto::ChatBskyGroup::RequestJoinStatus::JOINED:
+            {
+                if (!output->mConvo)
+                {
+                    qWarning() << "Convo missing:" << code;
+                    emit requestJoinFailed(code, tr("You have joined, but the convo cannot be opened"));
+                    return;
+                }
+
+                JoinLinkPreview joinedJoinLink(joinLink);
+                joinedJoinLink.setConvoView(output->mConvo);
+                emit requestJoinJoined(joinedJoinLink);
+                return;
+            }
+            case ATProto::ChatBskyGroup::RequestJoinStatus::UNKNOWN:
+                qWarning() << "Unexpected join request status:" << output->mRawStatus;
+                emit requestJoinFailed(code, tr("Unexpected join request status: %1").arg(output->mRawStatus));
+                return;
+            }
+        },
+        [this, presence=*mPresence, code](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "requestJoin FAILED:" << error << " - " << msg;
+            setRequestJoinInProgress(code, false);
+            emit requestJoinFailed(code, msg);
+        });
+}
+
+void Chat::withdrawJoinRequest(const QString convoId)
+{
+    qDebug() << "Withdraw join request:" << convoId;
+
+    if (isConvoUpdateInProgress())
+    {
+        qDebug() << "Convo update in progress";
+        return;
+    }
+
+    setConvoUpdateInProgress(true);
+
+    mBsky->withdrawJoinRequest(convoId,
+        [this, presence=*mPresence, convoId]{
+            if (!presence)
+                return;
+
+            setConvoUpdateInProgress(false);
+            mRequestConvoListModel.deleteConvo(convoId);
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "withdrawJoinRequest FAILED:" << error << " - " << msg;
+            setConvoUpdateInProgress(false);
+            emit failure(msg);
+        });
+}
+
+void Chat::withdrawJoinRequest(const JoinLinkPreview& joinLink)
+{
+    qDebug() << "Withdraw join request:" << joinLink.getConvoId() << "name:" << joinLink.getName();
+
+    if (isRequestJoinInProgress(joinLink.getCode()))
+    {
+        qDebug() << "Request join in progress:" << joinLink.getCode();
+        return;
+    }
+
+    setRequestJoinInProgress(joinLink.getCode(), true);
+
+    mBsky->withdrawJoinRequest(joinLink.getConvoId(),
+        [this, presence=*mPresence, joinLink]{
+            if (!presence)
+                return;
+
+            setRequestJoinInProgress(joinLink.getCode(), false);
+            mRequestConvoListModel.deleteConvo(joinLink.getConvoId());
+
+            JoinLinkPreview withdrawnJoinLink(joinLink);
+            withdrawnJoinLink.clearRequestedAt();
+            emit withdrawJoinRequestOk(withdrawnJoinLink);
+        },
+        [this, presence=*mPresence, joinLink](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "withdrawJoinRequest FAILED:" << error << " - " << msg;
+            setRequestJoinInProgress(joinLink.getCode(), false);
+            emit withdrawJoinRequestFailed(joinLink.getCode(), msg);
         });
 }
 

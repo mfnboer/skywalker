@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "join_link_preview.h"
+#include "convo_view.h"
 
 namespace Skywalker {
 
@@ -13,7 +14,7 @@ JoinLinkPreview::JoinLinkPreview(const ATProto::ChatBskyGroup::JoinLinkPreviewVi
     mMemberLimit(view.mMemberLimit),
     mRequireApproval(view.mRequireApproval),
     mJoinRule((QEnums::JoinRule)view.mJoinRule),
-    mUserIsMember(view.mConvo != nullptr)
+    mConvoView(view.mConvo)
 {
     if (view.mViewer && view.mViewer->mRequestedAt)
         mRequestedAt = *view.mViewer->mRequestedAt;
@@ -34,6 +35,25 @@ JoinLinkPreview::JoinLinkPreview(const ATProto::ChatBskyGroup::InvalidJoinLinkPr
 JoinLinkPreview::JoinLinkPreview(const ATProto::UnknownVariant& view)
 {
     qWarning() << "Unknow join link preview:" << view.mType;
+}
+
+QVariant JoinLinkPreview::getConvo() const
+{
+    if (!mConvoView)
+        return {};
+
+    const ConvoView convo(*mConvoView, {});
+    return QVariant::fromValue(convo);
+}
+
+void JoinLinkPreview::setRequestedAtToNow()
+{
+    mRequestedAt = QDateTime::currentDateTimeUtc();
+}
+
+void JoinLinkPreview::setConvoView(const ATProto::ChatBskyConvo::ConvoView::SharedPtr& convo)
+{
+    mConvoView = convo;
 }
 
 }

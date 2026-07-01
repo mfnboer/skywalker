@@ -32,6 +32,8 @@ class ConvoView
 
 public:
     ConvoView() = default;
+
+    // userDid only needed for direct convo
     explicit ConvoView(const ATProto::ChatBskyConvo::ConvoView& convo, const QString& userDid);
     explicit ConvoView(const ATProto::ChatBskyGroup::JoinRequestConvoView& joinRequest);
 

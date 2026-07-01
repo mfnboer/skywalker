@@ -41,12 +41,18 @@ public:
     int getMemberLimit() const { return mMemberLimit; }
     bool requireApproval() const { return mRequireApproval; }
     QEnums::JoinRule getJoinRule() const { return mJoinRule; }
-    bool userIsMember() const { return mUserIsMember; }
+    bool userIsMember() const { return mConvoView != nullptr; }
     bool isRequestPending() const { return mRequestedAt.has_value(); }
     QDateTime getRequestedAt() const { return mRequestedAt.value_or(QDateTime{}); }
 
     bool isDisabled() const { return mDisabled; }
     bool isInvalid() const { return mInvalid; }
+
+    // Returns a ConvoView when present, i.e. the active user is a member of the group
+    Q_INVOKABLE QVariant getConvo() const;
+    void setRequestedAtToNow();
+    void clearRequestedAt() { mRequestedAt = {}; }
+    void setConvoView(const ATProto::ChatBskyConvo::ConvoView::SharedPtr& convo);
 
 private:
     QString mConvoId;
@@ -57,7 +63,7 @@ private:
     int mMemberLimit = 0;
     bool mRequireApproval = false;
     QEnums::JoinRule mJoinRule;
-    bool mUserIsMember = false;
+    ATProto::ChatBskyConvo::ConvoView::SharedPtr mConvoView;
     std::optional<QDateTime> mRequestedAt;
     bool mDisabled = false;
     bool mInvalid = false;

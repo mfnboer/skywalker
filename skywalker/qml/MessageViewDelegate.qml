@@ -404,7 +404,7 @@ Rectangle {
         }
 
         onStatusChanged: {
-            if (status == Loader.Ready)
+            if (status == Loader.Ready && message.senderDid)
                 item.getBasicProfile(message.senderDid)
         }
     }

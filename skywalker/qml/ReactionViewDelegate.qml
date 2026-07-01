@@ -137,7 +137,7 @@ Rectangle {
         }
 
         onStatusChanged: {
-            if (status == Loader.Ready)
+            if (status == Loader.Ready && reaction.senderDid)
                 item.getBasicProfile(reaction.senderDid)
         }
     }

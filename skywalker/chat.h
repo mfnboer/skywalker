@@ -48,6 +48,7 @@ public:
     void updateConvos(QEnums::ConvoStatus status);
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
+    Q_INVOKABLE void startConvoIfNotPresent(ConvoView convo);
     Q_INVOKABLE void acceptConvo(const ConvoView& convo);
     Q_INVOKABLE void leaveConvo(const QString& convoId);
     Q_INVOKABLE void muteConvo(const QString& convoId);
@@ -114,6 +115,9 @@ public:
     Q_INVOKABLE void updateJoinRequestsRead(const QString& convoId);
     Q_INVOKABLE void approveJoinRequest(const QString& convoId, const ChatBasicProfile& member);
     Q_INVOKABLE void rejectJoinRequest(const QString& convoId, const ChatBasicProfile& member);
+    Q_INVOKABLE void requestJoin(const JoinLinkPreview& joinLink);
+    Q_INVOKABLE void withdrawJoinRequest(const QString convoId);
+    Q_INVOKABLE void withdrawJoinRequest(const JoinLinkPreview& joinLink);
     Q_INVOKABLE QString getJoinLinkCodeFromUri(const QString& uri);
     Q_INVOKABLE bool isJoinLinkUri(const QString& uri);
 
@@ -138,6 +142,11 @@ signals:
     void joinLinkUpdateInProgressChanged();
     void joinLinkUpdated(JoinLinkView joinLink);
     void joinLinkPreviewOk(JoinLinkPreview preview);
+    void requestJoinPending(JoinLinkPreview preview);
+    void requestJoinJoined(JoinLinkPreview preview);
+    void requestJoinFailed(QString code, QString error);
+    void withdrawJoinRequestOk(JoinLinkPreview preview);
+    void withdrawJoinRequestFailed(QString code, QString error);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
     void getMessagesOk(QString cursor);
@@ -176,6 +185,8 @@ private:
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message, const QString& quoteUri, const QString& quoteCid);
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message);
     void joinLinkUpdatedOk(const QString& convoId, ATProto::ChatBskyGroup::JoinLinkOutput::SharedPtr output);
+    bool isRequestJoinInProgress(const QString& code) const;
+    void setRequestJoinInProgress(const QString& code, bool inProgress);
 
     std::unique_ptr<Presence> mPresence;
     ATProto::Client::SharedPtr& mBsky;
@@ -204,6 +215,7 @@ private:
     bool mAcceptConvoInProgress = false;
     bool mConvoUpdateInProgress = false;
     bool mJoinLinkUpdateInProgress = false; // TODO: need this?
+    std::unordered_set<QString> mRequestJoinInProgess; // set of join codes
     QTimer mMessagesUpdateTimer;
     QTimer mAcceptedConvosUpdateTimer;
     QTimer mRequestConvosUpdateTimer;

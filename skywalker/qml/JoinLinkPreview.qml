@@ -12,6 +12,7 @@ RoundCornerMask {
     readonly property basicprofile owner: joinLink.owner.basicProfile
     property Skywalker skywalker: root.getSkywalker()
     property string borderColor: guiSettings.isLightMode ? Qt.darker(color, 1.1) : Qt.lighter(color, 1.6)
+    property bool joinInProgress: false
 
     id: preview
     height: contentCol.height + 20
@@ -110,6 +111,7 @@ RoundCornerMask {
             width: parent.width
             text: getButtonText()
             enabled: buttonEnabled()
+            onClicked: joinChat()
         }
     }
 
@@ -141,12 +143,76 @@ RoundCornerMask {
         }
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: joinInProgress
+    }
+
     Connections {
         target: skywalker.chat
 
         function onJoinLinkPreviewOk(joinLink) {
             if (joinLink.code === preview.code)
                 preview.joinLink = joinLink
+        }
+
+        function onRequestJoinPending(pendingJoinLink) {
+            if (pendingJoinLink.code !== preview.code)
+                return
+
+            joinLink = pendingJoinLink
+
+            if (joinInProgress) {
+                joinInProgress = false
+                skywalker.showStatusMessage(qsTr(`Request to join ${joinLink.name} sent`), QEnums.STATUS_LEVEL_INFO)
+            }
+        }
+
+        function onRequestJoinJoined(joinedJoinLink) {
+            if (joinedJoinLink.code !== preview.code)
+                return
+
+            joinLink = joinedJoinLink
+
+            if (joinInProgress) {
+                joinInProgress = false
+                const convo = joinLink.getConvo()
+
+                if (!convo.isNull())
+                    root.openConvo(convo)
+            }
+        }
+
+        function onRequestJoinFailed(code, error) {
+            if (code !== preview.code)
+                return
+
+            if (joinInProgress) {
+                joinInProgress = false
+                skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+            }
+        }
+
+        function onWithdrawJoinRequestOk(withdrawnJoinLink) {
+            if (withdrawnJoinLink.code !== preview.code)
+                return;
+
+            joinLink = withdrawnJoinLink
+
+            if (joinInProgress) {
+                joinInProgress = false
+                skywalker.showStatusMessage(qsTr("Join request canceled"))
+            }
+        }
+
+        function onWithdrawJoinRequestFailed(code, error) {
+            if (code !== preview.code)
+                return
+
+            if (joinInProgress) {
+                joinInProgress = false
+                skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+            }
         }
     }
 
@@ -177,6 +243,71 @@ RoundCornerMask {
             return false
 
         return true
+    }
+
+    function joinChat() {
+        if (joinLink.userIsMember) {
+            const convo = joinLink.getConvo()
+
+            if (convo.isNull()) {
+                console.warn("Convo not available:", joinLink.name, "uri:", uri)
+                return
+            }
+
+            root.openConvo(convo)
+            return
+        }
+
+        if (joinLink.requestPending) {
+            cancelJoinRequest()
+            return
+        }
+
+        if (joinLink.requireApproval) {
+            requestJoin()
+            return
+        }
+
+        join()
+    }
+
+    function join() {
+        if (joinInProgress)
+            return
+
+        guiSettings.askYesNoQuestion(
+            root,
+            qsTr(`Do you want to join: ${joinLink.name} ?`),
+            () => {
+                joinInProgress = true
+                skywalker.chat.requestJoin(joinLink)
+            })
+    }
+
+    function requestJoin() {
+        if (joinInProgress)
+            return
+
+        guiSettings.askYesNoQuestion(
+            root,
+            qsTr(`Do you want send a request to join: ${joinLink.name} ?`),
+            () => {
+                joinInProgress = true
+                skywalker.chat.requestJoin(joinLink)
+            })
+    }
+
+    function cancelJoinRequest() {
+        if (joinInProgress)
+            return
+
+        guiSettings.askYesNoQuestion(
+            root,
+            qsTr(`Do you want to cancel you request to join: ${joinLink.name} ?`),
+            () => {
+                joinInProgress = true
+                skywalker.chat.withdrawJoinRequest(joinLink)
+            })
     }
 
     Component.onCompleted: {
