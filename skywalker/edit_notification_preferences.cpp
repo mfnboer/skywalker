@@ -27,26 +27,6 @@ EditNotificationPreferences::EditNotificationPreferences(
 {
 }
 
-void EditNotificationPreferences::setChatIncludeType(QEnums::NotifcationChatIncludeType includeType)
-{
-    if (includeType != getChatIncludeType())
-    {
-        mPrefs->mChat->mInclude = (ATProto::AppBskyNotification::ChatPreference::IncludeType)includeType;
-        mPrefs->mChat->mRawInclude = ATProto::AppBskyNotification::ChatPreference::includeTypeToString(mPrefs->mChat->mInclude, "");
-        mChatModified = true;
-        emit chatIncludeTypeChanged();
-    }
-}
-
-void EditNotificationPreferences::setChatPush(bool push)
-{
-    if (push != getChatPush())
-    {
-        mPrefs->mChat->mPush = push;
-        emit chatPushChanged();
-    }
-}
-
 void EditNotificationPreferences::setAllowSubscriptions(QEnums::AllowActivitySubscriptionsType allowSubscriptions)
 {
     if (allowSubscriptions != mAllowSubscriptions)

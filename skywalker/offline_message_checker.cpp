@@ -551,6 +551,21 @@ void OffLineMessageChecker::getNotificationPreferences()
     mBsky->getNotificationPreferences(
         [this](auto prefs){
             mNotificationPrefs = prefs->mPreferences;
+            getChatNotificationPreferences();
+        },
+        [this](const QString& error, const QString& msg){
+            qWarning() << error << " - " << msg;
+            exit(EXIT_RETRY);
+        });
+}
+
+void OffLineMessageChecker::getChatNotificationPreferences()
+{
+    qDebug() << "Get chat notification preferences";
+
+    mBsky->getChatNotificationPreferences(
+        [this](auto prefs){
+            mChatNotificationPrefs = prefs->mPreferences;
             checkUnreadNotificationCount();
         },
         [this](const QString& error, const QString& msg){
@@ -736,11 +751,13 @@ void OffLineMessageChecker::filterNotifications(ATProto::AppBskyNotification::Li
 void OffLineMessageChecker::getChatNotifications()
 {
     qDebug() << "Get chat notifications";
+    const bool chatPush = mChatNotificationPrefs && mChatNotificationPrefs->mChat && mChatNotificationPrefs->mChat->mPush;
 
-    if (!mUserSettings.mustCheckOfflineChat(mUserDid) || (mNotificationPrefs && mNotificationPrefs->mChat && !mNotificationPrefs->mChat->mPush))
+    if (!mUserSettings.mustCheckOfflineChat(mUserDid) || !chatPush)
     {
         qDebug() << "Chat not enabled";
         getAvatars();
+        return;
     }
 
     // We used to list only unread convos, but that will not get convos with

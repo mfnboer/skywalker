@@ -1,0 +1,30 @@
+import QtQuick
+import QtQuick.Layouts
+import skywalker
+
+RowLayout {
+    required property EditChatNotificationPref notificationPref
+
+    Layout.fillWidth: true
+    spacing: -1
+
+    SkyRadioButton {
+        Layout.fillWidth: true
+        text: qsTr("Push")
+        checked: notificationPref.push
+        onCheckedChanged: {
+            if (checked)
+                notificationPref.push = true
+        }
+    }
+
+    SkyRadioButton {
+        Layout.fillWidth: true
+        text: qsTr("Off")
+        checked: !notificationPref.push
+        onCheckedChanged: {
+            if (checked)
+                notificationPref.push = false
+        }
+    }
+}

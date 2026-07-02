@@ -4,7 +4,9 @@ import QtQuick.Layouts
 import skywalker
 
 ColumnLayout {
-    required property var userPrefs
+    required property EditUserPreferences userPrefs
+    required property EditChatNotificationPreferences chatNotificationPrefs
+    readonly property int labelSize: width / 3
 
     id: messageColumn
 
@@ -16,7 +18,6 @@ ColumnLayout {
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        color: guiSettings.textColor
         text: qsTr("Allow new messages from:")
     }
 
@@ -41,5 +42,58 @@ ColumnLayout {
         allowIncomingChat: userPrefs.allowGroupInvites
 
         onAllowIncomingChatChanged: userPrefs.allowGroupInvites = allowIncomingChat
+    }
+
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: qsTr("Receive notifications:")
+    }
+
+    GridLayout {
+        Layout.fillWidth: true
+        columns: 2
+        rowSpacing: 5
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("Messages")
+        }
+
+        ChatNotificationTypeSetting {
+            notificationPref: chatNotificationPrefs.chat
+        }
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("from")
+        }
+
+        NotificationIncludeSetting {
+            filterablePref: chatNotificationPrefs.chat
+        }
+
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("Join requests")
+        }
+
+        ChatNotificationTypeSetting {
+            notificationPref: chatNotificationPrefs.chatRequest
+        }
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("from")
+        }
+
+        NotificationIncludeSetting {
+            filterablePref: chatNotificationPrefs.chatRequest
+        }
     }
 }

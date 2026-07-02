@@ -12,8 +12,6 @@ namespace Skywalker {
 class EditNotificationPreferences : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QEnums::NotifcationChatIncludeType chatIncludeType READ getChatIncludeType WRITE setChatIncludeType NOTIFY chatIncludeTypeChanged FINAL)
-    Q_PROPERTY(bool chatPush READ getChatPush WRITE setChatPush NOTIFY chatPushChanged FINAL)
     Q_PROPERTY(EditNotificationFilterablePref* follow READ getFollow CONSTANT FINAL)
     Q_PROPERTY(EditNotificationFilterablePref* like READ getLike CONSTANT FINAL)
     Q_PROPERTY(EditNotificationFilterablePref* likeViaRepost READ getLikeViaRepost CONSTANT FINAL)
@@ -35,13 +33,6 @@ public:
     bool isNull() const { return !mPrefs; }
 
     const ATProto::AppBskyNotification::Preferences::SharedPtr& getPrefs() const { return mPrefs; }
-
-    QEnums::NotifcationChatIncludeType getChatIncludeType() const { return (QEnums::NotifcationChatIncludeType)mPrefs->mChat->mInclude; }
-    void setChatIncludeType(QEnums::NotifcationChatIncludeType includeType);
-
-    bool getChatPush() const { return mPrefs->mChat->mPush; }
-    void setChatPush(bool push);
-    bool isChatModified() const { return mChatModified; }
 
     EditNotificationFilterablePref* getFollow() const { return mFollowPref.get(); }
     bool isFollowModified() const { return mFollowPref->isModified(); }
@@ -75,13 +66,10 @@ public:
     bool isAllowSubscriptionsModified() const { return mAllowSubscriptionsModified; }
 
 signals:
-    void chatIncludeTypeChanged();
-    void chatPushChanged();
     void allowSubscriptionsChanged();
 
 private:
     ATProto::AppBskyNotification::Preferences::SharedPtr mPrefs;
-    bool mChatModified = false;
 
     std::unique_ptr<EditNotificationFilterablePref> mFollowPref;
     std::unique_ptr<EditNotificationFilterablePref> mLikePref;

@@ -153,6 +153,9 @@ const QStringList SCOPE = {
     "rpc:chat.bsky.group.updateJoinRequestsRead?aud=*",
     "rpc:chat.bsky.group.withdrawJoinRequest?aud=*",
 
+    "rpc:chat.bsky.notification.getPreferences?aud=*",
+    "rpc:chat.bsky.notification.putPreferences?aud=*",
+
     "rpc:com.atproto.moderation.createReport?aud=*",
 
     "rpc:com.atproto.repo.uploadBlob?aud=*"

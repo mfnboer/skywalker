@@ -3,9 +3,9 @@ import QtQuick.Layouts
 import skywalker
 
 ColumnLayout {
-    required property  var notificationPrefs
-    property var skywalker: root.getSkywalker()
-    property var userSettings: skywalker.getUserSettings()
+    required property EditNotificationPreferences notificationPrefs
+    property Skywalker skywalker: root.getSkywalker()
+    property UserSettings userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
     readonly property int labelSize: width / 3
 

@@ -84,6 +84,7 @@ private:
     void refreshSession();
     void getUserPreferences();
     void getNotificationPreferences();
+    void getChatNotificationPreferences();
     void checkUnreadNotificationCount();
     void getNotifications(int toRead);
     void filterNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr) const;
@@ -110,6 +111,7 @@ private:
     ImageReader mImageReader;
     ATProto::UserPreferences mUserPreferences;
     ATProto::AppBskyNotification::Preferences::SharedPtr mNotificationPrefs;
+    ATProto::ChatBskyNotification::Preferences::SharedPtr mChatNotificationPrefs;
     ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     MutedWords mMutedWords;

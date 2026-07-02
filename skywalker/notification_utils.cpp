@@ -79,8 +79,6 @@ void NotificationUtils::saveNotificationPrefs()
 
     ATProto::AppBskyNotification::Preferences prefs;
 
-    if (mEditNotificationPrefs->isChatModified())
-        prefs.mChat = mEditNotificationPrefs->getPrefs()->mChat;
     if (mEditNotificationPrefs->isFollowModified())
         prefs.mFollow = mEditNotificationPrefs->getPrefs()->mFollow;
     if (mEditNotificationPrefs->isLikeModified())
@@ -189,8 +187,7 @@ bool NotificationUtils::arePreferencesModified() const
     if (!mEditNotificationPrefs)
         return false;
 
-    return mEditNotificationPrefs->isChatModified() ||
-           mEditNotificationPrefs->isFollowModified() ||
+    return mEditNotificationPrefs->isFollowModified() ||
            mEditNotificationPrefs->isLikeModified() ||
            mEditNotificationPrefs->isLikeViaRepostModified() ||
            mEditNotificationPrefs->isMentionModified() ||

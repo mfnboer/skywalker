@@ -740,6 +740,13 @@ qt_add_qml_module(libskywalker
         SOURCES join_link_preview.cpp
         QML_FILES qml/JoinLinkPreview.qml
         QML_FILES qml/JoinLinkPreviewDialog.qml
+        SOURCES edit_chat_notification_pref.h
+        SOURCES edit_chat_notification_pref.cpp
+        SOURCES edit_chat_notification_preferences.h
+        SOURCES chat_notification_utils.h
+        SOURCES chat_notification_utils.cpp
+        SOURCES edit_chat_notification_preferences.cpp
+        QML_FILES qml/ChatNotificationTypeSetting.qml
 )
 
 target_link_libraries(libskywalker

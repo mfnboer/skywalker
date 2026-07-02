@@ -6,7 +6,7 @@ import skywalker
 
 SkyPage {
     property Skywalker skywalker: root.getSkywalker()
-    property var userPrefs: skywalker.getEditUserPreferences()
+    property EditUserPreferences userPrefs: skywalker.getEditUserPreferences()
     property bool allVisible: true
     property bool onlyChatVisible: false
     property bool onlyNotificationVisible: false
@@ -117,13 +117,19 @@ SkyPage {
                 visible: allVisible
             }
 
-            SettingsChat {
+            Loader {
+                id: chatLoader
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
-                userPrefs: page.userPrefs
-                visible: allVisible || onlyChatVisible
             }
+            // SettingsChat {
+            //     Layout.leftMargin: 10
+            //     Layout.rightMargin: 10
+            //     Layout.fillWidth: true
+            //     userPrefs: page.userPrefs
+            //     visible: allVisible || onlyChatVisible
+            // }
 
             Rectangle {
                 Layout.topMargin: 10
@@ -216,7 +222,7 @@ SkyPage {
     }
 
     NotificationUtils {
-        property var prefs
+        property EditNotificationPreferences prefs
 
         id: notificationtUtils
         skywalker: page.skywalker
@@ -232,12 +238,42 @@ SkyPage {
         }
     }
 
+    Component {
+        id: chatComponent
+
+        SettingsChat {
+            id: settingsChat
+            userPrefs: page.userPrefs
+            chatNotificationPrefs: chatNotificationUtils.prefs
+        }
+    }
+
+    ChatNotificationUtils {
+        property EditChatNotificationPreferences prefs
+
+        id: chatNotificationUtils
+        skywalker: page.skywalker
+
+        onChatNotificationPrefsOk: (prefs) => {
+            chatNotificationUtils.prefs = prefs
+            chatLoader.sourceComponent = chatComponent
+            chatLoader.active = true
+        }
+
+        onChatNotificationPrefsFailed: (error) => {
+            skywalker.showStatusMessage(qsTr(`Cannot get chat notification preferences: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+        }
+    }
+
     function saveAndClose() {
         console.debug("Save settings")
         skywalker.saveUserPreferences()
 
         if (notificationsLoader.active)
             notificationtUtils.saveNotificationPrefs()
+
+        if (chatLoader.active)
+            chatNotificationUtils.saveChatNotificationPrefs()
 
         closed()
     }
@@ -250,5 +286,8 @@ SkyPage {
     Component.onCompleted: {
         if (allVisible || onlyNotificationVisible)
             notificationtUtils.getNotificationPrefs()
+
+        if (allVisible || onlyChatVisible)
+            chatNotificationUtils.getChatNotificationPrefs()
     }
 }
