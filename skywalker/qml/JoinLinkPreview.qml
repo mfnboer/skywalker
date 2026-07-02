@@ -14,6 +14,8 @@ RoundCornerMask {
     property string borderColor: guiSettings.isLightMode ? Qt.darker(color, 1.1) : Qt.lighter(color, 1.6)
     property bool joinInProgress: false
 
+    signal buttonClicked
+
     id: preview
     height: contentCol.height + 20
     cornerRadius: guiSettings.radius
@@ -46,8 +48,10 @@ RoundCornerMask {
                 showGroupIcon: true
 
                 onClicked: {
-                    if (!owner.isNull())
+                    if (!owner.isNull()) {
                         skywalker.getDetailedProfile(owner.did)
+                        buttonClicked()
+                    }
                 }
             }
 
@@ -111,7 +115,10 @@ RoundCornerMask {
             width: parent.width
             text: getButtonText()
             enabled: buttonEnabled()
-            onClicked: joinChat()
+            onClicked: {
+                joinChat()
+                buttonClicked()
+            }
         }
     }
 

@@ -1303,6 +1303,9 @@ ApplicationWindow {
         } else if (UnicodeFonts.isHashCashtag(link)) {
             console.debug("#$-TAG:", link)
             viewSearchView(link.slice(1))
+        } else if (getSkywalker(openByDid).chat.isJoinLinkUri(link)) {
+            console.debug("JOIN LINK:", link)
+            viewJoinLink(link)
         } else {
             getLinkUtils(openByDid).openLink(link, containingText)
         }
@@ -2122,6 +2125,13 @@ ApplicationWindow {
 
         if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_ACCEPTED))
             skywalker.chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED)
+    }
+
+    function viewJoinLink(link) {
+        let component = guiSettings.createComponent("JoinLinkPreviewDialog.qml")
+        let dialog = component.createObject(root, { joinUri: link })
+        dialog.onRejected.connect(() => dialog.close())
+        dialog.open()
     }
 
     function startConvo(text) {

@@ -739,6 +739,7 @@ qt_add_qml_module(libskywalker
         SOURCES join_link_preview.h
         SOURCES join_link_preview.cpp
         QML_FILES qml/JoinLinkPreview.qml
+        QML_FILES qml/JoinLinkPreviewDialog.qml
 )
 
 target_link_libraries(libskywalker
