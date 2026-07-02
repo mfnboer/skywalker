@@ -191,7 +191,7 @@ Rectangle {
                         elide: Text.ElideRight
                         wrapMode: Text.Wrap
                         maximumLineCount: 2
-                        textFormat: Text.StyledText
+                        textFormat: convo.lastMessage.textMetaInfo.isSimpleText() ? Text.StyledText : Text.RichText
                         font.italic: convo.lastMessage.deleted || convo.lastMessage.isSystemMessage
                         plainText: (senderName ? `<i>${senderName}: </i>` : "") + messageText
                         visible: !showLastReaction && !convo.group.isLocked() && !convo.isRequestToJoin
@@ -208,11 +208,13 @@ Rectangle {
                         elide: Text.ElideRight
                         wrapMode: Text.Wrap
                         maximumLineCount: 2
-                        textFormat: Text.StyledText
-                        inLayout: true
+                        textFormat: convo.lastReaction.message.textMetaInfo.isSimpleText() ? Text.StyledText : Text.RichText
                         plainText: (senderName ? `<i>${senderName} </i>` : "") +
-                                   qsTr(`reacted <span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `) +
+                                   qsTr(`reacted ${convo.lastReaction.reaction.emoji} to: `) +
                                    `${messageText}`
+                        // plainText: (senderName ? `<i>${senderName} </i>` : "") +
+                        //            qsTr(`reacted <span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `) +
+                        //            `${messageText}`
                         visible: showLastReaction && !convo.group.isLocked() && !convo.isRequestToJoin
                     }
 

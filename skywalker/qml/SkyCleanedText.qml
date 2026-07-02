@@ -97,11 +97,12 @@ Text {
         if (textFormat === Text.RichText)
             return
 
-        if (UnicodeFonts.hasCombinedEmojis(plainText)) {
-            mustClean = true
-            textFormat = Text.RichText
-            resetText()
-        }
+        // TODO
+        // if (UnicodeFonts.hasCombinedEmojis(plainText)) {
+        //     mustClean = true
+        //     textFormat = Text.RichText
+        //     resetText()
+        // }
     }
 
     Loader {

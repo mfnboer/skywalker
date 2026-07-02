@@ -60,7 +60,7 @@ Text {
     }
 
     function setPlainText() {
-        mustClean = UnicodeFonts.hasCombinedEmojis(plainText)
+        mustClean = false // TODO UnicodeFonts.hasCombinedEmojis(plainText)
 
         if (mustClean) {
             text = UnicodeFonts.toCleanedHtml(plainText)

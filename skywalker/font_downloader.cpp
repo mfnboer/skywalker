@@ -61,7 +61,8 @@ void FontDownloader::initAppFonts()
     qInfo() << "Font family emoji:" << getEmojiFontFamily();
     qInfo() << "Font emoji source:" << getEmojiFontSource();
 
-    ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
+    // TODO
+    // ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }
 
 void FontDownloader::addFont(const QString& fontFileName)
