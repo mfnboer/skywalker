@@ -430,7 +430,7 @@ ApplicationWindow {
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
-            skywalker.chat.getAllConvos()
+            skywalker.chat.start()
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
             userSettings.updateLastSignInTimestamp(did)
@@ -2117,13 +2117,17 @@ ApplicationWindow {
         }
     }
 
-    function viewChat() {
+    function viewChat(refreshIfNeeded = true) {
         rootContent.currentIndex = rootContent.chatIndex
+        console.debug("Unread accepted:", skywalker.chat.acceptedConvoListModel.unreadCount, "request:", skywalker.chat.requestConvoListModel.unreadCount)
 
-        if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_REQUEST))
+        if (!refreshIfNeeded)
+            return
+
+        if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_REQUEST) || skywalker.chat.requestConvoListModel.unreadCount > 0)
             skywalker.chat.getConvos(QEnums.CONVO_STATUS_REQUEST)
 
-        if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_ACCEPTED))
+        if (!skywalker.chat.convosLoaded(QEnums.CONVO_STATUS_ACCEPTED) || skywalker.chat.acceptedConvoListModel.unreadCount > 0)
             skywalker.chat.getConvos(QEnums.CONVO_STATUS_ACCEPTED)
     }
 
@@ -2135,12 +2139,12 @@ ApplicationWindow {
     }
 
     function startConvo(text) {
-        viewChat()
+        viewChat(false)
         getChatView().addConvo(text)
     }
 
     function openConvo(convo) {
-        viewChat()
+        viewChat(false)
         getChatView().viewMessages(convo, true)
     }
 

@@ -41,10 +41,11 @@ public:
     QEnums::AllowIncomingChat getAllowGroupInvites() const { return mAllowGroupInvites; }
     QString getLastRev() const;
 
-    Q_INVOKABLE void getAllConvos();
+    Q_INVOKABLE void start();
     Q_INVOKABLE void getConvos(QEnums::ConvoStatus status, const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage(QEnums::ConvoStatus status);
     void updateConvos(QEnums::ConvoStatus status);
+    void getConvosUnreadCounts();
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
     Q_INVOKABLE void startConvoIfNotPresent(ConvoView convo);
@@ -174,8 +175,8 @@ private:
     void updateMessages();
     void startMessagesUpdateTimer();
     void stopMessagesUpdateTimer();
-    void startConvosUpdateTimer(QEnums::ConvoStatus status);
-    void stopConvosUpdateTimer(QEnums::ConvoStatus status);
+    void startConvosUnreadUpdateTimer();
+    void stopConvosUnreadUpdateTimer();
     bool isMessagesUpdating(const QString& convoId) const { return mConvoIdUpdatingMessages.contains(convoId); }
     void setMessagesUpdating(const QString& convoId, bool updating);
     void continueSendMessage(const QString& convoId, ATProto::ChatBskyConvo::MessageInput::SharedPtr message, const QString& quoteUri, const QString& quoteCid);
@@ -212,8 +213,7 @@ private:
     bool mConvoUpdateInProgress = false;
     std::unordered_set<QString> mRequestJoinInProgess; // set of join codes
     QTimer mMessagesUpdateTimer;
-    QTimer mAcceptedConvosUpdateTimer;
-    QTimer mRequestConvosUpdateTimer;
+    QTimer mConvosUnreadUpdateTimer;
     QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
     QEnums::AllowIncomingChat mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
 };

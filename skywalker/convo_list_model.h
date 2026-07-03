@@ -84,7 +84,7 @@ private:
     QString mCursor;
     bool mGetConvosInProgress = false;
     bool mLoaded = false;
-    int mUnreadCount = 0;
+    int mUnreadCount = 0; // number of unread convos
 };
 
 }
