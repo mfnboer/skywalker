@@ -261,7 +261,9 @@ void ConvoListModel::insertConvo(const ConvoView& convo)
     endInsertRows();
 
     changeData({ int(Role::EndOfList) }, (int)mConvos.size() - 1, (int)mConvos.size() - 1);
-    setUnreadCount(mUnreadCount + convo.getUnreadCount());
+
+    if (convo.getUnreadCount() > 0)
+        setUnreadCount(mUnreadCount + 1);
 }
 
 bool ConvoListModel::checkIndex(int index) const
@@ -349,7 +351,9 @@ void ConvoListModel::deleteConvo(const QString& convoId)
         return;
 
     const int convoUnread = mConvos[index].getUnreadCount();
-    setUnreadCount(mUnreadCount - convoUnread);
+
+    if (convoUnread > 0)
+        setUnreadCount(mUnreadCount - 1);
 
     beginRemoveRows({}, index, index);
     mConvos.erase(mConvos.begin() + index);
@@ -429,51 +433,13 @@ void ConvoListModel::setUnreadCount(int unread)
     }
 }
 
-void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output)
+void ConvoListModel::updateAllRead()
 {
-    int unread = mUnreadCount;
+    for (auto& convo : mConvos)
+        convo.clearUnreadCount();
 
-    for (const auto& convo : output.mConvos)
-    {
-        if (convo->mMuted)
-            continue;
-
-        unread += convo->mUnreadCount;
-
-        if (convo->mKind && ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind))
-        {
-            const auto& group = std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind);
-            unread += group->mUnreadJoinRequestCount.value_or(0);
-        }
-    }
-
-    setUnreadCount(unread);
-}
-
-void ConvoListModel::updateUnreadCount(const ATProto::ChatBskyConvo::ConvoRequestListOutput& output)
-{
-    int unread = mUnreadCount;
-
-    for (const auto& request : output.mRequests)
-    {
-        if (ATProto::holdsNonNull<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request))
-        {
-            const auto& convo = std::get<ATProto::ChatBskyConvo::ConvoView::SharedPtr>(request);
-
-            if (convo->mMuted)
-                continue;
-
-            unread += convo->mUnreadCount;
-
-            if (convo->mKind && ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind))
-            {
-                const auto& group = std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind);
-                unread += group->mUnreadJoinRequestCount.value_or(0);
-            }
-        }
-    }
-
-    setUnreadCount(unread);
+    changeData({ int(Role::Convo) });
+    setUnreadCount(0);
 }
 
 BasicProfileList ConvoListModel::getAllConvoMembers(std::optional<int> max) const

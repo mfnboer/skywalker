@@ -1726,6 +1726,32 @@ void Chat::updateRead(const QString& convoId)
     );
 }
 
+void Chat::updateAllRead()
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Update all read";
+
+    mBsky->updateAllRead({},
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::UpdateAllReadOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            qDebug() << "Updated all read:" << output->mUpdatedCount;
+            mAcceptedConvoListModel.updateAllRead();
+            mRequestConvoListModel.updateAllRead();
+            updateTotalUnreadCount();
+            statusMessage(tr("All chats marked as read"));
+        },
+        [this, presence=*mPresence](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "updateAllRead FAILED:" << error << " - " << msg;
+            failure(error);
+        }
+    );
+}
+
 QString Chat::getLastReadMessageId(const ConvoView& convo) const
 {
     auto it = mMessageListModels.find(convo.getId());

@@ -166,6 +166,7 @@ SkyPage {
         FlickableRefresher {
             inProgress: chat.getMessagesInProgress
             topOvershootFun: () => chat.getMessagesNextPage(convo.id)
+            enableDirectionalScroll: true
         }
 
         EmptyListIndication {

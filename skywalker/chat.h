@@ -77,6 +77,7 @@ public:
     Q_INVOKABLE void getMessagesNextPage(const QString& convoId);
     Q_INVOKABLE void updateMessages(const QString& convoId);
     Q_INVOKABLE void updateRead(const QString& convoId);
+    Q_INVOKABLE void updateAllRead();
 
     Q_INVOKABLE void sendMessage(const QString& convoId, const QString& text,
                                  const QString& replyToMessageId,

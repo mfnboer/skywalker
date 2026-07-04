@@ -50,8 +50,7 @@ public:
     bool isLoaded() const { return mLoaded; }
 
     void setUnreadCount(int unread);
-    void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoListOutput& output);
-    void updateUnreadCount(const ATProto::ChatBskyConvo::ConvoRequestListOutput& output);
+    void updateAllRead();
     int getUnreadCount() const { return mUnreadCount; }
 
 signals:

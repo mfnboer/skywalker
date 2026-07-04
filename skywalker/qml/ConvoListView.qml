@@ -179,8 +179,15 @@ SkyPage {
             id: moreMenu
 
             SkyMenuButton {
-                text: qsTr("Permissions")
-                svg: SvgOutline.key
+                text: qsTr("Mark all chats as read")
+                svg: SvgOutline.check
+                popup: moreMenu
+                onClicked: skywalker.chat.updateAllRead()
+            }
+
+            SkyMenuButton {
+                text: qsTr("Settings")
+                svg: SvgOutline.settings
                 popup: moreMenu
                 onClicked: root.editChatSettings()
             }
