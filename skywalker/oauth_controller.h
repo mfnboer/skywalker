@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #pragma once
+#include <atproto/lib/oauth.h>
 #include <QUrl>
 
 #ifndef Q_OS_ANDROID
@@ -23,6 +24,11 @@ public:
 
     static QString getClientId();
     static QStringList getScope();
+
+    // When you add new scopes for a new release, add one of them here
+    // to check and give an error message when it is not there, telling the user
+    // to re-login.
+    static std::optional<ATProto::OAuth::ScopeCheck> getScopeToCheckOnResume();
 
 #ifndef Q_OS_ANDROID
     static QString getKeyStorageFilename(const QString& did);

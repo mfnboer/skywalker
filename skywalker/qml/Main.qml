@@ -2681,6 +2681,10 @@ ApplicationWindow {
         return root.width * 0.33 >= guiSettings.sideBarMinWidth
     }
 
+    function getSideBarWidth() {
+        return sideBar.width
+    }
+
     function setDisplayMode(displayMode) {
         switch (displayMode) {
         case QEnums.DISPLAY_MODE_SYSTEM:

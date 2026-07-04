@@ -47,7 +47,7 @@ Item {
     readonly property int labelRowPadding: 5
     readonly property int maxImageCarouselHeight: 400
     readonly property int maxImageHeight: root.height - headerHeight - headerMargin - (root.isPortrait ? footerHeight + footerMargin + tabBarHeight : 0)
-    readonly property int maxLabelWidth: 200
+    readonly property int maxLabelWidth: 175
     readonly property int radius: 8
     readonly property int sideBarHeaderHeight: 44
     readonly property int sideBarMinWidth: 180

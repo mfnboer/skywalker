@@ -104,7 +104,7 @@ SkyDialog {
                     text: !isNaN(label.expiresAt.getTime()) ?
                               qsTr(`till ${label.expiresAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`) :
                               ""
-                    visible: !isNaN(label.exiresAt.getTime())
+                    visible: !isNaN(label.expiresAt.getTime())
                 }
             }
 

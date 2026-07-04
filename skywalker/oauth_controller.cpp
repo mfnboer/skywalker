@@ -171,6 +171,14 @@ QStringList OAuthController::getScope()
     return SCOPE;
 }
 
+std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
+{
+    return {{
+        "rpc:chat.bsky.notification.getPreferences?aud=*",
+        "Please login again to get authorization for new chat group functions."
+    }};
+}
+
 #ifdef DEBUG
 QString OAuthController::getTestClientId()
 {

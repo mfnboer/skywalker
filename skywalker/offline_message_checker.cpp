@@ -412,7 +412,7 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
 #endif
         const auto authDpopNonce = mUserSettings.getAuthDpopNonce(did);
 
-        mBsky->oauthResumeSession(OAuthController::getClientId(), *session,
+        mBsky->oauthResumeSession(OAuthController::getClientId(), *session, {},
             [this] {
                 qDebug() << "Session resumed";
                 saveSession(*mBsky->getSession());
