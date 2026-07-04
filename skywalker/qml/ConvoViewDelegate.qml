@@ -212,9 +212,6 @@ Rectangle {
                         plainText: (senderName ? `<i>${senderName} </i>` : "") +
                                    qsTr(`reacted ${convo.lastReaction.reaction.emoji} to: `) +
                                    `${messageText}`
-                        // plainText: (senderName ? `<i>${senderName} </i>` : "") +
-                        //            qsTr(`reacted <span style="font-family:'${UnicodeFonts.getEmojiFontFamily()}'">${convo.lastReaction.reaction.emoji}</span> to: `) +
-                        //            `${messageText}`
                         visible: showLastReaction && !convo.group.isLocked() && !convo.isRequestToJoin
                     }
 
