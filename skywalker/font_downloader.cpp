@@ -61,7 +61,7 @@ void FontDownloader::initAppFonts()
     qInfo() << "Font family emoji:" << getEmojiFontFamily();
     qInfo() << "Font emoji source:" << getEmojiFontSource();
 
-    // TODO
+    // In older Qt versions combined emojis were not properly rendered
     // ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }
 

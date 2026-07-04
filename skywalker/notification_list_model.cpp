@@ -199,7 +199,7 @@ QString NotificationListModel::addNotifications(
         }
 
         qDebug() << "New convo rev:" << convoRev << "last:" << lastRev;
-        newRev = std::max(newRev, convoRev);
+        newRev = std::max(newRev, convoRev);        
         addConvoLastMessage(*convo, lastRev, userDid);
         addConvoLastReaction(*convo, lastRev, userDid);
     }
@@ -233,13 +233,16 @@ void NotificationListModel::addConvoLastMessage(const ATProto::ChatBskyConvo::Co
     const ChatBasicProfile sender = convoView.getMember(convoView.getLastMessage().getSenderDid());
     const BasicProfile profile = sender.getBasicProfile();
 
-    if (profile.isNull())
-    {
-        qWarning() << "Unknown message sender:" << convo.mId << convo.mRev;
-        return;
-    }
+    // In a group chat, the sender may not be available in convoView.members
+    // The sender of the very last message will be there though. For older messages
+    // we will simple not render a name and avatar.
+    // We may improve by requesting those profiles from the network.
 
-    const Notification notification(messageView, profile);
+    if (profile.isNull())
+        qDebug() << "Unknown message sender:" << convo.mId << convo.mRev << convoView.getLastMessage().getSenderDid();
+
+    const QString groupName = convoView.getGroupConvo().getName(); // empty if not a group
+    const Notification notification(messageView, profile, groupName);
     mList.push_back(notification);
 }
 
@@ -264,13 +267,19 @@ void NotificationListModel::addConvoLastReaction(const ATProto::ChatBskyConvo::C
     const BasicProfile profile = sender.getBasicProfile();
 
     if (profile.isNull())
-    {
-        qWarning() << "Unknown reaction sender:" << convo.mId << convo.mRev;
-        return;
-    }
+        qDebug() << "Unknown reaction sender:" << convo.mId << convo.mRev << msgAndReaction->mReactionView->mSender->mDid;
 
+    const QString groupName = convoView.getGroupConvo().getName(); // empty if not a group
     const MessageAndReactionView messageAndReactionView(*convo.mLastReaction);
-    const Notification notification(messageAndReactionView, profile);
+    const Notification notification(messageAndReactionView, profile, groupName);
+    mList.push_back(notification);
+}
+
+void NotificationListModel::addJoinRequest(const ATProto::ChatBskyConvo::ConvoView& convo, const ATProto::ChatBskyGroup::JoinRequestView& joinRequest, const QString& userDid)
+{
+    const ConvoView convoView(convo, userDid);
+    const ChatBasicProfile profile = ChatBasicProfile(*joinRequest.mRequestedBy);
+    const Notification notification(convoView, profile.getBasicProfile());
     mList.push_back(notification);
 }
 

@@ -5108,8 +5108,12 @@ void Skywalker::pauseApp()
 
     saveHashtags();
     mUserSettings.setOfflineMessageCheckTimestamp(QDateTime{});
-    mUserSettings.setOffLineChatCheckRev(mUserDid, mChat->getLastRev());
+    mUserSettings.setOfflineChatCheckRev(mUserDid, mChat->getLastRev());
+    mUserSettings.setOfflineJoinRequestCheck(mUserDid, QDateTime::currentDateTime());
+
+    // If convos are not loaded, we do not have the last rev to check for new messages.
     mUserSettings.setCheckOfflineChat(mUserDid, mChat->convosLoaded());
+
     mUserSettings.resetNextNotificationId();
     mUserSettings.sync();
     OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());

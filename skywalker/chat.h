@@ -44,7 +44,6 @@ public:
     Q_INVOKABLE void start();
     Q_INVOKABLE void getConvos(QEnums::ConvoStatus status, const QString& cursor = "");
     Q_INVOKABLE void getConvosNextPage(QEnums::ConvoStatus status);
-    void updateConvos(QEnums::ConvoStatus status);
     void getConvosUnreadCounts();
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
@@ -168,8 +167,6 @@ private:
     void updateConvoInModel(const ATProto::ChatBskyConvo::ConvoView& convo);
     void updateTotalUnreadCount();
     void setUnreadCount(QEnums::ConvoStatus status, int unread);
-    void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output);
-    void updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoRequestListOutput& output);
     QString getLastReadMessageId(const ConvoView& convo) const;
     QString getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatBskyConvo::ConvoView::List& convos);
     void updateMessages();

@@ -1976,14 +1976,24 @@ bool UserSettings::isOfflineMessageCheckRunning() const
     return mSettings.value("offlineMessageCheckRunning").toBool();
 }
 
-void UserSettings::setOffLineChatCheckRev(const QString& did, const QString& rev)
+void UserSettings::setOfflineChatCheckRev(const QString& did, const QString& rev)
 {
     mSettings.setValue(key(did, "offlineChatCheckRev"), rev);
 }
 
-QString UserSettings::getOffLineChatCheckRev(const QString& did) const
+QString UserSettings::getOfflineChatCheckRev(const QString& did) const
 {
     return mSettings.value(key(did, "offlineChatCheckRev")).toString();
+}
+
+void UserSettings::setOfflineJoinRequestCheck(const QString& did, const QDateTime timestamp)
+{
+    mSettings.setValue(key(did, "offlineJoinRequestCheck"), timestamp);
+}
+
+QDateTime UserSettings::getOfflineJoinRequestCheck(const QString& did) const
+{
+    return mSettings.value(key(did, "offlineJoinRequestCheck")).toDateTime();
 }
 
 void UserSettings::setCheckOfflineChat(const QString& did, bool check)

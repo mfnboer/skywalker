@@ -127,6 +127,9 @@ public:
                           const std::function<void()>& doneCb = nullptr);
     QString addNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoListOutput,
                           const QString& lastRev, const QString& userDid);
+    void addJoinRequest(const ATProto::ChatBskyConvo::ConvoView& convo,
+                        const ATProto::ChatBskyGroup::JoinRequestView& joinRequest,
+                        const QString& userDid);
     const QString& getCursor() const { return mCursor; }
     bool getPriority() const { return mPriority; }
     void setPriority(bool priority);

@@ -18,15 +18,23 @@ Notification::Notification(const QString& inviteCode, const BasicProfile& usedBy
 {
 }
 
-Notification::Notification(const MessageView& messageView, const BasicProfile& messageSender) :
+Notification::Notification(const MessageView& messageView, const BasicProfile& messageSender, const QString& group) :
     mDirectMessage(messageView),
+    mDirectMessageGroup(group),
     mMessageSender(messageSender)
 {
 }
 
-Notification::Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender) :
+Notification::Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender, const QString& group) :
     mDirectMessageAndRection(messageAndReactionView),
+    mDirectMessageGroup(group),
     mMessageSender(reactionSender)
+{
+}
+
+Notification::Notification(const ConvoView& joinRequest, const BasicProfile& requestedBy) :
+    mJoinRequest(joinRequest),
+    mMessageSender(requestedBy)
 {
 }
 
@@ -56,6 +64,9 @@ Notification::Reason Notification::getReason() const
 
     if (!mDirectMessageAndRection.isNull())
         return Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION;
+
+    if (!mJoinRequest.isNull())
+        return Reason::NOTIFICATION_REASON_CHAT_JOIN_REQUEST;
 
     if (!mLabelerWithNewLabels.isNull())
         return Reason::NOTIFICATION_REASON_NEW_LABELS;
@@ -251,6 +262,7 @@ QString Notification::getPostUri() const
     case Reason::NOTIFICATION_REASON_INVITE_CODE_USED:
     case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
     case Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION:
+    case Reason::NOTIFICATION_REASON_CHAT_JOIN_REQUEST:
     case Reason::NOTIFICATION_REASON_NEW_LABELS:
     case Reason::NOTIFICATION_REASON_VERIFIED:
     case Reason::NOTIFICATION_REASON_UNVERIFIED:

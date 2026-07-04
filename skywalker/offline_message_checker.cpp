@@ -14,6 +14,8 @@
 #include <QHostInfo>
 #endif
 
+#include <ranges>
+
 using namespace std::chrono_literals;
 
 namespace {
@@ -595,7 +597,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
             if (newCount == 0)
             {
                 qDebug() << "No new posts";
-                getChatNotifications();
+                checkUnreadChatNotificationCount();
                 return;
             }
 
@@ -603,7 +605,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "Failed to get unread notification count:" << error << " - " << msg;
-            getChatNotifications();
+            checkUnreadChatNotificationCount();
         });
 }
 
@@ -616,18 +618,18 @@ void OffLineMessageChecker::getNotifications(int toRead)
         [this, toRead](auto notifications){
             filterNotifications(notifications);
             const bool added = mNotificationListModel.addNotifications(std::move(notifications), mBsky, false,
-                [this]{ getChatNotifications(); });
+                [this]{ checkUnreadChatNotificationCount(); });
 
             const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
             mUserSettings.setOfflineUnread(mUserDid, prevUnread + toRead);
             mUserSettings.sync();
 
             if (!added)
-                getChatNotifications();
+                checkUnreadChatNotificationCount();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getNotifications FAILED:" << error << " - " << msg;
-            getChatNotifications();
+            checkUnreadChatNotificationCount();
         },
         false);
 }
@@ -748,33 +750,137 @@ void OffLineMessageChecker::filterNotifications(ATProto::AppBskyNotification::Li
     }
 }
 
-void OffLineMessageChecker::getChatNotifications()
+void OffLineMessageChecker::checkUnreadChatNotificationCount()
 {
-    qDebug() << "Get chat notifications";
-    const bool chatPush = mChatNotificationPrefs && mChatNotificationPrefs->mChat && mChatNotificationPrefs->mChat->mPush;
-
-    if (!mUserSettings.mustCheckOfflineChat(mUserDid) || !chatPush)
+    if (!mUserSettings.mustCheckOfflineChat(mUserDid))
     {
-        qDebug() << "Chat not enabled";
+        qDebug() << "Chat messages must not be checked";
         getAvatars();
         return;
     }
 
+    const bool chatPush = mChatNotificationPrefs && mChatNotificationPrefs->mChat && mChatNotificationPrefs->mChat->mPush;
+    const bool chatRequestPush = mChatNotificationPrefs && mChatNotificationPrefs->mChatRequest && mChatNotificationPrefs->mChatRequest->mPush;
+
+    if (!chatPush && !chatRequestPush)
+    {
+        qDebug() << "Chat push notifications are off";
+        getAvatars();
+        return;
+    }
+
+    qDebug() << "Check unread chat counts";
+
+    mBsky->getConvoUnreadCounts(true,
+        [this](ATProto::ChatBskyConvo::ConvoUnreadCountsOutput::SharedPtr output){
+            // We cannot test against the previous unread counts as these counts are
+            // unread convos and not unread messages.
+            if (output->mUnreadAcceptedConvos <= 0 && output->mUnreadRequestConvos <= 0)
+            {
+                qDebug() << "No unread convos";
+                getAvatars();
+                return;
+            }
+
+            getChatNotifications();
+        },
+        [this](const QString& error, const QString& msg){
+            qDebug() << "checkUnreadChatNotificationCount FAILED:" << error << " - " << msg;
+            getAvatars();
+        }
+    );
+}
+
+void OffLineMessageChecker::getChatNotifications()
+{
+    qDebug() << "Get chat notifications";
+
     // We used to list only unread convos, but that will not get convos with
-    // new reactions.
+    // new reactions or unread join requests.
     mBsky->listConvos({}, false, {}, {}, {}, {},
         [this](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
-            const QString lastRev = mUserSettings.getOffLineChatCheckRev(mUserDid);
-            const QString rev = mNotificationListModel.addNotifications(std::move(output), lastRev, mUserDid);
+            const bool chatPush = mChatNotificationPrefs && mChatNotificationPrefs->mChat && mChatNotificationPrefs->mChat->mPush;
 
-            if (!rev.isNull() && rev > lastRev)
-                mUserSettings.setOffLineChatCheckRev(mUserDid, rev);
+            if (chatPush)
+            {
+                const QString lastRev = mUserSettings.getOfflineChatCheckRev(mUserDid);
+                const QString rev = mNotificationListModel.addNotifications(output, lastRev, mUserDid);
+
+                if (!rev.isNull() && rev > lastRev)
+                    mUserSettings.setOfflineChatCheckRev(mUserDid, rev);
+            }
+
+            const bool chatRequestPush = mChatNotificationPrefs && mChatNotificationPrefs->mChatRequest && mChatNotificationPrefs->mChatRequest->mPush;
+
+            if (chatRequestPush)
+            {
+                getChatRequestNotifications(output);
+                return;
+            }
 
             getAvatars();
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getChatNotifications FAILED:" << error << " - " << msg;
             getAvatars();
+        }
+    );
+}
+
+void OffLineMessageChecker::getChatRequestNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoList)
+{
+    qDebug() << "Get chat request notifications";
+    ATProto::ChatBskyConvo::ConvoView::List unreadConvos;
+
+    for (const auto& convo : convoList->mConvos)
+    {
+        if (!convo->mKind || !ATProto::holdsNonNull<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind))
+            continue;
+
+        const auto& group = std::get<ATProto::ChatBskyConvo::GroupConvo::SharedPtr>(*convo->mKind);
+
+        if (group->mUnreadJoinRequestCount.value_or(0) > 0)
+        {
+            qDebug() << "Unread join requests:" << *group->mUnreadJoinRequestCount << "convo:" << convo->mId << group->mName;
+            unreadConvos.push_back(convo);
+        }
+    }
+
+    continueChatRequestNotifications(unreadConvos);
+}
+
+void OffLineMessageChecker::continueChatRequestNotifications(const ATProto::ChatBskyConvo::ConvoView::List& convos, int index)
+{
+    qDebug() << "Convos to check:" << convos.size() << "index:" << index;
+
+    if (index >= (int)convos.size())
+    {
+        mUserSettings.setOfflineJoinRequestCheck(mUserDid, QDateTime::currentDateTime());
+        getAvatars();
+        return;
+    }
+
+    const auto& convo = convos[index];
+    qDebug() << "Check convo:" << convo->mId;
+
+    mBsky->listJoinRequests(convo->mId, {}, {},
+        [this, convos, index](ATProto::ChatBskyGroup::JoinRequestsOutput::SharedPtr output){
+            const QDateTime lastCheck = mUserSettings.getOfflineJoinRequestCheck(mUserDid);
+
+            // Newest reqeusts are at the end
+            for (const auto& request : output->mRequests | std::ranges::views::reverse)
+            {
+                if (request->mRequestedAt < lastCheck)
+                    break;
+
+                mNotificationListModel.addJoinRequest(*convos[index], *request, mUserDid);
+            }
+
+            continueChatRequestNotifications(convos, index + 1);
+        },
+        [this, convos, index](const QString& error, const QString& msg){
+            qDebug() << "getChatNotifications FAILED:" << error << " - " << msg;
+            continueChatRequestNotifications(convos, index + 1);
         }
     );
 }
@@ -909,20 +1015,30 @@ void OffLineMessageChecker::createNotification(const Notification& notification)
         channelId = CHANNEL_ACTIVITY_SUBSCRIPTION;
         break;
     case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE:
+    {
         channelId = CHANNEL_CHAT;
         iconType = IconType::CHAT;
-        msg = QObject::tr("<b>Direct message</b><br>") + notification.getDirectMessage().getFormattedText();
+        const QString title = notification.getChatGroupTitle().isEmpty() ? "Direct message" : notification.getChatGroupTitle();
+        msg = QObject::tr("<b>%1</b><br>").arg(title) + notification.getDirectMessage().getFormattedText();
         break;
+    }
     case Notification::Reason::NOTIFICATION_REASON_DIRECT_MESSAGE_REACTION:
     {
         channelId = CHANNEL_CHAT;
         iconType = IconType::CHAT;
+        const QString title = notification.getChatGroupTitle().isEmpty() ? "Direct message" : notification.getChatGroupTitle();
         const auto& msgAndReaction = notification.getDirectMessageAndReaction();
-        msg = QObject::tr("Reacts with %1 to: %2").arg(
+        msg = QObject::tr("<b>%1</b><br>Reaction %2 to: %3").arg(
+                title,
                 msgAndReaction.getReactionView().getEmoji(),
                 msgAndReaction.getMessageView().getFormattedText());
         break;
     }
+    case Notification::Reason::NOTIFICATION_REASON_CHAT_JOIN_REQUEST:
+        channelId = CHANNEL_CHAT;
+        iconType = IconType::CHAT_REQUEST;
+        msg = QObject::tr("<b>Join request</b><br>") + notification.getJoinRequest().getTitle();
+        break;
     case Notification::Reason::NOTIFICATION_REASON_VERIFIED:
         channelId = CHANNEL_VERIFICATION;
         iconType = IconType::VERIFICATION;

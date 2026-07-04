@@ -444,8 +444,11 @@ public:
     void setOfflineMessageCheckRunning(bool running);
     bool isOfflineMessageCheckRunning() const;
 
-    void setOffLineChatCheckRev(const QString& did, const QString& rev);
-    QString getOffLineChatCheckRev(const QString& did) const;
+    void setOfflineChatCheckRev(const QString& did, const QString& rev);
+    QString getOfflineChatCheckRev(const QString& did) const;
+
+    void setOfflineJoinRequestCheck(const QString& did, const QDateTime timestamp);
+    QDateTime getOfflineJoinRequestCheck(const QString& did) const;
 
     void setCheckOfflineChat(const QString& did, bool check);
     bool mustCheckOfflineChat(const QString& did) const;

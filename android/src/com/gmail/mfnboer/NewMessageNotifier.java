@@ -32,6 +32,7 @@ public class NewMessageNotifier {
     private static final int IC_REPOST = 4;
     private static final int IC_CHAT = 5;
     private static final int IC_VERIFICATION = 6;
+    private static final int IC_CHAT_REQUEST = 5;
 
     // Must be the same as channel IDs in offline_message_checker.cpp
     private static final String CHANNEL_CHAT = "CHANNEL_CHAT";

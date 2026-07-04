@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "convo_view.h"
 #include "message_and_reaction_view.h"
 #include "message_view.h"
 #include "post.h"
@@ -20,8 +21,9 @@ public:
 
     explicit Notification(const ATProto::AppBskyNotification::Notification::SharedPtr& notification);
     Notification(const QString& inviteCode, const BasicProfile& usedBy);
-    Notification(const MessageView& messageView, const BasicProfile& messageSender);
-    Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender);
+    Notification(const MessageView& messageView, const BasicProfile& messageSender, const QString& group = {});
+    Notification(const MessageAndReactionView& messageAndReactionView, const BasicProfile& reactionSender, const QString& group = {});
+    Notification(const ConvoView& joinRequest, const BasicProfile& requestedBy);
     explicit Notification(const BasicProfile& labeler, const std::unordered_set<QString> newLabelIds);
 
     QString getUri() const;
@@ -59,6 +61,8 @@ public:
     void addOtherAuthor(const BasicProfile& author);
     const MessageView& getDirectMessage() const { return mDirectMessage; }
     const MessageAndReactionView& getDirectMessageAndReaction() const { return mDirectMessageAndRection; }
+    const QString& getChatGroupTitle() const { return mDirectMessageGroup; }
+    const ConvoView& getJoinRequest() const { return mJoinRequest; }
 
     bool updateNewLabels(const ContentFilter* contentFilter);
     QString getLabelerDid() const { return mLabelerWithNewLabels.getDid(); }
@@ -71,9 +75,14 @@ private:
     BasicProfileList mOtherAuthors;
     QString mInviteCode;
     BasicProfile mInviteCodeUsedBy;
+
     MessageView mDirectMessage;
     MessageAndReactionView mDirectMessageAndRection;
-    BasicProfile mMessageSender; // sender of reaction in case of MessageAndReactionView
+    QString mDirectMessageGroup;
+    ConvoView mJoinRequest;
+    // sender of message, reaction or join request
+    BasicProfile mMessageSender;
+
     BasicProfile mLabelerWithNewLabels;
     std::unordered_set<QString> mNewLabelIds; // when mLabelerWithNewLabels is set
     bool mIsRead = false;

@@ -154,6 +154,11 @@ QString Chat::getLastRev() const
 
 void Chat::start()
 {
+    // Load convos at start, such that we can determine that last rev when
+    // the app gets paused (needed for chat notifications).
+    getConvos(QEnums::CONVO_STATUS_ACCEPTED);
+    getConvos(QEnums::CONVO_STATUS_REQUEST);
+
     startConvosUnreadUpdateTimer();
     getConvosUnreadCounts();
 }
@@ -239,7 +244,7 @@ void Chat::getRequestedConvos(const QString& cursor)
             if (!presence)
                 return;
 
-            qDebug() << "Get accepted convos ok";
+            qDebug() << "Get requested convos ok";
             auto* model = getConvoListModel(QEnums::CONVO_STATUS_REQUEST);
 
             if (!model)
@@ -320,54 +325,6 @@ QString Chat::getLastRevIncludingReactions(ConvoListModel* model, ATProto::ChatB
     }
 
     return lastRev;
-}
-
-// TODO: old way to get unread accounts. Expensive and does not work to get unread join requests for approval
-void Chat::updateConvos(QEnums::ConvoStatus status)
-{
-    Q_ASSERT(mBsky);
-    qDebug() << "Update convos:" << status;
-
-    mBsky->listConvos({}, false, ATProto::ChatBskyConvo::ConvoStatus(status), {}, {}, {},
-        [this, presence=*mPresence, status](ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr output){
-            if (!presence)
-                return;
-
-            qDebug() << "Got convos";
-
-            if (output->mConvos.empty())
-            {
-                qDebug() << "No convos:" << status;
-                return;
-            }
-
-            auto* model = getConvoListModel(status);
-
-            if (!model)
-                return;
-
-            // Before reactions we could simply compare the revisions of the first convo
-            // in the list with the first convo in the model.
-            // As Bluesky does not update the rev of the convo on new reactions, we have
-            // to compare all convos...
-            const QString rev = getLastRevIncludingReactions(model, output->mConvos);
-
-            if (rev == model->getLastRevIncludingReactions())
-            {
-                qDebug() << "No updated convos, rev:" << rev << "status:" << status;
-                return;
-            }
-
-            model->clear();
-            setUnreadCount(status, 0);
-            model->addConvos(output->mConvos, output->mCursor.value_or(""));
-            updateUnreadCount(status, *output);
-            model->setLoaded(true);
-        },
-        [](const QString& error, const QString& msg){
-            qDebug() << "updateConvos FAILED:" << error << " - " << msg;
-        }
-        );
 }
 
 void Chat::getConvosUnreadCounts()
@@ -648,28 +605,6 @@ void Chat::setUnreadCount(QEnums::ConvoStatus status, int unread)
         return;
 
     model->setUnreadCount(unread);
-}
-
-// TODO: model unread count is now the number of unread convos set by getConvosUnreadCounts
-void Chat::updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoListOutput& output)
-{
-    auto* model = getConvoListModel(status);
-
-    if (!model)
-        return;
-
-    model->updateUnreadCount(output);
-}
-
-// TODO: model unread count is now the number of unread convos set by getConvosUnreadCounts
-void Chat::updateUnreadCount(QEnums::ConvoStatus status, const ATProto::ChatBskyConvo::ConvoRequestListOutput& output)
-{
-    auto* model = getConvoListModel(status);
-
-    if (!model)
-        return;
-
-    model->updateUnreadCount(output);
 }
 
 void Chat::setStartConvoInProgress(bool inProgress)

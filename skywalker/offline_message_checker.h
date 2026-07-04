@@ -66,6 +66,7 @@ private:
         REPOST = 4,
         CHAT = 5,
         VERIFICATION = 6,
+        CHAT_REQUEST
     };
 
     static void createNotificationChannels();
@@ -88,7 +89,10 @@ private:
     void checkUnreadNotificationCount();
     void getNotifications(int toRead);
     void filterNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr) const;
+    void checkUnreadChatNotificationCount();
     void getChatNotifications();
+    void getChatRequestNotifications(ATProto::ChatBskyConvo::ConvoListOutput::SharedPtr convoList);
+    void continueChatRequestNotifications(const ATProto::ChatBskyConvo::ConvoView::List& convos, int index = 0);
     void getAvatars();
     void getAvatars(const QStringList& urls);
     void createNotifications();
