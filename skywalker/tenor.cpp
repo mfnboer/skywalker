@@ -19,7 +19,6 @@ constexpr int MAX_RECENT_GIFS = 50;
 Tenor::Tenor(QObject* parent) :
     WrappedSkywalker(parent),
     WebServiceBase(TENOR_BASE_URL, new QNetworkAccessManager(this)),
-    mApiKey(TENOR_API_KEY),
     mClientKey("com.gmail.mfnboer.skywalker"),
     mOverviewModel(mWidth, mSpacing, this)
 {
