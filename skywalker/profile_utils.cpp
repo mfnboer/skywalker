@@ -326,6 +326,20 @@ void ProfileUtils::getFirstAppearance(const QString& did)
         });
 }
 
+void ProfileUtils::getPds(const QString& did)
+{
+    plcDirectory().getPds(did,
+        [this, presence=getPresence(), did](const QString& pds){
+            if (!presence)
+                return;
+
+            emit pdsOk(did, pds);
+        },
+        [](int errorCode, const QString& errorMsg){
+               qDebug() << "getPds failed:" << errorCode << " - " << errorMsg;
+        });
+}
+
 void ProfileUtils::setPinnedPost(const QString& did, const QString& uri, const QString& cid)
 {
     if (!bskyClient())

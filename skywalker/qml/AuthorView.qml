@@ -52,6 +52,7 @@ SkyPage {
     property int labelerLikeCount: 0
     property bool labelerLikeTransient: false
     property string firstAppearanceDate: "unknown"
+    property string pds: "unknown pds"
     property bool feedInitialized: false
 
     signal closed
@@ -648,6 +649,14 @@ SkyPage {
                 wrapMode: Text.Wrap
                 text: qsTr("🤖 Automated account")
                 visible: contentVisible() && author.automatedAccount
+            }
+
+            AccessibleText {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                wrapMode: Text.Wrap
+                text: `💻 ${pds}`
+                visible: contentVisible()
             }
 
             AccessibleText {
@@ -1517,6 +1526,8 @@ SkyPage {
 
         onFirstAppearanceOk: (did, appearance) => setFirstAppearance(appearance)
 
+        onPdsOk: (did, pds) => page.pds = new URL(pds).hostname
+
         onBasicProfileOk: (profile) => contentLabeler = profile
 
         onUpdateStatusOk: (statusView) => {
@@ -1957,6 +1968,8 @@ SkyPage {
             setFirstAppearance(author.createdAt)
         else
             profileUtils.getFirstAppearance(author.did)
+
+        profileUtils.getPds(author.did)
 
         if (hasFeeds)
             getFeedList(feedListModelId)

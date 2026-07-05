@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLikeLabeler(const QString& likeUri);
     Q_INVOKABLE void getFirstAppearance(const QString& did);
+    Q_INVOKABLE void getPds(const QString& did);
     Q_INVOKABLE void setPinnedPost(const QString& did, const QString& uri, const QString& cid);
     Q_INVOKABLE void clearPinnedPost(const QString& did, const QString& cid);
     Q_INVOKABLE void updateStatus(const QString& did, const QString& uri, const QString& title,
@@ -58,6 +59,7 @@ signals:
     void undoLikeLabelerOk();
     void undoLikeLabelerFailed(QString error);
     void firstAppearanceOk(QString did, QDateTime appearance);
+    void pdsOk(QString did, QString pds);
     void setPinnedPostOk(QString uri, QString cid);
     void setPinnedPostFailed(QString error);
     void clearPinnedPostOk();
