@@ -1,9 +1,9 @@
-next
+4.39
 ====
 * Group chat
 * Reply to chat message
 * Chat notification preferences
-* Hide Android system bars in full screem image or video view
+* Hide Android system bars in full screen image or video view
 * Click on search icon on search page to set focus on text input
 * Bug fixes
 
