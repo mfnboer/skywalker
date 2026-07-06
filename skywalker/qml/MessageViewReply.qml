@@ -5,14 +5,17 @@ import skywalker
 Rectangle {
     required property int maxWidth
     property int minWidth: 20
+    property int maxLineCount: 3
     required property convoview convo
     required property messageview replyTo
     property basicprofile author: convo.getMember(replyTo.senderDid).basicProfile
     property string backgroundColor: guiSettings.backgroundColor
     property string borderColor: guiSettings.isLightMode ? Qt.darker(backgroundColor, 1.1) : Qt.lighter(backgroundColor, 1.6)
     property Skywalker skywalker: root.getSkywalker()
+    readonly property bool isCapped: messageText.isCapped
 
     signal clicked
+    signal doubleClicked
 
     id: view
     width: Math.max(viewColumn.width, minWidth)
@@ -25,6 +28,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         onClicked: view.clicked()
+        onDoubleClicked: view.doubleClicked()
     }
 
     Column {
@@ -51,10 +55,10 @@ Rectangle {
             convo: view.convo
             message: view.replyTo
             author: view.author
-            maximumLineCount: 3
+            maximumLineCount: view.maxLineCount
             ellipsisBackgroundColor: view.backgroundColor
             font.pointSize: guiSettings.scaledFont(7/8)
-            showEmbedTextIfMessageIsEmpty: true
+            addEmbedToText: true
         }
     }
 

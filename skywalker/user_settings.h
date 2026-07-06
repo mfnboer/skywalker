@@ -124,6 +124,8 @@ public:
     explicit UserSettings(QObject* parent = nullptr);
     explicit UserSettings(const QString& fileName, QObject* parent = nullptr);
 
+    std::function<void(const QString& access, const QString& refresh)> getTokenSetter(const QString& did);
+
     Q_INVOKABLE QList<BasicProfile> getUserList() const;
 
     // Get the user list with a surrogate profile added for adding a new user account

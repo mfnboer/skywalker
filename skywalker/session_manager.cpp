@@ -90,6 +90,8 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
 
     auto xrpc = std::make_unique<Xrpc::Client>("", Xrpc::Client::DEFAULT_TIMEOUT_MS, pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
+    xrpc->setOAuthNewTokensCb(mUserSettings->getTokenSetter(did));
+
     connect(xrpc.get(), &Xrpc::Client::pdsDpopNonceChanged, this,
         [this, did](const QString nonce){ mUserSettings->setPdsDpopNonce(did, std::move(nonce)); });
     connect(xrpc.get(), &Xrpc::Client::authDpopNonceChanged, this,

@@ -383,6 +383,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
             mUserSettings.setOAuthEnabled(did, true);
             mUserSettings.saveSession(*session);
             mUserSettings.sync();
+            mBsky->setOAuthNewTokensCb(mUserSettings.getTokenSetter(did));
 
 #ifdef Q_OS_ANDROID
             mUserSettings.setOAuthDpopKeyAlias(did, dpopKeyAlias);
@@ -483,6 +484,8 @@ bool Skywalker::resumeAndRefreshSession()
     const auto pdsDpopNonce = mUserSettings.getPdsDpopNonce(session->mDid);
     auto xrpc = std::make_unique<Xrpc::Client>("", Xrpc::Client::DEFAULT_TIMEOUT_MS, pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
+    xrpc->setOAuthNewTokensCb(mUserSettings.getTokenSetter(session->mDid));
+
     connect(xrpc.get(), &Xrpc::Client::pdsDpopNonceChanged, this,
         [this, did=session->mDid](const QString nonce){ mUserSettings.setPdsDpopNonce(did, std::move(nonce)); });
     connect(xrpc.get(), &Xrpc::Client::authDpopNonceChanged, this,

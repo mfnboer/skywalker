@@ -63,6 +63,13 @@ UserSettings::UserSettings(const QString& fileName, QObject* parent) :
     cleanup();
 }
 
+std::function<void(const QString& access, const QString& refresh)> UserSettings::getTokenSetter(const QString& did)
+{
+    return [this, did](const QString& access, const QString& refresh) {
+        saveTokens(did, access, refresh);
+    };
+}
+
 bool UserSettings::isValidKeyPart(const QString& keyPart) const
 {
     if (keyPart.indexOf('/') != -1)

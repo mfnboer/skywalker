@@ -15,6 +15,7 @@ Text {
     readonly property bool mustElideRich: elide === Text.ElideRight && textFormat === Text.RichText
     property bool isCompleted: false
     property bool inWidthChanged: false
+    readonly property bool isCapped: textFormat === Text.RichText ? height < contentHeight : truncated
 
     // When textFormat = Text.RichText then Text.contentWidth gives the full width
     // of the field. advanceWidth seems to work better.

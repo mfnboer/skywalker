@@ -140,12 +140,29 @@ Rectangle {
             active: message.isReply
 
             sourceComponent: MessageViewReply {
+                id: replyView
                 maxWidth: maxTextWidth - 20
                 minWidth: messageText.width
                 convo: view.convo
                 replyTo: message.replyTo
 
                 onClicked: view.replyClicked(message.replyTo.id)
+
+                SvgPlainButton {
+                    anchors.right: parent.right
+                    width: 36
+                    height: width
+                    svg: SvgOutline.expand
+                    accessibleName: qsTr("expand")
+                    visible: replyView.isCapped || replyView.maxLineCount > 3
+
+                    onClicked: {
+                        if (replyView.maxLineCount === 3)
+                            replyView.maxLineCount = 1000
+                        else
+                            replyView.maxLineCount = 3
+                    }
+                }
             }
         }
 

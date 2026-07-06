@@ -501,21 +501,32 @@ Item {
         }
     }
 
-    function getChatMessageQuoteText(message, showEmbedIfEmpty = false) {
+    function getChatMessageQuoteText(message, addEmbedToText = false) {
         if (message.deleted)
             return qsTr("(message deleted)")
 
-        if (message.text || !showEmbedIfEmpty)
-            return message.formattedText
+        if (!addEmbedToText)
+            return message.text ? message.formattedText : ""
+
+        let embed = ""
 
         switch (message.embedType) {
         case QEnums.MESSAGE_EMBED_RECORD:
-            return `Post from @${message.embedRecord.author.handle}: ${message.embedRecord.postTextFormatted}`
+            embed = `Post from @${message.embedRecord.author.handle}: ${message.embedRecord.postTextFormatted}`
+            break
         case QEnums.MESSAGE_EMBED_JOIN_LINK:
-            return qsTr(`(chat invite link: ${message.embedJoinLink.name})`)
+            embed = qsTr(`(chat invite link: ${message.embedJoinLink.name})`)
+            break
         }
 
-        return "";
+        if (message.text) {
+            if (embed)
+                return `${message.formattedText}<br>${embed}`
+            else
+                return message.formattedText
+        }
+
+        return embed
     }
 
     function threadStartColor(color) {

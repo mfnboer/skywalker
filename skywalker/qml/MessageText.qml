@@ -3,10 +3,10 @@ import skywalker
 
 SkyCleanedText {
     property int maxWidth: 100
+    property bool addEmbedToText: false
     required property convoview convo
     required property messageview message
     required property basicprofile author
-    property bool showEmbedTextIfMessageIsEmpty: false
 
     // Note: textMetrics.boundingRect.width gave a wrong width when the text
     // ended with an emoji VARIATION SELECTOR-16 (U+FE0F)
@@ -25,7 +25,7 @@ SkyCleanedText {
     plainText: getMessageDisplayText()
 
     function getMessageDisplayText() {
-        return guiSettings.getChatMessageQuoteText(message, showEmbedTextIfMessageIsEmpty)
+        return guiSettings.getChatMessageQuoteText(message, addEmbedToText)
     }
 
     TextMetrics {

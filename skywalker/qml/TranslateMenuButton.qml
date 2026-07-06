@@ -12,7 +12,7 @@ SkyMenuButton {
 
     SvgPlainButton {
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: 5
         anchors.verticalCenter: parent.verticalCenter
         svg: SvgOutline.settings
         accessibleName: qsTr("choose translation app")

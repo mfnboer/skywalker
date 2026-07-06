@@ -2,6 +2,7 @@ next
 ====
 * Choose GoogleTranslate, DeepL or other app for translation
 * Click on alt-text to maximize
+* Button to expand reply-to message in chat
 * Show PDS on profile
 * Bug fixes
 
