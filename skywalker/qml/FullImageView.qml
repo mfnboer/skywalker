@@ -29,7 +29,7 @@ SkyPage {
 
     Loader {
         id: previewLoader
-        active: Boolean(previewImage)
+        active: Boolean(previewImage) && view.currentIndex === imageIndex
 
         // Do not disable cache or set sourceSize. That will cause a flicker
         // between AnimateToFullImage and this view.
@@ -73,6 +73,10 @@ SkyPage {
                     }
                 }
                 Flickable {
+                    readonly property int minHeight: Math.min(contentHeight, altText.maxHeight)
+                    readonly property int maxHeight: Math.min(contentHeight, page.height - guiSettings.headerMargin)
+                    property bool minimized: true
+
                     id: altFlick
                     anchors.left: parent.left
                     anchors.leftMargin: altText.leftMargin
@@ -80,7 +84,7 @@ SkyPage {
                     anchors.rightMargin: altText.rightMargin
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: altText.bottomMargin
-                    height: Math.min(contentHeight, altText.maxHeight)
+                    height: minimized ? minHeight : maxHeight
                     clip: true
                     contentWidth: width
                     contentHeight: altText.contentHeight
@@ -101,6 +105,11 @@ SkyPage {
                         alt: images[index].alt
                         isHtml: images[index].hasHtmlAlt()
                         visible: alt
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: altFlick.minimized = !altFlick.minimized
                     }
                 }
                 ImageWithZoom {

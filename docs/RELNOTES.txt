@@ -1,6 +1,7 @@
 next
 ====
 * Choose GoogleTranslate, DeepL or other app for translation
+* Click on alt-text to maximize
 * Show PDS on profile
 * Bug fixes
 

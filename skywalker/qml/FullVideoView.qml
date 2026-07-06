@@ -74,15 +74,19 @@ SkyPage {
     }
 
     Flickable {
+        readonly property int minHeight: Math.min(contentHeight, altText.maxHeight)
+        readonly property int maxHeight: Math.min(contentHeight, page.height - guiSettings.headerMargin)
+        property bool minimized: true
+
         id: altFlick
         anchors.left: parent.left
-        anchors.leftMargin: guiSettings.leftMargin
+        anchors.leftMargin: altText.leftMargin
         anchors.right: parent.right
-        anchors.rightMargin: guiSettings.rightMargin
+        anchors.rightMargin: altText.rightMargin
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 10 + guiSettings.footerMargin
+        anchors.bottomMargin: altText.bottomMargin
         width: parent.width
-        height: Math.min(contentHeight, 6 * 21)
+        height: minimized ? minHeight : maxHeight
         clip: true
         contentWidth: parent.width
         contentHeight: altText.contentHeight
@@ -99,15 +103,26 @@ SkyPage {
             altScrollBar.contentItem.color = "#1d3030"
         }
 
-        SkyCleanedText {
+        ImageAltText {
             id: altText
-            leftPadding: 10
-            width: parent.width - 15
-            wrapMode: Text.Wrap
-            color: "white"
-            plainText: videoView.alt
-            textFormat: videoView.hasHtmlAlt() ? Text.RichText : Text.PlainText
+            alt: videoView.alt
+            isHtml: videoView.hasHtmlAlt()
         }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: altFlick.minimized = !altFlick.minimized
+        }
+
+        // SkyCleanedText {
+        //     id: altText
+        //     leftPadding: 10
+        //     width: parent.width - 15
+        //     wrapMode: Text.Wrap
+        //     color: "white"
+        //     plainText: videoView.alt
+        //     textFormat: videoView.hasHtmlAlt() ? Text.RichText : Text.PlainText
+        // }
     }
 
     SvgButton {
