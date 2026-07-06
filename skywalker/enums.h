@@ -682,6 +682,16 @@ public:
         AUTHOR_SEARCH_FILTER_GROUP_CHAT_ONLY
     };
     Q_ENUM(AuthorSearchFilter)
+
+    enum TranslateApp
+    {
+        TRANSLATE_APP_GOOGLE = 0,
+        TRANSLATE_APP_DEEPL,
+        TRANSLATE_APP_OTHER,
+
+        TRANSLATE_APP_LAST = TRANSLATE_APP_OTHER
+    };
+    Q_ENUM(TranslateApp)
 };
 
 }

@@ -17,7 +17,6 @@ ColumnLayout {
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        color: guiSettings.textColor
         text: qsTr("Which languages do you want to see in feeds (other than home). If no languages are selected than all posts will be shown. Note that the language tags on posts may be wrong or missing.")
     }
 
@@ -44,8 +43,7 @@ ColumnLayout {
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        color: guiSettings.textColor
-        text: qsTr("Exclude these languages from auto detection.")
+        text: qsTr("Exclude these languages from auto detection:")
     }
     LanguageComboCheckBox {
         Layout.fillWidth: true
@@ -54,6 +52,22 @@ ColumnLayout {
         checkedLangCodes: userSettings.getExcludeDetectLanguages(userDid)
         noneCheckedMeansAll: false
         onCheckedLangCodesChanged: userSettings.setExcludeDetectLanguages(userDid, checkedLangCodes)
+    }
+
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: qsTr("App for translation:")
+    }
+    SkyComboBox {
+        Layout.fillWidth: true
+        model: ListModel {
+            ListElement { value: QEnums.TRANSLATE_APP_GOOGLE; text: qsTr("Google Translate") }
+            ListElement { value: QEnums.TRANSLATE_APP_DEEPL; text: qsTr("DeepL") }
+            ListElement { value: QEnums.TRANSLATE_APP_OTHER; text: qsTr("Other") }
+        }
+        currentIndex: userSettings.getTranslateApp()
+        onCurrentValueChanged: userSettings.setTranslateApp(currentValue)
     }
 
     LanguageUtils {

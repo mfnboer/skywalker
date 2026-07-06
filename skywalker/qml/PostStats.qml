@@ -159,9 +159,7 @@ Item {
                 id: moreMenu
                 onClosed: parent.active = false
 
-                SkyMenuButton {
-                    text: qsTr("Translate")
-                    svg: SvgOutline.googleTranslate
+                TranslateMenuButton {
                     popup: moreMenu
                     onClicked: translatePost()
                 }

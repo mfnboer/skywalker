@@ -1266,12 +1266,10 @@ ApplicationWindow {
         skywalker: skywalker
     }
 
-    // InviteCodeStore {
-    //     id: inviteCodeStore
-    //     skywalker: skywalker
-
-    //     onLoaded: skywalker.notificationListModel.addInviteCodeUsageNofications(inviteCodeStore)
-    // }
+    LanguageUtils {
+        id: languageUtils
+        skywalker: skywalker
+    }
 
     GuiSettings {
         id: guiSettings
@@ -2558,8 +2556,22 @@ ApplicationWindow {
 
     function translateText(text) {
         if (Qt.platform.os === "android") {
-            if (utils.translate(text))
+            const settings = skywalker.getUserSettings()
+            const translateApp = settings.getTranslateApp()
+
+            if (languageUtils.translate(text, translateApp))
                 return
+
+            switch (translateApp) {
+            case QEnums.TRANSLATE_APP_GOOGLE:
+                break
+            case QEnums.TRANSLATE_APP_DEEPL:
+                skywalker.showStatusMessage(qsTr("Cannot open DeepL. Did you install it?"), QEnums.STATUS_LEVEL_ERROR)
+                return
+            default:
+                skywalker.showStatusMessage(qsTr("Cannot open translation app."), QEnums.STATUS_LEVEL_ERROR)
+                return
+            }
         }
 
         const lang = Qt.locale().name.split("_")[0]

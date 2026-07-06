@@ -545,6 +545,9 @@ public:
     Q_INVOKABLE bool getShowLanguageTags() const;
     Q_INVOKABLE void setShowLanguageTags(bool show);
 
+    Q_INVOKABLE QEnums::TranslateApp getTranslateApp() const;
+    Q_INVOKABLE void setTranslateApp(QEnums::TranslateApp app);
+
     QDate getAnniversaryNoticeDate(const QString& did) const override;
     void setAnniversaryNoticeDate(const QString& did, QDate date) override;
 

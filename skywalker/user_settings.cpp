@@ -2423,6 +2423,22 @@ void UserSettings::setShowLanguageTags(bool show)
     mSettings.setValue("showLanguageTags", show);
 }
 
+QEnums::TranslateApp UserSettings::getTranslateApp() const
+{
+    int app = mSettings.value("translateApp", (int)QEnums::TRANSLATE_APP_GOOGLE).toInt();
+
+    if (app < 0 || app > (int)QEnums::TRANSLATE_APP_LAST)
+        return QEnums::TRANSLATE_APP_GOOGLE;
+
+    return QEnums::TranslateApp(app);
+}
+
+void UserSettings::setTranslateApp(QEnums::TranslateApp app)
+{
+    mSettings.setValue("translateApp", (int)app);
+}
+
+
 QDate UserSettings::getAnniversaryNoticeDate(const QString& did) const
 {
     return mSettings.value(key(did, "anniversaryNoticeDate")).toDate();

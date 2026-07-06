@@ -144,9 +144,7 @@ SkyPage {
                 onClicked: root.saveVideo(view.videoSource, videoView.playlistUrl)
             }
 
-            SkyMenuButton {
-                text: qsTr("Translate")
-                svg: SvgOutline.googleTranslate
+            TranslateMenuButton {
                 popup: moreMenu
                 enabled: Boolean(videoView.alt)
                 onClicked: root.translateText(videoView.alt)

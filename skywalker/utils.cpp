@@ -44,11 +44,6 @@ bool Utils::similarColors(const QColor& lhs, const QColor& rhs)
     return std::abs(lhs.red() - rhs.red()) < threshold && std::abs(lhs.green() - rhs.green()) < threshold && std::abs(lhs.blue() - rhs.blue()) < threshold;
 }
 
-bool Utils::translate(const QString& text)
-{
-    return AndroidUtils::translate(text);
-}
-
 void Utils::showEmojiPicker()
 {
     if (!sEmojiPickerShown)

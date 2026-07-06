@@ -29,7 +29,7 @@ public:
     static int getDisplayCutoutSize(QEnums::InsetsSide side);
 
     static void installVirtualKeyboardListener();
-    static bool translate(const QString& text);
+    static bool translate(const QString& text, QEnums::TranslateApp app);
 
     static void showEmojiPicker(QEnums::DisplayMode displayMode);
     static void dismissEmojiPicker();

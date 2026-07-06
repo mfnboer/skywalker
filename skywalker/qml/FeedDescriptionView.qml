@@ -226,9 +226,7 @@ SkyPage {
                         skywalker.saveFavoriteFeeds()
                     }
                 }
-                SkyMenuButton {
-                    text: qsTr("Translate")
-                    svg: SvgOutline.googleTranslate
+                TranslateMenuButton {
                     popup: moreMenu
                     enabled: feed.description
                     onClicked: root.translateText(feed.description)

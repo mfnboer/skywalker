@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "enums.h"
 #include "wrapped_skywalker.h"
 #include <QtQmlIntegration>
 #include <QObject>
@@ -55,6 +56,7 @@ public:
     static LanguageList getLanguages(const std::vector<QString>& langCodes);
     static LanguageList getLanguages(const QStringList& langCodes);
     static QString getInputLanguage();
+    Q_INVOKABLE static bool translate(const QString& text, QEnums::TranslateApp app);
 
     explicit LanguageUtils(QObject* parent = nullptr);
 

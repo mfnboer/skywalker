@@ -216,9 +216,7 @@ Rectangle {
                 popup: moreMenu
                 onClicked: replyToMessage(message, author)
             }
-            SkyMenuButton {
-                text: qsTr("Translate")
-                svg: SvgOutline.googleTranslate
+            TranslateMenuButton {
                 popup: moreMenu
                 onClicked: root.translateText(message.text)
             }

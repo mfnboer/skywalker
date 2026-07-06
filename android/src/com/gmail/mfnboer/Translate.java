@@ -20,14 +20,10 @@ public class Translate {
     private static final String GOOGLE_TRANSLATE_PACKAGE_NAME = "com.google.android.apps.translate";
     private static final String GOOGLE_TRANSLATE_TAP_ACTIVITY = "com.google.android.apps.translate.copydrop.gm3.TapToTranslateActivity";
     private static final String GOOGLE_TRANSLATE_MAIN_ACTIVITY = "com.google.android.apps.translate.TranslateActivity";
+    private static final String DEEPL_TRANSLATE_PACKAGE_NAME = "com.deepl.mobiletranslator";
 
-    public static boolean translate(String text) {
-        Intent intent = new Intent()
-            .setAction(Intent.ACTION_PROCESS_TEXT)
-            .setType("text/plain")
-            .putExtra(Intent.EXTRA_PROCESS_TEXT, text)
-            .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
-
+    public static boolean translateGoogle(String text) {
+        Intent intent = createIntent(text);
         ActivityInfo googleTranslate = getGoogleTranslate(intent);
 
         // It seems the Google Translate pacakge is not always visible. In that case
@@ -47,6 +43,33 @@ public class Translate {
             .setClassName(GOOGLE_TRANSLATE_PACKAGE_NAME, GOOGLE_TRANSLATE_MAIN_ACTIVITY);
 
         return startTranslateActivity(intent);
+    }
+
+    public static boolean translateDeepL(String text) {
+        Intent intent = createIntent(text);
+        intent.setPackage(DEEPL_TRANSLATE_PACKAGE_NAME);
+        return startTranslateActivity(intent);
+    }
+
+    public static boolean translateOther(String text) {
+        Intent intent = createIntent(text);
+        SkywalkerActivity activity = SkywalkerActivity.getInstance();
+        PackageManager pm = activity.getPackageManager();
+
+        if (intent.resolveActivity(pm) != null)
+            return startTranslateActivity(intent);
+
+        return true;
+    }
+
+    private static Intent createIntent(String text) {
+        Intent intent = new Intent()
+            .setAction(Intent.ACTION_PROCESS_TEXT)
+            .setType("text/plain")
+            .putExtra(Intent.EXTRA_PROCESS_TEXT, text)
+            .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
+
+        return intent;
     }
 
     private static ActivityInfo getGoogleTranslate(Intent intent) {

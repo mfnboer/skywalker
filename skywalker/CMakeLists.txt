@@ -747,6 +747,7 @@ qt_add_qml_module(libskywalker
         SOURCES chat_notification_utils.cpp
         SOURCES edit_chat_notification_preferences.cpp
         QML_FILES qml/ChatNotificationTypeSetting.qml
+        QML_FILES qml/TranslateMenuButton.qml
 )
 
 target_link_libraries(libskywalker

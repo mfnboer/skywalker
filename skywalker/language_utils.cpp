@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "language_utils.h"
+#include "android_utils.h"
 #include "jni_callback.h"
 #include "skywalker.h"
 #include <QInputMethod>
@@ -91,6 +92,11 @@ QString LanguageUtils::getInputLanguage()
 
     auto* inputMethod = qGuiApp->inputMethod();
     return languageCodeToShortCode(inputMethod->locale().name());
+}
+
+bool LanguageUtils::translate(const QString& text, QEnums::TranslateApp app)
+{
+    return AndroidUtils::translate(text, app);
 }
 
 LanguageUtils::LanguageUtils(QObject* parent) :

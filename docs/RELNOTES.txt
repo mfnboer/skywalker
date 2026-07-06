@@ -1,5 +1,6 @@
 next
 ====
+* Choose GoogleTranslate, DeepL or other app for translation
 * Show PDS on profile
 
 4.39

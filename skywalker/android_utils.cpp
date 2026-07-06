@@ -199,14 +199,28 @@ void AndroidUtils::installVirtualKeyboardListener()
 #endif
 }
 
-bool AndroidUtils::translate(const QString& text)
+bool AndroidUtils::translate(const QString& text, QEnums::TranslateApp app)
 {
     qDebug() << "Translate:" << text;
 #if defined(Q_OS_ANDROID)
+    QString function = "translateOther";
+
+    switch (app)
+    {
+    case QEnums::TRANSLATE_APP_GOOGLE:
+        function = "translateGoogle";
+        break;
+    case QEnums::TRANSLATE_APP_DEEPL:
+        function = "translateDeepL";
+        break;
+    case QEnums::TRANSLATE_APP_OTHER:
+        break;
+    }
+
     auto jsText = QJniObject::fromString(text);
     return (bool)QJniObject::callStaticMethod<jboolean>(
         "com/gmail/mfnboer/Translate",
-        "translate",
+        function.toUtf8(),
         "(Ljava/lang/String;)Z",
         jsText.object<jstring>());
 #endif

@@ -230,9 +230,7 @@ SkyPage {
         SkyMenu {
             id: moreMenu
 
-            SkyMenuButton {
-                text: qsTr("Translate")
-                svg: SvgOutline.googleTranslate
+            TranslateMenuButton {
                 popup: moreMenu
                 enabled: starterPack.description
                 onClicked: root.translateText(starterPack.description)

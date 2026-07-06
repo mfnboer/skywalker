@@ -174,9 +174,7 @@ SkyPage {
                 onClicked: page.shareImage(images[view.currentIndex].fullSizeUrl)
             }
 
-            SkyMenuButton {
-                text: qsTr("Translate")
-                svg: SvgOutline.googleTranslate
+            TranslateMenuButton {
                 popup: moreMenu
                 enabled: images[view.currentIndex].alt
                 onClicked: root.translateText(images[view.currentIndex].alt)
