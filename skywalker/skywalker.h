@@ -39,14 +39,17 @@
 namespace Skywalker {
 
 class Chat;
+class Constellation;
 class OAuthController;
 class FocusHashtags;
 class ForYou;
 class ShareUtils;
+class VerificationUtils;
 
 class Skywalker : public IFeedPager
 {
     Q_MOC_INCLUDE("share_utils.h")
+    Q_MOC_INCLUDE("verification_utils.h")
 
     Q_OBJECT
     Q_PROPERTY(QString APP_NAME MEMBER APP_NAME CONSTANT)
@@ -245,6 +248,7 @@ public:
     Q_INVOKABLE UserSettings* getUserSettings() { return &mUserSettings; }
     Q_INVOKABLE SessionManager* getSessionManager() { return &mSessionManager; }
     Q_INVOKABLE ShareUtils* getShareUtils();
+    Q_INVOKABLE VerificationUtils* getVerificationUtils();
     Q_INVOKABLE void showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds = 0);
     Q_INVOKABLE void clearStatusMessage();
 
@@ -430,6 +434,7 @@ private:
     void handleShowLink(const QString& url);
     ATProto::PostMaster* postMaster();
     ForYou* getForYou();
+    Constellation* getConstellation();
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
@@ -439,6 +444,8 @@ private:
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     std::unique_ptr<ForYou> mForYou;
+    std::unique_ptr<Constellation> mConstellation;
+    std::unique_ptr<VerificationUtils> mVerificationUtils;
 
     QString mUserDid;
     Profile mUserProfile;

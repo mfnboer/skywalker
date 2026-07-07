@@ -2,6 +2,7 @@ import QtQuick
 import skywalker
 
 Image {
+    property string userDid
     required property basicprofile author
 
     id: badge
@@ -16,7 +17,9 @@ Image {
 
     function showVerifierStatus() {
         let component = guiSettings.createComponent("TrustedVerifierDialog.qml")
-        let dialog = component.createObject(rootContent, { author: badge.author })
+        let dialog = component.createObject(rootContent, {
+                userDid: badge.userDid,
+                author: badge.author })
         dialog.onAccepted.connect(() => { dialog.close() })
         dialog.onRejected.connect(() => { dialog.close() })
         dialog.open()

@@ -10,9 +10,10 @@ Rectangle {
     property alias maximumLineCount: nameText.maximumLineCount
     property alias wrapMode: nameText.wrapMode
     property alias ellipsisBackgroundColor: nameText.ellipsisBackgroundColor
-    readonly property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
+    property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
     readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
+    property Skywalker skywalker: root.getSkywalker(userDid)
 
     id: nameRect
     height: nameText.height
@@ -55,5 +56,21 @@ Rectangle {
             height: width
             author: nameRect.author
         }
+    }
+
+    Connections {
+        target: skywalker.getVerificationUtils()
+
+        function onVerified(did, isVerified) {
+            if (did !== author.did)
+                return
+
+            authorVerified = isVerified
+        }
+    }
+
+    Component.onCompleted: {
+        if (!authorVerified)
+            skywalker.getVerificationUtils().isVerified(author)
     }
 }

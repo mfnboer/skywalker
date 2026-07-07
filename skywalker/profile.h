@@ -34,6 +34,7 @@ public:
     const QString& getUri() const; // Verification record at-uri
     bool isValid() const;
     QDateTime getCreatedAt() const;
+    const ATProto::AppBskyActor::VerificationView::SharedPtr& getAtProtoView() const { return mView; }
 
 private:
     ATProto::AppBskyActor::VerificationView::SharedPtr mView;

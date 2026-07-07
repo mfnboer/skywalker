@@ -3,7 +3,13 @@ import QtQuick.Controls
 import skywalker
 
 SkyDialog {
+    property string userDid
     required property basicprofile author
+    property Skywalker skywalker: root.getSkywalker(userDid)
+    property var verificationUtils: skywalker.getVerificationUtils()
+    readonly property string verifierReason: verificationUtils.isVerifier(author.did) ?
+                                                 qsTr("This verifier is selected by you.") :
+                                                 qsTr("This verifier is selected by Bluesky.")
 
     id: page
     width: parent.width - 40
@@ -39,6 +45,6 @@ SkyDialog {
         anchors.topMargin: 10
         width: parent.width - 20
         wrapMode: Text.Wrap
-        text: qsTr("Verifiers can verify other accounts. Trusted verifiers are selected by Bluesky.")
+        text: qsTr(`Verifiers can verify other accounts. ${verifierReason}`)
     }
 }

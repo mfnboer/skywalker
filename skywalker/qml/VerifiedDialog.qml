@@ -6,6 +6,7 @@ import skywalker
 SkyDialog {
     property string userDid
     required property basicprofile author
+    property list<verificationview> userVerifications: []
     property var skywalker: root.getSkywalker(userDid)
 
     id: page
@@ -50,7 +51,7 @@ SkyDialog {
         anchors.top: verifiedByText.bottom
         anchors.bottom: parent.bottom
         width: parent.width - 20
-        model: author.verificationState.getValidVerifications()
+        model: page.getVerifications()
         boundsBehavior: ListView.StopAtBounds
         clip: true
         spacing: 5
@@ -134,5 +135,24 @@ SkyDialog {
                 profileUtils.getBasicProfile(modelData.issuer)
             }
         }
+    }
+
+    Connections {
+        target: skywalker.getVerificationUtils()
+
+        function onVerifications(did, verifications) {
+            if (did !== author.did)
+                return
+
+            userVerifications = verifications
+        }
+    }
+
+    function getVerifications() {
+        return author.verificationState.getValidVerifications().concat(userVerifications)
+    }
+
+    Component.onCompleted: {
+        skywalker.getVerificationUtils().getVerifications(author)
     }
 }

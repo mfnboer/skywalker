@@ -748,6 +748,10 @@ qt_add_qml_module(libskywalker
         SOURCES edit_chat_notification_preferences.cpp
         QML_FILES qml/ChatNotificationTypeSetting.qml
         QML_FILES qml/TranslateMenuButton.qml
+        SOURCES constellation.h
+        SOURCES constellation.cpp
+        SOURCES verification_utils.h
+        SOURCES verification_utils.cpp
 )
 
 target_link_libraries(libskywalker

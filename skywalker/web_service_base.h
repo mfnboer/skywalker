@@ -20,7 +20,11 @@ protected:
     using ErrorOccurredCb = std::function<void(QNetworkReply*, QNetworkReply::NetworkError)>;
     using SslErrorsCb = std::function<void(QNetworkReply*)>;
 
+    static void addOptionalIntParam(Params& params, const QString& name, std::optional<int> value);
+    static void addStringListParam(Params& params, const QString& name, const std::vector<QString>& list);
+
     void setBaseUrl(const QString& baseUrl) { mBaseUrl = baseUrl; }
+    void setUserAgent(const QString& userAgent) { mUserAgent = userAgent; }
     virtual QUrl buildUrl(const QString& endpoint, const Params& params) const;
     QNetworkReply* sendRequest(const QString& endpoint, const Params& params,
                      const FinishedCb& finishedCb,
@@ -29,6 +33,7 @@ protected:
 
     QString mBaseUrl;
     QNetworkAccessManager* mNetwork = nullptr;
+    QString mUserAgent;
 };
 
 }

@@ -3,6 +3,7 @@
 #include "skywalker.h"
 #include "author_cache.h"
 #include "chat.h"
+#include "constellation.h"
 #include "definitions.h"
 #include "draft_orphaned_media_checker.h"
 #include "file_utils.h"
@@ -20,6 +21,7 @@
 #include "share_utils.h"
 #include "shared_image_provider.h"
 #include "temp_file_holder.h"
+#include "verification_utils.h"
 #include "utils.h"
 #include <atproto/lib/at_uri.h>
 #include <QGuiApplication>
@@ -5067,6 +5069,18 @@ ShareUtils* Skywalker::getShareUtils()
     return mShareUtils.get();
 }
 
+VerificationUtils* Skywalker::getVerificationUtils()
+{
+    if (!mVerificationUtils)
+    {
+        auto* constellation = getConstellation();
+        mVerificationUtils = std::make_unique<VerificationUtils>(*constellation, this);
+        mVerificationUtils->setSkywalker(this);
+    }
+
+    return mVerificationUtils.get();
+}
+
 void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level, int seconds)
 {
     emit statusMessage(mUserDid, msg, level, seconds);
@@ -5375,6 +5389,14 @@ ForYou* Skywalker::getForYou()
     }
 
     return mForYou.get();
+}
+
+Constellation* Skywalker::getConstellation()
+{
+    if (!mConstellation)
+        mConstellation = std::make_unique<Constellation>(mNetwork);
+
+    return mConstellation.get();
 }
 
 void Skywalker::signOut()

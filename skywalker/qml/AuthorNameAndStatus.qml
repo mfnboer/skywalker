@@ -6,8 +6,10 @@ Rectangle {
     required property basicprofile author
     property double pointSize: guiSettings.scaledFont(1)
     property string textColor: guiSettings.textColor
-    readonly property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
-    readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
+    property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
+    property Skywalker skywalker: root.getSkywalker(userDid)
+    property var verificationUtils: skywalker.getVerificationUtils()
+    readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID || verificationUtils.isVerifier(author.did)
     readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
     readonly property int verificationStatusWidth: (verificationStatusLoader.item ? verificationStatusLoader.item.width + 5 : 0) - (verifierStatusLoader.item ? verifierStatusLoader.item.width + 5 : 0)
     readonly property real advanceWidth: nameText.advanceWidth + verificationStatusWidth
@@ -32,7 +34,7 @@ Rectangle {
 
     Loader {
         id: verificationStatusLoader
-        active: authorVerified && !root.getSkywalker(userDid).hideVerificationBadges
+        active: authorVerified && !skywalker.hideVerificationBadges
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
@@ -47,7 +49,7 @@ Rectangle {
 
     Loader {
         id: verifierStatusLoader
-        active: isTrustedVerifier && !root.getSkywalker(userDid).hideVerificationBadges
+        active: !skywalker.hideVerificationBadges && isTrustedVerifier
 
         sourceComponent: VerifierBadge {
             id: verifierStatus
@@ -55,7 +57,24 @@ Rectangle {
             y: (nameText.height - height) / 2
             width: badgeSize
             height: width
+            userDid: nameRect.userDid
             author: nameRect.author
         }
+    }
+
+    Connections {
+        target: verificationUtils
+
+        function onVerified(did, isVerified) {
+            if (did !== author.did)
+                return
+
+            authorVerified = isVerified
+        }
+    }
+
+    Component.onCompleted: {
+        if (!skywalker.hideVerificationBadges && !authorVerified)
+            verificationUtils.isVerified(author)
     }
 }

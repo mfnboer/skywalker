@@ -40,14 +40,16 @@ void ForYou::continueAlsoLiked(QNetworkReply* reply, const QString& postUri, con
                                const AlsoLikedSuccessCb& successCb, const ErrorCb& errorCb)
 {
     qDebug() << "Also liked reply:" << reply->request().url() << reply->error();
+    const auto data = reply->readAll();
 
     if (reply->error() != QNetworkReply::NoError)
     {
-        qWarning() << "Also liked failed:" << reply->request().url() << "error:" << reply->error() << reply->errorString();
-        errorCb("Error", reply->errorString());
+        QString msg(data);
+        qWarning() << "Also liked failed:" << reply->request().url() << "error:" << reply->error() << reply->errorString() << "msg:" << msg;
+        errorCb("Error", !msg.isEmpty() ? msg : reply->errorString());
+        return;
     }
 
-    const auto data = reply->readAll();
     const QJsonDocument json(QJsonDocument::fromJson(data));
     AlsoLikedFeed::SharedPtr feed;
 
@@ -56,6 +58,7 @@ void ForYou::continueAlsoLiked(QNetworkReply* reply, const QString& postUri, con
     } catch (ATProto::InvalidJsonException& e) {
         qWarning() << e.msg();
         errorCb("InvalidJson", e.msg());
+        return;
     }
 
     std::vector<QString> uris;

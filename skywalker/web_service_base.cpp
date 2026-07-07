@@ -1,13 +1,27 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "web_service_base.h"
+#include "skywalker.h"
 #include <QUrlQuery>
 
 namespace Skywalker {
 
+void WebServiceBase::addOptionalIntParam(Params& params, const QString& name, std::optional<int> value)
+{
+    if (value)
+        params.append({name, QString::number(*value)});
+}
+
+void WebServiceBase::addStringListParam(Params& params, const QString& name, const std::vector<QString>& list)
+{
+    for (const auto& str : list)
+        params.append({name, str});
+}
+
 WebServiceBase::WebServiceBase(const QString& baseUrl, QNetworkAccessManager* network) :
     mBaseUrl(baseUrl),
-    mNetwork(network)
+    mNetwork(network),
+    mUserAgent(Skywalker::getUserAgentString())
 {
 }
 
@@ -29,6 +43,7 @@ QNetworkReply* WebServiceBase::sendRequest(const QString& endpoint, const Params
                                  const SslErrorsCb& sslErrorsCb)
 {
     QNetworkRequest request(buildUrl(endpoint, params));
+    request.setRawHeader("User-Agent", mUserAgent.toUtf8());
     QNetworkReply* reply = mNetwork->get(request);
 
     if (finishedCb)
