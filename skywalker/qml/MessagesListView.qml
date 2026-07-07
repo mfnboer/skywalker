@@ -120,7 +120,7 @@ SkyPage {
     SkyListView {
         id: messagesView
         width: parent.width
-        height: parent.height - y - (convoAccepted ? flick.height : requestButtons.height) - newMessageText.topPadding - newMessageText.bottomPadding
+        height: parent.height - y - (convoAccepted ? (lockedLoader.item ? lockedLoader.item.height - 2 * margin : flick.height) : requestButtons.height) - newMessageText.topPadding - newMessageText.bottomPadding
         model: chat.getMessageListModel(convo.id)
         cacheBuffer: Screen.height * 3
         clip: true
@@ -202,6 +202,7 @@ SkyPage {
     }
 
     Loader {
+        id: lockedLoader
         anchors.bottom: parent.bottom
         anchors.bottomMargin: margin
         active: convo.group.isLocked()

@@ -201,7 +201,7 @@ void AndroidUtils::installVirtualKeyboardListener()
 
 bool AndroidUtils::translate(const QString& text, QEnums::TranslateApp app)
 {
-    qDebug() << "Translate:" << text;
+    qDebug() << "Translate:" << text << "app:" << (int)app;
 #if defined(Q_OS_ANDROID)
     QString function = "translateOther";
 

@@ -493,7 +493,7 @@ Item {
     function getChatLockedText(convo) {
         switch (convo.group.lockStatus) {
         case QEnums.CONVO_LOCK_STATUS_LOCKED:
-            return qsTr("This is locked")
+            return qsTr("This chat is locked")
         case QEnums.CONVO_LOCK_STATUS_LOCKED_PERMANENTLY:
             return qsTr("This chat is locked permanently")
         default:
