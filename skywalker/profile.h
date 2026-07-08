@@ -18,6 +18,8 @@ class VerificationView
 {
     Q_GADGET
     Q_PROPERTY(QString issuer READ getIssuer FINAL)
+    Q_PROPERTY(QString displayName READ getDisplayName FINAL)
+    Q_PROPERTY(QString handle READ getHandle FINAL)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(bool isValid READ isValid FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
@@ -31,6 +33,8 @@ public:
 
     Q_INVOKABLE bool isNull() const { return mView == nullptr; }
     const QString& getIssuer() const; // DID
+    const QString& getDisplayName() const;
+    const QString& getHandle() const;
     const QString& getUri() const; // Verification record at-uri
     bool isValid() const;
     QDateTime getCreatedAt() const;

@@ -43,7 +43,10 @@ QNetworkReply* WebServiceBase::sendRequest(const QString& endpoint, const Params
                                  const SslErrorsCb& sslErrorsCb)
 {
     QNetworkRequest request(buildUrl(endpoint, params));
-    request.setRawHeader("User-Agent", mUserAgent.toUtf8());
+
+    if (!mUserAgent.isEmpty())
+        request.setHeader(QNetworkRequest::UserAgentHeader, mUserAgent);
+
     QNetworkReply* reply = mNetwork->get(request);
 
     if (finishedCb)

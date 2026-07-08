@@ -31,6 +31,7 @@ public:
     };
 
     using BacklinksCb = std::function<void(Backlinks::SharedPtr)>;
+    using HasBacklinksCb = std::function<void(bool hasLinks)>;
     using ErrorCb = std::function<void(const QString& error, const QString& message)>;
 
     explicit Constellation(QNetworkAccessManager* network);
@@ -38,6 +39,9 @@ public:
     void getBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,
                       std::optional<int> limit,
                       const BacklinksCb& successCb, const ErrorCb& errorCb);
+
+    void hasBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,
+                      const HasBacklinksCb& successCb, const ErrorCb& errorCb);
 };
 
 }

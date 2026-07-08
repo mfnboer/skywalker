@@ -67,6 +67,46 @@ void Constellation::getBackLinks(const QString& subject, const QString& source, 
         });
 }
 
+void Constellation::hasBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,
+                                 const HasBacklinksCb& successCb, const ErrorCb& errorCb)
+{
+    qDebug() << "Has backlinks:" << subject << "source:" << source << "filterDids:" << filterDids.size();
+
+    if (subject.isEmpty())
+    {
+        qWarning() << "No subject, source:" << source;
+        return;
+    }
+
+    if (source.isEmpty())
+    {
+        qWarning() << "No source, subcject:" << subject;
+        return;
+    }
+
+    Params params{{"subject", subject}, {"source", source}, {"limit", "1"}};
+    addStringListParam(params, "did", filterDids);
+
+    sendRequest("blue.microcosm.links.getBacklinks", params,
+        [successCb, errorCb](QNetworkReply* reply){
+            qDebug() << "Has backlinks reply:" << reply->request().url() << reply->error();
+            const auto data = reply->readAll();
+
+            if (reply->error() != QNetworkReply::NoError)
+            {
+                QString msg(data);
+                qWarning() << "Has backlinks failed:" << reply->request().url() << "error:" << reply->error() << reply->errorString() << "msg:" << msg;
+                errorCb("Error", reply->errorString());
+                return;
+            }
+
+
+            const QJsonDocument json(QJsonDocument::fromJson(data));
+            const int total = json.object().value("total").toInt(0);
+            successCb(total > 0);
+        });
+}
+
 Constellation::Record::SharedPtr Constellation::Record::fromJson(const QJsonObject& json)
 {
     ATProto::XJsonObject xjson(json);

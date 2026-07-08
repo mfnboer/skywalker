@@ -22,6 +22,16 @@ const QString& VerificationView::getIssuer() const
     return mView ? mView->mIssuer : NULL_STRING;
 }
 
+const QString& VerificationView::getDisplayName() const
+{
+    return (mView && mView->mDisplayName) ? *mView->mDisplayName : NULL_STRING;
+}
+
+const QString& VerificationView::getHandle() const
+{
+    return (mView && mView->mHandle) ? *mView->mHandle : NULL_STRING;
+}
+
 const QString& VerificationView::getUri() const
 {
     return mView ? mView->mUri : NULL_STRING;

@@ -8,8 +8,8 @@ SkyDialog {
     property Skywalker skywalker: root.getSkywalker(userDid)
     property var verificationUtils: skywalker.getVerificationUtils()
     readonly property string verifierReason: verificationUtils.isVerifier(author.did) ?
-                                                 qsTr("This verifier is selected by you.") :
-                                                 qsTr("This verifier is selected by Bluesky.")
+                                                 qsTr("This verifier is trusted by you.") :
+                                                 qsTr("This verifier is trusted by Bluesky.")
 
     id: page
     width: parent.width - 40

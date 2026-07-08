@@ -4,15 +4,35 @@
 
 namespace Skywalker {
 
+using namespace std::chrono_literals;
+
 VerificationUtils::VerificationUtils(Constellation& constellation, QObject* parent) :
     WrappedSkywalker(parent),
     mConstellation(constellation),
-    mIsVerifiedCache(500)
+    mIsVerifiedCache(24h, 500),
+    mVerificationCache(10)
 {
     // TODO:
     // This is the DID for Eurosky for testing.
-    mVerifierDids.push_back("did:plc:ooensn4mr5mhznzypvxelfa3");
-    mVerifierDidSet.insert("did:plc:ooensn4mr5mhznzypvxelfa3");
+    setVerifiers({"did:plc:ooensn4mr5mhznzypvxelfa3"});
+}
+
+void VerificationUtils::setVerifiers(const std::vector<QString>& verifierDids)
+{
+    Q_ASSERT(verifierDids.size() <= MAX_VERIFIERS);
+
+    if (verifierDids.size() > MAX_VERIFIERS)
+    {
+        qWarning() << "Too many verifiers:" << verifierDids.size() << "max:" << MAX_VERIFIERS;
+        return;
+    }
+
+    mVerifierDids = verifierDids;
+    mVerifierDidIndex.clear();
+    mVerifierDidIndex.insert(verifierDids.begin(), verifierDids.end());
+
+    mIsVerifiedCache.clear();
+    mVerificationCache.clear();
 }
 
 void VerificationUtils::isVerified(const BasicProfile& profile)
@@ -29,7 +49,8 @@ void VerificationUtils::isVerified(const BasicProfile& profile)
         return;
     }
 
-    // TODO: check if verifiers are configured
+    if (mVerifierDids.empty())
+        return;
 
     const bool* v = mIsVerifiedCache.object(did);
 
@@ -43,11 +64,10 @@ void VerificationUtils::isVerified(const BasicProfile& profile)
     // The cache will be updated when the verification status comes back from Constellation.
     mIsVerifiedCache.insert(did, new bool(false));
 
-    mConstellation.getBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids, 1,
-        [this, did](Constellation::Backlinks::SharedPtr backlinks){
-            bool* v = new bool(backlinks->mTotal > 0);
-            emit verified(did, *v);
-            mIsVerifiedCache.insert(did, v);
+    mConstellation.hasBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids,
+        [this, did](bool hasLinks){
+            emit verified(did, hasLinks);
+            mIsVerifiedCache.insert(did, new bool(hasLinks));
         },
         [this, did](const QString& error, const QString& message){
             qWarning() << "isVerified failed:" << error << "-" << message;
@@ -69,7 +89,8 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
             return;
     }
 
-    // TODO: check if verifiers are configured
+    if (mVerifierDids.empty())
+        return;
 
     if (mVerificationCache.contains(did))
     {
@@ -82,7 +103,8 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
     mVerificationCache.insert(did, new VerificationView::List);
 
     mConstellation.getBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids, {},
-        [this, did](Constellation::Backlinks::SharedPtr backlinks){
+        [this, profile](Constellation::Backlinks::SharedPtr backlinks){
+            const QString& did = profile.getDid();
             const bool hasRecords = !backlinks->mRecords.empty();
             mIsVerifiedCache.insert(did, new bool(hasRecords));
 
@@ -101,7 +123,7 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
                 verificationView->mIsValid = true;
                 verificationList->push_back(VerificationView{verificationView});
 
-                getVerificationRecord(did, record->mDid, record->mCollection, record->mRkey);
+                getVerificationRecord(profile, record->mDid, record->mCollection, record->mRkey);
             }
 
             emit verifications(did, *verificationList);
@@ -115,15 +137,17 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
 
 bool VerificationUtils::isVerifier(const QString& did)
 {
-    return mVerifierDidSet.contains(did);
+    return mVerifierDidIndex.contains(did);
 }
 
-void VerificationUtils::getVerificationRecord(const QString& userDid, const QString& issuerDid, const QString& collection, const QString& rkey)
+void VerificationUtils::getVerificationRecord(const BasicProfile& user, const QString& issuerDid, const QString& collection, const QString& rkey)
 {
+    const QString& userDid = user.getDid();
     qDebug() << "Get verification record for:" << userDid << "issuer:" << issuerDid;
 
     bskyClient()->getRecord(issuerDid, collection, rkey, {},
-        [this, userDid, issuerDid](ATProto::ComATProtoRepo::Record::SharedPtr record){
+        [this, user, issuerDid](ATProto::ComATProtoRepo::Record::SharedPtr record){
+            const QString& userDid = user.getDid();
             VerificationView::List* verificationList = mVerificationCache.object(userDid);
 
             if (!verificationList)
@@ -148,6 +172,9 @@ void VerificationUtils::getVerificationRecord(const QString& userDid, const QStr
 
                 const auto& atProtoView = it->getAtProtoView();
                 atProtoView->mCreatedAt = verification->mCreatedAt;
+                atProtoView->mDisplayName = verification->mDisplayName;
+                atProtoView->mHandle = verification->mHandle;
+                atProtoView->mIsValid = verification->mDisplayName == user.getDisplayName() && verification->mHandle == user.getHandle();
                 emit verifications(userDid, *verificationList);
             }
             catch (ATProto::InvalidJsonException& e) {

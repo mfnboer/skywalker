@@ -108,9 +108,35 @@ SkyDialog {
 
                     AccessibleText {
                         width: parent.width
+                        elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(7/8)
                         color: guiSettings.handleColor
                         text: modelData.createdAt.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
+                    }
+
+                    AccessibleText {
+                        width: parent.width
+                        topPadding: 10
+                        elide: Text.ElideRight
+                        color: guiSettings.errorColor
+                        text: "⚠️ Verification invalidated"
+                        visible: !modelData.isValid
+                    }
+
+                    AccessibleText {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        textFormat: Text.StyledText
+                        text: `<b>Verified name:</b><br>${modelData.displayName}`
+                        visible: !modelData.isValid
+                    }
+
+                    AccessibleText {
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        textFormat: Text.StyledText
+                        text: `<b>Verified handle:</b><br>${modelData.handle}`
+                        visible: !modelData.isValid
                     }
                 }
             }
