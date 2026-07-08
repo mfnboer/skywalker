@@ -127,16 +127,16 @@ SkyDialog {
                         width: parent.width
                         wrapMode: Text.Wrap
                         textFormat: Text.StyledText
-                        text: `<b>Verified name:</b><br>${modelData.displayName}`
-                        visible: !modelData.isValid
+                        text: `<b>Verified name:</b><br>${modelData.verifiedDisplayName}`
+                        visible: !modelData.isValid && modelData.verifiedDisplayName
                     }
 
                     AccessibleText {
                         width: parent.width
                         wrapMode: Text.Wrap
                         textFormat: Text.StyledText
-                        text: `<b>Verified handle:</b><br>${modelData.handle}`
-                        visible: !modelData.isValid
+                        text: `<b>Verified handle:</b><br>${modelData.verifiedHandle}`
+                        visible: !modelData.isValid && modelData.verifiedHandle
                     }
                 }
             }

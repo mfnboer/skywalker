@@ -32,9 +32,19 @@ public:
         mExpiryInterval(expiryInterval)
     {}
 
+    std::chrono::minutes getExpiryInterval() const
+    {
+        return mExpiryInterval;
+    }
+
     bool insert(const Key& key, Value* object, qsizetype cost = 1)
     {
         auto* entry = new Entry{object, QDateTime::currentDateTimeUtc()};
+        return Parent::insert(key, entry, cost);
+    }
+
+    bool insertEntry(const Key& key, Entry* entry, qsizetype cost = 1)
+    {
         return Parent::insert(key, entry, cost);
     }
 
@@ -54,6 +64,11 @@ public:
         }
 
         return entry->mValue;
+    }
+
+    Entry* getEntry(const Key& key) const
+    {
+        return Parent::object(key);
     }
 
     Value* take(const Key& key)

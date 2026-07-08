@@ -18,11 +18,13 @@ class VerificationView
 {
     Q_GADGET
     Q_PROPERTY(QString issuer READ getIssuer FINAL)
-    Q_PROPERTY(QString displayName READ getDisplayName FINAL)
-    Q_PROPERTY(QString handle READ getHandle FINAL)
+    Q_PROPERTY(QString issuerDisplayName READ getIssuerDisplayName FINAL)
+    Q_PROPERTY(QString issuerHandle READ getIssuerHandle FINAL)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(bool isValid READ isValid FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
+    Q_PROPERTY(QString verifiedDisplayName READ getVerifiedDisplayName FINAL)
+    Q_PROPERTY(QString verifiedHandle READ getVerifiedHandle FINAL)
     QML_VALUE_TYPE(verificationview)
 
 public:
@@ -33,15 +35,22 @@ public:
 
     Q_INVOKABLE bool isNull() const { return mView == nullptr; }
     const QString& getIssuer() const; // DID
-    const QString& getDisplayName() const;
-    const QString& getHandle() const;
+    const QString& getIssuerDisplayName() const;
+    const QString& getIssuerHandle() const;
     const QString& getUri() const; // Verification record at-uri
     bool isValid() const;
     QDateTime getCreatedAt() const;
     const ATProto::AppBskyActor::VerificationView::SharedPtr& getAtProtoView() const { return mView; }
 
+    void setVerifiedDisplayName(const QString& displayName) { mVerifiedDisplayName = displayName; }
+    const QString& getVerifiedDisplayName() const { return mVerifiedDisplayName; }
+    void setVerifiedHandle(const QString& handle) { mVerifiedHandle = handle; }
+    const QString& getVerifiedHandle() const { return mVerifiedHandle; }
+
 private:
     ATProto::AppBskyActor::VerificationView::SharedPtr mView;
+    QString mVerifiedDisplayName;
+    QString mVerifiedHandle;
 };
 
 class VerificationState

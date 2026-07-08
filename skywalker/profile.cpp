@@ -22,14 +22,14 @@ const QString& VerificationView::getIssuer() const
     return mView ? mView->mIssuer : NULL_STRING;
 }
 
-const QString& VerificationView::getDisplayName() const
+const QString& VerificationView::getIssuerDisplayName() const
 {
-    return (mView && mView->mDisplayName) ? *mView->mDisplayName : NULL_STRING;
+    return (mView && mView->mIssuerDisplayName) ? *mView->mIssuerDisplayName : NULL_STRING;
 }
 
-const QString& VerificationView::getHandle() const
+const QString& VerificationView::getIssuerHandle() const
 {
-    return (mView && mView->mHandle) ? *mView->mHandle : NULL_STRING;
+    return (mView && mView->mIssuerHandle) ? *mView->mIssuerHandle : NULL_STRING;
 }
 
 const QString& VerificationView::getUri() const

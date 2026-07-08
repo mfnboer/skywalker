@@ -24,12 +24,16 @@ public:
     Q_INVOKABLE void getVerifications(const BasicProfile& profile);
     Q_INVOKABLE bool isVerifier(const QString& did);
 
+    void saveCache();
+    Q_INVOKABLE void loadCache();
+
 signals:
     void verified(QString did, bool isVerified);
     void verifications(QString did, VerificationView::List);
 
 private:
     void getVerificationRecord(const BasicProfile& user, const QString& issuerDid, const QString& collection, const QString& rkey);
+    bool checkVerifiers(const QStringList& dids) const;
 
     Constellation& mConstellation;
     std::vector<QString> mVerifierDids;

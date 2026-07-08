@@ -430,6 +430,7 @@ ApplicationWindow {
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
+            skywalker.getVerificationUtils().loadCache();
             skywalker.chat.start()
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()

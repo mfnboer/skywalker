@@ -1,8 +1,13 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "verification_utils.h"
+#include "file_utils.h"
+#include "skywalker.h"
+#include <QTextStream>
 
 namespace Skywalker {
+
+static constexpr const char* CACHE_FILENAME = "verified_cache";
 
 using namespace std::chrono_literals;
 
@@ -172,9 +177,14 @@ void VerificationUtils::getVerificationRecord(const BasicProfile& user, const QS
 
                 const auto& atProtoView = it->getAtProtoView();
                 atProtoView->mCreatedAt = verification->mCreatedAt;
-                atProtoView->mDisplayName = verification->mDisplayName;
-                atProtoView->mHandle = verification->mHandle;
                 atProtoView->mIsValid = verification->mDisplayName == user.getDisplayName() && verification->mHandle == user.getHandle();
+
+                if (!atProtoView->mIsValid)
+                {
+                    it->setVerifiedDisplayName(verification->mDisplayName);
+                    it->setVerifiedHandle(verification->mHandle);
+                }
+
                 emit verifications(userDid, *verificationList);
             }
             catch (ATProto::InvalidJsonException& e) {
@@ -199,6 +209,142 @@ void VerificationUtils::getVerificationRecord(const BasicProfile& user, const QS
                 }
             }
         });
+}
+
+void VerificationUtils::saveCache()
+{
+    if (mVerifierDids.empty())
+        return;
+
+    const QString path = FileUtils::getCachePath(getSkywalker()->getUserDid());
+
+    if (path.isEmpty())
+        return;
+
+    QDir cacheDir(path);
+    const QString fileName = cacheDir.filePath(CACHE_FILENAME);
+    qDebug() << "Save:" << fileName << "entries:" << mIsVerifiedCache.size();
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qWarning() << "Cannot open file:" << fileName;
+        return;
+    }
+
+    QTextStream out(&file);
+
+    for (int i = 0; i < (int)mVerifierDids.size(); ++i)
+    {
+        if (i > 0)
+            out << ',';
+
+        out << mVerifierDids[i];
+    }
+
+    out << '\n';
+
+    const auto keys = mIsVerifiedCache.keys();
+
+    for (const auto& key : keys)
+    {
+        auto* entry = mIsVerifiedCache.getEntry(key);
+        Q_ASSERT(entry);
+        Q_ASSERT(entry->mValue);
+
+        if (!entry || !entry->mValue)
+            continue;
+
+        out << key << ',' << (*entry->mValue ? 1 : 0) << ',' << entry->mTimestamp.toSecsSinceEpoch() << '\n';
+    }
+
+    file.close();
+    qDebug() << "Saving done:" << fileName;
+}
+
+void VerificationUtils::loadCache()
+{
+    if (mVerifierDids.empty())
+        return;
+
+    const QString path = FileUtils::getCachePath(getSkywalker()->getUserDid());
+
+    if (path.isEmpty())
+        return;
+
+    QDir cacheDir(path);
+    const QString fileName = cacheDir.filePath(CACHE_FILENAME);
+    qDebug() << "Load:" << fileName;
+    QFile file(fileName);
+
+    if (!file.exists())
+    {
+        qDebug() << "No cache file";
+        return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qWarning() << "Cannot open file:" << fileName;
+        return;
+    }
+
+    mIsVerifiedCache.clear();
+    QTextStream in(&file);
+
+    QString line = in.readLine();
+    QStringList dids = line.split(',');
+
+    if (!checkVerifiers(dids))
+        return;
+
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+
+    while (!(line = in.readLine()).isEmpty())
+    {
+        QStringList values = line.split(',');
+
+        if (values.size() != 3)
+        {
+            qWarning() << "Invalid line:" << line;
+            return;
+        }
+
+        const QDateTime timestamp = QDateTime::fromSecsSinceEpoch(values[2].toLongLong());
+        const auto dt = now - timestamp;
+
+        if (dt >= mIsVerifiedCache.getExpiryInterval())
+            continue;
+
+        const QString& key = values[0];
+        bool* isVerified = new bool(values[1] == "1");
+
+        auto* entry = new ExpiryCache<QString, bool>::Entry{isVerified, timestamp};
+        mIsVerifiedCache.insertEntry(key, entry);
+    }
+
+    file.close();
+    qDebug() << "Loading done:" << fileName << "entries:" << mIsVerifiedCache.size();
+}
+
+bool VerificationUtils::checkVerifiers(const QStringList& dids) const
+{
+    if (dids.size() != (qsizetype)mVerifierDids.size())
+    {
+        qDebug() << "Different verifiers";
+        return false;
+    }
+
+    for (const auto& did : dids)
+    {
+        if (!mVerifierDidIndex.contains(did))
+        {
+            qDebug() << "Verifiers changes:" << did;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 }

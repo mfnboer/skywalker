@@ -10,10 +10,11 @@ Rectangle {
     property alias maximumLineCount: nameText.maximumLineCount
     property alias wrapMode: nameText.wrapMode
     property alias ellipsisBackgroundColor: nameText.ellipsisBackgroundColor
-    property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
-    readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
-    readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property var verificationUtils: skywalker.getVerificationUtils()
+    property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
+    readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID || verificationUtils.isVerifier(author.did)
+    readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
 
     id: nameRect
     height: nameText.height
@@ -32,7 +33,7 @@ Rectangle {
 
     Loader {
         id: verificationStatusLoader
-        active: authorVerified && !root.getSkywalker(userDid).hideVerificationBadges
+        active: authorVerified && !skywalker.hideVerificationBadges
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
@@ -46,7 +47,7 @@ Rectangle {
 
     Loader {
         id: verifierStatusLoader
-        active: isTrustedVerifier && !root.getSkywalker(userDid).hideVerificationBadges
+        active: isTrustedVerifier && !skywalker.hideVerificationBadges
 
         sourceComponent: VerifierBadge {
             id: verifierStatus
@@ -59,7 +60,7 @@ Rectangle {
     }
 
     Connections {
-        target: skywalker.getVerificationUtils()
+        target: verificationUtils
 
         function onVerified(did, isVerified) {
             if (did !== author.did)
@@ -70,7 +71,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        if (!authorVerified)
-            skywalker.getVerificationUtils().isVerified(author)
+        if (!skywalker.hideVerificationBadges && !authorVerified)
+            verificationUtils.isVerified(author)
     }
 }

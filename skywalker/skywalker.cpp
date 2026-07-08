@@ -5133,6 +5133,10 @@ void Skywalker::pauseApp()
 
     mUserSettings.resetNextNotificationId();
     mUserSettings.sync();
+
+    if (mVerificationUtils)
+        mVerificationUtils->saveCache();
+
     OffLineMessageChecker::start(mUserSettings.getNotificationsWifiOnly());
 
     if (mTimelineUpdateTimer.isActive())

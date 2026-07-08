@@ -71,6 +71,12 @@ bool FileUtils::isPhotoPickerAvailable()
 
 QString FileUtils::getAppDataPath(const QString& subDir)
 {
+    if (subDir.isEmpty())
+    {
+        qWarning() << "Empty sub directory";
+        return {};
+    }
+
 #if defined(Q_OS_ANDROID)
     QJniObject jsSubDir = QJniObject::fromString(QString("%1/%2").arg(APP_DATA_SUB_DIR, subDir));
     auto pathObj = QJniObject::callStaticMethod<jstring>(
@@ -122,6 +128,13 @@ QString FileUtils::getPicturesPath()
 QString FileUtils::getPicturesPath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
+
+    if (subDir.isEmpty())
+    {
+        qWarning() << "Empty sub directory";
+        return {};
+    }
+
 #if defined(Q_OS_ANDROID)
     auto jsSubDir = QJniObject::fromString(subDir);
     auto pathObj = QJniObject::callStaticMethod<jstring>(
@@ -173,6 +186,13 @@ QString FileUtils::getMoviesPath()
 QString FileUtils::getMoviesPath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
+
+    if (subDir.isEmpty())
+    {
+        qWarning() << "Empty sub directory";
+        return {};
+    }
+
 #if defined(Q_OS_ANDROID)
     auto jsSubDir = QJniObject::fromString(subDir);
     auto pathObj = QJniObject::callStaticMethod<jstring>(
@@ -205,6 +225,13 @@ QString FileUtils::getMoviesPath(const QString& subDir)
 QString FileUtils::getCachePath(const QString& subDir)
 {
     Q_ASSERT(!subDir.isEmpty());
+
+    if (subDir.isEmpty())
+    {
+        qWarning() << "Empty sub directory";
+        return {};
+    }
+
 #if defined(Q_OS_ANDROID)
     auto jsSubDir = QJniObject::fromString(subDir);
     auto pathObj = QJniObject::callStaticMethod<jstring>(
