@@ -101,7 +101,7 @@ void AnniversaryCard::initCard()
     font.setItalic(true);
     painter.setFont(font);
     painter.drawText(cardImage.rect().adjusted(0, 0, -10, -5), Qt::AlignRight | Qt::AlignBottom,
-                     QString("sent with %1").arg(SKYWALKER_HANDLE));
+                     QString("sent with @%1").arg(SKYWALKER_HANDLE));
     painter.end();
 
     auto* imageProvider = SharedImageProvider::getProvider(SharedImageProvider::SHARED_IMAGE);

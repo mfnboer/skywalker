@@ -40,7 +40,7 @@ public:
     Q_INVOKABLE bool isOverridableSytemLabel() const;
 
     Q_INVOKABLE bool appliesToActor() const;
-    Q_INVOKABLE const QString& getActorDid() const;
+    Q_INVOKABLE QString getActorDid() const;
 
 private:
     struct PrivateData

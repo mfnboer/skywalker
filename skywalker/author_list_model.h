@@ -19,6 +19,7 @@ class AuthorListModel : public QAbstractListModel,
 {
     Q_OBJECT
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
+    Q_PROPERTY(QEnums::AuthorListType type READ getType CONSTANT FINAL)
 
 public:
     enum class Role {
@@ -58,13 +59,16 @@ public:
     void addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
     void addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor);
     Q_INVOKABLE void prependAuthor(const Profile& author, const QString& listItemUri);
+    Q_INVOKABLE void prependBasicProfile(const BasicProfile& author, const QString& listItemUri);
     Q_INVOKABLE void deleteEntry(int index);
 
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Type getType() const { return mType; }
+
     const QString& getAtId() const { return mAtId; }
+    Q_INVOKABLE void setAtId(QString atId) { mAtId = atId; }
 
     std::vector<QString> getActiveFollowsDids(QString& cursor) const;
 

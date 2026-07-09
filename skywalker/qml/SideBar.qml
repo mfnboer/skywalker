@@ -209,7 +209,6 @@ Pane {
                 id: simpleDescriptionHeader
                 width: undefined
                 height: undefined
-                Layout.preferredHeight: guiSettings.sideBarHeaderHeight
                 Layout.fillWidth: true
                 rightPadding: simpleDescriptionHeaderButton.visible ? simpleDescriptionHeaderButton.width : 0
                 color: guiSettings.sideBarColor

@@ -50,7 +50,7 @@ public:
     Q_INVOKABLE ListViewBasic getCachedListView(const QString& listUri);
     Q_INVOKABLE void getListView(const QString& listUri, bool viewPosts = false);
     Q_INVOKABLE void addListUser(const QString& listUri, const BasicProfile& profile);
-    Q_INVOKABLE void removeListUser(const QString& listUri, const QString& listItemUri);
+    Q_INVOKABLE void removeListUser(const QString& listUri, const QString& listItemUri, const QString& listItemDid = {});
 
     Q_INVOKABLE void createListFromStarterPack(const StarterPackView& starterPack);
 
@@ -72,7 +72,11 @@ public:
     Q_INVOKABLE void muteReposts(const BasicProfile& profile);
     Q_INVOKABLE void unmuteReposts(const QString& did);
 
+    Q_INVOKABLE void addTrustedVerifier(const BasicProfile& profile);
+    Q_INVOKABLE void removeTrustedVerifier(const QString& did);
+
     void findMutedRepostsList(const ListSuccessCb& successCb, const ErrorCb& errorCb);
+    void findTrustedVerifiersList(const ListSuccessCb& successCb, const ErrorCb& errorCb);
 
     // Check if a list is a list internally used by Skywalker
     static bool isInternalList(const ATProto::AppBskyGraph::ListView& listView);
@@ -123,6 +127,11 @@ signals:
     void muteRepostsFailed(QString error);
     void unmuteRepostsOk();
     void unmuteRepostsFailed(QString error);
+    void createdTrustedVerifierList(QString uri);
+    void addTrustedVerifierOk(BasicProfile profile, QString itemUri);
+    void addTrustedVerifierFailed(QString error);
+    void removeTrustedVerifierOk();
+    void removeTrustedVerifierFailed(QString error);
     void hideListOk();
     void hideListFailed(QString error);
     void cachedList(ListViewBasic list);

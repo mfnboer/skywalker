@@ -14,30 +14,55 @@ using namespace std::chrono_literals;
 VerificationUtils::VerificationUtils(Constellation& constellation, QObject* parent) :
     WrappedSkywalker(parent),
     mConstellation(constellation),
-    mIsVerifiedCache(24h, 500),
+    mIsVerifiedCache(12h, 500),
     mVerificationCache(10)
 {
-    // TODO:
-    // This is the DID for Eurosky for testing.
-    setVerifiers({"did:plc:ooensn4mr5mhznzypvxelfa3"});
 }
 
-void VerificationUtils::setVerifiers(const std::vector<QString>& verifierDids)
+void VerificationUtils::addVerifier(const QString& did, const QString& listItemUri)
 {
-    Q_ASSERT(verifierDids.size() <= MAX_VERIFIERS);
+    qDebug() << "Add verifier:" << did;
 
-    if (verifierDids.size() > MAX_VERIFIERS)
+    if (mVerifierDidIndex.contains(did))
     {
-        qWarning() << "Too many verifiers:" << verifierDids.size() << "max:" << MAX_VERIFIERS;
+        qDebug() << "Verifier already present:" << did;
         return;
     }
 
-    mVerifierDids = verifierDids;
-    mVerifierDidIndex.clear();
-    mVerifierDidIndex.insert(verifierDids.begin(), verifierDids.end());
+    if (mVerifierDids.size() >= MAX_VERIFIERS)
+    {
+        qDebug() << "Maximum verifiers, cannot add more";
+        return;
+    }
 
-    mIsVerifiedCache.clear();
-    mVerificationCache.clear();
+    mVerifierDids.push_back(did);
+    mVerifierDidIndex.insert({did, listItemUri});
+
+    clearCaches();
+}
+
+void VerificationUtils::removeVerifier(const QString& did)
+{
+    qDebug() << "Remove verifier:" << did;
+
+    if (!mVerifierDidIndex.contains(did))
+    {
+        qDebug() << "Verifier was not present:" << did;
+        return;
+    }
+
+    std::erase_if(mVerifierDids, [did](const QString& verifier){ return verifier == did; });
+    mVerifierDidIndex.erase(did);
+
+    clearCaches();
+}
+
+const QString* VerificationUtils::getListItemUri(const QString& did) const
+{
+    if (!mVerifierDidIndex.contains(did))
+        return nullptr;
+
+    return &mVerifierDidIndex.at(did);
 }
 
 void VerificationUtils::isVerified(const BasicProfile& profile)
@@ -116,11 +141,21 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
             if (!hasRecords)
                 return;
 
+            std::unordered_set<QString> issuers;
             auto* verificationList = new VerificationView::List;
             verificationList->reserve(backlinks->mRecords.size());
 
             for (const auto& record : backlinks->mRecords)
             {
+                // A verifier may create multiple verification records. Take the most
+                // recent record only (backlinks are sorted from new to old)
+                if (issuers.contains(record->mDid))
+                {
+                    qDebug() << "Multiple verifications from:" << record->mDid;
+                    continue;
+                }
+
+                issuers.insert(record->mDid);
                 const ATProto::ATUri atUri(record->mDid, record->mCollection, record->mRkey);
                 auto verificationView = std::make_shared<ATProto::AppBskyActor::VerificationView>();
                 verificationView->mIssuer = record->mDid;
@@ -295,7 +330,7 @@ void VerificationUtils::loadCache()
     QString line = in.readLine();
     QStringList dids = line.split(',');
 
-    if (!checkVerifiers(dids))
+    if (!sameVerifiers(dids))
         return;
 
     const QDateTime now = QDateTime::currentDateTimeUtc();
@@ -327,7 +362,7 @@ void VerificationUtils::loadCache()
     qDebug() << "Loading done:" << fileName << "entries:" << mIsVerifiedCache.size();
 }
 
-bool VerificationUtils::checkVerifiers(const QStringList& dids) const
+bool VerificationUtils::sameVerifiers(const QStringList& dids) const
 {
     if (dids.size() != (qsizetype)mVerifierDids.size())
     {
@@ -339,12 +374,18 @@ bool VerificationUtils::checkVerifiers(const QStringList& dids) const
     {
         if (!mVerifierDidIndex.contains(did))
         {
-            qDebug() << "Verifiers changes:" << did;
+            qDebug() << "Verifiers changed:" << did;
             return false;
         }
     }
 
     return true;
+}
+
+void VerificationUtils::clearCaches()
+{
+    mIsVerifiedCache.clear();
+    mVerificationCache.clear();
 }
 
 }

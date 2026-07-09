@@ -20,7 +20,7 @@ bool ContentLabel::appliesToActor() const
     return mPrivate->mUri.startsWith("did:");
 }
 
-const QString& ContentLabel::getActorDid() const
+QString ContentLabel::getActorDid() const
 {
     if (mPrivate->mUri.startsWith("did:"))
         return mPrivate->mUri;

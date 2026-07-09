@@ -119,7 +119,7 @@ SkyDialog {
                         topPadding: 10
                         elide: Text.ElideRight
                         color: guiSettings.errorColor
-                        text: "⚠️ Verification invalidated"
+                        text: "⚠️ Verification invalid"
                         visible: !modelData.isValid
                     }
 

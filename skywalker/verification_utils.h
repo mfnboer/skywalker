@@ -13,19 +13,28 @@ namespace Skywalker {
 class VerificationUtils : public WrappedSkywalker
 {
     Q_OBJECT
+    Q_PROPERTY(int MAX_VERIFIERS MEMBER MAX_VERIFIERS CONSTANT)
 
 public:
     static constexpr int MAX_VERIFIERS = 10;
 
     explicit VerificationUtils(Constellation& constellation, QObject* parent = nullptr);
 
-    void setVerifiers(const std::vector<QString>& verifierDids);
+    void addVerifier(const QString& did, const QString& listItemUri);
+    void removeVerifier(const QString& did);
+    const QString* getListItemUri(const QString& did) const;
+
+    void setListUri(const QString& uri) { mListUri = uri; }
+    Q_INVOKABLE QString getListUri() const { return mListUri; }
+
+    int size() const { return mVerifierDids.size(); }
+
     Q_INVOKABLE void isVerified(const BasicProfile& profile);
     Q_INVOKABLE void getVerifications(const BasicProfile& profile);
     Q_INVOKABLE bool isVerifier(const QString& did);
 
     void saveCache();
-    Q_INVOKABLE void loadCache();
+    void loadCache();
 
 signals:
     void verified(QString did, bool isVerified);
@@ -33,13 +42,15 @@ signals:
 
 private:
     void getVerificationRecord(const BasicProfile& user, const QString& issuerDid, const QString& collection, const QString& rkey);
-    bool checkVerifiers(const QStringList& dids) const;
+    bool sameVerifiers(const QStringList& dids) const;
+    void clearCaches();
 
     Constellation& mConstellation;
     std::vector<QString> mVerifierDids;
-    std::unordered_set<QString> mVerifierDidIndex;
+    std::unordered_map<QString, QString> mVerifierDidIndex; // did -> list item uri
     ExpiryCache<QString, bool> mIsVerifiedCache;
     QCache<QString, VerificationView::List> mVerificationCache;
+    QString mListUri;
 };
 
 }

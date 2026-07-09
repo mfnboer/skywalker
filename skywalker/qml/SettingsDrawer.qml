@@ -19,6 +19,7 @@ SkyDrawer {
     signal userLists()
     signal mutedWords()
     signal focusHashtags()
+    signal verifiers()
     signal settings()
     signal switchAccount()
     signal inviteCodes()
@@ -159,6 +160,12 @@ SkyDrawer {
                         svg: SvgOutline.focusHashtag
                         popup: moderationMenu
                         onClicked: focusHashtags()
+                    }
+                    SkyMenuButton {
+                        text: qsTr("Trusted Verifiers")
+                        svg: SvgOutline.check
+                        popup: moderationMenu
+                        onClicked: verifiers()
                     }
                     MenuSeparator {}
                     AccessibleMenuItem {

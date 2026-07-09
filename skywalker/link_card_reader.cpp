@@ -141,7 +141,7 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSav
             qDebug() << "Create Giphy link card";
 
             TenorGif gif("",
-                         tr("This GIF has been posted from Skywalker for Android. Get Skywalker from Google Play.<br>Bluesky: %1").arg(SKYWALKER_HANDLE),
+                         tr("This GIF has been posted from Skywalker for Android. Get Skywalker from Google Play.<br>Bluesky: @%1").arg(SKYWALKER_HANDLE),
                          "",
                          gifUrl, QSize{},
                          gifUrl, QSize{},

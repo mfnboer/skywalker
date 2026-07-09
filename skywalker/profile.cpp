@@ -873,6 +873,11 @@ Profile::Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& pr
 {
 }
 
+Profile::Profile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile) :
+    BasicProfile(profile)
+{
+}
+
 Profile::Profile(const QString& did, const QString& handle, const QString& displayName,
         const QString& avatarUrl) :
     BasicProfile(did, handle, displayName, avatarUrl)

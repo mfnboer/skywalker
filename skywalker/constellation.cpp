@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "constellation.h"
+#include "definitions.h"
 #include "skywalker.h"
 #include <atproto/lib/xjson.h>
 #include <QJsonDocument>
@@ -13,7 +14,7 @@ Constellation::Constellation(QNetworkAccessManager* network) :
     WebServiceBase(CONSTELLATION_BASE_URL, network)
 {
     Q_ASSERT(network);
-    setUserAgent(QString("%1/%2 (@skywalker.thereforeiam.eu)").arg(Skywalker::APP_NAME, Skywalker::VERSION));
+    setUserAgent(QString("%1/%2 (@%3)").arg(Skywalker::APP_NAME, Skywalker::VERSION, SKYWALKER_HANDLE));
 }
 
 void Constellation::getBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,

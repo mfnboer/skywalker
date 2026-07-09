@@ -7,6 +7,7 @@
 #include "list_cache.h"
 #include "photo_picker.h"
 #include "skywalker.h"
+#include "verification_utils.h"
 #include <atproto/lib/at_uri.h>
 
 namespace Skywalker {
@@ -677,6 +678,8 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
                 });
 
             ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+            auto* verificationUtils = mSkywalker->getVerificationUtils();
+
             if (listUri == mutedReposts.getListUri())
             {
                 qDebug() << "List item is a muted repost, list-uri:" << listUri
@@ -690,6 +693,14 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
 
                 emit muteRepostsOk();
             }
+            else if (listUri == verificationUtils->getListUri())
+            {
+                qDebug() << "List item is a trusted verifier, list-uri:" << listUri
+                         << "item-uri:" << itemUri << "did:" << profile.getDid();
+                verificationUtils->addVerifier(profile.getDid(), itemUri);
+
+                emit addTrustedVerifierOk(profile, itemUri);
+            }
 
             emit GraphListener::instance().userAdded(listUri, profile, itemUri);
             emit addListUserOk(profile.getDid(), itemUri, itemCid);
@@ -700,24 +711,30 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
 
             qDebug() << "addListUser:" << error << " - " << msg;
             ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+            auto* verificationUtils = mSkywalker->getVerificationUtils();
 
             if (listUri == mutedReposts.getListUri())
             {
                 qDebug() << "List item is a muted repost, list-uri:" << listUri;
                 emit muteRepostsFailed(msg);
             }
+            else if (listUri == verificationUtils->getListUri())
+            {
+                qDebug() << "List item is a trusted verifier, list-uri:" << listUri;
+                emit addTrustedVerifierFailed(msg);
+            }
 
             emit addListUserFailed(msg);
         });
 }
 
-void GraphUtils::removeListUser(const QString& listUri, const QString& listItemUri)
+void GraphUtils::removeListUser(const QString& listUri, const QString& listItemUri, const QString& listItemDid)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->undo(listItemUri,
-        [this, presence=getPresence(), listUri, listItemUri]{
+        [this, presence=getPresence(), listUri, listItemUri, listItemDid]{
             if (!presence)
                 return;
 
@@ -727,6 +744,8 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
                 });
 
             ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+            auto* verificationUtils = mSkywalker->getVerificationUtils();
+
             if (listUri == mutedReposts.getListUri())
             {
                 qDebug() << "List item is a muted repost, list-uri:" << listUri << "item-uri:" << listItemUri;
@@ -746,6 +765,13 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
                     emit unmuteRepostsOk();
                 }
             }
+            else if (listUri == verificationUtils->getListUri())
+            {
+                qDebug() << "List item is a trusted verifier, list-uri:" << listUri << "item-uri:" << listItemUri;
+                Q_ASSERT(!listItemDid.isEmpty());
+                verificationUtils->removeVerifier(listItemDid);
+                emit removeTrustedVerifierOk();
+            }
 
             emit GraphListener::instance().userRemoved(listUri, listItemUri);
             emit removeListUserOk();
@@ -756,9 +782,12 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
 
             qDebug() << "Remove list user failed:" << error << " - " << msg;
             ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+            auto* verificationUtils = mSkywalker->getVerificationUtils();
 
             if (listUri == mutedReposts.getListUri())
                 emit unmuteRepostsFailed(msg);
+            else if (listUri == verificationUtils->getListUri())
+                emit removeTrustedVerifierFailed(msg);
 
             emit removeListUserFailed(msg);
         });
@@ -1023,11 +1052,79 @@ void GraphUtils::unmuteReposts(const QString& did)
     removeListUser(mutedReposts.getListUri(), *listItemUri);
 }
 
+void GraphUtils::addTrustedVerifier(const BasicProfile& profile)
+{
+    auto* verificationUtils = mSkywalker->getVerificationUtils();
+
+    if (profile.getVerificationState().getTrustedVerifierStatus() == QEnums::VERIFIED_STATUS_VALID ||
+        verificationUtils->isVerifier(profile.getDid()))
+    {
+        emit addTrustedVerifierFailed(tr("%1 is already a trusted verifier").arg(profile.getHandle()));
+        return;
+    }
+
+    if (verificationUtils->size() >= VerificationUtils::MAX_VERIFIERS)
+    {
+        emit addTrustedVerifierFailed(tr("Cannot add more trusted verifiers"));
+        return;
+    }
+
+    const QString& listUri = verificationUtils->getListUri();
+
+    if (listUri.isEmpty())
+    {
+        graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::CURATE_LIST,
+            LIST_NAME_TRUSTED_VERIFIERS,
+            "Used by Skywalker to store trusted verifiers. Do not delete.",
+            {}, {}, "",
+            [this, presence=getPresence(), profile](const QString& uri, const QString&){
+                if (!presence)
+                    return;
+
+                auto* verificationUtils = mSkywalker->getVerificationUtils();
+                verificationUtils->setListUri(uri);
+                emit createdTrustedVerifierList(uri);
+                addListUser(uri, profile);
+            },
+            [this, presence=getPresence()](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
+
+                qDebug() << "Add trusted verifier failed:" << error << " - " << msg;
+                emit addTrustedVerifierFailed(msg);
+            });
+    }
+    else
+    {
+        addListUser(listUri, profile);
+    }
+}
+
+void GraphUtils::removeTrustedVerifier(const QString& did)
+{
+    Q_ASSERT(mSkywalker);
+    auto* verificationUtils = mSkywalker->getVerificationUtils();
+    const QString* listItemUri = verificationUtils->getListItemUri(did);
+
+    if (!listItemUri)
+        return;
+
+    removeListUser(verificationUtils->getListUri(), *listItemUri, did);
+}
+
 void GraphUtils::findMutedRepostsList(const ListSuccessCb& successCb, const ErrorCb& errorCb)
 {
     Q_ASSERT(mSkywalker);
     graphMaster()->getListByName(mSkywalker->getUserDid(), LIST_NAME_MUTED_REPOSTS,
                                  ATProto::AppBskyGraph::ListPurpose::MOD_LIST, {},
+                                 successCb, errorCb);
+}
+
+void GraphUtils::findTrustedVerifiersList(const ListSuccessCb& successCb, const ErrorCb& errorCb)
+{
+    Q_ASSERT(mSkywalker);
+    graphMaster()->getListByName(mSkywalker->getUserDid(), LIST_NAME_TRUSTED_VERIFIERS,
+                                 ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, {},
                                  successCb, errorCb);
 }
 
@@ -1038,7 +1135,8 @@ bool GraphUtils::isInternalList(const ATProto::AppBskyGraph::ListView& listView)
     if (atUri.isValid() && atUri.getRkey() == RKEY_MUTED_REPOSTS_DEPRECATED)
         return true;
 
-    return listView.mName == LIST_NAME_MUTED_REPOSTS;
+    return listView.mName == LIST_NAME_MUTED_REPOSTS ||
+           listView.mName == LIST_NAME_TRUSTED_VERIFIERS;
 }
 
 void GraphUtils::expireBlocks()

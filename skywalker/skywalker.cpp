@@ -849,6 +849,69 @@ void Skywalker::loadContentFilterPolicies(QStringList uris)
         });
 }
 
+void Skywalker::loadTrustedVerifiers()
+{
+    Q_ASSERT(mBsky);
+
+    if (!mIsActiveUser)
+    {
+        qDebug() << "No acitve user";
+        loadMutedReposts();
+        return;
+    }
+
+    mGraphUtils.findTrustedVerifiersList(
+        [this](const QString& uri, const QString&){
+            loadTrustedVerifiersContinue(uri);
+        },
+        [this](const QString& error, const QString& msg){
+            handleTrustedVerifiersError(error, msg);
+        });
+}
+
+void Skywalker::loadTrustedVerifiersContinue(const QString& uri)
+{
+    qDebug() << "Load trusted verifiers:" << uri;
+
+    mBsky->getList(uri, VerificationUtils::MAX_VERIFIERS, {},
+        [this, uri](auto output){
+            auto* verificationUtils = getVerificationUtils();
+            verificationUtils->setListUri(uri);
+
+            for (const auto& item : output->mItems)
+                verificationUtils->addVerifier(item->mSubject->mDid, item->mUri);
+
+            verificationUtils->loadCache();
+            loadMutedReposts();
+        },
+        [this](const QString& error, const QString& msg){
+            handleTrustedVerifiersError(error, msg);
+        });
+}
+
+void Skywalker::handleTrustedVerifiersError(const QString& error, const QString& msg)
+{
+    if (ATProto::ATProtoErrorMsg::isListNotFound(error))
+    {
+        qDebug() << "No trusted verifiers list:" << error << " - " << msg;
+        const QString& pds = mBsky->getPDS();
+
+        if (pds.endsWith(EUROSKY_DOMAN))
+        {
+            qDebug() << "Eurosky user:" << mUserDid;
+            const BasicProfile profile(EUROSKY_DID, EUROSKY_HANDLE, EUROSKY_NAME, "");
+            mGraphUtils.addTrustedVerifier(profile);
+        }
+
+        loadMutedReposts();
+    }
+    else
+    {
+        qWarning() << "loadTrustedVerifiers failed:" << error << " - " << msg;
+        emit getUserPreferencesFailed(tr("Failed to load trusted verifiers: %1").arg(msg));
+    }
+}
+
 void Skywalker::loadMutedReposts()
 {
     Q_ASSERT(mBsky);
@@ -946,7 +1009,7 @@ void Skywalker::loadLabelSettings()
     if (dids.empty())
     {
         qDebug() << "No labelers";
-        loadMutedReposts();
+        loadTrustedVerifiers();
         return;
     }
 
@@ -991,7 +1054,7 @@ void Skywalker::loadLabelSettings()
                 mContentFilter.saveAllNewLabelIdsToSettings();
             }
 
-            loadMutedReposts();
+            loadTrustedVerifiers();
         },
         [this](const QString& error, const QString& msg){
             qWarning() << "initLabelSettings failed:" << error << " - " << msg;
@@ -4219,7 +4282,7 @@ void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const Q
 {
     const auto* model = mAuthorListModels.get(modelId);
 
-    // HACK: for the muted reposts lists an empty URI is passed when it is not created yet.
+    // HACK: for the muted reposts and trusted verifiers lists an empty URI is passed when it is not created yet.
     if (atId.isEmpty())
         return;
 
@@ -4305,6 +4368,7 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         Q_ASSERT(false);
         break;
     case AuthorListModel::Type::AUTHOR_LIST_LIST_MEMBERS:
+    case AuthorListModel::Type::AUTHOR_LIST_TRUSTED_VERIFIERS:
         getListMembersAuthorList(atId, limit, cursor, id);
         break;
     case AuthorListModel::Type::AUTHOR_LIST_SUGGESTIONS:
@@ -5425,6 +5489,13 @@ void Skywalker::signOut()
 
     mUserSettings.sync();
     mSessionManager.saveTokens();
+
+    if (mVerificationUtils)
+    {
+        mVerificationUtils->saveCache();
+        mVerificationUtils = nullptr;
+    }
+
     mPostMaster = nullptr;
 
     stopTimelineAutoUpdate();

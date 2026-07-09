@@ -20,6 +20,7 @@ Rectangle {
     property bool showAuthor: authorVisible()
     property bool showFollow: true
     property bool showActivitySubscription: false
+    property bool showDescription: true
     property bool highlight: false
     property string highlightColor: guiSettings.postHighLightColor
     property int maximumDescriptionLineCount: 25
@@ -29,7 +30,7 @@ Rectangle {
 
     signal follow(basicprofile profile)
     signal unfollow(string did, string uri)
-    signal deleteItem(string listItemUri)
+    signal deleteItem(string listItemUri, string did)
     signal clicked(basicprofile profile)
 
     id: authorRect
@@ -173,7 +174,7 @@ Rectangle {
             showEllipsis: false
             color: guiSettings.textColor
             plainText: authorRect.formatDescription ?  postUtils.linkiFy(author.description, guiSettings.linkColor) : author.description
-            visible: showAuthor && author.description
+            visible: showAuthor && author.description && showDescription
 
             LinkCatcher {
                 userDid: authorRect.userDid
@@ -220,7 +221,7 @@ Rectangle {
         guiSettings.askYesNoQuestion(
                     authorRect,
                     qsTr(`Do you really want to delete: @${author.handle} ?`),
-                    () => deleteItem(listItemUri))
+                    () => deleteItem(listItemUri, author.did))
     }
 
     function authorVisible() {

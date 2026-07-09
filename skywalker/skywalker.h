@@ -407,6 +407,9 @@ private:
     void loadTimelineHide(QStringList uris);
     void loadContentFilterPolicies();
     void loadContentFilterPolicies(QStringList uris);
+    void loadTrustedVerifiers();
+    void loadTrustedVerifiersContinue(const QString& uri);
+    void handleTrustedVerifiersError(const QString& error, const QString& msg);
     void loadMutedReposts();
     void loadMutedRepostsContinue(const QString& uri, int maxPages = 10, const QString& cursor = {});
     void handleLoadMutedRepostsError(const QString& error, const QString& msg);

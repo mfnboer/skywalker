@@ -5,6 +5,7 @@ import skywalker
 
 Rectangle {
     required property string title
+    property string subTitle
     property string description
     property bool isSideBar: false
     property string userDid
@@ -16,6 +17,7 @@ Rectangle {
     id: header
     width: parent.width
     height: visible ? headerColumn.height : 0
+    Layout.preferredHeight: visible ? headerColumn.height : 0
     z: guiSettings.headerZLevel
     color: "transparent"
 
@@ -40,21 +42,33 @@ Rectangle {
                     accessibleName: qsTr("go back")
                     onClicked: header.closed()
                 }
-                AccessibleText {
-                    id: headerTexts
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.fillWidth: true
-                    leftPadding: 10
-                    font.bold: true
-                    font.pointSize: isSideBar ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
-                    elide: Text.ElideRight
-                    color: guiSettings.headerTextColor
-                    text: title
 
-                    Accessible.role: Accessible.TitleBar
-                    Accessible.name: text
-                    Accessible.description: Accessible.name
+                Column {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+
+                    AccessibleText {
+                        width: parent.width
+                        font.bold: true
+                        font.pointSize: (Boolean(subTitle) || isSideBar) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
+                        elide: Text.ElideRight
+                        color: guiSettings.headerTextColor
+                        text: title
+
+                        Accessible.role: Accessible.TitleBar
+                        Accessible.name: text
+                        Accessible.description: Accessible.name
+                    }
+                    AccessibleText {
+                        width: parent.width
+                        color: guiSettings.handleColor
+                        font.pointSize: guiSettings.scaledFont(7/8)
+                        elide: Text.ElideRight
+                        text: subTitle
+                        visible: Boolean(subTitle)
+                    }
                 }
+
                 Loader {
                     id: currentUserAvatar
                     Layout.rightMargin: active ? 10 : 0

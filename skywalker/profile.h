@@ -383,6 +383,10 @@ public:
     Profile() = default;
     explicit Profile(const ATProto::AppBskyActor::ProfileView::SharedPtr& profile);
     explicit Profile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
+
+    // Turn a basic profile into a profile with an empty description
+    explicit Profile(const ATProto::AppBskyActor::ProfileViewBasic::SharedPtr& profile);
+
     Profile(const QString& did, const QString& handle, const QString& displayName,
             const QString& avatarUrl);
 

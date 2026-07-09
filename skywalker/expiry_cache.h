@@ -37,6 +37,11 @@ public:
         return mExpiryInterval;
     }
 
+    bool contains(const Key& key) const
+    {
+        return object(key) != nullptr;
+    }
+
     bool insert(const Key& key, Value* object, qsizetype cost = 1)
     {
         auto* entry = new Entry{object, QDateTime::currentDateTimeUtc()};

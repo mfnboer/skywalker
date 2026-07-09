@@ -170,6 +170,12 @@ void AuthorListModel::prependAuthor(const Profile& author, const QString& listIt
         setEndOfList();
 }
 
+void AuthorListModel::prependBasicProfile(const BasicProfile& author, const QString& listItemUri)
+{
+    Profile profile(author.getProfileBasicView());
+    prependAuthor(profile, listItemUri);
+}
+
 void AuthorListModel::deleteEntry(int index)
 {
     qDebug() << "Delete entry:" << index;

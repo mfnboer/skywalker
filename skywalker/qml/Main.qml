@@ -430,7 +430,6 @@ ApplicationWindow {
             skywalker.loadMutedWords()
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
-            skywalker.getVerificationUtils().loadCache();
             skywalker.chat.start()
             setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
@@ -980,6 +979,11 @@ ApplicationWindow {
                 const r = root
                 page.onClosed.connect(() => { r.popStack() })
                 pushStack(page)
+                close()
+            }
+
+            onVerifiers: {
+                viewTrustedVerifiers()
                 close()
             }
 
@@ -2309,6 +2313,28 @@ ApplicationWindow {
 
     function viewAuthorListByUser(viewByDid, modelId, title) {
         viewAuthorList(modelId, title, "", true, false, viewByDid)
+    }
+
+    function viewTrustedVerifiers(viewByDid = "") {
+        let verifcationUtils = skywalker.getVerificationUtils()
+        let listUri = verifcationUtils.getListUri()
+        let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_TRUSTED_VERIFIERS, listUri)
+
+        let component = guiSettings.createComponent("AuthorListView.qml")
+        let view = component.createObject(root, {
+                title: qsTr("Trusted Verifiers"),
+                modelId: modelId,
+                userDid: viewByDid,
+                description: qsTr("Verifiers you trust in addition to Bluesky trusted verifiers."),
+                showFollow: false,
+                showDescription: false,
+                allowDeleteItem: true,
+                allowAddItem: true,
+                maxItems: verifcationUtils.MAX_VERIFIERS
+        })
+        view.onClosed.connect(() => { popStack() })
+        pushStack(view)
+        getSkywalker(viewByDid).getAuthorList(modelId, verifcationUtils.MAX_VERIFIERS)
     }
 
     function viewSimpleAuthorList(title, profiles, viewedByDid = "") {
