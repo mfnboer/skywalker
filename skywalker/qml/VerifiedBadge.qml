@@ -7,7 +7,7 @@ Image {
 
     id: badge
     fillMode: Image.PreserveAspectFit
-    source: "/images/verified_check.svg"
+    source: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID ? "/images/verified_check.svg" : "/images/verified_check_pink.svg"
     asynchronous: true
 
     SkyMouseArea {

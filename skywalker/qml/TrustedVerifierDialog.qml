@@ -13,7 +13,7 @@ SkyDialog {
 
     id: page
     width: parent.width - 40
-    contentHeight: nameText.height + handleText.height + verifiedByText.height + 10
+    contentHeight: nameText.height + handleText.height + verifiedByText.height + viewText.height + 10
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
@@ -46,5 +46,21 @@ SkyDialog {
         width: parent.width - 20
         wrapMode: Text.Wrap
         text: qsTr(`Verifiers can verify other accounts. ${verifierReason}`)
+    }
+
+    AccessibleText {
+        id: viewText
+        x: 10
+        width: parent.width - 20
+        anchors.top: verifiedByText.bottom
+        anchors.topMargin: 10
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+        textFormat: Text.RichText
+        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">View trusted verifiers</a>.`)
+        onLinkActivated: {
+            root.viewTrustedVerifiers()
+            page.accept()
+        }
     }
 }

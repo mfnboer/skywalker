@@ -11,7 +11,7 @@ SkyDialog {
 
     id: page
     width: parent.width - 40
-    contentHeight: nameText.height + handleText.height + verifiedByText.height + verifierList.contentHeight + 20
+    contentHeight: nameText.height + handleText.height + verifiedByText.height + verifierList.contentHeight + viewText.height + 20
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
@@ -49,7 +49,7 @@ SkyDialog {
         id: verifierList
         anchors.topMargin: 10
         anchors.top: verifiedByText.bottom
-        anchors.bottom: parent.bottom
+        anchors.bottom: viewText.top
         width: parent.width - 20
         model: page.getVerifications()
         boundsBehavior: ListView.StopAtBounds
@@ -77,7 +77,7 @@ SkyDialog {
 
                     Avatar {
                         x: 10
-                        anchors.verticalCenter: parent.verticalCenter
+                        //anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - 13
                         userDid: page.userDid
                         author: issuer
@@ -117,9 +117,9 @@ SkyDialog {
                     AccessibleText {
                         width: parent.width
                         topPadding: 10
-                        elide: Text.ElideRight
+                        wrapMode: Text.Wrap
                         color: guiSettings.errorColor
-                        text: "⚠️ Verification invalid"
+                        text: "⚠️ " + getInvalidReason(modelData)
                         visible: !modelData.isValid
                     }
 
@@ -128,7 +128,7 @@ SkyDialog {
                         wrapMode: Text.Wrap
                         textFormat: Text.StyledText
                         text: `<b>Verified name:</b><br>${modelData.verifiedDisplayName}`
-                        visible: !modelData.isValid && modelData.verifiedDisplayName
+                        visible: !modelData.isValid && modelData.verifiedDisplayName !== author.displayName
                     }
 
                     AccessibleText {
@@ -136,7 +136,7 @@ SkyDialog {
                         wrapMode: Text.Wrap
                         textFormat: Text.StyledText
                         text: `<b>Verified handle:</b><br>${modelData.verifiedHandle}`
-                        visible: !modelData.isValid && modelData.verifiedHandle
+                        visible: !modelData.isValid && modelData.verifiedHandle !== author.handle
                     }
                 }
             }
@@ -163,6 +163,22 @@ SkyDialog {
         }
     }
 
+    AccessibleText {
+        id: viewText
+        x: 10
+        width: parent.width - 20
+        anchors.bottom: parent.bottom
+        topPadding: 10
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+        textFormat: Text.RichText
+        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">View trusted verifiers</a>.`)
+        onLinkActivated: {
+            root.viewTrustedVerifiers()
+            page.accept()
+        }
+    }
+
     Connections {
         target: skywalker.getVerificationUtils()
 
@@ -172,6 +188,20 @@ SkyDialog {
 
             userVerifications = verifications
         }
+    }
+
+    function getInvalidReason(verification) {
+        if (verification.verifiedDisplayName && verification.verifiedDisplayName !== author.displayName) {
+            if (verification.verifiedHandle && verification.verifiedHandle !== author.handle)
+                return qsTr("Name and handle changed after verification")
+            else
+                return qsTr("Name changed after verification")
+        }
+
+        if (verification.verifiedHandle && verification.verifiedHandle !== author.handle)
+            return qsTr("Handle changed after verification")
+
+        return "unknown"
     }
 
     function getVerifications() {

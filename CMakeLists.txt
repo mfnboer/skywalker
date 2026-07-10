@@ -84,6 +84,8 @@ qt_add_qml_module(appskywalker
         images/dont_panic.png
         images/verified_check.svg
         images/verifier_check.svg
+        images/verified_check_pink.svg
+        images/verifier_check_pink.svg
         images/songlink-odesli-logo-light.png
         images/songlink-odesli-logo-dark.png
         images/spotify-logo.png
