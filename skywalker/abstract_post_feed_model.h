@@ -56,8 +56,8 @@ public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
 
     // I have seen that posts in chronological feeds like timeline and list feeds are not
-    // always strictly chronological. I have seen deviations up to 40s.
-    static constexpr auto MAX_CHRONO_DEVIATION_DT = 50s;
+    // always strictly chronological. I have seen deviations up to 75s.
+    static constexpr auto MAX_CHRONO_DEVIATION_DT = 120s;
 
     enum class Role {
         UserDid = Qt::UserRole + 1,

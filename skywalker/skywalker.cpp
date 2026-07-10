@@ -4278,6 +4278,37 @@ void Skywalker::getRepostsAuthorList(const QString& atId, int limit, const QStri
         });
 }
 
+void Skywalker::getVerificationsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
+{
+    qDebug() << "Get verification authors list:" << atId << "limit:" << limit << "cursor:" << cursor << "modelId:" << modelId;
+    limit = std::min(limit, ATProto::GraphMaster::MAX_GET_VERIFICATIONS);
+    const auto* model = mAuthorListModels.get(modelId);
+
+    if (model)
+        (*model)->setGetFeedInProgress(true);
+
+    mGraphUtils.graphMaster()->getVerifications(atId, limit, Utils::makeOptionalString(cursor),
+        [this, modelId](auto output){
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+            {
+                (*model)->setGetFeedInProgress(false);
+                (*model)->addAuthors(std::move(output->mVerifiedUsers), output->mCursor.value_or(""));
+            }
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qDebug() << "getVerificationsAuthorList failed:" << error << " - " << msg;
+
+            const auto* model = mAuthorListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
 void Skywalker::getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId)
 {
     const auto* model = mAuthorListModels.get(modelId);
@@ -4379,6 +4410,9 @@ void Skywalker::getAuthorList(int id, int limit, const QString& cursor)
         break;
     case AuthorListModel::Type::AUTHOR_LIST_ACTIVE_FOLLOWS:
         getActiveFollowsAuthorList(id, cursor);
+        break;
+    case AuthorListModel::Type::AUTHOR_LIST_VERIFICATIONS:
+        getVerificationsAuthorList(atId, limit, cursor, id);
         break;
     }
 }

@@ -84,6 +84,8 @@ public:
     void startExpiryCheckTimer();
     void stopExpiryCheckTimer();
 
+    ATProto::GraphMaster* graphMaster();
+
 signals:
     void followOk(QString uri);
     void followFailed(QString error);
@@ -148,7 +150,6 @@ private:
     void expireMutes();
     void checkExpiry();
 
-    ATProto::GraphMaster* graphMaster();
     std::unique_ptr<ATProto::GraphMaster> mGraphMaster;
     QTimer mExpiryCheckTimer;
     bool mBlockBusy = false;

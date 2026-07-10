@@ -372,6 +372,7 @@ private:
     void getSuggestionsAuthorList(int limit, const QString& cursor, int modelId);
     void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getVerificationsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
     void getListListAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);

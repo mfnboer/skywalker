@@ -42,6 +42,7 @@ SkyPage {
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
     readonly property bool hasStarterPacks: author.associated.starterPacks > 0
     readonly property int starterPackListModelId: skywalker.createStarterPackListModel()
+    readonly property int verificationModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFICATIONS, author.did)
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
     property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
@@ -780,6 +781,10 @@ SkyPage {
                     id: listsTab
                     text: qsTr("Lists")
                 }
+                AccessibleTabButton {
+                    id: verificationsTab
+                    text: qsTr("Verifications")
+                }
 
                 Component.onCompleted: {
                     if (!isLabeler)
@@ -1317,6 +1322,62 @@ SkyPage {
                 }
             }
 
+            // Verifications
+            Loader {
+                id: verificationsView
+                active: true
+                asynchronous: true
+
+                sourceComponent: ListView {
+                    id: authorVerificationList
+                    width: parent.width
+                    height: parent.height
+                    clip: true
+                    spacing: 0
+                    model: skywalker.getAuthorListModel(verificationModelId)
+                    flickDeceleration: guiSettings.flickDeceleration
+                    maximumFlickVelocity: guiSettings.maxFlickVelocity
+                    pixelAligned: guiSettings.flickPixelAligned
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                    interactive: !authorFeedView.interactive
+
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
+
+                    delegate: AuthorViewDelegate {
+                        width: authorFeedView.width
+                        userDid: page.userDid
+                        showFollow: false
+                    }
+
+                    FlickableRefresher {
+                        inProgress: authorVerificationList.model?.getFeedInProgress
+                        bottomOvershootFun: () => getAuthorListNextPage(verificationModelId)
+                    }
+
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: authorVerificationList.model?.getFeedInProgress
+                    }
+
+                    EmptyListIndication {
+                        svg: SvgOutline.noUsers
+                        text: qsTr("No verifications")
+                        list: authorVerificationList
+                    }
+
+                    function refresh() {
+                        getAuthorList(listListModelId)
+                    }
+
+                    function clear() {
+                        model.clear()
+                    }
+                }
+            }
+
             Component.onCompleted: {
                 if (!isLabeler)
                     removeItem(labelsView)
@@ -1786,6 +1847,16 @@ SkyPage {
             skywalker.getAuthorStarterPackListNextPage(author.did, modelId)
     }
 
+    function getAuthorList(modelId) {
+        if (mustGetFeed())
+            skywalker.getAuthorList(modelId, 25)
+    }
+
+    function getAuthorListNextPage(modelId) {
+        if (mustGetFeed())
+            skywalker.getAuthorListNextPage(modelId)
+    }
+
     function updateLists() {
         let listModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, skywalker.getUserDid())
         let listModel = skywalker.getListListModel(listModelId)
@@ -1924,6 +1995,7 @@ SkyPage {
         skywalker.removeFeedListModel(feedListModelId)
         skywalker.removeListListModel(listListModelId)
         skywalker.removeStarterPackListModel(starterPackListModelId)
+        skywalker.removeAuthorListModel(verificationModelId)
 
         if (contentGroupListModelId > -1) {
             // Tracking for new labels is only done for the default settings
@@ -1980,6 +2052,8 @@ SkyPage {
 
         if (isLabeler)
             profileUtils.getLabelerViewDetailed(author.did)
+
+        getAuthorList(verificationModelId)
 
         // HACK: directly setting the current index does not work...
         Qt.callLater(() => {
