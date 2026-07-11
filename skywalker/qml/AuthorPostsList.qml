@@ -167,10 +167,12 @@ SkyListView {
     }
 
     function removeModel() {
+        clear()
+
+        // HACK: ideally we should set model to null before removing it.
+        // But that causes a crash (bug in Qt??)
         if (modelId >= 0) {
-            const id = modelId
-            modelId = -1
-            skywalker.removeAuthorFeedModel(id)
+            skywalker.removeAuthorFeedModel(modelId)
         }
     }
 
