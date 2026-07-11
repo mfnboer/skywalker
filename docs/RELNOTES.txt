@@ -1,6 +1,8 @@
 next
 ====
 * Choose GoogleTranslate, DeepL or other app for translation
+* Show verification badges from verifiers you trust
+* Show verifications on profile page
 * Click on alt-text to maximize
 * Button to expand reply-to message in chat
 * Show PDS on profile

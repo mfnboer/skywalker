@@ -16,6 +16,7 @@ SkyListView {
     id: postFeedView
     cacheBuffer: Screen.height * 3
     model: skywalker.getPostFeedModel(modelId)
+    preloadNextPageFunc: () => skywalker.getAlsoLikedFeedNextPage(modelId)
 
     Accessible.name: sideBarTitle
 
@@ -60,15 +61,6 @@ SkyListView {
                 color: guiSettings.separatorColor
             }
         }
-    }
-
-    onMovementEnded: {
-        const firstVisibleIndex = getFirstVisibleIndex()
-        const lastVisibleIndex = getLastVisibleIndex()
-        const remaining = count - lastVisibleIndex
-
-        if (remaining < 10 && !model.getFeedInProgress)
-            skywalker.getAlsoLikedFeedNextPage(modelId)
     }
 
     onErrorChanged: {

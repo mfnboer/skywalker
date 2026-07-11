@@ -21,6 +21,7 @@ Rectangle {
     property bool showFollow: true
     property bool showActivitySubscription: false
     property bool showDescription: true
+    property bool showVerificationDate: false
     property bool highlight: false
     property string highlightColor: guiSettings.postHighLightColor
     property int maximumDescriptionLineCount: 25
@@ -51,7 +52,7 @@ Rectangle {
         // Avatar
         Rectangle {
             id: avatar
-            Layout.rowSpan: 3
+            Layout.rowSpan: showVerificationDate ? 4 : 3
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
@@ -179,6 +180,25 @@ Rectangle {
             LinkCatcher {
                 userDid: authorRect.userDid
                 author: authorRect.author
+            }
+        }
+
+        Loader {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
+            active: showVerificationDate
+
+            sourceComponent: AccessibleText {
+                readonly property list<verificationview> verifications: author.verificationState.verifications
+                readonly property string verificationDate: verifications.length > 0 ?
+                        verifications[verifications.length - 1].createdAt.toLocaleDateString(Qt.locale(), Locale.ShortFormat) :
+                        qsTr("unknown")
+
+                rightPadding: 10 + authorRect.textRightPadding
+                wrapMode: Text.Wrap
+                font.italic: true
+                text: qsTr(`Verified at ${verificationDate}`)
             }
         }
 

@@ -84,6 +84,7 @@ SkyPage {
             model: skywalker.notificationListModel
             cacheBuffer: Screen.height * 3
             clip: true
+            preloadNextPageFunc: () => skywalker.getNotificationsNextPage(false)
 
             delegate: NotificationViewDelegate {
                 width: page.width
@@ -98,15 +99,6 @@ SkyPage {
                         skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, true, false)
                         skywalker.getNotifications(skywalker.NOTIFICATION_PAGE_SIZE, false, true)
                     }
-                }
-            }
-
-            onContentYChanged: {
-                const lastVisibleIndex = getLastVisibleIndex()
-
-                if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
-                    console.debug("Get next notification page")
-                    skywalker.getNotificationsNextPage(false)
                 }
             }
 
@@ -151,6 +143,7 @@ SkyPage {
             model: skywalker.mentionListModel
             cacheBuffer: Screen.height * 3
             clip: true
+            preloadNextPageFunc: () => skywalker.getNotificationsNextPage(true)
 
             delegate: NotificationViewDelegate {
                 width: page.width
@@ -160,18 +153,6 @@ SkyPage {
             SwipeView.onIsCurrentItemChanged: {
                 if (!SwipeView.isCurrentItem)
                     cover()
-            }
-
-            onMovementEnded: updateOnMovement()
-            onContentMoved: updateOnMovement()
-
-            function updateOnMovement() {
-                const lastVisibleIndex = getLastVisibleIndex()
-
-                if (count - lastVisibleIndex < 10 && !model?.getFeedInProgress) {
-                    console.debug("Get next mentions page")
-                    skywalker.getNotificationsNextPage(true)
-                }
             }
 
             FlickableRefresher {

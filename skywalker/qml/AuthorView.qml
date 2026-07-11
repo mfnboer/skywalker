@@ -1328,18 +1328,15 @@ SkyPage {
                 active: true
                 asynchronous: true
 
-                sourceComponent: ListView {
+                sourceComponent: SkyListView {
                     id: authorVerificationList
                     width: parent.width
                     height: parent.height
                     clip: true
                     spacing: 0
                     model: skywalker.getAuthorListModel(verificationModelId)
-                    flickDeceleration: guiSettings.flickDeceleration
-                    maximumFlickVelocity: guiSettings.maxFlickVelocity
-                    pixelAligned: guiSettings.flickPixelAligned
-                    ScrollIndicator.vertical: ScrollIndicator {}
                     interactive: !authorFeedView.interactive
+                    preloadNextPageFunc: () => getAuthorListNextPage(verificationModelId)
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
@@ -1350,6 +1347,7 @@ SkyPage {
                         width: authorFeedView.width
                         userDid: page.userDid
                         showFollow: false
+                        showVerificationDate: true
                     }
 
                     FlickableRefresher {

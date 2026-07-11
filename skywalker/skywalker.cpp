@@ -4287,7 +4287,11 @@ void Skywalker::getVerificationsAuthorList(const QString& atId, int limit, const
     if (model)
         (*model)->setGetFeedInProgress(true);
 
-    mGraphUtils.graphMaster()->getVerifications(atId, limit, Utils::makeOptionalString(cursor),
+    // NOTE: add verifications as invalid, so they do not show up as a valid verification
+    // on a profile. When you ask all verifications from a trusted verifier, e.g. Bluesky, then
+    // the verification from Bluesky will be twice in the the list; first as the official
+    // verification, second as a result of this request.
+    mGraphUtils.graphMaster()->getVerifications(atId, false, limit, Utils::makeOptionalString(cursor),
         [this, modelId](auto output){
             const auto* model = mAuthorListModels.get(modelId);
 

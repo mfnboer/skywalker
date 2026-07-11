@@ -23,6 +23,7 @@ SkyListView {
     model: modelId >= 0 ? skywalker.getAuthorFeedModel(page.modelId) : null
     interactive: !enclosingView.interactive
     clip: true
+    preloadNextPageFunc: () => getFeedNextPage(modelId)
 
     SwipeView.onIsCurrentItemChanged: changeCurrentItem(SwipeView.isCurrentItem)
 
@@ -58,21 +59,6 @@ SkyListView {
             } else {
                 console.warn("This is not a media feed")
             }
-        }
-    }
-
-    onMovementEnded: updateOnMovement()
-    onContentMoved: updateOnMovement()
-
-    function updateOnMovement() {
-        if (modelId < 0)
-            return
-
-        const lastVisibleIndex = getLastVisibleIndex()
-
-        if (count - lastVisibleIndex < 10 && Boolean(model) && !model.getFeedInProgress) {
-            console.debug("Get next author feed page")
-            getFeedNextPage(modelId)
         }
     }
 

@@ -15,6 +15,8 @@ ListView {
     readonly property int virtualFooterY: virtualFooterTopY < height ? Math.max(virtualFooterTopY, height - virtualFooterHeight) : height
     property int prevContentY: 0
     property bool fastMoving: false
+    property var preloadNextPageFunc
+    property int preloadThreshold: 10
 
     signal contentMoved()
 
@@ -50,10 +52,10 @@ ListView {
         if (virtualFooterHeight !== 0)
             moveVirtualFooter()
 
+        preloadNextPage()
+
         if (!enableOnScreenCheck)
             return
-
-
 
         for (let index = getFirstNonNullIndex(); index < count; ++index) {
             const item = itemAtIndex(index)
@@ -71,7 +73,20 @@ ListView {
         if (Math.abs(contentY - prevContentY) > 250) {
             prevContentY = contentY
             fastMoving = fastMoving || (Math.abs(verticalVelocity) > guiSettings.slowFlickVelocity)
+            preloadNextPage()
             contentMoved()
+        }
+    }
+
+    function preloadNextPage() {
+        if (!preloadNextPageFunc)
+            return
+
+        const lastVisibleIndex = getLastVisibleIndex()
+
+        if (count - lastVisibleIndex < preloadThreshold && !model.getFeedInProgress) {
+            console.debug("Preload next page")
+            preloadNextPageFunc()
         }
     }
 
