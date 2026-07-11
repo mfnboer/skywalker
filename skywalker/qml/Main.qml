@@ -2330,8 +2330,20 @@ ApplicationWindow {
                 showDescription: false,
                 allowDeleteItem: true,
                 allowAddItem: true,
-                maxItems: verifcationUtils.MAX_VERIFIERS
+                maxItems: verifcationUtils.MAX_VERIFIERS,
+                sideBarButtonSvg: SvgOutline.help,
+                sideBarButtonName: qsTr("help")
         })
+        view.onSideBarButtonClicked.connect(() =>
+            guiSettings.notice(root, qsTr(
+                "Following badges will be shown for users verified by:<br><br>" +
+                "<img src=\"/images/verified_check.svg\" align=\"top\" width=\"16\" height=\"16\"/> Bluesky trusted verfier<br>" +
+                "<img src=\"/images/verified_check_pink.svg\" align=\"top\" width=\"16\" height=\"16\"/> Verfier trusted by you<br><br>" +
+                "For verifiers the following badges will be shown:<br><br>" +
+                "<img src=\"/images/verifier_check.svg\" align=\"top\" width=\"16\" height=\"16\"/> Bluesky trusted<br>" +
+                "<img src=\"/images/verifier_check_pink.svg\" align=\"top\" width=\"16\" height=\"16\"/> Trusted by you"
+            ))
+        )
         view.onClosed.connect(() => { popStack() })
         pushStack(view)
         getSkywalker(viewByDid).getAuthorList(modelId, verifcationUtils.MAX_VERIFIERS)

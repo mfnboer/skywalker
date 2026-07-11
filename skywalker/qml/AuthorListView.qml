@@ -20,8 +20,11 @@ SkyListView {
     readonly property string sideBarTitle: authorListView.title
     readonly property string sideBarDescription: authorListView.description
     readonly property SvgImage sideBarSvg: SvgOutline.group
+    property var sideBarButtonSvg: undefined
+    property string sideBarButtonName
 
     signal closed
+    signal sideBarButtonClicked(Item item, point p)
 
     id: authorListView
     model: skywalker.getAuthorListModel(modelId)
@@ -41,6 +44,18 @@ SkyListView {
             description: sideBarDescription
             visible: authorListView.title && !root.showSideBar
             onClosed: authorListView.closed()
+
+            Loader {
+                anchors.right: parent.right
+                anchors.top: parent.top
+                active: sideBarButtonSvg != undefined
+
+                sourceComponent: SvgPlainButton {
+                    svg: sideBarButtonSvg
+                    accessibleName: sideBarButtonName
+                    onClicked: sideBarButtonClicked(authorListView.header, Qt.point(x, y))
+                }
+            }
         }
     }
     headerPositioning: ListView.OverlayHeader
