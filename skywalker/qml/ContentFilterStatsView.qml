@@ -34,7 +34,7 @@ SkyPage {
 
     function sideBarButtonClicked(mouseView, clickPoint) {
         guiSettings.notice(page, qsTr(
-            "This pages shows you how many posts have been filtered from your feed due to " +
+            "This page shows you how many posts have been filtered from your feed due to " +
             "various settings:<br><br>" +
             "⚙️ feed preferences<br>" +
             "⚙️ muted users<br>" +
