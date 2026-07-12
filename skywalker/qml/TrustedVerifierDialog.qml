@@ -57,7 +57,7 @@ SkyDialog {
         horizontalAlignment: Text.AlignHCenter
         elide: Text.ElideRight
         textFormat: Text.RichText
-        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">View trusted verifiers</a>.`)
+        text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">View trusted verifiers</a>`)
         onLinkActivated: {
             root.viewTrustedVerifiers()
             page.accept()

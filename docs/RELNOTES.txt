@@ -1,4 +1,4 @@
-next
+4.40
 ====
 * Choose GoogleTranslate, DeepL or other app for translation
 * Show verification badges from verifiers you trust

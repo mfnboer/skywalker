@@ -2336,12 +2336,12 @@ ApplicationWindow {
         })
         view.onSideBarButtonClicked.connect(() =>
             guiSettings.notice(root, qsTr(
-                "Following badges will be shown for users verified by:<br><br>" +
-                "<img src=\"/images/verified_check.svg\" align=\"top\" width=\"16\" height=\"16\"/> Bluesky trusted verfier<br>" +
-                "<img src=\"/images/verified_check_pink.svg\" align=\"top\" width=\"16\" height=\"16\"/> Verfier trusted by you<br><br>" +
-                "For verifiers the following badges will be shown:<br><br>" +
-                "<img src=\"/images/verifier_check.svg\" align=\"top\" width=\"16\" height=\"16\"/> Bluesky trusted<br>" +
-                "<img src=\"/images/verifier_check_pink.svg\" align=\"top\" width=\"16\" height=\"16\"/> Trusted by you"
+                "These badges will be shown for users verified by:<br><br>" +
+                "<img src=\"/images/verified_check.svg\" align=\"middle\" width=\"16\" height=\"16\"/>&nbsp; Bluesky trusted verfier<br>" +
+                "<img src=\"/images/verified_check_pink.svg\" align=\"middle\" width=\"16\" height=\"16\"/>&nbsp; Verfier trusted by you<br><br>" +
+                "For verifiers these badges will be shown:<br><br>" +
+                "<img src=\"/images/verifier_check.svg\" align=\"middle\" width=\"16\" height=\"16\"/>&nbsp; Bluesky trusted<br>" +
+                "<img src=\"/images/verifier_check_pink.svg\" align=\"middle\" width=\"16\" height=\"16\"/>&nbsp; Trusted by you"
             ))
         )
         view.onClosed.connect(() => { popStack() })
