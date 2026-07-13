@@ -325,7 +325,7 @@ SkyPage {
             id: postsViewLatest
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, SearchSortOrder.LATEST)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, SearchSortOrder.RECENT)
             clip: true
 
             delegate: PostFeedViewDelegate {
@@ -344,7 +344,7 @@ SkyPage {
             FlickableRefresher {
                 inProgress: postsViewLatest.model && postsViewLatest.model.getFeedInProgress
                 topOvershootFun:  () => parent.refreshSearch()
-                bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.LATEST)
+                bottomOvershootFun: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.RECENT)
                 topText: qsTr("Pull down to refresh")
             }
 
@@ -361,7 +361,7 @@ SkyPage {
             }
 
             function refreshSearch() {
-                searchUtils?.scopedRefreshSearchPosts(SearchSortOrder.LATEST)
+                searchUtils?.scopedRefreshSearchPosts(SearchSortOrder.RECENT)
             }
         }
 
@@ -996,7 +996,7 @@ SkyPage {
                 return
 
             scopedRefreshSearchPosts(SearchSortOrder.TOP)
-            scopedRefreshSearchPosts(SearchSortOrder.LATEST)
+            scopedRefreshSearchPosts(SearchSortOrder.RECENT)
         }
 
         function scopedNextPageSearchPosts(sortOrder) {

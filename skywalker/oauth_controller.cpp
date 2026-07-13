@@ -71,6 +71,7 @@ const QStringList SCOPE = {
     "rpc:app.bsky.feed.getSuggestedFeeds?aud=*",
     "rpc:app.bsky.feed.getTimeline?aud=*",
     "rpc:app.bsky.feed.searchPosts?aud=*",
+    "rpc:app.bsky.feed.searchPostsV2?aud=*",
     "rpc:app.bsky.feed.sendInteractions?aud=*",
 
     "rpc:app.bsky.graph.getActorStarterPacks?aud=*",
@@ -174,8 +175,8 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "rpc:chat.bsky.notification.getPreferences?aud=*",
-        "Please login again to get authorization for new chat group functions."
+        "rpc:app.bsky.feed.searchPostsV2?aud=*",
+        "Please login again to get authorization for new search function."
     }};
 }
 

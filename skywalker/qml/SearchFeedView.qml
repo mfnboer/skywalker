@@ -265,7 +265,7 @@ PostListView {
     }
 
     function getNextPage() {
-        searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, SearchSortOrder.LATEST,
+        searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, SearchSortOrder.RECENT,
                                 searchFeed.authorHandle, searchFeed.mentionHandle,
                                 searchFeed.since, !isNaN(searchFeed.since.getTime()),
                                 searchFeed.until, !isNaN(searchFeed.until.getTime()),
@@ -295,7 +295,7 @@ PostListView {
         console.debug("Search feed view:", searchFeed.name)
         // Model set here. Setting it right away causes getSearchPostFeedModel crash with an
         // assert as the skywalker property is not set yet.
-        const m = searchUtils.getSearchPostFeedModel(SearchSortOrder.LATEST, searchFeed.name)
+        const m = searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, searchFeed.name)
         m.onFirstPage.connect(() => { syncSearch() })
         m.onNextPage.connect(() => { getNextPage() })
         setModel(m)

@@ -125,6 +125,12 @@ private:
     QString preProcessSearchText(const QString& text) const;
     TrendingTopicListModel& createTrendingTopicsListModel();
     QStringList getLastProfileSearches() const;
+    ATProto::Client::SearchParams createSearchParams(
+        const QString& sortOrder,
+        const QString& author, const QString& mentions,
+        const QDateTime& since, bool setSince,
+        const QDateTime& until, bool setUntil,
+        const QString& language);
     void syncSearchPosts(const QString& text,
                          const QString& author, const QString& mentions,
                          const QDateTime& since, bool setSince,
@@ -132,8 +138,8 @@ private:
                          const QString& language,
                          QDateTime tillTimestamp, const QString& cid,
                          int maxPages = 10, const QString& cursor = {});
-    bool syncPageHasNewPosts(const ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr& feed, const SearchPostFeedModel& model) const;
-    QString processSyncPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
+    bool syncPageHasNewPosts(const ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr& feed, const SearchPostFeedModel& model) const;
+    QString processSyncPage(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
     ATProto::Client* publicBskyClient();
 
     BasicProfileList mAuthorTypeaheadList;

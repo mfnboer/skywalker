@@ -41,8 +41,8 @@ public:
     QEnums::ContentMode getContentMode() const { return QEnums::CONTENT_MODE_UNSPECIFIED; }
 
     // Returns how many entries have been added.
-    int setFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
-    int addFeed(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
+    int setFeed(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr&& feed);
+    int addFeed(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr&& feed);
     Q_INVOKABLE void clear();
 
     void setGetFeedInProgress(bool inProgress) override;
@@ -78,7 +78,7 @@ private:
         using Ptr = std::unique_ptr<Page>;
     };
 
-    Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsOutput::SharedPtr&& feed);
+    Page::Ptr createPage(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr&& feed);
     void addPageToFilteredPostModels(const Page& page, int pageSize);
     void clearFilteredPostModels();
     void setReverseFeedFilteredPostModels(bool reverse);
