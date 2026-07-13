@@ -163,7 +163,7 @@ SkyDrawer {
                     }
                     SkyMenuButton {
                         text: qsTr("Trusted Verifiers")
-                        svg: SvgOutline.check
+                        svg: SvgOutline.verifier
                         popup: moderationMenu
                         onClicked: verifiers()
                     }

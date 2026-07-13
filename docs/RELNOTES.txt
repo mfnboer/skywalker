@@ -1,3 +1,7 @@
+next
+====
+* Option to add/remove trusted verifier on profile page
+
 4.40
 ====
 * Choose GoogleTranslate, DeepL or other app for translation

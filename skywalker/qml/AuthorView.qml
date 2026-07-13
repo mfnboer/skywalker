@@ -25,12 +25,12 @@ SkyPage {
     property string authorBanner
     property actorstatusview authorStatus: author.actorStatus
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
-    property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID
     property string following: author.viewer.following
     property string blocking: author.viewer.blocking
     property activitysubscription activitySubscription: author.viewer.activitySubscription
     property bool authorMuted: author.viewer.muted
     property bool authorMutedReposts: false
+    property bool isVerifier: skywalker.getVerificationUtils().isVerifier(author.did)
     property bool authorHideFromTimeline: false
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property string contentWarning: ""
@@ -269,6 +269,7 @@ SkyPage {
 
                         sourceComponent: SkyMenu {
                             id: moreMenu
+                            menuWidth: 250
                             onClosed: parent.active = false
 
                             TranslateMenuButton {
@@ -357,6 +358,20 @@ SkyPage {
                                 popup: moreMenu
                                 onClicked: updateLists()
                             }
+
+                            SkyMenuButton {
+                               text: isVerifier ? qsTr("Remove trusted verifier") : qsTr("Add trusted verifier")
+                               svg: isVerifier ? SvgOutline.verifierOff : SvgOutline.verifier
+                               popup: moreMenu
+                               visible: author.verificationState.trustedVerifierStatus !== QEnums.VERIFIED_STATUS_VALID
+                               onClicked: {
+                                   if (isVerifier)
+                                       graphUtils.removeTrustedVerifier(author.did)
+                                   else
+                                       graphUtils.addTrustedVerifier(author)
+                               }
+                            }
+
                             SkyMenuButton {
                                 text: qsTr("Report account")
                                 svg: SvgOutline.report
@@ -458,6 +473,7 @@ SkyPage {
             }
 
             AuthorNameAndStatusMultiLine {
+                id: authorNameHeader
                 topPadding: authorStatus.isActive ? 10 : 0
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 userDid: page.userDid
@@ -817,6 +833,10 @@ SkyPage {
 
             function getFeedMenuBar() {
                 return feedMenuBar
+            }
+
+            function setTrustedVerifier(trusted) {
+                authorNameHeader.isTrustedVerifier = trusted
             }
         }
 
@@ -1542,6 +1562,20 @@ SkyPage {
             skywalker.showStatusMessage(qsTr("Unmuted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
         }
         onUnmuteRepostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onAddTrustedVerifierOk: () => {
+            isVerifier = true
+            authorFeedView.headerItem.setTrustedVerifier(true)
+            skywalker.showStatusMessage(qsTr(`${author.name} added to trusted verifiers`), QEnums.STATUS_LEVEL_INFO)
+        }
+        onAddTrustedVerifierFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onRemoveTrustedVerifierOk: () => {
+            isVerifier = false
+            authorFeedView.headerItem.setTrustedVerifier(false)
+            skywalker.showStatusMessage(qsTr(`${author.name} removed from trusted verifiers`), QEnums.STATUS_LEVEL_INFO)
+        }
+        onRemoveTrustedVerifierFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     BusyIndicator {
