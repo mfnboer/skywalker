@@ -3532,14 +3532,17 @@ void Skywalker::removeAuthorFeedModel(int id)
     mAuthorFeedModels.remove(id);
 }
 
-int Skywalker::createSearchPostFeedModel(const QString& feedName)
+int Skywalker::createSearchPostFeedModel(const QString& feedName, bool ignoreReverseSetting)
 {
     qDebug() << "Create search post feed model:" << feedName;
     auto model = std::make_unique<SearchPostFeedModel>(
         feedName, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
-    model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, feedName));
+
+    if (!ignoreReverseSetting)
+        model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, feedName));
+
     const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
 }

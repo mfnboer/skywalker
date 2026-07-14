@@ -43,7 +43,8 @@ SkyDialog {
             textRole: "label"
             valueRole: "value"
             model: ListModel {
-                ListElement { label: qsTr("Everyone"); value: "all" }
+                ListElement { label: qsTr("Anyone"); value: "all" }
+                ListElement { label: qsTr("People you follow"); value: "following" }
                 ListElement { label: qsTr("Me"); value: "me" }
                 ListElement { label: qsTr("Enter user handle"); value: "other" }
             }
@@ -293,7 +294,7 @@ SkyDialog {
     }
 
     function getUserName(userName, otherUserHandle) {
-        if (userName === "all")
+        if (userName === "all" || userName === "following")
             return ""
 
         if (userName === "other") {
@@ -304,6 +305,10 @@ SkyDialog {
         }
 
         return userName
+    }
+
+    function getFollowing() {
+        return (authorName === "following")
     }
 
     function getAuthorName() {

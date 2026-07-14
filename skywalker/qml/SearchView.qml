@@ -14,6 +14,7 @@ SkyPage {
     property bool isHashtagSearch: false
     property bool isCashtagSearch: false
     property bool isPostSearch: true
+    property bool following: false
     property string postAuthorUser // empty, "me", handle
     property string postMentionsUser // empty, "me", handle
     property date postSince
@@ -281,7 +282,8 @@ SkyPage {
             id: postsViewTop
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP, SearchSortOrder.TOP)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP, SearchSortOrder.TOP, true)
+            preloadNextPageFunc: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
             clip: true
 
             delegate: PostFeedViewDelegate {
@@ -325,7 +327,8 @@ SkyPage {
             id: postsViewLatest
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, SearchSortOrder.RECENT)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, SearchSortOrder.RECENT, true)
+            preloadNextPageFunc: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.RECENT)
             clip: true
 
             delegate: PostFeedViewDelegate {
@@ -1000,7 +1003,7 @@ SkyPage {
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(currentText, sortOrder, postAuthorUser,
+            getNextPageSearchPosts(currentText, sortOrder, following, postAuthorUser,
                                    postMentionsUser, postSince, postSetSince,
                                    postUntil, postSetUntil, postLanguage)
         }
@@ -1009,7 +1012,7 @@ SkyPage {
             if (currentText === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
                 return
 
-            searchPosts(currentText, sortOrder, postAuthorUser, postMentionsUser,
+            searchPosts(currentText, sortOrder, following, postAuthorUser, postMentionsUser,
                         postSince, postSetSince, postUntil, postSetUntil, postLanguage)
         }
 
@@ -1095,6 +1098,8 @@ SkyPage {
                 authorName = "other"
                 otherAuthorHandle = postAuthorUser
             }
+        } else if (following) {
+            authorName = "following"
         }
 
         if (postMentionsUser) {
@@ -1124,6 +1129,7 @@ SkyPage {
         })
 
         let callback = () => {
+            following = scopePage.getFollowing()
             postAuthorUser = scopePage.getAuthorName()
             postMentionsUser = scopePage.getMentionsName()
             postSince = scopePage.sinceDate

@@ -184,7 +184,7 @@ public:
     Q_INVOKABLE void removeAuthorFeedModel(int id);
     Q_INVOKABLE void getFeedGenerator(const QString& feedUri, bool viewPosts = false);
     Q_INVOKABLE void getStarterPackView(const QString& starterPackUri);
-    Q_INVOKABLE int createSearchPostFeedModel(const QString& feedName);
+    Q_INVOKABLE int createSearchPostFeedModel(const QString& feedName, bool ignoreReverseSetting = false);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
     Q_INVOKABLE void getAuthorFeedList(const QString& did, int id, const QString& cursor = {});

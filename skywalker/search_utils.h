@@ -45,13 +45,13 @@ public:
 
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
 
-    Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder,
+    Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder, bool following = false,
                                  const QString& author = "", const QString& mentions = "",
                                  const QDateTime& since = {}, bool setSince = false,
                                  const QDateTime& until = {}, bool setUntil = false,
                                  const QString& language = {},
                                  int maxPages = 10, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const QString& sortOrder,
+    Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const QString& sortOrder, bool following = false,
                                             const QString& author = "", const QString& mentions = "",
                                             const QDateTime& since = {}, bool setSince = false,
                                             const QDateTime& until = {}, bool setUntil = false,
@@ -77,7 +77,7 @@ public:
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE void getSuggestedFeeds();
     Q_INVOKABLE void getSuggestedStarterPacks();
-    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder, const QString& feedName = "SearchFeed");
+    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder, const QString& feedName = "SearchFeed", bool ignoreReverseSetting = false);
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
@@ -126,7 +126,7 @@ private:
     TrendingTopicListModel& createTrendingTopicsListModel();
     QStringList getLastProfileSearches() const;
     ATProto::Client::SearchParams createSearchParams(
-        const QString& sortOrder,
+        const QString& sortOrder, bool following,
         const QString& author, const QString& mentions,
         const QDateTime& since, bool setSince,
         const QDateTime& until, bool setUntil,
