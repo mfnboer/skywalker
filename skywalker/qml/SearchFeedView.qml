@@ -266,7 +266,8 @@ PostListView {
 
     function getNextPage() {
         searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, SearchSortOrder.RECENT,
-                                searchFeed.authorHandle, searchFeed.mentionHandle,
+                                searchFeed.following,
+                                searchFeed.authorHandles, searchFeed.mentionHandles,
                                 searchFeed.since, !isNaN(searchFeed.since.getTime()),
                                 searchFeed.until, !isNaN(searchFeed.until.getTime()),
                                 searchFeed.language)
@@ -274,7 +275,8 @@ PostListView {
 
     function syncSearch() {
         searchUtils.syncSearchPosts(searchFeed.searchQuery,
-                                    searchFeed.authorHandle, searchFeed.mentionHandle,
+                                    searchFeed.following,
+                                    searchFeed.authorHandles, searchFeed.mentionHandles,
                                     searchFeed.since, !isNaN(searchFeed.since.getTime()),
                                     searchFeed.until, !isNaN(searchFeed.until.getTime()),
                                     searchFeed.language)

@@ -15,8 +15,8 @@ SkyPage {
     property bool isCashtagSearch: false
     property bool isPostSearch: true
     property bool following: false
-    property string postAuthorUser // empty, "me", handle
-    property string postMentionsUser // empty, "me", handle
+    property list<string> postAuthorUsers: [] // empty or list of "me" and real handles
+    property list<string> postMentionUsers: [] // empty or list of "me" and real handles
     property date postSince
     property bool postSetSince: false
     property date postUntil
@@ -186,8 +186,9 @@ SkyPage {
 
         HashtagContextMenu {
             id: moreMenu
-            postAuthorUser: page.postAuthorUser
-            postMentionsUser: page.postMentionsUser
+            following: page.following
+            postAuthorUsers: page.postAuthorUsers
+            postMentionUsers: page.postMentionUsers
             postSince: page.postSince
             postSetSince: page.postSetSince
             postUntil: page.postUntil
@@ -251,7 +252,7 @@ SkyPage {
             Material.background: guiSettings.backgroundColor
             svg: SvgOutline.close
             accessibleName: qsTr("clear search scope")
-            visible: postAuthorUser || postMentionsUser || postSetSince || postSetUntil || postLanguage
+            visible: postAuthorUsers.length > 0 || postMentionUsers.length > 0 || postSetSince || postSetUntil || postLanguage
             onClicked: page.clearSearchPostScope()
         }
     }
@@ -1003,16 +1004,16 @@ SkyPage {
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(currentText, sortOrder, following, postAuthorUser,
-                                   postMentionsUser, postSince, postSetSince,
+            getNextPageSearchPosts(currentText, sortOrder, following, postAuthorUsers,
+                                   postMentionUsers, postSince, postSetSince,
                                    postUntil, postSetUntil, postLanguage)
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
-            if (currentText === "*" && postAuthorUser.length === 0 && postMentionsUser.length === 0)
+            if (currentText === "*" && postAuthorUsers.length === 0 && postMentionUsers.length === 0)
                 return
 
-            searchPosts(currentText, sortOrder, following, postAuthorUser, postMentionsUser,
+            searchPosts(currentText, sortOrder, following, postAuthorUsers, postMentionUsers,
                         postSince, postSetSince, postUntil, postSetUntil, postLanguage)
         }
 
@@ -1020,10 +1021,10 @@ SkyPage {
             if (!userSettings.showSuggestedUsers)
                 return
 
-            if (!postAuthorUser || postAuthorUser === "me")
+            if (postAuthorUsers.length === 0 || postAuthorUsers === ["me"])
                 getSuggestedActors()
             else
-                getSuggestedFollows(postAuthorUser)
+                getSuggestedFollows(postAuthorUsers[0])
         }
 
         function suggestTrendingTopics() {
@@ -1075,8 +1076,8 @@ SkyPage {
     }
 
     function clearSearchPostScope() {
-        postAuthorUser = ""
-        postMentionsUser = ""
+        postAuthorUsers = []
+        postMentionUsers = []
         postSetSince = false
         postSince = nullDate
         postSetUntil = false
@@ -1086,41 +1087,41 @@ SkyPage {
 
     function changeSearchPostScope() {
         let authorName = "all"
-        let otherAuthorHandle = ""
+        let otherAuthorHandles = ""
         let mentionsName = "all"
-        let otherMentionsHandle = ""
+        let otherMentionsHandles = ""
 
-        if (postAuthorUser) {
-            if (postAuthorUser === "me") {
+        if (postAuthorUsers.length > 0) {
+            if (postAuthorUsers === ["me"]) {
                 authorName = "me"
             }
             else {
                 authorName = "other"
-                otherAuthorHandle = postAuthorUser
+                otherAuthorHandles = postAuthorUsers.join(" ")
             }
         } else if (following) {
             authorName = "following"
         }
 
-        if (postMentionsUser) {
-            if (postMentionsUser === "me") {
+        if (postMentionUsers.length > 0) {
+            if (postMentionUsers === ["me"]) {
                 mentionsName = "me"
             }
             else {
                 mentionsName = "other"
-                otherMentionsHandle = postMentionsUser
+                otherMentionsHandles = postMentionUsers.join(" ")
             }
         }
 
-        console.debug("AUTHOR:", authorName, otherAuthorHandle)
+        console.debug("AUTHOR:", authorName, otherAuthorHandles)
 
         let component = guiSettings.createComponent("SearchPostScope.qml")
         let scopePage = component.createObject(page, {
                 skywalker: page.skywalker,
                 authorName: authorName,
-                otherAuthorHandle: otherAuthorHandle,
+                otherAuthorHandles: otherAuthorHandles,
                 mentionsName: mentionsName,
-                otherMentionsHandle: otherMentionsHandle,
+                otherMentionsHandles: otherMentionsHandles,
                 sinceDate: postSince,
                 setSince: postSetSince,
                 untilDate: postUntil,
@@ -1130,8 +1131,8 @@ SkyPage {
 
         let callback = () => {
             following = scopePage.getFollowing()
-            postAuthorUser = scopePage.getAuthorName()
-            postMentionsUser = scopePage.getMentionsName()
+            postAuthorUsers = scopePage.getAuthorNames()
+            postMentionUsers = scopePage.getMentionNames()
             postSince = scopePage.sinceDate
             postSetSince = scopePage.setSince
             postUntil = scopePage.untilDate
@@ -1152,18 +1153,34 @@ SkyPage {
         return page.header.displayText
     }
 
+    function getAuthorListText(authors) {
+        let authorText = ""
+
+        for (const author of authors) {
+            if (authorText)
+                authorText += " "
+
+            authorText += author === "me" ? author : `@${author}`
+        }
+
+        return authorText
+    }
+
     function getSearchPostScopeText() {
         let scopeText = ""
 
-        if (postAuthorUser)
+        if (following)
+            scopeText += qsTr(" from:<b>users you follow</b>")
+
+        if (postAuthorUsers.length > 0)
         {
-            const authorText = (postAuthorUser === "me") ? postAuthorUser : `@${postAuthorUser}`
-            scopeText = qsTr(` from:<b>${authorText}</b>`)
+            const authorText = getAuthorListText(postAuthorUsers)
+            scopeText += qsTr(` from:<b>${authorText}</b>`)
         }
 
-        if (postMentionsUser)
+        if (postMentionUsers.length > 0)
         {
-            const mentionsText = (postMentionsUser === "me") ? postMentionsUser : `@${postMentionsUser}`
+            const mentionsText = getAuthorListText(postMentionUsers)
             scopeText += qsTr(` mentions:<b>${mentionsText}</b>`)
         }
 
@@ -1245,8 +1262,9 @@ SkyPage {
         adultContent = skywalker.getContentFilter().getAdultContent()
         page.header.forceFocus()
         searchBar.setLatestPosts()
-        postAuthorUser = searchFeed.authorHandle
-        postMentionsUser = searchFeed.mentionHandle
+        following = searchFeed.following
+        postAuthorUsers = searchFeed.authorHandles
+        postMentionUsers = searchFeed.mentionHandles
         postSince = searchFeed.since
         postSetSince = !isNaN(searchFeed.since.getTime())
         postUntil = searchFeed.until
@@ -1266,7 +1284,7 @@ SkyPage {
 
         if (searchText || searchScope) {
             searchBar.setTopPosts()
-            postAuthorUser = searchScope
+            postAuthorUsers = searchScope ? [searchScope] : []
             header.setSearchText(searchText)
 
             if (searchText)

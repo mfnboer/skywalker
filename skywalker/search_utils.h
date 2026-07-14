@@ -46,21 +46,21 @@ public:
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
 
     Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder, bool following = false,
-                                 const QString& author = "", const QString& mentions = "",
+                                 const QStringList& authors = {}, const QStringList& mentions = {},
                                  const QDateTime& since = {}, bool setSince = false,
                                  const QDateTime& until = {}, bool setUntil = false,
                                  const QString& language = {},
                                  int maxPages = 10, int minEntries = 10, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const QString& sortOrder, bool following = false,
-                                            const QString& author = "", const QString& mentions = "",
+                                            const QStringList& author = {}, const QStringList& mentions = {},
                                             const QDateTime& since = {}, bool setSince = false,
                                             const QDateTime& until = {}, bool setUntil = false,
                                             const QString& language = {},
                                             int maxPages = 10, int minEntries = 10);
 
     Q_INVOKABLE void syncFeed(const QString& searchQuery, bool sync);
-    Q_INVOKABLE void syncSearchPosts(const QString& text,
-                                     const QString& author = "", const QString& mentions = "",
+    Q_INVOKABLE void syncSearchPosts(const QString& text, bool following = false,
+                                     const QStringList& authors = {}, const QStringList& mentions = {},
                                      const QDateTime& since = {}, bool setSince = false,
                                      const QDateTime& until = {}, bool setUntil = false,
                                      const QString& language = {},
@@ -92,8 +92,10 @@ public:
     Q_INVOKABLE void clearLastSearches();
     Q_INVOKABLE void initLastSearchedProfiles(bool resolveDids = true);
     Q_INVOKABLE void getTrendingTopics();
-    Q_INVOKABLE SearchFeed createSearchFeed(const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
-                                            QDateTime since, QDateTime until, const QString& language) const;
+    Q_INVOKABLE SearchFeed createSearchFeed(
+        const QString& searchQuery, bool following,
+        const QStringList& authorHandles, const QStringList& mentionHandles,
+        QDateTime since, QDateTime until, const QString& language) const;
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
@@ -125,14 +127,15 @@ private:
     QString preProcessSearchText(const QString& text) const;
     TrendingTopicListModel& createTrendingTopicsListModel();
     QStringList getLastProfileSearches() const;
+    QStringList cleanHandleList(QStringList authors) const;
     ATProto::Client::SearchParams createSearchParams(
         const QString& sortOrder, bool following,
-        const QString& author, const QString& mentions,
+        const QStringList& authors, const QStringList& mentions,
         const QDateTime& since, bool setSince,
         const QDateTime& until, bool setUntil,
         const QString& language);
     void syncSearchPosts(const QString& text,
-                         const QString& author, const QString& mentions,
+                         const QStringList& authors, const QStringList& mentions,
                          const QDateTime& since, bool setSince,
                          const QDateTime& until, bool setUntil,
                          const QString& language,

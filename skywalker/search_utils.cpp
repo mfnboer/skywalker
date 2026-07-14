@@ -4,6 +4,7 @@
 #include "author_cache.h"
 #include "skywalker.h"
 #include "utils.h"
+#include <atproto/lib/at_regex.h>
 #include <QCollator>
 #include <QTextBoundaryFinder>
 
@@ -309,13 +310,13 @@ QString SearchUtils::preProcessSearchText(const QString& text) const
 }
 
 void SearchUtils::searchPosts(const QString& text, const QString& sortOrder,
-                              bool following, const QString& author,
-                              const QString& mentions, const QDateTime& since, bool setSince,
+                              bool following, const QStringList& authors,
+                              const QStringList& mentions, const QDateTime& since, bool setSince,
                               const QDateTime& until, bool setUntil, const QString& language,
                               int maxPages, int minEntries, const QString& cursor)
 {
     qDebug() << "Search posts:" << text << "order:" << sortOrder << "following:" << following
-             << "author:" << author
+             << "authors:" << authors
              << "mentions:" << mentions << "since:" << since << "setSince:" << setSince
              << "until:" << until << "setUntil:" << setUntil << "language:" << language
              << "cursor:" << cursor << "max pages:"
@@ -334,13 +335,13 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder,
 
     const auto searchText = preProcessSearchText(text);
     auto searchParams = createSearchParams(
-        sortOrder, following, author, mentions, since, setSince, until, setUntil, language);
+        sortOrder, following, authors, mentions, since, setSince, until, setUntil, language);
 
     model.setGetFeedInProgress(true);
 
     bskyClient()->searchPostsV2(searchText, mSearchPageSize, Utils::makeOptionalString(cursor),
         searchParams,
-        [this, presence=getPresence(), searchText, sortOrder, following, author, mentions, since, setSince,
+        [this, presence=getPresence(), searchText, sortOrder, following, authors, mentions, since, setSince,
          until, setUntil, language, maxPages, minEntries, cursor](auto feed){
             if (!presence)
                 return;
@@ -356,7 +357,7 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder,
             int entriesToAdd = minEntries - added;
 
             if (entriesToAdd > 0)
-                getNextPageSearchPosts(searchText, sortOrder, following, author, mentions, since, setSince,
+                getNextPageSearchPosts(searchText, sortOrder, following, authors, mentions, since, setSince,
                                        until, setUntil, language, maxPages - 1, entriesToAdd);
         },
         [this, presence=getPresence(), sortOrder](const QString& error, const QString& msg){
@@ -371,7 +372,7 @@ void SearchUtils::searchPosts(const QString& text, const QString& sortOrder,
 }
 
 void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sortOrder, bool following,
-                                         const QString& author, const QString& mentions,
+                                         const QStringList& authors, const QStringList& mentions,
                                          const QDateTime& since, bool setSince,
                                          const QDateTime& until, bool setUntil,
                                          const QString& language,
@@ -403,7 +404,7 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const QString& sor
         return;
     }
 
-    searchPosts(text, sortOrder, following, author, mentions, since, setSince, until, setUntil,
+    searchPosts(text, sortOrder, following, authors, mentions, since, setSince, until, setUntil,
                 language, maxPages, minEntries, cursor);
 }
 
@@ -419,8 +420,8 @@ void SearchUtils::syncFeed(const QString& searchQuery, bool sync)
         userSettings->removeSyncSearchFeed(mSkywalker->getUserDid(), searchQuery);
 }
 
-void SearchUtils::syncSearchPosts(const QString& text, const QString& author,
-                                  const QString& mentions, const QDateTime& since, bool setSince,
+void SearchUtils::syncSearchPosts(const QString& text, bool following, const QStringList& authors,
+                                  const QStringList& mentions, const QDateTime& since, bool setSince,
                                   const QDateTime& until, bool setUntil, const QString& language,
                                   int maxPages)
 {
@@ -442,7 +443,7 @@ void SearchUtils::syncSearchPosts(const QString& text, const QString& author,
 
     if (!userSettings->mustSyncSearchFeed(userDid, text))
     {
-        searchPosts(text, ATProto::AppBskyFeed::SearchSortOrder::RECENT, false, author, mentions,
+        searchPosts(text, ATProto::AppBskyFeed::SearchSortOrder::RECENT, following, authors, mentions,
                     since, setSince, until, setUntil, language, maxPages);
         return;
     }
@@ -453,25 +454,42 @@ void SearchUtils::syncSearchPosts(const QString& text, const QString& author,
     if (!timestamp.isValid())
     {
         qDebug() << "Do not rewind";
-        searchPosts(text, ATProto::AppBskyFeed::SearchSortOrder::RECENT, false, author, mentions,
+        searchPosts(text, ATProto::AppBskyFeed::SearchSortOrder::RECENT, false, authors, mentions,
                     since, setSince, until, setUntil, language, maxPages);
         return;
     }
 
     const auto cid = userSettings->getSearchFeedSyncCid(userDid, text);
-    syncSearchPosts(text, author, mentions, since, setSince, until, setUntil, language,
+    syncSearchPosts(text, authors, mentions, since, setSince, until, setUntil, language,
                     timestamp, cid, maxPages);
+}
+
+QStringList SearchUtils::cleanHandleList(QStringList authors) const
+{
+    QStringList handleList;
+
+    for (const auto& author : authors)
+    {
+        if (author == USER_ME)
+            handleList.push_back(mSkywalker->getUserDid());
+        else if (ATProto::ATRegex::isHandle(author))
+            handleList.push_back(author);
+        else
+            qWarning() << "Invalid handle:" << author;
+    }
+
+    return handleList;
 }
 
 ATProto::Client::SearchParams SearchUtils::createSearchParams(
     const QString& sortOrder, bool following,
-    const QString& author, const QString& mentions,
+    const QStringList& authors, const QStringList& mentions,
     const QDateTime& since, bool setSince,
     const QDateTime& until, bool setUntil,
     const QString& language)
 {
-    const auto authorId = (author == USER_ME) ? mSkywalker->getUserDid() : author;
-    const auto mentionsId = (mentions == USER_ME) ? mSkywalker->getUserDid() : mentions;
+    QStringList authorList = cleanHandleList(authors);
+    QStringList mentionList = cleanHandleList(mentions);
 
     ATProto::Client::SearchParams searchParams;
     searchParams.setSort(sortOrder);
@@ -479,11 +497,11 @@ ATProto::Client::SearchParams SearchUtils::createSearchParams(
     if (following)
         searchParams.setFollowing(following);
 
-    if (!authorId.isEmpty())
-        searchParams.addAuthors({authorId,});
+    if (!authorList.isEmpty())
+        searchParams.addAuthors(authorList);
 
-    if (!mentionsId.isEmpty())
-        searchParams.addMentions({mentionsId,});
+    if (!mentionList.isEmpty())
+        searchParams.addMentions(mentionList);
 
     if (setSince)
         searchParams.setSince(since.toUTC());
@@ -498,7 +516,7 @@ ATProto::Client::SearchParams SearchUtils::createSearchParams(
 }
 
 void SearchUtils::syncSearchPosts(const QString& text,
-                                  const QString& author, const QString& mentions,
+                                  const QStringList& authors, const QStringList& mentions,
                                   const QDateTime& since, bool setSince,
                                   const QDateTime& until, bool setUntil,
                                   const QString& language,
@@ -523,11 +541,11 @@ void SearchUtils::syncSearchPosts(const QString& text,
     const auto searchText = preProcessSearchText(text);
     auto searchParams = createSearchParams(
         ATProto::AppBskyFeed::SearchSortOrder::RECENT, false,
-        author, mentions, since, setSince, until, setUntil, language);
+        authors, mentions, since, setSince, until, setUntil, language);
 
     bskyClient()->searchPostsV2(text, SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
         searchParams,
-        [this, presence=getPresence(), text, author, mentions, since, setSince, until, setUntil, language, tillTimestamp, cid, maxPages, cursor](auto feed){
+        [this, presence=getPresence(), text, authors, mentions, since, setSince, until, setUntil, language, tillTimestamp, cid, maxPages, cursor](auto feed){
             if (!presence)
                 return;
 
@@ -554,7 +572,7 @@ void SearchUtils::syncSearchPosts(const QString& text,
             }
 
             if (!newCursor.isEmpty())
-                syncSearchPosts(text, author, mentions, since, setSince, until, setUntil, language,
+                syncSearchPosts(text, authors, mentions, since, setSince, until, setUntil, language,
                                 tillTimestamp, cid, maxPages - 1, newCursor);
         },
         [this, presence=getPresence(), text](const QString& error, const QString& msg){
@@ -1292,13 +1310,14 @@ void SearchUtils::setSearchPageSize(int pageSize)
 }
 
 SearchFeed SearchUtils::createSearchFeed(
-    const QString& searchQuery, const QString& authorHandle, const QString& mentionsHandle,
+    const QString& searchQuery, bool following,
+    const QStringList& authorHandles, const QStringList& mentionHandles,
     QDateTime since, QDateTime until, const QString& language) const
 {
-    const auto feed = SearchFeed(searchQuery, authorHandle, mentionsHandle, since, until, language);
-    qDebug() << "Search feed:" << feed.getSearchQuery() << "author:" << feed.getAuthorHandle() <<
-        "mention:" << feed.getMentionHandle() << "since:" << feed.getSince() << "until:" << feed.getUntil() <<
-        "lang:" << feed.getLanguage();
+    const auto feed = SearchFeed(searchQuery, following, authorHandles, mentionHandles, since, until, language);
+    qDebug() << "Search feed:" << feed.getSearchQuery() << "following:" << following <<
+        "author:" << feed.getAuthorHandles() << "mention:" << feed.getMentionHandles() <<
+        "since:" << feed.getSince() << "until:" << feed.getUntil() << "lang:" << feed.getLanguage();
     return feed;
 }
 

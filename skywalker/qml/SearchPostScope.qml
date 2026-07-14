@@ -8,9 +8,9 @@ SkyDialog {
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
     property string authorName // "all", "me", "other"
-    property string otherAuthorHandle
+    property string otherAuthorHandles // space separated handles
     property string mentionsName // "all", "me", "other"
-    property string otherMentionsHandle
+    property string otherMentionsHandles // space separated handles
     property date sinceDate
     property bool setSince: false
     property date untilDate
@@ -46,10 +46,10 @@ SkyDialog {
                 ListElement { label: qsTr("Anyone"); value: "all" }
                 ListElement { label: qsTr("People you follow"); value: "following" }
                 ListElement { label: qsTr("Me"); value: "me" }
-                ListElement { label: qsTr("Enter user handle"); value: "other" }
+                ListElement { label: qsTr("Enter user handle(s)"); value: "other" }
             }
-            editableIndex: 2
-            initialEditValue: otherAuthorHandle
+            editableIndex: 3
+            initialEditValue: otherAuthorHandles
 
             onCurrentValueChanged: {
                 if (initialized && currentValue !== undefined)
@@ -61,14 +61,14 @@ SkyDialog {
                     searchPostScope.isTyping = true
                     authorTypeaheadView.textInputCombo = authorComboBox
                     authorTypeaheadView.startSearch()
-                    otherAuthorHandle = textInput.displayText
+                    otherAuthorHandles = textInput.displayText
                 }
             }
 
             onEditingFinished: (text) => {
                 searchPostScope.isTyping = false
                 authorTypeaheadView.stopSearch()
-                otherAuthorHandle = text
+                otherAuthorHandles = text
             }
         }
 
@@ -85,10 +85,10 @@ SkyDialog {
             model: ListModel {
                 ListElement { label: qsTr("-"); value: "all" }
                 ListElement { label: qsTr("Me"); value: "me" }
-                ListElement { label: qsTr("Enter user handle"); value: "other" }
+                ListElement { label: qsTr("Enter user handle(s)"); value: "other" }
             }
             editableIndex: 2
-            initialEditValue: otherMentionsHandle
+            initialEditValue: otherMentionsHandles
 
             onCurrentValueChanged: {
                 if (initialized && currentValue !== undefined)
@@ -100,14 +100,14 @@ SkyDialog {
                     searchPostScope.isTyping = true
                     authorTypeaheadView.textInputCombo = mentionsComboBox
                     authorTypeaheadView.startSearch()
-                    otherMentionsHandle = textInput.displayText
+                    otherMentionsHandles = textInput.displayText
                 }
             }
 
             onEditingFinished: (text) => {
                 searchPostScope.isTyping = false
                 authorTypeaheadView.stopSearch()
-                otherMentionsHandle = text
+                otherMentionsHandles = text
             }
         }
 
@@ -257,11 +257,11 @@ SkyDialog {
         anchors.right: parent.right
         y: textInputCombo.y + textInputCombo.height
         height: 300
-        searchText: textInputCombo.contentItem.displayText
+        searchText: textInputCombo.contentItem.cursorWord
         visible: searchPostScope.isTyping
 
         onAuthorClicked: (profile) => {
-            textInputCombo.contentItem.text = profile.handle
+            textInputCombo.contentItem.replaceCursorWord(profile.handle)
             searchPostScope.isTyping = false
         }
     }
@@ -293,30 +293,28 @@ SkyDialog {
         datePicker.open()
     }
 
-    function getUserName(userName, otherUserHandle) {
+    function getUserNames(userName, otherUserHandle) {
         if (userName === "all" || userName === "following")
-            return ""
+            return []
 
         if (userName === "other") {
-            if (otherUserHandle.startsWith('@'))
-                return otherAuthorHandle.slice(1)
-
-            return otherUserHandle
+            const s = otherUserHandle.replace(/@/g, "")
+            return s.trim().split(/\s+/)
         }
 
-        return userName
+        return [userName]
     }
 
     function getFollowing() {
         return (authorName === "following")
     }
 
-    function getAuthorName() {
-        return getUserName(authorName, otherAuthorHandle)
+    function getAuthorNames() {
+        return getUserNames(authorName, otherAuthorHandles)
     }
 
-    function getMentionsName() {
-        return getUserName(mentionsName, otherMentionsHandle)
+    function getMentionNames() {
+        return getUserNames(mentionsName, otherMentionsHandles)
     }
 
     function startOfToday() {
