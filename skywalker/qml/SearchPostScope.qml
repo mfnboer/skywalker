@@ -7,6 +7,9 @@ SkyDialog {
     required property var skywalker
     property var userSettings: skywalker.getUserSettings()
     readonly property string userDid: skywalker.getUserDid()
+    property bool exactPhrase: false
+    property int postFilter: SearchOptions.POST_FILTER_ALL
+    property int mediaPostFilter: SearchOptions.MEDIA_POST_FILTER_ALL
     property string authorName // "all", "me", "other"
     property string otherAuthorHandles // space separated handles
     property string mentionsName // "all", "me", "other"
@@ -27,223 +30,272 @@ SkyDialog {
     topMargin: guiSettings.headerHeight
     standardButtons: Dialog.Ok
 
-    GridLayout {
-        id: scopeGrid
-        width: parent.width
-        columns: 2
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentWidth: parent.width
+        contentHeight: Math.max(scopeGrid.height, (authorTypeaheadView.visible ? authorTypeaheadView.y + authorTypeaheadView.height : 0))
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
 
-        AccessibleText {
-            font.bold: true
-            text: qsTr("From:")
-        }
+        GridLayout {
+            id: scopeGrid
+            width: parent.width
+            columns: 2
 
-        EditComboBox {
-            id: authorComboBox
-            Layout.fillWidth: true
-            textRole: "label"
-            valueRole: "value"
-            model: ListModel {
-                ListElement { label: qsTr("Anyone"); value: "all" }
-                ListElement { label: qsTr("People you follow"); value: "following" }
-                ListElement { label: qsTr("Me"); value: "me" }
-                ListElement { label: qsTr("Enter user handle(s)"); value: "other" }
-            }
-            editableIndex: 3
-            initialEditValue: otherAuthorHandles
-
-            onCurrentValueChanged: {
-                if (initialized && currentValue !== undefined)
-                    authorName = currentValue
-            }
-
-            onInputTextChanged: (textInput) => {
-                if (textInput.displayText !== initialEditValue) {
-                    searchPostScope.isTyping = true
-                    authorTypeaheadView.textInputCombo = authorComboBox
-                    authorTypeaheadView.startSearch()
-                    otherAuthorHandles = textInput.displayText
-                }
-            }
-
-            onEditingFinished: (text) => {
-                searchPostScope.isTyping = false
-                authorTypeaheadView.stopSearch()
-                otherAuthorHandles = text
-            }
-        }
-
-        AccessibleText {
-            font.bold: true
-            text: qsTr("Mentions:")
-        }
-
-        EditComboBox {
-            id: mentionsComboBox
-            Layout.fillWidth: true
-            textRole: "label"
-            valueRole: "value"
-            model: ListModel {
-                ListElement { label: qsTr("-"); value: "all" }
-                ListElement { label: qsTr("Me"); value: "me" }
-                ListElement { label: qsTr("Enter user handle(s)"); value: "other" }
-            }
-            editableIndex: 2
-            initialEditValue: otherMentionsHandles
-
-            onCurrentValueChanged: {
-                if (initialized && currentValue !== undefined)
-                    mentionsName = currentValue
-            }
-
-            onInputTextChanged: (textInput) => {
-                if (textInput.displayText !== initialEditValue) {
-                    searchPostScope.isTyping = true
-                    authorTypeaheadView.textInputCombo = mentionsComboBox
-                    authorTypeaheadView.startSearch()
-                    otherMentionsHandles = textInput.displayText
-                }
-            }
-
-            onEditingFinished: (text) => {
-                searchPostScope.isTyping = false
-                authorTypeaheadView.stopSearch()
-                otherMentionsHandles = text
-            }
-        }
-
-        AccessibleText {
-            font.bold: true
-            text: qsTr("Since:")
-        }
-
-        SkyTextInput {
-            id: sinceText
-            Layout.fillWidth: true
-            svgIcon: SvgOutline.date
-            placeholderText: qsTr("Date")
-            text: setSince ? sinceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
-
-            SkyMouseArea {
-                anchors.fill: parent
-                onClicked: selectDate(sinceText)
-            }
-
-            SvgPlainButton {
-                width: 40
-                height: width
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                svg: SvgOutline.cancel
-                accessibleName: qsTr("clear since date")
-                visible: setSince
-                onClicked: {
-                    setSince = false
-                    sinceText.clear()
-                }
-            }
-        }
-
-        AccessibleText {
-            font.bold: true
-            text: qsTr("Until:")
-        }
-
-        SkyTextInput {
-            id: untilText
-            Layout.fillWidth: true
-            svgIcon: SvgOutline.date
-            placeholderText: qsTr("Date")
-            text: setUntil ? untilDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
-
-            SkyMouseArea {
-                anchors.fill: parent
-                onClicked: selectDate(untilText)
-            }
-
-            SvgPlainButton {
-                width: 40
-                height: width
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                svg: SvgOutline.cancel
-                accessibleName: qsTr("clear until date")
-                visible: setUntil
-                onClicked: {
-                    setUntil = false
-                    untilText.clear()
-                }
-            }
-        }
-
-        AccessibleText {
-            font.bold: true
-            text: qsTr("Language:")
-        }
-
-        LanguageComboBox {
-            id: languageComboBox
-            Layout.fillWidth: true
-            background.implicitHeight: untilText.height
-            radius: 5
-            color: guiSettings.textColor
-            backgroundColor: guiSettings.textInputBackgroundColor
-            borderColor: guiSettings.buttonColor
-            borderWidth: languageComboBox.activeFocus ? 1 : 0
-            allLanguages: languageUtils.languages
-            usedLanguages: languageUtils.usedLanguages
-            addAnyLanguage: true
-            initialLanguage: language
-
-            onActivated: (index) => {
-                if (!initialized)
-                    return
-
-                if (index > 0)
-                    language = valueAt(index)
-                else
-                    language = ""
-            }
-        }
-
-        AccessibleText {
-            font.bold: true
-            text: qsTr("Adult:")
-            visible: adultContent
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: -1
-            visible: adultContent
-
-            SkyRadioButton {
+            AccessibleCheckBox {
+                Layout.columnSpan: 2
                 Layout.fillWidth: true
-                checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_SHOW
-                horizontalAlignment: Qt.AlignHCenter
-                text: qsTr("On")
-                onCheckedChanged: {
-                    if (checked)
-                        overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_SHOW
+                text: qsTr("Search exact phrase")
+                checked: exactPhrase
+                onCheckedChanged: exactPhrase = checked
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Posts:")
+            }
+
+            SkyComboBox {
+                Layout.fillWidth: true
+                model: ListModel {
+                    ListElement { value: SearchOptions.POST_FILTER_ALL; text: qsTr("Posts and replies") }
+                    ListElement { value: SearchOptions.POST_FILTER_NO_REPLIES; text: qsTr("No replies") }
+                    ListElement { value: SearchOptions.POST_FILTER_ONLY_REPLIES; text: qsTr("Only replies") }
+                }
+                currentIndex: postFilter
+                onCurrentValueChanged: postFilter = currentValue
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Media:")
+            }
+
+            SkyComboBox {
+                Layout.fillWidth: true
+                model: ListModel {
+                    ListElement { value: SearchOptions.MEDIA_POST_FILTER_ALL; text: qsTr("All posts") }
+                    ListElement { value: SearchOptions.MEDIA_POST_FILTER_MEDIA; text: qsTr("Only posts with media") }
+                    ListElement { value: SearchOptions.MEDIA_POST_FILTER_VIDEO; text: qsTr("Only posts with video") }
+                }
+                currentIndex: mediaPostFilter
+                onCurrentValueChanged: mediaPostFilter = currentValue
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("From:")
+            }
+
+            EditComboBox {
+                id: authorComboBox
+                Layout.fillWidth: true
+                textRole: "label"
+                valueRole: "value"
+                model: ListModel {
+                    ListElement { label: qsTr("Anyone"); value: "all" }
+                    ListElement { label: qsTr("People you follow"); value: "following" }
+                    ListElement { label: qsTr("Me"); value: "me" }
+                    ListElement { label: qsTr("Enter user handle(s)"); value: "other" }
+                }
+                editableIndex: 3
+                initialEditValue: otherAuthorHandles
+
+                onCurrentValueChanged: {
+                    if (initialized && currentValue !== undefined)
+                        authorName = currentValue
+                }
+
+                onInputTextChanged: (textInput) => {
+                    if (textInput.displayText !== initialEditValue) {
+                        searchPostScope.isTyping = true
+                        authorTypeaheadView.textInputCombo = authorComboBox
+                        authorTypeaheadView.startSearch()
+                        otherAuthorHandles = textInput.displayText
+                    }
+                }
+
+                onEditingFinished: (text) => {
+                    searchPostScope.isTyping = false
+                    authorTypeaheadView.stopSearch()
+                    otherAuthorHandles = text
                 }
             }
-            SkyRadioButton {
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Mentions:")
+            }
+
+            EditComboBox {
+                id: mentionsComboBox
                 Layout.fillWidth: true
-                checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA
-                horizontalAlignment: Qt.AlignHCenter
-                text: qsTr("Warn")
-                onCheckedChanged: {
-                    if (checked)
-                        overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_WARN_MEDIA
+                textRole: "label"
+                valueRole: "value"
+                model: ListModel {
+                    ListElement { label: qsTr("-"); value: "all" }
+                    ListElement { label: qsTr("Me"); value: "me" }
+                    ListElement { label: qsTr("Enter user handle(s)"); value: "other" }
+                }
+                editableIndex: 2
+                initialEditValue: otherMentionsHandles
+
+                onCurrentValueChanged: {
+                    if (initialized && currentValue !== undefined)
+                        mentionsName = currentValue
+                }
+
+                onInputTextChanged: (textInput) => {
+                    if (textInput.displayText !== initialEditValue) {
+                        searchPostScope.isTyping = true
+                        authorTypeaheadView.textInputCombo = mentionsComboBox
+                        authorTypeaheadView.startSearch()
+                        otherMentionsHandles = textInput.displayText
+                    }
+                }
+
+                onEditingFinished: (text) => {
+                    searchPostScope.isTyping = false
+                    authorTypeaheadView.stopSearch()
+                    otherMentionsHandles = text
                 }
             }
-            SkyRadioButton {
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Since:")
+            }
+
+            SkyTextInput {
+                id: sinceText
                 Layout.fillWidth: true
-                checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
-                horizontalAlignment: Qt.AlignHCenter
-                text: qsTr("Hide")
-                onCheckedChanged: {
-                    if (checked)
-                        overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+                svgIcon: SvgOutline.date
+                placeholderText: qsTr("Date")
+                text: setSince ? sinceDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+
+                SkyMouseArea {
+                    anchors.fill: parent
+                    onClicked: selectDate(sinceText)
+                }
+
+                SvgPlainButton {
+                    width: 40
+                    height: width
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    svg: SvgOutline.cancel
+                    accessibleName: qsTr("clear since date")
+                    visible: setSince
+                    onClicked: {
+                        setSince = false
+                        sinceText.clear()
+                    }
+                }
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Until:")
+            }
+
+            SkyTextInput {
+                id: untilText
+                Layout.fillWidth: true
+                svgIcon: SvgOutline.date
+                placeholderText: qsTr("Date")
+                text: setUntil ? untilDate.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+
+                SkyMouseArea {
+                    anchors.fill: parent
+                    onClicked: selectDate(untilText)
+                }
+
+                SvgPlainButton {
+                    width: 40
+                    height: width
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    svg: SvgOutline.cancel
+                    accessibleName: qsTr("clear until date")
+                    visible: setUntil
+                    onClicked: {
+                        setUntil = false
+                        untilText.clear()
+                    }
+                }
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Language:")
+            }
+
+            LanguageComboBox {
+                id: languageComboBox
+                Layout.fillWidth: true
+                background.implicitHeight: untilText.height
+                radius: 5
+                color: guiSettings.textColor
+                backgroundColor: guiSettings.textInputBackgroundColor
+                borderColor: guiSettings.buttonColor
+                borderWidth: languageComboBox.activeFocus ? 1 : 0
+                allLanguages: languageUtils.languages
+                usedLanguages: languageUtils.usedLanguages
+                addAnyLanguage: true
+                initialLanguage: language
+
+                onActivated: (index) => {
+                    if (!initialized)
+                        return
+
+                    if (index > 0)
+                        language = valueAt(index)
+                    else
+                        language = ""
+                }
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Adult:")
+                visible: adultContent
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: -1
+                visible: adultContent
+
+                SkyRadioButton {
+                    Layout.fillWidth: true
+                    checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_SHOW
+                    horizontalAlignment: Qt.AlignHCenter
+                    text: qsTr("On")
+                    onCheckedChanged: {
+                        if (checked)
+                            overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_SHOW
+                    }
+                }
+                SkyRadioButton {
+                    Layout.fillWidth: true
+                    checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_WARN_MEDIA
+                    horizontalAlignment: Qt.AlignHCenter
+                    text: qsTr("Warn")
+                    onCheckedChanged: {
+                        if (checked)
+                            overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_WARN_MEDIA
+                    }
+                }
+                SkyRadioButton {
+                    Layout.fillWidth: true
+                    checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+                    horizontalAlignment: Qt.AlignHCenter
+                    text: qsTr("Hide")
+                    onCheckedChanged: {
+                        if (checked)
+                            overrideAdultVisibility = QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
+                    }
                 }
             }
         }
@@ -264,6 +316,11 @@ SkyDialog {
             textInputCombo.contentItem.replaceCursorWord(profile.handle)
             searchPostScope.isTyping = false
         }
+    }
+
+    SearchUtils {
+        id: searchUtils
+        skywalker: root.getSkywalker()
     }
 
     LanguageUtils {
@@ -298,8 +355,13 @@ SkyDialog {
             return []
 
         if (userName === "other") {
-            const s = otherUserHandle.replace(/@/g, "")
-            return s.trim().split(/\s+/)
+            const s = otherUserHandle.replace(/@/g, "").trim()
+
+            if (s.length === 0)
+                return []
+
+            const handles = s.trim().split(/\s+/)
+            return searchUtils.validateHandles(handles)
         }
 
         return [userName]

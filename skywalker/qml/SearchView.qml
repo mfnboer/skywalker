@@ -14,6 +14,9 @@ SkyPage {
     property bool isHashtagSearch: false
     property bool isCashtagSearch: false
     property bool isPostSearch: true
+    property bool exactPhrase: false
+    property int postFilter: SearchOptions.POST_FILTER_ALL
+    property int mediaPostFilter: SearchOptions.MEDIA_POST_FILTER_ALL
     property bool following: false
     property list<string> postAuthorUsers: [] // empty or list of "me" and real handles
     property list<string> postMentionUsers: [] // empty or list of "me" and real handles
@@ -1004,17 +1007,31 @@ SkyPage {
         }
 
         function scopedNextPageSearchPosts(sortOrder) {
-            getNextPageSearchPosts(currentText, sortOrder, following, postAuthorUsers,
-                                   postMentionUsers, postSince, postSetSince,
-                                   postUntil, postSetUntil, postLanguage)
+            getNextPageSearchPosts(currentText, getSearchOptions(sortOrder))
         }
 
         function scopedRefreshSearchPosts(sortOrder) {
             if (currentText === "*" && postAuthorUsers.length === 0 && postMentionUsers.length === 0)
                 return
 
-            searchPosts(currentText, sortOrder, following, postAuthorUsers, postMentionUsers,
-                        postSince, postSetSince, postUntil, postSetUntil, postLanguage)
+            searchPosts(currentText, getSearchOptions(sortOrder))
+        }
+
+        function getSearchOptions(sortOrder) {
+            let searchOptions = searchUtils.makeSearchOptions()
+            searchOptions.sortOrder = sortOrder
+            searchOptions.exactPhrase = exactPhrase
+            searchOptions.postFilter = postFilter
+            searchOptions.mediaPostFilter = mediaPostFilter
+            searchOptions.following = following
+            searchOptions.authors = postAuthorUsers
+            searchOptions.mentions = postMentionUsers
+            searchOptions.since = postSince
+            searchOptions.isSetSince = postSetSince
+            searchOptions.until = postUntil
+            searchOptions.isSetUntil = postSetUntil
+            searchOptions.language = postLanguage
+            return searchOptions
         }
 
         function suggestUsers() {
@@ -1118,6 +1135,9 @@ SkyPage {
         let component = guiSettings.createComponent("SearchPostScope.qml")
         let scopePage = component.createObject(page, {
                 skywalker: page.skywalker,
+                exactPhrase: exactPhrase,
+                postFilter: postFilter,
+                mediaPostFilter: mediaPostFilter,
                 authorName: authorName,
                 otherAuthorHandles: otherAuthorHandles,
                 mentionsName: mentionsName,
@@ -1130,6 +1150,9 @@ SkyPage {
         })
 
         let callback = () => {
+            exactPhrase = scopePage.exactPhrase
+            postFilter = scopePage.postFilter
+            mediaPostFilter = scopePage.mediaPostFilter
             following = scopePage.getFollowing()
             postAuthorUsers = scopePage.getAuthorNames()
             postMentionUsers = scopePage.getMentionNames()

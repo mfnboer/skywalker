@@ -753,6 +753,8 @@ qt_add_qml_module(libskywalker
         SOURCES verification_utils.h
         SOURCES verification_utils.cpp
         SOURCES expiry_cache.h
+        SOURCES search_options.h
+        SOURCES search_options.cpp
 )
 
 target_link_libraries(libskywalker

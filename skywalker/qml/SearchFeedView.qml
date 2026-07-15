@@ -265,21 +265,24 @@ PostListView {
     }
 
     function getNextPage() {
-        searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, SearchSortOrder.RECENT,
-                                searchFeed.following,
-                                searchFeed.authorHandles, searchFeed.mentionHandles,
-                                searchFeed.since, !isNaN(searchFeed.since.getTime()),
-                                searchFeed.until, !isNaN(searchFeed.until.getTime()),
-                                searchFeed.language)
+        searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, getSearchOptions())
     }
 
     function syncSearch() {
-        searchUtils.syncSearchPosts(searchFeed.searchQuery,
-                                    searchFeed.following,
-                                    searchFeed.authorHandles, searchFeed.mentionHandles,
-                                    searchFeed.since, !isNaN(searchFeed.since.getTime()),
-                                    searchFeed.until, !isNaN(searchFeed.until.getTime()),
-                                    searchFeed.language)
+        searchUtils.syncSearchPosts(searchFeed.searchQuery, getSearchOptions())
+    }
+
+    function getSearchOptions() {
+        let searchOptions = searchUtils.makeSearchOptions()
+        searchOptions.following = searchFeed.following
+        searchOptions.authors = searchFeed.authorHandles
+        searchOptions.mentions = searchFeed.mentionHandles
+        searchOptions.since = searchFeed.since
+        searchOptions.isSetSince = !isNaN(searchFeed.since.getTime())
+        searchOptions.until = searchFeed.until
+        searchOptions.isSetUntil = !isNaN(searchFeed.until.getTime())
+        searchOptions.language = searchFeed.language
+        return searchOptions
     }
 
     function forceDestroy() {

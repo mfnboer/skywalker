@@ -7,6 +7,7 @@
 #include "profile.h"
 #include "profile_matcher.h"
 #include "search_feed.h"
+#include "search_options.h"
 #include "search_post_feed_model.h"
 #include "starter_pack_list_model.h"
 #include "trending_topic_list_model.h"
@@ -36,6 +37,8 @@ public:
     explicit SearchUtils(QObject* parent = nullptr);
     ~SearchUtils();
 
+    Q_INVOKABLE SearchOptions makeSearchOptions() const { return SearchOptions{}; }
+
     Q_INVOKABLE void removeModels();
     Q_INVOKABLE void searchAuthorsTypeahead(const QString& typed, int limit = 20, QEnums::AuthorSearchFilter filter = QEnums::AUTHOR_SEARCH_FILTER_NONE);
 
@@ -45,25 +48,13 @@ public:
 
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
 
-    Q_INVOKABLE void searchPosts(const QString& text, const QString& sortOrder, bool following = false,
-                                 const QStringList& authors = {}, const QStringList& mentions = {},
-                                 const QDateTime& since = {}, bool setSince = false,
-                                 const QDateTime& until = {}, bool setUntil = false,
-                                 const QString& language = {},
+    Q_INVOKABLE void searchPosts(const QString& text, const SearchOptions& searchOptions = {},
                                  int maxPages = 10, int minEntries = 10, const QString& cursor = {});
-    Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const QString& sortOrder, bool following = false,
-                                            const QStringList& author = {}, const QStringList& mentions = {},
-                                            const QDateTime& since = {}, bool setSince = false,
-                                            const QDateTime& until = {}, bool setUntil = false,
-                                            const QString& language = {},
+    Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const SearchOptions& searchOptions = {},
                                             int maxPages = 10, int minEntries = 10);
 
     Q_INVOKABLE void syncFeed(const QString& searchQuery, bool sync);
-    Q_INVOKABLE void syncSearchPosts(const QString& text, bool following = false,
-                                     const QStringList& authors = {}, const QStringList& mentions = {},
-                                     const QDateTime& since = {}, bool setSince = false,
-                                     const QDateTime& until = {}, bool setUntil = false,
-                                     const QString& language = {},
+    Q_INVOKABLE void syncSearchPosts(const QString& text, const SearchOptions& searchOptions = {},
                                      int maxPages = 10);
 
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
@@ -93,9 +84,11 @@ public:
     Q_INVOKABLE void initLastSearchedProfiles(bool resolveDids = true);
     Q_INVOKABLE void getTrendingTopics();
     Q_INVOKABLE SearchFeed createSearchFeed(
-        const QString& searchQuery, bool following,
+        const QString& searchQuery,
+        bool following,
         const QStringList& authorHandles, const QStringList& mentionHandles,
         QDateTime since, QDateTime until, const QString& language) const;
+    Q_INVOKABLE QStringList validateHandles(const QStringList& handles) const;
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }
     void setAuthorTypeaheadList(const BasicProfileList& list);
@@ -125,20 +118,12 @@ private:
     void addAuthorTypeaheadList(const ATProto::AppBskyActor::ProfileViewBasic::List& profileViewBasicList, const IProfileMatcher& matcher = AnyProfileMatcher{});
     void localSearchAuthorsTypeahead(const QString& typed, int limit, const IProfileMatcher& matcher = AnyProfileMatcher{});
     QString preProcessSearchText(const QString& text) const;
+    QString quoteText(const QString& text) const;
+    QString addExcludeWords(const QString& text, const QStringList& excludeWords) const;
     TrendingTopicListModel& createTrendingTopicsListModel();
     QStringList getLastProfileSearches() const;
-    QStringList cleanHandleList(QStringList authors) const;
-    ATProto::Client::SearchParams createSearchParams(
-        const QString& sortOrder, bool following,
-        const QStringList& authors, const QStringList& mentions,
-        const QDateTime& since, bool setSince,
-        const QDateTime& until, bool setUntil,
-        const QString& language);
-    void syncSearchPosts(const QString& text,
-                         const QStringList& authors, const QStringList& mentions,
-                         const QDateTime& since, bool setSince,
-                         const QDateTime& until, bool setUntil,
-                         const QString& language,
+
+    void syncSearchPosts(const QString& text, const SearchOptions& searchOptions,
                          QDateTime tillTimestamp, const QString& cid,
                          int maxPages = 10, const QString& cursor = {});
     bool syncPageHasNewPosts(const ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr& feed, const SearchPostFeedModel& model) const;
