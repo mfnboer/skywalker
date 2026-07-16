@@ -82,6 +82,9 @@ public:
     void setExcludeWords(const QStringList& excludeWords) { mExcludeWords = excludeWords; }
 
     ATProto::Client::SearchParams createSearchParams(const QString& userDid) const;
+    Q_INVOKABLE QString getDescription() const;
+
+    bool equals(const SearchOptions& other) const;
 
     static QStringList validateHandles(const QStringList& handles);
     static QStringList cleanHandleList(const QStringList& authors, const QString& userDid);

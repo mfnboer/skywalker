@@ -13,6 +13,7 @@ import atproto.lib
 PostListView {
     required property searchfeed searchFeed
     property bool pinnedFeed: false
+    readonly property string feedKey: searchFeed.searchQuery
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property int extraFooterMargin: 0
 
@@ -29,6 +30,7 @@ PostListView {
 
     header: PostFeedHeader {
         feedName: searchFeed.name
+        subTitle: searchFeed.searchOptions.getDescription()
         defaultSvg: guiSettings.searchFeedDefaultAvatar(searchFeed)
         feedAvatar: ""
         contentMode: initialContentMode
@@ -265,24 +267,11 @@ PostListView {
     }
 
     function getNextPage() {
-        searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, getSearchOptions())
+        searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, searchFeed.searchOptions)
     }
 
     function syncSearch() {
-        searchUtils.syncSearchPosts(searchFeed.searchQuery, getSearchOptions())
-    }
-
-    function getSearchOptions() {
-        let searchOptions = searchUtils.makeSearchOptions()
-        searchOptions.following = searchFeed.following
-        searchOptions.authors = searchFeed.authorHandles
-        searchOptions.mentions = searchFeed.mentionHandles
-        searchOptions.since = searchFeed.since
-        searchOptions.isSetSince = !isNaN(searchFeed.since.getTime())
-        searchOptions.until = searchFeed.until
-        searchOptions.isSetUntil = !isNaN(searchFeed.until.getTime())
-        searchOptions.language = searchFeed.language
-        return searchOptions
+        searchUtils.syncSearchPosts(searchFeed.searchQuery, searchFeed.searchOptions)
     }
 
     function forceDestroy() {

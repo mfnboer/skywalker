@@ -62,6 +62,94 @@ ATProto::Client::SearchParams SearchOptions::createSearchParams(const QString& u
     return searchParams;
 }
 
+static QString getAuthorsString(const QStringList& authors)
+{
+    QString s;
+
+    for (const auto& author : authors)
+    {
+        if (ATProto::ATRegex::isHandle(author))
+            s += QString(" @%1").arg(author);
+        else
+            s += QString(" %1").arg(author);
+    }
+
+    return s;
+}
+
+QString SearchOptions::getDescription() const
+{
+    QStringList parts;
+
+    if (mExactPrase)
+        parts.push_back(QObject::tr("exact phrase"));
+
+    if (mPostFilter == POST_FILTER_NO_REPLIES)
+        parts.push_back(QObject::tr("no replies"));
+    else if (mPostFilter == POST_FILTER_ONLY_REPLIES)
+        parts.push_back(QObject::tr("only replies"));
+
+    if (mMediaPostFilter == MEDIA_POST_FILTER_MEDIA)
+        parts.push_back(QObject::tr("only media"));
+    else if (mMediaPostFilter == MEDIA_POST_FILTER_VIDEO)
+        parts.push_back(QObject::tr("only video"));
+
+    if (mFollowing)
+        parts.push_back(QObject::tr("from: users you follow"));
+
+    if (!mAuthors.empty())
+    {
+        auto text = getAuthorsString(mAuthors);
+        parts.push_back(QObject::tr("from:%1").arg(text));
+    }
+
+    if (!mMentions.empty())
+    {
+        auto text = getAuthorsString(mMentions);
+        parts.push_back(QObject::tr("from:%1").arg(text));
+    }
+
+    if (!mExcludeWords.empty())
+    {
+        auto text = mExcludeWords.join(" ");
+        parts.push_back(QObject::tr("exclude: %1").arg(text));
+    }
+
+    if (mSetSince)
+    {
+        auto text = mSince.toString(QLocale().dateFormat(QLocale::ShortFormat));
+        parts.push_back(QObject::tr("since: %1").arg(text));
+    }
+
+    if (mSetUntil)
+    {
+        auto text = mUntil.toString(QLocale().dateFormat(QLocale::ShortFormat));
+        parts.push_back(QObject::tr("until: %1").arg(text));
+    }
+
+    if (!mLanguage.isEmpty())
+        parts.push_back(QObject::tr("language: %1").arg(mLanguage));
+
+    return parts.join(", ");
+}
+
+bool SearchOptions::equals(const SearchOptions& other) const
+{
+    return mSortOrder == other.mSortOrder &&
+           mExactPrase == other.mExactPrase &&
+           mFollowing == other.mFollowing &&
+           mAuthors == other.mAuthors &&
+           mMentions == other.mMentions &&
+           mSetSince == other.mSetSince &&
+           (!mSetSince || mSince == other.mSince) &&
+           mSetUntil == other.mSetUntil &&
+           (!mSetUntil || mUntil == other.mUntil) &&
+           mLanguage == other.mLanguage &&
+           mPostFilter == other.mPostFilter &&
+           mMediaPostFilter == other.mMediaPostFilter &&
+           mExcludeWords == other.mExcludeWords;
+}
+
 QStringList SearchOptions::validateHandles(const QStringList& handles)
 {
     std::set<QString> handleSet;

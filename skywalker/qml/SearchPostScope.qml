@@ -14,6 +14,7 @@ SkyDialog {
     property string otherAuthorHandles // space separated handles
     property string mentionsName // "all", "me", "other"
     property string otherMentionsHandles // space separated handles
+    property string excludeWords // space separated words
     property date sinceDate
     property bool setSince: false
     property date untilDate
@@ -160,6 +161,19 @@ SkyDialog {
                     authorTypeaheadView.stopSearch()
                     otherMentionsHandles = text
                 }
+            }
+
+            AccessibleText {
+                font.bold: true
+                text: qsTr("Exclude:")
+            }
+
+            SkyTextInput {
+                Layout.fillWidth: true
+                placeholderText: qsTr("Words, hashtags")
+                text: excludeWords
+
+                onEditingFinished: excludeWords = text
             }
 
             AccessibleText {
@@ -360,7 +374,7 @@ SkyDialog {
             if (s.length === 0)
                 return []
 
-            const handles = s.trim().split(/\s+/)
+            const handles = s.split(/\s+/)
             return searchUtils.validateHandles(handles)
         }
 
@@ -377,6 +391,15 @@ SkyDialog {
 
     function getMentionNames() {
         return getUserNames(mentionsName, otherMentionsHandles)
+    }
+
+    function getExcludeWords() {
+        const s = excludeWords.trim()
+
+        if (s.length === 0)
+            return ""
+
+        return s.split(/\s+/)
     }
 
     function startOfToday() {

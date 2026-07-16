@@ -441,7 +441,7 @@ Pane {
 
                 RowLayout {
                     required property favoritefeedview modelData
-                    readonly property bool active: activeFeedView && activeFeedView.feedUri === modelData.uri
+                    readonly property bool active: activeFeedView && activeFeedView.feedKey === modelData.key
 
                     id: favoriteEntry
                     width: parent.width
@@ -466,18 +466,38 @@ Pane {
                         onPressAndHold: showFavoritesSorter()
                     }
 
-                    SkyCleanedTextLine {
+                    Column {
                         Layout.fillWidth: true
-                        verticalAlignment: Text.AlignVCenter
-                        rightPadding: 10
-                        elide: Text.ElideRight
-                        font.bold: active
-                        plainText: modelData.name
+                        Layout.alignment: Qt.AlignVCenter
 
-                        SkyMouseArea {
-                            anchors.fill: parent
-                            onClicked: favoriteEntry.activate()
-                            onPressAndHold: showFavoritesSorter()
+                        SkyCleanedTextLine {
+                            width: parent.width
+                            rightPadding: 10
+                            elide: Text.ElideRight
+                            font.bold: favoriteEntry.active
+                            plainText: modelData.name
+
+                            SkyMouseArea {
+                                anchors.fill: parent
+                                onClicked: favoriteEntry.activate()
+                                onPressAndHold: showFavoritesSorter()
+                            }
+                        }
+
+                        AccessibleText {
+                            width: parent.width
+                            rightPadding: 10
+                            color: guiSettings.handleColor
+                            font.pointSize: guiSettings.scaledFont(7/8)
+                            elide: Text.ElideRight
+                            text: modelData.subTitle
+                            visible: modelData.subTitle
+
+                            SkyMouseArea {
+                                anchors.fill: parent
+                                onClicked: favoriteEntry.activate()
+                                onPressAndHold: showFavoritesSorter()
+                            }
                         }
                     }
 

@@ -20,6 +20,7 @@ SkyPage {
     property bool following: false
     property list<string> postAuthorUsers: [] // empty or list of "me" and real handles
     property list<string> postMentionUsers: [] // empty or list of "me" and real handles
+    property list<string> postExcludeWords: []
     property date postSince
     property bool postSetSince: false
     property date postUntil
@@ -189,14 +190,7 @@ SkyPage {
 
         HashtagContextMenu {
             id: moreMenu
-            following: page.following
-            postAuthorUsers: page.postAuthorUsers
-            postMentionUsers: page.postMentionUsers
-            postSince: page.postSince
-            postSetSince: page.postSetSince
-            postUntil: page.postUntil
-            postSetUntil: page.postSetUntil
-            postLanguage: page.postLanguage
+            searchOptions: searchUtils.getSearchOptions(SearchSortOrder.RECENT)
         }
     }
 
@@ -225,7 +219,7 @@ SkyPage {
             imageMargin: 0
             iconColor: guiSettings.linkColor
             Material.background: guiSettings.backgroundColor
-            svg: SvgOutline.noReplyRestrictions
+            svg: SvgOutline.options
             accessibleName: searchModeText.text
             onClicked: page.changeSearchPostScope()
         }
@@ -235,10 +229,10 @@ SkyPage {
             Layout.alignment: Qt.AlignVCenter
             leftPadding: 5
             rightPadding: 5
+            maximumLineCount: 3
             elide: Text.ElideRight
             wrapMode: Text.Wrap
             color: guiSettings.linkColor
-            textFormat: Text.StyledText
             text: page.getSearchPostScopeText()
 
             SkyMouseArea {
@@ -255,7 +249,16 @@ SkyPage {
             Material.background: guiSettings.backgroundColor
             svg: SvgOutline.close
             accessibleName: qsTr("clear search scope")
-            visible: postAuthorUsers.length > 0 || postMentionUsers.length > 0 || postSetSince || postSetUntil || postLanguage
+            visible: exactPhrase ||
+                     postFilter !== SearchOptions.POST_FILTER_ALL ||
+                     mediaPostFilter !== SearchOptions.MEDIA_POST_FILTER_ALL ||
+                     following ||
+                     postAuthorUsers.length > 0 ||
+                     postMentionUsers.length > 0 ||
+                     postExcludeWords.length > 0 ||
+                     postSetSince ||
+                     postSetUntil ||
+                     postLanguage
             onClicked: page.clearSearchPostScope()
         }
     }
@@ -1026,6 +1029,7 @@ SkyPage {
             searchOptions.following = following
             searchOptions.authors = postAuthorUsers
             searchOptions.mentions = postMentionUsers
+            searchOptions.excludeWords = postExcludeWords
             searchOptions.since = postSince
             searchOptions.isSetSince = postSetSince
             searchOptions.until = postUntil
@@ -1093,8 +1097,13 @@ SkyPage {
     }
 
     function clearSearchPostScope() {
+        exactPhrase = false
+        postFilter = SearchOptions.POST_FILTER_ALL
+        mediaPostFilter = SearchOptions.MEDIA_POST_FILTER_ALL
+        following = false
         postAuthorUsers = []
         postMentionUsers = []
+        postExcludeWords = []
         postSetSince = false
         postSince = nullDate
         postSetUntil = false
@@ -1142,6 +1151,7 @@ SkyPage {
                 otherAuthorHandles: otherAuthorHandles,
                 mentionsName: mentionsName,
                 otherMentionsHandles: otherMentionsHandles,
+                excludeWords: postExcludeWords.join(" "),
                 sinceDate: postSince,
                 setSince: postSetSince,
                 untilDate: postUntil,
@@ -1156,6 +1166,7 @@ SkyPage {
             following = scopePage.getFollowing()
             postAuthorUsers = scopePage.getAuthorNames()
             postMentionUsers = scopePage.getMentionNames()
+            postExcludeWords = scopePage.getExcludeWords()
             postSince = scopePage.sinceDate
             postSetSince = scopePage.setSince
             postUntil = scopePage.untilDate
@@ -1190,31 +1201,7 @@ SkyPage {
     }
 
     function getSearchPostScopeText() {
-        let scopeText = ""
-
-        if (following)
-            scopeText += qsTr(" from:<b>users you follow</b>")
-
-        if (postAuthorUsers.length > 0)
-        {
-            const authorText = getAuthorListText(postAuthorUsers)
-            scopeText += qsTr(` from:<b>${authorText}</b>`)
-        }
-
-        if (postMentionUsers.length > 0)
-        {
-            const mentionsText = getAuthorListText(postMentionUsers)
-            scopeText += qsTr(` mentions:<b>${mentionsText}</b>`)
-        }
-
-        if (postSetSince)
-            scopeText += qsTr(` since:<b>${postSince.toLocaleDateString(Qt.locale(), Locale.ShortFormat)}</b>`)
-
-        if (postSetUntil)
-            scopeText += qsTr(` until:<b>${postUntil.toLocaleDateString(Qt.locale(), Locale.ShortFormat)}</b>`)
-
-        if (postLanguage)
-            scopeText += qsTr(` language:<b>${postLanguage}</b>`)
+        let scopeText = searchUtils.getSearchOptions(SearchSortOrder.RECENT).getDescription()
 
         let adult = ""
 
@@ -1222,7 +1209,7 @@ SkyPage {
             adult = `, adult: ${getAdultVisibility()}`
 
         if (scopeText)
-            return qsTr(`Posts${scopeText}${adult}`)
+            return qsTr(`${scopeText}${adult}`)
 
         return qsTr(`All posts${adult}`)
     }
@@ -1285,14 +1272,18 @@ SkyPage {
         adultContent = skywalker.getContentFilter().getAdultContent()
         page.header.forceFocus()
         searchBar.setLatestPosts()
-        following = searchFeed.following
-        postAuthorUsers = searchFeed.authorHandles
-        postMentionUsers = searchFeed.mentionHandles
-        postSince = searchFeed.since
-        postSetSince = !isNaN(searchFeed.since.getTime())
-        postUntil = searchFeed.until
-        postSetUntil = !isNaN(searchFeed.until.getTime())
-        postLanguage = searchFeed.language
+        exactPhrase = searchFeed.searchOptions.exactPhrase
+        following = searchFeed.searchOptions.following
+        postAuthorUsers = searchFeed.searchOptions.authors
+        postMentionUsers = searchFeed.searchOptions.mentions
+        postSince = searchFeed.searchOptions.since
+        postSetSince = searchFeed.searchOptions.isSetSince
+        postUntil = searchFeed.searchOptions.until
+        postSetUntil = searchFeed.searchOptions.isSetUntil
+        postLanguage = searchFeed.searchOptions.language
+        postFilter = searchFeed.searchOptions.postFilter
+        mediaPostFilter = searchFeed.searchOptions.mediaPostFilter
+        postExcludeWords = searchFeed.searchOptions.excludeWords
         header.setSearchText(searchFeed.searchQuery)
         searchUtils.search(searchFeed.searchQuery)
     }

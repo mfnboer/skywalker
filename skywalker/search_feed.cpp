@@ -5,16 +5,9 @@
 
 namespace Skywalker {
 
-SearchFeed::SearchFeed(const QString& searchQuery, bool following,
-                       const QStringList& authorHandles, const QStringList& mentionHandles,
-                       QDateTime since, QDateTime until, const QString& language) :
+SearchFeed::SearchFeed(const QString& searchQuery, const SearchOptions& searchOptions) :
     mSearchQuery(searchQuery),
-    mFollowing(following),
-    mAuthorHandles(authorHandles),
-    mMentionHandles(mentionHandles),
-    mSince(since),
-    mUntil(until),
-    mLanguage(language)
+    mSearchOptions(searchOptions)
 {
 }
 
@@ -31,20 +24,15 @@ bool SearchFeed::isCashtag() const
 bool SearchFeed::equals(const SearchFeed& other) const
 {
     return mSearchQuery == other.mSearchQuery &&
-        mFollowing == other.mFollowing &&
-        mAuthorHandles == other.mAuthorHandles &&
-        mMentionHandles == other.mMentionHandles &&
-        mSince == other.mSince &&
-        mUntil == other.mUntil &&
-        mLanguage == other.mLanguage;
+           mSearchOptions.equals(other.mSearchOptions);
 }
 
 LanguageList SearchFeed::getLanguageList() const
 {
-    if (mLanguage.isEmpty())
+    if (mSearchOptions.getLanguage().isEmpty())
         return {};
 
-    return LanguageUtils::getLanguages(QStringList{mLanguage});
+    return LanguageUtils::getLanguages(QStringList{mSearchOptions.getLanguage()});
 }
 
 QJsonObject SearchFeed::toJson() const
@@ -52,23 +40,23 @@ QJsonObject SearchFeed::toJson() const
     QJsonObject json;
     json.insert("searchQuery", mSearchQuery);
 
-    if (mFollowing)
+    if (mSearchOptions.getFollowing())
         json.insert("following", "true");
 
-    if (!mAuthorHandles.isEmpty())
-        json.insert("authors", QJsonArray::fromStringList(mAuthorHandles));
+    if (!mSearchOptions.getAuthors().isEmpty())
+        json.insert("authors", QJsonArray::fromStringList(mSearchOptions.getAuthors()));
 
-    if (!mMentionHandles.isEmpty())
-        json.insert("mentions", QJsonArray::fromStringList(mMentionHandles));
+    if (!mSearchOptions.getMentions().isEmpty())
+        json.insert("mentions", QJsonArray::fromStringList(mSearchOptions.getMentions()));
 
-    if (mSince.isValid())
-        json.insert("since", mSince.toUTC().toString(Qt::ISODateWithMs));
+    if (mSearchOptions.getSetSince() && mSearchOptions.getSince().isValid())
+        json.insert("since", mSearchOptions.getSince().toUTC().toString(Qt::ISODateWithMs));
 
-    if (mUntil.isValid())
-        json.insert("until", mUntil.toUTC().toString(Qt::ISODateWithMs));
+    if (mSearchOptions.getSetUntil() && mSearchOptions.getUntil().isValid())
+        json.insert("until", mSearchOptions.getUntil().toUTC().toString(Qt::ISODateWithMs));
 
-    if (!mLanguage.isEmpty())
-        json.insert("language", mLanguage);
+    if (!mSearchOptions.getLanguage().isEmpty())
+        json.insert("language", mSearchOptions.getLanguage());
 
     return json;
 }
@@ -78,27 +66,40 @@ SearchFeed SearchFeed::fromJson(const QJsonObject& json)
     const ATProto::XJsonObject xjson(json);
     SearchFeed feed;
     feed.mSearchQuery = xjson.getRequiredString("searchQuery");
-    feed.mFollowing = xjson.getOptionalBool("following", false);
+    feed.mSearchOptions.setFollowing(xjson.getOptionalBool("following", false));
 
     // Author used to be a single value, now it is a list
     auto author = xjson.getOptionalString("author");
 
     if (author)
-        feed.mAuthorHandles.push_back(*author);
+        feed.mSearchOptions.setAuthors({*author,});
     else
-        feed.mAuthorHandles = xjson.getOptionalStringList("authors");
+        feed.mSearchOptions.setAuthors(xjson.getOptionalStringList("authors"));
 
     auto mention = xjson.getOptionalString("mention");
 
     if (mention)
-        feed.mMentionHandles.push_back(*mention);
+        feed.mSearchOptions.setMentions({*mention,});
     else
-        feed.mMentionHandles = xjson.getOptionalStringList("mentions");
+        feed.mSearchOptions.setMentions(xjson.getOptionalStringList("mentions"));
 
-    feed.mSince = xjson.getOptionalDateTime("since", {});
-    feed.mUntil = xjson.getOptionalDateTime("until", {});
-    feed.mLanguage = xjson.getOptionalString("language", "");
+    auto since = xjson.getOptionalDateTime("since");
 
+    if (since)
+    {
+        feed.mSearchOptions.setSetSince(true);
+        feed.mSearchOptions.setSince(*since);
+    }
+
+    auto until = xjson.getOptionalDateTime("until");
+
+    if (until)
+    {
+        feed.mSearchOptions.setSetUntil(true);
+        feed.mSearchOptions.setUntil(*until);
+    }
+
+    feed.mSearchOptions.setLanguage(xjson.getOptionalString("language", ""));
     return feed;
 }
 

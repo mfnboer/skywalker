@@ -12,8 +12,10 @@ class FavoriteFeedView
 {
     Q_GADGET
     Q_PROPERTY(QEnums::FavoriteType type READ getType FINAL)
+    Q_PROPERTY(QString key READ getKey FINAL)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
+    Q_PROPERTY(QString subTitle READ getSubTitle FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode FINAL)
@@ -36,6 +38,7 @@ public:
     QString getKey() const; // uri for feeds and lists, name for search feeds
     QString getUri() const;
     QString getName() const;
+    QString getSubTitle() const;
     QString getAvatar() const;
     QString getAvatarThumb() const;
     QEnums::ContentMode getContentMode() const;

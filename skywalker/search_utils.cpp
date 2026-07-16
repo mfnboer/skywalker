@@ -1278,15 +1278,10 @@ void SearchUtils::setSearchPageSize(int pageSize)
     emit searchPageSizeChanged();
 }
 
-SearchFeed SearchUtils::createSearchFeed(
-    const QString& searchQuery, bool following,
-    const QStringList& authorHandles, const QStringList& mentionHandles,
-    QDateTime since, QDateTime until, const QString& language) const
+SearchFeed SearchUtils::createSearchFeed(const QString& searchQuery, const SearchOptions& searchOptions) const
 {
-    const auto feed = SearchFeed(searchQuery, following, authorHandles, mentionHandles, since, until, language);
-    qDebug() << "Search feed:" << feed.getSearchQuery() << "following:" << following <<
-        "author:" << feed.getAuthorHandles() << "mention:" << feed.getMentionHandles() <<
-        "since:" << feed.getSince() << "until:" << feed.getUntil() << "lang:" << feed.getLanguage();
+    const auto feed = SearchFeed(searchQuery, searchOptions);
+    qDebug() << "Search feed:" << feed.getSearchQuery();
     return feed;
 }
 

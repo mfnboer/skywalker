@@ -60,6 +60,16 @@ QString FavoriteFeedView::getName() const
     return std::visit([](auto&& view){ return view.getName(); }, mView);
 }
 
+QString FavoriteFeedView::getSubTitle() const
+{
+    auto searchFeed = getSearchFeed();
+
+    if (searchFeed.isNull())
+        return "";
+
+    return searchFeed.getSearchOptions().getDescription();
+}
+
 QString FavoriteFeedView::getAvatar() const
 {
     switch (getType())

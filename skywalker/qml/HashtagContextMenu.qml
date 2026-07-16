@@ -11,15 +11,7 @@ SkyMenu {
     property var skywalker: root.getSkywalker()
 
     // Search scope parameters
-    property bool following: false
-    property list<string> postAuthorUsers: [] // empty or list of "me" and real handles
-    property list<string> postMentionUsers: [] // empty or list of "me" and real handles
-    property date postSince
-    property bool postSetSince: false
-    property date postUntil
-    property bool postSetUntil: false
-    property string postLanguage
-    property date nullDate
+    property SearchOptions searchOptions
 
     signal done
 
@@ -83,13 +75,7 @@ SkyMenu {
         popup: hashtagMenu
         svgColor: hashtagMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
         onClicked: {
-            const view = searchUtils.createSearchFeed(hashtag,
-                following,
-                postAuthorUsers, postMentionUsers,
-                postSetSince ? postSince : nullDate,
-                postSetUntil ? postUntil : nullDate,
-                postLanguage)
-
+            const view = searchUtils.createSearchFeed(hashtag, searchOptions)
             skywalker.favoriteFeeds.pinSearch(view, !hashtagMenu.isPinned)
             skywalker.saveFavoriteFeeds()
         }

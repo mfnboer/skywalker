@@ -83,11 +83,7 @@ public:
     Q_INVOKABLE void clearLastSearches();
     Q_INVOKABLE void initLastSearchedProfiles(bool resolveDids = true);
     Q_INVOKABLE void getTrendingTopics();
-    Q_INVOKABLE SearchFeed createSearchFeed(
-        const QString& searchQuery,
-        bool following,
-        const QStringList& authorHandles, const QStringList& mentionHandles,
-        QDateTime since, QDateTime until, const QString& language) const;
+    Q_INVOKABLE SearchFeed createSearchFeed(const QString& searchQuery, const SearchOptions& searchOptions) const;
     Q_INVOKABLE QStringList validateHandles(const QStringList& handles) const;
 
     const BasicProfileList& getAuthorTypeaheadList() const { return mAuthorTypeaheadList; }

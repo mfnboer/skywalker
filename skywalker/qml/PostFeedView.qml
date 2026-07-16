@@ -8,6 +8,7 @@ PostListView {
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property int extraFooterMargin: 0
     readonly property string feedName: underlyingModel ? underlyingModel.feedName : ""
+    readonly property string feedKey: feedUri
 
     signal closed
 

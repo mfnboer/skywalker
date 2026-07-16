@@ -87,6 +87,7 @@ Rectangle {
             }
         }
         FeedAvatar {
+            id: avatarLeftSide
             Layout.leftMargin: 10
             Layout.rightMargin: 10
             Layout.preferredHeight: parent.height - 10
@@ -119,7 +120,7 @@ Rectangle {
             SkyCleanedTextLine {
                 id: headerTexts
                 width: parent.width
-                leftPadding: header.feedAvatar ? 0 : 10
+                leftPadding: avatarLeftSide.visible ? 0 : 10
                 rightPadding: showAsHome ? expandFeedsButton.width : 0
                 elide: Text.ElideRight
                 font.bold: true
@@ -154,6 +155,7 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
+                leftPadding: avatarLeftSide.visible ? 0 : 10
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
                 elide: Text.ElideRight
