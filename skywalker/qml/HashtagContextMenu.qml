@@ -5,6 +5,7 @@ import skywalker
 SkyMenu {
     property string hashtag: "" // or cashtag starting with $
     readonly property bool isCashtag: hashtag.startsWith("$")
+    readonly property searchfeed searchFeed: searchUtils.createSearchFeed(hashtag, searchOptions)
     property string handle
     property bool isMuted: false
     property bool isPinned: false
@@ -20,7 +21,7 @@ SkyMenu {
 
     onAboutToShow: {
         isMuted = skywalker.mutedWords.containsEntry(hashtag)
-        isPinned = skywalker.favoriteFeeds.isPinnedSearch(hashtag)
+        isPinned = skywalker.favoriteFeeds.isPinnedSearch(searchFeed.key)
     }
 
     onAboutToHide: {
@@ -75,8 +76,7 @@ SkyMenu {
         popup: hashtagMenu
         svgColor: hashtagMenu.isPinned ? guiSettings.favoriteColor : guiSettings.textColor
         onClicked: {
-            const view = searchUtils.createSearchFeed(hashtag, searchOptions)
-            skywalker.favoriteFeeds.pinSearch(view, !hashtagMenu.isPinned)
+            skywalker.favoriteFeeds.pinSearch(searchFeed, !hashtagMenu.isPinned)
             skywalker.saveFavoriteFeeds()
         }
     }

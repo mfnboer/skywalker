@@ -6,7 +6,8 @@
 
 namespace Skywalker {
 
-SearchPostFeedModel::SearchPostFeedModel(const QString& feedName, const QString& userDid,
+SearchPostFeedModel::SearchPostFeedModel(const QString& searchKey, const QString& feedName,
+                                         const QString& userDid,
                                          const IProfileStore& mutedReposts,
                                          const ContentFilter& contentFilter,
                                          const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -15,20 +16,21 @@ SearchPostFeedModel::SearchPostFeedModel(const QString& feedName, const QString&
     AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
+    mSearchKey(searchKey),
     mFeedName(feedName)
 {
 }
 
 void SearchPostFeedModel::setReverseFeed(bool reverse)
 {
-    qDebug() << "Reverse feed:" << reverse << mModelId << mFeedName;
+    qDebug() << "Reverse feed:" << reverse << mModelId << mSearchKey;
     AbstractPostFeedModel::setReverseFeed(reverse);
     setReverseFeedFilteredPostModels(reverse);
 }
 
 void SearchPostFeedModel::setChronological(bool chronological)
 {
-    qDebug() << "Set chronological:" << chronological << mModelId << mFeedName;
+    qDebug() << "Set chronological:" << chronological << mModelId << mSearchKey;
     AbstractPostFeedModel::setChronological(chronological);
     setChronologicalFilteredPostModels(chronological);
 }
@@ -303,7 +305,7 @@ void SearchPostFeedModel::clearFilteredPostModels()
 
 void SearchPostFeedModel::setReverseFeedFilteredPostModels(bool reverse)
 {
-    qDebug() << "Reverse feed filtered post models:" << reverse << mModelId << mFeedName;
+    qDebug() << "Reverse feed filtered post models:" << reverse << mModelId << mSearchKey;
 
     for (auto& model : mFilteredPostFeedModels)
         model->setReverseFeed(reverse);

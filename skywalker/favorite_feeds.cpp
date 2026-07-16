@@ -128,7 +128,7 @@ void FavoriteFeeds::initUserOrderedPinnedFeeds()
     const QString userDid = mSkywalker->getUserDid();
     const QStringList favoriteKeys = settings.getUserOrderedPinnedFeed(userDid);
 
-    qDebug() << "Init user ordered pinned feeds:" << userDid;
+    qDebug() << "Init user ordered pinned feeds:" << userDid << "keys:" << favoriteKeys;
 
     if (!mUserOrderedPinnedFeeds.empty())
     {
@@ -526,48 +526,48 @@ void FavoriteFeeds::pinSearch(const SearchFeed& search, bool pin)
 
 void FavoriteFeeds::pinSearch(const SearchFeed& search)
 {
-    if (isPinnedSearch(search.getName()))
+    if (isPinnedSearch(search.getKey()))
     {
-        qDebug() << "Search already pinned:" << search.getName();
+        qDebug() << "Search already pinned:" << search.getKey();
         return;
     }
 
-    mPinnedSearches.insert(search.getName());
+    mPinnedSearches.insert(search.getKey());
 
     FavoriteFeedView view(search);
     auto it = std::lower_bound(mPinnedFeeds.cbegin(), mPinnedFeeds.cend(), view, favoriteFeedNameCompare);
     mPinnedFeeds.insert(it, view);
-    qDebug() << "Pinned:" << view.getName();
+    qDebug() << "Pinned:" << view.getKey();
 
-    emit searchPinned(view.getName());
+    emit searchPinned(view.getKey());
     emit pinnedFeedsChanged();
     addToUserOrderedPinnedFeeds(view);
 }
 
 void FavoriteFeeds::unpinSearch(const SearchFeed& search)
 {
-    if (!isPinnedSearch(search.getName()))
+    if (!isPinnedSearch(search.getKey()))
     {
-        qDebug() << "Search not pinned:" << search.getName();
+        qDebug() << "Search not pinned:" << search.getKey();
         return;
     }
 
-    mPinnedSearches.erase(search.getName());
+    mPinnedSearches.erase(search.getKey());
 
     FavoriteFeedView view(search);
     auto it = std::find_if(
         mPinnedFeeds.cbegin(), mPinnedFeeds.cend(),
-        [name=view.getName()](const auto& fav){
-            return fav.getType() == QEnums::FAVORITE_SEARCH && fav.getName() == name;
+        [key=view.getKey()](const auto& fav){
+            return fav.getType() == QEnums::FAVORITE_SEARCH && fav.getKey() == key;
         });
 
     if (it != mPinnedFeeds.cend())
     {
-        qDebug() << "Unpin:" << it->getName();
+        qDebug() << "Unpin:" << it->getKey();
         mPinnedFeeds.erase(it);
     }
 
-    emit searchUnpinned(search.getName());
+    emit searchUnpinned(search.getKey());
     emit pinnedFeedsChanged();
     removeFromUserOrderedPinnedFeeds(view);
 }
@@ -627,11 +627,11 @@ FavoriteFeedView FavoriteFeeds::getPinnedFeed(const QString& uri) const
     return {};
 }
 
-FavoriteFeedView FavoriteFeeds::getPinnedSearch(const QString& name) const
+FavoriteFeedView FavoriteFeeds::getPinnedSearch(const QString& key) const
 {
     for (const auto& feed : mPinnedFeeds)
     {
-        if (feed.getName() == name)
+        if (feed.getKey() == key)
             return feed;
     }
 
@@ -992,16 +992,16 @@ void FavoriteFeeds::cleanupSettings()
         [&settings, &userDid](const QString& uri){ settings.setFeedReverse(userDid, uri, false); });
 
     qDebug() << "Cleanup search feed reverse settings";
-    removeNonPinnedSearches(settings.getSearchFeedReverseUris(userDid),
-        [&settings, &userDid](const QString& query){ settings.setSearchFeedReverse(userDid, query, false); });
+    removeNonPinnedSearches(settings.getSearchFeedReverseKeys(userDid),
+        [&settings, &userDid](const QString& key){ settings.setSearchFeedReverse(userDid, key, false); });
 
     qDebug() << "Cleanup feed view mode settings";
     removeNonPinnedFeeds(settings.getFeedViewModeUris(userDid),
         [&settings, &userDid](const QString& uri){ settings.setFeedViewMode(userDid, uri, QEnums::CONTENT_MODE_UNSPECIFIED); });
 
     qDebug() << "Cleanup search feed view mode settings";
-    removeNonPinnedSearches(settings.getSearchFeedViewModeSearchQueries(userDid),
-        [&settings, &userDid](const QString& query){ settings.setSearchFeedViewMode(userDid, query, QEnums::CONTENT_MODE_UNSPECIFIED); });
+    removeNonPinnedSearches(settings.getSearchFeedViewModeSearchKeys(userDid),
+        [&settings, &userDid](const QString& key){ settings.setSearchFeedViewMode(userDid, key, QEnums::CONTENT_MODE_UNSPECIFIED); });
 
     qDebug() << "Cleanup feed hide replies settings";
     removeNonPinnedFeeds(settings.getFeedHideRepliesUris(userDid),
@@ -1036,17 +1036,17 @@ void FavoriteFeeds::removeNonPinnedFeeds(const Container& feedUris, const std::f
 }
 
 template<typename Container>
-void FavoriteFeeds::removeNonPinnedSearches(const Container& searchQueries, const std::function<void(const QString& searchQuery)>& removeFun)
+void FavoriteFeeds::removeNonPinnedSearches(const Container& searchKeys, const std::function<void(const QString& searchKey)>& removeFun)
 {
     qDebug() << "Remove non pinned searches";
 
-    for (const QString& query : searchQueries)
+    for (const QString& key : searchKeys)
     {
-        qDebug() << "Check:" << query;
-        if (!isPinnedSearch(query))
+        qDebug() << "Check:" << key;
+        if (!isPinnedSearch(key))
         {
-            qWarning() << "Feed not pinned:" << query;
-            removeFun(query);
+            qWarning() << "Feed not pinned:" << key;
+            removeFun(key);
         }
     }
 }

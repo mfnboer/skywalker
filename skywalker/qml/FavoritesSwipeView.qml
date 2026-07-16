@@ -161,9 +161,9 @@ SwipeView {
                         viewLoader.rewindEnabled = mustSyncFeed(modelData)
                 }
 
-                function onSyncSearchFeedChanged(did, searchQuery) {
+                function onSyncSearchFeedChanged(did, searchKey) {
                     if (did === skywalker.getUserDid() && modelData.type === QEnums.FAVORITE_SEARCH &&
-                            searchQuery === modelData.searchFeed.searchQuery)
+                            searchKey === modelData.searchFeed.key)
                         viewLoader.rewindEnabled = mustSyncFeed(modelData)
                 }
             }
@@ -233,7 +233,7 @@ SwipeView {
             showAsHome: true
 
             function saveAsLastViewedFeed() {
-                skywalker.saveLastViewedFeed(modelData.searchFeed.name)
+                skywalker.saveLastViewedFeed(searchFeed.key)
             }
 
             function refreshFeed() {
@@ -244,7 +244,7 @@ SwipeView {
                 if (unreadPosts == 0)
                     syncSearch()
                 else
-                    console.debug("There are unread posts:", unreadPosts, modelData.searchFeed.name)
+                    console.debug("There are unread posts:", unreadPosts, searchFeed.name)
             }
         }
     }
@@ -255,7 +255,7 @@ SwipeView {
         case QEnums.FAVORITE_LIST:
             return userSettings.mustSyncFeed(skywalker.getUserDid(), favorite.uri)
         case QEnums.FAVORITE_SEARCH:
-            return userSettings.mustSyncSearchFeed(skywalker.getUserDid(), favorite.searchFeed.searchQuery)
+            return userSettings.mustSyncSearchFeed(skywalker.getUserDid(), favorite.key)
         }
 
         console.warn("Unknown favorite type:", favorite.name)

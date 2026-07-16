@@ -77,11 +77,27 @@ SvgButton {
                     required property favoritefeedview modelData
 
                     contentItem: Row {
-                        SkyCleanedTextLine {
-                            width: Math.min(parent.width - badge.width - feedAvatar.width - 5, implicitWidth)
-                            verticalAlignment: Text.AlignVCenter
-                            elide: Text.ElideRight
-                            plainText: modelData.name
+                        Column {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.verticalCenterOffset: modelData.subTitle ? -subTitleText.implicitHeight / 2 : 0
+                            width: parent.width - badge.width - feedAvatar.width - 5
+
+                            height: nameText.implicitHeight
+
+                            SkyCleanedTextLine {
+                                id: nameText
+                                width: parent.width
+                                elide: Text.ElideRight
+                                plainText: modelData.name
+                            }
+                            Text {
+                                id: subTitleText
+                                width: parent.width
+                                elide: Text.ElideRight
+                                font.pointSize: guiSettings.scaledFont(5/8)
+                                text: modelData.subTitle
+                                visible: modelData.subTitle
+                            }
                         }
 
                         BadgeCounter {

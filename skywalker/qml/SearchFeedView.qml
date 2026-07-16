@@ -13,7 +13,6 @@ import atproto.lib
 PostListView {
     required property searchfeed searchFeed
     property bool pinnedFeed: false
-    readonly property string feedKey: searchFeed.searchQuery
     readonly property int unreadPosts: mediaTilesLoader.item ? mediaTilesLoader.item.unreadPosts : listUnreadPosts
     readonly property int extraFooterMargin: 0
 
@@ -22,6 +21,7 @@ PostListView {
     id: feedView
     width: parent.width
     inSync: true
+    feedKey: searchFeed.key
     reverseSyncFun: () => { moveToIndex(count - 1, doMoveToPost); finishSync() }
     resyncFun: () => setInSync(newLastVisibleIndex, newLastVisibleOffsetY, true)
     syncFun: (index, offsetY) => setInSync(index, offsetY)
@@ -83,7 +83,7 @@ PostListView {
 
         if (lastVisibleIndex !== -1 && model) {
             const lastVisibleOffsetY = calcVisibleOffsetY(lastVisibleIndex)
-            skywalker.searchFeedMovementEnded(model.getModelId(), model.contentMode, lastVisibleIndex, lastVisibleOffsetY)
+            skywalker.searchFeedMovementEnded(model.getModelId(), searchFeed.key, model.contentMode, lastVisibleIndex, lastVisibleOffsetY)
         }
 
         setAnchorItem(firstVisibleIndex, lastVisibleIndex)
@@ -169,13 +169,13 @@ PostListView {
 
         onShowFeed: root.viewSearchViewFeed(searchFeed)
         onNewReverseFeed: (reverse) => changeReverseFeed(reverse)
-        onEnableSyncSearchFeed: (enable) => searchUtils.syncFeed(searchFeed.searchQuery, enable)
+        onEnableSyncSearchFeed: (enable) => searchUtils.syncFeed(searchFeed, enable)
     }
 
     function changeReverseFeed(reverse) {
-        userSettings.setSearchFeedReverse(skywalker.getUserDid(), searchFeed.name, reverse)
+        userSettings.setSearchFeedReverse(skywalker.getUserDid(), searchFeed.key, reverse)
 
-        console.debug("Reverse feed changed:", reverse, searchFeed.name)
+        console.debug("Reverse feed changed:", reverse, searchFeed.key)
         const [reverseIndex, offsetY] = calcReverseVisibleIndexAndOffsetY(reverse)
         underlyingModel.reverseFeed = reverse
         setInSync(reverseIndex, offsetY)
@@ -203,7 +203,7 @@ PostListView {
         if (mediaTilesLoader.item)
             mediaTilesLoader.item.moveToHome()
 
-        skywalker.searchFeedMovementEnded(model.getModelId(), model.contentMode, homeIndex, 0)
+        skywalker.searchFeedMovementEnded(model.getModelId(), searchFeed.key, model.contentMode, homeIndex, 0)
 
         updateUnreadPosts()
     }
@@ -271,7 +271,7 @@ PostListView {
     }
 
     function syncSearch() {
-        searchUtils.syncSearchPosts(searchFeed.searchQuery, searchFeed.searchOptions)
+        searchUtils.syncSearchPosts(searchFeed)
     }
 
     function forceDestroy() {
@@ -289,7 +289,7 @@ PostListView {
         console.debug("Search feed view:", searchFeed.name)
         // Model set here. Setting it right away causes getSearchPostFeedModel crash with an
         // assert as the skywalker property is not set yet.
-        const m = searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, searchFeed.name)
+        const m = searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, searchFeed.key, searchFeed.name)
         m.onFirstPage.connect(() => { syncSearch() })
         m.onNextPage.connect(() => { getNextPage() })
         setModel(m)
@@ -299,7 +299,7 @@ PostListView {
         searchUtils.onFeedSyncOk.connect(setInSync)
         searchUtils.onFeedSyncFailed.connect(syncToHome)
 
-        const viewMode = userSettings.getSearchFeedViewMode(skywalker.getUserDid(), searchFeed.name)
+        const viewMode = userSettings.getSearchFeedViewMode(skywalker.getUserDid(), searchFeed.key)
 
         if (viewMode !== QEnums.CONTENT_MODE_UNSPECIFIED) {
             initialContentMode = viewMode

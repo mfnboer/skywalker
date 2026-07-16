@@ -38,7 +38,7 @@ public:
     // Can also be called for list uri's
     Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.contains(uri); }
     Q_INVOKABLE bool isPinnedFeed(const QString& uri) const { return mPinnedUris.contains(uri); }
-    Q_INVOKABLE bool isPinnedSearch(const QString& name) const { return mPinnedSearches.contains(name); }
+    Q_INVOKABLE bool isPinnedSearch(const QString& key) const { return mPinnedSearches.contains(key); }
 
     Q_INVOKABLE void addFeed(const GeneratorView& feed);
     Q_INVOKABLE void removeFeed(const GeneratorView& feed);
@@ -61,7 +61,7 @@ public:
     void setUserOrderedPinnedFeedInitialized(bool initialized);
 
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
-    Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& name) const;
+    Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& key) const;
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);
@@ -85,8 +85,8 @@ signals:
     void feedUnpinned(QString uri);
     void listPinned();
     void listUnpinned(QString uri);
-    void searchPinned(QString name);
-    void searchUnpinned(QString name);
+    void searchPinned(QString key);
+    void searchUnpinned(QString key);
     void updateSavedFeedsModelInProgressChanged();
     void updateSavedListsModelInProgressChanged();
     void pinnedFeedsChanged();
@@ -134,7 +134,7 @@ private:
     void removeNonPinnedFeeds(const Container& feedUris, const std::function<void(const QString& uri)>& removeFun);
 
     template<typename Container>
-    void removeNonPinnedSearches(const Container& searchQueries, const std::function<void(const QString& searchQuery)>& removeFun);
+    void removeNonPinnedSearches(const Container& searchKeys, const std::function<void(const QString& searchKey)>& removeFun);
 
     ATProto::UserPreferences::SavedFeedsPref mSavedFeedsPref;
     ATProto::UserPreferences::SavedFeedsPrefV2 mSavedFeedsPrefV2;

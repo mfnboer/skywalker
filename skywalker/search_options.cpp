@@ -150,6 +150,12 @@ bool SearchOptions::equals(const SearchOptions& other) const
            mExcludeWords == other.mExcludeWords;
 }
 
+bool SearchOptions::isDefault() const
+{
+    const SearchOptions defaultOptions;
+    return equals(defaultOptions);
+}
+
 QStringList SearchOptions::validateHandles(const QStringList& handles)
 {
     std::set<QString> handleSet;

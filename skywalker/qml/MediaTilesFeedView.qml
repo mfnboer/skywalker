@@ -9,6 +9,7 @@ GridView {
     property bool acceptsInteractions: false
     property string feedDid: ""
     property string feedUri: ""
+    property string feedKey: ""
     readonly property int columns: skywalker.TILE_VIEW_ROW_SIZE
     readonly property int spacing: 2
     property bool showAsHome: false
@@ -163,7 +164,7 @@ GridView {
         if (firstVisibleIndex !== -1 && model)
         {
             if (model.feedType === QEnums.FEED_SEARCH)
-                skywalker.searchFeedMovementEnded(model.getModelId(), model.contentMode, firstVisibleIndex, 0)
+                skywalker.searchFeedMovementEnded(model.getModelId(), feedKey, model.contentMode, firstVisibleIndex, 0)
             else
                 skywalker.feedMovementEnded(model.getModelId(), model.contentMode, firstVisibleIndex, 0)
         }

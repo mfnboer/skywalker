@@ -25,13 +25,26 @@ AccessibleTabButton {
             onClicked: button.click()
         }
 
-        Text {
-            id: tabText
-            leftPadding: 5
+        Column {
+            width: tabText.width
             anchors.verticalCenter: parent.verticalCenter
-            font: button.font
-            color: button.checked ? guiSettings.accentColor : guiSettings.textColor
-            text: button.text
+
+            Text {
+                id: tabText
+                leftPadding: 5
+                font: button.font
+                color: button.checked ? guiSettings.accentColor : guiSettings.textColor
+                text: button.text
+            }
+
+            Text {
+                width: parent.width
+                leftPadding: 5
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(5/8)
+                text: favorite.subTitle
+                visible: favorite.subTitle
+            }
         }
 
         BadgeCounter {

@@ -28,17 +28,21 @@ class SearchOptions
 public:
     enum PostFilter
     {
-        POST_FILTER_ALL,
+        POST_FILTER_ALL = 0,
         POST_FILTER_NO_REPLIES,
-        POST_FILTER_ONLY_REPLIES
+        POST_FILTER_ONLY_REPLIES,
+
+        POST_FILTER_LAST = POST_FILTER_ONLY_REPLIES
     };
     Q_ENUM(PostFilter)
 
     enum MediaPostFilter
     {
-        MEDIA_POST_FILTER_ALL,
+        MEDIA_POST_FILTER_ALL = 0,
         MEDIA_POST_FILTER_MEDIA,
-        MEDIA_POST_FILTER_VIDEO
+        MEDIA_POST_FILTER_VIDEO,
+
+        MEDIA_POST_FILTER_LAST = MEDIA_POST_FILTER_VIDEO
     };
     Q_ENUM(MediaPostFilter)
 
@@ -85,6 +89,7 @@ public:
     Q_INVOKABLE QString getDescription() const;
 
     bool equals(const SearchOptions& other) const;
+    bool isDefault() const;
 
     static QStringList validateHandles(const QStringList& handles);
     static QStringList cleanHandleList(const QStringList& authors, const QString& userDid);

@@ -596,7 +596,7 @@ ApplicationWindow {
             appIsRunning = true
         }
 
-        // Note for search feeds the feedUri is the search name
+        // Note for search feeds the feedUri is the searchFeed key
         function saveLastViewedFeed(feedUri) {
             let userSettings = skywalker.getUserSettings()
             const userDid = skywalker.getUserDid()

@@ -289,7 +289,7 @@ SkyPage {
             id: postsViewTop
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP, SearchSortOrder.TOP, true)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.TOP, "", SearchSortOrder.TOP, true)
             preloadNextPageFunc: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.TOP)
             clip: true
 
@@ -334,7 +334,7 @@ SkyPage {
             id: postsViewLatest
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height
-            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, SearchSortOrder.RECENT, true)
+            model: searchUtils.getSearchPostFeedModel(SearchSortOrder.RECENT, "", SearchSortOrder.RECENT, true)
             preloadNextPageFunc: () => searchUtils.scopedNextPageSearchPosts(SearchSortOrder.RECENT)
             clip: true
 

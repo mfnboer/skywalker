@@ -33,6 +33,7 @@ class ListViewBasic
 {
     Q_GADGET
     Q_PROPERTY(QString typeName READ typeName CONSTANT FINAL)
+    Q_PROPERTY(QString key READ getKey FINAL)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
@@ -56,6 +57,7 @@ public:
     QEnums::FavoriteType getFavoriteType() const { return QEnums::FAVORITE_LIST; }
 
     Q_INVOKABLE bool isNull() const { return getUri().isEmpty(); }
+    QString getKey() const { return getUri(); }
     QString getUri() const;
     QString getCid() const;
     QString getName() const;

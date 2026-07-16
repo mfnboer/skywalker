@@ -61,7 +61,7 @@ SkyPage {
                         width: parent.width - avatar.width - parent.spacing
                         color: guiSettings.textColor
                         elide: Text.ElideRight
-                        text: modelData.name
+                        text: modelData.name + (modelData.subTitle ? " (" + modelData.subTitle + ")" : "")
                     }
                 }
             }

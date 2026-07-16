@@ -130,7 +130,7 @@ public:
     Q_INVOKABLE void syncListFeed(int modelId, int maxPages = 20) override;
     Q_INVOKABLE void syncFeed(int modelId, int maxPages = 20) override;
     Q_INVOKABLE void feedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
-    Q_INVOKABLE void searchFeedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
+    Q_INVOKABLE void searchFeedMovementEnded(int modelId, const QString& searchKey, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
 
     // IFeedPager
     // Repeating default values here for calls from QML
@@ -184,7 +184,7 @@ public:
     Q_INVOKABLE void removeAuthorFeedModel(int id);
     Q_INVOKABLE void getFeedGenerator(const QString& feedUri, bool viewPosts = false);
     Q_INVOKABLE void getStarterPackView(const QString& starterPackUri);
-    Q_INVOKABLE int createSearchPostFeedModel(const QString& feedName, bool ignoreReverseSetting = false);
+    int createSearchPostFeedModel(const QString& searchKey, const QString& feedName, bool ignoreReverseSetting = false);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
     Q_INVOKABLE void getAuthorFeedList(const QString& did, int id, const QString& cursor = {});
@@ -400,7 +400,7 @@ private:
     void saveAutomatedAccount();
     void saveSyncTimestamp(int postIndex, int offsetY);
     void saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& feedUri, int postIndex, int offsetY);
-    void saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchQuery, int postIndex, int offsetY);
+    void saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchKey, int postIndex, int offsetY);
     void shareImage(const QString& contentUri, const QString& text);
     void shareVideo(const QString& contentUri, const QString& text);
     void updateFavoriteFeeds();

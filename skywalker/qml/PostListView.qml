@@ -13,6 +13,7 @@ SkyListView {
     property bool acceptsInteractions: false
     property string feedDid
     property string feedUri
+    property string feedKey
     property var reverseSyncFun: () => {}
     property var resyncFun: () => {}
     property var syncFun: (index, offset) => {}
@@ -50,6 +51,7 @@ SkyListView {
             acceptsInteractions: postListView.acceptsInteractions
             feedDid: postListView.feedDid
             feedUri: postListView.feedUri
+            feedKey: postListView.feedKey
             showAsHome: postListView.showAsHome
             model: postListView.model
             virtualFooterHeight: postListView.virtualFooterHeight
@@ -224,8 +226,8 @@ SkyListView {
 
                 break
             case QEnums.FEED_SEARCH:
-                if (skywalker.favoriteFeeds.isPinnedSearch(searchFeed.name))
-                    userSettings.setSearchFeedViewMode(skywalker.getUserDid(), underlyingModel.feedName, contentMode)
+                if (skywalker.favoriteFeeds.isPinnedSearch(searchFeed.key))
+                    userSettings.setSearchFeedViewMode(skywalker.getUserDid(), searchFeed.key, contentMode)
 
                 break
         }

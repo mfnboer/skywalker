@@ -10,7 +10,7 @@ SkyMenu {
     required property var feed
     property bool isPinnedFeed: postFeedModel.feedType === QEnums.FEED_GENERATOR ?
                                     skywalker.favoriteFeeds.isPinnedFeed(feed.uri) :
-                                    skywalker.favoriteFeeds.isPinnedSearch(feed.name)
+                                    skywalker.favoriteFeeds.isPinnedSearch(feed.key)
     property bool feedHideFollowing: false
     property bool feedSync: false
 
@@ -130,7 +130,7 @@ SkyMenu {
             feedHideFollowing = userSettings.getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
             feedSync = userSettings.mustSyncFeed(skywalker.getUserDid(), feed.uri)
         } else {
-            feedSync = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), feed.searchQuery)
+            feedSync = userSettings.mustSyncSearchFeed(skywalker.getUserDid(), feed.key)
         }
 
         if (origin) {

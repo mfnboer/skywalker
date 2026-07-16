@@ -28,6 +28,7 @@ private:
 class GeneratorView
 {
     Q_GADGET
+    Q_PROPERTY(QString key READ getKey FINAL)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QString did READ getDid FINAL)
@@ -53,6 +54,7 @@ public:
     QEnums::FavoriteType getFavoriteType() const { return QEnums::FAVORITE_FEED; }
 
     Q_INVOKABLE bool isNull() const { return mGeneratorView == nullptr; }
+    QString getKey() const { return getUri(); }
     QString getUri() const;
     QString getCid() const;
     QString getDid() const;

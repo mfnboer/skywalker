@@ -12,6 +12,7 @@ namespace Skywalker {
 class SearchFeed
 {
     Q_GADGET
+    Q_PROPERTY(QString key READ getKey FINAL)
     Q_PROPERTY(QString name READ getName() FINAL)
     Q_PROPERTY(QString searchQuery READ getSearchQuery FINAL)
     Q_PROPERTY(SearchOptions searchOptions READ getSearchOptions FINAL)
@@ -31,6 +32,7 @@ public:
     Q_INVOKABLE bool isCashtag() const;
     Q_INVOKABLE bool equals(const SearchFeed& other) const;
 
+    const QString getKey() const;
     const QString& getName() const { return mSearchQuery; }
     const QString& getSearchQuery() const { return mSearchQuery; }
     const SearchOptions& getSearchOptions() const { return mSearchOptions; }

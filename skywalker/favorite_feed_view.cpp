@@ -26,17 +26,7 @@ QEnums::FavoriteType FavoriteFeedView::getType() const
 
 QString FavoriteFeedView::getKey() const
 {
-    switch (getType())
-    {
-    case QEnums::FAVORITE_FEED:
-    case QEnums::FAVORITE_LIST:
-        return getUri();
-    case QEnums::FAVORITE_SEARCH:
-        return getName();
-    }
-
-    Q_ASSERT(false);
-    return "";
+    return std::visit([](auto&& view){ return view.getKey(); }, mView);
 }
 
 QString FavoriteFeedView::getUri() const

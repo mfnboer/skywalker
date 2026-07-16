@@ -2703,7 +2703,7 @@ void Skywalker::feedMovementEnded(int modelId, QEnums::ContentMode contentMode, 
     }
 }
 
-void Skywalker::searchFeedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY)
+void Skywalker::searchFeedMovementEnded(int modelId, const QString& searchKey, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY)
 {
     auto* model = getSearchPostFeedModel(modelId);
 
@@ -2713,11 +2713,10 @@ void Skywalker::searchFeedMovementEnded(int modelId, QEnums::ContentMode content
         return;
     }
 
-    if (mUserSettings.mustSyncSearchFeed(mUserDid, model->getFeedName()))
+    if (mUserSettings.mustSyncSearchFeed(mUserDid, searchKey))
     {
-        const QString& searchQuery = model->getFeedName();
         AbstractPostFeedModel& viewModel = model->getViewModel(contentMode);
-        saveSearchFeedSyncTimestamp(viewModel, searchQuery, lastVisibleIndex, lastVisibleOffsetY);
+        saveSearchFeedSyncTimestamp(viewModel, searchKey, lastVisibleIndex, lastVisibleOffsetY);
     }
 }
 
@@ -3532,16 +3531,16 @@ void Skywalker::removeAuthorFeedModel(int id)
     mAuthorFeedModels.remove(id);
 }
 
-int Skywalker::createSearchPostFeedModel(const QString& feedName, bool ignoreReverseSetting)
+int Skywalker::createSearchPostFeedModel(const QString& searchKey, const QString& feedName, bool ignoreReverseSetting)
 {
-    qDebug() << "Create search post feed model:" << feedName;
+    qDebug() << "Create search post feed model:" << searchKey << "name:" << feedName;
     auto model = std::make_unique<SearchPostFeedModel>(
-        feedName, mUserDid, mMutedReposts, mContentFilter,
+        searchKey, feedName, mUserDid, mMutedReposts, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
 
     if (!ignoreReverseSetting)
-        model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, feedName));
+        model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, searchKey));
 
     const int id = addModelToStore<SearchPostFeedModel>(std::move(model), mSearchPostFeedModels);
     return id;
@@ -5084,20 +5083,20 @@ void Skywalker::saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QStrin
     mUserSettings.saveFeedSyncOffsetY(mUserDid, feedUri, offsetY);
 }
 
-void Skywalker::saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchQuery, int postIndex, int offsetY)
+void Skywalker::saveSearchFeedSyncTimestamp(AbstractPostFeedModel& model, const QString& searchKey, int postIndex, int offsetY)
 {
     if (postIndex < 0 || postIndex >= model.rowCount())
     {
-        qWarning() << "Invalid index:" << postIndex << "size:" << model.rowCount() << searchQuery;
+        qWarning() << "Invalid index:" << postIndex << "size:" << model.rowCount() << searchKey;
         return;
     }
 
     const Post& post = model.getPost(postIndex);
-    qDebug() << "Save feed sync:" << searchQuery << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
+    qDebug() << "Save feed sync:" << searchKey << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
 
-    mUserSettings.saveSearchFeedSyncTimestamp(mUserDid, searchQuery, post.getTimelineTimestamp());
-    mUserSettings.saveSearchFeedSyncCid(mUserDid, searchQuery, post.getCid());
-    mUserSettings.saveSearchFeedSyncOffsetY(mUserDid, searchQuery, offsetY);
+    mUserSettings.saveSearchFeedSyncTimestamp(mUserDid, searchKey, post.getTimelineTimestamp());
+    mUserSettings.saveSearchFeedSyncCid(mUserDid, searchKey, post.getCid());
+    mUserSettings.saveSearchFeedSyncOffsetY(mUserDid, searchKey, offsetY);
 }
 
 Chat* Skywalker::getChat()
@@ -5439,8 +5438,8 @@ void Skywalker::updateGlobalFeedOrder()
 
     for (auto& [_,model] : mSearchPostFeedModels.items())
     {
-        const QString name = model->getFeedName();
-        model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, name));
+        const QString key = model->getSearchKey();
+        model->setReverseFeed(mUserSettings.getSearchFeedReverse(mUserDid, key));
     }
 }
 

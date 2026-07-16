@@ -27,6 +27,18 @@ bool SearchFeed::equals(const SearchFeed& other) const
            mSearchOptions.equals(other.mSearchOptions);
 }
 
+const QString SearchFeed::getKey() const
+{
+    if (mSearchOptions.isDefault())
+        return mSearchQuery;
+
+    const auto optionsJson = toJson();
+    const auto optionsBytes = QJsonDocument{optionsJson}.toJson(QJsonDocument::Compact);
+    const auto hash = QCryptographicHash::hash(optionsBytes, QCryptographicHash::Md5);
+
+    return QString("%1-%2").arg(mSearchQuery).arg(hash.toHex());
+}
+
 LanguageList SearchFeed::getLanguageList() const
 {
     if (mSearchOptions.getLanguage().isEmpty())
@@ -39,6 +51,9 @@ QJsonObject SearchFeed::toJson() const
 {
     QJsonObject json;
     json.insert("searchQuery", mSearchQuery);
+
+    if (mSearchOptions.getExactPhrase())
+        json.insert("exactPhrase", "true");
 
     if (mSearchOptions.getFollowing())
         json.insert("following", "true");
@@ -58,6 +73,15 @@ QJsonObject SearchFeed::toJson() const
     if (!mSearchOptions.getLanguage().isEmpty())
         json.insert("language", mSearchOptions.getLanguage());
 
+    if (mSearchOptions.getPostFilter() != SearchOptions::POST_FILTER_ALL)
+        json.insert("postFilter", (int)mSearchOptions.getPostFilter());
+
+    if (mSearchOptions.getMediaPostFilter() != SearchOptions::MEDIA_POST_FILTER_ALL)
+        json.insert("mediaPostFilter", (int)mSearchOptions.getMediaPostFilter());
+
+    if (!mSearchOptions.getExcludeWords().isEmpty())
+        json.insert("excludeWords", QJsonArray::fromStringList(mSearchOptions.getExcludeWords()));
+
     return json;
 }
 
@@ -67,6 +91,7 @@ SearchFeed SearchFeed::fromJson(const QJsonObject& json)
     SearchFeed feed;
     feed.mSearchQuery = xjson.getRequiredString("searchQuery");
     feed.mSearchOptions.setFollowing(xjson.getOptionalBool("following", false));
+    feed.mSearchOptions.setExactPhrase(xjson.getOptionalBool("exactPhrase", false));
 
     // Author used to be a single value, now it is a list
     auto author = xjson.getOptionalString("author");
@@ -100,6 +125,19 @@ SearchFeed SearchFeed::fromJson(const QJsonObject& json)
     }
 
     feed.mSearchOptions.setLanguage(xjson.getOptionalString("language", ""));
+
+    const int postFilter = xjson.getOptionalInt("postFilter", 0);
+
+    if (postFilter >= 0 && postFilter <= SearchOptions::POST_FILTER_LAST)
+        feed.mSearchOptions.setPostFilter((SearchOptions::PostFilter)postFilter);
+
+    const int mediaPostFilter = xjson.getOptionalInt("mediaPostFilter", 0);
+
+    if (mediaPostFilter >= 0 && mediaPostFilter <= SearchOptions::MEDIA_POST_FILTER_LAST)
+        feed.mSearchOptions.setMediaPostFilter((SearchOptions::MediaPostFilter)mediaPostFilter);
+
+    feed.mSearchOptions.setExcludeWords(xjson.getOptionalStringList("excludeWords"));
+
     return feed;
 }
 

@@ -53,9 +53,8 @@ public:
     Q_INVOKABLE void getNextPageSearchPosts(const QString& text, const SearchOptions& searchOptions = {},
                                             int maxPages = 10, int minEntries = 10);
 
-    Q_INVOKABLE void syncFeed(const QString& searchQuery, bool sync);
-    Q_INVOKABLE void syncSearchPosts(const QString& text, const SearchOptions& searchOptions = {},
-                                     int maxPages = 10);
+    Q_INVOKABLE void syncFeed(const SearchFeed& searchFeed, bool sync);
+    Q_INVOKABLE void syncSearchPosts(const SearchFeed& searchFeed, int maxPages = 10);
 
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);
@@ -68,7 +67,7 @@ public:
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
     Q_INVOKABLE void getSuggestedFeeds();
     Q_INVOKABLE void getSuggestedStarterPacks();
-    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder, const QString& feedName = "SearchFeed", bool ignoreReverseSetting = false);
+    Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder, const QString& searchKey = "", const QString& feedName = "SearchFeed", bool ignoreReverseSetting = false);
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
@@ -119,11 +118,11 @@ private:
     TrendingTopicListModel& createTrendingTopicsListModel();
     QStringList getLastProfileSearches() const;
 
-    void syncSearchPosts(const QString& text, const SearchOptions& searchOptions,
+    void syncSearchPosts(const SearchFeed& searchFeed,
                          QDateTime tillTimestamp, const QString& cid,
                          int maxPages = 10, const QString& cursor = {});
     bool syncPageHasNewPosts(const ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr& feed, const SearchPostFeedModel& model) const;
-    QString processSyncPage(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr feed, SearchPostFeedModel& model, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
+    QString processSyncPage(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr feed, SearchPostFeedModel& model, const QString& searchKey, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor);
     ATProto::Client* publicBskyClient();
 
     BasicProfileList mAuthorTypeaheadList;
