@@ -44,14 +44,6 @@ SkyDialog {
             width: parent.width
             columns: 2
 
-            AccessibleCheckBox {
-                Layout.columnSpan: 2
-                Layout.fillWidth: true
-                text: qsTr("Search exact phrase")
-                checked: exactPhrase
-                onCheckedChanged: exactPhrase = checked
-            }
-
             AccessibleText {
                 font.bold: true
                 text: qsTr("Posts:")
@@ -272,6 +264,18 @@ SkyDialog {
 
             AccessibleText {
                 font.bold: true
+                text: qsTr("Match:")
+            }
+
+            AccessibleCheckBox {
+                Layout.fillWidth: true
+                text: qsTr("Exact phrase")
+                checked: exactPhrase
+                onCheckedChanged: exactPhrase = checked
+            }
+
+            AccessibleText {
+                font.bold: true
                 text: qsTr("Adult:")
                 visible: adultContent
             }
@@ -283,6 +287,7 @@ SkyDialog {
 
                 SkyRadioButton {
                     Layout.fillWidth: true
+                    leftRadius: 5
                     checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_SHOW
                     horizontalAlignment: Qt.AlignHCenter
                     text: qsTr("On")
@@ -303,6 +308,7 @@ SkyDialog {
                 }
                 SkyRadioButton {
                     Layout.fillWidth: true
+                    rightRadius: 5
                     checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
                     horizontalAlignment: Qt.AlignHCenter
                     text: qsTr("Hide")

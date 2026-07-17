@@ -2,8 +2,10 @@ import QtQuick
 import QtQuick.Controls
 
 ComboBox {
+    property int radius: 5
     required property int editableIndex
     property string initialEditValue
+    property string borderColor: guiSettings.buttonColor
     property string textColor: guiSettings.textColor
     property bool indexChangeEnabled: true
 
@@ -33,14 +35,14 @@ ComboBox {
 
         id: textInput
         width: parent.width
-        padding: 10
-        rightPadding: 0
-        clip: true
+        leftPadding: 10
+        verticalAlignment: Text.AlignVCenter
         color: comboBox.textColor
         enabled: comboBox.editable
         font.pointSize: guiSettings.scaledFont(9/8)
         inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
         text: comboBox.displayText
+        clip: true
 
         onDisplayTextChanged: {
             if (comboBox.currentIndex === comboBox.editableIndex)
@@ -97,18 +99,26 @@ ComboBox {
     }
 
     // For some reason the background item gets positioned too low??
-    background: Item {}
-
-    // This draws a rectangle around the combobox
-    Rectangle {
-        z: parent.z - 1
-        width: comboBox.width
-        height: textInput.height
-        radius: 5
-        border.color: guiSettings.buttonColor
+    // background: Item {}
+    background: Rectangle {
+        implicitWidth: 140
+        implicitHeight: 34
+        radius: comboBox.radius
+        border.color: comboBox.borderColor
         border.width: comboBox.activeFocus ? 1 : 0
         color: guiSettings.textInputBackgroundColor
     }
+
+    // This draws a rectangle around the combobox
+    // Rectangle {
+    //     z: parent.z - 1
+    //     width: comboBox.width
+    //     height: textInput.height
+    //     radius: 5
+    //     border.color: guiSettings.buttonColor
+    //     border.width: comboBox.activeFocus ? 1 : 0
+    //     color: guiSettings.textInputBackgroundColor
+    // }
 
     Timer {
         id: acceptedTimer

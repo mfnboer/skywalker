@@ -23,7 +23,7 @@ Rectangle {
     signal editingFinished
 
     id: skyTextInput
-    implicitHeight: textField.implicitHeight
+    implicitHeight: 34 // textField.implicitHeight
     radius: 5
     border.width: textField.activeFocus ? 1 : 0
     border.color: guiSettings.buttonColor
@@ -34,9 +34,10 @@ Rectangle {
     TextInput {
         id: textField
         width: parent.width
+        height: parent.height
         clip: true
-        padding: 10
         leftPadding: icon.visible ? icon.width : 10
+        verticalAlignment: Text.AlignVCenter
         activeFocusOnTab: true
         enabled: skyTextInput.enabled
         font.pointSize: guiSettings.scaledFont(9/8)
@@ -90,7 +91,7 @@ Rectangle {
             anchors.left: parent.left
             y: height + 5
             width: visible ? height : 0
-            height: parent.height - 10
+            height: parent.height - 8
             color: parent.color
             svg: visible ? svgIcon : SvgOutline.check
             visible: svgIcon && !svgIcon.isNull()
@@ -102,6 +103,7 @@ Rectangle {
             anchors.fill: parent
             padding: parent.padding
             leftPadding: parent.leftPadding
+            verticalAlignment: parent.verticalAlignment
             font.pointSize: parent.font.pointSize
             color: skyTextInput.valid ? guiSettings.placeholderTextColor : guiSettings.placeholderTextInvalidColor
             elide: Text.ElideRight

@@ -100,13 +100,13 @@ QString SearchOptions::getDescription() const
     if (!mAuthors.empty())
     {
         auto text = getAuthorsString(mAuthors);
-        parts.push_back(QObject::tr("from:%1").arg(text));
+        parts.push_back(QObject::tr("from: %1").arg(text));
     }
 
     if (!mMentions.empty())
     {
         auto text = getAuthorsString(mMentions);
-        parts.push_back(QObject::tr("from:%1").arg(text));
+        parts.push_back(QObject::tr("mention: %1").arg(text));
     }
 
     if (!mExcludeWords.empty())

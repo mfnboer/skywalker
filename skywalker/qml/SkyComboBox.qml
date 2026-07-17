@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Controls
 
 ComboBox {
-    property int radius: 0
+    property int radius: 5
     property string borderColor: guiSettings.buttonColor
-    property string color: guiSettings.buttonColor
+    property string textColor: guiSettings.textColor
 
     id: control
     valueRole: "value"
@@ -18,18 +18,17 @@ ComboBox {
         implicitHeight: 34
         radius: control.radius
         border.color: control.borderColor
-        border.width: 1
-        color: "transparent"
+        border.width: control.activeFocus ? 1 : 0
+        color: guiSettings.textInputBackgroundColor
     }
-
-    indicator: Item {}
 
     contentItem: AccessibleText {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
-        color: control.color
+        font.pointSize: guiSettings.scaledFont(9/8)
+        color: control.textColor
         text: control.displayText ? control.displayText : ""
     }
 
@@ -53,5 +52,9 @@ ComboBox {
             implicitWidth: delegate.width
             color: delegate.highlighted ? Material.listHighlightColor : "transparent"
         }
+    }
+
+    Component.onCompleted: {
+        indicator.color = control.textColor
     }
 }
