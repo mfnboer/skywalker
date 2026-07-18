@@ -17,15 +17,14 @@ SkyDialog {
     standardButtons: Dialog.Ok
     anchors.centerIn: parent
 
-    SkyCleanedText {
+    AccessibleText {
         id: nameText
         x: 10
         width: parent.width - 20
         wrapMode: Text.Wrap
         font.bold: true
         font.pointSize: guiSettings.scaledFont(10/8)
-        color: guiSettings.textColor
-        plainText: qsTr(`${author.name} is a trusted verifier`)
+        text: qsTr(`${author.name} is a trusted verifier`)
     }
 
     AccessibleText {

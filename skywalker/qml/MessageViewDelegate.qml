@@ -100,14 +100,14 @@ Rectangle {
         anchors.top: messageDateText.bottom
         active: isGroupConvo && !senderIsUser && !sameSenderAsPrevious && !message.isSystemMessage
 
-        sourceComponent: SkyCleanedTextLine {
+        sourceComponent: AccessibleText {
             topPadding: 10
             width: maxTextWidth
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            plainText: view.author.name
+            text: view.author.name
         }
     }
 

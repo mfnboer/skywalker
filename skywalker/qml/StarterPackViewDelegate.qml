@@ -39,13 +39,13 @@ Rectangle {
                 }
             }
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 topPadding: 10
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                plainText: starterPack.name
+                text: starterPack.name
             }
 
             AccessibleText {
@@ -68,14 +68,14 @@ Rectangle {
             contentAuthor: starterPack.creator
         }
 
-        SkyCleanedText {
+        AccessibleText {
             topPadding: 10
             width: parent.width
             wrapMode: Text.Wrap
             elide: Text.ElideRight
             maximumLineCount: maxTextLines
             color: guiSettings.textColor
-            plainText: starterPack.description
+            text: starterPack.description
             visible: starterPack.description
         }
 

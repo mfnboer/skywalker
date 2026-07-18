@@ -75,13 +75,13 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: generatorView.margin
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 width: parent.width
                 bottomPadding: 5
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                plainText: feed.displayName
+                text: feed.displayName
             }
 
             AuthorNameAndStatus {

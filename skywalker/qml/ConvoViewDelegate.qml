@@ -67,12 +67,12 @@ Rectangle {
                 width: parent.width
                 spacing: 3
 
-                SkyCleanedTextLine {
+                AccessibleText {
                     id: nameText
                     width: parent.width - mutedImg.width - timeText.width - parent.spacing * (convo.muted ? 2 : 1)
                     elide: Text.ElideRight
                     font.bold: true
-                    plainText: convo.title
+                    text: convo.title
                 }
 
                 SkySvg {

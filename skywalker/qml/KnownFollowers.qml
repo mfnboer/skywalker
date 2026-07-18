@@ -33,17 +33,15 @@ RowLayout {
         }
     }
 
-    SkyCleanedText {
+    AccessibleText {
         id: knownFollowersText
         Layout.fillWidth: true
         topPadding: 10
         elide: Text.ElideRight
         wrapMode: Text.Wrap
-        textFormat: Text.RichText
-        inLayout: true
         maximumLineCount: 3
         color: guiSettings.linkColor
-        plainText: authorIsUser ? qsTr(`Mutuals: ${getKnownFollowersText()}`) : qsTr(`Followed by ${getKnownFollowersText()}`)
+        text: authorIsUser ? qsTr(`Mutuals: ${getKnownFollowersText()}`) : qsTr(`Followed by ${getKnownFollowersText()}`)
         visible: author.viewer.knownFollowers.count > 0
 
         SkyMouseArea {
@@ -75,10 +73,10 @@ RowLayout {
         if (knownFollowers.followers.length === 0)
             return knownFollowers.count > 1 ? qsTr(`${knownFollowers.count} others you follow`) : qsTr("1 other you follow")
 
-        let followersText = UnicodeFonts.toCleanedHtml(knownFollowers.followers[0].name)
+        let followersText = knownFollowers.followers[0].name
 
         if (knownFollowers.followers.length > 1)
-            followersText = `${followersText}, ${UnicodeFonts.toCleanedHtml(knownFollowers.followers[1].name)}`
+            followersText = `${followersText}, ${knownFollowers.followers[1].name}`
 
         if (knownFollowers.count > 3)
             followersText = qsTr(`${followersText} and ${(knownFollowers.count - 2)} others`)

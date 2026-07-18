@@ -40,18 +40,18 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: 5
 
-        SkyCleanedTextLine {
+        AccessibleText {
             width: parent.width
-            plainText: externalSource.title
+            text: externalSource.title
             elide: Text.ElideRight
             color: getForegroundColor()
             font.bold: true
             visible: !isCardLink
         }
 
-        SkyCleanedText {
+        AccessibleText {
             width: parent.width
-            plainText: externalSource.description
+            text: externalSource.description
             maximumLineCount: 1
             elide: Text.ElideRight
             color: getForegroundColor()

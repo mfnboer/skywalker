@@ -413,7 +413,6 @@ qt_add_qml_module(libskywalker
         SOURCES gif_to_video_converter.h
         SOURCES gif_to_video_converter.cpp
         QML_FILES qml/ProgressDialog.qml
-        QML_FILES qml/SkyCleanedTextLine.qml
         QML_FILES qml/SkyFooterButton.qml
         SOURCES post_filter.h
         SOURCES post_filter.cpp
@@ -521,7 +520,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/VerifiedDialog.qml
         QML_FILES qml/AuthorNameAndStatus.qml
         QML_FILES qml/TrustedVerifierDialog.qml
-        QML_FILES qml/AuthorNameAndStatusMultiLine.qml
         QML_FILES qml/PlaceholderHeader.qml
         QML_FILES qml/SwipeListView.qml
         SOURCES songlink_links.h

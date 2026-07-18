@@ -470,12 +470,12 @@ Pane {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignVCenter
 
-                        SkyCleanedTextLine {
+                        AccessibleText {
                             width: parent.width
                             rightPadding: 10
                             elide: Text.ElideRight
                             font.bold: favoriteEntry.active
-                            plainText: modelData.name
+                            text: modelData.name
 
                             SkyMouseArea {
                                 anchors.fill: parent

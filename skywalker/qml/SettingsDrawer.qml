@@ -67,12 +67,11 @@ SkyDrawer {
                     Accessible.ignored: true
                 }
 
-                AuthorNameAndStatusMultiLine {
+                AuthorNameAndStatus {
                     id: nameText
                     width: parent.width
                     wrapMode: Text.Wrap
                     maximumLineCount: 2
-                    ellipsisBackgroundColor: Material.dialogColor
                     author: user
                 }
 

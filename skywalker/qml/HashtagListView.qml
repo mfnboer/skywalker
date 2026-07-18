@@ -37,14 +37,13 @@ ListView {
             color: guiSettings.separatorColor
         }
 
-        SkyCleanedTextLine {
+        AccessibleText {
             id: hashtagText
             width: parent.width
             padding: 10
             elide: Text.ElideRight
             font.bold: true
-            color: guiSettings.textColor
-            plainText: `#${hashtagEntry.hashtag}`
+            text: `#${hashtagEntry.hashtag}`
 
             Accessible.ignored: true
         }

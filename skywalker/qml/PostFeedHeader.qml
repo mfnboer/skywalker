@@ -117,7 +117,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignVCenter
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 id: headerTexts
                 width: parent.width
                 leftPadding: avatarLeftSide.visible ? 0 : 10
@@ -126,7 +126,7 @@ Rectangle {
                 font.bold: true
                 font.pointSize: subTitle ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
-                plainText: header.feedName
+                text: header.feedName
 
                 Accessible.role: Accessible.ButtonDropDown
                 Accessible.name: qsTr(`${header.feedName}, press to select other feed`)

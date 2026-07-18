@@ -648,10 +648,10 @@ Rectangle {
                     visible: showAvatarAsIcon()
                 }
 
-                SkyCleanedText {
+                AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
-                    plainText: reasonText()
+                    text: reasonText()
                 }
 
                 Rectangle {

@@ -343,13 +343,13 @@ Rectangle {
                         svg: SvgOutline.repost
                     }
                 }
-                SkyCleanedTextLine {
+                AccessibleText {
                     id: repostedByText
                     leftPadding: contentLeftMargin
                     rightPadding: postEntry.margin
                     width: parent.width - threadColumnWidth
                     elide: Text.ElideRight
-                    plainText: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
+                    text: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
                     color: Material.color(Material.Grey)
                     font.bold: true
                     font.pointSize: guiSettings.scaledFont(7/8)

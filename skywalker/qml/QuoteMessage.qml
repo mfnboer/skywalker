@@ -15,17 +15,15 @@ Column {
     RowLayout {
         width: parent.width - 10
 
-        SkyCleanedTextLine {
+        AccessibleText {
             id: authorName
             Layout.fillWidth: true
             padding: 10
-            // leftPadding: 10
-            // rightPadding: 10
             elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            plainText: quoteColumn.author.name
+            text: quoteColumn.author.name
         }
 
         SvgButton {

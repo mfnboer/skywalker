@@ -35,12 +35,12 @@ Column {
         Column {
             Layout.fillWidth: true
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                plainText: feed.displayName
+                text: feed.displayName
 
                 Accessible.ignored: true
             }

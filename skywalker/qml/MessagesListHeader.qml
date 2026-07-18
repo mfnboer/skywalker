@@ -53,14 +53,14 @@ Rectangle {
             Layout.rightMargin: margin
             spacing: 0
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 width: parent.width
                 topPadding: 3
                 Layout.fillHeight: true
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.headerTextColor
-                plainText: convo.title
+                text: convo.title
             }
 
             AccessibleText {

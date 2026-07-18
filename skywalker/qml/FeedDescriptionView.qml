@@ -144,7 +144,7 @@ SkyPage {
             leftPadding: 10
             rightPadding: 10
 
-            SkyCleanedText {
+            AccessibleText {
                 width: parent.width
                 bottomPadding: 5
                 elide: Text.ElideRight
@@ -153,7 +153,7 @@ SkyPage {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                plainText: feed.displayName
+                text: feed.displayName
             }
 
             AuthorNameAndStatus {

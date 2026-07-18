@@ -93,14 +93,13 @@ Rectangle {
             Accessible.name: description
             Accessible.description: Accessible.name
 
-            SkyCleanedText {
+            AccessibleText {
                 id: descriptionText
                 width: parent.width
                 padding: 10
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                color: guiSettings.textColor
-                plainText: description
+                text: description
 
                 Accessible.ignored: true
             }

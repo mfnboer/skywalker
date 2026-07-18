@@ -60,7 +60,7 @@ SkyPage {
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
 
-        SkyCleanedText {
+        AccessibleText {
             id: appealTitle
             width: parent.width
             leftPadding: page.margin
@@ -69,8 +69,7 @@ SkyPage {
             wrapMode: Text.Wrap
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)
-            color: guiSettings.textColor
-            plainText: contentGroup.title
+            text: contentGroup.title
         }
 
         AccessibleText {

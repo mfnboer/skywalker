@@ -583,11 +583,11 @@ SkyPage {
                             anchors.leftMargin: guiSettings.threadColumnWidth - topicIcon.width
                             anchors.rightMargin: page.margin
 
-                            SkyCleanedTextLine {
+                            AccessibleText {
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 font.bold: true
-                                plainText: modelData.topic.topic + (modelData.topic.status === QEnums.TREND_STATUS_HOT ? " 🔥" : "")
+                                text: modelData.topic.topic + (modelData.topic.status === QEnums.TREND_STATUS_HOT ? " 🔥" : "")
                             }
 
                             DurationLabel {
@@ -603,13 +603,13 @@ SkyPage {
                             anchors.right: topicTitle.right
                             anchors.top: topicTitle.bottom
 
-                            SkyCleanedTextLine {
+                            AccessibleText {
                                 topPadding: 5
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 font.pointSize: guiSettings.scaledFont(7/8)
                                 font.italic: true
-                                plainText: modelData.topic.category
+                                text: modelData.topic.category
                             }
 
                             AccessibleText {
@@ -879,14 +879,14 @@ SkyPage {
                         }
                     }
 
-                    SkyCleanedTextLine {
+                    AccessibleText {
                         id: profileName
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(6/8)
                         horizontalAlignment: Text.AlignHCenter
-                        plainText: modelData.name
+                        text: modelData.name
                     }
                 }
             }

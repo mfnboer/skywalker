@@ -4,6 +4,7 @@ import skywalker
 Rectangle {
     property string userDid
     required property basicprofile author
+    property string authorName: author.name
     property double pointSize: guiSettings.scaledFont(1)
     property string textColor: guiSettings.textColor
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
@@ -11,35 +12,33 @@ Rectangle {
     property var verificationUtils: skywalker.getVerificationUtils()
     readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID || verificationUtils.isVerifier(author.did)
     readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
-    readonly property int verificationStatusWidth: (verificationStatusLoader.item ? verificationStatusLoader.item.width + 5 : 0) - (verifierStatusLoader.item ? verifierStatusLoader.item.width + 5 : 0)
-    readonly property real advanceWidth: nameText.advanceWidth + verificationStatusWidth
+    readonly property int verificationStatusWidth: skywalker.hideVerificationBadges ? 0 : (authorVerified ? badgeSize + 5 : 0) + (isTrustedVerifier ? badgeSize + 5 : 0)
+    property alias maximumLineCount: nameText.maximumLineCount
+    property alias wrapMode: nameText.wrapMode
+    property alias topPadding: nameText.topPadding
 
     id: nameRect
-    height: nameText.height
+    height: nameText.implicitHeight
     color: "transparent"
 
-    SkyCleanedTextLine {
+    AccessibleText {
         id: nameText
         width: parent.width - verificationStatusWidth
         elide: Text.ElideRight
         font.bold: true
         font.pointSize: nameRect.pointSize
         color: nameRect.textColor
-        plainText: author.name
-    }
-
-    function getNameText() {
-        return nameText
+        text: authorName
     }
 
     Loader {
         id: verificationStatusLoader
+        x: Math.min(nameText.width, nameText.contentWidth) + 5
+        anchors.verticalCenter: parent.verticalCenter
         active: authorVerified && !skywalker.hideVerificationBadges
 
         sourceComponent: VerifiedBadge {
             id: verifiedStatus
-            x: nameText.advanceWidth + 5
-            y: (nameText.height - height) / 2
             width: badgeSize
             height: width
             userDid: nameRect.userDid
@@ -49,12 +48,12 @@ Rectangle {
 
     Loader {
         id: verifierStatusLoader
+        x: Math.min(nameText.width, nameText.contentWidth) + 5 + (authorVerified ? badgeSize + 5 : 0)
+        anchors.verticalCenter: parent.verticalCenter
         active: !skywalker.hideVerificationBadges && isTrustedVerifier
 
         sourceComponent: VerifierBadge {
             id: verifierStatus
-            x: nameText.advanceWidth + 5 + (authorVerified ? verificationStatusLoader.item?.width + 5 : 0)
-            y: (nameText.height - height) / 2
             width: badgeSize
             height: width
             userDid: nameRect.userDid

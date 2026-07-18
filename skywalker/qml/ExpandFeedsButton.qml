@@ -84,11 +84,11 @@ SvgButton {
 
                             height: nameText.implicitHeight
 
-                            SkyCleanedTextLine {
+                            AccessibleText {
                                 id: nameText
                                 width: parent.width
                                 elide: Text.ElideRight
-                                plainText: modelData.name
+                                text: modelData.name
                             }
                             Text {
                                 id: subTitleText

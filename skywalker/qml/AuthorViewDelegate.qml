@@ -149,16 +149,15 @@ Rectangle {
             }
         }
 
-        SkyCleanedText {
+        AccessibleText {
             rightPadding: 10 + authorRect.textRightPadding
             Layout.columnSpan: 2
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
-            inLayout: true
             width: parent.width
             font.italic: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            plainText: author.pronouns
+            text: author.pronouns
             visible: Boolean(author.pronouns)
         }
 

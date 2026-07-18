@@ -91,12 +91,12 @@ Rectangle {
             Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                plainText: list.name
+                text: list.name
             }
 
             AccessibleText {

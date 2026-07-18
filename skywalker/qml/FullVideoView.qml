@@ -113,16 +113,6 @@ SkyPage {
             anchors.fill: parent
             onClicked: altFlick.minimized = !altFlick.minimized
         }
-
-        // SkyCleanedText {
-        //     id: altText
-        //     leftPadding: 10
-        //     width: parent.width - 15
-        //     wrapMode: Text.Wrap
-        //     color: "white"
-        //     plainText: videoView.alt
-        //     textFormat: videoView.hasHtmlAlt() ? Text.RichText : Text.PlainText
-        // }
     }
 
     SvgButton {

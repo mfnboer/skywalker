@@ -19,11 +19,11 @@ RowLayout {
         onClicked: root.viewListByUri(list.uri, false)
     }
 
-    SkyCleanedTextLine {
+    AccessibleText {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
         elide: Text.ElideRight
         font.bold: true
-        plainText: list.name
+        text: list.name
     }
 }

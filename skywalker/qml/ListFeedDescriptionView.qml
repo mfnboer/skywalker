@@ -118,15 +118,14 @@ SkyPage {
             leftPadding: 10
             rightPadding: 10
 
-            SkyCleanedText {
+            AccessibleText {
                 width: parent.width
                 elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
-                color: guiSettings.textColor
-                plainText: list.name
+                text: list.name
             }
 
             AccessibleText {
@@ -218,7 +217,6 @@ SkyPage {
             maximumLineCount: 1000
             elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
             plainText: list.formattedDescription
 
             LinkCatcher {

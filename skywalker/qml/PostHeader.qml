@@ -25,6 +25,7 @@ Column {
             width: parent.width
 
             AuthorNameAndStatus {
+                Layout.alignment: Qt.AlignVCenter
                 Layout.fillWidth: true
                 userDid: postHeader.userDid
                 author: postHeader.author

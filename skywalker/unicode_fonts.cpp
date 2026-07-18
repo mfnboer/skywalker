@@ -517,7 +517,6 @@ TextMetaInfo UnicodeFonts::getTextMetaInfo(const QString& text, bool hasFacets)
     info.setNewLineCount(newLineCount);
     info.setHasContinousWhitespace(spaceLen > 1);
     info.setHasFacets(hasFacets);
-    info.setHasCombinedEmoji(hasCombinedEmojis(text));
 
     return info;
 }

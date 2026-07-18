@@ -59,12 +59,12 @@ RoundCornerMask {
                 Layout.fillWidth: true
                 spacing: 0
 
-                SkyCleanedText {
+                AccessibleText {
                     width: parent.width
                     elide: Text.ElideRight
                     font.bold: true
                     color: guiSettings.messageUserTextColor
-                    plainText: joinLink.isNull() ? title : joinLink.name
+                    text: joinLink.isNull() ? title : joinLink.name
                 }
 
                 AccessibleText {

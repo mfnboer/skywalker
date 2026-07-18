@@ -472,7 +472,7 @@ SkyPage {
                 }
             }
 
-            AuthorNameAndStatusMultiLine {
+            AuthorNameAndStatus {
                 id: authorNameHeader
                 topPadding: authorStatus.isActive ? 10 : 0
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
@@ -484,13 +484,13 @@ SkyPage {
                 wrapMode: Text.Wrap
             }
 
-            SkyCleanedText {
+            AccessibleText {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 5
                 bottomPadding: 5
                 font.italic: true
                 wrapMode: Text.Wrap
-                plainText: `${authorPronouns}`
+                text: `${authorPronouns}`
                 visible: Boolean(authorPronouns)
             }
 

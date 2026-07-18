@@ -144,13 +144,13 @@ SkyPage {
                 }
             }
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 topPadding: 10
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                plainText: starterPack.name
+                text: starterPack.name
             }
 
             AccessibleText {

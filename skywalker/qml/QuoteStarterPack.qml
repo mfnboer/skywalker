@@ -32,13 +32,13 @@ Column {
             }
         }
 
-        SkyCleanedTextLine {
+        AccessibleText {
             Layout.fillWidth: true
             Layout.rightMargin: margin
             elide: Text.ElideRight
             font.bold: true
             color: guiSettings.textColor
-            plainText: starterPack.name
+            text: starterPack.name
         }
 
         AccessibleText {
@@ -62,14 +62,13 @@ Column {
         contentAuthor: starterPack.creator
     }
 
-    SkyCleanedText {
+    AccessibleText {
         topPadding: 10
         width: parent.width - 2 * margin
         wrapMode: Text.Wrap
         elide: Text.ElideRight
         maximumLineCount: 5
-        color: guiSettings.textColor
-        plainText: starterPack.description
+        text: starterPack.description
         visible: starterPack.description
     }
 

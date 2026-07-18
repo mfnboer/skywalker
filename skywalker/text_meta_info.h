@@ -12,30 +12,26 @@ class TextMetaInfo
     Q_PROPERTY(int newLineCount READ getNewLineCount CONSTANT FINAL)
     Q_PROPERTY(int hasContinuousWhitespace READ hasContinuousWhitespace CONSTANT FINAL)
     Q_PROPERTY(int hasFacets READ hasFacets CONSTANT FINAL)
-    Q_PROPERTY(int hasCombinedEmoji READ hasCombinedEmoji CONSTANT FINAL)
     Q_PROPERTY(int hasFullHtml READ hasFullHtml CONSTANT FINAL)
     QML_VALUE_TYPE(textmetainfo)
 
 public:
     Q_INVOKABLE bool isNull() const { return mNewLineCount < 0; }
-    Q_INVOKABLE bool isSimpleText() const { return !mHasFacets && !mHasCombinedEmoji && !mHasContinuousWhitespace; }
+    Q_INVOKABLE bool isSimpleText() const { return !mHasFacets && !mHasContinuousWhitespace; }
     int getNewLineCount() const { return mNewLineCount; }
     bool hasContinuousWhitespace() const { return mHasContinuousWhitespace; }
     bool hasFacets() const { return mHasFacets; }
-    bool hasCombinedEmoji() const { return mHasCombinedEmoji; }
     bool hasFullHtml() const { return mHasFullHtml; }
 
     void setNewLineCount(int count) { mNewLineCount = count; }
     void setHasContinousWhitespace(bool continuous) { mHasContinuousWhitespace = continuous; }
     void setHasFacets(bool facets) { mHasFacets = facets; }
-    void setHasCombinedEmoji(bool combinedEmoji) { mHasCombinedEmoji = combinedEmoji; }
     void setHasFullHtml(bool fullHtml) { mHasFullHtml = fullHtml; }
 
 private:
     int mNewLineCount = -1;
     bool mHasContinuousWhitespace = false;
     bool mHasFacets = false;
-    bool mHasCombinedEmoji = false;
     bool mHasFullHtml = false;
 };
 

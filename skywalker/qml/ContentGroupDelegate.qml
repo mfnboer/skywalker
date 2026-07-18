@@ -36,14 +36,14 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
 
-            SkyCleanedTextLine {
+            AccessibleText {
                 id: titleText
                 Layout.leftMargin: contentGroupView.margin
                 Layout.rightMargin: contentGroupView.margin
                 Layout.fillWidth: true
                 font.bold: true
                 elide: Text.ElideRight
-                plainText: contentGroup.title
+                text: contentGroup.title
             }
             SvgButton {
                 imageMargin: 0

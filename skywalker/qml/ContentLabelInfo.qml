@@ -43,7 +43,7 @@ SkyDialog {
                     author: labeler
                 }
 
-                SkyCleanedText {
+                AccessibleText {
                     id: titleText
                     Layout.fillWidth: true
                     elide: Text.ElideRight
@@ -51,7 +51,7 @@ SkyDialog {
                     font.bold: true
                     font.pointSize: guiSettings.scaledFont(10/8)
                     color: guiSettings.textColor
-                    plainText: contentGroup.title
+                    text: contentGroup.title
                 }
 
                 SkyButton {

@@ -34,9 +34,9 @@ Rectangle {
     Column {
         id: viewColumn
         y: 10
-        width: Math.max(Math.min(authorName.advanceWidth + 20, maxWidth), messageText.width)
+        width: Math.max(Math.min(authorName.contentWidth + 20, maxWidth), messageText.width)
 
-        SkyCleanedTextLine {
+        AccessibleText {
             id: authorName
             width: view.maxWidth
             leftPadding: 10
@@ -45,7 +45,7 @@ Rectangle {
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
-            plainText: view.author.name
+            text: view.author.name
             visible: replyTo.senderDid
         }
 

@@ -3,13 +3,13 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
+// Text that can cap and elide RichText
 Text {
     required property string plainText
     property bool inLayout: false
     property string elidedText
     property bool showEllipsis: true
     property string ellipsisBackgroundColor: guiSettings.backgroundColor
-    property bool mustClean: false
     property int initialShowMaxLineCount: maximumLineCount
     property int capLineCount: initialShowMaxLineCount
     readonly property bool mustElideRich: elide === Text.ElideRight && textFormat === Text.RichText
@@ -49,10 +49,7 @@ Text {
     Accessible.name: plainText
 
     function setElidedText() {
-        if (mustClean)
-            text = UnicodeFonts.toCleanedHtml(elidedText)
-        else
-            text = elidedText
+        text = elidedText
     }
 
     function elideRichText() {
@@ -97,13 +94,6 @@ Text {
 
         if (textFormat === Text.RichText)
             return
-
-        // TODO
-        // if (UnicodeFonts.hasCombinedEmojis(plainText)) {
-        //     mustClean = true
-        //     textFormat = Text.RichText
-        //     resetText()
-        // }
     }
 
     Loader {

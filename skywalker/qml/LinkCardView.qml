@@ -145,12 +145,12 @@ RoundCornerMask {
         }
         Loader {
             active: associatedProfiles.length > 0
-            sourceComponent: SkyCleanedText {
+            sourceComponent: AccessibleText {
                 x: 5
                 width: externalColumn.width - 10
                 font.italic: true
                 wrapMode: Text.Wrap
-                plainText: qsTr(`by ${guiSettings.toAuthorNameSequence(associatedProfiles)}`)
+                text: qsTr(`by ${guiSettings.toAuthorNameSequence(associatedProfiles)}`)
             }
         }
         Loader {
