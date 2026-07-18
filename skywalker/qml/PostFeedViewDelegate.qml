@@ -893,7 +893,6 @@ Rectangle {
                 Loader {
                     x: contentLeftMargin
                     width: parent.width - contentLeftMargin - postEntry.margin
-                    height: item ? item.height : 0
                     active: (postThreadType & QEnums.THREAD_LEAF) &&
                             !(postThreadType & QEnums.THREAD_ENTRY) &&
                             !unrollThread &&

@@ -1,6 +1,8 @@
 next
 ====
+* Support new search options from Bluesky
 * Option to add/remove trusted verifier on profile page
+* Bug fixes
 
 4.40
 ====
