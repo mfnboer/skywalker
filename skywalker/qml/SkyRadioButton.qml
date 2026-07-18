@@ -8,7 +8,7 @@ RadioButton {
     property int horizontalAlignment: Qt.AlignLeft
     property int borderWidth: 1
     readonly property string buttonColor: enabled ? guiSettings.buttonColor : guiSettings.disabledColor
-    property string labelColor: "transparent"
+    property string labelColor: guiSettings.textInputBackgroundColor
 
     id: radio
     padding: 0
@@ -27,11 +27,11 @@ RadioButton {
             bottomRightRadius: radio.rightRadius
             color: radio.checked ? buttonColor : labelColor
             border.width: radio.borderWidth
-            border.color: buttonColor
+            border.color: guiSettings.textColor
         }
         horizontalAlignment: radio.horizontalAlignment
         font.pointSize: guiSettings.scaledFont(1)
-        color: checked ? guiSettings.buttonTextColor : buttonColor
+        color: checked ? guiSettings.buttonTextColor : guiSettings.textColor
         elide: Text.ElideRight
         text: radio.text
     }

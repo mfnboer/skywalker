@@ -28,7 +28,7 @@ SkyMenuButton {
         modal: true
 
         background: Rectangle {
-            radius: 5
+            radius: guiSettings.radius
             color: guiSettings.backgroundColor
         }
 

@@ -86,7 +86,7 @@ Column {
             Rectangle {
                 anchors.fill: parent
                 z: parent.z - 2
-                radius: 5
+                radius: guiSettings.radius
                 color: postHighlightColor
                 opacity: guiSettings.focusHighlightOpacity
                 visible: postHighlightColor != "transparent"
@@ -119,7 +119,7 @@ Column {
             Rectangle {
                 anchors.fill: parent
                 z: parent.z - 2
-                radius: 5
+                radius: guiSettings.radius
                 color: postHighlightColor
                 opacity: guiSettings.focusHighlightOpacity
                 visible: postHighlightColor != "transparent"

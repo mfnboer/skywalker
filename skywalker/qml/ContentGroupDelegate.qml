@@ -103,6 +103,7 @@ Rectangle {
             SkyRadioButton {
                 Layout.leftMargin: contentGroupView.margin
                 Layout.fillWidth: true
+                leftRadius: guiSettings.radius
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW
                 horizontalAlignment: Qt.AlignHCenter
                 labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_SHOW ? guiSettings.labelPrefDefaultColor : "transparent"
@@ -132,6 +133,7 @@ Rectangle {
             SkyRadioButton {
                 Layout.rightMargin: contentGroupView.margin
                 Layout.fillWidth: true
+                rightRadius: guiSettings.radius
                 checked: contentPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE
                 horizontalAlignment: Qt.AlignHCenter
                 labelColor: !checked && isListPref && defaultPrefVisibility === QEnums.CONTENT_PREF_VISIBILITY_HIDE ? guiSettings.labelPrefDefaultColor : "transparent"

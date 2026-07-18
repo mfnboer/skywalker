@@ -15,7 +15,7 @@ SkyDialog {
     Rectangle {
         width: parent.width
         height: textInput.height
-        radius: 5
+        radius: guiSettings.radius
         border.width: textInput.activeFocus ? 1 : 0
         border.color: guiSettings.buttonColor
         color: guiSettings.textInputBackgroundColor

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 ComboBox {
-    property int radius: 5
+    property int radius: guiSettings.radius
     property string borderColor: guiSettings.buttonColor
     property string textColor: guiSettings.textColor
 

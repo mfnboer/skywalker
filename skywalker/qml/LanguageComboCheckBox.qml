@@ -7,9 +7,9 @@ ComboBox {
     property list<language> usedLanguages
     property list<string> checkedLangCodes
     property bool noneCheckedMeansAll: true
-    property int radius: 0
+    property int radius: guiSettings.radius
     property string borderColor: guiSettings.buttonColor
-    property string color: guiSettings.buttonColor
+    property string color: guiSettings.textColor
 
     id: languageComboBox
     height: 34
@@ -25,11 +25,9 @@ ComboBox {
         implicitHeight: 34
         radius: languageComboBox.radius
         border.color: languageComboBox.borderColor
-        border.width: 1
-        color: "transparent"
+        border.width: languageComboBox.activeFocus ? 1 : 0
+        color: guiSettings.textInputBackgroundColor
     }
-
-    indicator: Item {}
 
     contentItem: AccessibleText {
         leftPadding: 10
@@ -126,4 +124,7 @@ ComboBox {
         footerPositioning: ListView.OverlayFooter
     }
 
+    Component.onCompleted: {
+        indicator.color = languageComboBox.color
+    }
 }

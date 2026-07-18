@@ -24,7 +24,7 @@ Rectangle {
 
     id: skyTextInput
     implicitHeight: 34 // textField.implicitHeight
-    radius: 5
+    radius: guiSettings.radius
     border.width: textField.activeFocus ? 1 : 0
     border.color: guiSettings.buttonColor
     color: valid ? guiSettings.textInputBackgroundColor : guiSettings.textInputInvalidColor

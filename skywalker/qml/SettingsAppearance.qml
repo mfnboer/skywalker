@@ -48,6 +48,7 @@ ColumnLayout {
 
             SkyRadioButton {
                 Layout.fillWidth: true
+                leftRadius: guiSettings.radius
                 checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_SYSTEM
                 text: qsTr("System");
                 onCheckedChanged: {
@@ -70,6 +71,7 @@ ColumnLayout {
             }
             SkyRadioButton {
                 Layout.fillWidth: true
+                rightRadius: guiSettings.radius
                 checked: userSettings.getDisplayMode() === QEnums.DISPLAY_MODE_DARK
                 text: qsTr("Dark");
                 onCheckedChanged: {
@@ -89,9 +91,10 @@ ColumnLayout {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
+            Layout.preferredHeight: 34
+            radius: guiSettings.radius
             border.width: 1
-            border.color: guiSettings.buttonColor
+            border.color: guiSettings.textColor
             color: guiSettings.backgroundColor
 
             SkyMouseArea {
@@ -119,9 +122,8 @@ ColumnLayout {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
-            border.width: 1
-            border.color: guiSettings.buttonColor
+            Layout.preferredHeight: 34
+            radius: guiSettings.radius
             color: guiSettings.textColor
 
             SkyMouseArea {
@@ -155,6 +157,7 @@ ColumnLayout {
             SvgButton {
                 id: accentColorInfoButton
                 anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
                 width: 34
                 height: width
                 imageMargin: 4
@@ -166,9 +169,8 @@ ColumnLayout {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
-            border.width: 1
-            border.color: guiSettings.accentColor
+            Layout.preferredHeight: 34
+            radius: guiSettings.radius
             color: guiSettings.accentColor
 
             SkyMouseArea {
@@ -199,9 +201,8 @@ ColumnLayout {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
-            border.width: 1
-            border.color: guiSettings.buttonColor
+            Layout.preferredHeight: 34
+            radius: guiSettings.radius
             color: guiSettings.linkColor
 
             SkyMouseArea {
@@ -233,6 +234,7 @@ ColumnLayout {
 
             SkyRadioButton {
                 Layout.fillWidth: true
+                leftRadius: guiSettings.radius
                 checked: userSettings.threadStyle === QEnums.THREAD_STYLE_BAR
                 text: qsTr("Bar");
                 onCheckedChanged: {
@@ -242,6 +244,7 @@ ColumnLayout {
             }
             SkyRadioButton {
                 Layout.fillWidth: true
+                rightRadius: guiSettings.radius
                 checked: userSettings.threadStyle === QEnums.THREAD_STYLE_LINE
                 text: qsTr("Line");
                 onCheckedChanged: {
@@ -259,9 +262,8 @@ ColumnLayout {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
-            border.width: 1
-            border.color: guiSettings.buttonColor
+            Layout.preferredHeight: 34
+            radius: guiSettings.radius
 
             gradient: Gradient {
                 orientation: Gradient.Horizontal
@@ -316,6 +318,7 @@ ColumnLayout {
 
             SkyRadioButton {
                 Layout.fillWidth: true
+                leftRadius: guiSettings.radius
                 checked: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
                 text: qsTr("Top");
                 onCheckedChanged: {
@@ -334,6 +337,7 @@ ColumnLayout {
             }
             SkyRadioButton {
                 Layout.fillWidth: true
+                rightRadius: guiSettings.radius
                 checked: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_NONE
                 text: qsTr("None");
                 onCheckedChanged: {
@@ -510,6 +514,7 @@ ColumnLayout {
         }
         SkyRadioButton {
             Layout.fillWidth: true
+            leftRadius: guiSettings.radius
             checked: userSettings.videoQuality === QEnums.VIDEO_QUALITY_HD
             text: qsTr("HD");
             onCheckedChanged: {
@@ -528,6 +533,7 @@ ColumnLayout {
         }
         SkyRadioButton {
             Layout.fillWidth: true
+            rightRadius: guiSettings.radius
             checked: userSettings.videoQuality === QEnums.VIDEO_QUALITY_SD
             text: qsTr("SD");
             onCheckedChanged: {

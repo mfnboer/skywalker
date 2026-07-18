@@ -10,6 +10,7 @@ RowLayout {
 
     SkyRadioButton {
         Layout.fillWidth: true
+        leftRadius: guiSettings.radius
         text: qsTr("In-app + Push")
         checked: notificationPref.list && notificationPref.push
         onCheckedChanged: {
@@ -32,6 +33,7 @@ RowLayout {
     }
     SkyRadioButton {
         Layout.fillWidth: true
+        rightRadius: guiSettings.radius
         text: qsTr("Off")
         checked: !notificationPref.list
         onCheckedChanged: {

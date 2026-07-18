@@ -569,7 +569,7 @@ Column {
             popup.topMargin: guiSettings.headerMargin
             popup.bottomMargin: guiSettings.footerMargin
             popup.background: Rectangle {
-                radius: 5
+                radius: guiSettings.radius
                 color: videoStack.backgroundColor
                 opacity: 0.9
             }

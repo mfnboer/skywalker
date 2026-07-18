@@ -241,7 +241,7 @@ SkyDialog {
                 id: languageComboBox
                 Layout.fillWidth: true
                 background.implicitHeight: untilText.height
-                radius: 5
+                radius: guiSettings.radius
                 color: guiSettings.textColor
                 backgroundColor: guiSettings.textInputBackgroundColor
                 borderColor: guiSettings.buttonColor
@@ -287,7 +287,7 @@ SkyDialog {
 
                 SkyRadioButton {
                     Layout.fillWidth: true
-                    leftRadius: 5
+                    leftRadius: guiSettings.radius
                     checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_SHOW
                     horizontalAlignment: Qt.AlignHCenter
                     text: qsTr("On")
@@ -308,7 +308,7 @@ SkyDialog {
                 }
                 SkyRadioButton {
                     Layout.fillWidth: true
-                    rightRadius: 5
+                    rightRadius: guiSettings.radius
                     checked: overrideAdultVisibility === QEnums.CONTENT_VISIBILITY_HIDE_MEDIA
                     horizontalAlignment: Qt.AlignHCenter
                     text: qsTr("Hide")

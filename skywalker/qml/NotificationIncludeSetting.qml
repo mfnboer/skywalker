@@ -10,6 +10,7 @@ RowLayout {
 
     SkyRadioButton {
         Layout.fillWidth: true
+        leftRadius: guiSettings.radius
         text: qsTr("Everyone")
         checked: filterablePref.includeType === QEnums.NOTIFICATION_FILTER_INCLUDE_ALL
         enabled: filterablePref instanceof EditChatNotificationPref ? filterablePref.push : filterablePref.list
@@ -20,6 +21,7 @@ RowLayout {
     }
     SkyRadioButton {
         Layout.fillWidth: true
+        rightRadius: guiSettings.radius
         text: qsTr("Users I follow")
         checked: filterablePref.includeType === QEnums.NOTIFICATION_FILTER_INCLUDE_FOLLOWS
         enabled: filterablePref instanceof EditChatNotificationPref ? filterablePref.push : filterablePref.list

@@ -201,12 +201,14 @@ SkyPage {
             SkyRadioButton {
                 id: hdRadioButton
                 Layout.fillWidth: true
+                leftRadius: guiSettings.radius
                 text: `HD (${(sizeString(calcHdResolution()))})`
                 checked: true
             }
             SkyRadioButton {
                 id: sdRadioButton
                 Layout.fillWidth: true
+                rightRadius: guiSettings.radius
                 text: `SD (${(sizeString(calcSdResolution()))})`
             }
         }

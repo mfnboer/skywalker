@@ -103,7 +103,7 @@ SkyPage {
                         anchors.centerIn: parent
                         leftPadding: 5
                         rightPadding: 5
-                        background: Rectangle { color: "black"; opacity: 0.2; radius: 5 }
+                        background: Rectangle { color: "black"; opacity: 0.2; radius: guiSettings.radius }
                         elide: Text.ElideRight
                         font.bold: true
                         font.pointSize: guiSettings.scaledFont(9/8)

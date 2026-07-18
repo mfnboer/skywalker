@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 ComboBox {
-    property int radius: 5
+    property int radius: guiSettings.radius
     required property int editableIndex
     property string initialEditValue
     property string borderColor: guiSettings.buttonColor
@@ -108,17 +108,6 @@ ComboBox {
         border.width: comboBox.activeFocus ? 1 : 0
         color: guiSettings.textInputBackgroundColor
     }
-
-    // This draws a rectangle around the combobox
-    // Rectangle {
-    //     z: parent.z - 1
-    //     width: comboBox.width
-    //     height: textInput.height
-    //     radius: 5
-    //     border.color: guiSettings.buttonColor
-    //     border.width: comboBox.activeFocus ? 1 : 0
-    //     color: guiSettings.textInputBackgroundColor
-    // }
 
     Timer {
         id: acceptedTimer

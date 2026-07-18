@@ -284,12 +284,14 @@ ColumnLayout {
 
             SkyRadioButton {
                 Layout.fillWidth: true
+                leftRadius: guiSettings.radius
                 text: qsTr("In-app")
                 checked: userSettings.getNewLabelNotifications(userDid)
                 onCheckedChanged: userSettings.setNewLabelNotifications(userDid, checked)
             }
             SkyRadioButton {
                 Layout.fillWidth: true
+                rightRadius: guiSettings.radius
                 text: qsTr("Off")
                 checked: !userSettings.getNewLabelNotifications(userDid)
             }

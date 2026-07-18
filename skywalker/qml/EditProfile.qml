@@ -239,7 +239,7 @@ SkyPage {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: nameField.height
-                radius: 5
+                radius: guiSettings.radius
                 border.width: nameField.activeFocus ? 1 : 0
                 border.color: guiSettings.buttonColor
                 color: guiSettings.textInputBackgroundColor
@@ -279,7 +279,7 @@ SkyPage {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: pronounsField.height
-                radius: 5
+                radius: guiSettings.radius
                 border.width: pronounsField.activeFocus ? 1 : 0
                 border.color: guiSettings.buttonColor
                 color: guiSettings.textInputBackgroundColor
@@ -311,7 +311,7 @@ SkyPage {
                 id: descriptionRect
                 Layout.fillWidth: true
                 Layout.preferredHeight: descriptionField.height
-                radius: 5
+                radius: guiSettings.radius
                 border.width: descriptionField.activeFocus ? 1 : 0
                 border.color: guiSettings.buttonColor
                 color: guiSettings.textInputBackgroundColor

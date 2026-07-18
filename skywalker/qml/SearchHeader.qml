@@ -37,7 +37,7 @@ Rectangle {
         }
 
         Rectangle {
-            radius: 5
+            radius: guiSettings.radius
             Layout.fillWidth: true
             Layout.rightMargin: 10
             Layout.preferredHeight: searchText.height

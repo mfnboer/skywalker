@@ -26,7 +26,7 @@ ComboBox {
         z: parent.z - 1
         width: hostField.width
         height: hostField.height
-        radius: 5
+        radius: guiSettings.radius
         color: valid ? guiSettings.textInputBackgroundColor : guiSettings.textInputInvalidColor
     }
 
