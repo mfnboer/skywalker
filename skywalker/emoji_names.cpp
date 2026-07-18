@@ -5051,6 +5051,7 @@ const std::unordered_map<QString, QString> EmojiNames::EMOJI_NAMES_MAP = {
     {"🏴󠁧󠁢󠁷󠁬󠁳󠁿", "flag: Wales"},
 
     // MANUALLY ADDED: missing from file
+    {"✨\uFE0F", "sparkles"},
     {"☔\uFE0F", "umbrella with rain drops"}
 };
 
