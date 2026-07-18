@@ -16,6 +16,7 @@ SkyCleanedText {
 
     id: messageText
     width: Math.min(textWidth + 5 + leftPadding + rightPadding, maxWidth)
+    height: plainText.length > 0 ? implicitHeight : 0
     leftPadding: 10
     rightPadding: 10
     wrapMode: Text.Wrap

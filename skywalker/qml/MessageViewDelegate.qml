@@ -126,7 +126,7 @@ Rectangle {
                         embedJoinLink.item ? embedJoinLink.item.width + 20 : 0,
                         replyToLoader.item ? replyToLoader.item.width + 20 : 0)
         height: (replyToLoader.item ? replyToLoader.item.height + 10 : 0) +
-                messageText.height +
+                (messageText.height > 0 ? messageText.height : 10) +
                 (embedRecord.item ? embedRecord.item.height + 10 : 0) +
                 (embedJoinLink.item ? embedJoinLink.item.height + 10 : 0)
         radius: guiSettings.radius
@@ -196,6 +196,7 @@ Rectangle {
             id: embedRecord
             x: 10
             anchors.top: messageText.bottom
+            anchors.topMargin: messageText.height > 0 ? 0 : 10
             active: message.embedType === QEnums.MESSAGE_EMBED_RECORD
 
             sourceComponent: RecordView {
@@ -208,6 +209,7 @@ Rectangle {
             id: embedJoinLink
             x: 10
             anchors.top: messageText.bottom
+            anchors.topMargin: messageText.height > 0 ? 0 : 10
             active: message.embedType === QEnums.MESSAGE_EMBED_JOIN_LINK
 
             sourceComponent: JoinLinkPreview {

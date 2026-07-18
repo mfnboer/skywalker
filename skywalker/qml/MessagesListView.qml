@@ -382,6 +382,10 @@ SkyPage {
                     fixQuoteLink(true)
             }
 
+            function hasValidText() {
+                return graphemeLength > 0 && graphemeLength <= page.maxMessageLength
+            }
+
             function getQuoteUri() {
                 if (quoteUri)
                     return quoteUri
@@ -397,6 +401,11 @@ SkyPage {
                     return quoteCid
 
                 return quoteFeed.cid
+            }
+
+            function hasQuote() {
+                const uri = getQuoteUri()
+                return uri.length > 0
             }
 
             function fixQuoteLink(fix) {
@@ -423,7 +432,7 @@ SkyPage {
         y: flick.y + flick.height + 5
         svg: SvgFilled.send
         accessibleName: qsTr("send message")
-        enabled: !page.isSending && newMessageText.graphemeLength > 0 && newMessageText.graphemeLength <= page.maxMessageLength
+        enabled: !page.isSending && (newMessageText.hasValidText() || newMessageText.hasQuote())
         visible: convoAccepted && !convo.group.isLocked()
         onClicked: sendMessage()
     }
