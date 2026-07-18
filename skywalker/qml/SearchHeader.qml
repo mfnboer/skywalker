@@ -10,6 +10,7 @@ Rectangle {
     property bool showBackButton: true
     property string prevDisplayText
     readonly property alias displayText: searchText.displayText
+    readonly property alias cursorWord: searchText.cursorWord
 
     signal back
     signal searchTextChanged(string text)
@@ -45,7 +46,7 @@ Rectangle {
             border.width: searchText.activeFocus ? 1 : 0
             border.color: guiSettings.buttonColor
 
-            TextInput {
+            WordsInput {
                 id: searchText
                 EnterKey.type: Qt.EnterKeySearch // works since Qt6.8
                 width: parent.width
@@ -108,6 +109,10 @@ Rectangle {
 
     function setSearchText(text) {
         searchText.text = text
+    }
+
+    function setCursorWord(word) {
+        searchText.replaceCursorWord(word)
     }
 
     function hasFocus() {

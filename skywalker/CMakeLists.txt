@@ -753,6 +753,7 @@ qt_add_qml_module(libskywalker
         SOURCES expiry_cache.h
         SOURCES search_options.h
         SOURCES search_options.cpp
+        QML_FILES qml/WordsInput.qml
 )
 
 target_link_libraries(libskywalker

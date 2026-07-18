@@ -29,6 +29,9 @@ SkyPage {
     property bool adultContent: false
     property int overrideAdultVisibility: userSettings.getSearchAdultOverrideVisibility(userDid)
     property string currentText
+    property string currentCursorWord
+    property bool currentCursorWordIsHashtag: false
+    property bool currentCursorWordIsCashtag: false
     property bool firstSearch: true
     readonly property int margin: 10
     property date nullDate
@@ -58,14 +61,12 @@ SkyPage {
                 if (UnicodeFonts.isHashtag(text)) {
                     page.isHashtagSearch = true
                     page.isCashtagSearch = false
-                    hashtagTypeaheadSearchTimer.start()
                 } else if (UnicodeFonts.isCashtag(text)) {
-                    page.isHashtagSearch = false
-                    page.isCashtagSearch = true
+                    page.isHashtagSearch = true
+                    page.isCashtagSearch = false
                 } else {
                     page.isHashtagSearch = false
                     page.isCashtagSearch = false
-                    authorTypeaheadSearchTimer.start()
                 }
             } else {
                 authorTypeaheadSearchTimer.stop()
@@ -75,6 +76,28 @@ SkyPage {
                 page.isHashtagSearch = false
                 page.isCashtagSearch = false
                 page.header.forceFocus()
+            }
+        }
+
+        onCursorWordChanged: {
+            currentCursorWord = cursorWord
+
+            if (cursorWord.length > 0) {
+                if (UnicodeFonts.isHashtag(cursorWord)) {
+                    page.currentCursorWordIsHashtag = true
+                    page.currentCursorWordIsCashtag = false
+                    hashtagTypeaheadSearchTimer.start()
+                } else if (UnicodeFonts.isCashtag(cursorWord)) {
+                    page.currentCursorWordIsHashtag = false
+                    page.currentCursorWordIsCashtag = true
+                } else {
+                    page.currentCursorWordIsHashtag = false
+                    page.currentCursorWordIsCashtag = false
+                    authorTypeaheadSearchTimer.start()
+                }
+            } else {
+                page.currentCursorWordIsHashtag = false
+                page.currentCursorWordIsCashtag = false
             }
         }
 
@@ -110,7 +133,7 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         model: searchUtils.authorTypeaheadList
-        visible: page.isTyping && currentText && !page.isHashtagSearch && !page.isCashtagSearch
+        visible: page.isTyping && currentText && !page.currentCursorWordIsHashtag && !page.currentCursorWordIsCashtag
 
         onAuthorClicked: (profile) => {
             searchUtils.addLastSearchedProfile(profile)
@@ -125,11 +148,11 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         model: searchUtils.hashtagTypeaheadList
-        visible: page.isTyping && currentText && page.isHashtagSearch
+        visible: page.isTyping && currentCursorWord && page.currentCursorWordIsHashtag
 
         onHashtagClicked: (tag) => {
             const fullTag = `#${tag}`
-            page.header.setSearchText(fullTag) // qmllint disable missing-property
+            page.header.setCursorWord(fullTag) // qmllint disable missing-property
             searchUtils.search(fullTag)
         }
     }
@@ -970,7 +993,7 @@ SkyPage {
         id: hashtagTypeaheadSearchTimer
         interval: 500
         onTriggered: {
-            const text = page.getSearchText()
+            const text = currentCursorWord
 
             if (text.length > 1)
                 searchUtils.searchHashtagsTypeahead(text.slice(1)) // strip #-symbol
