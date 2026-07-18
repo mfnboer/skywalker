@@ -1,4 +1,4 @@
-next
+4.41
 ====
 * Support new search options from Bluesky
 * Option to add/remove trusted verifier on profile page
