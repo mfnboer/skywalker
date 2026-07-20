@@ -55,15 +55,15 @@ SkyPage {
 
         onSearchTextChanged: (text) => {
             page.isTyping = true
-            currentText = text
+            currentText = text.trim()
 
-            if (text.length > 0) {
-                if (UnicodeFonts.isHashtag(text)) {
+            if (currentText.length > 0) {
+                if (UnicodeFonts.isHashtag(currentText)) {
                     page.isHashtagSearch = true
                     page.isCashtagSearch = false
-                } else if (UnicodeFonts.isCashtag(text)) {
-                    page.isHashtagSearch = true
-                    page.isCashtagSearch = false
+                } else if (UnicodeFonts.isCashtag(currentText)) {
+                    page.isHashtagSearch = false
+                    page.isCashtagSearch = true
                 } else {
                     page.isHashtagSearch = false
                     page.isCashtagSearch = false
@@ -1207,7 +1207,7 @@ SkyPage {
     }
 
     function getSearchText() {
-        return page.header.displayText
+        return page.header.displayText.trim()
     }
 
     function getAuthorListText(authors) {

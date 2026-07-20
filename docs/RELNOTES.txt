@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.41
 ====
 * Support new search options from Bluesky
