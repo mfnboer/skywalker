@@ -264,7 +264,7 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
     {
         const auto& feedEntry = feed->mPosts[i];
 
-        if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(feedEntry->mRecord))
         {
             Post post(feedEntry);
             mContentFilterStats.reportChecked(post);
@@ -278,10 +278,17 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
             preprocess(post);
             page->pushPost(post);
         }
+        else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(feedEntry->mRecord))
+        {
+            const auto unknownRecord = std::get<ATProto::UnknownVariant::SharedPtr>(feedEntry->mRecord);
+            qWarning() << "Unsupported post record type:" << unknownRecord->mType;
+            page->pushPost(Post::createNotSupported(unknownRecord->mType));
+        }
         else
         {
-            qWarning() << "Unsupported post record type:" << int(feedEntry->mRecordType);
-            page->pushPost(Post::createNotSupported(feedEntry->mRawRecordType));
+            qWarning() << "Unexpected post record type";
+            Q_ASSERT(false);
+            page->pushPost(Post::createNotSupported("UnknownRecordType"));
         }
     }
 

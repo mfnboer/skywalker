@@ -495,7 +495,7 @@ bool PostThreadModel::isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& r
 // Pin posts are used to fill the bookmark feed. They are annoying in the thread.
 bool PostThreadModel::isPinPost(const ATProto::AppBskyFeed::PostView& post) const
 {
-    if (post.mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(post.mRecord))
         return false;
 
     const auto postRecord = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(post.mRecord).get();

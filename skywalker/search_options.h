@@ -24,6 +24,7 @@ class SearchOptions
     Q_PROPERTY(MediaPostFilter mediaPostFilter READ getMediaPostFilter WRITE setMediaPostFilter FINAL)
     Q_PROPERTY(QStringList excludeWords READ getExcludeWords WRITE setExcludeWords FINAL)
     QML_ELEMENT
+    QML_VALUE_TYPE(searchoptions)
 
 public:
     enum PostFilter

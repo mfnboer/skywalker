@@ -909,7 +909,6 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(Dra
     postView->mEmbed = createEmbedView(draft.mPost->mEmbed, std::move(draft.mQuote));
     postView->mLabels = createContentLabels(*draft.mPost, recordUri);
     postView->mRecord = std::move(draft.mPost);
-    postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
     postView->mThreadgate = createThreadgateView(draft);
     postView->mViewer = createViewerState(draft);
 
@@ -1192,34 +1191,31 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(
         viewRecord->mCid = record->mRecord->mCid;
         viewRecord->mAuthor = std::move(quotePost->mAuthor);
         viewRecord->mValue = std::move(post);
-        viewRecord->mValueType = ATProto::RecordType::APP_BSKY_FEED_POST;
         viewRecord->mIndexedAt = quotePost->mDateTime;
 
-        view->mRecordType = ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD;
         view->mRecord = std::move(viewRecord);
         break;
     }
     case Draft::Quote::RecordType::QUOTE_FEED:
-        view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(quote->mRecord));
         break;
     case Draft::Quote::RecordType::QUOTE_LIST:
-        view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(quote->mRecord));
         break;
     case Draft::Quote::RecordType::QUOTE_LABELER:
-        view->mRecordType = ATProto::RecordType::APP_BSKY_LABELER_VIEW;
         view->mRecord = std::move(std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(quote->mRecord));
         break;
     case Draft::Quote::RecordType::QUOTE_STARTER_PACK:
-        view->mRecordType = ATProto::RecordType::APP_BSKY_GRAPH_STARTER_PACK_VIEW_BASIC;
         view->mRecord = std::move(std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(quote->mRecord));
         break;
     default:
+    {
         qWarning() << "Unknown record type" << (int)quote->mRecordType;
-        view->mRecordType = ATProto::RecordType::UNKNOWN;
-        view->mUnsupportedType = QString::number((int)quote->mRecordType);
+        auto unknownRecord = std::make_shared<ATProto::UnknownVariant>();
+        unknownRecord->mType = QString("UnknownDraftRecord-%1").arg((int)quote->mRecordType);
+        view->mRecord = std::move(unknownRecord);
         break;
+    }
     }
 
     return view;
@@ -1398,7 +1394,6 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertReplyToPostView(con
     view->mCid = postReplyRef->mParent->mCid;
     view->mAuthor = std::move(replyToPost->mAuthor);
     view->mRecord = createReplyToPost(replyToPost);
-    view->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
     view->mIndexedAt = replyToPost->mDateTime;
     return view;
 }
@@ -1434,7 +1429,6 @@ ATProto::AppBskyFeed::PostView::SharedPtr DraftPosts::convertDraftToPostView(con
         postRecord->mJson.insert(Lexicon::DRAFT_EMBBEDED_LINKS_FIELD, *embeddedLinks);
 
     postView->mRecord = postRecord;
-    postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
     postView->mThreadgate = createThreadgateView(draftView.mDraft->mThreadgateRules, recordUri, draftView.mCreatedAt);
     postView->mViewer = createViewerState(*draftView.mDraft);
 
@@ -1707,7 +1701,6 @@ ATProto::AppBskyEmbed::RecordView::SharedPtr DraftPosts::createRecordView(const 
 
     auto view = std::make_shared<ATProto::AppBskyEmbed::RecordView>();
     view->mRecord = postRecord;
-    view->mRecordType = ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND;
 
     return view;
 }
@@ -2841,10 +2834,10 @@ void DraftPosts::getPostRecordPost(const Post& post, int index, const QString& p
             auto quotePost = std::make_shared<Draft::QuotePost>();
             quotePost->mAuthor = recordPost->mAuthor;
 
-            if (recordPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+            if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(recordPost->mRecord))
                 quotePost->mText = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(recordPost->mRecord)->mText;
             else
-                qWarning() << "Unsupported record type:" << (int)recordPost->mRecordType;
+                qWarning() << "Unsupported record";
 
             quotePost->mDateTime = recordPost->mIndexedAt;
             auto quote = std::make_shared<Draft::Quote>();

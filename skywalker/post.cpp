@@ -184,7 +184,7 @@ QString Post::getText() const
     if (!mPost)
         return NO_STRING;
 
-    if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
@@ -194,7 +194,7 @@ QString Post::getText() const
             return record->mText;
     }
 
-    qWarning() << "Record type not supported:" << mPost->mRawRecordType;
+    qWarning() << "Record type not supported";
     return NO_STRING;
 }
 
@@ -208,7 +208,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const
     if (!mPost)
         return NO_STRING;
 
-    if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
@@ -221,8 +221,16 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const
             emphasizeHashtags);
     }
 
-    QString text = "UNSUPPORTED:\n" + mPost->mRawRecordType;
-    return ATProto::RichTextMaster::plainToHtml(text);
+    if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(mPost->mRecord))
+    {
+        const auto unknownRecord = std::get<ATProto::UnknownVariant::SharedPtr>(mPost->mRecord);
+        const QString text = "UNSUPPORTED:\n" + unknownRecord->mType;
+        return ATProto::RichTextMaster::plainToHtml(text);
+    }
+
+    qWarning() << "Unexpected post record type";
+    Q_ASSERT(false);
+    return ATProto::RichTextMaster::plainToHtml("UNSUPPORTED POST RECORD");
 }
 
 TextMetaInfo Post::getTextMetaInfo() const
@@ -233,7 +241,7 @@ TextMetaInfo Post::getTextMetaInfo() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -251,7 +259,7 @@ NamedLink::List Post::getDraftEmbeddedLinks() const
 
     NamedLink::List embeddedLinks;
 
-    if (mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
         const ATProto::XJsonObject xjson(record->mJson);
@@ -274,7 +282,7 @@ NamedLink::List Post::getEmbeddedLinks() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -362,7 +370,7 @@ bool Post::isReply() const
     if (!mPost)
         return false;
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return false;
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -436,7 +444,7 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyToRef() const
     if (!mPost)
         return nullptr;
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return nullptr;
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -477,7 +485,7 @@ QString Post::getReplyToAuthorDid() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -507,7 +515,7 @@ QString Post::getReplyRootAuthorDid() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -536,7 +544,7 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyRootRef() const
     if (!mPost)
         return nullptr;
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return nullptr;
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -1045,7 +1053,7 @@ const LanguageList& Post::getLanguages() const
     if (!mPost)
         return mLanguages;
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return mLanguages;
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -1063,7 +1071,7 @@ QStringList Post::getMentionDids() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -1075,7 +1083,7 @@ std::vector<QString> Post::getHashtags() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -1097,7 +1105,7 @@ std::vector<QString> Post::getCashtags() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -1119,7 +1127,7 @@ std::vector<QString> Post::getAllTags() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
@@ -1132,7 +1140,7 @@ std::vector<QString> Post::getWebLinks() const
     if (!mPost)
         return {};
 
-    if (mPost->mRecordType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord))
         return {};
 
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);

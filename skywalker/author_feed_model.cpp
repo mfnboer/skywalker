@@ -96,7 +96,7 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
     {
         const auto& feedEntry = feed->mFeed[i];
 
-        if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(feedEntry->mPost->mRecord))
         {
             Post post(feedEntry);
 
@@ -131,10 +131,17 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
             preprocess(post);
             page->addPost(post);
         }
+        else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(feedEntry->mPost->mRecord))
+        {
+            const auto unknownRecord = std::get<ATProto::UnknownVariant::SharedPtr>(feedEntry->mPost->mRecord);
+            qWarning() << "Unsupported post record type:" << unknownRecord->mType;
+            page->addPost(Post::createNotSupported(unknownRecord->mType));
+        }
         else
         {
-            qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType));
+            qWarning() << "Unexpected record type";
+            Q_ASSERT(false);
+            page->addPost(Post::createNotSupported("UnknownRecord"));
         }
     }
 

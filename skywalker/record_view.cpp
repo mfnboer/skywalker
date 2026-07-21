@@ -29,59 +29,58 @@ RecordView::SharedPtr RecordView::makeDetachedRecord(const QString postUri)
 
 RecordView::RecordView(const ATProto::AppBskyEmbed::RecordView& view)
 {
-    switch (view.mRecordType)
-    {
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_NOT_FOUND:
+    if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordViewNotFound::SharedPtr>(view.mRecord))
     {
         const auto record = std::get<ATProto::AppBskyEmbed::RecordViewNotFound::SharedPtr>(view.mRecord);
         mPrivate->mNotFound = true;
         mPrivate->mNotFoundUri = record->mUri;
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_BLOCKED:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordViewBlocked::SharedPtr>(view.mRecord))
     {
         const auto record = std::get<ATProto::AppBskyEmbed::RecordViewBlocked::SharedPtr>(view.mRecord);
         mPrivate->mBlockedAuthor = BlockedAuthor(record->mAuthor);
         mPrivate->mBlocked = true;
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_DETACHED:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordViewDetached::SharedPtr>(view.mRecord))
     {
         const auto record = std::get<ATProto::AppBskyEmbed::RecordViewDetached::SharedPtr>(view.mRecord);
         mPrivate->mDetachedByDid = PostUtils::extractDidFromUri(record->mUri);
         mPrivate->mDetachedPostUri = record->mUri;
         mPrivate->mDetached = true;
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_EMBED_RECORD_VIEW_RECORD:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord))
     {
         mPrivate->mRecord = std::get<ATProto::AppBskyEmbed::RecordViewRecord::SharedPtr>(view.mRecord);
         mPrivate->mRecordWordIndex = std::make_unique<RecordWordIndex>(mPrivate->mRecord);
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(view.mRecord))
     {
         mPrivate->mFeed = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(view.mRecord);
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyGraph::ListView::SharedPtr>(view.mRecord))
     {
         mPrivate->mList = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(view.mRecord);
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord))
     {
         mPrivate->mLabeler = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(view.mRecord);
-        break;
     }
-    case ATProto::RecordType::APP_BSKY_GRAPH_STARTER_PACK_VIEW_BASIC:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(view.mRecord))
+    {
         mPrivate->mStarterPack = std::get<ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr>(view.mRecord);
-        break;
-    default:
-        qWarning() << "Record type not supported:" << view.mUnsupportedType;
+    }
+    else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(view.mRecord))
+    {
+        const auto unknownRecord = std::get<ATProto::UnknownVariant::SharedPtr>(view.mRecord);
         mPrivate->mNotSupported = true;
-        mPrivate->mUnsupportedType = view.mUnsupportedType;
-        break;
+        mPrivate->mUnsupportedType = unknownRecord->mType;
+    }
+    else
+    {
+        qWarning() << "Record type not supported";
+        Q_ASSERT(false);
+        mPrivate->mNotSupported = true;
+        mPrivate->mUnsupportedType = "Uknown";
     }
 
     mValid = true;
@@ -110,9 +109,7 @@ QString RecordView::getFormattedText() const
     if (!mPrivate->mRecord)
         return {};
 
-    switch (mPrivate->mRecord->mValueType)
-    {
-    case ATProto::RecordType::APP_BSKY_FEED_POST:
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
 
@@ -121,24 +118,20 @@ QString RecordView::getFormattedText() const
 
         return ATProto::RichTextMaster::getFormattedPostText(*recordValue, UserSettings::getCurrentLinkColor());
     }
-    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedFeedDescription(*recordValue, UserSettings::getCurrentLinkColor());
     }
-    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedListDescription(*recordValue, UserSettings::getCurrentLinkColor());
     }
-    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mPrivate->mRecord->mValue);
         return ATProto::RichTextMaster::getFormattedLabelerDescription(*recordValue, UserSettings::getCurrentLinkColor());
-
-    }
-    default:
-        break;
     }
 
     return {};
@@ -155,33 +148,28 @@ bool RecordView::hasFacets() const
     if (!mPrivate->mRecord)
         return false;
 
-    switch (mPrivate->mRecord->mValueType)
-    {
-    case ATProto::RecordType::APP_BSKY_FEED_POST:
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
         return !recordValue->mFacets.empty();
     }
-    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mPrivate->mRecord->mValue);
         return !recordValue->mDescriptionFacets.empty();
     }
-    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mPrivate->mRecord->mValue);
         return !recordValue->mDescriptionFacets.empty();
     }
-    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mPrivate->mRecord->mValue))
     {
         // There is no explicit facets field here. The text gets linkfied based on the presence
         // of what looks likes links. Let's just assume there are facets to make sure text display
         // always looks good.
         return true;
 
-    }
-    default:
-        break;
     }
 
     return false;
@@ -301,7 +289,7 @@ bool RecordView::isReply() const
     if (!mPrivate->mRecord)
         return false;
 
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
         return false;
 
     const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
@@ -313,7 +301,7 @@ bool RecordView::isQuote() const
     if (!mPrivate->mRecord)
         return false;
 
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
         return false;
 
     const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
@@ -330,7 +318,7 @@ QEnums::TripleBool RecordView::isThread() const
     if (!mPrivate->mRecord)
         return QEnums::TRIPLE_BOOL_NO;
 
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
         return QEnums::TRIPLE_BOOL_NO;;
 
     if (isReply())
@@ -362,7 +350,7 @@ QString RecordView::getReplyToAuthorDid() const
     if (!mPrivate->mRecord)
         return {};
 
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
         return {};
 
     const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
@@ -397,7 +385,7 @@ QString RecordView::getReplyRootAuthorDid() const
     if (!mPrivate->mRecord)
         return {};
 
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
         return {};
 
     const auto& post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
@@ -424,7 +412,7 @@ const LanguageList& RecordView::getLanguages() const
     if (!mPrivate->mRecord)
         return mPrivate->mLanguages;
 
-    if (mPrivate->mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue))
         return mPrivate->mLanguages;
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);

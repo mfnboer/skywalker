@@ -1484,7 +1484,7 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
     {
         const auto& feedEntry = feed->mFeed[i];
 
-        if (feedEntry->mPost->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(feedEntry->mPost->mRecord))
         {
             Post post(feedEntry);
             page->collectThreadgate(post);
@@ -1622,10 +1622,17 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::OutputF
             preprocess(post);
             page->addPost(post, false);
         }
+        else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(feedEntry->mPost->mRecord))
+        {
+            const auto unknownRecord = std::get<ATProto::UnknownVariant::SharedPtr>(feedEntry->mPost->mRecord);
+            qWarning() << "Unsupported post record type:" << unknownRecord->mType;
+            page->addPost(Post::createNotSupported(unknownRecord->mType), false);
+        }
         else
         {
-            qWarning() << "Unsupported post record type:" << int(feedEntry->mPost->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mPost->mRawRecordType), false);
+            qWarning() << "Unexpected post record type";
+            Q_ASSERT(false);
+            page->addPost(Post::createNotSupported("UnknownRecordType"), false);
         }
     }
 
@@ -1655,16 +1662,23 @@ PostFeedModel::Page::Ptr PostFeedModel::createPage(ATProto::AppBskyFeed::GetQuot
     {
         const auto& feedEntry = feed->mPosts[i];
 
-        if (feedEntry->mRecordType == ATProto::RecordType::APP_BSKY_FEED_POST)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(feedEntry->mRecord))
         {
             Post post(feedEntry);
             preprocess(post);
             page->addPost(post, false);
         }
+        else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(feedEntry->mRecord))
+        {
+            const auto unknownRecord = std::get<ATProto::UnknownVariant::SharedPtr>(feedEntry->mRecord);
+            qWarning() << "Unsupported post record type:" << unknownRecord->mType;
+            page->addPost(Post::createNotSupported(unknownRecord->mType), false);
+        }
         else
         {
-            qWarning() << "Unsupported post record type:" << int(feedEntry->mRecordType);
-            page->addPost(Post::createNotSupported(feedEntry->mRawRecordType), false);
+            qWarning() << "Unexpected post record type";
+            Q_ASSERT(false);
+            page->addPost(Post::createNotSupported("UnknownRecordType"), false);
         }
     }
 

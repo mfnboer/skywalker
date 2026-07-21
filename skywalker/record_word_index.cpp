@@ -16,9 +16,7 @@ QString RecordWordIndex::getText() const
     if (!mRecord)
         return {};
 
-    switch (mRecord->mValueType)
-    {
-    case ATProto::RecordType::APP_BSKY_FEED_POST:
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
 
@@ -27,23 +25,20 @@ QString RecordWordIndex::getText() const
         else
             return recordValue->mText;
     }
-    case ATProto::RecordType::APP_BSKY_FEED_GENERATOR_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::GeneratorView::SharedPtr>(mRecord->mValue);
         return recordValue->mDescription.value_or("");
     }
-    case ATProto::RecordType::APP_BSKY_GRAPH_LIST_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyGraph::ListView::SharedPtr>(mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyGraph::ListView::SharedPtr>(mRecord->mValue);
         return recordValue->mDescription.value_or("");
     }
-    case ATProto::RecordType::APP_BSKY_LABELER_VIEW:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord->mValue))
     {
         const auto& recordValue = std::get<ATProto::AppBskyLabeler::LabelerView::SharedPtr>(mRecord->mValue);
         return recordValue->mCreator->mDescription.value_or("");
-    }
-    default:
-        break;
     }
 
     return {};
@@ -168,7 +163,7 @@ std::vector<QString> RecordWordIndex::getHashtags() const
     if (!mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue))
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
@@ -190,7 +185,7 @@ std::vector<QString> RecordWordIndex::getCashtags() const
     if (!mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue))
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
@@ -212,7 +207,7 @@ std::vector<QString> RecordWordIndex::getAllTags() const
     if (!mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue))
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
@@ -225,7 +220,7 @@ std::vector<QString> RecordWordIndex::getWebLinks() const
     if (!mRecord)
         return {};
 
-    if (mRecord->mValueType != ATProto::RecordType::APP_BSKY_FEED_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue))
         return {};
 
     const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);

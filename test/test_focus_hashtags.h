@@ -246,7 +246,6 @@ private:
 
         pm.createPost(text, "", nullptr, {}, [postView](auto&& postRecord){
             const auto json = postRecord->toJson();
-            postView->mRecordType = ATProto::RecordType::APP_BSKY_FEED_POST;
             postView->mRecord = ATProto::AppBskyFeed::Record::Post::fromJson(json);
             postView->mAuthor = std::make_shared<ATProto::AppBskyActor::ProfileViewBasic>();
         });
