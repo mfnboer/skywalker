@@ -179,7 +179,7 @@ public:
     std::vector<QString> getAllTags() const override;
     std::vector<QString> getWebLinks() const override;
 
-    bool isPinned() const { return mPinned; }
+    bool isPinned() const;
     void setPinned(bool pinned) { mPinned = pinned; }
 
     QEnums::TripleBool isThread() const;

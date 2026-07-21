@@ -1,5 +1,6 @@
 next
 ====
+* Proper handling of pinned post in a feed
 * Bug fixes
 
 4.41

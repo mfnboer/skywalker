@@ -1151,6 +1151,14 @@ std::vector<QString> Post::getWebLinks() const
     return links;
 }
 
+bool Post::isPinned() const
+{
+    if (mPinned)
+        return true;
+
+    return mFeedViewPost && mFeedViewPost->mReason && ATProto::holdsNonNull<ATProto::AppBskyFeed::ReasonPin::SharedPtr>(*mFeedViewPost->mReason);
+}
+
 QEnums::TripleBool Post::isThread() const
 {
     if (isPlaceHolder())

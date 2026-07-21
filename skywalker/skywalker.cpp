@@ -5075,11 +5075,27 @@ void Skywalker::saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QStrin
         return;
     }
 
-    const auto& post = model.getPost(postIndex);
-    qDebug() << "Save feed sync:" << feedUri << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post.getTimelineTimestamp() << "cid:" << post.getCid();
+    const auto* post = &model.getPost(postIndex);
 
-    mUserSettings.saveFeedSyncTimestamp(mUserDid, feedUri, post.getTimelineTimestamp());
-    mUserSettings.saveFeedSyncCid(mUserDid, feedUri, post.getCid());
+    while (post->isPinned())
+    {
+        postIndex = model.nextPostVisibleIndex(postIndex);
+
+        if (postIndex < 0 || postIndex >= model.rowCount())
+        {
+            qWarning() << "Cannot find non-pinned post:" << model.rowCount() << feedUri;
+            return;
+        }
+
+        post = &model.getPost(postIndex);
+        offsetY = 0;
+    }
+
+    Q_ASSERT(post);
+    qDebug() << "Save feed sync:" << feedUri << "index:" << postIndex << "offsetY:" << offsetY << "timestamp:" << post->getTimelineTimestamp() << "cid:" << post->getCid();
+
+    mUserSettings.saveFeedSyncTimestamp(mUserDid, feedUri, post->getTimelineTimestamp());
+    mUserSettings.saveFeedSyncCid(mUserDid, feedUri, post->getCid());
     mUserSettings.saveFeedSyncOffsetY(mUserDid, feedUri, offsetY);
 }
 

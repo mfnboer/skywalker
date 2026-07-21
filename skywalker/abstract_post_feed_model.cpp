@@ -463,6 +463,13 @@ int AbstractPostFeedModel::lastRowIndex() const
     return mFeed.empty() ? -1 : toVisibleIndex(mFeed.size() - 1);
 }
 
+int AbstractPostFeedModel::nextPostVisibleIndex(int visibleIndex) const
+{
+    int physicalIndex = toPhysicalIndex(visibleIndex);
+    ++physicalIndex;
+    return toVisibleIndex(physicalIndex);
+}
+
 QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int visibleIndex) const
 {
     if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
@@ -1441,6 +1448,11 @@ void AbstractPostFeedModel::AbstractPage::chronoCheck()
         if (post.isPlaceHolder())
             continue;
 
+        // A feed may have a pinned post at the start which is not part of its
+        // chronological content
+        if (post.isPinned())
+            continue;
+
         const auto timestamp = post.getTimelineTimestamp();
 
         if (!prevTimestamp.isNull() && timestamp > prevTimestamp)
@@ -1473,7 +1485,7 @@ QDateTime AbstractPostFeedModel::AbstractPage::firstTimestamp() const
 {
     auto it = mFeed.begin();
 
-    while (it != mFeed.end() && it->isPlaceHolder())
+    while (it != mFeed.end() && (it->isPlaceHolder() || it->isPinned()))
         ++it;
 
     if (it == mFeed.end())

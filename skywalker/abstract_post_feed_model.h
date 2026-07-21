@@ -202,6 +202,8 @@ public:
 
     int lastRowIndex() const;
 
+    int nextPostVisibleIndex(int visibleIndex) const;
+
     Q_INVOKABLE QDateTime getPostTimelineTimestamp(int visibleIndex) const;
     Q_INVOKABLE QString getPostCid(int visibleIndex) const;
 

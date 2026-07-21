@@ -285,8 +285,6 @@ Rectangle {
             visible: status === Loader.Ready
 
             sourceComponent: Row {
-                spacing: contentLeftMargin
-
                 // BAR
                 // Pinned post
                 Loader {
