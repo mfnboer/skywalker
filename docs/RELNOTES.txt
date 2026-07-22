@@ -1,6 +1,7 @@
 next
 ====
 * Proper handling of pinned post in a feed
+* Open mu.social and other atproto web links in Skywalker
 * Bug fixes
 
 4.41

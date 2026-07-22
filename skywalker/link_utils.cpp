@@ -37,8 +37,7 @@ bool LinkUtils::isDomain(const QString& value)
     if (index == 0)
         return true;
 
-    // Handles are domains!
-    auto match = value.startsWith('.') ? ATProto::ATRegex::HANDLE.match(value) : ATProto::ATRegex::HANDLE.match(value.sliced(1));
+    auto match = !value.startsWith('.') ? ATProto::ATRegex::DOMAIN.match(value) : ATProto::ATRegex::HANDLE.match(value.sliced(1));
     return match.hasMatch();
 }
 
