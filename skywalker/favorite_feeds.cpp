@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "favorite_feeds.h"
+#include "definitions.h"
 #include "search_utils.h"
 #include "skywalker.h"
 #include <atproto/lib/at_uri.h>
@@ -36,9 +37,25 @@ FavoriteFeeds::FavoriteFeeds(Skywalker* skywalker, QObject* parent) :
     mSkywalker(skywalker)
 {
     connect(this, &FavoriteFeeds::pinnedFeedsChanged, this, [this]{
+        UserSettings& settings = *mSkywalker->getUserSettings();
+        const QString homeFeedUri = settings.getHomeFeedUri(mSkywalker->getUserDid());
+
+        if (mUserOrderedPinnedFeedsInitialized && homeFeedUri != HOME_FEED && !isPinnedFeed(homeFeedUri))
+            settings.setHomeFeedUri(mSkywalker->getUserDid(), HOME_FEED);
+
         if (mUserOrderedPinnedFeeds.empty())
+        {
+            emit homeFeedUriChanged();
             emit userOrderedPinnedFeedsChanged();
+        }
     });
+
+    connect(mSkywalker->getUserSettings(), &UserSettings::homeFeedUriChanged, this,
+            [this](const QString& did)
+            {
+                if (did == mSkywalker->getUserDid())
+                    emit homeFeedUriChanged();
+            });
 }
 
 FavoriteFeeds::~FavoriteFeeds()
@@ -78,6 +95,27 @@ void FavoriteFeeds::init(const SearchFeed::List& searchFeeds,
     set(savedFeedsPref);
     set(savedFeedsPrefV2);
     updatePinnedViews();
+}
+
+QString FavoriteFeeds::getHomeFeedKey()
+{
+    return HOME_FEED;
+}
+
+QString FavoriteFeeds::getHomeFeedUri() const
+{
+    const auto& settings = *mSkywalker->getUserSettings();
+    const QString uri = settings.getHomeFeedUri(mSkywalker->getUserDid());
+
+    if (isPinned(uri))
+        return uri;
+
+    return getHomeFeedKey();
+}
+
+bool FavoriteFeeds::isPinned(const QString& key) const
+{
+    return isPinnedFeed(key) || isPinnedSearch(key);
 }
 
 void FavoriteFeeds::set(const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref)
@@ -636,6 +674,23 @@ FavoriteFeedView FavoriteFeeds::getPinnedSearch(const QString& key) const
     }
 
     return {};
+}
+
+FavoriteFeedView FavoriteFeeds::getStartupFeed() const
+{
+    const auto& settings = *mSkywalker->getUserSettings();
+    const bool showLast = settings.getStartLastViewedFeed(mSkywalker->getUserDid());
+    const QString uri = showLast ? settings.getLastViewedFeed(mSkywalker->getUserDid()) : getHomeFeedUri();
+
+    if (!isPinned(uri))
+        return {};
+
+    const auto pinnedFeed = getPinnedFeed(uri);
+
+    if (!pinnedFeed.isNull())
+        return pinnedFeed;
+
+    return getPinnedSearch(uri);
 }
 
 std::unordered_set<QString> FavoriteFeeds::filterUris(const std::vector<QString> uris, char const* collection) const

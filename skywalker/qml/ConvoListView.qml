@@ -22,7 +22,7 @@ SkyPage {
         timeline: root.getTimelineView()
         skywalker: page.skywalker
         activePage: QEnums.UI_PAGE_MESSAGES
-        onHomeClicked: root.viewTimeline()
+        onHomeClicked: root.viewHomePage()
         onNotificationsClicked: root.viewNotifications()
         onSearchClicked: root.viewSearchView()
         onMessagesClicked: positionViewAtBeginning()

@@ -81,7 +81,7 @@ Rectangle {
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: feed.displayName
+                text: (skywalker.favoriteFeeds.homeFeedUri === feed.key ? "🏠 " : "") + feed.displayName
             }
 
             AuthorNameAndStatus {

@@ -20,6 +20,7 @@ PostListView {
     header: PostFeedHeader {
         reverseFeed: skywalker.timelineModel.reverseFeed
         feedName: skywalker.timelineModel.feedName
+        feedKey: skywalker.favoriteFeeds.getHomeFeedKey()
         showAsHome: true
         isHomeFeed: true
         showMoreOptions: true

@@ -25,6 +25,8 @@ class FavoriteFeeds : public QObject
     Q_PROPERTY(QList<FavoriteFeedView> pinnedFeeds READ getPinnedFeeds NOTIFY pinnedFeedsChanged FINAL)
     Q_PROPERTY(QList<FavoriteFeedView> userOrderedPinnedFeeds READ getUserOrderedPinnedFeeds WRITE setUserOrderedPinnedFeeds NOTIFY userOrderedPinnedFeedsChanged FINAL)
     Q_PROPERTY(bool userOrderedPinnedFeedsInitialized READ getUserOrderedPinnedFeedsInitialized WRITE setUserOrderedPinnedFeedInitialized NOTIFY userOrderedPinnedFeedsInitializedChanged FINAL)
+    Q_PROPERTY(QString homeFeedUri READ getHomeFeedUri NOTIFY homeFeedUriChanged FINAL)
+    QML_ELEMENT
 
 public:
     explicit FavoriteFeeds(Skywalker* skywalker, QObject* parent = nullptr);
@@ -35,10 +37,14 @@ public:
               const ATProto::UserPreferences::SavedFeedsPref& savedFeedsPref,
               const ATProto::UserPreferences::SavedFeedsPrefV2& savedFeedsPrefV2);
 
+    Q_INVOKABLE static QString getHomeFeedKey();
+    Q_INVOKABLE QString getHomeFeedUri() const;
+
     // Can also be called for list uri's
     Q_INVOKABLE bool isSavedFeed(const QString& uri) const { return mSavedUris.contains(uri); }
     Q_INVOKABLE bool isPinnedFeed(const QString& uri) const { return mPinnedUris.contains(uri); }
     Q_INVOKABLE bool isPinnedSearch(const QString& key) const { return mPinnedSearches.contains(key); }
+    Q_INVOKABLE bool isPinned(const QString& key) const;
 
     Q_INVOKABLE void addFeed(const GeneratorView& feed);
     Q_INVOKABLE void removeFeed(const GeneratorView& feed);
@@ -62,6 +68,7 @@ public:
 
     Q_INVOKABLE FavoriteFeedView getPinnedFeed(const QString& uri) const;
     Q_INVOKABLE FavoriteFeedView getPinnedSearch(const QString& key) const;
+    Q_INVOKABLE FavoriteFeedView getStartupFeed() const;
 
     bool getUpdateSavedFeedsModelInProgress() const { return mUpdateSavedFeedsModelInProgress; }
     void setUpdateSavedFeedsModelInProgress(bool inProgress);
@@ -92,6 +99,7 @@ signals:
     void pinnedFeedsChanged();
     void userOrderedPinnedFeedsChanged();
     void userOrderedPinnedFeedsInitializedChanged();
+    void homeFeedUriChanged();
 
 private:
     void addToSavedFeedsPrefsV2(const QString& uri, ATProto::AppBskyActor::SavedFeedType type);

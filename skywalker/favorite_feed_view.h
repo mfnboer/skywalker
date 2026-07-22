@@ -16,6 +16,7 @@ class FavoriteFeedView
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString subTitle READ getSubTitle FINAL)
+    Q_PROPERTY(QString nameWithSubTitle READ getNameWithSubTitle FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
     Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode FINAL)
@@ -39,6 +40,7 @@ public:
     QString getUri() const;
     QString getName() const;
     QString getSubTitle() const;
+    QString getNameWithSubTitle() const;
     QString getAvatar() const;
     QString getAvatarThumb() const;
     QEnums::ContentMode getContentMode() const;

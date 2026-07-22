@@ -19,7 +19,10 @@ RadioButton {
     icon.source: ""
 
     contentItem: Label {
-        padding: 5
+        leftPadding: 10
+        rightPadding: 10
+        topPadding: 5
+        bottomPadding: 5
         background: Rectangle {
             topLeftRadius: radio.leftRadius
             bottomLeftRadius: radio.leftRadius

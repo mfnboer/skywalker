@@ -9,6 +9,7 @@ SkyTabBar {
     readonly property int pinnedFeedsCount: favoriteFeeds.userOrderedPinnedFeeds.length
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
+    readonly property string currentKey: (currentItem && currentItem.favoriteFeed) ? currentItem.favoriteFeed.key : ""
 
     id: tabBar
 
@@ -50,6 +51,18 @@ SkyTabBar {
     function setCurrent(favorite) {
         favoriteFeeds.userOrderedPinnedFeeds.forEach((pinned, index) => {
             if (favorite.isSame(pinned))
+                tabBar.setCurrentIndex(index + 1)
+        })
+    }
+
+    function setCurrentKey(key) {
+        if (key === skywalker.favoriteFeeds.getHomeFeedKey()) {
+            tabBar.setCurrentIndex(0)
+            return
+        }
+
+        favoriteFeeds.userOrderedPinnedFeeds.forEach((pinned, index) => {
+            if (key === pinned.key)
                 tabBar.setCurrentIndex(index + 1)
         })
     }

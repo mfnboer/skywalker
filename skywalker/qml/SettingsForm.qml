@@ -123,13 +123,6 @@ SkyPage {
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
             }
-            // SettingsChat {
-            //     Layout.leftMargin: 10
-            //     Layout.rightMargin: 10
-            //     Layout.fillWidth: true
-            //     userPrefs: page.userPrefs
-            //     visible: allVisible || onlyChatVisible
-            // }
 
             Rectangle {
                 Layout.topMargin: 10

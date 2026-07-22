@@ -270,10 +270,16 @@ public:
     Q_INVOKABLE void updateLastSignInTimestamp(const QString& did);
     Q_INVOKABLE QDateTime getLastSignInTimestamp(const QString& did) const;
 
-    // For the home feed, the URI is "home"
+    // For the home feed (following), the URI is "home"
     // For search feeds, the URI is the search name
     Q_INVOKABLE void setLastViewedFeed(const QString& did, const QString& uri);
     Q_INVOKABLE QString getLastViewedFeed(const QString& did) const;
+
+    Q_INVOKABLE void setStartLastViewedFeed(const QString& did, bool startLastViewedFeed);
+    Q_INVOKABLE bool getStartLastViewedFeed(const QString& did) const;
+
+    Q_INVOKABLE void setHomeFeedUri(const QString& did, const QString& uri);
+    Q_INVOKABLE QString getHomeFeedUri(const QString& did) const;
 
     void setHideLists(const QString& did, const QStringList& listUris);
     QStringList getHideLists(const QString& did) const;
@@ -628,6 +634,7 @@ signals:
     void syncFeedChanged(const QString& did, const QString& feedUri);
     void syncSearchFeedChanged(const QString& did, const QString& searchKey);
     void rewindToLastSeenPostChanged(const QString& did);
+    void homeFeedUriChanged(const QString& did);
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;

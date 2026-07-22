@@ -295,60 +295,6 @@ Pane {
                 }
             }
 
-            // Following feed
-            RowLayout {
-                readonly property bool active: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
-
-                id: followingEntry
-                width: parent.width
-                spacing: 12
-                visible: isBasePage
-
-                SkyFooterButton {
-                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight
-                    Layout.preferredWidth: Layout.preferredHeight
-                    svg: followingEntry.active ? SvgFilled.menu : SvgOutline.menu
-                    Accessible.name: qsTr("more options")
-                    onClicked: {
-                        if (followingEntry.active)
-                            moreMenu.open()
-                        else
-                            followingEntry.activate()
-                    }
-
-                    TimelineOptionsMenu {
-                        id: moreMenu
-                        reverseFeed: skywalker.timelineModel.reverseFeed
-
-                        onAddUserView: root.getTimelineView().addUserView()
-                        onAddHashtagView: root.getTimelineView().addHashtagView()
-                        onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
-                        onAddMediaView: root.getTimelineView().showMediaView()
-                        onAddVideoView: root.getTimelineView().showVideoView()
-                        onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
-                        onNewReverseFeed: (reverse) => root.getTimelineView().setReverseFeed(reverse)
-                    }
-                }
-
-                AccessibleText {
-                    Layout.fillWidth: true
-                    verticalAlignment: Text.AlignVCenter
-                    rightPadding: 10
-                    elide: Text.ElideRight
-                    font.bold: followingEntry.active
-                    text: qsTr("Following", "timeline title")
-
-                    SkyMouseArea {
-                        anchors.fill: parent
-                        onClicked: followingEntry.activate()
-                    }
-                }
-
-                function activate() {
-                    root.viewHomeFeed()
-                }
-            }
-
             // Search
             RowLayout {
                 Layout.fillWidth: true
@@ -434,6 +380,63 @@ Pane {
                 }
             }
 
+            // Following feed
+            RowLayout {
+                readonly property bool active: rootItem instanceof FavoritesSwipeView && rootItem.currentView instanceof TimelinePage
+
+                id: followingEntry
+                width: parent.width
+                spacing: 12
+                visible: isBasePage
+
+                FeedAvatar {
+                    Layout.margins: 5
+                    Layout.preferredHeight: guiSettings.sideBarHeaderHeight - 10
+                    Layout.preferredWidth: Layout.preferredHeight
+                    unknownSvg: SvgFilled.following
+
+                    Accessible.name: qsTr("more timeline options")
+
+                    onClicked: {
+                        if (followingEntry.active)
+                            moreMenu.open()
+                        else
+                            followingEntry.activate()
+                    }
+
+                    TimelineOptionsMenu {
+                        id: moreMenu
+                        reverseFeed: skywalker.timelineModel.reverseFeed
+
+                        onAddUserView: root.getTimelineView().addUserView()
+                        onAddHashtagView: root.getTimelineView().addHashtagView()
+                        onAddFocusHashtagView: root.getTimelineView().addFocusHashtagView()
+                        onAddMediaView: root.getTimelineView().showMediaView()
+                        onAddVideoView: root.getTimelineView().showVideoView()
+                        onFilterStatistics: root.viewContentFilterStats(skywalker.timelineModel)
+                        onNewReverseFeed: (reverse) => root.getTimelineView().setReverseFeed(reverse)
+                    }
+                }
+
+                AccessibleText {
+                    Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                    rightPadding: 10
+                    elide: Text.ElideRight
+                    font.bold: followingEntry.active
+                    text: (skywalker.favoriteFeeds.homeFeedUri === skywalker.favoriteFeeds.getHomeFeedKey() ? "🏠 " : "") + qsTr("Following", "timeline title")
+
+                    SkyMouseArea {
+                        anchors.fill: parent
+                        onClicked: followingEntry.activate()
+                    }
+                }
+
+                function activate() {
+                    root.viewFollowingFeed()
+                }
+            }
+
             // Favorites
             Repeater {
                 Layout.fillWidth: true
@@ -475,7 +478,7 @@ Pane {
                             rightPadding: 10
                             elide: Text.ElideRight
                             font.bold: favoriteEntry.active
-                            text: modelData.name
+                            text: (skywalker.favoriteFeeds.homeFeedUri === modelData.key ? "🏠 " : "") + modelData.name
 
                             SkyMouseArea {
                                 anchors.fill: parent

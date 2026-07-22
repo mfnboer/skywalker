@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSettings: skywalker.getUserSettings()
     required property listview list
     required property profile listCreator
     required property string listBlockedUri
@@ -96,7 +97,7 @@ Rectangle {
                 elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
-                text: list.name
+                text: (skywalker.favoriteFeeds.homeFeedUri === list.key ? "🏠 " : "") + list.name
             }
 
             AccessibleText {
@@ -360,6 +361,15 @@ Rectangle {
             popup: moreMenu
             visible: UnicodeFonts.hasEmoji(list.description)
             onClicked: root.showEmojiNamesList(list.description)
+        }
+
+        SkyMenuButton {
+            text: qsTr("Set as home")
+            svg: SvgOutline.home
+            popup: moreMenu
+            enabled: skywalker.favoriteFeeds.homeFeedUri !== list.key
+            visible: listPinned
+            onClicked: userSettings.setHomeFeedUri(skywalker.getUserDid(), list.key)
         }
 
         AccessibleMenuItem {

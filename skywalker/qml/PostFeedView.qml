@@ -29,6 +29,7 @@ PostListView {
         userDid: postFeedView.userDid
         reverseFeed: underlyingModel ? underlyingModel.reverseFeed : false
         feedName: postFeedView.feedName
+        feedKey: postFeedView.feedKey
         feedAvatar: postFeedView.getFeedAvatar()
         defaultSvg: postFeedView.getFeedDefaultAvatar()
         contentMode: initialContentMode

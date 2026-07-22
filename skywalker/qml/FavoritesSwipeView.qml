@@ -29,7 +29,7 @@ SwipeView {
                 }
 
                 if (trackLastViewedFeed)
-                    skywalker.saveLastViewedFeed("home")
+                    skywalker.saveLastViewedFeed(skywalker.favoriteFeeds.getHomeFeedKey())
             }
             else {
                 cover()

@@ -5,6 +5,7 @@ import skywalker
 RowLayout {
     property string userDid
     required property listviewbasic list
+    property Skywalker skywalker: root.getSkywalker(userDid)
 
     id: listHeader
     spacing: 10
@@ -24,6 +25,6 @@ RowLayout {
         Layout.alignment: Qt.AlignVCenter
         elide: Text.ElideRight
         font.bold: true
-        text: list.name
+        text: (skywalker.favoriteFeeds.homeFeedUri === list.key ? "🏠 " : "") + list.name
     }
 }

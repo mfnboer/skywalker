@@ -30,6 +30,7 @@ PostListView {
 
     header: PostFeedHeader {
         feedName: searchFeed.name
+        feedKey: feedView.feedKey
         subTitle: searchFeed.searchOptions.getDescription()
         defaultSvg: guiSettings.searchFeedDefaultAvatar(searchFeed)
         feedAvatar: ""

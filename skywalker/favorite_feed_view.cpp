@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "favorite_feed_view.h"
+#include "definitions.h"
 
 namespace Skywalker {
 
@@ -26,6 +27,10 @@ QEnums::FavoriteType FavoriteFeedView::getType() const
 
 QString FavoriteFeedView::getKey() const
 {
+    // Empty favorite is used as placeholder for the Following (HOME) feed.
+    if (isNull())
+        return HOME_FEED;
+
     return std::visit([](auto&& view){ return view.getKey(); }, mView);
 }
 
@@ -58,6 +63,17 @@ QString FavoriteFeedView::getSubTitle() const
         return "";
 
     return searchFeed.getSearchOptions().getDescription();
+}
+
+QString FavoriteFeedView::getNameWithSubTitle() const
+{
+    const QString name = getName();
+    const QString subTitle = getSubTitle();
+
+    if (subTitle.isEmpty())
+        return name;
+
+    return QString("%1 (%2)").arg(name, subTitle);
 }
 
 QString FavoriteFeedView::getAvatar() const

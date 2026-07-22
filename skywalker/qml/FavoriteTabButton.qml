@@ -34,7 +34,7 @@ AccessibleTabButton {
                 leftPadding: 5
                 font: button.font
                 color: button.checked ? guiSettings.accentColor : guiSettings.textColor
-                text: button.text
+                text: (skywalker.favoriteFeeds.homeFeedUri === favorite.key ? "🏠 " : "") + button.text
             }
 
             Text {

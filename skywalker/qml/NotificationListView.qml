@@ -27,7 +27,7 @@ SkyPage {
         timeline: page.timeline
         skywalker: page.skywalker
         activePage: QEnums.UI_PAGE_NOTIFICATIONS
-        onHomeClicked: root.viewTimeline()
+        onHomeClicked: root.viewHomePage()
         onNotificationsClicked: handleNotificationsClicked()
         onSearchClicked: root.viewSearchView()
         onMessagesClicked: root.viewChat()

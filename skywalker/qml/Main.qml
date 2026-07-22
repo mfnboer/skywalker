@@ -106,6 +106,7 @@ ApplicationWindow {
         }
 
         // This catches the back-button on Android
+        console.debug("MICHEL: back pressed")
 
         if (utils.isEmojiPickerShown()) {
             utils.dismissEmojiPicker()
@@ -141,15 +142,16 @@ ApplicationWindow {
             // there at all.
             currentStackItem().hide()
             event.accepted = false
-            viewTimeline()
+            viewHomePage()
         }
-        else if (rootContent.currentIndex !== rootContent.timelineIndex) {
+        else if (rootContent.currentIndex !== rootContent.homePageIndex) {
             event.accepted = false
-            viewTimeline()
+            viewHomePage()
         }
-        else if (favoritesTabBar.currentIndex !== 0) {
+        else if (favoritesTabBar.currentKey !== skywalker.favoriteFeeds.homeFeedUri) {
             event.accepted = false
-            favoritesTabBar.setCurrentIndex(0)
+            const key = skywalker.favoriteFeeds.homeFeedUri
+            favoritesTabBar.setCurrentKey(key)
         }
         else if (displayUtils.sendAppToBackground()) {
             event.accepted = false
@@ -273,26 +275,13 @@ ApplicationWindow {
         skywalker.startTimelineAutoUpdate()
     }
 
-    function showLastViewedFeed() {
+    function showStartupFeed() {
         let userSettings = skywalker.getUserSettings()
-        const lastViewed = userSettings.getLastViewedFeed(skywalker.getUserDid())
-
-        console.debug("Show last viewed feed:", lastViewed)
         getFavoritesSwipeView().trackLastViewedFeed = true
+        const favorite = skywalker.favoriteFeeds.getStartupFeed()
 
-        if (lastViewed === "home")
-            return
-
-        let favorite = null
-
-        if (lastViewed.startsWith("at://"))
-            favorite = skywalker.favoriteFeeds.getPinnedFeed(lastViewed)
-        else
-            favorite = skywalker.favoriteFeeds.getPinnedSearch(lastViewed)
-
-        if (favorite.isNull())
-        {
-            console.debug("Last viewed feed not in favorites:", lastViewed)
+        if (favorite.isNull()) {
+            console.debug("Show following feed")
             return
         }
 
@@ -601,7 +590,7 @@ ApplicationWindow {
             let userSettings = skywalker.getUserSettings()
             const userDid = skywalker.getUserDid()
 
-            if (feedUri === "home" ||
+            if (feedUri === skywalker.favoriteFeeds.getHomeFeedKey() ||
                     skywalker.favoriteFeeds.isPinnedFeed(feedUri) ||
                     skywalker.favoriteFeeds.isPinnedSearch(feedUri)) {
                 userSettings.setLastViewedFeed(userDid, feedUri)
@@ -715,7 +704,7 @@ ApplicationWindow {
             height: parent.height
             timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
             skywalker: root.getSkywalker()
-            homeActive: rootContent.currentIndex === rootContent.timelineIndex
+            homeActive: rootContent.currentIndex === rootContent.homePageIndex
             notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
             searchActive: rootContent.currentIndex === rootContent.searchIndex
             messagesActive: rootContent.currentIndex === rootContent.chatIndex
@@ -724,7 +713,7 @@ ApplicationWindow {
                 if (homeActive)
                     favoritesSwipeView.currentView.moveToHome()
                 else
-                    root.viewTimeline()
+                    root.viewHomePage()
             }
             onNotificationsClicked: {
                 if (!notificationsActive)
@@ -751,16 +740,16 @@ ApplicationWindow {
         }
 
         StackLayout {
-            readonly property int timelineIndex: 0
+            readonly property int homePageIndex: 0
             readonly property int notificationIndex: 1
             readonly property int searchIndex: 2
             readonly property int chatIndex: 3
-            property int prevIndex: timelineIndex
+            property int prevIndex: homePageIndex
 
             id: rootContent
             SplitView.fillWidth: true
             height: parent.height
-            currentIndex: timelineIndex
+            currentIndex: homePageIndex
             clip: true
 
             onCurrentIndexChanged: {
@@ -794,7 +783,7 @@ ApplicationWindow {
             }
 
             StackView {
-                id: timelineStack
+                id: homePageStack
             }
             StackView {
                 id: notificationStack
@@ -2092,8 +2081,8 @@ ApplicationWindow {
         pushStack(view, StackView.Immediate)
     }
 
-    function viewTimeline() {
-        rootContent.currentIndex = rootContent.timelineIndex
+    function viewHomePage() {
+        rootContent.currentIndex = rootContent.homePageIndex
     }
 
     function viewNotifications() {
@@ -2155,7 +2144,7 @@ ApplicationWindow {
         let searchComponent = guiSettings.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView(), })
-        searchView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
+        searchView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
         searchStack.push(searchView)
     }
 
@@ -2187,8 +2176,8 @@ ApplicationWindow {
         currentStackItem().showSearchFeed(searchFeed)
     }
 
-    function viewHomeFeed() {
-        viewTimeline()
+    function viewFollowingFeed() {
+        viewHomePage()
         unwindStack()
         favoritesTabBar.setCurrentIndex(0)
     }
@@ -2621,7 +2610,7 @@ ApplicationWindow {
     }
 
     function getFavoritesSwipeView() {
-        return timelineStack.get(0)
+        return homePageStack.get(0)
     }
 
     function getTimelineView() {
@@ -2863,7 +2852,7 @@ ApplicationWindow {
     function initHandlers() {
         skywalker.chat.onStartConvoForMembersOk.connect(chatOnStartConvoForMembersOk)
         skywalker.chat.onStartConvoForMembersFailed.connect(chatOnStartConvoForMembersFailed)
-        skywalker.favoriteFeeds.onInitialized.connect(showLastViewedFeed)
+        skywalker.favoriteFeeds.onInitialized.connect(showStartupFeed)
     }
 
     // DEBUG focus change issues
@@ -2887,21 +2876,21 @@ ApplicationWindow {
         const userSettings = skywalker.getUserSettings()
         setDisplayMode(userSettings.getDisplayMode())
 
-        let timelineComponent = guiSettings.createComponent("FavoritesSwipeView.qml")
-        let timelinePage = timelineComponent.createObject(root, { skywalker: skywalker })
-        timelinePage.onCurrentIndexChanged.connect(() => { favoritesTabBar.setCurrentIndex(timelinePage.currentIndex) })
-        timelineStack.push(timelinePage)
-        favoritesTabBar.favoritesSwipeView = timelinePage
+        let homePageComponent = guiSettings.createComponent("FavoritesSwipeView.qml")
+        let homePage = homePageComponent.createObject(root, { skywalker: skywalker })
+        homePage.onCurrentIndexChanged.connect(() => { favoritesTabBar.setCurrentIndex(homePage.currentIndex) })
+        homePageStack.push(homePage)
+        favoritesTabBar.favoritesSwipeView = homePage
 
         let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
-                { skywalker: skywalker, timeline: timelinePage })
-        notificationsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
+                { skywalker: skywalker, timeline: homePage })
+        notificationsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
         notificationStack.push(notificationsView)
 
         let chatComponent = guiSettings.createComponent("ConvoListView.qml")
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
-        chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.timelineIndex })
+        chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
         chatStack.push(chatView)
 
         favoritesTabBar.update()

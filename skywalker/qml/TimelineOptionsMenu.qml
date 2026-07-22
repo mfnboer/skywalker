@@ -60,6 +60,14 @@ SkyMenu {
         onClicked: filterStatistics()
     }
 
+    SkyMenuButton {
+        text: qsTr("Set as home")
+        svg: SvgOutline.home
+        popup: moreMenu
+        enabled: skywalker.favoriteFeeds.homeFeedUri !== skywalker.favoriteFeeds.getHomeFeedKey()
+        onClicked: userSettings.setHomeFeedUri(skywalker.getUserDid(), skywalker.favoriteFeeds.getHomeFeedKey())
+    }
+
     MenuSeparator {}
 
     AccessibleText {

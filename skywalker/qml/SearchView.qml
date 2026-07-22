@@ -119,7 +119,7 @@ SkyPage {
         skywalker: page.skywalker
         searchView: page
         activePage: QEnums.UI_PAGE_SEARCH
-        onHomeClicked: root.viewTimeline()
+        onHomeClicked: root.viewHomePage()
         onSearchClicked: page.header.forceFocus()
         onNotificationsClicked: root.viewNotifications()
         onMessagesClicked: root.viewChat()

@@ -1,5 +1,7 @@
 next
 ====
+* Set pinned favorite feed as home feed
+* Startup with last viewed feed or home feed
 * Proper handling of pinned post in a feed
 * Open mu.social and other atproto web links in Skywalker
 * Bug fixes

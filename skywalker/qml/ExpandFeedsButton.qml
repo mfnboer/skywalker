@@ -5,7 +5,7 @@ import QtQml.Models
 import skywalker
 
 SvgButton {
-    required property var skywalker
+    required property Skywalker skywalker
     property list<favoritefeedview> favorites: skywalker.favoriteFeeds.userOrderedPinnedFeeds
 
     iconColor: guiSettings.headerTextColor
@@ -41,7 +41,7 @@ SvgButton {
                         width: Math.min(parent.width - homeBadge.width - homeAvatar.width - 5, implicitWidth)
                         verticalAlignment: Text.AlignVCenter
                         elide: Text.ElideRight
-                        text: qsTr("Following", "timeline title")
+                        text: (skywalker.favoriteFeeds.homeFeedUri === skywalker.favoriteFeeds.getHomeFeedKey()  ? "🏠 " : "") + qsTr("Following", "timeline title")
                     }
 
                     BadgeCounter {
@@ -57,11 +57,11 @@ SvgButton {
                     anchors.right: parent.right
                     width: height
                     height: parent.height - 10
-                    unknownSvg: SvgFilled.home
+                    unknownSvg: SvgFilled.following
                     onClicked: parent.triggered()
                 }
 
-                onTriggered: { highlighted = false; root.viewHomeFeed() }
+                onTriggered: { highlighted = false; root.viewFollowingFeed() }
 
                 Accessible.role: Accessible.MenuItem
                 Accessible.name: homeText.text
@@ -88,7 +88,7 @@ SvgButton {
                                 id: nameText
                                 width: parent.width
                                 elide: Text.ElideRight
-                                text: modelData.name
+                                text: (skywalker.favoriteFeeds.homeFeedUri === modelData.key ? "🏠 " : "") + modelData.name
                             }
                             Text {
                                 id: subTitleText

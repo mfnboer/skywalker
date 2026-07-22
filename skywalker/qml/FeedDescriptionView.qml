@@ -6,14 +6,15 @@ import skywalker
 SkyPage {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSettings: skywalker.getUserSettings()
     required property generatorview feed
     property int feedLikeCount: feed.likeCount
     property string feedLikeUri: feed.viewer.like
     property bool feedLikeTransient: false
     property bool isSavedFeed: skywalker.favoriteFeeds.isSavedFeed(feed.uri)
     property bool isPinnedFeed: skywalker.favoriteFeeds.isPinnedFeed(feed.uri)
-    property bool feedHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
-    property bool feedSync: skywalker.getUserSettings().mustSyncFeed(skywalker.getUserDid(), feed.uri)
+    property bool feedHideFollowing: userSettings.getFeedHideFollowing(skywalker.getUserDid(), feed.uri)
+    property bool feedSync: suserSettingss.mustSyncFeed(skywalker.getUserDid(), feed.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     property bool showWarnedMedia: false
     property bool isVideoFeed: feed.contentMode === QEnums.CONTENT_MODE_VIDEO
@@ -120,6 +121,7 @@ SkyPage {
                 avatarUrl: !contentVisible() ? "" : feed.avatar
                 unknownSvg: guiSettings.feedDefaultAvatar(feed)
                 contentMode: feed.contentMode
+
                 onClicked: {
                     if (feed.avatar) {
                         fullImageLoader.show(0)
@@ -153,7 +155,7 @@ SkyPage {
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
                 color: guiSettings.textColor
-                text: feed.displayName
+                text: (skywalker.favoriteFeeds.homeFeedUri === feed.key ? "🏠 " : "") + feed.displayName
             }
 
             AuthorNameAndStatus {
@@ -255,6 +257,14 @@ SkyPage {
                     popup: moreMenu
                     visible: UnicodeFonts.hasEmoji(feed.description)
                     onClicked: root.showEmojiNamesList(feed.description)
+                }
+                SkyMenuButton {
+                    text: qsTr("Set as home")
+                    svg: SvgOutline.home
+                    popup: moreMenu
+                    enabled: skywalker.favoriteFeeds.homeFeedUri !== feed.key
+                    visible: isPinnedFeed
+                    onClicked: userSettings.setHomeFeedUri(skywalker.getUserDid(), feed.key)
                 }
                 AccessibleMenuItem {
                     text: qsTr("Show following")

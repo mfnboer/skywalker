@@ -4,7 +4,7 @@ import QtQuick.Controls.Material
 import skywalker
 
 SkyPage {
-    required property var favoriteFeeds
+    required property FavoriteFeeds favoriteFeeds
     readonly property string sideBarTitle: qsTr("Sort favorites")
     readonly property string sideBarDescription: qsTr("To change the order, keep a favorite pushed till its background changes color, then drag it to the desired position.")
 
@@ -61,7 +61,7 @@ SkyPage {
                         width: parent.width - avatar.width - parent.spacing
                         color: guiSettings.textColor
                         elide: Text.ElideRight
-                        text: modelData.name + (modelData.subTitle ? " (" + modelData.subTitle + ")" : "")
+                        text: modelData.nameWithSubTitle
                     }
                 }
             }

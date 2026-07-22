@@ -395,7 +395,7 @@ Item {
 
     function favoriteDefaultAvatar(favorite: favoritefeedview) : SvgImage {
         if (favorite.isNull())
-            return SvgFilled.home
+            return SvgFilled.following
 
         switch (favorite.type) {
         case QEnums.FAVORITE_FEED:

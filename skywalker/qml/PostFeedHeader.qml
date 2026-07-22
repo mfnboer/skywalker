@@ -9,13 +9,14 @@ Rectangle {
     property UserSettings userSettings: skywalker.getUserSettings()
     property bool reverseFeed: false
     required property string feedName
+    property string feedKey
     property string subTitle
     property SvgImage defaultSvg: SvgFilled.feed
     property string feedAvatar
     property int contentMode: QEnums.CONTENT_MODE_UNSPECIFIED
     property int underlyingContentMode: QEnums.CONTENT_MODE_UNSPECIFIED
     property bool showAsHome: false
-    property bool isHomeFeed: false
+    property bool isHomeFeed: false // TODO: isFollowingFeed
     property bool showLanguageFilter: false
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
@@ -61,14 +62,16 @@ Rectangle {
             onClicked: header.closed()
         }
         Loader {
+            Layout.leftMargin: showMoreOptions ? 10 : 0
             active: showMoreOptions
 
-            sourceComponent: SvgPlainButton {
+            sourceComponent: FeedAvatar {
                 id: moreButton
-                iconColor: guiSettings.headerTextColor
-                svg: SvgOutline.menu
-                accessibleName: qsTr("more options")
-                visible: showMoreOptions
+                height: guiSettings.headerHeight - 10
+                width: height
+                userDid: header.userDid
+                badgeOutlineColor: guiSettings.headerColor
+                unknownSvg: SvgFilled.following
 
                 onClicked: moreMenu.open()
 
@@ -84,8 +87,13 @@ Rectangle {
                     onFilterStatistics: header.filterStatistics()
                     onNewReverseFeed: (reverse) => header.newReverseFeed(reverse)
                 }
+
+                Accessible.role: Accessible.Button
+                Accessible.name: qsTr("timeline options")
+                Accessible.onPressAction: clicked(Qt.point(0, 0))
             }
         }
+
         FeedAvatar {
             id: avatarLeftSide
             Layout.leftMargin: 10
@@ -97,7 +105,7 @@ Rectangle {
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
             unknownSvg: defaultSvg
-            visible: showAsHome && !isHomeFeed
+            visible: showAsHome && !header.isHomeFeed
 
             onClicked: (clickPoint) => {
                 const mousePoint = clickPoint ?
@@ -126,7 +134,7 @@ Rectangle {
                 font.bold: true
                 font.pointSize: subTitle ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
-                text: header.feedName
+                text: (skywalker.favoriteFeeds.homeFeedUri === header.feedKey ? "🏠 " : "") + header.feedName
 
                 Accessible.role: Accessible.ButtonDropDown
                 Accessible.name: qsTr(`${header.feedName}, press to select other feed`)
@@ -194,7 +202,7 @@ Rectangle {
             contentMode: header.contentMode
             badgeOutlineColor: guiSettings.headerColor
             unknownSvg: defaultSvg
-            visible: !showAsHome && !isHomeFeed
+            visible: !showAsHome && !header.isHomeFeed
 
             onClicked: (clickPoint) => {
                 const mousePoint = clickPoint ?

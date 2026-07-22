@@ -1178,6 +1178,31 @@ QString UserSettings::getLastViewedFeed(const QString& did) const
     return mSettings.value(key(did, "lastViewedFeed"), HOME_FEED).toString();
 }
 
+void UserSettings::setStartLastViewedFeed(const QString& did, bool startLastViewedFeed)
+{
+    mSettings.setValue(key(did, "startLastViewedFeed"), startLastViewedFeed);
+}
+
+bool UserSettings::getStartLastViewedFeed(const QString& did) const
+{
+    return mSettings.value(key(did, "startLastViewedFeed"), true).toBool();
+}
+
+void UserSettings::setHomeFeedUri(const QString& did, const QString& uri)
+{
+    if (uri == getHomeFeedUri(did))
+        return;
+
+    qDebug() << "Set home feed uri:" << uri << "did:" << did;
+    mSettings.setValue(key(did, "homeFeedUri"), uri);
+    emit homeFeedUriChanged(did);
+}
+
+QString UserSettings::getHomeFeedUri(const QString& did) const
+{
+    return mSettings.value(key(did, "homeFeedUri"), HOME_FEED).toString();
+}
+
 void UserSettings::setHideLists(const QString& did, const QStringList& listUris)
 {
     mSettings.setValue(key(did, "hideLists"), listUris);

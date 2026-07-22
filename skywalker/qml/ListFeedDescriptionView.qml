@@ -6,15 +6,16 @@ import skywalker
 SkyPage {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSettings: skywalker.getUserSettings()
     required property listview list
     property string listBlockedUri: list.viewer.blocked
     property bool listMuted: list.viewer.muted
     property bool isSavedList: skywalker.favoriteFeeds.isSavedFeed(list.uri)
     property bool isPinnedList: skywalker.favoriteFeeds.isPinnedFeed(list.uri)
     property bool listHideFromTimeline: skywalker.getTimelineHide().hasList(list.uri)
-    property bool listSync: skywalker.getUserSettings().mustSyncFeed(skywalker.getUserDid(), list.uri)
-    property bool listHideReplies: skywalker.getUserSettings().getFeedHideReplies(skywalker.getUserDid(), list.uri)
-    property bool listHideFollowing: skywalker.getUserSettings().getFeedHideFollowing(skywalker.getUserDid(), list.uri)
+    property bool listSync: userSettings.mustSyncFeed(skywalker.getUserDid(), list.uri)
+    property bool listHideReplies: userSettings.getFeedHideReplies(skywalker.getUserDid(), list.uri)
+    property bool listHideFollowing: userSettings.getFeedHideFollowing(skywalker.getUserDid(), list.uri)
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
     readonly property string sideBarTitle: guiSettings.listTypeName(list.purpose)
     readonly property string sideBarListAvatarUrl: !contentVisible() ? "" : list.avatar
@@ -125,7 +126,7 @@ SkyPage {
                 maximumLineCount: 2
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
-                text: list.name
+                text: (skywalker.favoriteFeeds.homeFeedUri === list.key ? "🏠 " : "") + list.name
             }
 
             AccessibleText {
@@ -342,6 +343,14 @@ SkyPage {
             popup: moreMenu
             visible: UnicodeFonts.hasEmoji(list.description)
             onClicked: root.showEmojiNamesList(list.description)
+        }
+        SkyMenuButton {
+            text: qsTr("Set as home")
+            svg: SvgOutline.home
+            popup: moreMenu
+            enabled: skywalker.favoriteFeeds.homeFeedUri !== list.key
+            visible: isPinnedList
+            onClicked: userSettings.setHomeFeedUri(skywalker.getUserDid(), list.key)
         }
         AccessibleMenuItem {
             text: qsTr("Show replies")

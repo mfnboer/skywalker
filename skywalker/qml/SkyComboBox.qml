@@ -34,7 +34,7 @@ ComboBox {
 
     delegate: ItemDelegate {
         required property int index
-        required property var modelData
+        required property var model
 
         id: delegate
         width: popup.width
@@ -45,7 +45,7 @@ ComboBox {
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             color: delegate.index === control.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
-            text: modelData.text
+            text: model[control.textRole]
         }
 
         background: Rectangle {
