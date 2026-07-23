@@ -216,18 +216,6 @@ SkyPage {
             currentViewItem.moveToHome()
     }
 
-    function moveToPost(index) {
-        timelineView.moveToPost(index)
-    }
-
-    function resumeTimeline(index, offsetY) {
-        timelineView.resumeTimeline(index, offsetY)
-    }
-
-    function resyncTimeline(index, offsetY) {
-        timelineView.resyncTimeline(index, offsetY)
-    }
-
     function showTimelineViewsSorter() {
         if (skywalker.timelineModel.filteredPostFeedModels.length < 2)
             return

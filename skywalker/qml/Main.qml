@@ -269,14 +269,6 @@ ApplicationWindow {
         statusPopup.close()
     }
 
-    function syncTimelineToPost(postIndex, offsetY = 0) {
-        skywalker.timelineModel.addFilteredPostFeedModelsFromSettings()
-        getTimelineView().switchToFullView()
-        closeStartupStatus()
-        getTimelineView().setInSync(postIndex, offsetY)
-        skywalker.startTimelineAutoUpdate()
-    }
-
     function showStartupFeed() {
         let userSettings = skywalker.getUserSettings()
         getFavoritesSwipeView().trackLastViewedFeed = true
@@ -422,9 +414,10 @@ ApplicationWindow {
             skywalker.loadHashtags()
             skywalker.focusHashtags.load(skywalker.getUserDid(), skywalker.getUserSettings())
             skywalker.chat.start()
-            setStartupStatus(qsTr("Rewinding timeline"))
             skywalker.syncTimeline()
             userSettings.updateLastSignInTimestamp(did)
+            getTimelineView().switchToFullView()
+            closeStartupStatus()
         }
 
         onGetUserPreferencesFailed: (error) => {
@@ -433,33 +426,6 @@ ApplicationWindow {
             statusPopup.show(getUserDid(), error, QEnums.STATUS_LEVEL_ERROR)
             signOutCurrentUser()
             signIn()
-        }
-
-        onTimelineSyncStart: (maxPages, rewindTimestamp) => {
-            setStartupRewindStart(maxPages, rewindTimestamp)
-        }
-
-        onTimelineSyncProgress: (pages, timestamp) => {
-            setStartupRewindProgress(pages, timestamp)
-        }
-
-        onTimelineSyncOK: (index, offsetY) => {
-            syncTimelineToPost(index, offsetY)
-        }
-
-        onTimelineSyncFailed: {
-            console.warn("SYNC FAILED")
-            syncTimelineToPost(0)
-        }
-
-        onGapFilled: (gapEndIndex) => {
-            console.debug("Gap filled, end index:", gapEndIndex)
-            getTimelineView().moveToPost(gapEndIndex)
-        }
-
-        onTimelineResumed: (postIndex, offsetY) => {
-            console.debug("Timeline resumed, index:", postIndex, "offsetY:", offsetY)
-            Qt.callLater(() => getTimelineView().resyncTimeline(postIndex, offsetY))
         }
 
         onGetDetailedProfileOK: (did, profile, labelPrefsListUri) => { // qmllint disable signal-handler-parameters
@@ -1317,20 +1283,6 @@ ApplicationWindow {
 
         if (item instanceof StartupStatus)
             item.setStatus(msg)
-    }
-
-    function setStartupRewindStart(pages, timestamp) {
-        let item = currentStackItem()
-
-        if (item instanceof StartupStatus)
-            item.startRewind(pages, timestamp)
-    }
-
-    function setStartupRewindProgress(pages, timestamp) {
-        let item = currentStackItem()
-
-        if (item instanceof StartupStatus)
-            item.updateRewindProgress(pages, timestamp)
     }
 
     function closeLoginPage() {

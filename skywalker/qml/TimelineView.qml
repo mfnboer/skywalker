@@ -197,4 +197,45 @@ PostListView {
         else
             moveToEnd(syncDone)
     }
+
+    function syncTimelineToPost(postIndex, offsetY = 0) {
+        model.addFilteredPostFeedModelsFromSettings()
+        setInSync(postIndex, offsetY)
+        skywalker.startTimelineAutoUpdate()
+    }
+
+    Connections {
+        target: skywalker
+
+        function onTimelineSyncStart(maxPages, timestamp) {
+            console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
+            startRewind(maxPages, timestamp)
+            inSync = false
+        }
+
+        function onTimelineSyncProgress(pages, timestamp) {
+            console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
+            updateRewindProgress(pages, timestamp)
+        }
+
+        function onTimelineSyncOK(index, offset) {
+            syncTimelineToPost(index, offset)
+            rewindDone()
+        }
+
+        function onTimelineSyncFailed() {
+            console.warn("Sync failed:", model.feedName)
+            syncTimelineToPost(0)
+        }
+
+        function onGapFilled(gapEndIndex) {
+            console.debug("Gap filled:", model.feedName, "end index:", gapEndIndex)
+            moveToPost(gapEndIndex)
+        }
+
+        function onTimelineResumed(postIndex, offsetY) {
+            console.debug("Resumed:", model.feedName, "index:", postIndex, "offsetY:", offsetY)
+            Qt.callLater(() => timelineView.resyncTimeline(postIndex, offsetY))
+        }
+    }
 }
