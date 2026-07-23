@@ -27,6 +27,7 @@ class FavoriteFeeds : public QObject
     Q_PROPERTY(bool userOrderedPinnedFeedsInitialized READ getUserOrderedPinnedFeedsInitialized WRITE setUserOrderedPinnedFeedInitialized NOTIFY userOrderedPinnedFeedsInitializedChanged FINAL)
     Q_PROPERTY(QString homeFeedUri READ getHomeFeedUri NOTIFY homeFeedUriChanged FINAL)
     QML_ELEMENT
+    QML_UNCREATABLE("only created on the C++ side")
 
 public:
     explicit FavoriteFeeds(Skywalker* skywalker, QObject* parent = nullptr);

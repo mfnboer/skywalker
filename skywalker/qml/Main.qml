@@ -100,13 +100,15 @@ ApplicationWindow {
         rootSplitView.init()
     }
 
+    // Note for this to work on targetSdkVersion=36, the following has been
+    // added to AndroidManifest.xml
+    // <application android:enableOnBackInvokedCallback="false" ...>
     onClosing: (event) => {
         if (Qt.platform.os !== "android") {
             return
         }
 
         // This catches the back-button on Android
-        console.debug("MICHEL: back pressed")
 
         if (utils.isEmojiPickerShown()) {
             utils.dismissEmojiPicker()
