@@ -16,7 +16,7 @@ Rectangle {
     property int contentMode: QEnums.CONTENT_MODE_UNSPECIFIED
     property int underlyingContentMode: QEnums.CONTENT_MODE_UNSPECIFIED
     property bool showAsHome: false
-    property bool isHomeFeed: false // TODO: isFollowingFeed
+    property bool isHomeFeed: false
     property bool showLanguageFilter: false
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
