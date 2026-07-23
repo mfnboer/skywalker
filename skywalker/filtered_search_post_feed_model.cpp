@@ -27,6 +27,15 @@ QVariant FilteredSearchPostFeedModel::getUnderlyingModel()
     return QVariant::fromValue(mUnderlyingModel);
 }
 
+QString FilteredSearchPostFeedModel::getFeedName() const
+{
+    if (mUnderlyingModel)
+        return QString("%1 [%2]").arg(mUnderlyingModel->getFeedName(), FilteredPostBaseModel::getFeedName());
+
+    return FilteredPostBaseModel::getFeedName();
+}
+
+
 void FilteredSearchPostFeedModel::clear()
 {
     if (!mFeed.empty())

@@ -1143,7 +1143,7 @@ void Skywalker::syncListFeed(int modelId, int maxPages)
 
     if (!timestamp.isValid())
     {
-        qDebug() << "Do not rewind timeline";
+        qDebug() << "Do not rewind list feed:" << model->getFeedName();
         getListFeed(modelId);
         return;
     }

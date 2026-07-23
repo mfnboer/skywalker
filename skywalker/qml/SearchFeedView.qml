@@ -124,33 +124,6 @@ PostListView {
         }
     }
 
-    // TODO: duplicate code
-    Rectangle {
-        y: headerItem ? headerItem.height : 0
-        width: parent.width
-        height: parent.height - (headerItem ? headerItem.height : 0) - (footerItem && footerItem.visible ? footerItem.height : 0)
-        color: guiSettings.backgroundColor
-        visible: !inSync && (rewindStatus.rewindPagesLoaded > 0 || rewindStatus.isFirstRewind)
-
-        Column {
-            width: parent.width - 20
-            anchors.centerIn: parent
-
-            AccessibleText {
-                anchors.horizontalCenter: parent.horizontalCenter
-                font.pointSize: guiSettings.scaledFont(2)
-                text: qsTr("Rewinding feed")
-            }
-
-            RewindStatus {
-                property bool isFirstRewind: true
-
-                id: rewindStatus
-                width: parent.width
-            }
-        }
-    }
-
     SearchUtils {
         id: searchUtils
         skywalker: feedView.skywalker
@@ -211,7 +184,7 @@ PostListView {
 
     function finishSync() {
         syncDone()
-        rewindStatus.isFirstRewind = false
+        rewindDone()
         updateUnreadPosts()
         resetHeaderPosition()
     }
@@ -255,7 +228,7 @@ PostListView {
 
     function handleSyncStart(maxPages, timestamp) {
         console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
-        rewindStatus.startRewind(maxPages, timestamp)
+        startRewind(maxPages, timestamp)
         inSync = false
 
         if (mediaTilesLoader.item)
@@ -264,7 +237,7 @@ PostListView {
 
     function handleSyncProgress(pages, timestamp) {
         console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
-        rewindStatus.updateRewindProgress(pages, timestamp)
+        updateRewindProgress(pages, timestamp)
     }
 
     function getNextPage() {
