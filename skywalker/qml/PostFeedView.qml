@@ -319,34 +319,6 @@ PostListView {
         finishSync()
     }
 
-    function handleSyncStart(id, maxPages, timestamp) {
-        if (id !== modelId)
-            return
-
-        console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
-        startRewind(maxPages, timestamp)
-        inSync = false
-
-        if (mediaTilesLoader.item)
-            mediaTilesLoader.item.stopSync()
-    }
-
-    function handleSyncProgress(id, pages, timestamp) {
-        if (id !== modelId)
-            return
-
-        console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
-        updateRewindProgress(pages, timestamp)
-    }
-
-    function handleFeedGapFilled(id, gapEndIndex) {
-        if (id !== modelId)
-            return
-
-        console.debug("Gap filled:", model.feedName, "end index:", gapEndIndex)
-        doMoveToPost(gapEndIndex)
-    }
-
     function forceDestroy() {
         if (modelId !== -1) {
             skywalker.removePostFeedModel(modelId)
@@ -355,24 +327,52 @@ PostListView {
         }
     }
 
-    Component.onDestruction: {
-        skywalker.onFeedSyncStart.disconnect(handleSyncStart)
-        skywalker.onFeedSyncProgress.disconnect(handleSyncProgress)
-        skywalker.onFeedSyncOk.disconnect(setInSync)
-        skywalker.onFeedSyncFailed.disconnect(syncToHome)
-        skywalker.onFeedGapFilled.disconnect(handleFeedGapFilled)
+    Connections {
+        target: skywalker
 
+        function onFeedSyncStart(id, maxPages, timestamp) {
+            if (id !== modelId)
+                return
+
+            console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
+            startRewind(maxPages, timestamp)
+            inSync = false
+
+            if (mediaTilesLoader.item)
+                mediaTilesLoader.item.stopSync()
+        }
+
+        function onFeedSyncProgress(id, pages, timestamp) {
+            if (id !== modelId)
+                return
+
+            console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
+            updateRewindProgress(pages, timestamp)
+        }
+
+        function onFeedSyncOk(id, index, offsetY) {
+            setInSync(id, index, offsetY)
+        }
+
+        function onFeedSyncFailed(id) {
+            syncToHome(id)
+        }
+
+        function onFeedGapFilled(id, gapEndIndex) {
+            if (id !== modelId)
+                return
+
+            console.debug("Gap filled:", model.feedName, "end index:", gapEndIndex)
+            doMoveToPost(gapEndIndex)
+        }
+    }
+
+    Component.onDestruction: {
         if (modelId !== -1)
             skywalker.removePostFeedModel(modelId)
     }
 
     Component.onCompleted: {
-        skywalker.onFeedSyncStart.connect(handleSyncStart)
-        skywalker.onFeedSyncProgress.connect(handleSyncProgress)
-        skywalker.onFeedSyncOk.connect(setInSync)
-        skywalker.onFeedSyncFailed.connect(syncToHome)
-        skywalker.onFeedGapFilled.connect(handleFeedGapFilled)
-
         const viewMode = userSettings.getFeedViewMode(skywalker.getUserDid(), model.feedUri)
 
         if (viewMode !== QEnums.CONTENT_MODE_UNSPECIFIED) {

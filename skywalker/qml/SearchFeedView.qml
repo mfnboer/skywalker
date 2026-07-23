@@ -129,6 +129,28 @@ PostListView {
         skywalker: feedView.skywalker
         searchPageSize: mediaTilesLoader.active ? 100 : 0
 
+        onFeedSyncStart: (maxPages, timestamp) => {
+            console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
+            startRewind(maxPages, timestamp)
+            inSync = false
+
+            if (mediaTilesLoader.item)
+                mediaTilesLoader.item.stopSync()
+        }
+
+        onFeedSyncProgress: (pages, timestamp) => {
+            console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
+            updateRewindProgress(pages, timestamp)
+        }
+
+        onFeedSyncOk: (index, offsetY) => {
+            setInSync(index, offsetY)
+        }
+
+        onFeedSyncFailed: {
+            syncToHome()
+        }
+
         Component.onDestruction: {
             // The destuctor of SearchUtils is called too late by the QML engine
             // Remove models now before the Skywalker object is destroyed.
@@ -226,20 +248,6 @@ PostListView {
         finishSync()
     }
 
-    function handleSyncStart(maxPages, timestamp) {
-        console.debug("Sync start:", model.feedName, "maxPages:", maxPages, "timestamp:", timestamp)
-        startRewind(maxPages, timestamp)
-        inSync = false
-
-        if (mediaTilesLoader.item)
-            mediaTilesLoader.item.stopSync()
-    }
-
-    function handleSyncProgress(pages, timestamp) {
-        console.debug("Sync progress:", model.feedName, "pages:", pages, "timestamp:", timestamp)
-        updateRewindProgress(pages, timestamp)
-    }
-
     function getNextPage() {
         searchUtils.getNextPageSearchPosts(searchFeed.searchQuery, searchFeed.searchOptions)
     }
@@ -249,11 +257,6 @@ PostListView {
     }
 
     function forceDestroy() {
-        searchUtils.onFeedSyncStart.disconnect(handleSyncStart)
-        searchUtils.onFeedSyncProgress.disconnect(handleSyncProgress)
-        searchUtils.onFeedSyncOk.disconnect(setInSync)
-        searchUtils.onFeedSyncFailed.disconnect(syncToHome)
-
         searchUtils.clearAllSearchResults()
         searchUtils.removeModels()
         destroy()
@@ -267,11 +270,6 @@ PostListView {
         m.onFirstPage.connect(() => { syncSearch() })
         m.onNextPage.connect(() => { getNextPage() })
         setModel(m)
-
-        searchUtils.onFeedSyncStart.connect(handleSyncStart)
-        searchUtils.onFeedSyncProgress.connect(handleSyncProgress)
-        searchUtils.onFeedSyncOk.connect(setInSync)
-        searchUtils.onFeedSyncFailed.connect(syncToHome)
 
         const viewMode = userSettings.getSearchFeedViewMode(skywalker.getUserDid(), searchFeed.key)
 
