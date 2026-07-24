@@ -23,7 +23,7 @@ constexpr char const* EUROSKY_NAME = "Eurosky Social";
 constexpr char const* RKEY_MUTED_REPOSTS_DEPRECATED = "sw-muted-repsts";
 
 constexpr char const* LIST_NAME_MUTED_REPOSTS = "Skywalker muted reposts";
-constexpr char const* LIST_NAME_TRUSTED_VERIFIERS = "Skwyalker trusted verifiers";
+constexpr char const* LIST_NAME_TRUSTED_VERIFIERS = "Skywalker trusted verifiers";
 
 // This is not really an uri, but we use it as a a uri to indicate the list of user you follow
 constexpr char const* FOLLOWING_LIST_URI = "following";

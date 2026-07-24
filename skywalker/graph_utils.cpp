@@ -1123,9 +1123,30 @@ void GraphUtils::findMutedRepostsList(const ListSuccessCb& successCb, const Erro
 void GraphUtils::findTrustedVerifiersList(const ListSuccessCb& successCb, const ErrorCb& errorCb)
 {
     Q_ASSERT(mSkywalker);
-    graphMaster()->getListByName(mSkywalker->getUserDid(), LIST_NAME_TRUSTED_VERIFIERS,
-                                 ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, {},
-                                 successCb, errorCb);
+
+    // v4.40 introduced trusted verifiers and created a list with a spelling error in the name.
+    // Here we rename the list to fix the spelling error.
+    // TODO: remove the renaming after some weeks from now 24-7-2026
+    graphMaster()->renameListByName(
+        mSkywalker->getUserDid(), "Skwyalker trusted verifiers", LIST_NAME_TRUSTED_VERIFIERS,
+        ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, {}, successCb,
+        [this, presence=getPresence(), successCb, errorCb](const QString& error, const QString& message){
+            if (!presence)
+                return;
+
+            if (ATProto::ATProtoErrorMsg::isListNotFound(error))
+            {
+                graphMaster()->getListByName(
+                    mSkywalker->getUserDid(), LIST_NAME_TRUSTED_VERIFIERS,
+                    ATProto::AppBskyGraph::ListPurpose::CURATE_LIST, {},
+                    successCb, errorCb);
+
+                return;
+            }
+
+            if (errorCb)
+                errorCb(error, message);
+        });
 }
 
 bool GraphUtils::isInternalList(const ATProto::AppBskyGraph::ListView& listView)
