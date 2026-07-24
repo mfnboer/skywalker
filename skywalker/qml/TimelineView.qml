@@ -112,7 +112,8 @@ PostListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: skywalker.getTimelineInProgress && !skywalker.autoUpdateTimelineInProgress
+        running: skywalker.getTimelineInProgress && !skywalker.autoUpdateTimelineInProgress &&
+                 !timelineView.isRewinding()
         Accessible.role: Accessible.ProgressBar
     }
 

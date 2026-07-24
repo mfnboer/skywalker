@@ -113,7 +113,7 @@ PostListView {
     BusyIndicator {
         id: busyIndicator
         anchors.centerIn: parent
-        running: model && feedView.model.getFeedInProgress
+        running: model && feedView.model.getFeedInProgress && !feedView.isRewinding()
     }
 
     Loader {

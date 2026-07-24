@@ -4019,7 +4019,7 @@ void Skywalker::getFollowsAuthorList(const QString& atId, int limit, const QStri
     if (model)
         (*model)->setGetFeedInProgress(true);
 
-    mBsky->getFollows(atId, limit, Utils::makeOptionalString(cursor),
+    mBsky->getFollows(atId, limit, Utils::makeOptionalString(cursor), {},
         [this, modelId](auto output){
             const auto* model = mAuthorListModels.get(modelId);
 
@@ -4048,7 +4048,7 @@ void Skywalker::getFollowersAuthorList(const QString& atId, int limit, const QSt
     if (model)
         (*model)->setGetFeedInProgress(true);
 
-    mBsky->getFollowers(atId, limit, Utils::makeOptionalString(cursor),
+    mBsky->getFollowers(atId, limit, Utils::makeOptionalString(cursor), {},
         [this, modelId](auto output){
             const auto* model = mAuthorListModels.get(modelId);
 

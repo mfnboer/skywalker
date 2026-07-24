@@ -101,7 +101,7 @@ SkyListView {
         width: parent.width
         height: parent.height - (headerItem ? headerItem.height : 0) - (footerItem && footerItem.visible ? footerItem.height : 0)
         color: guiSettings.backgroundColor
-        visible: !inSync && (rewindStatus.rewindPagesLoaded > 0 || rewindStatus.isFirstRewind)
+        visible: parent.isRewinding()
 
         Column {
             width: parent.width - 20
@@ -120,6 +120,10 @@ SkyListView {
                 width: parent.width
             }
         }
+    }
+
+    function isRewinding() {
+        return !inSync && rewindStatus.isFirstRewind
     }
 
     function rewindDone() {
