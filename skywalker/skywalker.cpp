@@ -5077,13 +5077,13 @@ void Skywalker::saveFeedSyncTimestamp(AbstractPostFeedModel& model, const QStrin
 
     const auto* post = &model.getPost(postIndex);
 
-    while (post->isPinned())
+    while (post->skipChronoCheck())
     {
         postIndex = model.nextPostVisibleIndex(postIndex);
 
         if (postIndex < 0 || postIndex >= model.rowCount())
         {
-            qWarning() << "Cannot find non-pinned post:" << model.rowCount() << feedUri;
+            qWarning() << "Cannot find post for chrono check:" << model.rowCount() << feedUri;
             return;
         }
 

@@ -72,7 +72,7 @@ void FilteredSearchPostFeedModel::addPosts(const TimelineFeed& posts, size_t num
 
     for (const auto& post : posts | std::ranges::views::reverse)
     {
-        if (!post.isPlaceHolder())
+        if (!post.skipChronoCheck())
         {
             setCheckedTillTimestamp(post.getTimelineTimestamp());
             break;

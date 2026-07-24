@@ -487,7 +487,7 @@ void PostFeedModel::chronoCheckAddPage(Page& page)
 
     for (auto& post : page.mFeed)
     {
-        if (post.isPlaceHolder())
+        if (post.skipChronoCheck())
             continue;
 
 

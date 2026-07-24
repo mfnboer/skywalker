@@ -1167,6 +1167,17 @@ bool Post::isPinned() const
     return mFeedViewPost && mFeedViewPost->mReason && ATProto::holdsNonNull<ATProto::AppBskyFeed::ReasonPin::SharedPtr>(*mFeedViewPost->mReason);
 }
 
+bool Post::skipChronoCheck() const
+{
+    // In feeds created with Bluesky Feed Creator promo posts are injected having an old date.
+    // These break chronological order.
+    static const QString BLUESKY_FEED_CREATOR_PROMO_DID("did:plc:uxaeytkt26skhskl2t4dfb2e");
+
+    // A feed may have a pinned post at the start which is not part of its
+    // chronological content.
+    return isPlaceHolder() || isPinned() || getAuthorDid() == BLUESKY_FEED_CREATOR_PROMO_DID;
+}
+
 QEnums::TripleBool Post::isThread() const
 {
     if (isPlaceHolder())

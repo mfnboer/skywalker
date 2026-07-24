@@ -81,7 +81,7 @@ void FilteredPostFeedModel::addPosts(const TimelineFeed& posts, size_t numPosts,
 
     for (const auto& post : posts | std::ranges::views::reverse)
     {
-        if (!post.isPlaceHolder())
+        if (!post.skipChronoCheck())
         {
             setCheckedTillTimestamp(post.getTimelineTimestamp());
             break;
@@ -161,7 +161,7 @@ void FilteredPostFeedModel::removeTailPosts(const TimelineFeed& posts, size_t nu
 
     for (const auto& post : posts)
     {
-        if (!post.isPlaceHolder())
+        if (!post.skipChronoCheck())
         {
             setCheckedTillTimestamp(post.getTimelineTimestamp());
             break;

@@ -248,7 +248,7 @@ std::tuple<std::optional<size_t>, bool> AbstractPostFeedModel::findOverlapStart(
     {
         const auto& post = mFeed[i];
 
-        if (post.isPlaceHolder())
+        if (post.skipChronoCheck())
             continue;
 
         cidFirstStoredPost = post.getCid();
@@ -305,7 +305,7 @@ std::optional<size_t> AbstractPostFeedModel::findOverlapEnd(const AbstractPage& 
     {
         const auto& post = mFeed[i];
 
-        if (post.isPlaceHolder())
+        if (post.skipChronoCheck())
             continue;
 
         if (cidLastPagePost == post.getCid() && timestampLastPagePost == post.getTimelineTimestamp())
@@ -407,7 +407,7 @@ QDateTime AbstractPostFeedModel::lastTimestamp() const
 {
     auto it = mFeed.rbegin();
 
-    while (it != mFeed.rend() && it->isPlaceHolder())
+    while (it != mFeed.rend() && it->skipChronoCheck())
         ++it;
 
     if (it == mFeed.rend())
@@ -425,7 +425,7 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
     {
         const Post& post = mFeed[i];
 
-        if (post.isPlaceHolder())
+        if (post.skipChronoCheck())
             continue;
 
         if (post.getTimelineTimestamp() == timestamp)
@@ -1445,12 +1445,7 @@ void AbstractPostFeedModel::AbstractPage::chronoCheck()
 
     for (auto& post : mFeed)
     {
-        if (post.isPlaceHolder())
-            continue;
-
-        // A feed may have a pinned post at the start which is not part of its
-        // chronological content
-        if (post.isPinned())
+        if (post.skipChronoCheck())
             continue;
 
         const auto timestamp = post.getTimelineTimestamp();
@@ -1485,7 +1480,7 @@ QDateTime AbstractPostFeedModel::AbstractPage::firstTimestamp() const
 {
     auto it = mFeed.begin();
 
-    while (it != mFeed.end() && (it->isPlaceHolder() || it->isPinned()))
+    while (it != mFeed.end() && it->skipChronoCheck())
         ++it;
 
     if (it == mFeed.end())

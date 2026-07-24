@@ -182,6 +182,8 @@ public:
     bool isPinned() const;
     void setPinned(bool pinned) { mPinned = pinned; }
 
+    bool skipChronoCheck() const;
+
     QEnums::TripleBool isThread() const;
     bool isThreadReply() const;
 
