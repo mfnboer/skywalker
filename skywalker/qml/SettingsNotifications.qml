@@ -7,7 +7,7 @@ ColumnLayout {
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
     property string userDid: userSettings.getActiveUserDid()
-    readonly property int labelSize: width / 3
+    readonly property int labelSize: width / 4
 
     HeaderText {
         Layout.topMargin: 10
