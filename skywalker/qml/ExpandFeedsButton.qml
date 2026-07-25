@@ -34,8 +34,11 @@ SvgButton {
             menuWidth: 250
             currentIndex: 0
 
+            // Following
             MenuItem {
                 contentItem: Row {
+                    spacing: 5
+
                     AccessibleText {
                         id: homeText
                         width: Math.min(parent.width - homeBadge.width - homeAvatar.width - 5, implicitWidth)
@@ -69,6 +72,7 @@ SvgButton {
                 Accessible.onPressAction: triggered()
             }
 
+            // Favorites
             Instantiator {
                 id: menuInstantiator
                 model: []
@@ -76,8 +80,11 @@ SvgButton {
                     required property int index
                     required property favoritefeedview modelData
 
-                    contentItem: Row {
+                    contentItem: Item {
+                        height: favoriteColumn.implicitHeight
+
                         Column {
+                            id: favoriteColumn
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.verticalCenterOffset: modelData.subTitle ? -subTitleText.implicitHeight / 2 : 0
                             width: parent.width - badge.width - feedAvatar.width - 5
@@ -102,6 +109,7 @@ SvgButton {
 
                         BadgeCounter {
                             id: badge
+                            x: Math.min(nameText.width, nameText.contentWidth) + 5
                             counter: root.getFavoritesTabBar().itemAt(index + 1).counter
                         }
                     }

@@ -1,7 +1,7 @@
 import QtQuick
 import skywalker
 
-Rectangle {
+Item {
     property string userDid
     required property basicprofile author
     property string authorName: author.name
@@ -19,7 +19,6 @@ Rectangle {
 
     id: nameRect
     height: nameText.implicitHeight
-    color: "transparent"
 
     AccessibleText {
         id: nameText

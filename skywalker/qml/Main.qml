@@ -419,7 +419,7 @@ ApplicationWindow {
             getTimelineView().switchToFullView()
             closeStartupStatus()
 
-            // WHile feeds are rewinding, pending intent can be handled, e.g. sharing post
+            // While feeds are rewinding, pending intent can be handled, e.g. sharing post
             skywalker.handlePendingIntent()
         }
 
