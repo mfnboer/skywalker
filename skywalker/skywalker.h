@@ -119,6 +119,7 @@ public:
     Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void dataMigration();
     Q_INVOKABLE void syncTimeline(int maxPages = 20);
+    Q_INVOKABLE void handlePendingIntent();
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
     Q_INVOKABLE void getTimeline(int limit, int maxPages = 20, int minEntries = 10, const QString& cursor = {}) override;

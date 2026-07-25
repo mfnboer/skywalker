@@ -418,6 +418,9 @@ ApplicationWindow {
             userSettings.updateLastSignInTimestamp(did)
             getTimelineView().switchToFullView()
             closeStartupStatus()
+
+            // WHile feeds are rewinding, pending intent can be handled, e.g. sharing post
+            skywalker.handlePendingIntent()
         }
 
         onGetUserPreferencesFailed: (error) => {

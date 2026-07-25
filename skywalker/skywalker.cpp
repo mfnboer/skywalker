@@ -1363,6 +1363,14 @@ QString Skywalker::processSyncPage(ATProto::AppBskyFeed::OutputFeed::SharedPtr f
     return newCursor;
 }
 
+void Skywalker::handlePendingIntent()
+{
+    // Now we can handle pending intent (content share).
+    // If there is any, then this will open the post composition page. This should
+    // only been done when the startup sequence in the GUI is finished.
+    JNICallbackListener::handlePendingIntent();
+}
+
 void Skywalker::finishTimelineSync(int index)
 {
     qDebug() << "Timeline synced";
@@ -1374,11 +1382,6 @@ void Skywalker::finishTimelineSync(int index)
     emit timelineSyncOK(index, offsetY);
     OffLineMessageChecker::checkNotificationPermission();
 
-    // Now we can handle pending intent (content share).
-    // If there is any, then this will open the post composition page. This should
-    // only been done when the startup sequence in the GUI is finished.
-    JNICallbackListener::handlePendingIntent();
-
     checkAnniversary();
     checkDraftOrphanedMedia();
 }
@@ -1388,7 +1391,6 @@ void Skywalker::finishTimelineSyncFailed()
     qWarning() << "Timeline sync failed";
     emit timelineSyncFailed();
     OffLineMessageChecker::checkNotificationPermission();
-    JNICallbackListener::handlePendingIntent();
 }
 
 void Skywalker::syncListFeed(int modelId, QDateTime tillTimestamp, const QString& cid, int maxPages, const QString& cursor)
