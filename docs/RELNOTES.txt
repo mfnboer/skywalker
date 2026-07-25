@@ -1,4 +1,4 @@
-next
+4.42
 ====
 * Set pinned favorite feed as home feed
 * Startup with last viewed feed or home feed
