@@ -244,7 +244,7 @@ void ProfileUtils::getLabelerViewDetailed(const QString& did)
     qDebug() << "Get detailed labeler view:" << did;
 
     bskyClient()->getServices({did}, true,
-        [this](auto output){
+        [this](ATProto::AppBskyLabeler::GetServicesOutput::SharedPtr output){
             if (output->mViews.empty())
             {
                 qWarning() << "Invalid services output, views missing";
@@ -254,14 +254,14 @@ void ProfileUtils::getLabelerViewDetailed(const QString& did)
 
             const auto& outputView = output->mViews.front();
 
-            if (outputView->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
+            if (!ATProto::holdsNonNull<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(outputView))
             {
-                qWarning() << "Invalid view type:" << (int)outputView->mViewType;
+                qWarning() << "Invalid view type:" << outputView.index();
                 emit getLabelerViewDetailedFailed(tr("Could not get label information."));
                 return;
             }
 
-            const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(outputView->mView));
+            const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(outputView));
             emit getLabelerViewDetailedOk(view);
         },
         [this](const QString& error, const QString& msg){

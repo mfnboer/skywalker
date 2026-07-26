@@ -1014,20 +1014,20 @@ void Skywalker::loadLabelSettings()
     }
 
     mBsky->getServices(dids, true,
-        [this, labelerDids](auto output){
+        [this, labelerDids](ATProto::AppBskyLabeler::GetServicesOutput::SharedPtr output){
             auto remainingDids = labelerDids;
             std::unordered_map<QString, BasicProfile> labelerProfiles;
 
             for (const auto& v : output->mViews)
             {
-                if (v->mViewType != ATProto::AppBskyLabeler::GetServicesOutputView::ViewType::VIEW_DETAILED)
+                if (!ATProto::holdsNonNull<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v))
                 {
-                    qWarning() << "Invalid view type:" << (int)v->mViewType;
+                    qWarning() << "Invalid view type:" << v.index();
                     emit getUserPreferencesFailed(tr("Failed to get labelers: %1").arg("invalid view type"));
                     return;
                 }
 
-                const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v->mView));
+                const LabelerViewDetailed view(std::get<ATProto::AppBskyLabeler::LabelerViewDetailed::SharedPtr>(v));
                 const auto& policies = view.getPolicies();
                 const auto& groupMap = policies.getLabelContentGroupMap();
                 const auto creator = view.getCreator();
