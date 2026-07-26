@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.42
 ====
 * Set pinned favorite feed as home feed

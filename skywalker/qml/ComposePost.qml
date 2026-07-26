@@ -22,7 +22,6 @@ SkyPage {
     readonly property int maxThreadPosts: 50
     readonly property int minPostSplitLineLength: 30
     readonly property int maxImages: 10 // per post
-    property bool pickingImage: false
     property bool editingVideo: false
 
     // Reply restrictions (on post thread)
@@ -1359,7 +1358,7 @@ SkyPage {
                 }
 
                 if (Qt.platform.os === "android") {
-                    pickingImage = postUtils.pickPhoto(pickVideo, maxItems)
+                    postUtils.pickPhoto(pickVideo, maxItems)
                 } else {
                     fileDialog.pick(pickVideo)
                 }
@@ -1706,14 +1705,11 @@ SkyPage {
         onPostProgress: (msg) => page.postProgress(msg)
 
         onPhotoPicked: (imgSource, gifTempFileName) => {
-            pickingImage = false
             page.photoPicked(imgSource, gifTempFileName)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
         onVideoPicked: (videoUrl) => {
-            pickingImage = false
-
             if (!canAddVideo()) {
                 console.debug("Cannot add video")
                 currentPostItem().getPostText().forceActiveFocus()
@@ -1724,19 +1720,16 @@ SkyPage {
         }
 
         onVideoPickedFailed: (error) => {
-            pickingImage = false
             skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
         onPhotoPickFailed: (error) => {
-            pickingImage = false
             skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
             currentPostItem().getPostText().forceActiveFocus()
         }
 
         onPhotoPickCanceled: {
-            pickingImage = false
             currentPostItem().getPostText().forceActiveFocus()
         }
 
@@ -3088,7 +3081,6 @@ SkyPage {
                 postItem.video.length === 0 &&
                 threadPosts.postList[currentPostIndex].gif.isNull() &&
                 !threadPosts.postList[currentPostIndex].card &&
-                !pickingImage &&
                 !editingVideo
     }
 

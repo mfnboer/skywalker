@@ -7,7 +7,6 @@ SkyPage {
     required property var skywalker
     required property int purpose // QEnums::ListPurpose
     property listview list
-    property bool pickingImage: false
     property string createdAvatarSource
     readonly property int avatarSize: 1000
     readonly property string sideBarTitle: list.isNull() ? qsTr(`New ${(guiSettings.listTypeName(purpose))}`) : qsTr(`Edit ${(guiSettings.listTypeName(purpose))}`)
@@ -123,11 +122,8 @@ SkyPage {
                 avatarUrl: list.avatar
 
                 onClicked: {
-                    if (pickingImage)
-                        return
-
                     if (Qt.platform.os === "android") {
-                        pickingImage = postUtils.pickPhoto(false, 1)
+                        postUtils.pickPhoto(false, 1)
                     } else {
                         fileDialog.open()
                     }
@@ -258,17 +254,15 @@ SkyPage {
         skywalker: editListPage.skywalker // qmllint disable missing-type
 
         onPhotoPicked: (imgSource) => {
-            pickingImage = false
             editListPage.photoPicked(imgSource)
         }
 
         onPhotoPickFailed: (error) => {
-            pickingImage = false
             skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onPhotoPickCanceled: {
-            pickingImage = false
+            console.debug("Photo pick canceled")
         }
     }
 

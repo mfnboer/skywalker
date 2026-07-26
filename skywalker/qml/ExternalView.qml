@@ -11,7 +11,7 @@ Item {
     property string maskColor: highlight ? guiSettings.postHighLightColor : guiSettings.backgroundColor
     property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
-    readonly property bool isJoinLink: skywalker.chat.isJoinLinkUri(postExternal.uri)
+    readonly property bool isJoinLink: skywalker.chat?.isJoinLinkUri(postExternal.uri)
     property bool moving: false
 
     id: view

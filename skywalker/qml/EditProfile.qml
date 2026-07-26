@@ -13,7 +13,6 @@ SkyPage {
     required property string authorAvatar
     required property string authorBanner
     required property bool authorVerified
-    property bool pickingImage: false
     property int imageType: QEnums.PHOTO_TYPE_AVATAR
     property string createdAvatarSource
     property string createdBannerSource
@@ -366,17 +365,15 @@ SkyPage {
         skywalker: editProfilePage.skywalker // qmllint disable missing-type
 
         onPhotoPicked: (imgSource) => {
-            pickingImage = false
             editProfilePage.photoPicked(imgSource)
         }
 
         onPhotoPickFailed: (error) => {
-            pickingImage = false
             skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
 
         onPhotoPickCanceled: {
-            pickingImage = false
+            console.debug("Photo pick canceled")
         }
     }
 
@@ -423,24 +420,18 @@ SkyPage {
     }
 
     function pickAvatarPhoto() {
-        if (pickingImage)
-            return
-
         imageType = QEnums.PHOTO_TYPE_AVATAR
         pickPhoto()
     }
 
     function pickBannerPhoto() {
-        if (pickingImage)
-            return
-
         imageType = QEnums.PHOTO_TYPE_BANNER
         pickPhoto()
     }
 
     function pickPhoto() {
         if (Qt.platform.os === "android") {
-            pickingImage = postUtils.pickPhoto(false, 1)
+            postUtils.pickPhoto(false, 1)
         } else {
             fileDialog.open()
         }

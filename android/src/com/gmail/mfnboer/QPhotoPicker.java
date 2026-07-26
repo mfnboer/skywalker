@@ -37,6 +37,25 @@ public class QPhotoPicker extends AppCompatActivity {
     public static native void emitPhotoPicked(int fd, String mimeType, boolean last);
     public static native void emitPhotoPickCanceled();
 
+
+    // The app may get reloaded during photo picking and may not be loaded yet causing
+    // a link error here.
+    private static void callPhotoPicked(int fd, String mimeType, boolean last) {
+        try {
+            emitPhotoPicked(fd, mimeType, last);
+        } catch (UnsatisfiedLinkError e) {
+            Log.w(LOGTAG, "Photo picked, lib not loaded: " + e.getMessage());
+        }
+    }
+
+    private static void callPhotoPickPickedCanceled() {
+        try {
+            emitPhotoPickCanceled();
+        } catch (UnsatisfiedLinkError e) {
+            Log.w(LOGTAG, "Photo pick canceled, lib not loaded: " + e.getMessage());
+        }
+    }
+
     public static boolean isPhotoPickerAvailable() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM)
             return false;
@@ -92,7 +111,7 @@ public class QPhotoPicker extends AppCompatActivity {
             }
             else {
                 Log.d(LOGTAG, "No media selected");
-                emitPhotoPickCanceled();
+                callPhotoPickPickedCanceled();
             }
 
             finish();
@@ -116,7 +135,7 @@ public class QPhotoPicker extends AppCompatActivity {
                 }
             } else {
                 Log.d(LOGTAG, "No media selected");
-                emitPhotoPickCanceled();
+                callPhotoPickPickedCanceled();
             }
 
             finish();
@@ -173,13 +192,13 @@ public class QPhotoPicker extends AppCompatActivity {
 
             } else {
                 Log.d(LOGTAG, "No media selected");
-                emitPhotoPickCanceled();
+                callPhotoPickPickedCanceled();
             }
         }
         else
         {
             Log.d(LOGTAG, "requestCode: " + requestCode + " resultCode: " + resultCode);
-            emitPhotoPickCanceled();
+            callPhotoPickPickedCanceled();
         }
 
         finish();
@@ -191,6 +210,6 @@ public class QPhotoPicker extends AppCompatActivity {
 
         Log.d(LOGTAG, "Selected URI: " + uri + " mimetype: " + mimeType);
         int fd = FileUtils.openContentUri(uri, "r");
-        emitPhotoPicked(fd, mimeType, last);
+        callPhotoPicked(fd, mimeType, last);
     }
 }
