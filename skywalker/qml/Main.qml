@@ -1266,7 +1266,7 @@ ApplicationWindow {
         } else if (UnicodeFonts.isHashCashtag(link)) {
             console.debug("#$-TAG:", link)
             viewSearchView(link.slice(1))
-        } else if (getSkywalker(openByDid).chat.isJoinLinkUri(link)) {
+        } else if (getSkywalker(openByDid).chat?.isJoinLinkUri(link)) {
             console.debug("JOIN LINK:", link)
             viewJoinLink(link)
         } else {
