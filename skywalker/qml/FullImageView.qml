@@ -74,7 +74,7 @@ SkyPage {
                 }
                 Flickable {
                     readonly property int minHeight: Math.min(contentHeight, altText.maxHeight)
-                    readonly property int maxHeight: Math.min(contentHeight, page.height - guiSettings.headerMargin)
+                    readonly property int maxHeight: Math.min(contentHeight, page.height - guiSettings.headerMargin - altText.bottomMargin - backButton.height)
                     property bool minimized: true
 
                     id: altFlick
