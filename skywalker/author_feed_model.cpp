@@ -151,12 +151,13 @@ AuthorFeedModel::Page::Ptr AuthorFeedModel::createPage(ATProto::AppBskyFeed::Out
 
 bool AuthorFeedModel::mustShow(const Post& post) const
 {
+    // A pinned post may be a reply. We show a pinned posts with normal posts.
     switch (mFilter)
     {
     case QEnums::AUTHOR_FEED_FILTER_NONE:
         return true;
     case QEnums::AUTHOR_FEED_FILTER_POSTS:
-        return !post.isReply() || post.isRepost();
+        return !post.isReply() || post.isRepost() || post.isPinned();
     case QEnums::AUTHOR_FEED_FILTER_REPLIES:
         return post.isReply() && !post.isRepost();
     case QEnums::AUTHOR_FEED_FILTER_MEDIA:
