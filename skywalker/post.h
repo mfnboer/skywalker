@@ -32,8 +32,8 @@ public:
     static Post createBlocked(const QString uri = "", const QString cid = "", const BlockedAuthor blockedAuthor = {});
     static Post createNotSupported(const QString& unsupportedType);
     static Post createEndOfFeedPlaceHolder();
-    static Post createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
-    static Post createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement);
+    static Post createPost(const ATProto::AppBskyFeed::ThreadElementType& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
+    static Post createPost(const ATProto::AppBskyFeed::ReplyRef::ReplyElementType& replyElement);
     static Post fromJson(const QJsonObject& json);
     static void initNextGapId(int gapId) { sNextGapId = gapId; }
 

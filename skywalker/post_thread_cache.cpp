@@ -70,12 +70,12 @@ void PostThreadCache::putPost(const QString& uri)
         });
 }
 
-bool PostThreadCache::putThread(const ATProto::AppBskyFeed::ThreadElement::SharedPtr& thread)
-{   
-    if (thread->mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+bool PostThreadCache::putThread(const ATProto::AppBskyFeed::ThreadElementType& thread)
+{
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(thread))
         return false;
 
-    const auto threadViewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(thread->mPost);
+    const auto threadViewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(thread);
 
     if (threadViewPost->mHasReplyFromPostAuthor)
     {

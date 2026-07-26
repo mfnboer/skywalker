@@ -89,7 +89,7 @@ private:
 
         Post& addPost(const Post& post);
         Post& prependPost(const Post& post);
-        void addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply, bool directReply, bool firstDirectReply, int indentLevel);
+        void addReplyThread(const ATProto::AppBskyFeed::ThreadElementType& reply, bool directReply, bool firstDirectReply, int indentLevel);
     };
 
     void clear();
@@ -113,7 +113,7 @@ private:
     void insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize);
     void setThreadgateView(const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView);
     bool isHiddenReply(const QString& uri) const;
-    bool isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const;
+    bool isHiddenReply(const ATProto::AppBskyFeed::ThreadElementType& reply) const;
     bool isPinPost(const ATProto::AppBskyFeed::PostView& post) const;
 
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;

@@ -67,61 +67,63 @@ Post Post::createEndOfFeedPlaceHolder()
     return post;
 }
 
-Post Post::createPost(const ATProto::AppBskyFeed::ThreadElement& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView)
+Post Post::createPost(const ATProto::AppBskyFeed::ThreadElementType& threadElement, const ATProto::AppBskyFeed::ThreadgateView::SharedPtr& threadgateView)
 {
-    switch (threadElement.mType)
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement))
     {
-    case ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST:
-    {
-        const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement.mPost).get();
+        const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(threadElement);
         Q_ASSERT(threadPost);
         Q_ASSERT(threadPost->mPost);
         Post post(threadPost->mPost);
         post.mThreadgateView = threadgateView;
         return post;
     }
-    case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
-        return Post::createNotFound();
-    case ATProto::AppBskyFeed::PostElementType::BLOCKED_POST:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::NotFoundPost::SharedPtr>(threadElement))
     {
-        auto blockedPost = std::get<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(threadElement.mPost);
+        return Post::createNotFound();
+    }
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(threadElement))
+    {
+        auto blockedPost = std::get<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(threadElement);
         return Post::createBlocked("", "", BlockedAuthor(blockedPost->mAuthor));
     }
-    case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
-    case ATProto::AppBskyFeed::PostElementType::UNKNOWN:
-        return Post::createNotSupported(threadElement.mUnsupportedType);
+    else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(threadElement))
+    {
+        auto unknown = std::get<ATProto::UnknownVariant::SharedPtr>(threadElement);
+        return Post::createNotSupported(unknown->mType);
     }
 
     Q_ASSERT(false);
-    qWarning() << "Unexpected thread post type:" << int(threadElement.mType);
-    return Post::createNotSupported(QString("Unexpected type: %1").arg(int(threadElement.mType)));
+    qWarning() << "Unexpected thread post type";
+    return Post::createNotSupported("unknownType");
 }
 
-Post Post::createPost(const ATProto::AppBskyFeed::ReplyElement& replyElement)
+Post Post::createPost(const ATProto::AppBskyFeed::ReplyRef::ReplyElementType& replyElement)
 {
-    switch (replyElement.mType)
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement))
     {
-    case ATProto::AppBskyFeed::PostElementType::POST_VIEW:
-    {
-        const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement.mPost);
+        const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(replyElement);
         Q_ASSERT(postView);
         return Post(postView);
     }
-    case ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST:
-        return Post::createNotFound();
-    case ATProto::AppBskyFeed::PostElementType::BLOCKED_POST:
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::NotFoundPost::SharedPtr>(replyElement))
     {
-        auto blockedPost = std::get<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(replyElement.mPost);
+        return Post::createNotFound();
+    }
+    else if (ATProto::holdsNonNull<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(replyElement))
+    {
+        auto blockedPost = std::get<ATProto::AppBskyFeed::BlockedPost::SharedPtr>(replyElement);
         return Post::createBlocked("", "", BlockedAuthor(blockedPost->mAuthor));
     }
-    case ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST:
-    case ATProto::AppBskyFeed::PostElementType::UNKNOWN:
-        return Post::createNotSupported(replyElement.mUnsupportedType);
+    else if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(replyElement))
+    {
+        auto unknown = std::get<ATProto::UnknownVariant::SharedPtr>(replyElement);
+        return Post::createNotSupported(unknown->mType);
     }
 
     Q_ASSERT(false);
-    qWarning() << "Unexpected thread post type:" << int(replyElement.mType);
-    return Post::createNotSupported(QString("Unexpected type: %1").arg(int(replyElement.mType)));
+    qWarning() << "Unexpected reply element";
+    return Post::createNotSupported("unknownType");
 }
 
 Post::Post(const ATProto::AppBskyFeed::FeedViewPost::SharedPtr feedViewPost) :
@@ -385,8 +387,8 @@ std::optional<PostReplyRef> Post::getViewPostReplyRef() const
 
     const auto& reply = *mFeedViewPost->mReply;
     PostReplyRef replyRef;
-    replyRef.mRoot = Post::createPost(*reply.mRoot);
-    replyRef.mParent = Post::createPost(*reply.mParent);
+    replyRef.mRoot = Post::createPost(reply.mRoot);
+    replyRef.mParent = Post::createPost(reply.mParent);
 
     // Set the reference timestamp to the timestap of this reply post.
     // They show up together with this reply post.
@@ -403,10 +405,9 @@ std::optional<BasicProfile> Post::getReplyToAuthor() const
 
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
-        Q_ASSERT(mFeedViewPost->mReply->mParent);
-        if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent))
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent);
             return BasicProfile(postView->mAuthor);
         }
         else
@@ -431,9 +432,9 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyToRef() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
-        if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent))
         {
-            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost);
+            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent);
             auto ref = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
@@ -471,9 +472,9 @@ QString Post::getReplyToAuthorDid() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
-        if (mFeedViewPost->mReply->mParent->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent))
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mParent);
             return postView->mAuthor->mDid;
         }
         else
@@ -501,9 +502,9 @@ QString Post::getReplyRootAuthorDid() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
-        if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot))
         {
-            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost).get();
+            const auto postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot);
             return postView->mAuthor->mDid;
         }
         else
@@ -531,9 +532,9 @@ ATProto::ComATProtoRepo::StrongRef::SharedPtr Post::getReplyRootRef() const
 {
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
-        if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot))
         {
-            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost);
+            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot);
             auto ref = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
             ref->mCid = postView->mCid;
             ref->mUri = postView->mUri;
@@ -929,9 +930,9 @@ ATProto::AppBskyFeed::ThreadgateView::SharedPtr Post::getThreadgateView() const
 
     if (mFeedViewPost && mFeedViewPost->mReply)
     {
-        if (mFeedViewPost->mReply->mRoot->mType == ATProto::AppBskyFeed::PostElementType::POST_VIEW)
+        if (ATProto::holdsNonNull<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot))
         {
-            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot->mPost);
+            const auto& postView = std::get<ATProto::AppBskyFeed::PostView::SharedPtr>(mFeedViewPost->mReply->mRoot);
 
             if (postView->mThreadgate)
                 return postView->mThreadgate;

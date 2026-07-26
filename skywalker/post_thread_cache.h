@@ -25,7 +25,7 @@ signals:
 
 private:
     explicit PostThreadCache(QObject* parent = nullptr);
-    bool putThread(const ATProto::AppBskyFeed::ThreadElement::SharedPtr& thread);
+    bool putThread(const ATProto::AppBskyFeed::ThreadElementType& thread);
 
     QCache<QString, bool> mCache{1000}; // post-uri -> isThread
     std::unordered_set<QString> mFetchingUris;

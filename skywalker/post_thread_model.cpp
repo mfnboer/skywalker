@@ -401,7 +401,7 @@ Post& PostThreadModel::Page::prependPost(const Post& post)
     return mFeed.front();
 }
 
-void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElement& reply,
+void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadElementType& reply,
                                            bool directReply, bool firstDirectReply, int indentLevel)
 {
     auto threadPost = Post::createPost(reply, mPostFeedModel.mThreadgateView);
@@ -427,30 +427,29 @@ void PostThreadModel::Page::addReplyThread(const ATProto::AppBskyFeed::ThreadEle
 
     addPost(threadPost);
 
-    if (!threadPost.isPlaceHolder())
+    if (!threadPost.isPlaceHolder() && ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply))
     {
-        const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply.mPost));
+        const auto& post(std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply));
         if (!post->mReplies.empty())
         {
             mPostFeedModel.sortReplies(post.get());
             const auto& nextReply = post->mReplies[0];
-            Q_ASSERT(nextReply);
 
             // Hide a reply that is not a direct reply of the thread entry post.
             // The user will see the current post as a post with a non-zero reply count.
             // By clicking on this post the hidden replies can be accessed.
-            if (!mPostFeedModel.isHiddenReply(*nextReply))
+            if (!mPostFeedModel.isHiddenReply(nextReply))
             {
                 if (mPostFeedModel.mOnlyEntryAuthorPosts)
                 {
-                    auto nextReplyPost = Post::createPost(*nextReply, mPostFeedModel.mThreadgateView);
+                    auto nextReplyPost = Post::createPost(nextReply, mPostFeedModel.mThreadgateView);
 
                     if (nextReplyPost.getAuthorDid() == threadPost.getAuthorDid())
-                        addReplyThread(*nextReply, false, false, indentLevel);
+                        addReplyThread(nextReply, false, false, indentLevel);
                 }
                 else
                 {
-                    addReplyThread(*nextReply, false, false, indentLevel);
+                    addReplyThread(nextReply, false, false, indentLevel);
                 }
             }
             else
@@ -482,12 +481,12 @@ bool PostThreadModel::isHiddenReply(const QString& uri) const
     return mThreadgateView->mRecord->mHiddenReplies.contains(uri);
 }
 
-bool PostThreadModel::isHiddenReply(const ATProto::AppBskyFeed::ThreadElement& reply) const
+bool PostThreadModel::isHiddenReply(const ATProto::AppBskyFeed::ThreadElementType& reply) const
 {
-    if (reply.mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+    if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply))
         return false;
 
-    const auto post = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply.mPost).get();
+    const auto post = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(reply);
     Q_ASSERT(post);
     return isHiddenReply(post->mPost->mUri);
 }
@@ -506,27 +505,27 @@ bool PostThreadModel::isPinPost(const ATProto::AppBskyFeed::PostView& post) cons
 void PostThreadModel::sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const
 {
     std::sort(viewPost->mReplies.begin(), viewPost->mReplies.end(),
-        [this, viewPost](const ATProto::AppBskyFeed::ThreadElement::SharedPtr& lhs, const ATProto::AppBskyFeed::ThreadElement::SharedPtr& rhs) {
-            // THREAD_VIEW_POST before others
-            if (lhs->mType != rhs->mType)
+        [this, viewPost](const ATProto::AppBskyFeed::ThreadElementType& lhs, const ATProto::AppBskyFeed::ThreadElementType& rhs) {
+            // ThreadViewPost before others
+            if (lhs.index() != rhs.index())
             {
-                if (lhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+                if (ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs))
                     return true;
 
-                if (rhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+                if (ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(rhs))
                     return false;
 
-                return lhs->mType < rhs->mType;
+                return lhs.index() < rhs.index();
             }
 
-            if (lhs->mType != ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST)
+            if (!ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs))
                 return lhs < rhs; // no order here, just pick pointer order
 
-            Q_ASSERT(lhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
-            Q_ASSERT(rhs->mType == ATProto::AppBskyFeed::PostElementType::THREAD_VIEW_POST);
+            Q_ASSERT(ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs));
+            Q_ASSERT(ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(rhs));
 
-            const auto& lhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs->mPost)->mPost;
-            const auto& rhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(rhs->mPost)->mPost;
+            const auto& lhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(lhs)->mPost;
+            const auto& rhsPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(rhs)->mPost;
 
             // Non-hidden before hidden
             const bool lhsHidden = isHiddenReply(lhsPost->mUri);
@@ -682,13 +681,13 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
     ATProto::AppBskyFeed::ThreadViewPost* viewPost = nullptr;
     const auto& postThread = page->mRawThread->mThread;
-    Post post = Post::createPost(*postThread, mThreadgateView);
+    Post post = Post::createPost(postThread, mThreadgateView);
     post.addThreadType(QEnums::THREAD_ENTRY);
     const auto postEntryDid = post.getAuthorDid();
 
-    if (!post.isPlaceHolder())
+    if (!post.isPlaceHolder() && ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(postThread))
     {
-        viewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(postThread->mPost).get();
+        viewPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(postThread).get();
 
         if (!viewPost->mParent)
             post.addThreadType(QEnums::THREAD_TOP);
@@ -709,7 +708,7 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
     if (viewPost)
     {
-        auto parent = viewPost->mParent.get();
+        auto parent = viewPost->mParent;
 
         // If more posts are added to the threads, then parent posts are in the thread model
         // already.
@@ -722,21 +721,20 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
             parentPost.addThreadType(QEnums::THREAD_PARENT);
 
-            if (!parentPost.isPlaceHolder())
+            if (!parentPost.isPlaceHolder() && ATProto::holdsNonNull<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(*parent))
             {
-                const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(parent->mPost).get();
-                parent = threadPost->mParent.get();
+                const auto threadPost = std::get<ATProto::AppBskyFeed::ThreadViewPost::SharedPtr>(*parent);
+                parent = threadPost->mParent;
 
                 if (!parent)
                     parentPost.addThreadType(QEnums::THREAD_TOP);
                 else
                     parentPost.setParentInThread(true);
-
             }
             else
             {
                 parentPost.addThreadType(QEnums::THREAD_TOP);
-                parent = nullptr;
+                parent = std::nullopt;
             }
 
             if (!parentPost.isBlocked())
@@ -753,23 +751,21 @@ PostThreadModel::Page::Ptr PostThreadModel::createPage(const ATProto::AppBskyFee
 
         for (const auto& reply : viewPost->mReplies)
         {
-            Q_ASSERT(reply);
-
             if (mOnlyEntryAuthorPosts)
             {
-                Post replyPost = Post::createPost(*reply, mThreadgateView);
+                Post replyPost = Post::createPost(reply, mThreadgateView);
 
                 if (replyPost.getAuthorDid() != postEntryDid)
                     continue;
             }
 
-            if (page->mFirstHiddenReplyIndex == -1 && isHiddenReply(*reply))
+            if (page->mFirstHiddenReplyIndex == -1 && isHiddenReply(reply))
             {
                 page->mFirstHiddenReplyIndex = page->mFeed.size();
                 qDebug() << "First hidden reply:" << page->mFirstHiddenReplyIndex;
             }
 
-            page->addReplyThread(*reply, directReply, firstReply, indentLevel);
+            page->addReplyThread(reply, directReply, firstReply, indentLevel);
             firstReply = false;
 
             // We only need the first reply in a thread if there are multiple by

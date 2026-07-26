@@ -1360,17 +1360,13 @@ ATProto::AppBskyFeed::ReplyRef::SharedPtr DraftPosts::createReplyRef(const Draft
     }
 
     auto replyRef = std::make_shared<ATProto::AppBskyFeed::ReplyRef>();
-    replyRef->mParent = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
-    replyRef->mParent->mType = ATProto::AppBskyFeed::PostElementType::POST_VIEW;
-    replyRef->mParent->mPost = convertReplyToPostView(replyToPost, postReplyRef);
+    replyRef->mParent = convertReplyToPostView(replyToPost, postReplyRef);
 
     // We did not save the root post in the draft. Set it to NOT FOUND. The post composer
     // does not need it.
-    replyRef->mRoot = std::make_shared<ATProto::AppBskyFeed::ReplyElement>();
-    replyRef->mRoot->mType = ATProto::AppBskyFeed::PostElementType::NOT_FOUND_POST;
     auto notFound = std::make_shared<ATProto::AppBskyFeed::NotFoundPost>();
     notFound->mUri = postReplyRef->mRoot->mUri;
-    replyRef->mRoot->mPost = std::move(notFound);
+    replyRef->mRoot = std::move(notFound);
 
     return replyRef;
 }
