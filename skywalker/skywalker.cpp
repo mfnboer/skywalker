@@ -1092,7 +1092,7 @@ void Skywalker::dataMigration()
     emit dataMigrationDone();
 }
 
-void Skywalker::syncTimeline(int maxPages)
+void Skywalker::syncTimeline()
 {
     mTimelineModel.setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
     mTimelineModel.setReverseFeed(mUserSettings.getReverseTimeline(mUserDid));
@@ -1115,12 +1115,13 @@ void Skywalker::syncTimeline(int maxPages)
     //     return;
     // }
 
+    const int maxPages = mUserSettings.getMaxRewindPages();
     emit timelineSyncStart(maxPages, timestamp);
     const auto cid = mUserSettings.getSyncCid(mUserDid);
     syncTimeline(timestamp, cid, maxPages);
 }
 
-void Skywalker::syncListFeed(int modelId, int maxPages)
+void Skywalker::syncListFeed(int modelId)
 {
     auto* model = getPostFeedModel(modelId);
 
@@ -1148,11 +1149,12 @@ void Skywalker::syncListFeed(int modelId, int maxPages)
         return;
     }
 
+    const int maxPages = mUserSettings.getMaxRewindPages();
     const auto cid = mUserSettings.getFeedSyncCid(mUserDid, model->getFeedUri());
     syncListFeed(modelId, timestamp, cid, maxPages);
 }
 
-void Skywalker::syncFeed(int modelId, int maxPages)
+void Skywalker::syncFeed(int modelId)
 {
     auto* model = getPostFeedModel(modelId);
 
@@ -1181,6 +1183,7 @@ void Skywalker::syncFeed(int modelId, int maxPages)
         return;
     }
 
+    const int maxPages = mUserSettings.getMaxRewindPages();
     const auto cid = mUserSettings.getFeedSyncCid(mUserDid, model->getFeedUri());
     syncFeed(modelId, timestamp, cid, maxPages);
 }
@@ -5603,6 +5606,7 @@ void Skywalker::signOut()
     mSignOutInProgress = false;
 
     emit bskyClientDeleted();
+    emit signedOut();
 }
 
 }

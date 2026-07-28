@@ -118,7 +118,7 @@ public:
     Q_INVOKABLE void getUserProfileAndFollows();
     Q_INVOKABLE void getUserPreferences();
     Q_INVOKABLE void dataMigration();
-    Q_INVOKABLE void syncTimeline(int maxPages = 20);
+    Q_INVOKABLE void syncTimeline();
     Q_INVOKABLE void handlePendingIntent();
     Q_INVOKABLE void startTimelineAutoUpdate();
     Q_INVOKABLE void stopTimelineAutoUpdate();
@@ -128,8 +128,8 @@ public:
     Q_INVOKABLE void getTimelineNextPage(int maxPages = 20, int minEntries = 10) override;
     Q_INVOKABLE void updateTimeline(int autoGapFill, int pageSize, const updateTimelineCb& cb = {}) override;
     Q_INVOKABLE void timelineMovementEnded(int firstVisibleIndex, int lastVisibleIndex, int lastVisibleOffsetY);
-    Q_INVOKABLE void syncListFeed(int modelId, int maxPages = 20) override;
-    Q_INVOKABLE void syncFeed(int modelId, int maxPages = 20) override;
+    Q_INVOKABLE void syncListFeed(int modelId) override;
+    Q_INVOKABLE void syncFeed(int modelId) override;
     Q_INVOKABLE void feedMovementEnded(int modelId, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
     Q_INVOKABLE void searchFeedMovementEnded(int modelId, const QString& searchKey, QEnums::ContentMode contentMode, int lastVisibleIndex, int lastVisibleOffsetY);
 
@@ -354,6 +354,7 @@ signals:
     void showDirectMessages(); // Action received from clicking an app notification
     void showLinkReceived(QString uri); // Action received from the user clicking on a bsky link outside the app
     void bskyClientDeleted();
+    void signedOut();
     void anniversary();
     void appPaused();
     void appResumed();

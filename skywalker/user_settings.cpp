@@ -801,6 +801,16 @@ int UserSettings::getSyncOffsetY(const QString& did) const
     return mSettings.value(key(did, "syncOffsetY"), 0).toInt();
 }
 
+void UserSettings::setMaxRewindPages(int maxPages)
+{
+    mSettings.setValue("maxRewindPages", maxPages);
+}
+
+int UserSettings::getMaxRewindPages() const
+{
+    return mSettings.value("maxRewindPages", 20).toInt();
+}
+
 void UserSettings::setTimelineViews(const QString& did, const QJsonObject postFilters)
 {
     mSettings.setValue(key(did, "timelineViews"), postFilters);

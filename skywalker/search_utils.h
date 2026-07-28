@@ -54,7 +54,7 @@ public:
                                             int maxPages = 10, int minEntries = 10);
 
     Q_INVOKABLE void syncFeed(const SearchFeed& searchFeed, bool sync);
-    Q_INVOKABLE void syncSearchPosts(const SearchFeed& searchFeed, int maxPages = 10);
+    Q_INVOKABLE void syncSearchPosts(const SearchFeed& searchFeed);
 
     Q_INVOKABLE void searchActors(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchActors(const QString& text);

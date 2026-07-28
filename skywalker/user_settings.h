@@ -203,6 +203,9 @@ public:
     void saveSyncOffsetY(const QString& did, int offsetY);
     int getSyncOffsetY(const QString& did) const;
 
+    Q_INVOKABLE void setMaxRewindPages(int maxPages);
+    Q_INVOKABLE int getMaxRewindPages() const;
+
     void setTimelineViews(const QString& did, const QJsonObject postFilters);
     QJsonObject getTimelineViews(const QString& did) const;
 

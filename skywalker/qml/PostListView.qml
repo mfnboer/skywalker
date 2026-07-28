@@ -120,6 +120,14 @@ SkyListView {
                 width: parent.width
             }
         }
+
+        Connections {
+            target: skywalker
+
+            function onSignedOut() {
+                rewindStatus.isFirstRewind = true
+            }
+        }
     }
 
     function isRewinding() {

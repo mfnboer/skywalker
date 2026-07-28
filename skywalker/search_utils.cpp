@@ -435,7 +435,7 @@ void SearchUtils::syncFeed(const SearchFeed& searchFeed, bool sync)
         userSettings->removeSyncSearchFeed(mSkywalker->getUserDid(), searchFeed.getKey());
 }
 
-void SearchUtils::syncSearchPosts(const SearchFeed& searchFeed, int maxPages)
+void SearchUtils::syncSearchPosts(const SearchFeed& searchFeed)
 {
     Q_ASSERT(mSkywalker);
     const auto sortOrder = searchFeed.getSearchOptions().getSortOrder();
@@ -455,6 +455,7 @@ void SearchUtils::syncSearchPosts(const SearchFeed& searchFeed, int maxPages)
 
     const auto* userSettings = mSkywalker->getUserSettings();
     const auto userDid = mSkywalker->getUserDid();
+    const int maxPages = userSettings->getMaxRewindPages();
 
     if (!userSettings->mustSyncSearchFeed(userDid, searchFeed.getKey()))
     {

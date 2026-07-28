@@ -107,4 +107,44 @@ ColumnLayout {
                 userSettings.globalFeedOrder = QEnums.FEED_ORDER_OLD_TO_NEW
         }
     }
+
+    RowLayout {
+        Layout.fillWidth: true
+
+        AccessibleText {
+            Layout.fillWidth: true
+            text: qsTr("Max rewind pages")
+        }
+
+        SkyComboBox {
+            id: rewindComboBox
+            model: ListModel {
+                Component.onCompleted: {
+                    for (let i = 1; i < 11; ++i) {
+                        append({ "value": i * 10, "text": `${i * 10}` })
+                    }
+                }
+            }
+            currentValue: userSettings.getMaxRewindPages()
+            onCurrentValueChanged: userSettings.setMaxRewindPages(currentValue)
+        }
+
+        SvgButton {
+            Layout.preferredWidth: 34
+            Layout.preferredHeight: Layout.preferredWidth
+            svg: SvgOutline.close
+            accessibleName: qsTr("reset nax rewind pages to default")
+            visible: rewindComboBox.currentValue !== 20
+            onClicked: rewindComboBox.currentValue = 20
+        }
+
+        SvgButton {
+            Layout.preferredWidth: 34
+            Layout.preferredHeight: Layout.preferredWidth
+            imageMargin: 4
+            svg: SvgOutline.info
+            accessibleName: qsTr("info")
+            onClicked: guiSettings.notice(rootContent, qsTr("Maximum number of pages to rewind at startup when rewinding is enabled for a feed. One page is about 100 posts, could be less due to content filtering."))
+        }
+    }
 }
