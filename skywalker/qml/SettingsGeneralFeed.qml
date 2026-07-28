@@ -113,11 +113,14 @@ ColumnLayout {
 
         AccessibleText {
             Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            rightPadding: 10
             text: qsTr("Max rewind pages")
         }
 
         SkyComboBox {
             id: rewindComboBox
+            Layout.preferredWidth: 100
             model: ListModel {
                 Component.onCompleted: {
                     for (let i = 1; i < 11; ++i) {
