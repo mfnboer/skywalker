@@ -203,12 +203,14 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
     static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?title[\"']? [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
     static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?title[\"']?[^>]*>)");
+    static const QString htmlTitleStr(R"(<title>(?<title>[^<]+)</title>)");
 
     static const std::vector<QRegularExpression> ogTitleREs = {
         QRegularExpression(ogTitleStr1.arg('"')),
         QRegularExpression(ogTitleStr1.arg('\'')),
         QRegularExpression(ogTitleStr2.arg('"')),
-        QRegularExpression(ogTitleStr2.arg('\''))
+        QRegularExpression(ogTitleStr2.arg('\'')),
+        QRegularExpression(htmlTitleStr)
     };
 
     static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?description[\"']? [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
