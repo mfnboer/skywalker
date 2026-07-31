@@ -368,6 +368,38 @@ ColumnLayout {
         AccessibleText {
             Layout.preferredWidth: labelSize
             wrapMode: Text.Wrap
+            text: qsTr("Side bar position")
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: -1
+
+            SkyRadioButton {
+                Layout.fillWidth: true
+                leftRadius: guiSettings.radius
+                checked: userSettings.sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT
+                text: qsTr("Left");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.sideBarPosition = QEnums.SIDE_BAR_POSITION_LEFT
+                }
+            }
+            SkyRadioButton {
+                Layout.fillWidth: true
+                rightRadius: guiSettings.radius
+                checked: userSettings.sideBarPosition === QEnums.SIDE_BAR_POSITION_RIGHT
+                text: qsTr("Right");
+                onCheckedChanged: {
+                    if (checked)
+                        userSettings.sideBarPosition = QEnums.SIDE_BAR_POSITION_RIGHT
+                }
+            }
+        }
+
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
             text: qsTr("Font size")
         }
         Slider {

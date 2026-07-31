@@ -1,5 +1,6 @@
 next
 ====
+* Option to position side bar on the right side
 * Setting to change maximum pages to rewind
 * Bug fix: pinned post was not shown if it was a reply
 * Bug fixes

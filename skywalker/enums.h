@@ -39,6 +39,15 @@ public:
     };
     Q_ENUM(SideBarType)
 
+    enum SideBarPosition
+    {
+        SIDE_BAR_POSITION_LEFT = 0,
+        SIDE_BAR_POSITION_RIGHT,
+
+        SIDE_BAR_POSITION_LAST = SIDE_BAR_POSITION_RIGHT
+    };
+    Q_ENUM(SideBarPosition)
+
     enum UiPage
     {
         UI_PAGE_NONE = 0,

@@ -37,9 +37,11 @@ Pane {
     RowLayout {
         id: topRow
         width: parent.width
+        layoutDirection: userSettings.sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT ? Qt.LeftToRight : Qt.RightToLeft
 
         Avatar {
             Layout.leftMargin: 10
+            Layout.rightMargin: 10
             Layout.topMargin: 10
             Layout.bottomMargin: 10
             Layout.preferredWidth: 40
@@ -564,8 +566,7 @@ Pane {
 
     Item {
         id: lockButton
-        anchors.right: parent.right
-        anchors.rightMargin: 20
+        x: userSettings.sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT ? parent.width - 20 - width : 20
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 20
         width: 24

@@ -181,13 +181,14 @@ ApplicationWindow {
 
     FavoritesTabBar {
         property bool favoritesSwipeViewVisible: false
-        property bool show: favoritesSwipeViewVisible && !sideBar.visible && skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
+        property bool show: favoritesSwipeViewVisible && !sideBarLeft.active && !sideBarRight.active &&
+                            skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
         id: favoritesTabBar
-        x: guiSettings.leftMargin + (sideBar.visible ? sideBar.width : 0)
+        x: guiSettings.leftMargin + (sideBarLeft.active ? sideBarLeft.width : 0)
         y: calcY()
         z: guiSettings.headerZLevel
-        width: parent.width - x - guiSettings.rightMargin
+        width: parent.width - x - guiSettings.rightMargin - (sideBarRight.active ? sideBarRight.width : 0)
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
         visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
@@ -612,6 +613,7 @@ ApplicationWindow {
     SkySplitView {
         readonly property bool noSideBar: (currentStackItem() && typeof currentStackItem().noSideBar !== 'undefined' ? currentStackItem().noSideBar : false)
         readonly property bool fullScreen: noSideBar
+        readonly property Loader sideBar: skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT ? sideBarLeft : sideBarRight
 
         id: rootSplitView
         anchors.left: parent.left
@@ -647,7 +649,8 @@ ApplicationWindow {
         function init() {
             const w = getSideBarWidth()
             console.debug("Init side bar width:", w, "portrait:", isPortrait)
-            sideBar.SplitView.preferredWidth = w
+            sideBarLeft.SplitView.preferredWidth = w
+            sideBarRight.SplitView.preferredWidth = w
         }
 
         function getSideBarWidth() {
@@ -665,49 +668,15 @@ ApplicationWindow {
             return w
         }
 
-        SideBar {
-            property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
-
-            id: sideBar
+        Loader {
+            id: sideBarLeft
             SplitView.minimumWidth: !rootSplitView.locked ? guiSettings.sideBarMinWidth : SplitView.preferredWidth
             SplitView.preferredWidth: skywalker.getUserSettings().sideBarDefaultWidth
             SplitView.maximumWidth: !rootSplitView.locked ? Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth) : SplitView.preferredWidth
             height: parent.height
-            timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
-            skywalker: root.getSkywalker()
-            homeActive: rootContent.currentIndex === rootContent.homePageIndex
-            notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
-            searchActive: rootContent.currentIndex === rootContent.searchIndex
-            messagesActive: rootContent.currentIndex === rootContent.chatIndex
-
-            onHomeClicked: {
-                if (homeActive)
-                    favoritesSwipeView.currentView.moveToHome()
-                else
-                    root.viewHomePage()
-            }
-            onNotificationsClicked: {
-                if (!notificationsActive)
-                    viewNotifications()
-                else if (currentStackItem() instanceof NotificationListView)
-                    currentStackItem().handleNotificationsClicked()
-            }
-            onSearchClicked: {
-                if (!searchActive)
-                    viewSearchView()
-            }
-            onMessagesClicked: {
-                if (!messagesActive)
-                    viewChat()
-                else if (currentStackItem() instanceof ConvoListView)
-                    currentStackItem().positionViewAtBeginning()
-            }
-            onAddConvoClicked: {
-                if (currentStackItem() instanceof ConvoListView)
-                    currentStackItem().addConvo()
-            }
-
-            visible: showSideBar && !rootSplitView.noSideBar
+            active: showSideBar && !rootSplitView.noSideBar && skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT
+            visible: active
+            sourceComponent: sideBarComp
         }
 
         StackLayout {
@@ -764,6 +733,59 @@ ApplicationWindow {
             }
             StackView {
                 id: chatStack
+            }
+        }
+
+        Loader {
+            id: sideBarRight
+            SplitView.minimumWidth: !rootSplitView.locked ? guiSettings.sideBarMinWidth : SplitView.preferredWidth
+            SplitView.preferredWidth: skywalker.getUserSettings().sideBarDefaultWidth
+            SplitView.maximumWidth: !rootSplitView.locked ? Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth) : SplitView.preferredWidth
+            height: parent.height
+            active: showSideBar && !rootSplitView.noSideBar && skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_RIGHT
+            visible: active
+            sourceComponent: sideBarComp
+        }
+    }
+
+    Component {
+        id: sideBarComp
+
+        SideBar {
+            property var favoritesSwipeView: favoritesTabBar.favoritesSwipeView
+
+            timeline: favoritesSwipeView ? favoritesSwipeView.currentView : null
+            skywalker: root.getSkywalker()
+            homeActive: rootContent.currentIndex === rootContent.homePageIndex
+            notificationsActive: rootContent.currentIndex === rootContent.notificationIndex
+            searchActive: rootContent.currentIndex === rootContent.searchIndex
+            messagesActive: rootContent.currentIndex === rootContent.chatIndex
+
+            onHomeClicked: {
+                if (homeActive)
+                    favoritesSwipeView.currentView.moveToHome()
+                else
+                    root.viewHomePage()
+            }
+            onNotificationsClicked: {
+                if (!notificationsActive)
+                    viewNotifications()
+                else if (currentStackItem() instanceof NotificationListView)
+                    currentStackItem().handleNotificationsClicked()
+            }
+            onSearchClicked: {
+                if (!searchActive)
+                    viewSearchView()
+            }
+            onMessagesClicked: {
+                if (!messagesActive)
+                    viewChat()
+                else if (currentStackItem() instanceof ConvoListView)
+                    currentStackItem().positionViewAtBeginning()
+            }
+            onAddConvoClicked: {
+                if (currentStackItem() instanceof ConvoListView)
+                    currentStackItem().addConvo()
             }
         }
     }
@@ -843,7 +865,7 @@ ApplicationWindow {
         sourceComponent: SettingsDrawer {
             id: settingsDrawer
             height: parent.height
-            edge: !showSideBar ? Qt.RightEdge : Qt.LeftEdge
+            edge: (!showSideBar || skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_RIGHT) ? Qt.RightEdge : Qt.LeftEdge
 
             onProfile: {
                 let did = skywalker.getUserDid()
@@ -2678,8 +2700,8 @@ ApplicationWindow {
         return root.width * 0.33 >= guiSettings.sideBarMinWidth
     }
 
-    function getSideBarWidth() {
-        return sideBar.width
+    function getSideBarLeftWidth() {
+        return sideBarLeft.active ? sideBarLeft.width : 0
     }
 
     function setDisplayMode(displayMode) {

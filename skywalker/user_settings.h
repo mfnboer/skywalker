@@ -78,6 +78,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(int sideBarDefaultWidth MEMBER SIDE_BAR_DEFAULT_WIDTH CONSTANT)
     Q_PROPERTY(bool sideBarLocked READ getSideBarLocked WRITE setSideBarLocked NOTIFY sideBarLockedChanged FINAL)
     Q_PROPERTY(QEnums::SideBarType sideBarType READ getSideBarType WRITE setSideBarType NOTIFY sideBarTypeChanged FINAL)
+    Q_PROPERTY(QEnums::SideBarPosition sideBarPosition READ getSideBarPosition WRITE setSideBarPosition NOTIFY sideBarPositionChanged FINAL)
     Q_PROPERTY(bool gifAutoPlay READ getGifAutoPlay WRITE setGifAutoPlay NOTIFY gifAutoPlayChanged FINAL)
     Q_PROPERTY(bool videoSound READ getVideoSound WRITE setVideoSound NOTIFY videoSoundChanged FINAL)
     Q_PROPERTY(bool videoAutoPlay READ getVideoAutoPlay WRITE setVideoAutoPlay NOTIFY videoAutoPlayChanged FINAL)
@@ -377,6 +378,9 @@ public:
     void setSideBarType(QEnums::SideBarType sideBarType);
     QEnums::SideBarType getSideBarType() const;
 
+    void setSideBarPosition(QEnums::SideBarPosition position);
+    QEnums::SideBarPosition getSideBarPosition() const;
+
     void setGifAutoPlay(bool autoPlay);
     bool getGifAutoPlay() const;
 
@@ -618,6 +622,7 @@ signals:
     void showFeedbackButtonsChanged();
     void sideBarLockedChanged();
     void sideBarTypeChanged();
+    void sideBarPositionChanged();
     void gifAutoPlayChanged();
     void videoSoundChanged();
     void videoAutoPlayChanged();

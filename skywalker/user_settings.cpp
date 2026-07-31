@@ -1685,6 +1685,25 @@ QEnums::SideBarType UserSettings::getSideBarType() const
     return QEnums::SideBarType(sideBarType);
 }
 
+void UserSettings::setSideBarPosition(QEnums::SideBarPosition position)
+{
+    if (position == getSideBarPosition())
+        return;
+
+    mSettings.setValue("sideBarPosition", int(position));
+    emit sideBarPositionChanged();
+}
+
+QEnums::SideBarPosition UserSettings::getSideBarPosition() const
+{
+    const int position = mSettings.value("sideBarPosition", int(QEnums::SIDE_BAR_POSITION_LEFT)).toInt();
+
+    if (position < 0 || position > QEnums::SIDE_BAR_POSITION_LAST)
+        return QEnums::SIDE_BAR_POSITION_LEFT;
+
+    return QEnums::SideBarPosition(position);
+}
+
 void UserSettings::setGifAutoPlay(bool autoPlay)
 {
     if (autoPlay == getGifAutoPlay())
