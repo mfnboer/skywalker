@@ -374,6 +374,7 @@ ColumnLayout {
         RowLayout {
             Layout.fillWidth: true
             spacing: -1
+            enabled: userSettings.sideBarType !== QEnums.SIDE_BAR_OFF
 
             SkyRadioButton {
                 Layout.fillWidth: true

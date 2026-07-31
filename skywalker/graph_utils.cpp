@@ -285,7 +285,7 @@ void GraphUtils::mute(const QString& did, QDateTime expiresAt)
 
     setMuteBusy(true);
 
-    bskyClient()->muteActor(did,
+    bskyClient()->muteActor(did, false, false,
         [this, presence=getPresence(), did, expiresAt]{
             if (!presence)
                 return;
