@@ -88,6 +88,9 @@ Item {
         readonly property bool alignToTop: swipeMode && (maxHeight - origImplicitHeight * scale) < guiSettings.topAlignmentThreshold
         readonly property real top: alignToTop ? 0 : (maxHeight - origImplicitHeight * scale) / 2
         readonly property real bottom: top + origImplicitHeight * scale
+        readonly property real toWidth: right - left
+        readonly property real toHeight: bottom - top
+        readonly property bool isReverse: from > to
 
         id: zoomAnimation
         target: zoomAnimation
@@ -112,13 +115,14 @@ Item {
             }
 
             thumbImage.setVisible(false)
+
             root.enablePopupShield(true, from)
         }
 
         onStopped: {
             root.enablePopupShield(false)
 
-            if (from < to)
+            if (!isReverse)
                 done(zoomImage.item.img)
             else
                 reverseDone()
@@ -133,15 +137,23 @@ Item {
             if (!zoomImage.item)
                 return
 
+            // HACK: On reverse animation seems to resize when the side bar is on
+            if (isReverse)
+                setThumbImage()
+
             const newX = orig.x - (orig.x - left) * zoom
             const newY = orig.y - (orig.y - top) * zoom
             zoomImage.item.img.setRelPos(newX, newY)
-            zoomImage.item.img.width = orig.x + origWidth + (right - orig.x - origWidth) * zoom - newX
-            zoomImage.item.img.height = orig.y + origHeight + (bottom - orig.y - origHeight) * zoom - newY
+            zoomImage.item.img.width = origWidth + ((toWidth - origWidth) * zoom)
+            zoomImage.item.img.height = origHeight + ((toHeight - origHeight) * zoom)
             root.enablePopupShield(true, zoom)
         }
 
         function setThumbImage() {
+            // HACK: during resizing the implicit size sometimes goes to 0 for a short period
+            if (thumbImage.implicitWidth <= 0 || thumbImage.implicitHeight <= 0)
+                return
+
             orig = thumbImageOrig
             origWidth = thumbImage.width
             origHeight = thumbImage.height
