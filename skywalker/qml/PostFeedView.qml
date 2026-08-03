@@ -49,7 +49,7 @@ PostListView {
     headerPositioning: ListView.PullBackHeader
 
     delegate: PostFeedViewDelegate {
-        width: Math.min(postFeedView.width, root.width - root.getSideBarWidth())
+        width: Math.min(postFeedView.width, root.getMaxContentWidth())
         feedAcceptsInteractions: postFeedView.acceptsInteractions
         feedDid: postFeedView.feedDid
         feedUri: postFeedView.feedUri

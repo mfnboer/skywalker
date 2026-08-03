@@ -44,7 +44,7 @@ PostListView {
     }
 
     delegate: PostFeedViewDelegate {
-        width: Math.min(timelineView.width, root.width - root.getSideBarWidth())
+        width: Math.min(timelineView.width, root.getMaxContentWidth())
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraHeaderFooterLoader.active && !model.reverseFeed ? extraHeaderFooterLoader.height : 0
         extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0

@@ -22,6 +22,8 @@ SwipeView {
 
         SwipeView.onIsCurrentItemChanged: {
             if (SwipeView.isCurrentItem) {
+                console.debug("Current favorite: timeline")
+
                 if (syncWarning) {
                     console.debug("Sync warning: home - ", syncWarning)
                     skywalker.showStatusMessage(syncWarning, QEnums.STATUS_LEVEL_INFO, 10)
@@ -96,6 +98,9 @@ SwipeView {
 
                     if (item && trackLastViewedFeed)
                         item.saveAsLastViewedFeed()
+
+                    if (item)
+                        item.forceActiveFocus()
                 }
                 else {
                     if (item)

@@ -179,10 +179,17 @@ ApplicationWindow {
         width: rootContent.width
     }
 
+    Timer {
+        id: fixFavoriteTimer
+        interval: 100
+        onTriggered: favoritesTabBar.fixIndex = -1
+    }
+
     FavoritesTabBar {
         property bool favoritesSwipeViewVisible: false
         property bool show: favoritesSwipeViewVisible && !sideBarLeft.active && !sideBarRight.active &&
                             skywalker.getUserSettings().favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
+        property int fixIndex: -1
 
         id: favoritesTabBar
         x: guiSettings.leftMargin + (sideBarLeft.active ? sideBarLeft.width : 0)
@@ -197,13 +204,32 @@ ApplicationWindow {
             if (currentIndex < 0)
                 return
 
+            // HACK: For some reasone the following may happen.
+            // The side bar is visible. The user views a favorite feed.
+            // The user clicks on an image. Full image view is pushed on the stack.
+            // User leaves full image view.
+            // Few ms later sometimes the current index goes to 0????
+            // With this hack we move back to the previous current index.
+            if (fixIndex >= 0 && fixIndex !== currentIndex) {
+                console.debug("HACK Index changed to:", currentIndex, "fix:", fixIndex)
+                Qt.callLater(() => setCurrentIndex(fixIndex))
+                return
+            }
+
             const item = contentChildren[currentIndex]
 
             if (item && item instanceof SkySettingsTabButton) {
-                if (favoritesSwipeView)
-                    Qt.callLater(() => { setCurrentIndex(favoritesSwipeView.currentIndex) })
-                else
-                    Qt.callLater(() => { setCurrentIndex(0) })
+                if (favoritesSwipeView) {
+                    Qt.callLater(() => {
+                        fixIndex = -1
+                        setCurrentIndex(favoritesSwipeView.currentIndex)
+                    })
+                } else {
+                    Qt.callLater(() => {
+                        fixIndex = -1
+                        setCurrentIndex(0)
+                    })
+                }
             }
             else if (favoritesSwipeView) {
                 favoritesSwipeView.setCurrentIndex(currentIndex)
@@ -218,6 +244,9 @@ ApplicationWindow {
         }
 
         function update() {
+            fixIndex = currentIndex
+            fixFavoriteTimer.start()
+
             let view = currentStackItem()
             favoritesSwipeViewVisible = (view instanceof FavoritesSwipeView)
         }
@@ -674,8 +703,8 @@ ApplicationWindow {
             SplitView.preferredWidth: skywalker.getUserSettings().sideBarDefaultWidth
             SplitView.maximumWidth: !rootSplitView.locked ? Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth) : SplitView.preferredWidth
             height: parent.height
-            active: showSideBar && !rootSplitView.noSideBar && skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT
-            visible: active
+            active: showSideBar && skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT
+            visible: active && !rootSplitView.noSideBar
             sourceComponent: sideBarComp
         }
 
@@ -742,8 +771,8 @@ ApplicationWindow {
             SplitView.preferredWidth: skywalker.getUserSettings().sideBarDefaultWidth
             SplitView.maximumWidth: !rootSplitView.locked ? Math.max(parent.width * 0.5, guiSettings.sideBarMinWidth) : SplitView.preferredWidth
             height: parent.height
-            active: showSideBar && !rootSplitView.noSideBar && skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_RIGHT
-            visible: active
+            active: showSideBar && skywalker.getUserSettings().sideBarPosition === QEnums.SIDE_BAR_POSITION_RIGHT
+            visible: active && !rootSplitView.noSideBar
             sourceComponent: sideBarComp
         }
     }
@@ -2708,6 +2737,10 @@ ApplicationWindow {
         return showSideBar ? rootSplitView.getSideBarWidth() + rootSplitView.handleWidth : 0
     }
 
+    function getMaxContentWidth() {
+        return width - getSideBarWidth() - guiSettings.leftMargin - guiSettings.rightMargin
+    }
+
     function setDisplayMode(displayMode) {
         switch (displayMode) {
         case QEnums.DISPLAY_MODE_SYSTEM:
@@ -2861,7 +2894,9 @@ ApplicationWindow {
 
         let homePageComponent = guiSettings.createComponent("FavoritesSwipeView.qml")
         let homePage = homePageComponent.createObject(root, { skywalker: skywalker })
-        homePage.onCurrentIndexChanged.connect(() => { favoritesTabBar.setCurrentIndex(homePage.currentIndex) })
+        homePage.onCurrentIndexChanged.connect(() => {
+            favoritesTabBar.setCurrentIndex(homePage.currentIndex)
+        })
         homePageStack.push(homePage)
         favoritesTabBar.favoritesSwipeView = homePage
 
