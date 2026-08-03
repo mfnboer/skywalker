@@ -50,7 +50,7 @@ PostListView {
     headerPositioning: ListView.PullBackHeader
 
     delegate: PostFeedViewDelegate {
-        width: feedView.width
+        width: Math.min(feedView.width, root.width - root.getSideBarWidth())
         swipeMode: [QEnums.CONTENT_MODE_VIDEO, QEnums.CONTENT_MODE_MEDIA].includes(model.contentMode)
         extraFooterHeight: extraHeaderFooterLoader.active && !model.reverseFeed ? extraHeaderFooterLoader.height : 0
         extraHeaderHeight: extraHeaderFooterLoader.active && model.reverseFeed ? extraHeaderFooterLoader.height : 0

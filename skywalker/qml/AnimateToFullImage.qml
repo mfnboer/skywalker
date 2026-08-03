@@ -16,6 +16,7 @@ Item {
     signal started
     signal done(var img)
     signal reverseDone()
+    signal reverseUpdate()
 
     id: animator
 
@@ -115,7 +116,6 @@ Item {
             }
 
             thumbImage.setVisible(false)
-
             root.enablePopupShield(true, from)
         }
 
@@ -138,8 +138,10 @@ Item {
                 return
 
             // HACK: On reverse animation seems to resize when the side bar is on
-            if (isReverse)
+            if (isReverse) {
+                animator.reverseUpdate()
                 setThumbImage()
+            }
 
             const newX = orig.x - (orig.x - left) * zoom
             const newY = orig.y - (orig.y - top) * zoom

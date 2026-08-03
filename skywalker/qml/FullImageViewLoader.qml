@@ -69,6 +69,11 @@ Loader {
             fullImageLoader.active = false
         }
 
+        onReverseUpdate: {
+            // HACK: with a side bar active, the images move during the transition from full view.
+            initThumbImages()
+        }
+
         function goBack(imgIndex, closeCb) {
             fullImageLoader.goingBackTo(imgIndex)
             startCb = closeCb
@@ -87,7 +92,7 @@ Loader {
         for (const [thumbIndex, thumbImage] of thumbImageViewList.entries()) {
             const gridIndex = Math.floor(thumbIndex / maxGridSize)
             const offset = gridWidth * (gridIndex - startGridIndex)
-            const orig = thumbImage.mapToItem(null, -offset, 0)
+            const orig = thumbImage.mapToItem(Overlay.overlay, -offset, 0)
             thumbImageOrigList.push(orig)
         }
     }

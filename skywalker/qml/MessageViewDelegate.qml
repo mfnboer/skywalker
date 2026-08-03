@@ -262,7 +262,7 @@ Rectangle {
 
         ReactionsMenu {
             parent: Overlay.overlay
-            x: messageRect.x + moreMenu.x + moreMenu.width + 10 + (root.showSideBar ? root.getSideBarLeftWidth() : 0)
+            x: messageRect.x + moreMenu.x + moreMenu.width + 10 + (root.showSideBar ? root.getActiveSideBarLeftWidth() : 0)
             y: view.y - view.ListView.view.contentY + view.ListView.view.parent.y + messageRect.y + moreMenu.y
             z: 1
             color: moreMenu.background.color

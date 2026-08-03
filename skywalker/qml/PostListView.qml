@@ -44,7 +44,7 @@ SkyListView {
             property int favoritesY: getFavoritesY()
 
             clip: true
-            width: postListView.width
+            width: Math.min(postListView.width, root.width - root.getSideBarWidth())
             height: postListView.height - (postListView.footerItem && postListView.footerItem.visible ? postListView.footerItem.height : 0)
             headerHeight: postListView.headerItem ? postListView.headerItem.height : 0
             userDid: postListView.userDid

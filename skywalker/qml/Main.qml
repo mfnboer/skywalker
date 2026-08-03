@@ -2700,8 +2700,12 @@ ApplicationWindow {
         return root.width * 0.33 >= guiSettings.sideBarMinWidth
     }
 
-    function getSideBarLeftWidth() {
-        return sideBarLeft.active ? sideBarLeft.width : 0
+    function getActiveSideBarLeftWidth() {
+        return sideBarLeft.active ? sideBarLeft.width + rootSplitView.handleWidth : 0
+    }
+
+    function getSideBarWidth() {
+        return showSideBar ? rootSplitView.getSideBarWidth() + rootSplitView.handleWidth : 0
     }
 
     function setDisplayMode(displayMode) {

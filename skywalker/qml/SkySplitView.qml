@@ -3,12 +3,13 @@ import QtQuick.Controls
 
 SplitView {
     property bool locked: false
+    readonly property int handleWidth: (SplitHandle.pressed && !locked) ? 2 : 1
 
     id: splitView
 
     handle: Rectangle {
         id: handleItem
-        implicitWidth: (SplitHandle.pressed && !locked) ? 2 : 1
+        implicitWidth: handleWidth
         color: (SplitHandle.pressed && !locked) ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
         enabled: !locked
 
