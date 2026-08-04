@@ -1,4 +1,4 @@
-next
+4.43
 ====
 * Option to position side bar on the right side
 * Setting to change maximum pages to rewind
