@@ -117,6 +117,9 @@ SkyPage {
         color: guiSettings.backgroundColor
     }
 
+    onLastIndexChanged: handleLastMessageChanged()
+    onLastOffsetYChanged: handleLastMessageChanged()
+
     SkyListView {
         id: messagesView
         width: parent.width
@@ -132,10 +135,7 @@ SkyPage {
             moveToMessage(page.lastIndex, ListView.End, () => { contentY -= page.lastOffsetY })
         }
 
-        onMovementEnded: {
-            page.lastIndex = getLastVisibleIndex()
-            page.lastOffsetY = calcVisibleOffsetY(page.lastIndex)
-        }
+        onMovementEnded: page.updateLastMessageIndex()
 
         onContentMoved: {
             const remaining = getFirstVisibleIndex()
@@ -167,6 +167,16 @@ SkyPage {
             inProgress: chat.getMessagesInProgress
             topOvershootFun: () => chat.getMessagesNextPage(convo.id)
             enableDirectionalScroll: true
+
+            scrollToTopFun: () => {
+                list.positionViewAtBeginning()
+                page.updateLastMessageIndex()
+            }
+
+            scrollToBottomFun: () => {
+                list.positionViewAtEnd()
+                page.updateLastMessageIndex()
+            }
         }
 
         EmptyListIndication {
@@ -654,6 +664,26 @@ SkyPage {
         }
     }
 
+    function updateLastMessageIndex() {
+        lastIndex = messagesView.getLastVisibleIndex()
+        lastOffsetY = messagesView.calcVisibleOffsetY(page.lastIndex)
+        handleLastMessageChanged()
+    }
+
+    function handleLastMessageChanged() {
+        if (lastIndex < 0) {
+            messagesView.model.setAutoUpdate(true)
+            return
+        }
+
+        if (lastIndex < messagesView.count - 1) {
+            messagesView.model.setAutoUpdate(false)
+            return
+        }
+
+        messagesView.model.setAutoUpdate(lastOffsetY < 30)
+    }
+
     function addMessage(msgText) {
         Qt.inputMethod.commit() // qmllint disable missing-property
         newMessageText.insert(newMessageText.length, msgText)
@@ -854,6 +884,7 @@ SkyPage {
         let lastVisibleIndex = messagesView.getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", messagesView.count)
         messagesView.positionViewAtIndex(Math.max(index, 0), positionMode)
+        updateLastMessageIndex()
         return (lastVisibleIndex >= index && firstVisibleIndex <= index)
     }
 

@@ -222,6 +222,15 @@ int MessageListModel::getMessageIndexById(const QString& id) const
     return index;
 }
 
+void MessageListModel::setAutoUpdate(bool autoUpdate)
+{
+    if (autoUpdate == mAutoUpdate)
+        return;
+
+    mAutoUpdate = autoUpdate;
+    qDebug() << "Auto update:" << autoUpdate;
+}
+
 void MessageListModel::rebuildIndex()
 {
     mMessageIdToPosIndex.clear();

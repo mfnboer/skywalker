@@ -1665,8 +1665,13 @@ void Chat::updateMessages()
 {
     qDebug() << "Update messages";
 
-    for (const auto& [convoId, _] : mMessageListModels)
-        updateMessages(convoId);
+    for (const auto& [convoId, model] : mMessageListModels)
+    {
+        if (model->getAutoUpdate())
+            updateMessages(convoId);
+        else
+            qDebug() << "convoId:" << convoId << "auto update disabled";
+    }
 }
 
 void Chat::updateRead(const QString& convoId)

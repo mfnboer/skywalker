@@ -1,6 +1,7 @@
 next
 ====
 * Do not show parent post for a pinned reply 
+* Do not update chat message list when you are viewing an older message
 
 4.43
 ====

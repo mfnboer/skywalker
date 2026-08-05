@@ -41,6 +41,9 @@ public:
 
     Q_INVOKABLE int getMessageIndexById(const QString& id) const;
 
+    bool getAutoUpdate() const { return mAutoUpdate; }
+    Q_INVOKABLE void setAutoUpdate(bool autoUpdate);
+
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
@@ -58,6 +61,7 @@ private:
     std::unordered_map<QString, int> mMessageIdToPosIndex; // to position in mMessages
     QString mCursor;
     std::unordered_map<QString, ChatBasicProfile> mDidMemberMap; // other than user
+    bool mAutoUpdate = true;
 };
 
 }
