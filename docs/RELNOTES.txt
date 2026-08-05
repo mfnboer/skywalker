@@ -1,3 +1,7 @@
+next
+====
+* Do not show parent post for a pinned reply 
+
 4.43
 ====
 * Option to position side bar on the right side

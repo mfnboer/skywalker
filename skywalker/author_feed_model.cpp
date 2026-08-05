@@ -177,7 +177,6 @@ bool AuthorFeedModel::mustShowReplyContext() const
     switch (mFilter)
     {
     case QEnums::AUTHOR_FEED_FILTER_NONE:
-    case QEnums::AUTHOR_FEED_FILTER_POSTS:
     case QEnums::AUTHOR_FEED_FILTER_REPLIES:
         return true;
     default:

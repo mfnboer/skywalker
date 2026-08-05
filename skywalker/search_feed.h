@@ -13,7 +13,7 @@ class SearchFeed
 {
     Q_GADGET
     Q_PROPERTY(QString key READ getKey FINAL)
-    Q_PROPERTY(QString name READ getName() FINAL)
+    Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QString searchQuery READ getSearchQuery FINAL)
     Q_PROPERTY(SearchOptions searchOptions READ getSearchOptions FINAL)
     Q_PROPERTY(LanguageList languageList READ getLanguageList FINAL)
