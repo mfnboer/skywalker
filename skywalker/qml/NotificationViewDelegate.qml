@@ -84,6 +84,8 @@ Rectangle {
     required property basicprofile notificationPostContentLabeler
     required property int notificationPostMutedReason // QEnums::MutedPostReason
     required property bool notificationPostIsReply
+    required property bool notificationPostIsThread
+    required property bool notificationPostIsThreadReply
     required property basicprofile replyToAuthor
     required property string notificationInviteCode
     required property basicprofile notificationInviteCodeUsedBy
@@ -335,8 +337,8 @@ Rectangle {
                     postContentWarning: notificationPostContentWarning
                     postContentLabeler: notificationPostContentLabeler
                     postMuted: notificationPostMutedReason
-                    postIsThread: false
-                    postIsThreadReply: false
+                    postIsThread: notificationPostIsThread
+                    postIsThreadReply: notificationPostIsReply
                     postVideo: notificationPostVideo
                     postExternal: notificationPostExternal
                     postRecord: notificationPostRecord
@@ -344,6 +346,8 @@ Rectangle {
                     postDateTime: notificationPostTimestamp
                     bodyBackgroundColor: notification.color
                     moving: notification.ListView.view.fastMoving
+
+                    onUnrollThread: unrollPostThread()
                 }
 
                 Loader {
@@ -754,6 +758,11 @@ Rectangle {
             showAuthorList()
         else if (notificationReason === QEnums.NOTIFICATION_REASON_NEW_LABELS)
             skywalker.getDetailedProfile(notificationAuthor.did)
+    }
+
+    function unrollPostThread() {
+        if (notificationPostUri)
+            skywalker.getPostThread(notificationPostUri, QEnums.POST_THREAD_UNROLLED)
     }
 
     function showAuthorList() {

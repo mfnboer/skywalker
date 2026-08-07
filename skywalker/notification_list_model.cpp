@@ -5,6 +5,7 @@
 #include "convo_view.h"
 #include "content_filter.h"
 #include "enums.h"
+#include "post_thread_cache.h"
 #include <atproto/lib/at_uri.h>
 #include <unordered_map>
 
@@ -28,6 +29,13 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
                                  int(Role::NotificationReasonPostRecord),
                                  int(Role::NotificationReasonPostRecordWithMedia),
                                  int(Role::NotificationPostContentLabeler) });
+            });
+
+    connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
+            [this](const QString&){ changeData({
+                    int(Role::NotificationPostIsThread),
+                    int(Role::NotificationPostRecord),
+                    int(Role::NotificationPostRecordWithMedia) });
             });
 }
 
@@ -1039,6 +1047,28 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     }
     case Role::NotificationPostIsReply:
         return notification.getPostRecord().isReply();
+    case Role::NotificationPostIsThread:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        const auto isThread = post.isThread();
+        qDebug() << "isThread:" << isThread << "post:" << post.getText();
+
+        switch (isThread)
+        {
+        case QEnums::TRIPLE_BOOL_NO:
+            return false;
+        case QEnums::TRIPLE_BOOL_YES:
+            return true;
+        case QEnums::TRIPLE_BOOL_UNKNOWN:
+            QTimer::singleShot(0, this, [postUri=post.getUri()]{ PostThreadCache::instance().putPost(postUri); });
+            return false;
+        }
+
+        qWarning() << "Invalid isThread:" << isThread;
+        return false;
+    }
+    case Role::NotificationPostIsThreadReply:
+        return notification.getNotificationPost(mPostCache).isThreadReply();
     case Role::ReplyToAuthor:
     {
         const auto record = notification.getPostRecord();
@@ -1157,6 +1187,8 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostContentLabeler), "notificationPostContentLabeler" },
         { int(Role::NotificationPostMutedReason), "notificationPostMutedReason" },
         { int(Role::NotificationPostIsReply), "notificationPostIsReply" },
+        { int(Role::NotificationPostIsThread), "notificationPostIsThread" },
+        { int(Role::NotificationPostIsThreadReply), "notificationPostIsThreadReply" },
         { int(Role::ReplyToAuthor), "replyToAuthor" },
         { int(Role::NotificationInviteCode), "notificationInviteCode" },
         { int(Role::NotificationInviteCodeUsedBy), "notificationInviteCodeUsedBy" },

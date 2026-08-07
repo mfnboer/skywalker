@@ -105,6 +105,8 @@ public:
         NotificationPostContentLabeler,
         NotificationPostMutedReason,
         NotificationPostIsReply,
+        NotificationPostIsThread,
+        NotificationPostIsThreadReply,
         ReplyToAuthor,
         NotificationInviteCode,
         NotificationInviteCodeUsedBy,
