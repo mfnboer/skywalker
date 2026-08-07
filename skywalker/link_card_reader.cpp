@@ -203,13 +203,17 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
     static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?title[\"']? [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
     static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?title[\"']?[^>]*>)");
-    static const QString htmlTitleStr(R"(<title>(?<title>[^<]+)</title>)");
 
     static const std::vector<QRegularExpression> ogTitleREs = {
         QRegularExpression(ogTitleStr1.arg('"')),
         QRegularExpression(ogTitleStr1.arg('\'')),
         QRegularExpression(ogTitleStr2.arg('"')),
-        QRegularExpression(ogTitleStr2.arg('\'')),
+        QRegularExpression(ogTitleStr2.arg('\''))
+    };
+
+    static const QString htmlTitleStr(R"(<title>(?<title>[^<]+)</title>)");
+
+    static const std::vector<QRegularExpression> htmlTitleREs = {
         QRegularExpression(htmlTitleStr)
     };
 
@@ -263,10 +267,12 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     const auto data = reply->readAll();
 
     const QString title = matchRegexes(ogTitleREs, data, "title");
+
     if (!title.isEmpty())
         card->setTitle(toPlainText(title));
 
     const QString description = matchRegexes(ogDescriptionREs, data, "description");
+
     if (!description.isEmpty())
         card->setDescription(toPlainText(description));
 
@@ -351,20 +357,26 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         {
             qDebug() << "Cookies stored, retry";
             getLinkCard(url.toString(), true, mCookieSaveControl);
+            return;
         }
         else if (!mCookieSaveControl)
         {
             qDebug() << "Retry with cookie save control on";
             getLinkCard(url.toString(), false, true);
+            return;
+        }
+        else if (auto htmlTitle = matchRegexes(htmlTitleREs, data, "title"); !htmlTitle.isEmpty())
+        {
+            card->setTitle(htmlTitle);
+            qDebug() << "Got title from HTML document:" << htmlTitle;
         }
         else
         {
             mCardCache.insert(url, card.release());
             qDebug() << url << "has no link card.";
             emit linkCardFailed();
+            return;
         }
-
-        return;
     }
 
     std::vector<QString> associatedUris;
