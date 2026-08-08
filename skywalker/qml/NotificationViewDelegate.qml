@@ -133,7 +133,6 @@ Rectangle {
             }
 
             Avatar {
-                id: avatarImg
                 x: 8
                 y: 10
                 width: parent.width - 13
@@ -147,77 +146,98 @@ Rectangle {
                 Accessible.name: qsTr(`show profile of ${notificationAuthor.name}`)
                 Accessible.onPressAction: clicked()
             }
-            SkySvg {
-                x: parent.x + 14
-                y: height + 5
+            Loader {
+                x: 14
+                y: 5
                 width: parent.width - 19
                 height: width
-                color: guiSettings.likeColor
-                svg: SvgFilled.like
-                visible: [QEnums.NOTIFICATION_REASON_LIKE, QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST].includes(notificationReason)
+                active: [QEnums.NOTIFICATION_REASON_LIKE, QEnums.NOTIFICATION_REASON_LIKE_VIA_REPOST].includes(notificationReason)
+
+                sourceComponent: SkySvg {
+                    color: guiSettings.likeColor
+                    svg: SvgFilled.like
+                }
             }
-            SkySvg {
-                x: parent.x + 14
-                y: height + 5
-                width: parent.width - 19
-                height: width
-                color: guiSettings.textColor
-                svg: SvgOutline.repost
-                visible: [QEnums.NOTIFICATION_REASON_REPOST, QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST].includes(notificationReason)
-            }
-            SkySvg {
-                x: parent.x + 14
-                y: height + 5
-                width: parent.width - 19
-                height: width
-                color: guiSettings.avatarDefaultColor
-                svg: SvgFilled.notificationsActive
-                visible: [QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST].includes(notificationReason)
-            }
-            SkySvg {
-                x: parent.x + 14
-                y: height + 5
-                width: parent.width - 19
-                height: width
-                color: guiSettings.textColor
-                svg: SvgOutline.inviteCode
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
-            }
-            SkySvg {
-                x: parent.x + 14
-                y: height + 5
-                width: parent.width - 19
-                height: width
-                color: guiSettings.starterpackColor
-                svg: SvgOutline.starterpack
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED
-            }
-            Image {
+            Loader {
                 x: parent.x + 14
                 y: 5
                 width: parent.width - 19
                 height: width
-                fillMode: Image.PreserveAspectFit
-                source: "/images/verified_check.svg"
-                asynchronous: true
-                visible: [QEnums.NOTIFICATION_REASON_VERIFIED, QEnums.NOTIFICATION_REASON_UNVERIFIED].includes(notificationReason)
+                active: [QEnums.NOTIFICATION_REASON_REPOST, QEnums.NOTIFICATION_REASON_REPOST_VIA_REPOST].includes(notificationReason)
+
+                sourceComponent: SkySvg {
+                    color: guiSettings.textColor
+                    svg: SvgOutline.repost
+                }
             }
-            Rectangle {
+            Loader {
                 x: parent.x + 14
-                y: parent.y + 5
+                y: 5
                 width: parent.width - 19
                 height: width
-                radius: height / 2
-                color: guiSettings.avatarDefaultColor
-                visible: notificationReason === QEnums.NOTIFICATION_REASON_FOLLOW
+                active: [QEnums.NOTIFICATION_REASON_SUBSCRIBED_POST].includes(notificationReason)
 
-                SkySvg {
-                    x: 5
-                    y: height + 5
-                    width: parent.width - 10
-                    height: width
-                    color: "white"
-                    svg: SvgFilled.newFollower
+                sourceComponent: SkySvg {
+                    color: guiSettings.avatarDefaultColor
+                    svg: SvgFilled.notificationsActive
+                }
+            }
+            Loader {
+                x: parent.x + 14
+                y: 5
+                width: parent.width - 19
+                height: width
+                active: notificationReason === QEnums.NOTIFICATION_REASON_INVITE_CODE_USED
+
+                sourceComponent: SkySvg {
+                    color: guiSettings.textColor
+                    svg: SvgOutline.inviteCode
+                }
+            }
+            Loader {
+                x: parent.x + 14
+                y: 5
+                width: parent.width - 19
+                height: width
+                active: notificationReason === QEnums.NOTIFICATION_REASON_STARTERPACK_JOINED
+
+                sourceComponent: SkySvg {
+                    color: guiSettings.starterpackColor
+                    svg: SvgOutline.starterpack
+                }
+            }
+            Loader {
+                x: parent.x + 14
+                y: 5
+                width: parent.width - 19
+                height: width
+                active: [QEnums.NOTIFICATION_REASON_VERIFIED, QEnums.NOTIFICATION_REASON_UNVERIFIED].includes(notificationReason)
+
+                sourceComponent: Image {
+                    fillMode: Image.PreserveAspectFit
+                    source: "/images/verified_check.svg"
+                    asynchronous: true
+                }
+            }
+            Loader {
+                x: parent.x + 14
+                y: 5
+                width: parent.width - 19
+                height: width
+                active: notificationReason === QEnums.NOTIFICATION_REASON_FOLLOW
+
+                sourceComponent: Rectangle {
+                    radius: height / 2
+                    color: guiSettings.avatarDefaultColor
+
+                    SkySvg {
+                        x: 5
+                        y: height + 5
+                        width: parent.width - 10
+                        height: width
+                        color: "white"
+                        svg: SvgFilled.newFollower
+                    }
                 }
             }
 

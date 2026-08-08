@@ -22,21 +22,14 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
     mFollowsActivityStore(followsActivityStore)
 {
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
-            [this](const QString&){ changeData({ int(Role::ReplyToAuthor),
-                                 int(Role::NotificationReasonPostReplyToAuthor),
-                                 int(Role::NotificationPostRecord),
-                                 int(Role::NotificationPostRecordWithMedia),
-                                 int(Role::NotificationReasonPostRecord),
-                                 int(Role::NotificationReasonPostRecordWithMedia),
-                                 int(Role::NotificationPostContentLabeler) });
-            });
+            [this](const QString& did){
+                authorAdded(did);
+                labelerAdded(did);
+            },
+            Qt::QueuedConnection);
 
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
-            [this](const QString&){ changeData({
-                    int(Role::NotificationPostIsThread),
-                    int(Role::NotificationPostRecord),
-                    int(Role::NotificationPostRecordWithMedia) });
-            });
+            [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
 }
 
 void NotificationListModel::clear()
@@ -336,6 +329,88 @@ void NotificationListModel::addNotificationList(const NotificationList& list, bo
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();
+}
+
+void NotificationListModel::postIsThreadChanged(const QString& postUri)
+{
+    const bool* isThread = PostThreadCache::instance().getIsThread(postUri);
+
+    // If the post is not a thread, then model assumed correctly it is not a thread,
+    // so no change in the GUI.
+    if (!isThread || *isThread == false)
+        return;
+
+    for (int i = 0; i < (int)mList.size(); ++i)
+    {
+        const auto& notification = mList[i];
+
+        switch (notification.getReason())
+        {
+        case QEnums::NOTIFICATION_REASON_REPLY:
+        case QEnums::NOTIFICATION_REASON_MENTION:
+        case QEnums::NOTIFICATION_REASON_QUOTE:
+        case QEnums::NOTIFICATION_REASON_SUBSCRIBED_POST:
+            break;
+        default:
+            return;
+        }
+
+        if (notification.getUri() == postUri)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationPostIsThread) });
+
+        const auto post = notification.getNotificationPost(mPostCache);
+
+        const auto postRecord = post.getRecordView();
+
+        if (postRecord && postRecord->getUri() == postUri)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationPostRecord) });
+
+        const auto recordWithMedia = post.getRecordWithMediaView();
+
+        if (recordWithMedia)
+        {
+            const auto record = recordWithMedia->getRecordPtr();
+
+            if (record && record->getUri() == postUri)
+                emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationPostRecordWithMedia) });
+        }
+    }
+}
+
+void NotificationListModel::authorAdded(const QString& did)
+{
+    for (int i = 0; i < (int)mList.size(); ++i)
+    {
+        const auto& notification = mList[i];
+        const auto record = notification.getPostRecord();
+
+        if (record.isReply() && record.getReplyToAuthorDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::ReplyToAuthor) });
+
+        const auto reasonPost = notification.getReasonPost(mReasonPostCache);
+
+        if (reasonPost.isReply() && reasonPost.getReplyToAuthorDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationReasonPostReplyToAuthor) });
+
+        const auto reasonRecord = reasonPost.getRecordViewFromRecordOrRecordWithMedia();
+
+        if (reasonRecord && reasonRecord->isReply() && reasonRecord->getReplyRootAuthorDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationReasonPostRecord), int(Role::NotificationReasonPostRecordWithMedia) });
+
+        const auto post = notification.getNotificationPost(mPostCache);
+        const auto postRecord = post.getRecordViewFromRecordOrRecordWithMedia();
+
+        if (postRecord && postRecord->isReply() && postRecord->getReplyToAuthorDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationPostRecord), int(Role::NotificationPostRecordWithMedia) });
+    }
+}
+
+void NotificationListModel::labelerAdded(const QString& did)
+{
+    const auto* profile = AuthorCache::instance().get(did);
+
+    if (profile && profile->getAssociated().isLabeler())
+        changeData({ int(Role::NotificationPostContentLabeler), int(Role::NotificationPostRecord), int(Role::NotificationPostRecordWithMedia) });
 }
 
 void NotificationListModel::reportActivity(const Notification& notification) const

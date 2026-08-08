@@ -195,6 +195,9 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
+    void postIsThreadChanged(const QString& postUri);
+    void authorAdded(const QString& did);
+    void labelerAdded(const QString& did);
     void reportActivity(const Notification& notification) const;
     NotificationList createNotificationList(const ATProto::AppBskyNotification::Notification::List& rawList) const;
     void filterNotificationList(NotificationList& list) const;
