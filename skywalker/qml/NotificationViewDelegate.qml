@@ -221,6 +221,30 @@ Rectangle {
                 }
             }
 
+            // Unroll thread button
+            Loader {
+                anchors.top: parent.top
+                anchors.topMargin: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter
+                active: showPost() && notificationPostIsThread
+                asynchronous: true
+                visible: status === Loader.Ready
+
+                sourceComponent: SvgButton {
+                    svg: SvgOutline.thread
+                    accessibleName: qsTr("unroll thread")
+                    flat: true
+                    iconColor: skywalker.getUserSettings().threadColor
+                    background: Rectangle {
+                        implicitWidth: 34
+                        implicitHeight: 34
+                        radius: width / 2
+                        color: notification.color
+                    }
+                    onClicked: unrollPostThread()
+                }
+            }
+
             // Unwrap quote chain post
             Loader {
                 anchors.top: parent.top
