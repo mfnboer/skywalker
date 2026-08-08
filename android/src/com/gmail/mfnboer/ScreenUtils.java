@@ -30,7 +30,6 @@ public class ScreenUtils {
     private static PowerManager.WakeLock sWakeLock = null;
     private static boolean sStatusBarTransparent = false;
 
-    // Must match QEnums::InsertsSide
     public static final int INSETS_SIDE_TOP = 0;
     public static final int INSETS_SIDE_BOTTOM = 1;
     public static final int INSETS_SIDE_LEFT = 2;

@@ -10,10 +10,10 @@ SkyListView {
     property int previewIndex: 0
     property var previewImage
     readonly property int closeTransition: StackView.Immediate
-    property int headerHeight: root.SafeArea.margins.top // guiSettings.getStatusBarSize(QEnums.INSETS_SIDE_TOP)
-    property int footerHeight: root.SafeArea.margins.bottom // guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
-    property int leftMarginWidth: root.SafeArea.margins.left // guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_LEFT)
-    property int rightMarginWidth: root.SafeArea.margins.right // guiSettings.getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT)
+    property int headerHeight: root.SafeArea.margins.top
+    property int footerHeight: root.SafeArea.margins.bottom
+    property int leftMarginWidth: root.SafeArea.margins.left
+    property int rightMarginWidth: root.SafeArea.margins.right
     readonly property bool noSideBar: true
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     readonly property bool acceptsInteractions: underlyingModel ? underlyingModel.feedAcceptsInteractions : false

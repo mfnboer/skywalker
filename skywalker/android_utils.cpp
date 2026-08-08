@@ -96,17 +96,6 @@ void AndroidUtils::setNavigationBarColorAndMode(QColor color, bool isLightMode)
 #endif
 }
 
-int AndroidUtils::getNavigationBarSize(QEnums::InsetsSide side)
-{
-#ifdef Q_OS_ANDROID
-    return (int)QJniObject::callStaticMethod<jint>(
-        "com/gmail/mfnboer/ScreenUtils", "getNavigationBarSize", "(I)I", (jint)side);
-#else
-    Q_UNUSED(side)
-    return 0;
-#endif
-}
-
 void AndroidUtils::setStatusBarColor(QColor color, QEnums::DisplayMode displayMode)
 {
     const bool isLightMode = (displayMode == QEnums::DISPLAY_MODE_LIGHT);
@@ -123,17 +112,6 @@ void AndroidUtils::setStatusBarColorAndMode(QColor color, bool isLightMode)
 #else
     Q_UNUSED(color)
     Q_UNUSED(isLightMode)
-#endif
-}
-
-int AndroidUtils::getStatusBarSize(QEnums::InsetsSide side)
-{
-#ifdef Q_OS_ANDROID
-    return (int)QJniObject::callStaticMethod<jint>(
-        "com/gmail/mfnboer/ScreenUtils", "getStatusBarSize", "(I)I", (jint)side);
-#else
-    Q_UNUSED(side)
-    return 0;
 #endif
 }
 
@@ -165,17 +143,6 @@ void AndroidUtils::setStatusBarLightMode(bool isLightMode)
         "(Z)V", (jboolean)isLightMode);
 #else
     Q_UNUSED(isLightMode)
-#endif
-}
-
-int AndroidUtils::getDisplayCutoutSize(QEnums::InsetsSide side)
-{
-#ifdef Q_OS_ANDROID
-    return (int)QJniObject::callStaticMethod<jint>(
-        "com/gmail/mfnboer/ScreenUtils", "getDisplayCutoutSize", "(I)I", (jint)side);
-#else
-    Q_UNUSED(side)
-    return 0;
 #endif
 }
 

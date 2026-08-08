@@ -508,15 +508,6 @@ public:
     Q_ENUM(ContentMode)
     static ContentMode contentModeToFilterMode(ContentMode contentMode);
 
-    enum InsetsSide
-    {
-        INSETS_SIDE_TOP,
-        INSETS_SIDE_BOTTOM,
-        INSETS_SIDE_LEFT,
-        INSETS_SIDE_RIGHT
-    };
-    Q_ENUM(InsetsSide)
-
     enum FeedType
     {
         FEED_GENERIC,

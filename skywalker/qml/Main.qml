@@ -1267,10 +1267,6 @@ ApplicationWindow {
         id: displayUtils
         skywalker: skywalker
 
-        onStatusBarColorChanged: {
-            guiSettings.updateScreenMargins()
-        }
-
         function updateBackground() {
             displayUtils.setNavigationBarColor(guiSettings.backgroundColor)
             displayUtils.setStatusBarColor(guiSettings.headerColor)

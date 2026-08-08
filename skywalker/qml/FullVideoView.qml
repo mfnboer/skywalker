@@ -188,7 +188,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        guiSettings.updateScreenMargins()
         setSystemBarsColor()
     }
 }

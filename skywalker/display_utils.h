@@ -25,14 +25,11 @@ public:
     Q_INVOKABLE static void hideSystemBars();
     Q_INVOKABLE void setNavigationBarColor(QColor color) const;
     Q_INVOKABLE static void setNavigationBarColorAndMode(QColor color, bool isLightMode);
-    Q_INVOKABLE static int getNavigationBarSize(QEnums::InsetsSide side);
     Q_INVOKABLE void setStatusBarColor(QColor color);
     Q_INVOKABLE void setStatusBarColorAndMode(QColor color, bool isLightMode);
-    Q_INVOKABLE static int getStatusBarSize(QEnums::InsetsSide side);
     Q_INVOKABLE void setStatusBarTransparent(bool transparent, QColor color);
     Q_INVOKABLE void setStatusBarTransparentAndMode(bool transparent, QColor color, bool isLightMode);
     Q_INVOKABLE void resetStatusBarLightMode();
-    Q_INVOKABLE static int getDisplayCutoutSize(QEnums::InsetsSide side);
 
 signals:
     void statusBarColorChanged();

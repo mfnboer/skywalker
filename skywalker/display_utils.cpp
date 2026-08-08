@@ -59,11 +59,6 @@ void DisplayUtils::setNavigationBarColorAndMode(QColor color, bool isLightMode)
     AndroidUtils::setNavigationBarColorAndMode(color, isLightMode);
 }
 
-int DisplayUtils::getNavigationBarSize(QEnums::InsetsSide side)
-{
-    return AndroidUtils::getNavigationBarSize(side);
-}
-
 void DisplayUtils::setStatusBarColor(QColor color)
 {
     Q_ASSERT(mSkywalker);
@@ -78,11 +73,6 @@ void DisplayUtils::setStatusBarColorAndMode(QColor color, bool isLightMode)
     AndroidUtils::setStatusBarColorAndMode(color, isLightMode);
     setInternalStatusBarColor(color);
     mIsLightMode = isLightMode;
-}
-
-int DisplayUtils::getStatusBarSize(QEnums::InsetsSide side)
-{
-    return AndroidUtils::getStatusBarSize(side);
 }
 
 void DisplayUtils::setStatusBarTransparent(bool transparent, QColor color)
@@ -104,11 +94,6 @@ void DisplayUtils::setStatusBarTransparentAndMode(bool transparent, QColor color
 void DisplayUtils::resetStatusBarLightMode()
 {
     AndroidUtils::setStatusBarLightMode(mIsLightMode);
-}
-
-int DisplayUtils::getDisplayCutoutSize(QEnums::InsetsSide side)
-{
-    return AndroidUtils::getDisplayCutoutSize(side);
 }
 
 void DisplayUtils::setInternalStatusBarColor(QColor color)

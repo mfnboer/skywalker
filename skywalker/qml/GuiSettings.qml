@@ -16,23 +16,6 @@ Item {
     property int leftMargin: root.SafeArea.margins.left
     property int rightMargin: root.SafeArea.margins.right
 
-    // DEPRECATED: SafeArea margins seem to work better in Qt6.11.1
-    // property int footerMargin: getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
-    // property int headerMargin: getStatusBarSize(QEnums.INSETS_SIDE_TOP)
-    // property int leftMargin: Math.max(getNavigationBarSize(QEnums.INSETS_SIDE_LEFT), getDisplayCutoutSize(QEnums.INSETS_SIDE_LEFT))
-    // property int rightMargin: Math.max(getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT), getDisplayCutoutSize(QEnums.INSETS_SIDE_RIGHT))
-
-    function updateScreenMargins() {
-        // footerMargin = getNavigationBarSize(QEnums.INSETS_SIDE_BOTTOM)
-        // headerMargin = getStatusBarSize(QEnums.INSETS_SIDE_TOP)
-        // leftMargin = Math.max(getNavigationBarSize(QEnums.INSETS_SIDE_LEFT), getDisplayCutoutSize(QEnums.INSETS_SIDE_LEFT))
-        // rightMargin = Math.max(getNavigationBarSize(QEnums.INSETS_SIDE_RIGHT), getDisplayCutoutSize(QEnums.INSETS_SIDE_RIGHT))
-
-        // console.debug("MARGINS          L:", leftMargin, "R:", rightMargin, "T:", headerMargin, "B:", footerMargin)
-        // console.debug("SAFE MARGINS     L:", root.SafeArea.margins.left, "R:", root.SafeArea.margins.right, "T:", root.SafeArea.margins.top, "B:", root.SafeArea.margins.bottom)
-        // console.debug("SAFE ADD MARGINS L:", root.SafeArea.additionalMargins.left, "R:", root.SafeArea.additionalMargins.right, "T:", root.SafeArea.additionalMargins.top, "B:", root.SafeArea.additionalMargins.bottom)
-    }
-
     // Geometry
     readonly property int avatarSmallWidth: 24
     readonly property int draftImageHeight: 180
@@ -595,18 +578,6 @@ Item {
             return guiSettings.statsIconHeight + padding
     }
 
-    function getNavigationBarSize(side) {
-        return displayUtils.getNavigationBarSize(side) / Screen.devicePixelRatio
-    }
-
-    function getStatusBarSize(side) {
-        return displayUtils.getStatusBarSize(side) / Screen.devicePixelRatio
-    }
-
-    function getDisplayCutoutSize(side) {
-        return displayUtils.getDisplayCutoutSize(side) / Screen.devicePixelRatio
-    }
-
     function stripHttpFromLink(link) {
         let text = link
 
@@ -643,12 +614,7 @@ Item {
         return imageCount > guiSettings.maxPreviewImageGridThreshold
     }
 
-    Component.onDestruction: {
-        root.onIsPortraitChanged.disconnect(updateScreenMargins)
-    }
-
     Component.onCompleted: {
-        root.onIsPortraitChanged.connect(updateScreenMargins)
         console.debug("Font scale factor:", fontScaleFactor)
         console.debug("Font line spacing:", fontMetrics.lineSpacing)
         console.debug("App font height:", appFontHeight)
