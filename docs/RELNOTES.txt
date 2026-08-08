@@ -1,4 +1,4 @@
-next
+4.44
 ====
 * Show descriptions for trending topics
 * Show thread symbol on post that is the first of a thread in notifications
