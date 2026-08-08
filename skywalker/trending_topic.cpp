@@ -53,6 +53,11 @@ QString TrendingTopic::getCategory() const
     return mTopic ? mTopic->mCategory.value_or("") : "";
 }
 
+QString TrendingTopic::getDescription() const
+{
+    return mTopic ? mTopic->mDescription.value_or("") : "";
+}
+
 int TrendingTopic::getPostCount() const
 {
     return mTopic ? mTopic->mPostCount : 0;

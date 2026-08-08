@@ -17,6 +17,7 @@ class TrendingTopic : public NormalizedWordIndex
     Q_PROPERTY(QDateTime startedAt READ getStartedAt FINAL)
     Q_PROPERTY(QEnums::TrendStatus status READ getStatus FINAL)
     Q_PROPERTY(QString category READ getCategory FINAL)
+    Q_PROPERTY(QString description READ getDescription FINAL)
     Q_PROPERTY(int postCount READ getPostCount FINAL)
     Q_PROPERTY(QEnums::ContentMode contentMode READ getContentMode FINAL)
     QML_VALUE_TYPE(trendingtopic)
@@ -33,6 +34,7 @@ public:
     QDateTime getStartedAt() const;
     QEnums::TrendStatus getStatus() const;
     QString getCategory() const;
+    QString getDescription() const;
     int getPostCount() const;
     QEnums::ContentMode getContentMode() const { return mContentMode; }
 

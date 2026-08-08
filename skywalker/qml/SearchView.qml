@@ -592,39 +592,41 @@ SkyPage {
                             id: topicIcon
                             x: page.margin
                             y: height + 10
-                            width: 34
+                            width: 24
                             height: width
                             color: guiSettings.textColor
                             svg: modelData.topic.contentMode === QEnums.CONTENT_MODE_VIDEO ? SvgOutline.film : SvgOutline.trending
                         }
 
-                        RowLayout {
+                        AccessibleText {
                             id: topicTitle
                             y: 10
                             anchors.left: topicIcon.right
                             anchors.right: parent.right
-                            anchors.leftMargin: guiSettings.threadColumnWidth - topicIcon.width
+                            anchors.leftMargin: 10
                             anchors.rightMargin: page.margin
+                            elide: Text.ElideRight
+                            font.bold: true
+                            text: modelData.topic.topic + (modelData.topic.status === QEnums.TREND_STATUS_HOT ? " 🔥" : "")
+                        }
 
-                            AccessibleText {
-                                Layout.fillWidth: true
-                                elide: Text.ElideRight
-                                font.bold: true
-                                text: modelData.topic.topic + (modelData.topic.status === QEnums.TREND_STATUS_HOT ? " 🔥" : "")
-                            }
-
-                            DurationLabel {
-                                Layout.alignment: Qt.AlignVCenter
-                                durationSeconds: modelData.topicAgeSeconds
-                                visible: modelData.topicAgeSeconds > 0
-                            }
+                        AccessibleText {
+                            id: topicDescription
+                            anchors.left: topicTitle.left
+                            anchors.right: topicTitle.right
+                            anchors.top: topicTitle.bottom
+                            maximumLineCount: 3
+                            wrapMode: Text.Wrap
+                            elide: Text.ElideRight
+                            text: modelData.topic.description
+                            visible: modelData.topic.description
                         }
 
                         RowLayout {
                             id: topicDetails
                             anchors.left: topicTitle.left
                             anchors.right: topicTitle.right
-                            anchors.top: topicTitle.bottom
+                            anchors.top: topicDescription.visible ? topicDescription.bottom : topicTitle.bottom
 
                             AccessibleText {
                                 topPadding: 5
