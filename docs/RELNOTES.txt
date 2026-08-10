@@ -1,6 +1,7 @@
 next
 ====
-* Fix mute author from post menu
+* Fix: post composer recognizes web link containing !-symbol
+* Fix: mute author from post menu
 
 4.44
 ====
