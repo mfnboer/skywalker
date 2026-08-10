@@ -1,3 +1,7 @@
+next
+====
+* Fix mute author from post menu
+
 4.44
 ====
 * Show descriptions for trending topics

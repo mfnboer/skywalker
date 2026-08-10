@@ -1994,7 +1994,7 @@ ApplicationWindow {
     }
 
     function muteAuthor(author, muteByDid = "") {
-        let gu = getGraphUtils(blockByDid)
+        let gu = getGraphUtils(muteByDid)
         let did = author.did
         showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt), muteByDid)
     }

@@ -1387,7 +1387,7 @@ SkyPage {
                     }
 
                     function refresh() {
-                        getAuthorList(listListModelId)
+                        getAuthorList(verificationModelId)
                     }
 
                     function clear() {
