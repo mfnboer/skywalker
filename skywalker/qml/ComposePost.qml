@@ -38,6 +38,7 @@ SkyPage {
 
     property int restrictionsListModelId: -1
     property bool allowQuoting: true
+    property bool copyAndQuote: false
 
     // Reply-to (first post)
     property basicprofile replyToAuthor
@@ -3244,7 +3245,9 @@ SkyPage {
         allowReplyFollowing = postInteractionSettings.allowFollowing
         allowListUrisFromDraft = postInteractionSettings.allowListUris
         restrictReply = postInteractionSettings.allowNobody || allowReplyMentioned || allowReplyFollower || allowReplyFollowing || allowListUrisFromDraft.length > 0
-        allowQuoting = !postInteractionSettings.disableEmbedding
+
+        if (!copyAndQuote)
+            allowQuoting = !postInteractionSettings.disableEmbedding
 
         for (const mentionDid of replyToMentionDids) {
             if (mentionDid !== userDid)

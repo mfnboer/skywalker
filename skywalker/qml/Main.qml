@@ -1623,7 +1623,8 @@ ApplicationWindow {
     }
 
     function doComposeQuote(quoteUri, quoteCid, quoteText, quoteDateTime, quoteAuthor,
-                            initialText = "", feedDid = "", feedContext = "", quoteByDid = "")
+                            initialText = "", feedDid = "", feedContext = "", quoteByDid = "",
+                            copyAndQuote = false)
     {
         let component = guiSettings.createComponent("ComposePost.qml")
         let page = component.createObject(root, {
@@ -1636,7 +1637,8 @@ ApplicationWindow {
                 quoteDateTime: quoteDateTime,
                 quoteAuthor: quoteAuthor,
                 quoteFeedDid: feedDid,
-                quoteFeedContext: feedContext
+                quoteFeedContext: feedContext,
+                copyAndQuote: copyAndQuote
         })
         page.onClosed.connect(() => { popStack() })
         pushStack(page)

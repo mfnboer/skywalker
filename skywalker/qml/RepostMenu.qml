@@ -67,7 +67,7 @@ SkyMenu {
                                 repostMenu.repostText, repostMenu.repostDateTime,
                                 repostMenu.repostAuthor, repostMenu.repostPlainText,
                                 repostMenu.repostFeedDid, repostMenu.repostFeedContext,
-                                repostMenu.repostByDid)
+                                repostMenu.repostByDid, true)
         }
     }
 
