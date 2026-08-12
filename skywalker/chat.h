@@ -30,7 +30,7 @@ public:
     static constexpr int MAX_GROUP_NAME_LEN = ATProto::Client::MAX_GRAPHEMES_GROUP_NAME;
 
     explicit Chat(ATProto::Client::SharedPtr& bsky, const QString& mUserDid,
-                  const IProfileStore& mutedReposts, const IProfileStore& timelineHide,
+                  const IProfileStore& timelineHide,
                   const ContentFilter& contentFilter,
                   FollowsActivityStore& followsActivityStore, QObject* parent = nullptr);
 
@@ -188,7 +188,6 @@ private:
     std::unique_ptr<ATProto::ChatMaster> mChatMaster;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     const QString& mUserDid;
-    const IProfileStore& mMutedReposts;
     const IProfileStore& mTimelineHide;
     const ContentFilter& mContentFilter;
     FollowsActivityStore& mFollowsActivityStore;

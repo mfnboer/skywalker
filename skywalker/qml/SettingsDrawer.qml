@@ -14,7 +14,6 @@ SkyDrawer {
     signal contentFiltering()
     signal blockedAccounts()
     signal mutedAccounts()
-    signal mutedReposts()
     signal modLists()
     signal userLists()
     signal mutedWords()
@@ -135,12 +134,6 @@ SkyDrawer {
                         svg: SvgOutline.mute
                         popup: moderationMenu
                         onClicked: mutedAccounts()
-                    }
-                    SkyMenuButton {
-                        text: qsTr("Muted Reposts")
-                        svg: SvgOutline.repost
-                        popup: moderationMenu
-                        onClicked: mutedReposts()
                     }
                     SkyMenuButton {
                         text: qsTr("Moderation Lists")

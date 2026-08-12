@@ -11,13 +11,11 @@ ChatAuthorListModel::ListEntry::ListEntry(const ChatBasicProfile& profile, QDate
 }
 
 ChatAuthorListModel::ChatAuthorListModel(Type type,
-                                 const IProfileStore& mutedReposts,
                                  const IProfileStore& timelineHide,
                                  const ContentFilter& contentFilter,
                                  QObject* parent) :
     QAbstractListModel(parent),
     mType(type),
-    mMutedReposts(mutedReposts),
     mTimelineHide(timelineHide),
     mContentFilter(contentFilter)
 {
@@ -53,7 +51,7 @@ QVariant ChatAuthorListModel::data(const QModelIndex& index, int role) const
     case Role::AuthorMuted:
         return change && change->mMuted ? *change->mMuted : author.getViewer().isMuted();
     case Role::MutedReposts:
-        return change && change->mMutedReposts ? *change->mMutedReposts : mMutedReposts.contains(author.getDid());
+        return change && change->mMutedReposts ? *change->mMutedReposts : author.getViewer().isMutedOnlyReposts();
     case Role::HideFromTimeline:
         return mTimelineHide.contains(author.getDid());
     case Role::EndOfList:

@@ -12,7 +12,6 @@ AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& lis
 }
 
 AuthorListModel::AuthorListModel(Type type, const QString& atId,
-                                 const IProfileStore& mutedReposts,
                                  const IProfileStore& timelineHide,
                                  const FollowsActivityStore& followsActivityStore,
                                  const ContentFilter& contentFilter,
@@ -20,7 +19,6 @@ AuthorListModel::AuthorListModel(Type type, const QString& atId,
     QAbstractListModel(parent),
     mType(type),
     mAtId(atId),
-    mMutedReposts(mutedReposts),
     mTimelineHide(timelineHide),
     mFollowsActivityStore(followsActivityStore),
     mContentFilter(contentFilter)
@@ -61,7 +59,7 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
     case Role::AuthorMuted:
         return change && change->mMuted ? *change->mMuted : author.getViewer().isMuted();
     case Role::MutedReposts:
-        return change && change->mMutedReposts ? *change->mMutedReposts : mMutedReposts.contains(author.getDid());
+        return change && change->mMutedReposts ? *change->mMutedReposts : author.getViewer().isMutedOnlyReposts();
     case Role::HideFromTimeline:
         return mTimelineHide.contains(author.getDid());
     case Role::EndOfList:

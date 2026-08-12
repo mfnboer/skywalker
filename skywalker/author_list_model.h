@@ -46,7 +46,7 @@ public:
     using Type = QEnums::AuthorListType;
     using Ptr = std::unique_ptr<AuthorListModel>;
 
-    AuthorListModel(Type type, const QString& atId, const IProfileStore& mutedReposts,
+    AuthorListModel(Type type, const QString& atId,
                     const IProfileStore& timelineHide,
                     const FollowsActivityStore& followsActivityStore,
                     const ContentFilter& contentFilter, QObject* parent = nullptr);
@@ -97,7 +97,6 @@ private:
 
     Type mType;
     QString mAtId;
-    const IProfileStore& mMutedReposts;
     const IProfileStore& mTimelineHide;
     const FollowsActivityStore& mFollowsActivityStore;
     const ContentFilter& mContentFilter;

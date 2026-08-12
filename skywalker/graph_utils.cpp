@@ -154,7 +154,7 @@ void GraphUtils::block(const QString& did, QDateTime expiresAt)
             if (expiresAt.isValid())
             {
                 auto* settings = mSkywalker->getUserSettings();
-                settings->addBlockWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{blockingUri, expiresAt});
+                settings->addBlockWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{blockingUri, expiresAt, false, false});
             }
 
             emit blockOk(blockingUri, expiresAt);
@@ -275,7 +275,7 @@ void GraphUtils::setBlockBusy(bool busy)
     }
 }
 
-void GraphUtils::mute(const QString& did, QDateTime expiresAt)
+void GraphUtils::mute(const BasicProfile& profile, QDateTime expiresAt)
 {
     if (mMuteBusy)
         return;
@@ -283,24 +283,30 @@ void GraphUtils::mute(const QString& did, QDateTime expiresAt)
     if (!bskyClient())
         return;
 
+    const QString& did = profile.getDid();
     setMuteBusy(true);
 
-    bskyClient()->muteActor(did, false, false,
-        [this, presence=getPresence(), did, expiresAt]{
+    bskyClient()->muteActor(did, {}, {},
+        [this, presence=getPresence(), profile, expiresAt]{
             if (!presence)
                 return;
 
             setMuteBusy(false);
+            const QString& did = profile.getDid();
 
             mSkywalker->makeLocalModelChange(
                 [did](LocalAuthorModelChanges* model){
                     model->updateMuted(did, true);
+                    model->updateMutedReposts(did, false);
                 });
 
             if (expiresAt.isValid())
             {
+                const auto& viewer = profile.getViewer();
                 auto* settings = mSkywalker->getUserSettings();
-                settings->addMuteWithExpiry(mSkywalker->getUserDid(), UriWithExpiry{did, expiresAt});
+                settings->addMuteWithExpiry(
+                    mSkywalker->getUserDid(),
+                    UriWithExpiry{did, expiresAt, viewer.isMutedOnlyReposts(), viewer.isMutedOnlyQuotes()});
             }
 
             emit muteOk(expiresAt);
@@ -315,8 +321,10 @@ void GraphUtils::mute(const QString& did, QDateTime expiresAt)
         });
 }
 
-void GraphUtils::unmute(const QString& did)
+void GraphUtils::unmute(const QString& did, bool unmuteRepostsQuotes)
 {
+    qDebug() << "Unmute:" << did << "unmuteRepostsQuotes:" << unmuteRepostsQuotes;
+
     if (mMuteBusy)
         return;
 
@@ -324,36 +332,90 @@ void GraphUtils::unmute(const QString& did)
         return;
 
     setMuteBusy(true);
+    auto* settings = mSkywalker->getUserSettings();
+    const auto* muteWithExpiry = settings->getMuteWithExpiry(mSkywalker->getUserDid(), did);
+    qDebug() << (muteWithExpiry ? "Unmute mute with expiry" : "Unmute unconditional mute");
 
-    bskyClient()->unmuteActor(did,
-        [this, presence=getPresence(), did]{
-            if (!presence)
-                return;
+    if (unmuteRepostsQuotes || !muteWithExpiry || (!muteWithExpiry->isOnlyReposts() && !muteWithExpiry->isOnlyQuotePosts()))
+    {
+        bskyClient()->unmuteActor(did,
+            [this, presence=getPresence(), did, unmuteRepostsQuotes]{
+                if (!presence)
+                    return;
 
-            setMuteBusy(false);
+                setMuteBusy(false);
 
-            mSkywalker->makeLocalModelChange(
-                [did](LocalAuthorModelChanges* model){
-                    model->updateMuted(did, false);
-                });
+                mSkywalker->makeLocalModelChange(
+                    [did](LocalAuthorModelChanges* model){
+                        model->updateMuted(did, false);
+                        model->updateMutedReposts(did, false);
+                    });
 
-            auto* settings = mSkywalker->getUserSettings();
+                auto* settings = mSkywalker->getUserSettings();
 
-            // NOTE: when a user has been unmuted already via another client
-            // we still get here, i.e. an unmute succeeds in this case.
-            if (settings->removeMuteWithExpiry(mSkywalker->getUserDid(), did))
-                expireMutes();
+                // NOTE: when a user has been unmuted already via another client
+                // we still get here, i.e. an unmute succeeds in this case.
+                if (settings->removeMuteWithExpiry(mSkywalker->getUserDid(), did))
+                    expireMutes();
 
-            emit unmuteOk();
-        },
-        [this, presence=getPresence()](const QString& error, const QString& msg){
-            if (!presence)
-                return;
+                if (unmuteRepostsQuotes)
+                    emit muteRepostsQuotesOk(did, false, false);
+                else
+                    emit unmuteOk(false, false);
+            },
+            [this, presence=getPresence(), did, unmuteRepostsQuotes](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
 
-            qDebug() << "Unmute failed failed:" << error << " - " << msg;
-            setMuteBusy(false);
-            emit unmuteFailed(msg);
-        });
+                qDebug() << "Unmute failed:" << error << " - " << msg;
+                setMuteBusy(false);
+
+                if (unmuteRepostsQuotes)
+                    emit muteRepostsQuotesFailed(did, msg);
+                else
+                    emit unmuteFailed(msg);
+            });
+    }
+    else
+    {
+        // Restore the scoped muted from for the expiry mute was set.
+        Q_ASSERT(muteWithExpiry);
+        qDebug() << "Restore from mute with expiry, onlyReposts:" << muteWithExpiry->isOnlyReposts() << "onlyQuotes:" << muteWithExpiry->isOnlyQuotePosts();
+
+        bool muteOnlyReposts = muteWithExpiry->isOnlyReposts();
+        bool muteOnlyQuotes = muteWithExpiry->isOnlyQuotePosts();
+
+        bskyClient()->muteActor(did, muteOnlyReposts, muteOnlyQuotes,
+            [this, presence=getPresence(), did, muteOnlyReposts, muteOnlyQuotes]{
+                if (!presence)
+                    return;
+
+                setMuteBusy(false);
+
+                mSkywalker->makeLocalModelChange(
+                    [did, muteOnlyReposts](LocalAuthorModelChanges* model){
+                        model->updateMuted(did, false);
+                        model->updateMutedReposts(did, muteOnlyReposts);
+                    });
+
+                auto* settings = mSkywalker->getUserSettings();
+
+                // NOTE: when a user has been unmuted already via another client
+                // we still get here, i.e. an unmute succeeds in this case.
+                if (settings->removeMuteWithExpiry(mSkywalker->getUserDid(), did))
+                    expireMutes();
+
+                emit unmuteOk(muteOnlyReposts, muteOnlyQuotes);
+            },
+            [this, presence=getPresence()](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
+
+                qDebug() << "Unmute failed:" << error << " - " << msg;
+                setMuteBusy(false);
+                emit unmuteFailed(msg);
+            });
+    }
 }
 
 void GraphUtils::setMuteBusy(bool busy)
@@ -584,33 +646,36 @@ void GraphUtils::deleteList(const QString& listUri)
     if (!graphMaster())
         return;
 
-    graphMaster()->undo(listUri,
+    mGraphMaster->batchDeleteAllUsersFromList(listUri,
         [this, presence=getPresence(), listUri]{
-            if (!presence)
-                return;
+            graphMaster()->undo(listUri,
+                [this, presence=getPresence(), listUri]{
+                    if (!presence)
+                        return;
 
-            ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
-            if (listUri == mutedReposts.getListUri())
-            {
-                qDebug() << "Muted reposts list deleted!";
-                mutedReposts.setListCreated(false);
-            }
+                    const bool listHidden = mSkywalker->getTimelineHide()->hasList(listUri);
+                    emit GraphListener::instance().listDeleted(listUri);
 
-            const bool listHidden = mSkywalker->getTimelineHide()->hasList(listUri);
-            emit GraphListener::instance().listDeleted(listUri);
+                    if (listHidden)
+                        unhideList(listUri);
 
-            if (listHidden)
-                unhideList(listUri);
+                    syncList(listUri, false);
 
-            syncList(listUri, false);
+                    emit deleteListOk();
+                },
+                [this, presence=getPresence()](const QString& error, const QString& msg){
+                    if (!presence)
+                        return;
 
-            emit deleteListOk();
+                    qDebug() << "Delete list failed:" << error << " - " << msg;
+                    emit deleteListFailed(msg);
+                });
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Delete list failed:" << error << " - " << msg;
+            qDebug() << "Delete list users failed:" << error << " - " << msg;
             emit deleteListFailed(msg);
         });
 }
@@ -677,23 +742,10 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
                     model->updateMemberListItemUri(listUri, itemUri);
                 });
 
-            ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+            // ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
             auto* verificationUtils = mSkywalker->getVerificationUtils();
 
-            if (listUri == mutedReposts.getListUri())
-            {
-                qDebug() << "List item is a muted repost, list-uri:" << listUri
-                         << "item-uri:" << itemUri << "did:" << profile.getDid();
-                mutedReposts.add(profile, itemUri);
-
-                mSkywalker->makeLocalModelChange(
-                    [did=profile.getDid()](LocalAuthorModelChanges* model){
-                        model->updateMutedReposts(did, true);
-                    });
-
-                emit muteRepostsOk();
-            }
-            else if (listUri == verificationUtils->getListUri())
+            if (listUri == verificationUtils->getListUri())
             {
                 qDebug() << "List item is a trusted verifier, list-uri:" << listUri
                          << "item-uri:" << itemUri << "did:" << profile.getDid();
@@ -710,15 +762,9 @@ void GraphUtils::addListUser(const QString& listUri, const BasicProfile& profile
                 return;
 
             qDebug() << "addListUser:" << error << " - " << msg;
-            ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
             auto* verificationUtils = mSkywalker->getVerificationUtils();
 
-            if (listUri == mutedReposts.getListUri())
-            {
-                qDebug() << "List item is a muted repost, list-uri:" << listUri;
-                emit muteRepostsFailed(msg);
-            }
-            else if (listUri == verificationUtils->getListUri())
+            if (listUri == verificationUtils->getListUri())
             {
                 qDebug() << "List item is a trusted verifier, list-uri:" << listUri;
                 emit addTrustedVerifierFailed(msg);
@@ -743,29 +789,9 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
                     model->updateMemberListItemUri(listUri, {});
                 });
 
-            ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
             auto* verificationUtils = mSkywalker->getVerificationUtils();
 
-            if (listUri == mutedReposts.getListUri())
-            {
-                qDebug() << "List item is a muted repost, list-uri:" << listUri << "item-uri:" << listItemUri;
-                const auto* did = mutedReposts.getDidByListItemUri(listItemUri);
-
-                if (did)
-                {
-                    qDebug() << "Remove muted repost:" << *did;
-                    const QString didCopy = *did;
-                    mutedReposts.remove(*did);
-
-                    mSkywalker->makeLocalModelChange(
-                        [didCopy](LocalAuthorModelChanges* model){
-                            model->updateMutedReposts(didCopy, false);
-                        });
-
-                    emit unmuteRepostsOk();
-                }
-            }
-            else if (listUri == verificationUtils->getListUri())
+            if (listUri == verificationUtils->getListUri())
             {
                 qDebug() << "List item is a trusted verifier, list-uri:" << listUri << "item-uri:" << listItemUri;
                 Q_ASSERT(!listItemDid.isEmpty());
@@ -781,12 +807,9 @@ void GraphUtils::removeListUser(const QString& listUri, const QString& listItemU
                 return;
 
             qDebug() << "Remove list user failed:" << error << " - " << msg;
-            ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
             auto* verificationUtils = mSkywalker->getVerificationUtils();
 
-            if (listUri == mutedReposts.getListUri())
-                emit unmuteRepostsFailed(msg);
-            else if (listUri == verificationUtils->getListUri())
+            if (listUri == verificationUtils->getListUri())
                 emit removeTrustedVerifierFailed(msg);
 
             emit removeListUserFailed(msg);
@@ -991,65 +1014,159 @@ void GraphUtils::hideFollowing(const QString& listUri, bool hide)
         });
 }
 
-bool GraphUtils::areRepostsMuted(const QString& did) const
+void GraphUtils::muteRepostsQuotes(const QString& did, bool reposts, bool quotes)
 {
-    Q_ASSERT(mSkywalker);
-    return mSkywalker->getMutedReposts().contains(did);
+    qDebug() << "Mute:" << did << "reposts:" << reposts << "quotes:" << quotes;
+
+    if (mMuteBusy)
+        return;
+
+    if (!reposts && !quotes)
+    {
+        unmute(did, true);
+        return;
+    }
+
+    if (!bskyClient())
+        return;
+
+    setMuteBusy(true);
+
+    bskyClient()->muteActor(did, reposts, quotes,
+        [this, presence=getPresence(), did, reposts, quotes]{
+            if (!presence)
+                return;
+
+            qDebug() << "Mute reposts/quotes succeeded:" << did << "reposts:" << reposts << "quotes:" << quotes;
+            setMuteBusy(false);
+            emit muteRepostsQuotesOk(did, reposts, quotes);
+        },
+        [this, presence=getPresence(), did](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Mute reposts/quotes failed:" << did << error << "-" << msg;
+            setMuteBusy(false);
+            emit muteRepostsQuotesFailed(did, msg);
+        });
 }
 
-void GraphUtils::muteReposts(const BasicProfile& profile)
+bool GraphUtils::migrateMutedRepostsToBsky(const std::function<void()>& doneCb)
 {
-    Q_ASSERT(mSkywalker);
+    qDebug() << "Migrate muted reposts to bsky";
     const ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
 
     if (!mutedReposts.isListCreated())
     {
-        if (!graphMaster())
-            return;
-
-        if (mutedReposts.hasListInitFailed())
-        {
-            emit muteRepostsFailed(tr("Mute reposts failed"));
-            return;
-        }
-
-        graphMaster()->createList(ATProto::AppBskyGraph::ListPurpose::MOD_LIST,
-            LIST_NAME_MUTED_REPOSTS,
-            "Used by Skywalker to keep track of muted reposts. Do not delete.",
-            {}, {}, "",
-            [this, presence=getPresence(), profile](const QString& uri, const QString&){
-                if (!presence)
-                    return;
-
-                auto& mutedReposts = mSkywalker->getMutedReposts();
-                mutedReposts.setListUri(uri);
-                mutedReposts.setListCreated(true);
-                addListUser(uri, profile);
-            },
-            [this, presence=getPresence()](const QString& error, const QString& msg){
-                if (!presence)
-                    return;
-
-                qDebug() << "Create mute reposts list failed:" << error << " - " << msg;
-                emit muteRepostsFailed(msg);
-            });
+        qDebug() << "No migration needed";
+        return false;
     }
-    else
+
+    if (mSkywalker->getUserSettings()->getMutedRepostsMigrationAttempts(mSkywalker->getUserDid()) >= 8)
     {
-        addListUser(mutedReposts.getListUri(), profile);
+        qWarning() << "Maximum migration attempts reached";
+        return false;
     }
+
+    const auto& didProfileMap = mutedReposts.getDidProfileMap();
+    std::vector<BasicProfile> profiles;
+    profiles.reserve(didProfileMap.size());
+
+    for (const auto& [did, profile] : didProfileMap)
+        profiles.push_back(profile);
+
+    qDebug() << "Number of mutes:" << profiles.size();
+    migrateMutedRepostsToBskyContinue(profiles, doneCb);
+    return true;
 }
 
-void GraphUtils::unmuteReposts(const QString& did)
+void GraphUtils::migrateMutedRepostsToBskyContinue(const std::vector<BasicProfile>& profiles, const std::function<void()>& doneCb, int index, bool hasError)
 {
-    Q_ASSERT(mSkywalker);
-    ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
-    const QString* listItemUri = mutedReposts.getListItemUri(did);
+    if (index >= (int)profiles.size())
+    {
+        if (hasError)
+        {
+            qDebug() << "Muted reposts migrated with failure";
+            incrementMigrateMutedRepostsFailed();
+            doneCb();
+            return;
+        }
+        else
+        {
+            migrateMutedRepostsToBskyDeleteList(doneCb);
+            return;
+        }
+    }
 
-    if (!listItemUri)
+    const auto& profile = profiles[index];
+    qDebug() << "Mute repost:" << profile.getDid() << profile.getName();
+
+    if (profile.getViewer().isMutedOnlyReposts() || profile.getViewer().isMuted())
+    {
+        qDebug() << "Reposts already muted:" << profile.getDid() << profile.getName();
+        migrateMutedRepostsToBskyContinue(profiles, doneCb, index + 1, hasError);
         return;
+    }
 
-    removeListUser(mutedReposts.getListUri(), *listItemUri);
+    const bool quotesMuted = profile.getViewer().isMutedOnlyQuotes();
+
+    bskyClient()->muteActor(profile.getDid(), true, quotesMuted,
+        [this, presence=getPresence(), profiles, doneCb, index, hasError]{
+            if (!presence)
+                return;
+
+            migrateMutedRepostsToBskyContinue(profiles, doneCb, index + 1, hasError);
+        },
+        [this, presence=getPresence(), profiles, doneCb, index](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            const auto& profile = profiles[index];
+            qDebug() << "Mute reposts/quotes failed:" << profile.getDid() << profile.getName() << error << "-" << msg;
+            mSkywalker->showStatusMessage(tr("Failed to mute reposts for: %1").arg(profile.getName()), QEnums::STATUS_LEVEL_ERROR);
+            migrateMutedRepostsToBskyContinue(profiles, doneCb, index + 1, true);
+        });
+}
+
+void GraphUtils::migrateMutedRepostsToBskyDeleteList(const std::function<void()>& doneCb)
+{
+    qDebug() << "Delete list:" << LIST_NAME_MUTED_REPOSTS;
+    const ProfileListItemStore& mutedReposts = mSkywalker->getMutedReposts();
+    const auto& listUri = mutedReposts.getListUri();
+
+    mGraphMaster->batchDeleteAllUsersFromList(listUri,
+        [this, presence=getPresence(), listUri, doneCb]{
+            graphMaster()->undo(listUri,
+                [presence=getPresence(), doneCb]{
+                    qDebug() << "Muted reposts migrated";
+                    doneCb();
+                },
+                [this, presence=getPresence(), doneCb](const QString& error, const QString& msg){
+                    if (!presence)
+                        return;
+
+                    qDebug() << "Delete list failed:" << error << " - " << msg;
+                    mSkywalker->showStatusMessage(tr("Failed to delete list [%1]: %2").arg(LIST_NAME_MUTED_REPOSTS, msg), QEnums::STATUS_LEVEL_ERROR);
+                    incrementMigrateMutedRepostsFailed();
+                    doneCb();
+                });
+        },
+        [this, presence=getPresence(), doneCb](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Delete list users failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(tr("Failed to delete list items [%1]: %2").arg(LIST_NAME_MUTED_REPOSTS, msg), QEnums::STATUS_LEVEL_ERROR);
+            incrementMigrateMutedRepostsFailed();
+            doneCb();
+        });
+}
+
+void GraphUtils::incrementMigrateMutedRepostsFailed()
+{
+    UserSettings* settings = mSkywalker->getUserSettings();
+    const int attempts = settings->getMutedRepostsMigrationAttempts(mSkywalker->getUserDid());
+    settings->setMutedRepostsMigrationAttempts(mSkywalker->getUserDid(), attempts + 1);
 }
 
 void GraphUtils::addTrustedVerifier(const BasicProfile& profile)

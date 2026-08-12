@@ -954,15 +954,6 @@ ApplicationWindow {
                 close()
             }
 
-            onMutedReposts: {
-                let listUri = skywalker.getMutedRepostsListUri()
-                let modelId = skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, listUri)
-                viewAuthorList(modelId, qsTr("Muted Reposts"),
-                        qsTr("Reposts from these accounts are removed from your feed."),
-                        false)
-                close()
-            }
-
             onModLists: {
                 let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_MOD, skywalker.getUserDid())
                 viewModerationLists(modelId)
@@ -1997,8 +1988,8 @@ ApplicationWindow {
 
     function muteAuthor(author, muteByDid = "") {
         let gu = getGraphUtils(muteByDid)
-        let did = author.did
-        showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt), muteByDid)
+        const authorToMute = author
+        showBlockMuteDialog(false, author, (expiresAt) => gu.mute(authorToMute, expiresAt), muteByDid)
     }
 
     function blockAuthor(author, blockByDid = "") {

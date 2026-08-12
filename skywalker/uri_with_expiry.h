@@ -17,16 +17,15 @@ public:
     UriWithExpiry(const UriWithExpiry&) = default;
     UriWithExpiry& operator=(const UriWithExpiry&) = default;
 
-    UriWithExpiry(const QString& uri, const QDateTime& expiry);
+    UriWithExpiry(const QString& uri, const QDateTime& expiry, bool onlyReposts, bool onlyQuotes);
 
     const QString& getUri() const { return mUri; }
     const QDateTime& getExpiry() const { return mExpiry; }
-
-    void setUri(const QString& uri) { mUri = uri; }
-    void setExpiry(const QDateTime& expiry) { mExpiry = expiry; }
+    bool isOnlyReposts() const { return mOnlyReposts; }
+    bool isOnlyQuotePosts() const { return mOnlyQuotes; }
 
     bool operator<(const UriWithExpiry &other) const;
-    bool operator==(const UriWithExpiry &other) const = default;
+    bool operator==(const UriWithExpiry &other) const;
 
     QJsonObject toJson() const;
     static UriWithExpiry fromJson(const QJsonObject& json);
@@ -34,6 +33,10 @@ public:
 private:
     QString mUri;
     QDateTime mExpiry;
+
+    // Scoped mute to set after expiry
+    bool mOnlyReposts = false;
+    bool mOnlyQuotes = false;
 };
 
 class UriWithExpirySet : public QObject
@@ -46,6 +49,7 @@ public:
     void clear();
     void insert(const UriWithExpiry& uriWithExpiry);
     bool remove(const QString& uri);
+    const UriWithExpiry* get(const QString& uri) const;
     Q_INVOKABLE QDateTime getExpiry(const QString& uri) const;
     const UriWithExpiry* getFirstExpiry() const;
 

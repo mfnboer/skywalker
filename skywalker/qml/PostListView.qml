@@ -109,7 +109,7 @@ SkyListView {
 
             AccessibleText {
                 anchors.horizontalCenter: parent.horizontalCenter
-                font.pointSize: guiSettings.scaledFont(2)
+                font.pointSize: guiSettings.scaledFont(1.5)
                 text: qsTr("Rewinding feed")
             }
 

@@ -1319,14 +1319,14 @@ QStringList UserSettings::getBookmarks(const QString& did) const
     return mSettings.value(key(did, "bookmarks")).toStringList();
 }
 
-void UserSettings::setBookmarksMigrationAttempts(const QString& did, int attempts)
+void UserSettings::setMutedRepostsMigrationAttempts(const QString& did, int attempts)
 {
-    mSettings.setValue(key(did, "bookmarksMigrationAttempts"), attempts);
+    mSettings.setValue(key(did, "mutedRepostsMigrationAttempts"), attempts);
 }
 
-int UserSettings::getBookmarksMigrationAttempts(const QString& did) const
+int UserSettings::getMutedRepostsMigrationAttempts(const QString& did) const
 {
-    return mSettings.value(key(did, "bookmarksMigrationAttempts"), 0).toInt();
+    return mSettings.value(key(did, "mutedRepostsMigrationAttempts"), 0).toInt();
 }
 
 QStringList UserSettings::getMutedWords(const QString& did) const
@@ -1409,10 +1409,16 @@ bool UserSettings::removeMuteWithExpiry(const QString& did, const QString& muteD
 {
     qDebug() << "Remove mute:" << muteDid;
     auto* mutes = getMutesWithExpiry(did);
-    const bool removed = mutes->remove(muteDid);
+    bool removed = mutes->remove(muteDid);
     mSettings.setValue(key(did, "mutesWithExpiry"), mutes->toJson());
     emit mutesWithExpiryChanged();
     return removed;
+}
+
+const UriWithExpiry* UserSettings::getMuteWithExpiry(const QString& did, const QString& muteDid)
+{
+    auto* mutes = getMutesWithExpiry(did);
+    return mutes->get(muteDid);
 }
 
 void UserSettings::setDisplayMode(QEnums::DisplayMode displayMode)
@@ -2635,6 +2641,10 @@ void UserSettings::cleanup()
 {
     // Here deprecated settings can be removed
     qDebug() << "Cleanup";
+    const QString did = getActiveUserDid();
+
+    if (!did.isEmpty())
+        mSettings.remove(key(did, "bookmarksMigrationAttempts"));
 }
 
 }

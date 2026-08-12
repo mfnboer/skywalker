@@ -49,9 +49,6 @@ void ContentFilterStats::clear()
     mMutedAuthor = 0;
     mAuthorsMutedAuthor.clear();
 
-    mRepostsFromAuthor = 0;
-    mAuthorsRepostsFromAuthor.clear();
-
     mHideFromFollowingFeed = 0;
     mListsHideFromFollowingFeed.clear();
 
@@ -102,12 +99,6 @@ void ContentFilterStats::report(const Post& post, QEnums::HideReasonType hideRea
             add(std::get<BasicProfile>(details), mAuthorsMutedAuthor);
 
         ++mMutedAuthor;
-        break;
-    case QEnums::HIDE_REASON_REPOST_FROM_AUTHOR:
-        if (std::holds_alternative<BasicProfile>(details))
-            add(std::get<BasicProfile>(details), mAuthorsRepostsFromAuthor);
-
-        ++mRepostsFromAuthor;
         break;
     case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
         if (std::holds_alternative<BasicProfile>(details))
@@ -326,12 +317,6 @@ void ContentFilterStats::removeReport(const Post& post, QEnums::HideReasonType h
 
         --mMutedAuthor;
         break;
-    case QEnums::HIDE_REASON_REPOST_FROM_AUTHOR:
-        if (std::holds_alternative<BasicProfile>(details))
-            remove(std::get<BasicProfile>(details), mAuthorsRepostsFromAuthor);
-
-        --mRepostsFromAuthor;
-        break;
     case QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED:
         if (std::holds_alternative<BasicProfile>(details))
         {
@@ -431,11 +416,6 @@ void ContentFilterStats::removeReport(const Post& post, QEnums::HideReasonType h
 std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsMutedAuthor() const
 {
     return getProfileStats(mAuthorsMutedAuthor);
-}
-
-std::vector<ContentFilterStats::ProfileStat> ContentFilterStats::authorsRepostsFromAuthor() const
-{
-    return getProfileStats(mAuthorsRepostsFromAuthor);
 }
 
 static auto listNameCompare = [](const ContentFilterStats::ListProfileStat& lhs, const QString& rhs)

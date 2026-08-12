@@ -44,7 +44,7 @@ public:
     using Type = QEnums::ChatAuthorListType;
     using Ptr = std::unique_ptr<ChatAuthorListModel>;
 
-    ChatAuthorListModel(Type type, const IProfileStore& mutedReposts,
+    ChatAuthorListModel(Type type,
                         const IProfileStore& timelineHide,
                         const ContentFilter& contentFilter, QObject* parent = nullptr);
 
@@ -93,7 +93,6 @@ private:
     void changeData(const QList<int>& roles) override;
 
     Type mType;
-    const IProfileStore& mMutedReposts;
     const IProfileStore& mTimelineHide;
     const ContentFilter& mContentFilter;
 

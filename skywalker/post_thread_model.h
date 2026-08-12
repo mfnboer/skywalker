@@ -21,7 +21,6 @@ public:
                              QEnums::ReplyOrder replyOrder,
                              bool threadFirst,
                              const QString& userDid,
-                             const IProfileStore& mutedReposts,
                              const ContentFilter& contentFilter,
                              const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                              HashtagIndex& hashtags,

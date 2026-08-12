@@ -67,13 +67,13 @@ Skywalker::Skywalker(QObject* parent) :
     mGraphUtils(this),
     mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
     mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
-    mChat(std::make_unique<Chat>(mBsky, mUserDid, mMutedReposts, mTimelineHide,
+    mChat(std::make_unique<Chat>(mBsky, mUserDid, mTimelineHide,
                                  mContentFilter, mFollowsActivityStore, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), nullptr, mUserDid, mMutedReposts, mTimelineHide,
+    mTimelineModel(tr("Following"), nullptr, mUserDid, mTimelineHide,
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
@@ -189,7 +189,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
     mFavoriteFeeds(this),
     mAnniversary(mUserDid, mUserSettings, this),
-    mTimelineModel(tr("Following"), nullptr, mUserDid, mMutedReposts, mTimelineHide,
+    mTimelineModel(tr("Following"), nullptr, mUserDid, mTimelineHide,
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
@@ -1085,11 +1085,10 @@ void Skywalker::dataMigration()
     // Here data migration functions to be executed at startup can be called.
     // dataMigrationStatus can be called to show status during startup.
 
-    // Bookmarks migration will be done while skywalker is running, no need to wait.
-    Bookmarks* bookmarks = getBookmarks();
-    bookmarks->migrateToBsky();
-
-    emit dataMigrationDone();
+    if (mGraphUtils.migrateMutedRepostsToBsky([this]{ emit dataMigrationDone(); }))
+        emit dataMigrationStatus(tr("Migrating muted reposts"));
+    else
+        emit dataMigrationDone();
 }
 
 void Skywalker::syncTimeline()
@@ -2749,7 +2748,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
             auto model = std::make_unique<PostThreadModel>(uri, postThreadType,
                 mUserSettings.getReplyOrder(mUserDid),
                 mUserSettings.getReplyOrderThreadFirst(mUserDid),
-                mUserDid, mMutedReposts, mContentFilter,
+                mUserDid, mContentFilter,
                 mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
             int postEntryIndex = model->setPostThread(thread);
@@ -2908,7 +2907,7 @@ int Skywalker::createPostThreadModel(const QString& uri, QEnums::PostThreadType 
     auto model = std::make_unique<PostThreadModel>(
         uri, type, mUserSettings.getReplyOrder(mUserDid),
         mUserSettings.getReplyOrderThreadFirst(mUserDid),
-        mUserDid, mMutedReposts, mContentFilter,
+        mUserDid, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     const int id = addModelToStore<PostThreadModel>(std::move(model), mPostThreadModels);
     return id;
@@ -3516,7 +3515,7 @@ void Skywalker::removeNotificationListModel(int id)
 int Skywalker::createAuthorFeedModel(const DetailedProfile& author, QEnums::AuthorFeedFilter filter)
 {
     auto model = std::make_unique<AuthorFeedModel>(
-        author, mUserDid, mMutedReposts, mContentFilter,
+        author, mUserDid, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setFilter(filter);
     const int id = addModelToStore<AuthorFeedModel>(std::move(model), mAuthorFeedModels);
@@ -3540,7 +3539,7 @@ int Skywalker::createSearchPostFeedModel(const QString& searchKey, const QString
 {
     qDebug() << "Create search post feed model:" << searchKey << "name:" << feedName;
     auto model = std::make_unique<SearchPostFeedModel>(
-        searchKey, feedName, mUserDid, mMutedReposts, mContentFilter,
+        searchKey, feedName, mUserDid, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
     model->setContentFilterStatsEnabled(mUserSettings.getContentFilterStatsEnabled());
 
@@ -3775,7 +3774,7 @@ int Skywalker::createPostFeedModel(const GeneratorView& generatorView)
 {
     const PostFeedModel::FeedVariant feedVariant{generatorView};
     auto model = std::make_unique<PostFeedModel>(generatorView.getDisplayName(), &feedVariant,
-            mUserDid, mMutedReposts, ListStore::NULL_STORE, mContentFilter, mMutedWords,
+            mUserDid, ListStore::NULL_STORE, mContentFilter, mMutedWords,
             *mFocusHashtags, mSeenHashtags, mUserPreferences, mUserSettings, mFollowsActivityStore,
             mBsky, this);
     model->enableLanguageFilter(true);
@@ -3789,7 +3788,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
 {
     const PostFeedModel::FeedVariant feedVariant{listView};
     auto model = std::make_unique<PostFeedModel>(listView.getName(), &feedVariant,
-                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -3804,7 +3803,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"), &feedVariant,
-                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -3816,7 +3815,7 @@ int Skywalker::createQuoteChainPostFeedModel(const QString& quoteUri)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote chain"), &feedVariant,
-                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -3828,7 +3827,7 @@ int Skywalker::createAlsoLikedPostFeedModel(const QString& postUri)
 {
     const PostFeedModel::FeedVariant feedVariant{postUri};
     auto model = std::make_unique<PostFeedModel>(tr("Also liked"), &feedVariant,
-                                                 mUserDid, mMutedReposts, ListStore::NULL_STORE,
+                                                 mUserDid, ListStore::NULL_STORE,
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
@@ -3841,7 +3840,7 @@ int Skywalker::createFilteredPostFeedModel(QEnums::HideReasonType hideReason, co
     const PostFeedModel::FeedVariant feedVariant{hideReason};
     auto model = std::make_unique<FilteredContentPostFeedModel>(
         tr("Filtered posts"), &feedVariant,
-        mUserDid, mMutedReposts, ListStore::NULL_STORE,
+        mUserDid, ListStore::NULL_STORE,
         mContentFilter, mMutedWords, *mFocusHashtags,
         mSeenHashtags, mUserPreferences, mUserSettings,
         mFollowsActivityStore, mBsky, this);
@@ -4461,7 +4460,7 @@ void Skywalker::getAuthorListNextPage(int id)
 
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
-    auto model = std::make_unique<AuthorListModel>(type, atId, mMutedReposts, mTimelineHide,
+    auto model = std::make_unique<AuthorListModel>(type, atId, mTimelineHide,
                                                    mFollowsActivityStore, mContentFilter, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
@@ -5020,7 +5019,7 @@ void Skywalker::saveAutomatedAccount()
 BookmarksModel* Skywalker::createBookmarksModel()
 {
     mBookmarksModel = std::make_unique<BookmarksModel>(
-        mUserDid, mMutedReposts, mContentFilter,
+        mUserDid, mContentFilter,
         mMutedWords, *mFocusHashtags, mSeenHashtags, this);
 
     return mBookmarksModel.get();
@@ -5039,7 +5038,7 @@ void Skywalker::deleteBookmarksModel()
 DraftPostsModel::Ptr Skywalker::createDraftPostsModel()
 {
     return std::make_unique<DraftPostsModel>(
-        mUserDid, mMutedReposts, mContentFilterShowAll,
+        mUserDid, mContentFilterShowAll,
         mMutedWordsNoMutes, *mFocusHashtags, mSeenHashtags, this);
 }
 

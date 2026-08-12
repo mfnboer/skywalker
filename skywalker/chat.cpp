@@ -13,14 +13,13 @@ static constexpr auto CONVOS_UPDATE_INTERVAL = 31s;
 static constexpr char const* DM_ACCESS_ERROR = "Your APP password does not allow access to your direct messages. Create a new APP password that allows access.";
 
 Chat::Chat(ATProto::Client::SharedPtr& bsky, const QString& userDid,
-           const IProfileStore& mutedReposts, const IProfileStore& timelineHide,
+           const IProfileStore& timelineHide,
            const ContentFilter& contentFilter,
            FollowsActivityStore& followsActivityStore, QObject* parent) :
     QObject(parent),
     mPresence(std::make_unique<Presence>()),
     mBsky(bsky),
     mUserDid(userDid),
-    mMutedReposts(mutedReposts),
     mTimelineHide(timelineHide),
     mContentFilter(contentFilter),
     mFollowsActivityStore(followsActivityStore),
@@ -659,7 +658,7 @@ ChatAuthorListModel* Chat::getConvoAuthorListModel(QEnums::ChatAuthorListType ty
     {
         qDebug() << "Create convo author list model for convo:" << convoId << "type:" << type;
         model = std::make_unique<ChatAuthorListModel>(
-            type, mMutedReposts, mTimelineHide, mContentFilter, this);
+            type, mTimelineHide, mContentFilter, this);
     }
 
     return model.get();

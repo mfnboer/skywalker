@@ -47,9 +47,6 @@ public:
     int mutedAuthor() const { return mMutedAuthor; }
     std::vector<ProfileStat> authorsMutedAuthor() const;
 
-    int repostsFromAuthor() const { return mRepostsFromAuthor; }
-    std::vector<ProfileStat> authorsRepostsFromAuthor() const;
-
     int hideFromFollowingFeed() const { return mHideFromFollowingFeed; }
     std::vector<ListProfileStat> listsHideFromFollowingFeed() const;
 
@@ -94,9 +91,6 @@ private:
 
     int mMutedAuthor = 0;
     DidStatMap mAuthorsMutedAuthor;
-
-    int mRepostsFromAuthor = 0;
-    DidStatMap mAuthorsRepostsFromAuthor;
 
     int mHideFromFollowingFeed = 0;
     ListUriProfileStatsMap mListsHideFromFollowingFeed;

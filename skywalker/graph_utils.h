@@ -34,8 +34,8 @@ public:
     bool isBlockBusy() const { return mBlockBusy; }
     void setBlockBusy(bool busy);
 
-    Q_INVOKABLE void mute(const QString& did, QDateTime expiresAt = QDateTime{});
-    Q_INVOKABLE void unmute(const QString& did);
+    Q_INVOKABLE void mute(const BasicProfile& profile, QDateTime expiresAt = QDateTime{});
+    Q_INVOKABLE void unmute(const QString& did, bool unmuteRepostsQuotes = false);
     bool isMuteBusy() const { return mMuteBusy; }
     void setMuteBusy(bool busy);
 
@@ -68,9 +68,8 @@ public:
     Q_INVOKABLE void hideReplies(const QString& listUri, bool hide);
     Q_INVOKABLE void hideFollowing(const QString& listUri, bool hide);
 
-    Q_INVOKABLE bool areRepostsMuted(const QString& did) const;
-    Q_INVOKABLE void muteReposts(const BasicProfile& profile);
-    Q_INVOKABLE void unmuteReposts(const QString& did);
+    Q_INVOKABLE void muteRepostsQuotes(const QString& did, bool reposts, bool quotes);
+    bool migrateMutedRepostsToBsky(const std::function<void()>& doneCb);
 
     Q_INVOKABLE void addTrustedVerifier(const BasicProfile& profile);
     Q_INVOKABLE void removeTrustedVerifier(const QString& did);
@@ -98,7 +97,7 @@ signals:
     void blockBusyChanged();
     void muteOk(QDateTime expiresAt);
     void muteFailed(QString error);
-    void unmuteOk();
+    void unmuteOk(bool onlyReposts, bool onlyQuotes);
     void unmuteFailed(QString error);
     void muteBusyChanged();
     void createListProgress(QString msg);
@@ -125,10 +124,8 @@ signals:
     void muteListFailed(QString error);
     void unmuteListOk();
     void unmuteListFailed(QString error);
-    void muteRepostsOk();
-    void muteRepostsFailed(QString error);
-    void unmuteRepostsOk();
-    void unmuteRepostsFailed(QString error);
+    void muteRepostsQuotesOk(QString did, bool reposts, bool quotePosts);
+    void muteRepostsQuotesFailed(QString did, QString error);
     void createdTrustedVerifierList(QString uri);
     void addTrustedVerifierOk(BasicProfile profile, QString itemUri);
     void addTrustedVerifierFailed(QString error);
@@ -139,6 +136,9 @@ signals:
     void cachedList(ListViewBasic list);
 
 private:
+    void migrateMutedRepostsToBskyContinue(const std::vector<BasicProfile>& profiles, const std::function<void()>& doneCb, int index = 0, bool hasError = false);
+    void migrateMutedRepostsToBskyDeleteList(const std::function<void()>& doneCb);
+    void incrementMigrateMutedRepostsFailed();
     void continueCreateList(const QEnums::ListPurpose purpose, const QString& name,
                             const QString& description, const NamedLink::List& embeddedLinks,
                             ATProto::Blob::SharedPtr blob);

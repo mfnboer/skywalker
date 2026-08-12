@@ -313,8 +313,8 @@ public:
     void setBookmarks(const QString& did, const QStringList& bookmarks);
     QStringList getBookmarks(const QString& did) const;
 
-    void setBookmarksMigrationAttempts(const QString& did, int attempts);
-    int getBookmarksMigrationAttempts(const QString& did) const;
+    void setMutedRepostsMigrationAttempts(const QString& did, int attempts);
+    int getMutedRepostsMigrationAttempts(const QString& did) const;
 
     // Legacy
     QStringList getMutedWords(const QString& did) const;
@@ -329,6 +329,7 @@ public:
     UriWithExpirySet* getMutesWithExpiry(const QString& did);
     void addMuteWithExpiry(const QString& did, const UriWithExpiry& mute);
     bool removeMuteWithExpiry(const QString& did, const QString& muteDid);
+    const UriWithExpiry* getMuteWithExpiry(const QString& did, const QString& muteDid);
 
     Q_INVOKABLE void setDisplayMode(QEnums::DisplayMode displayMode);
     Q_INVOKABLE QEnums::DisplayMode getDisplayMode() const;

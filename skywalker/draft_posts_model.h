@@ -18,7 +18,6 @@ public:
     using BlueskyDrafts = std::vector<ATProto::AppBskyDraft::DraftView::SharedPtr>;
 
     DraftPostsModel(const QString& userDid,
-                    const IProfileStore& mutedReposts,
                     const IContentFilter& contentFilter,
                     const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                     HashtagIndex& hashtags,

@@ -74,7 +74,6 @@ void ContentFilterStatsModel::setStats(const ContentFilterStats& stats, const IC
 
     addKeyStat(root, tr("Total filtered posts (out of %1)").arg(stats.checkedPosts()), stats.total(), QEnums::HIDE_REASON_ANY);
     addStat(root, stats.mutedAuthor(), QEnums::HIDE_REASON_MUTED_AUTHOR, stats.authorsMutedAuthor());
-    addStat(root, stats.repostsFromAuthor(), QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, stats.authorsRepostsFromAuthor());
 
     // addStat(root, stats.hideFromFollowingFeed(), QEnums::HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, stats.authorsHideFromFollowingFeed());
 

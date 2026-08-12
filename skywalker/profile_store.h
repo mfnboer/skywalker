@@ -24,6 +24,7 @@ public:
 
     bool contains(const QString& did) const override;
     const BasicProfile* get(const QString& did) const override;
+    const std::unordered_map<QString, BasicProfile>& getDidProfileMap() const { return mDidProfileMap; }
     virtual void add(const BasicProfile& profile);
     virtual void remove(const QString& did);
     virtual void clear();

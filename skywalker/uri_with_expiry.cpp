@@ -5,10 +5,13 @@
 
 namespace Skywalker {
 
-UriWithExpiry::UriWithExpiry(const QString& uri, const QDateTime& expiry) :
+UriWithExpiry::UriWithExpiry(const QString& uri, const QDateTime& expiry, bool onlyReposts, bool onlyQuotes) :
     mUri(uri),
-    mExpiry(expiry)
+    mExpiry(expiry),
+    mOnlyReposts(onlyReposts),
+    mOnlyQuotes(onlyQuotes)
 {
+    qDebug() << "Created:" << mUri << "expires:" << expiry << "onlyReposts:" << mOnlyReposts << "onlyQuotes:" << mOnlyQuotes;
 }
 
 bool UriWithExpiry::operator<(const UriWithExpiry &other) const
@@ -19,11 +22,23 @@ bool UriWithExpiry::operator<(const UriWithExpiry &other) const
     return mUri < other.mUri;
 }
 
+bool UriWithExpiry::operator==(const UriWithExpiry &other) const
+{
+    return mExpiry == other.mExpiry && mUri == other.mUri;
+}
+
 QJsonObject UriWithExpiry::toJson() const
 {
     QJsonObject json;
     json.insert("uri", mUri);
     json.insert("expiry", mExpiry.toUTC().toString(Qt::ISODateWithMs));
+
+    if (mOnlyReposts)
+        json.insert("onlyReposts", true);
+
+    if (mOnlyQuotes)
+        json.insert("onlyQuotes", true);
+
     return json;
 }
 
@@ -33,6 +48,8 @@ UriWithExpiry UriWithExpiry::fromJson(const QJsonObject& json)
     UriWithExpiry uriWithExpiry;
     uriWithExpiry.mUri = xjson.getRequiredString("uri");
     uriWithExpiry.mExpiry = xjson.getRequiredDateTime("expiry");
+    uriWithExpiry.mOnlyReposts = xjson.getOptionalBool("onlyReposts", false);
+    uriWithExpiry.mOnlyQuotes = xjson.getOptionalBool("onlyQuotes", false);
     return uriWithExpiry;
 }
 
@@ -64,6 +81,12 @@ bool UriWithExpirySet::remove(const QString& uri)
     }
 
     return false;
+}
+
+const UriWithExpiry* UriWithExpirySet::get(const QString& uri) const
+{
+    auto it = mUriMap.find(uri);
+    return it != mUriMap.end() ? &*(it->second) : nullptr;
 }
 
 QDateTime UriWithExpirySet::getExpiry(const QString& uri) const

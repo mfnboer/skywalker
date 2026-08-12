@@ -9,7 +9,6 @@
 #include "local_profile_changes.h"
 #include "muted_words.h"
 #include "post.h"
-#include "profile_store.h"
 #include <QAbstractListModel>
 #include <deque>
 #include <queue>
@@ -143,7 +142,6 @@ public:
     explicit AbstractPostFeedModel(QObject* parent = nullptr);
 
     AbstractPostFeedModel(const QString& userDid,
-                          const IProfileStore& mutedReposts,
                           const IListStore& feedHide,
                           const IContentFilter& contentFilter,
                           const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -311,7 +309,6 @@ protected:
     bool mReverseFeed = false;
 
     const QString& mUserDid;
-    const IProfileStore& mMutedReposts;
     const IListStore& mFeedHide;
     const IContentFilter& mContentFilter;
     const IMatchWords& mMutedWords;
@@ -324,7 +321,6 @@ protected:
 private:
     static const QString NULL_STRING;
     static const ListStore NULL_LIST_STORE;
-    static const ProfileStore NULL_PROFILE_STORE;
     static const ContentFilterShowAll NULL_CONTENT_FILTER;
     static const MutedWordsNoMutes NULL_MATCH_WORDS;
     static const FocusHashtags NULL_FOCUS_HASHTAGS;

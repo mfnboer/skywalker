@@ -9,13 +9,12 @@ namespace Skywalker {
 FilteredPostFeedModel::FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                              PostFeedModel* underlyingModel,
                                              const QString& userDid,
-                                             const IProfileStore& mutedReposts,
                                              const IContentFilter& contentFilter,
                                              const IMatchWords& mutedWords,
                                              const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    FilteredPostBaseModel(std::move(postFilter), userDid, mutedReposts,
+    FilteredPostBaseModel(std::move(postFilter), userDid,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mUnderlyingModel(underlyingModel)

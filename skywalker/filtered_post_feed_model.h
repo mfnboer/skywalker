@@ -20,7 +20,6 @@ public:
     explicit FilteredPostFeedModel(IPostFilter::Ptr postFilter,
                                    PostFeedModel* underlyingModel,
                                    const QString& userDid,
-                                   const IProfileStore& mutedReposts,
                                    const IContentFilter& contentFilter,
                                    const IMatchWords& mutedWords,
                                    const FocusHashtags& focusHashtags,

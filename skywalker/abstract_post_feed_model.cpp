@@ -15,7 +15,6 @@ namespace Skywalker {
 static const Post NULL_POST;
 
 const QString AbstractPostFeedModel::NULL_STRING;
-const ProfileStore AbstractPostFeedModel::NULL_PROFILE_STORE;
 const ListStore AbstractPostFeedModel::NULL_LIST_STORE;
 const ContentFilterShowAll AbstractPostFeedModel::NULL_CONTENT_FILTER;
 const MutedWordsNoMutes AbstractPostFeedModel::NULL_MATCH_WORDS;
@@ -25,7 +24,6 @@ HashtagIndex AbstractPostFeedModel::NULL_HASHTAG_INDEX{0};
 AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
     QAbstractListModel(parent),
     mUserDid{NULL_STRING},
-    mMutedReposts(NULL_PROFILE_STORE),
     mFeedHide(NULL_LIST_STORE),
     mContentFilter(NULL_CONTENT_FILTER),
     mMutedWords(NULL_MATCH_WORDS),
@@ -35,7 +33,6 @@ AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
 }
 
 AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
-                                             const IProfileStore& mutedReposts,
                                              const IListStore& feedHide,
                                              const IContentFilter& contentFilter,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
@@ -43,7 +40,6 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
                                              QObject* parent) :
     QAbstractListModel(parent),
     mUserDid(userDid),
-    mMutedReposts(mutedReposts),
     mFeedHide(feedHide),
     mContentFilter(contentFilter),
     mMutedWords(mutedWords),
@@ -202,12 +198,6 @@ std::pair<QEnums::HideReasonType, ContentFilterStats::Details> AbstractPostFeedM
             return { QEnums::HIDE_REASON_LABEL, postLabels[labelIndex] };
         else
             return { QEnums::HIDE_REASON_LABEL, nullptr };
-    }
-
-    if (post.isRepost() && mMutedReposts.contains(post.getRepostedBy()->getDid()))
-    {
-        qDebug() << "Mute repost, did:" << post.getRepostedBy()->getDid();
-        return { QEnums::HIDE_REASON_REPOST_FROM_AUTHOR, *post.getRepostedBy() };
     }
 
     if (auto match = mMutedWords.match(post); match.first)

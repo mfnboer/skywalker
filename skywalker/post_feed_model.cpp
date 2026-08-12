@@ -15,7 +15,6 @@ using namespace std::chrono_literals;
 
 PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVariant,
                              const QString& userDid,
-                             const IProfileStore& mutedReposts,
                              const IListStore& feedHide,
                              const IContentFilter& contentFilter,
                              const IMatchWords& mutedWords,
@@ -26,7 +25,7 @@ PostFeedModel::PostFeedModel(const QString& feedName, const FeedVariant* feedVar
                              FollowsActivityStore& followsActivityStore,
                              ATProto::Client::SharedPtr bsky,
                              QObject* parent) :
-    AbstractPostFeedModel(userDid, mutedReposts, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
+    AbstractPostFeedModel(userDid, feedHide, contentFilter, mutedWords, focusHashtags, hashtags, parent),
     mUserPreferences(userPrefs),
     mUserSettings(userSettings),
     mFollowsActivityStore(followsActivityStore),
@@ -821,7 +820,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     Q_ASSERT(postFilter);
     qDebug() << "Add filtered post feed model:" << postFilter->getName();
     auto model = std::make_unique<FilteredPostFeedModel>(
-            std::move(postFilter), this, mUserDid, mMutedReposts, mContentFilter,
+            std::move(postFilter), this, mUserDid, mContentFilter,
             mMutedWords, mFocusHashtags, mHashtags, this);
 
     model->setRowSize(rowSize);

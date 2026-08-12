@@ -172,7 +172,7 @@ ListView {
                     width: 44
                     height: width
                     flat: Boolean(user.postView?.repostUri)
-                    svg: SvgOutline.repost
+                    svg: user.postView?.repostUri ? SvgOutline.repostOff : SvgOutline.repost
                     accessibleName: user.postView?.repostUri ? qsTr("undo repost") : qsTr("repost")
 
                     onClicked: repostClicked(user)

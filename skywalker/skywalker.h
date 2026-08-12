@@ -289,9 +289,8 @@ public:
     void setUnreadNotificationCount(int unread);
     Following* getFollowing() { return &mFollowing; }
     Q_INVOKABLE FollowsActivityStore* getFollowsActivityStore() { return &mFollowsActivityStore; }
-    ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
-    Q_INVOKABLE QString getMutedRepostsListUri() const { return mMutedReposts.getListUri(); }
     Q_INVOKABLE ListStore* getTimelineHide() { return &mTimelineHide; }
+    ProfileListItemStore& getMutedReposts() { return mMutedReposts; }
     ATProto::Client* getBskyClient() const { return mBsky.get(); }
     ATProto::PlcDirectoryClient& getPlcDirectory() { return *mPlcDirectory; }
     HashtagIndex& getUserHashtags() { return mUserHashtags; }

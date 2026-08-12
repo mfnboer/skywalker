@@ -2,7 +2,6 @@
 // License: GPLv3
 #include "draft_posts_model.h"
 #include "draft_posts.h"
-#include "lexicon/lexicon.h"
 #include "list_store.h"
 #include "meme_maker.h"
 #include "unicode_fonts.h"
@@ -10,12 +9,11 @@
 namespace Skywalker {
 
 DraftPostsModel::DraftPostsModel(const QString& userDid,
-                                 const IProfileStore& mutedReposts,
                                  const IContentFilter& contentFilter,
                                  const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                  HashtagIndex& hashtags,
                                  QObject* parent) :
-    AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent)
 {

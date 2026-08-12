@@ -1,5 +1,7 @@
 next
 ====
+* Support Bluesky's repost muting and migrate your exisiting muted reposts
+  to Bluesky.
 * Allow others to quote your post when you "copy & quote" a post and you
   have disabled quoting by default
 * Fix: post composer recognizes web link containing !-symbol

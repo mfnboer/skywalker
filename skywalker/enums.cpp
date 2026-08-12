@@ -88,7 +88,6 @@ QString QEnums::hideReasonToString(HideReasonType reason)
     static const std::unordered_map<HideReasonType, QString> mapping = {
         { HIDE_REASON_NONE, tr("None") },
         { HIDE_REASON_MUTED_AUTHOR, tr("Muted users") },
-        { HIDE_REASON_REPOST_FROM_AUTHOR, tr("Muted reposts") },
         { HIDE_REASON_HIDE_FROM_FOLLOWING_FEED, tr("Hide from following feed") },
         { HIDE_REASON_LABEL, tr("Label") },
         { HIDE_REASON_MUTED_WORD, tr("Muted words") },

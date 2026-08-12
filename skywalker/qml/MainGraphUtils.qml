@@ -20,4 +20,13 @@ GraphUtils {
     }
 
     onBlockFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+
+    onMuteOk: (expiresAt) => {
+        if (isNaN(expiresAt.getTime()))
+            skywalker.showStatusMessage(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
+        else
+            skywalker.showStatusMessage(qsTr(`Muted till ${guiSettings.expiresIndication(expiresAt)}`), QEnums.STATUS_LEVEL_INFO, 2)
+    }
+
+    onMuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 }

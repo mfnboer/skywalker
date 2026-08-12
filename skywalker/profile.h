@@ -154,6 +154,8 @@ class ProfileViewerState
     Q_GADGET
     Q_PROPERTY(bool valid READ isValid FINAL)
     Q_PROPERTY(bool muted READ isMuted FINAL)
+    Q_PROPERTY(bool mutedOnlyReposts READ isMutedOnlyReposts FINAL)
+    Q_PROPERTY(bool mutedOnlyQuotes READ isMutedOnlyQuotes FINAL)
     Q_PROPERTY(bool blockedBy READ isBlockedBy FINAL)
     Q_PROPERTY(QString blocking READ getBlocking FINAL)
     Q_PROPERTY(QString following READ getFollowing FINAL)
@@ -170,6 +172,8 @@ public:
 
     bool isValid() const;
     bool isMuted() const;
+    bool isMutedOnlyReposts() const;
+    bool isMutedOnlyQuotes() const;
     bool isBlockedBy() const;
     const QString& getBlocking() const;
     const QString& getFollowing() const;

@@ -16,10 +16,36 @@ private slots:
         QCOMPARE(uriSet.getFirstExpiry(), nullptr);
     }
 
+    void getUriWithExpiry()
+    {
+        UriWithExpirySet uriSet;
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, true, false);
+        const UriWithExpiry bar("bar", QDateTime{QDate{2024, 5, 16}, {}}, false, true);
+        uriSet.insert(foo);
+        uriSet.insert(bar);
+
+        const auto* got1 = uriSet.get("foo");
+        Q_ASSERT(got1);
+        QCOMPARE(got1->getUri(), "foo");
+        QCOMPARE(got1->getExpiry(), (QDateTime{QDate{2024, 5, 17}, {}}));
+        QVERIFY(got1->isOnlyReposts());
+        QVERIFY(!got1->isOnlyQuotePosts());
+
+        const auto* got2 = uriSet.get("bar");
+        Q_ASSERT(got2);
+        QCOMPARE(got2->getUri(), "bar");
+        QCOMPARE(got2->getExpiry(), (QDateTime{QDate{2024, 5, 16}, {}}));
+        QVERIFY(!got2->isOnlyReposts());
+        QVERIFY(got2->isOnlyQuotePosts());
+
+        const auto* got3 = uriSet.get("foobar");
+        QVERIFY(!got3);
+    }
+
     void insertSingle()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
         uriSet.insert(foo);
         QCOMPARE(*uriSet.getFirstExpiry(), foo);
         QCOMPARE(uriSet.getExpiry("foo"), foo.getExpiry());
@@ -29,9 +55,9 @@ private slots:
     void insertMultiple()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
-        const UriWithExpiry bar("bar", QDateTime{QDate{2024, 5, 16}, {}});
-        const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}});
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
+        const UriWithExpiry bar("bar", QDateTime{QDate{2024, 5, 16}, {}}, false, false);
+        const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}}, false, false);
         uriSet.insert(foo);
         uriSet.insert(bar);
         uriSet.insert(foobar);
@@ -45,8 +71,8 @@ private slots:
     void insertDuplicate()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo1("foo", QDateTime{QDate{2024, 5, 17}, {}});
-        const UriWithExpiry foo2("foo", QDateTime{QDate{2024, 5, 18}, {}});
+        const UriWithExpiry foo1("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
+        const UriWithExpiry foo2("foo", QDateTime{QDate{2024, 5, 18}, {}}, false, false);
         uriSet.insert(foo1);
         uriSet.insert(foo2);
         QCOMPARE(*uriSet.getFirstExpiry(), foo2);
@@ -59,7 +85,7 @@ private slots:
     void clear()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
         uriSet.insert(foo);
         uriSet.clear();
         QCOMPARE(uriSet.getFirstExpiry(), nullptr);
@@ -69,9 +95,9 @@ private slots:
     void remove()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
-        const UriWithExpiry bar("zbar", QDateTime{QDate{2024, 5, 16}, {}});
-        const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}});
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
+        const UriWithExpiry bar("zbar", QDateTime{QDate{2024, 5, 16}, {}}, false, false);
+        const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}}, false, false);
         uriSet.insert(foo);
         uriSet.insert(bar);
         uriSet.insert(foobar);
@@ -103,7 +129,7 @@ private slots:
     void removeNonExisting()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
         uriSet.insert(foo);
         QCOMPARE(*uriSet.getFirstExpiry(), foo);
         QCOMPARE(uriSet.getExpiry("foo"), foo.getExpiry());
@@ -116,15 +142,15 @@ private slots:
     void serialization()
     {
         UriWithExpirySet uriSet;
-        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}});
-        const UriWithExpiry bar("bar", QDateTime{QDate{2024, 5, 16}, {}});
-        const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}});
+        const UriWithExpiry foo("foo", QDateTime{QDate{2024, 5, 17}, {}}, false, false);
+        const UriWithExpiry bar("bar", QDateTime{QDate{2024, 5, 16}, {}}, false, false);
+        const UriWithExpiry foobar("foobar", QDateTime{QDate{2024, 5, 18}, {}}, false, false);
         uriSet.insert(foo);
         uriSet.insert(bar);
         uriSet.insert(foobar);
 
         const auto json = uriSet.toJson();
-        const UriWithExpiry sky("sky", QDateTime{QDate{2024, 5, 1}, {}});
+        const UriWithExpiry sky("sky", QDateTime{QDate{2024, 5, 1}, {}}, false, false);
         uriSet.insert(sky);
         QCOMPARE(*uriSet.getFirstExpiry(), sky);
 

@@ -157,6 +157,16 @@ bool ProfileViewerState::isMuted() const
     return mPrivate && mPrivate->mViewerState ? mPrivate->mViewerState->mMuted : false;
 }
 
+bool ProfileViewerState::isMutedOnlyReposts() const
+{
+    return mPrivate && mPrivate->mViewerState ? mPrivate->mViewerState->mMutedOnlyReposts : false;
+}
+
+bool ProfileViewerState::isMutedOnlyQuotes() const
+{
+    return mPrivate && mPrivate->mViewerState ? mPrivate->mViewerState->mMutedOnlyQuotePosts : false;
+}
+
 bool ProfileViewerState::isBlockedBy() const
 {
     return mPrivate && mPrivate->mViewerState ? mPrivate->mViewerState->mBlockedBy : false;

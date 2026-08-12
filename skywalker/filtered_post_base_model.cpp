@@ -8,13 +8,12 @@ namespace Skywalker {
 
 FilteredPostBaseModel::FilteredPostBaseModel(IPostFilter::Ptr postFilter,
                                              const QString& userDid,
-                                             const IProfileStore& mutedReposts,
                                              const IContentFilter& contentFilter,
                                              const IMatchWords& mutedWords,
                                              const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    AbstractPostFeedModel(userDid, mutedReposts, ListStore::NULL_STORE,
+    AbstractPostFeedModel(userDid, ListStore::NULL_STORE,
                           contentFilter, mutedWords, focusHashtags, hashtags,
                           parent),
     mPostFilter(std::move(postFilter))

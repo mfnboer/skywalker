@@ -31,7 +31,7 @@ SkyPage {
         anchors.top: title.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         padding: 10
-        font.pointSize: guiSettings.absScaledFont(2)
+        font.pointSize: guiSettings.absScaledFont(1.5)
 
         SequentialAnimation on color {
             loops: Animation.Infinite

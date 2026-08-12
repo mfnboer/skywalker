@@ -23,7 +23,6 @@ public:
 
     SearchPostFeedModel(const QString& searchKey, const QString& feedName,
                         const QString& userDid,
-                        const IProfileStore& mutedReposts,
                         const ContentFilter& contentFilter,
                         const MutedWords& mutedWords, const FocusHashtags& focusHashtags,
                         HashtagIndex& hashtags,

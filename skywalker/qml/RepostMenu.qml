@@ -20,7 +20,7 @@ SkyMenu {
     menuWidth: 240
 
     SkyMenuButton {
-        svg: SvgOutline.repost
+        svg: repostMenu.repostedAlreadyUri ? SvgOutline.repostOff : SvgOutline.repost
         popup: repostMenu
         text: repostMenu.repostedAlreadyUri ? qsTr("Undo repost") : qsTr("Repost")
 

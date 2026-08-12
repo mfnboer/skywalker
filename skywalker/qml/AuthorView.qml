@@ -29,7 +29,8 @@ SkyPage {
     property string blocking: author.viewer.blocking
     property activitysubscription activitySubscription: author.viewer.activitySubscription
     property bool authorMuted: author.viewer.muted
-    property bool authorMutedReposts: false
+    property bool authorMutedReposts: author.viewer.mutedOnlyReposts
+    property bool authorMutedQuotes: author.viewer.mutedOnlyQuotes
     property bool isVerifier: skywalker.getVerificationUtils().isVerifier(author.did)
     property bool authorHideFromTimeline: false
     property int contentVisibility: QEnums.CONTENT_VISIBILITY_HIDE_POST // QEnums::ContentVisibility
@@ -318,8 +319,8 @@ SkyPage {
                                     }
                                     else {
                                         let gu = graphUtils
-                                        let did = author.did
-                                        root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(did, expiresAt), page.userDid)
+                                        const authorToMute = author
+                                        root.showBlockMuteDialog(false, author, (expiresAt) => gu.mute(authorToMute, expiresAt), page.userDid)
                                     }
                                 }
                             }
@@ -341,14 +342,14 @@ SkyPage {
                             }
                             SkyMenuButton {
                                text: authorMutedReposts ? qsTr("Unmute reposts") : qsTr("Mute reposts")
-                               svg: SvgOutline.repost
+                               svg: authorMutedReposts ? SvgOutline.repost : SvgOutline.repostOff
                                popup: moreMenu
-                               visible: !page.isUser(author)
+                               visible: !page.isUser(author) && !authorMuted
                                onClicked: {
                                    if (authorMutedReposts)
-                                       graphUtils.unmuteReposts(author.did)
+                                       graphUtils.unmute(author.did, true)
                                    else
-                                       graphUtils.muteReposts(author)
+                                       graphUtils.muteRepostsQuotes(author.did, true, authorMutedQuotes)
                                }
                             }
 
@@ -1526,6 +1527,7 @@ SkyPage {
 
         onMuteOk: (expiresAt) => {
             authorMuted = true
+            authorMutedReposts = false
             authorFeedView.clear()
 
             if (isNaN(expiresAt.getTime()))
@@ -1536,8 +1538,9 @@ SkyPage {
 
         onMuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
-        onUnmuteOk: {
+        onUnmuteOk: (mutedReposts, mutedQuotes) => {
             authorMuted = false
+            authorMutedReposts = mutedReposts
             authorFeedView.refresh()
             skywalker.showStatusMessage(qsTr("Unmuted"), QEnums.STATUS_LEVEL_INFO, 2)
         }
@@ -1549,19 +1552,15 @@ SkyPage {
         onMuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onUnmuteListFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
-        onMuteRepostsOk: {
-            authorMutedReposts = graphUtils.areRepostsMuted(author.did)
-            authorFeedView.refresh()
-            skywalker.showStatusMessage(qsTr("Muted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
-        }
-        onMuteRepostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteRepostsQuotesOk: (did, reposts, quotes) => {
+            if (!reposts && !quotes)
+                authorMuted = false
 
-        onUnmuteRepostsOk: {
-            authorMutedReposts = graphUtils.areRepostsMuted(author.did)
+            authorMutedReposts = reposts
             authorFeedView.refresh()
-            skywalker.showStatusMessage(qsTr("Unmuted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
+            skywalker.showStatusMessage(reposts ? qsTr("Muted reposts") : qsTr("Unmuted reposts"), QEnums.STATUS_LEVEL_INFO, 2)
         }
-        onUnmuteRepostsFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onMuteRepostsQuotesFailed: (did, error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         onAddTrustedVerifierOk: () => {
             isVerifier = true
@@ -2055,7 +2054,6 @@ SkyPage {
         authorWebsite = author.website
         authorAvatar = author.avatarUrl
         authorBanner = author.banner
-        authorMutedReposts = graphUtils.areRepostsMuted(author.did)
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)
         contentVisibility = skywalker.getContentVisibility(author.labels, author)
         contentWarning = skywalker.getContentWarning(author.labels, author)
