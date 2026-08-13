@@ -10,7 +10,7 @@
 
 namespace Skywalker {
 
-class VerificationUtils : public WrappedSkywalker
+class VerificationUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(int MAX_VERIFIERS MEMBER MAX_VERIFIERS CONSTANT)

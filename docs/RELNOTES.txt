@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.45
 ====
 * Support Bluesky's repost muting and migrate your exisiting muted reposts

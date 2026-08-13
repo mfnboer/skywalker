@@ -95,11 +95,17 @@ void VerificationUtils::isVerified(const BasicProfile& profile)
     mIsVerifiedCache.insert(did, new bool(false));
 
     mConstellation.hasBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids,
-        [this, did](bool hasLinks){
+        [this, presence=getPresence(), did](bool hasLinks){
+            if (!presence)
+                return;
+
             emit verified(did, hasLinks);
             mIsVerifiedCache.insert(did, new bool(hasLinks));
         },
-        [this, did](const QString& error, const QString& message){
+        [this, presence=getPresence(), did](const QString& error, const QString& message){
+            if (!presence)
+                return;
+
             qWarning() << "isVerified failed:" << error << "-" << message;
             mIsVerifiedCache.remove(did);
         });
@@ -133,7 +139,10 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
     mVerificationCache.insert(did, new VerificationView::List);
 
     mConstellation.getBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids, {},
-        [this, profile](Constellation::Backlinks::SharedPtr backlinks){
+        [this, presence=getPresence(), profile](Constellation::Backlinks::SharedPtr backlinks){
+            if (!presence)
+                return;
+
             const QString& did = profile.getDid();
             const bool hasRecords = !backlinks->mRecords.empty();
             mIsVerifiedCache.insert(did, new bool(hasRecords));
@@ -169,7 +178,10 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
             emit verifications(did, *verificationList);
             mVerificationCache.insert(did, verificationList);
         },
-        [this, did](const QString& error, const QString& message){
+        [this, presence=getPresence(), did](const QString& error, const QString& message){
+            if (!presence)
+                return;
+
             qWarning() << "getVerifications failed:" << error << "-" << message;
             mVerificationCache.remove(did);
         });
@@ -186,7 +198,10 @@ void VerificationUtils::getVerificationRecord(const BasicProfile& user, const QS
     qDebug() << "Get verification record for:" << userDid << "issuer:" << issuerDid;
 
     bskyClient()->getRecord(issuerDid, collection, rkey, {},
-        [this, user, issuerDid](ATProto::ComATProtoRepo::Record::SharedPtr record){
+        [this, presence=getPresence(), user, issuerDid](ATProto::ComATProtoRepo::Record::SharedPtr record){
+            if (!presence)
+                return;
+
             const QString& userDid = user.getDid();
             VerificationView::List* verificationList = mVerificationCache.object(userDid);
 
@@ -226,7 +241,10 @@ void VerificationUtils::getVerificationRecord(const BasicProfile& user, const QS
                 qWarning() << e.msg();
             }
         },
-        [this, userDid, issuerDid](const QString& error, const QString& message){
+        [this, presence=getPresence(), userDid, issuerDid](const QString& error, const QString& message){
+            if (!presence)
+                return;
+
             qWarning() << "getVerificationRecord failed:" << error << "-" << message;
 
             if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
