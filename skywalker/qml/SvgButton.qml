@@ -25,7 +25,7 @@ RoundButton {
         width: button.width - 2 * button.imageMargin
         height: button.height - 2 * button.imageMargin
         x: button.imageMargin
-        y: height + button.imageMargin
+        y: (svg.offsetByHeight ? height : 0) + button.imageMargin
         svg: button.svg
         color: button.iconColor
         Accessible.ignored: true
