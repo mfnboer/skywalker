@@ -1,5 +1,6 @@
 next
 ====
+* Increase video upload limit to 10 minutes
 * Bug fixes
 
 4.45
