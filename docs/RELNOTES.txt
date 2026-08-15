@@ -1,5 +1,5 @@
-next
-====
+4.45.1
+======
 * Increase video upload limit to 10 minutes
 * Bug fixes
 
