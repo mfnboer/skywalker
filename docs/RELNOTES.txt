@@ -1,6 +1,7 @@
 next
 ====
 * Access advance settings from user login page
+* Bug fix for configuring a different AppView
 
 4.45.1
 ======
