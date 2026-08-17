@@ -1464,9 +1464,26 @@ ApplicationWindow {
                 if (profile.did) {
                     if (profile.did === skywalker.getUserDid())
                         signOutCurrentUser()
+                    else
+                        skywalker.getSessionManageer().deleteSession(profile.did)
 
                     let userSettings = skywalker.getUserSettings()
                     userSettings.removeUser(profile.did)
+                }
+
+                if (!skywalker.isSignedIn())
+                    selectUser()
+        })
+        page.onResetUser.connect((profile) => {
+                if (profile.did) {
+                    if (profile.did === skywalker.getUserDid())
+                        signOutCurrentUser()
+                    else
+                        skywalker.getSessionManager().deleteSession(profile.did)
+
+                    let userSettings = skywalker.getUserSettings()
+                    userSettings.clearTokens(profile.did)
+                    skywalker.showStatusMessage(qsTr("Session reset"), QEnums.STATUS_LEVEL_INFO)
                 }
 
                 if (!skywalker.isSignedIn())

@@ -10,7 +10,7 @@ Item {
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
     property Skywalker skywalker: root.getSkywalker(userDid)
     property var verificationUtils: skywalker.getVerificationUtils()
-    readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID || verificationUtils.isVerifier(author.did)
+    readonly property bool isTrustedVerifier: author.verificationState.trustedVerifierStatus === QEnums.VERIFIED_STATUS_VALID || (verificationUtils && verificationUtils.isVerifier(author.did))
     readonly property int badgeSize: guiSettings.verificationBadgeSize / guiSettings.scaledFont(1) * pointSize
     readonly property int verificationStatusWidth: skywalker.hideVerificationBadges ? 0 : (authorVerified ? badgeSize + 5 : 0) + (isTrustedVerifier ? badgeSize + 5 : 0)
     property alias maximumLineCount: nameText.maximumLineCount

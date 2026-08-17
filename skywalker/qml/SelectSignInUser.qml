@@ -9,6 +9,7 @@ SkyPage {
 
     signal selectedUser(basicprofile user)
     signal deletedUser(basicprofile user)
+    signal resetUser(basicprofile user)
     signal canceled
 
     id: page
@@ -37,13 +38,6 @@ SkyPage {
                     page,
                     qsTr(`Do you want to reset the session of account "${profile.name}"?`),
                     () => page.resetUser(profile))
-    }
-
-    function resetUser(profile) {
-        let skywalker = root.getSkywalker()
-        let userSettings = skywalker.getUserSettings()
-        userSettings.clearTokens(profile.did)
-        skywalker.showStatusMessage(qsTr("Session reset"), QEnums.STATUS_LEVEL_INFO)
     }
 
     function deleteUser(profile) {

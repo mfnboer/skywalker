@@ -5529,6 +5529,12 @@ Constellation* Skywalker::getConstellation()
 
 void Skywalker::signOut()
 {
+    if (mUserDid.isEmpty())
+    {
+        qDebug() << "No user signed in";
+        return;
+    }
+
     qDebug() << "Sign out:" << mUserDid;
     Q_ASSERT(mPostThreadModels.empty());
     Q_ASSERT(mAuthorFeedModels.empty());
@@ -5539,13 +5545,14 @@ void Skywalker::signOut()
     Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mPostFeedModels.empty());
 
-    qDebug() << "Logout:" << mUserDid;
     mSignOutInProgress = true;
-
     saveHashtags();
 
     if (mBsky && mBsky->getSession())
+    {
         mUserSettings.saveSession(*mBsky->getSession());
+        mBsky->clearSession();
+    }
 
     mUserSettings.sync();
     mSessionManager.saveTokens();

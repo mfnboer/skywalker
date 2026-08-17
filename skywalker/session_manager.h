@@ -27,7 +27,7 @@ public:
     void clear();
 
     void insertSession(const QString& did, ATProto::Client* client);
-    void deleteSession(const QString& did);
+    Q_INVOKABLE void deleteSession(const QString& did);
     void resumeAndRefreshNonActiveUsers();
     bool resumeAndRefreshSession(const QString& did);
     void resumeAndRefreshSession(ATProto::Client* client, const ATProto::ComATProtoServer::Session& session,
