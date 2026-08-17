@@ -5,8 +5,8 @@ import skywalker
 SkyPage {
     property bool newUser: false
     property Skywalker skywalker: root.getSkywalker()
-    property var userSettings: skywalker.getUserSettings()
-    readonly property string userDid: skywalker.getUserDid()
+    property UserSettings userSettings: skywalker.getUserSettings()
+    property string userDid: skywalker.getUserDid()
     readonly property string sideBarTitle: qsTr("Advanced settings")
     readonly property SvgImage sideBarSvg: SvgOutline.settings
 

@@ -2493,9 +2493,11 @@ ApplicationWindow {
         pushStack(form)
     }
 
-    function editAdvancedSettings() {
+    function editAdvancedSettings(did = "") {
         let component = guiSettings.createComponent("AdvancedSettingsForm.qml")
-        let form = component.createObject(root)
+        let form = did === "" ?
+                component.createObject(root) :
+                component.createObject(root, { userDid: did })
         form.onClosed.connect(() => { popStack() })
         pushStack(form)
     }

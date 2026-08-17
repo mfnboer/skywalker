@@ -8,6 +8,7 @@ ListView {
     property string userDid
     property int rowPadding: 3
     property bool allowDelete: false
+    property bool allowConfig: false
     property bool showHost: false
     property Skywalker skywalker: root.getSkywalker(userDid)
     property UserSettings userSettings: skywalker.getUserSettings()
@@ -15,6 +16,7 @@ ListView {
     signal authorClicked(basicprofile profile)
     signal authorPressAndHold(basicprofile profile)
     signal deleteClicked(basicprofile profile)
+    signal configClicked(basicprofile profile)
 
     id: searchList
     spacing: 0
@@ -77,17 +79,23 @@ ListView {
                 author: authorEntry.author
             }
 
-            SvgPlainButton {
-                id: deleteButton
+            Row {
                 Layout.rowSpan: 2
-                svg: SvgOutline.delete
-                accessibleName: qsTr(`delete ${author.name}`)
-                onClicked: deleteClicked(author)
-                visible: allowDelete && author.did
-            }
-            Rectangle {
-                Layout.rowSpan: 2
-                visible: !deleteButton.visible
+
+                SvgPlainButton {
+                    Layout.rowSpan: 2
+                    svg: SvgOutline.settings
+                    accessibleName: qsTr(`advanced settings ${author.name}`)
+                    onClicked: configClicked(author)
+                    visible: allowConfig && author.did
+                }
+                SvgPlainButton {
+                    Layout.rowSpan: 2
+                    svg: SvgOutline.delete
+                    accessibleName: qsTr(`delete ${author.name}`)
+                    onClicked: deleteClicked(author)
+                    visible: allowDelete && author.did
+                }
             }
 
             AccessibleText {

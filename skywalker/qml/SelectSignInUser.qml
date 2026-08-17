@@ -26,11 +26,13 @@ SkyPage {
         anchors.fill: parent
         rowPadding: 13
         allowDelete: true
+        allowConfig: true
         model: userList
         showHost: true
         onAuthorClicked: (profile) => { selectedUser(profile) }
         onAuthorPressAndHold: (profile) => { askResetUser(profile) }
         onDeleteClicked: (profile) => { deleteUser(profile) }
+        onConfigClicked: (profile) => { root.editAdvancedSettings(profile.did) }
     }
 
     function askResetUser(profile) {
