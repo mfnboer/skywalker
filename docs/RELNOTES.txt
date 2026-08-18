@@ -1,5 +1,5 @@
-next
-====
+4.45.2
+======
 * Access advance settings from user login page
 * Bug fix for waking up app from background
 * Bug fix for configuring a different AppView
