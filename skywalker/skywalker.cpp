@@ -5215,6 +5215,10 @@ void Skywalker::clearStatusMessage()
     emit statusClear();
 }
 
+// NOTE:
+// Qt sometimes delivers state changes in the wrong order, e.g. first Active and then Suspended
+// when you suspend the app and quickly wake it up again. The actual state on the QGuiApplication
+// seems to be correct.
 void Skywalker::handleAppStateChange(Qt::ApplicationState state)
 {
     auto* app = (QGuiApplication*)QGuiApplication::instance();
