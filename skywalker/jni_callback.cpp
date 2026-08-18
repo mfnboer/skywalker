@@ -213,6 +213,22 @@ void _handleShowLink(JNIEnv* env, jobject, jstring jUri)
     }
 }
 
+void _handleAppStarted(JNIEnv*)
+{
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleAppStarted();
+}
+
+void _handleAppStopped(JNIEnv*)
+{
+    auto& instance = *gTheInstance;
+
+    if (instance)
+        instance->handleAppStopped();
+}
+
 void _handleKeyboardHeightChanged(JNIEnv*, jobject, jint height)
 {
     auto& instance = *gTheInstance;
@@ -298,9 +314,11 @@ JNICallbackListener::JNICallbackListener() : QObject()
         { "emitSharedDmTextReceived", "(Ljava/lang/String;)V", reinterpret_cast<void *>(_handleSharedDmTextReceived) },
         { "emitShowNotifications", "()V", reinterpret_cast<void *>(_handleShowNotifications) },
         { "emitShowDirectMessages", "()V", reinterpret_cast<void *>(_handleShowDirectMessages) },
-        { "emitShowLink", "(Ljava/lang/String;)V",  reinterpret_cast<void *>(_handleShowLink) }
+        { "emitShowLink", "(Ljava/lang/String;)V",  reinterpret_cast<void *>(_handleShowLink) },
+        { "emitAppStarted", "()V", reinterpret_cast<void *>(_handleAppStarted) },
+        { "emitAppStopped", "()V", reinterpret_cast<void *>(_handleAppStopped) }
     };
-    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 7);
+    jni.registerNativeMethods("com/gmail/mfnboer/SkywalkerActivity", skywalkerActivityCallbacks, 9);
 #endif
 }
 
@@ -402,6 +420,16 @@ void JNICallbackListener::handleShowDirectMessages()
 void JNICallbackListener::handleShowLink(const QString& uri)
 {
     emit showLink(uri);
+}
+
+void JNICallbackListener::handleAppStarted()
+{
+    emit appStarted();
+}
+
+void JNICallbackListener::handleAppStopped()
+{
+    emit appStopped();
 }
 
 void JNICallbackListener::handleKeyboardHeightChanged(int height)

@@ -2932,5 +2932,6 @@ ApplicationWindow {
 
         // Login or resume previous session is done in onAppIsRunningChanged
         showStartupStatus()
+        appIsRunning = true
     }
 }

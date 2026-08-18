@@ -24,7 +24,6 @@
 #include "verification_utils.h"
 #include "utils.h"
 #include <atproto/lib/at_uri.h>
-#include <QGuiApplication>
 #include <QLoggingCategory>
 
 #ifdef Q_OS_ANDROID
@@ -151,18 +150,15 @@ Skywalker::Skywalker(QObject* parent) :
                 callWhenRunning([this, uri]{ emit handleShowLink(uri); });
             });
 
-    auto* app = (QGuiApplication*)QGuiApplication::instance();
-    Q_ASSERT(app);
-
-    if (app)
-    {
-        connect(app, &QGuiApplication::applicationStateChanged, this,
-                [this](Qt::ApplicationState state){ handleAppStateChange(state); });
-    }
-    else
-    {
-        qWarning() << "Failed to get app instance!";
-    }
+    // NOTE: orignally we connected to QGuiApplication::applicationStateChanged.
+    // However that signal sometimes returned states in the wrong order!
+    connect(&jniCallbackListener, &JNICallbackListener::appStarted, this,
+            [this]{
+                OffLineMessageChecker::forceStop();
+                OffLineMessageChecker::waitForStop([this]{ resumeApp(); });
+            });
+    connect(&jniCallbackListener, &JNICallbackListener::appStopped, this,
+            [this]{ pauseApp(); });
 
     qDebug() << getUserAgentString();
 }
@@ -5213,24 +5209,6 @@ void Skywalker::showStatusMessage(const QString& msg, QEnums::StatusLevel level,
 void Skywalker::clearStatusMessage()
 {
     emit statusClear();
-}
-
-void Skywalker::handleAppStateChange(Qt::ApplicationState state)
-{
-    qDebug() << "App state:" << state;
-
-    switch (state)
-    {
-    case Qt::ApplicationSuspended:
-        pauseApp();
-        break;
-    case Qt::ApplicationActive:
-        OffLineMessageChecker::forceStop();
-        OffLineMessageChecker::waitForStop([this]{ resumeApp(); });
-        break;
-    default:
-        break;
-    };
 }
 
 void Skywalker::pauseApp()

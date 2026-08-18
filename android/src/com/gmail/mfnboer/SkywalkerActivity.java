@@ -49,6 +49,8 @@ public class SkywalkerActivity extends QtActivity {
     public static native void emitShowNotifications();
     public static native void emitShowDirectMessages();
     public static native void emitShowLink(String uri);
+    public static native void emitAppStarted();
+    public static native void emitAppStopped();
 
     private boolean mIsIntentPending = false;
     private boolean mIsReady = false;
@@ -106,9 +108,34 @@ public class SkywalkerActivity extends QtActivity {
         // In Qt6.11.1 the system bars disappear after starting the content chooser.
         // This will show them again.
         ScreenUtils.showSystemBars();
+    }
+
+    @Override
+    public void onResume() {
+        Log.d(LOGTAG, "onResume");
+        super.onResume();
 
         NewMessageChecker.stopChecker();
         NewMessageNotifier.clearNotifications();
+
+        try {
+            emitAppStarted();
+        } catch (UnsatisfiedLinkError e) {
+            Log.d(LOGTAG, "Skywalker not yet loaded: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(LOGTAG, "onPause");
+
+        try {
+            emitAppStopped();
+        } catch (UnsatisfiedLinkError e) {
+            Log.d(LOGTAG, "Skywalker not loaded??: " + e.getMessage());
+        }
+
+        super.onPause();
     }
 
     @Override

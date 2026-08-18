@@ -37,6 +37,8 @@ public:
     void handleShowNotifications();
     void handleShowDirectMessages();
     void handleShowLink(const QString& uri);
+    void handleAppStarted();
+    void handleAppStopped();
     void handleKeyboardHeightChanged(int height);
 
 signals:
@@ -60,6 +62,8 @@ signals:
     void showLink(QString uri);
     void showNotifications();
     void showDirectMessages();
+    void appStarted();
+    void appStopped();
     void keyboardHeightChanged(int height);
 
 private:
