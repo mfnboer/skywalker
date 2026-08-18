@@ -1998,13 +1998,13 @@ void Chat::setMessagesUpdating(const QString& convoId, bool updating)
 
 void Chat::startConvosUnreadUpdateTimer()
 {
-    qDebug() << "Start convus unread update timer";
+    qDebug() << "Start convos unread update timer";
     mConvosUnreadUpdateTimer.start(CONVOS_UPDATE_INTERVAL);
 }
 
 void Chat::stopConvosUnreadUpdateTimer()
 {
-    qDebug() << "Stop convus unread update timer";
+    qDebug() << "Stop convos unread update timer";
     mConvosUnreadUpdateTimer.stop();
 }
 

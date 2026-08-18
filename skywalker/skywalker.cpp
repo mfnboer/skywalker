@@ -5217,9 +5217,31 @@ void Skywalker::clearStatusMessage()
 
 void Skywalker::handleAppStateChange(Qt::ApplicationState state)
 {
-    qDebug() << "App state:" << state;
+    auto* app = (QGuiApplication*)QGuiApplication::instance();
+    Q_ASSERT(app);
 
-    switch (state)
+    if (!app)
+    {
+        qWarning() << "No app instance";
+        return;
+    }
+
+    const auto currentState = app->applicationState();
+
+    qDebug() << "State change:" << state << "current:" << currentState << "app:" << mAppState;
+
+    if (state != currentState)
+        qWarning() << "Changed state:" << state << "different from current:" << currentState;
+
+    if (mAppState == currentState)
+    {
+        qDebug() << "App state not changed:" << mAppState;
+        return;
+    }
+
+    mAppState = currentState;
+
+    switch (currentState)
     {
     case Qt::ApplicationSuspended:
         pauseApp();

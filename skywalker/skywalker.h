@@ -480,6 +480,7 @@ private:
     bool mAutoUpdateTimelineInProgress = false;
     bool mGetPostThreadInProgress = false;
     bool mSignOutInProgress = false;
+    Qt::ApplicationState mAppState = Qt::ApplicationInactive;
 
     QTimer mTimelineUpdateTimer;
     QDateTime mTimelineUpdatePaused;
