@@ -165,6 +165,13 @@ void Chat::start()
 void Chat::getConvos(QEnums::ConvoStatus status, const QString& cursor)
 {
     Q_ASSERT(mBsky);
+
+    if (!mBsky)
+    {
+        qWarning() << "No bsky client";
+        return;
+    }
+
     qDebug() << "Get convos:" << status << "cursor:" << cursor;
     auto* model = getConvoListModel(status);
 

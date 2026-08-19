@@ -3177,6 +3177,13 @@ void Skywalker::getNotificationsNextPage(bool mentionsOnly)
 void Skywalker::getDetailedProfile(const QString& author, const QString& labelPrefsListUri)
 {
     Q_ASSERT(mBsky);
+
+    if (!mBsky)
+    {
+        qWarning() << "No bsky client";
+        return;
+    }
+
     qDebug() << "Get detailed profile:" << author;
     incGetDetailedProfileInProgress();
 

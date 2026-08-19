@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.45.2
 ======
 * Access advance settings from user login page
