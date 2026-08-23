@@ -38,7 +38,7 @@ RoundCornerMask {
         sourceSize.width: width * Screen.devicePixelRatio
         sourceSize.height: height * Screen.devicePixelRatio
         url: filter.imageVisible() ? frame.url : ""
-        showAlt: hasAlt()
+        showAlt: filter.imageVisible() && hasAlt()
 
         onStatusChanged: {
             if (status == Image.Ready)

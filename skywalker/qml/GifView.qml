@@ -39,7 +39,7 @@ Item {
         anchors.leftMargin: 5
         anchors.bottom: gifImage.bottom
         anchors.bottomMargin: 5
-        active: gifUtils.isKlipyLink(view.uri)
+        active: gifUtils.isKlipyLink(view.uri) && gifImage.getFilter().imageVisible()
 
         sourceComponent: Image {
             width: guiSettings.gifAttributionWidth
