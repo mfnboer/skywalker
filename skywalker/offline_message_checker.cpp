@@ -583,7 +583,7 @@ void OffLineMessageChecker::checkUnreadNotificationCount()
     const int prevUnread = mUserSettings.getOfflineUnread(mUserDid);
     qDebug() << "Check unread notification count, last unread:" << prevUnread;
 
-    mBsky->getUnreadNotificationCount({}, {},
+    mBsky->getUnreadNotificationCount({},
         [this, prevUnread](int unread){
             qDebug() << "Unread notification count:" << unread;
             int newCount = unread - prevUnread;
@@ -616,7 +616,7 @@ void OffLineMessageChecker::getNotifications(int toRead)
     qDebug() << "Get notifications:" << toRead;
     const int limit = std::min(toRead, 100); // 100 is max that can be retreived in 1 request
 
-    mBsky->listNotifications(limit, {}, {}, false, {},
+    mBsky->listNotifications(limit, {}, {}, {},
         [this, toRead](auto notifications){
             filterNotifications(notifications);
             const bool added = mNotificationListModel.addNotifications(std::move(notifications), mBsky, false,

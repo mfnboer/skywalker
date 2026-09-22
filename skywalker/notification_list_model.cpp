@@ -39,7 +39,6 @@ void NotificationListModel::clear()
     mInviteCodeUsedNotifications.clear();
     mNewLabelsNotifications.clear();
     mNotificationsSeen = false;
-    setPriority(false);
 }
 
 void NotificationListModel::clearLocalState()
@@ -58,15 +57,6 @@ void NotificationListModel::clearRows()
         mList.clear();
         endRemoveRows();
     }
-}
-
-void NotificationListModel::setPriority(bool priority)
-{
-    if (priority == mPriority)
-        return;
-
-    mPriority = priority;
-    emit priorityChanged();
 }
 
 void NotificationListModel::addInviteCodeUsageNotificationRows()
@@ -123,7 +113,6 @@ bool NotificationListModel::addNotifications(ATProto::AppBskyNotification::ListN
         clearLocalState();
 
     mCursor = notifications->mCursor.value_or(QString());
-    setPriority(notifications->mPriority);
 
     if (notifications->mNotifications.empty())
     {

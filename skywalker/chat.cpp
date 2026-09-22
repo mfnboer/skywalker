@@ -74,6 +74,7 @@ void Chat::initSettings()
 
             mAllowIncomingChat = (QEnums::AllowIncomingChat)declaration->mAllowIncoming;
             mAllowGroupInvites = (QEnums::AllowIncomingChat)declaration->mAllowGroupInvites.value_or(declaration->mAllowIncoming);
+            mDeclarationParams = declaration->mJson;
 
             qDebug() << "Allow incoming chat:" << mAllowIncomingChat << "group:" << mAllowGroupInvites;
         },
@@ -84,6 +85,7 @@ void Chat::initSettings()
             qWarning() << "Failed to get chat settings:" << error << "-" << msg;
             mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
             mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+            mDeclarationParams = {};
         });
 }
 
@@ -98,6 +100,7 @@ void Chat::updateSettings(QEnums::AllowIncomingChat allowIncoming, QEnums::Allow
     ATProto::ChatBskyActor::Declaration declaration;
     declaration.mAllowIncoming = (ATProto::AppBskyActor::AllowIncomingType)allowIncoming;
     declaration.mAllowGroupInvites = (ATProto::AppBskyActor::AllowIncomingType)allowGroupInvites;
+    declaration.mJson = mDeclarationParams;
 
     chatMaster()->updateDeclaration(mUserDid, declaration,
         [this, presence=*mPresence, allowIncoming, allowGroupInvites]{

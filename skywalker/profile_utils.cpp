@@ -590,4 +590,54 @@ ActorStatusView ProfileUtils::getNullStatus()
     return ActorStatusView{};
 }
 
+void ProfileUtils::getContentVisibilityDeclaration(const QString& did)
+{
+    if (!profileMaster())
+        return;
+
+    profileMaster()->getContentVisibilityDeclaration(did,
+        [this, presence=getPresence()](ATProto::AppBskyActor::ContentVisibilityDeclaration::SharedPtr declaration){
+            if (!presence)
+                return;
+
+            emit getContentVisibilityDeclarationOk(declaration->mHideFromAlgorithmicRecommendations, declaration->mJson);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Get content visibility declaration failed:" << error << " - " << msg;
+
+            if (ATProto::ATProtoErrorMsg::isRecordNotFound(error))
+                emit getContentVisibilityDeclarationOk(false, {});
+            else
+                emit getContentVisibilityDeclarationFailed(msg);
+        });
+}
+
+void ProfileUtils::updateContentVisibilityDeclaration(const QString& did, bool hideFromAlgorithmicRecommendations, const QJsonObject& json)
+{
+    if (!profileMaster())
+        return;
+
+    ATProto::AppBskyActor::ContentVisibilityDeclaration declaration;
+    declaration.mHideFromAlgorithmicRecommendations = hideFromAlgorithmicRecommendations;
+    declaration.mJson = json;
+
+    profileMaster()->updateContentVisibilityDeclaration(did, declaration,
+        [this, presence=getPresence(), declaration](){
+            if (!presence)
+                return;
+
+            emit updateContentVisibilityDeclarationOk(declaration.mHideFromAlgorithmicRecommendations, declaration.mJson);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Update content visibility declaration failed:" << error << " - " << msg;
+            emit updateContentVisibilityDeclarationFailed(msg);
+        });
+}
+
 }

@@ -127,7 +127,7 @@ void NonActiveUser::getNotifications(int limit, bool updateSeen, const QString& 
 
     model->setGetFeedInProgress(true);
 
-    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {}, {},
+    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {},
         [this, presence=getPresence(), cursor](auto ouput){
             if (!presence)
                 return;

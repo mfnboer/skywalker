@@ -44,6 +44,8 @@ public:
     Q_INVOKABLE void deleteStatus(const QString& did);
     Q_INVOKABLE void getStatus(const QString& did);
     Q_INVOKABLE ActorStatusView getNullStatus();
+    Q_INVOKABLE void getContentVisibilityDeclaration(const QString& did);
+    Q_INVOKABLE void updateContentVisibilityDeclaration(const QString& did, bool hideFromAlgorithmicRecommendations, const QJsonObject& json);
 
 signals:
     void basicProfileOk(BasicProfile profile);
@@ -69,6 +71,10 @@ signals:
     void deleteStatusOk();
     void deleteStatusFailed(QString error);
     void getStatusOk(QString uri, int durationMinutes);
+    void getContentVisibilityDeclarationOk(bool hideFromAlgorithmicRecommendations, QJsonObject json);
+    void getContentVisibilityDeclarationFailed(QString error);
+    void updateContentVisibilityDeclarationOk(bool hideFromAlgorithmicRecommendations, QJsonObject json);
+    void updateContentVisibilityDeclarationFailed(QString error);
 
 private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,

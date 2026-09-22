@@ -499,7 +499,7 @@ void SessionManager::refreshNotificationCount(const QString& did)
     if (!session)
         return;
 
-    session->mBsky->getUnreadNotificationCount({}, {},
+    session->mBsky->getUnreadNotificationCount({},
         [this, did](int unread){
             qDebug() << "Unread notification count:" << unread << did;
             setUnreadNotificationCount(did, unread);

@@ -3089,22 +3089,6 @@ void Skywalker::removeFeedInteraction(const QString& feedDid, ATProto::AppBskyFe
         model->removeFeedInteraction(feedDid, event, postUri);
 }
 
-void Skywalker::updateNotificationPreferences(bool priority)
-{
-    Q_ASSERT(mBsky);
-    qDebug() << "Update notification prefereces, priorty:" << priority;
-
-    mBsky->putNotificationPreferences(priority,
-        [this]{
-            getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, false);
-            getNotifications(NOTIFICATIONS_ADD_PAGE_SIZE, false, true);
-        },
-        [this](const QString& error, const QString& msg){
-            qDebug() << "updateNotificationPreferences FAILED:" << error << " - " << msg;
-            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
-        });
-}
-
 void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, bool emitLoadedSignal, const QString& cursor)
 {
     Q_ASSERT(mBsky);
@@ -3126,7 +3110,7 @@ void Skywalker::getNotifications(int limit, bool updateSeen, bool mentionsOnly, 
             ATProto::AppBskyNotification::NotificationReason::QUOTE } :
         std::vector<ATProto::AppBskyNotification::NotificationReason>{};
 
-    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, {}, reasons,
+    mBsky->listNotifications(limit, Utils::makeOptionalString(cursor), {}, reasons,
         [this, mentionsOnly, emitLoadedSignal, cursor](auto ouput){
             const bool clearFirst = cursor.isEmpty();
             auto& model = mentionsOnly ? mMentionListModel : mNotificationListModel;

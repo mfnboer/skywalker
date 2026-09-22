@@ -8,6 +8,9 @@ Item {
     property bool emailAuthFactor: userPrefs.emailAuthFactor
     property bool emailConfirmed: userPrefs.emailConfirmed
     property string email: userPrefs.email
+    property bool hideFromAlgorithmicRecommendations: false
+    property var contentVisibilityDeclarationJson
+    property bool contentVisibilityDeclarationReceived: false
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
 
@@ -45,10 +48,24 @@ Item {
         }
 
         AccessibleCheckBox {
+            id: hideAlgorithmicRecommendationsSwitch
+            Layout.fillWidth: true
+            text: qsTr("Ask apps to hide my posts from algorithmic recommendations")
+            checked: hideFromAlgorithmicRecommendations
+            enabled: contentVisibilityDeclarationReceived
+
+            onCheckedChanged: {
+                if (checked !== hideFromAlgorithmicRecommendations) {
+                    contentVisibilityDeclarationReceived = false
+                    profileUtils.updateContentVisibilityDeclaration(userPrefs.did, checked, contentVisibilityDeclarationJson)
+                }
+            }
+        }
+
+        AccessibleCheckBox {
             id: loggedoutSwitch
             Layout.fillWidth: true
             text: qsTr("Discourage apps from showing my account to logged-out users")
-
             checked: !userPrefs.loggedOutVisibility
             onCheckedChanged: userPrefs.loggedOutVisibility = !checked
         }
@@ -151,8 +168,37 @@ Item {
         }
     }
 
+    ProfileUtils {
+        id: profileUtils
+        skywalker: section.skywalker
+
+        onGetContentVisibilityDeclarationOk: (hide, json) => {
+            hideFromAlgorithmicRecommendations = hide
+            contentVisibilityDeclarationJson = json
+            contentVisibilityDeclarationReceived = true
+        }
+
+        onGetContentVisibilityDeclarationFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onUpdateContentVisibilityDeclarationOk: (hide, json) => {
+            hideFromAlgorithmicRecommendations = hide
+            contentVisibilityDeclarationJson = json
+            contentVisibilityDeclarationReceived = true
+        }
+
+        onUpdateContentVisibilityDeclarationFailed: (error) => {
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+            hideAlgorithmicRecommendationsSwitch.checked = hideFromAlgorithmicRecommendations
+            contentVisibilityDeclarationReceived = true
+        }
+    }
+
     BusyIndicator {
         anchors.centerIn: parent
         running: accountUtils.updateInProgress
+    }
+
+    Component.onCompleted: {
+        profileUtils.getContentVisibilityDeclaration(userPrefs.did)
     }
 }

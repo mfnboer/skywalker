@@ -18,7 +18,7 @@ SkyPage {
     }
 
     header: SimpleHeader {
-        text: skywalker.notificationListModel.priority ? qsTr("Priority notifcations") : qsTr("Notifications")
+        text: qsTr("Notifications")
         visible: !root.showSideBar
         onBack: page.closed()
     }
@@ -115,7 +115,7 @@ SkyPage {
             EmptyListIndication {
                 y: parent.headerItem ? parent.headerItem.height : 0
                 svg: SvgOutline.noPosts
-                text: skywalker.notificationListModel.priority ? qsTr("No priority notifications") : qsTr("No notifications")
+                text: qsTr("No notifications")
                 list: allList
             }
 

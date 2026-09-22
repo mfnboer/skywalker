@@ -213,6 +213,7 @@ private:
     QTimer mConvosUnreadUpdateTimer;
     QEnums::AllowIncomingChat mAllowIncomingChat = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
     QEnums::AllowIncomingChat mAllowGroupInvites = QEnums::ALLOW_INCOMING_CHAT_FOLLOWING;
+    QJsonObject mDeclarationParams;
 };
 
 }

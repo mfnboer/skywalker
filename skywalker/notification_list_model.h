@@ -22,7 +22,6 @@ class NotificationListModel : public QAbstractListModel,
 {
     Q_OBJECT
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
-    Q_PROPERTY(bool priority READ getPriority NOTIFY priorityChanged FINAL)
 
 public:
     using Ptr = std::unique_ptr<NotificationListModel>;
@@ -133,8 +132,6 @@ public:
                         const ATProto::ChatBskyGroup::JoinRequestView& joinRequest,
                         const QString& userDid);
     const QString& getCursor() const { return mCursor; }
-    bool getPriority() const { return mPriority; }
-    void setPriority(bool priority);
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
@@ -160,7 +157,6 @@ public:
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
 signals:
-    void priorityChanged();
     void getFeedInProgressChanged();
 
 protected:
@@ -227,7 +223,6 @@ private:
 
     NotificationList mList;
     QString mCursor;
-    bool mPriority = false;
 
     // This cache must be emptied when the notifications are refreshed, because
     // the counts (like, reposts, replies) will change over time and are displayed.
