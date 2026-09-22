@@ -46,6 +46,10 @@ add_compile_options(-Wall -Wextra -Werror)
 
 message("BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 
+if (ANDROID)
+    message("ANDROID ABI: ${ANDROID_ABI}")
+endif()
+
 if (NOT ANDROID AND NOT CMAKE_BUILD_TYPE MATCHES RelWithDebInfo AND ENABLE_ASAN)
     add_compile_options(-fsanitize=address)
     add_compile_options(-fno-omit-frame-pointer)
@@ -161,11 +165,17 @@ if (CMAKE_BUILD_TYPE MATCHES Release)
     set_target_properties(appskywalker PROPERTIES
         QT_ANDROID_ABIS "arm64-v8a;armeabi-v7a"
     )
+elseif(ANDROID_ABI MATCHES "x86_64")
+    set_target_properties(appskywalker PROPERTIES
+        QT_ANDROID_ABIS "x86_64"
+    )
 else()
     set_target_properties(appskywalker PROPERTIES
         QT_ANDROID_ABIS "arm64-v8a"
     )
 endif()
+
+message("QT ANDROID ABIS: ${QT_ANDROID_ABIS}")
 
 target_link_libraries(appskywalker
     PRIVATE libatproto
