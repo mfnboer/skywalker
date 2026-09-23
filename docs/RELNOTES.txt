@@ -1,5 +1,5 @@
-next
-====
+4.45.3
+======
 * Setting to ask apps to hide your posts from algorithmic recommendations
 * Open mu.social links
 * Bug fix: Android 17 emoji rendering
