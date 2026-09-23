@@ -17,6 +17,7 @@ const QStringList SCOPE = {
     ATProto::OAuth::SCOPE_ATPROTO,
     "account:email?action=read",
 
+    "repo:app.bsky.actor.contentVisibilityDeclaration",
     "repo:app.bsky.actor.profile",
     "repo:app.bsky.actor.status",
     "repo:app.bsky.feed.like",
@@ -29,6 +30,7 @@ const QStringList SCOPE = {
     "repo:app.bsky.graph.list",
     "repo:app.bsky.graph.listblock",
     "repo:app.bsky.graph.listitem",
+    "repo:app.bsky.graph.referencelistoptout",
     "repo:app.bsky.graph.starterpack",
     "repo:app.bsky.notification.declaration",
     "repo:chat.bsky.actor.declaration",
@@ -175,8 +177,8 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "rpc:app.bsky.feed.searchPostsV2?aud=*",
-        "Please login again to get authorization for new search function."
+        "repo:app.bsky.actor.contentVisibilityDeclaration",
+        "Please login again to get authorization to opt out from algorithmic recommendations."
     }};
 }
 
