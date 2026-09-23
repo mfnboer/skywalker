@@ -38,7 +38,11 @@ void FontDownloader::initAppFonts()
     UserSettings userSettings;
 
     addApplicationFonts();
-    downloadEmojiFont();
+
+    // Install bunbled font to workaround Android 17 emoji bug
+    // https://qt-project.atlassian.net/browse/QTBUG-150748
+    //downloadEmojiFont();
+    installBundleEmojiFontSource();
 
     QFont font = QGuiApplication::font();
     const float fontScale = getFontScale();

@@ -1,6 +1,7 @@
 next
 ====
 * Setting to ask apps to hide your posts from algorithmic recommendations
+* Bug fix: Android 17 emoji rendering
 * Bug fixes
 
 4.45.2

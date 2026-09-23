@@ -75,6 +75,7 @@ qt_add_qml_module(appskywalker
         qtquickcontrols2.conf
         fonts/unicode.impact.ttf
         fonts/NotoSansMath-Regular.ttf
+        fonts/NotoColorEmoji.ttf
         images/skywalker.png
         images/klipy_watermark.svg
         images/pb_klipy_dark.svg
