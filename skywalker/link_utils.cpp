@@ -207,10 +207,12 @@ void LinkUtils::openStarterPackLink(const ATProto::ATUri& atUri)
 QString LinkUtils::isAuthorLink(const QString& link)
 {
     static const QRegularExpression authorHandleRE(
-            QString(R"(^https:\/\/bsky.app\/profile\/(?<handle>%1)$)").arg(
+            QString(R"(^https:\/\/%1\/profile\/(?<handle>%2)$)").arg(
+                ATProto::ATRegex::DOMAIN.pattern(), // e.g. bksy.app or mu.social
                 ATProto::ATRegex::HANDLE.pattern()));
     static const QRegularExpression authorDidRE(
-            QString(R"(^https:\/\/bsky.app\/profile\/(?<did>%2)$)").arg(
+            QString(R"(^https:\/\/%1\/profile\/(?<did>%2)$)").arg(
+                ATProto::ATRegex::DOMAIN.pattern(), // e.g. bksy.app or mu.social
                 ATProto::ATRegex::DID.pattern()));
 
     auto match = authorHandleRE.match(link);
