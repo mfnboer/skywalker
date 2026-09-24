@@ -274,6 +274,9 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
     if (host.endsWith("instagram.com"))
         return 1.0;
 
+    if (host.endsWith("bandcamp.com"))
+        return 1.0;
+
     // The leading slash is from the URL path, not the part of the user name.
     static const QRegularExpression MASTODON_USER_NAME{ R"(\/@[a-zA-Z0-9_]+([a-zA-Z0-9_.-]+[a-zA-Z0-9_]+)?)" };
     auto match = MASTODON_USER_NAME.match(path);
