@@ -1,3 +1,7 @@
+next
+====
+* Added Noto Sans Symbols to the font.
+
 4.45.3
 ======
 * Setting to ask apps to hide your posts from algorithmic recommendations

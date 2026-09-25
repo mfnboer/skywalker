@@ -7,6 +7,7 @@
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QFontDatabase>
+#include <QFontMetricsF>
 #include <QGuiApplication>
 #include <QTextBoundaryFinder>
 #include <QtGlobal>
@@ -49,7 +50,7 @@ void FontDownloader::initAppFonts()
     auto fontFamilies = font.families();
     fontFamilies.push_back(sEmojiFontFamily);
     font.setFamilies(fontFamilies);
-    font.setWeight(QFont::Weight(350));
+    font.setWeight(QFont::Weight(QFont::Normal));
     font.setPixelSize(16);
     QGuiApplication::setFont(font);
 
@@ -65,6 +66,13 @@ void FontDownloader::initAppFonts()
     qInfo() << "Font family emoji:" << getEmojiFontFamily();
     qInfo() << "Font emoji source:" << getEmojiFontSource();
 
+    for (const auto& fam : font.families())
+    {
+        QFont f(fam);
+        QFontMetricsF fm(f);
+        qDebug() << fam << fm.inFontUcs4(0x2313);
+    }
+
     // In older Qt versions combined emojis were not properly rendered
     // ATProto::RichTextMaster::setHtmlCleanup([](const QString& s){ return UnicodeFonts::setEmojiFontCombinedEmojis(s); });
 }
@@ -75,9 +83,27 @@ void FontDownloader::addFont(const QString& fontFileName)
     qDebug() << fontFileName << "fontId:" << fontId;
 
     if (fontId >= 0)
-        qInfo() << "FONT FAMILIES:" << QFontDatabase::applicationFontFamilies(fontId);
+    {
+        const auto families = QFontDatabase::applicationFontFamilies(fontId);
+        qDebug() << "FONT FAMILIES:" << families;
+
+        // HACK to display: ๑♡⌓♡๑
+        // ๑ is Thai. After that the renderer seems to assume that the other chars are Thai
+        // as well. By setting the fallback for Thai, the string renders properly.
+        // Maybe we should set the fallback for all scripts?
+        for (const auto& family : families)
+        {
+            // HACK: without creating font metrics, chars from Noto Sans Symbols do not show???
+            QFont font(family);
+            QFontMetrics fm(font);
+            qInfo() << "Init font:" << family << fm.height();
+            QFontDatabase::addApplicationFallbackFontFamily(QChar::Script_Thai, family);
+        }
+    }
     else
+    {
         qWarning() << "Failed to add:" << fontFileName;
+    }
 }
 
 void FontDownloader::addApplicationFonts()
@@ -85,6 +111,8 @@ void FontDownloader::addApplicationFonts()
     // The Noto Sans Math font has the math symbols, i.e. the bold, italic, wide unicode
     // characters that people often use in posts.
     addFont(QStringLiteral(":/fonts/NotoSansMath-Regular.ttf"));
+    addFont(QStringLiteral(":/fonts/NotoSansSymbols2-Regular.ttf"));
+    addFont(QStringLiteral(":/fonts/NotoSansSymbols-Regular.ttf"));
     addFont(QStringLiteral(":/fonts/unicode.impact.ttf"));
 }
 
