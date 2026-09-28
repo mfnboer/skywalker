@@ -15,8 +15,8 @@ VideoUtils::VideoUtils(QObject* parent) :
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingOk,
-            this, [this](QString inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight){
-                handleTranscodingOk(inputFileName, outputFile, outputWidth, outputHeight);
+            this, [this](QString inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight, qint64 durationMs){
+                handleTranscodingOk(inputFileName, outputFile, outputWidth, outputHeight, durationMs);
             });
 
     connect(&jniCallbackListener, &JNICallbackListener::videoTranscodingFailed,
@@ -84,7 +84,7 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     {
         qDebug() << "Cannot transcode video";
         QFile::copy(inputFileName, outputFileName);
-        handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), -1, -1);
+        handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), -1, -1, -1);
     }
 #else
     Q_UNUSED(height)
@@ -95,12 +95,12 @@ bool VideoUtils::transcodeVideo(const QString& inputFileName, int height, int st
     setTranscoding(true);
     mTranscodingFileName = inputFileName;
     QFile::copy(inputFileName, outputFileName);
-    handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), -1, -1);
+    handleTranscodingOk(inputFileName, std::make_shared<FileSignal>(outputFileName), -1, -1, -1);
 #endif
     return true;
 }
 
-void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight)
+void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::SharedPtr outputFile, int outputWidth, int outputHeight, qint64 durationMs)
 {
     if (inputFileName != mTranscodingFileName)
     {
@@ -113,7 +113,7 @@ void VideoUtils::handleTranscodingOk(const QString& inputFileName, FileSignal::S
     mTranscodingFileName.clear();
     outputFile->setHandled(true);
     TempFileHolder::instance().put(outputFile->getFileName());
-    emit transcodingOk(inputFileName, outputFile->getFileName(), outputWidth, outputHeight);
+    emit transcodingOk(inputFileName, outputFile->getFileName(), outputWidth, outputHeight, durationMs);
 }
 
 void VideoUtils::handleTranscodingFailed(const QString& inputFileName, FileSignal::SharedPtr outputFile, const QString& error)

@@ -1941,22 +1941,22 @@ SkyPage {
     }
 
     VideoUtils {
-        property var callbackOk: (videoSource, width, height) => {}
+        property var callbackOk: (videoSource, width, height, durationMs) => {}
         property var callbackFailed: (error) => {}
 
         id: videoUtils
 
-        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
+        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight, durationMs) => {
             const source = "file://" + outputFileName
             page.tmpVideos.push(source)
-            callbackOk(source, outputWidth, outputHeight) // qmllint disable use-proper-function
+            callbackOk(source, outputWidth, outputHeight, durationMs) // qmllint disable use-proper-function
             callbackOk = (videoSource, width, height) => {}
             callbackFailed = (error) => {}
         }
 
         onTranscodingFailed: (inputFileName, error) => {
             callbackFailed(error) // qmllint disable use-proper-function
-            callbackOk = (videoSource, width, height) => {}
+            callbackOk = (videoSource, width, height, durationMs) => {}
             callbackFailed = (error) => {}
         }
 
@@ -2541,6 +2541,7 @@ SkyPage {
                         true, /* isGif */
                         altText,
                         postItem.gif.size.width, postItem.gif.size.height,
+                        -1, /* duration ms */
                         parentUri, parentCid,
                         rootUri, rootCid,
                         qUri, qCid,
@@ -2552,11 +2553,12 @@ SkyPage {
             postUtils.checkVideoLimits(
                 () => videoUtils.transcode(postItem.video, postItem.videoNewHeight,
                         postItem.videoStartMs, postItem.videoEndMs, postItem.videoRemoveAudio, postItem.videoIsGif,
-                        (transcodedVideo, videoWidth, videoHeight) => {
+                        (transcodedVideo, videoWidth, videoHeight, videoDurationMs) => {
                             postUtils.postVideo(postText, transcodedVideo,
                                 postItem.videoIsGif,
                                 postItem.videoAltText,
                                 videoWidth, videoHeight,
+                                videoDurationMs,
                                 parentUri, parentCid,
                                 rootUri, rootCid,
                                 qUri, qCid,

@@ -24,6 +24,7 @@ struct PostAttachmentVideo
     QString mAltText;
     std::optional<int> mWidth;
     std::optional<int> mHeight;
+    std::optional<qint64> mDurationMs;
     bool mIsGif = false;
 };
 

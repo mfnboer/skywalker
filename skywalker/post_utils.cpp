@@ -280,6 +280,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
 void PostUtils::postVideo(const QString& text, const QString& videoFileName, bool isGif,
                      const QString& videoAltText, int videoWidth, int videoHeight,
+                     qint64 videoDurationMs,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
@@ -289,7 +290,8 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, boo
 {
     std::optional<int> vw = videoWidth > 0 ? videoWidth : std::optional<int>{};
     std::optional<int> vh = videoHeight > 0 ? videoHeight : std::optional<int>{};
-    const PostAttachmentVideo attachment{ videoFileName, videoAltText, vw, vh, isGif };
+    std::optional<qint64> vd = videoDurationMs > 0 ? videoDurationMs : std::optional<qint64>{};
+    const PostAttachmentVideo attachment{ videoFileName, videoAltText, vw, vh, vd, isGif };
     post(text, attachment, replyToUri, replyToCid, replyRootUri, replyRootCid,
          quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
@@ -846,11 +848,10 @@ void PostUtils::continuePostParallelVideoUpload(
     if (!bskyClient())
         return;
 
-    qDebug() << "Upload video parallel:" << video.mResource << QSize(video.mWidth.value_or(-1), video.mHeight.value_or(-1));
+    qDebug() << "Upload video parallel:" << video.mResource << QSize(video.mWidth.value_or(-1), video.mHeight.value_or(-1)) << "duration:" << video.mDurationMs;
     const QString fileName = video.mResource.sliced(7);
 
-    // TODO: duration
-    videoMaster()->parallelUpload(fileName, {}, video.mWidth, video.mHeight,
+    videoMaster()->parallelUpload(fileName, video.mDurationMs, video.mWidth, video.mHeight,
         [this, presence=getPresence(), video, post, postFeedContext](ATProto::Blob::SharedPtr blob){
             if (!presence)
                 return;

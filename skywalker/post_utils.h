@@ -59,6 +59,7 @@ public:
                           const PostFeedContext& postFeedContext);
     Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, bool isGif,
                           const QString& videoAltText, int videoWidth, int videoHeight,
+                          qint64 videoDurationMs,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
