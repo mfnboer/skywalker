@@ -806,7 +806,7 @@ void PostUtils::continuePostSerialVideoUpload(
     Q_ASSERT(ioDevice);
     qDebug() << "Upload video serial:" << QSize(video.mWidth.value_or(-1), video.mHeight.value_or(-1));
 
-    videoMaster()->serialUpload(ioDevice.get(),
+    videoMaster()->serialUpload(ioDevice,
         [this, presence=getPresence(), video, post, postFeedContext, ioDevice](ATProto::Blob::SharedPtr blob){
             if (!presence)
                 return;
