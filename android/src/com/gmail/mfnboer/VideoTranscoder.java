@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 
 public class VideoTranscoder {
     private static final String LOGTAG = "VideoTranscoder";
-    public static native void emitTranscodingOk(String inputFilePath, String outputFilePath, int outputWidth, int outputHeight);
+    public static native void emitTranscodingOk(String inputFilePath, String outputFilePath, int outputWidth, int outputHeight, long durationMs);
     public static native void emitTranscodingFailed(String inputFilePath, String outputFilePath, String error);
 
     public static boolean transcodeVideo(String inputFilePath, String outputFilePath, int height, int startMs, int endMs, boolean removeAudio) {
@@ -80,8 +80,8 @@ public class VideoTranscoder {
                         final boolean rotated = (result.width == height);
                         final int w = rotated ? result.height : result.width;
                         final int h = rotated ? result.width : result.height;
-                        Log.d(LOGTAG, "Transcoding completed: " + outputFilePath + " size: " + result.fileSizeBytes + " width: " + w + " height: " + h + " rotated: " + rotated);
-                        emitTranscodingOk(inputFilePath, outputFilePath, w, h);
+                        Log.d(LOGTAG, "Transcoding completed: " + outputFilePath + " size: " + result.fileSizeBytes + " width: " + w + " height: " + h + " rotated: " + rotated + " duration: " + result.approximateDurationMs + "ms");
+                        emitTranscodingOk(inputFilePath, outputFilePath, w, h, result.approximateDurationMs);
                     }
 
                     @Override

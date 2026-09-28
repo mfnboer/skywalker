@@ -15,6 +15,7 @@
 #include "named_link.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
+#include <atproto/lib/video_master.h>
 #include <QImage>
 #include <unordered_map>
 
@@ -58,6 +59,7 @@ public:
                           const PostFeedContext& postFeedContext);
     Q_INVOKABLE void postVideo(const QString& text, const QString& videoFileName, bool isGif,
                           const QString& videoAltText, int videoWidth, int videoHeight,
+                          qint64 videoDurationMs,
                           const QString& replyToUri, const QString& replyToCid,
                           const QString& replyRootUri, const QString& replyRootCid,
                           const QString& quoteUri, const QString& quoteCid,
@@ -176,9 +178,14 @@ private:
                       const PostFeedContext& postFeedContext);
     void continuePost(const PostAttachmentVideo& video, ATProto::AppBskyFeed::Record::Post::SharedPtr post,
                       const PostFeedContext& postFeedContext);
-    void continuePost(std::shared_ptr<QIODevice> ioDevice, const PostAttachmentVideo& video,
-                      ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                      const PostFeedContext& postFeedContext);
+    void continuePostSerialVideoUpload(
+        std::shared_ptr<QIODevice> ioDevice, const PostAttachmentVideo& video,
+        ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+        const PostFeedContext& postFeedContext);
+    void continuePostParallelVideoUpload(
+        const PostAttachmentVideo& video,
+        ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+        const PostFeedContext& postFeedContext);
     void continuePost(ATProto::AppBskyFeed::Record::Post::SharedPtr post, const PostFeedContext& postFeedContext);
 
     void continueRepost(const QString& uri, const QString& cid,
@@ -196,11 +203,13 @@ private:
     void removeIndexLanguageIdentificationRequestId(int index, int requestId);
 
     ATProto::PostMaster* postMaster();
+    ATProto::VideoMaster* videoMaster();
     ImageReader* imageReader();
     LanguageUtils* languageUtils();
 
     QNetworkAccessManager* mNetwork;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
+    std::unique_ptr<ATProto::VideoMaster> mVideoMaster;
     std::unique_ptr<ImageReader> mImageReader;
     bool mPickingPhoto = false;
     std::unique_ptr<LanguageUtils> mLanguageUtils;

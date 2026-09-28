@@ -707,7 +707,7 @@ Column {
     VideoUtils {
         id: videoUtils
 
-        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
+        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight, durationMs) => {
             console.debug("Set MP4 source:", outputFileName)
             videoHandle = videoUtils.cacheVideo(videoView.playlistUrl, outputFileName)
             transcodedSource = "file://" + videoHandle.fileName

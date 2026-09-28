@@ -1242,7 +1242,7 @@ ApplicationWindow {
         onCopyVideoOk: skywalker.showStatusMessage(qsTr("Video saved"), QEnums.STATUS_LEVEL_INFO)
         onCopyVideoFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
-        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight) => {
+        onTranscodingOk: (inputFileName, outputFileName, outputWidth, outputHeight, durationMs) => {
             videoUtils.copyVideoToGallery(outputFileName)
             videoUtils.dropVideo(outputFileName)
             m3u8Reader.resetStream()

@@ -69,6 +69,22 @@ ATProto::PostMaster* PostUtils::postMaster()
     return mPostMaster.get();
 }
 
+ATProto::VideoMaster* PostUtils::videoMaster()
+{
+    if (!mVideoMaster)
+    {
+        auto* client = bskyClient();
+        Q_ASSERT(client);
+
+        if (client)
+            mVideoMaster = std::make_unique<ATProto::VideoMaster>(*client);
+        else
+            qWarning() << "Bsky client not yet created";
+    }
+
+    return mVideoMaster.get();
+}
+
 ImageReader* PostUtils::imageReader()
 {
     if (!mImageReader)
@@ -264,6 +280,7 @@ void PostUtils::post(const QString& text, const LinkCard* card,
 
 void PostUtils::postVideo(const QString& text, const QString& videoFileName, bool isGif,
                      const QString& videoAltText, int videoWidth, int videoHeight,
+                     qint64 videoDurationMs,
                      const QString& replyToUri, const QString& replyToCid,
                      const QString& replyRootUri, const QString& replyRootCid,
                      const QString& quoteUri, const QString& quoteCid,
@@ -271,7 +288,10 @@ void PostUtils::postVideo(const QString& text, const QString& videoFileName, boo
                      const QStringList& labels, const QString& language,
                      const PostFeedContext& postFeedContext)
 {
-    const PostAttachmentVideo attachment{ videoFileName, videoAltText, videoWidth, videoHeight, isGif };
+    std::optional<int> vw = videoWidth > 0 ? videoWidth : std::optional<int>{};
+    std::optional<int> vh = videoHeight > 0 ? videoHeight : std::optional<int>{};
+    std::optional<qint64> vd = videoDurationMs > 0 ? videoDurationMs : std::optional<qint64>{};
+    const PostAttachmentVideo attachment{ videoFileName, videoAltText, vw, vh, vd, isGif };
     post(text, attachment, replyToUri, replyToCid, replyRootUri, replyRootCid,
          quoteUri, quoteCid, embeddedLinks, labels, language, postFeedContext);
 }
@@ -730,18 +750,7 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
 
     if (video.mResource.startsWith("file://"))
     {
-        qDebug() << "Open video file:" << video.mResource;
-        const QString fileName = video.mResource.sliced(7);
-        auto file = std::make_shared<QFile>(fileName);
-
-        if (!file->open(QFile::ReadOnly))
-        {
-            qWarning() << "Could not open video file:" << fileName;
-            emit postFailed(tr("Could not open video file"));
-            return;
-        }
-
-        continuePost(file, video, post, postFeedContext);
+        continuePostParallelVideoUpload(video, post, postFeedContext);
     }
     else if (video.mResource.startsWith("http"))
     {
@@ -776,7 +785,7 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
             }
 
             std::shared_ptr<QIODevice> ioDevice(reply);
-            continuePost(ioDevice, video, post, postFeedContext);
+            continuePostSerialVideoUpload(ioDevice, video, post, postFeedContext);
         });
     }
     else
@@ -786,55 +795,98 @@ void PostUtils::continuePost(const PostAttachmentVideo& video, ATProto::AppBskyF
     }
 }
 
-void PostUtils::continuePost(std::shared_ptr<QIODevice> ioDevice, const PostAttachmentVideo& video,
-                             ATProto::AppBskyFeed::Record::Post::SharedPtr post,
-                             const PostFeedContext& postFeedContext)
+void PostUtils::continuePostSerialVideoUpload(
+    std::shared_ptr<QIODevice> ioDevice, const PostAttachmentVideo& video,
+    ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+    const PostFeedContext& postFeedContext)
 {
     if (!bskyClient())
         return;
 
     Q_ASSERT(ioDevice);
+    qDebug() << "Upload video serial:" << QSize(video.mWidth.value_or(-1), video.mHeight.value_or(-1));
 
-    qDebug() << "Upload video:" << QSize(video.mWidth, video.mHeight);
-    bskyClient()->uploadVideo(ioDevice.get(),
-        [this, presence=getPresence(), video, post, postFeedContext, ioDevice](ATProto::AppBskyVideo::JobStatus::SharedPtr output){
+    videoMaster()->serialUpload(ioDevice,
+        [this, presence=getPresence(), video, post, postFeedContext, ioDevice](ATProto::Blob::SharedPtr blob){
             if (!presence)
                 return;
 
             if (!postMaster())
                 return;
 
-            postMaster()->addVideoToPost(post, *output, video.mWidth, video.mHeight, video.mAltText, video.mIsGif,
-                [this, presence, post, postFeedContext]{
-                    if (presence)
-                       continuePost(post, postFeedContext);
-                },
-                [this, presence](const QString& error, const QString& msg){
-                    if (!presence)
-                        return;
-
-                    qDebug() << "Post failed:" << error << " - " << msg;
-                    emit postFailed(msg);
-                },
-                [this, presence, video](const QString& status, std::optional<int> progress){
-                    if (!presence)
-                        return;
-
-                    qDebug() << "Status:" << status << "progress:" << progress.value_or(-1);
-                    QString msg(video.mIsGif ? tr("Processing GIF: %1").arg(status) : tr("Processing video: %1").arg(status));
-
-                    if (progress)
-                        msg += QString(" %1%").arg(*progress);
-
-                    emit postProgress(msg);
-                });
+            postMaster()->addVideoToPost(*post, blob, video.mWidth.value_or(-1), video.mHeight.value_or(-1), video.mAltText, video.mIsGif);
+            continuePost(post, postFeedContext);
+            mVideoMaster = nullptr;
         },
-        [this, presence=getPresence(), ioDevice](const QString& error, const QString& msg){
+        [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
             qDebug() << "Post failed:" << error << " - " << msg;
             emit postFailed(msg);
+            mVideoMaster = nullptr;
+        },
+        [this, presence=getPresence(), video](const QString& status, std::optional<int> progress){
+            if (!presence)
+                return;
+
+            qDebug() << "Status:" << status << "progress:" << progress.value_or(-1);
+            QString msg(video.mIsGif ? tr("Processing GIF: %1").arg(status) : tr("Processing video: %1").arg(status));
+
+            if (progress)
+                msg += QString(" %1%").arg(*progress);
+
+            emit postProgress(msg);
+        });
+}
+
+void PostUtils::continuePostParallelVideoUpload(
+    const PostAttachmentVideo& video,
+    ATProto::AppBskyFeed::Record::Post::SharedPtr post,
+    const PostFeedContext& postFeedContext)
+{
+    if (!bskyClient())
+        return;
+
+    qDebug() << "Upload video parallel:" << video.mResource << QSize(video.mWidth.value_or(-1), video.mHeight.value_or(-1)) << "duration:" << video.mDurationMs;
+    const QString fileName = video.mResource.sliced(7);
+
+    videoMaster()->parallelUpload(fileName, video.mDurationMs, video.mWidth, video.mHeight,
+        [this, presence=getPresence(), video, post, postFeedContext](ATProto::Blob::SharedPtr blob){
+            if (!presence)
+                return;
+
+            if (!postMaster())
+                return;
+
+            postMaster()->addVideoToPost(*post, blob, video.mWidth.value_or(-1), video.mHeight.value_or(-1), video.mAltText, video.mIsGif);
+            continuePost(post, postFeedContext);
+            mVideoMaster = nullptr;
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Post failed:" << error << " - " << msg;
+            emit postFailed(msg);
+            mVideoMaster = nullptr;
+        },
+        [this, presence=getPresence(), video](const QString& status, std::optional<int> progress){
+            if (!presence)
+                return;
+
+            qDebug() << "Status:" << status << "progress:" << progress.value_or(-1);
+            QString msg;
+
+            if (status == ATProto::VideoMaster::STATUS_UPLOADING)
+                msg = video.mIsGif ? tr("Uploading GIF") : tr("Uploading video");
+            else
+                msg = video.mIsGif ? tr("Processing GIF: %1").arg(status) : tr("Processing video: %2").arg(status);
+
+            if (progress)
+                msg += QString(" %1%").arg(*progress);
+
+            emit postProgress(msg);
         });
 }
 
