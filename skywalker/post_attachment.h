@@ -22,8 +22,8 @@ struct PostAttachmentVideo
 {
     QString mResource; // file://name or http-link
     QString mAltText;
-    int mWidth;
-    int mHeight;
+    std::optional<int> mWidth;
+    std::optional<int> mHeight;
     bool mIsGif = false;
 };
 

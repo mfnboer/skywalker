@@ -1,6 +1,7 @@
 next
 ====
-* Added Noto Sans Symbols to the font.
+* Added Noto Sans Symbols to the font
+* Faster upload for large videos
 
 4.45.3
 ======
