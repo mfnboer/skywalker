@@ -35,8 +35,8 @@ Item {
     }
     Loader {
         id: klipyAttribution
-        anchors.left: gifImage.left
-        anchors.leftMargin: 5
+        anchors.right: gifImage.right
+        anchors.rightMargin: 5
         anchors.bottom: gifImage.bottom
         anchors.bottomMargin: 5
         active: gifUtils.isKlipyLink(view.uri) && gifImage.getFilter().imageVisible()
