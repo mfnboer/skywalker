@@ -1200,7 +1200,7 @@ void Skywalker::syncTimeline(QDateTime tillTimestamp, const QString& cid, int ma
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor),
+    mBsky->getTimeline(TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor), {},
         [this, tillTimestamp, cid, maxPages, cursor](auto feed){
             const auto newCursor = processSyncPage(std::move(feed), mTimelineModel, tillTimestamp, cid, maxPages, cursor);
 
@@ -1422,7 +1422,7 @@ void Skywalker::syncListFeed(int modelId, QDateTime tillTimestamp, const QString
     if (cursor.isEmpty())
         emit feedSyncStart(modelId, maxPages, tillTimestamp);
 
-    mBsky->getListFeed(listUri, TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor), langs,
+    mBsky->getListFeed(listUri, TIMELINE_SYNC_PAGE_SIZE, Utils::makeOptionalString(cursor), {}, langs,
         [this, modelId, tillTimestamp, cid, maxPages, cursor](auto feed){
             auto* model = getPostFeedModel(modelId);
 
@@ -1576,7 +1576,7 @@ void Skywalker::getTimeline(int limit, int maxPages, int minEntries, const QStri
     }
 
     setGetTimelineInProgress(true);
-    mBsky->getTimeline(limit, Utils::makeOptionalString(cursor),
+    mBsky->getTimeline(limit, Utils::makeOptionalString(cursor), {},
        [this, maxPages, minEntries, cursor](auto feed){
             setGetTimelineInProgress(false);
             int addedPosts = 0;
@@ -1626,7 +1626,7 @@ void Skywalker::getTimelinePrepend(int autoGapFill, int pageSize, const updateTi
     setGetTimelineInProgress(true);
     setAutoUpdateTimelineInProgress(true);
 
-    mBsky->getTimeline(pageSize, {},
+    mBsky->getTimeline(pageSize, {}, {},
         [this, autoGapFill, cb](auto feed){
             const int gapId = mTimelineModel.prependFeed(std::move(feed));
             setGetTimelineInProgress(false);
@@ -1696,7 +1696,7 @@ void Skywalker::getTimelineForGap(int gapId, int autoGapFill, bool userInitiated
     setGetTimelineInProgress(true);
     setAutoUpdateTimelineInProgress(!userInitiated);
 
-    mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur,
+    mBsky->getTimeline(TIMELINE_GAP_FILL_SIZE, cur, {},
         [this, gapId, autoGapFill, userInitiated, cb](auto feed){
             mTimelineModel.clearLastInsertedRowIndex();
             const int newGapId = mTimelineModel.gapFillFeed(std::move(feed), gapId);
@@ -2069,7 +2069,7 @@ void Skywalker::getListFeed(int modelId, int limit, int maxPages, int minEntries
     const QStringList langs = mUserSettings.getContentLanguages(mUserDid);
     model->setGetFeedInProgress(true);
 
-    mBsky->getListFeed(listUri, limit, Utils::makeOptionalString(cursor), langs,
+    mBsky->getListFeed(listUri, limit, Utils::makeOptionalString(cursor), {}, langs,
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             int addedPosts = 0;
             auto* model = getPostFeedModel(modelId);
@@ -2166,7 +2166,7 @@ void Skywalker::getListFeedPrepend(int modelId, int autoGapFill, int limit)
     model->setGetFeedInProgress(true);
     model->setAutoUpdateInProgress(true);
 
-    mBsky->getListFeed(feedUri, limit, {}, langs,
+    mBsky->getListFeed(feedUri, limit, {}, {}, langs,
         [this, modelId, autoGapFill](auto feed){
             auto* model = getPostFeedModel(modelId);
 
@@ -2248,7 +2248,7 @@ void Skywalker::getListFeedForGap(int modelId, int gapId, int autoGapFill, bool 
     model->setGetFeedInProgress(true);
     model->setAutoUpdateInProgress(!userInitiated);
 
-    mBsky->getListFeed(feedUri, FEED_GAP_FILL_SIZE, cur, langs,
+    mBsky->getListFeed(feedUri, FEED_GAP_FILL_SIZE, cur, {}, langs,
         [this, modelId, gapId, autoGapFill, userInitiated](auto feed){
             auto* model = getPostFeedModel(modelId);
 
@@ -2347,7 +2347,7 @@ void Skywalker::getQuotesFeed(int modelId, int limit, int maxPages, int minEntri
     const QString& quoteUri = model->getQuoteUri();
     model->setGetFeedInProgress(true);
 
-    mBsky->getQuotes(quoteUri, {}, limit, Utils::makeOptionalString(cursor),
+    mBsky->getQuotes(quoteUri, {}, limit, Utils::makeOptionalString(cursor), {},
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             int addedPosts = 0;
             auto* model = getPostFeedModel(modelId);
