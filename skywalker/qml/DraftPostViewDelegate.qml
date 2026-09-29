@@ -105,6 +105,8 @@ Rectangle {
                 postRecord: draftPostView.postRecord
                 postRecordWithMedia: draftPostView.postRecordWithMedia
                 postDateTime: draftPostView.postIndexedDateTime
+                postThreadPostCount: 0
+                postThreadPostIndex: 0
                 postIsThread: false
                 postIsThreadReply: false
                 isDraft: true

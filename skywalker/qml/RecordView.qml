@@ -74,6 +74,8 @@ Item {
                 postContentWarning: record.contentWarning
                 postContentLabeler: record.contentLabeler
                 postMuted: record.mutedReason
+                postThreadPostCount: 0
+                postThreadPostIndex: 0
                 postIsThread: record.postIsThread === QEnums.TRIPLE_BOOL_YES
                 postIsThreadReply: record.postIsThreadReply
                 postVideo: record.video

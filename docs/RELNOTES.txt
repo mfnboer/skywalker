@@ -1,5 +1,6 @@
 next
 ====
+* Show thread post index and counts in feeds
 * Added Noto Sans Symbols to the font
 * Faster upload for large videos
 

@@ -74,6 +74,8 @@ Column {
             postContentWarning: ""
             postContentLabeler: accessibilityUtils.nullAuthor
             postMuted: QEnums.MUTED_POST_NONE
+            postThreadPostCount: 0
+            postThreadPostIndex: 0
             postIsThread: false
             postIsThreadReply: false
             postDateTime: postDateTime

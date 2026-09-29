@@ -77,6 +77,8 @@ Rectangle {
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
     required property bool postIsPinned
+    required property int postThreadPostCount
+    required property int postThreadPostIndex
     required property bool postIsThread
     required property bool postIsThreadReply
     required property bool postLocallyDeleted
@@ -658,6 +660,8 @@ Rectangle {
                     postContentWarning: postEntry.postContentWarning
                     postContentLabeler: postEntry.postContentLabeler
                     postMuted: postEntry.postMutedReason
+                    postThreadPostCount: postEntry.unrollThread ? 0 : postEntry.postThreadPostCount
+                    postThreadPostIndex: postEntry.unrollThread ? 0 : postEntry.postThreadPostIndex
                     postIsThread: postEntry.postIsThread && !postEntry.unrollThread
                     postIsThreadReply: postEntry.postIsThreadReply && !postEntry.unrollThread
                     postVideo: postEntry.postVideo

@@ -3,6 +3,7 @@
 #include "unicode_fonts.h"
 #include "emoji_names.h"
 #include "font_downloader.h"
+#include "thread_unroller.h"
 #include <atproto/lib/rich_text_master.h>
 #include <QQuickTextDocument>
 #include <unordered_map>
@@ -651,6 +652,11 @@ QString UnicodeFonts::scaleHtmlImgTags(const QString& text, int width)
 
     newText += text.sliced(prevPos);
     return newText;
+}
+
+bool UnicodeFonts::hasThreadCount(const QString& text)
+{
+    return ThreadUnroller::hasThreadCount(text);
 }
 
 }

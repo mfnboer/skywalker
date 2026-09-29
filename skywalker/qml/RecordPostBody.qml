@@ -23,6 +23,8 @@ Column {
     required property basicprofile postContentLabeler
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
+    required property int postThreadPostCount
+    required property int postThreadPostIndex
     required property bool postIsThread
     required property bool postIsThreadReply
     property var postVideo // videoView

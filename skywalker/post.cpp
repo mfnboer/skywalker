@@ -16,6 +16,9 @@
 
 namespace Skywalker {
 
+// After this date the opThread params in app.bsky.feed.defs#feedViewPost are guaranteed to be set.
+static const QDate DATE_OP_THREAD_COUNT_GUARANTEED{2026, 9, 25};
+
 int Post::sNextGapId = 1;
 
 Post Post::createGapPlaceHolder(const QString& gapCursor)
@@ -394,6 +397,18 @@ std::optional<PostReplyRef> Post::getViewPostReplyRef() const
     // They show up together with this reply post.
     replyRef.mRoot.mReplyRefTimestamp = getTimelineTimestamp();
     replyRef.mParent.mReplyRefTimestamp = getTimelineTimestamp();
+
+    if (mFeedViewPost->mOpThreadPostCount)
+    {
+        replyRef.mRoot.setThreadPostCount(mFeedViewPost->mOpThreadPostCount.value());
+        replyRef.mParent.setThreadPostCount(mFeedViewPost->mOpThreadPostCount.value());
+    }
+
+    if (mFeedViewPost->mOpThreadPostIndex)
+    {
+        replyRef.mRoot.setThreadPostIndex(1);
+        replyRef.mParent.setThreadPostIndex(mFeedViewPost->mOpThreadPostIndex.value() - 1);
+    }
 
     return replyRef;
 }
@@ -1179,6 +1194,28 @@ bool Post::skipChronoCheck() const
     return isPlaceHolder() || isPinned() || getAuthorDid() == BLUESKY_FEED_CREATOR_PROMO_DID;
 }
 
+int Post::getThreadPostCount() const
+{
+    if (mThreadPostCount > 0)
+        return mThreadPostCount;
+
+    if (!mFeedViewPost)
+        return 0;
+
+    return mFeedViewPost->mOpThreadPostCount.value_or(0);
+}
+
+int Post::getThreadPostIndex() const
+{
+    if (mThreadPostIndex > 0)
+        return mThreadPostIndex;
+
+    if (!mFeedViewPost)
+        return 0;
+
+    return mFeedViewPost->mOpThreadPostIndex.value_or(0);
+}
+
 QEnums::TripleBool Post::isThread() const
 {
     if (isPlaceHolder())
@@ -1187,7 +1224,10 @@ QEnums::TripleBool Post::isThread() const
     if (isReply())
         return QEnums::TRIPLE_BOOL_NO;
 
-    if (getReplyCount() == 0)
+    if (getThreadPostIndex() == 1)
+        return QEnums::TRIPLE_BOOL_YES;
+
+    if (getIndexedAt().date() > DATE_OP_THREAD_COUNT_GUARANTEED)
         return QEnums::TRIPLE_BOOL_NO;
 
     const bool* isThread = PostThreadCache::instance().getIsThread(getUri());
@@ -1212,6 +1252,9 @@ QEnums::TripleBool Post::isThread() const
 
 bool Post::isThreadReply() const
 {
+    if (getThreadPostIndex() > 1)
+        return true;
+
     const QString did = getAuthorDid();
 
     // NOTE: this is not fool proof as there could be replies from other authors

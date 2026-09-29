@@ -13,6 +13,7 @@ Label {
     rightPadding: 2
     background: Rectangle { color: backgroundColor; radius: 2; opacity: backgroundOpacity }
     font.pointSize: guiSettings.labelFontSize
+    color: guiSettings.textColor
 
     Accessible.role: Accessible.StaticText
     Accessible.name: text

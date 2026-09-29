@@ -381,6 +381,8 @@ Rectangle {
                     postContentWarning: notificationPostContentWarning
                     postContentLabeler: notificationPostContentLabeler
                     postMuted: notificationPostMutedReason
+                    postThreadPostCount: 0
+                    postThreadPostIndex: 0
                     postIsThread: notificationPostIsThread
                     postIsThreadReply: notificationPostIsReply
                     postVideo: notificationPostVideo
@@ -663,6 +665,8 @@ Rectangle {
                     postContentWarning: ""
                     postContentLabeler: accessibilityUtils.nullAuthor
                     postMuted: QEnums.MUTED_POST_NONE
+                    postThreadPostCount: 0
+                    postThreadPostIndex: 0
                     postIsThread: false
                     postIsThreadReply: false
                     postDateTime: notificationReasonPostTimestamp

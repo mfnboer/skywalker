@@ -24,6 +24,8 @@ Column {
     required property basicprofile postContentLabeler
     required property int postMuted // QEnums::MutedPostReason
     required property string postPlainText
+    required property int postThreadPostCount
+    required property int postThreadPostIndex
     required property bool postIsThread
     required property bool postIsThreadReply
     property var postVideo // videoView
@@ -43,8 +45,10 @@ Column {
     property bool swipeMode: false
     property bool showRecord: true
     property bool moving: false
-    readonly property bool showThreadIndicator: postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
-    readonly property bool replaceThreadIndicator: (postIsThread || postIsThreadReply) && !showThreadIndicator
+    readonly property bool showThreadCounter: postThreadPostCount > 0 && postThreadPostIndex > 0 && !UnicodeFonts.hasThreadCount(postText)
+    readonly property bool hasAttachment: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed
+    readonly property bool showThreadIndicator: !showThreadCounter && postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
+    readonly property bool replaceThreadIndicator: !showThreadCounter && (postIsThread || postIsThreadReply) && !showThreadIndicator
 
     // The font-size is set to make sure the thread indicator is in normal text size when the
     // post is giant emoji only.
@@ -76,7 +80,7 @@ Column {
             textFormat: Text.RichText
             font.pointSize: getPostFontSize()
             plainText: displayText
-            bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
+            bottomPadding: hasAttachment && !showThreadCounter ? 5 : 0
 
             LinkCatcher {
                 z: parent.z - 1
@@ -110,7 +114,7 @@ Column {
             textFormat: isSimpleText() ? Text.StyledText : Text.RichText
             font.pointSize: getPostFontSize()
             text: postTextMetaInfo.hasFullHtml ? UnicodeFonts.scaleHtmlImgTags(displayText, width) : displayText
-            bottomPadding: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed ? 5 : 0
+            bottomPadding: hasAttachment && !showThreadCounter ? 5 : 0
 
             LinkCatcher {
                 z: parent.z - 1
@@ -249,6 +253,27 @@ Column {
                     visible: !postContentLabeler.isNull()
                     onLinkActivated: skywalker.getDetailedProfile(postContentLabeler.did)
                 }
+            }
+        }
+    }
+
+    Loader {
+        width: parent.width
+        active: showThreadCounter
+        sourceComponent: Column {
+            Item {
+                width: parent.width
+                height: 2
+            }
+            ThreadCountLabel {
+                postCount: postThreadPostCount
+                postIndex: postThreadPostIndex
+
+                onClicked: postBody.unrollThread()
+            }
+            Item {
+                width: parent.width
+                height: hasAttachment ? 5 : 0
             }
         }
     }

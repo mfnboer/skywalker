@@ -184,6 +184,12 @@ public:
 
     bool skipChronoCheck() const;
 
+    int getThreadPostCount() const; // 0=no thread
+    void setThreadPostCount(int postCount) { mThreadPostCount = postCount; }
+
+    int getThreadPostIndex() const; // 1-indexed, 0=no thread
+    void setThreadPostIndex(int postIndex) { mThreadPostIndex = postIndex; }
+
     QEnums::TripleBool isThread() const;
     bool isThreadReply() const;
 
@@ -257,6 +263,8 @@ private:
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
 
     bool mPinned = false;
+    int mThreadPostCount = 0;
+    int mThreadPostIndex = 0;
     std::optional<ContentLabelList> mLabelsIncludingAuthorLabels;
 
     static int sNextGapId;

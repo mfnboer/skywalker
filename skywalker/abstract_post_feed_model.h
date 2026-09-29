@@ -127,6 +127,8 @@ public:
         PostMutedReason,
         PostHighlightColor,
         PostIsPinned,
+        PostThreadPostCount,
+        PostThreadPostIndex,
         PostIsThread,
         PostIsThreadReply,
         PostLocallyDeleted,

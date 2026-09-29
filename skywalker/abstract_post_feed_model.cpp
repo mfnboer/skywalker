@@ -899,6 +899,10 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     }
     case Role::PostIsPinned:
         return post.isPinned();
+    case Role::PostThreadPostCount:
+        return post.getThreadPostCount();
+    case Role::PostThreadPostIndex:
+        return post.getThreadPostIndex();
     case Role::PostIsThread:
     {
         const auto isThread = post.isThread();
@@ -1039,6 +1043,8 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostMutedReason), "postMutedReason" },
         { int(Role::PostHighlightColor), "postHighlightColor" },
         { int(Role::PostIsPinned), "postIsPinned" },
+        { int(Role::PostThreadPostCount), "postThreadPostCount" },
+        { int(Role::PostThreadPostIndex), "postThreadPostIndex" },
         { int(Role::PostIsThread), "postIsThread" },
         { int(Role::PostIsThreadReply), "postIsThreadReply" },
         { int(Role::PostLocallyDeleted), "postLocallyDeleted" },

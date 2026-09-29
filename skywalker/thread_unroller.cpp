@@ -235,6 +235,12 @@ QString ThreadUnroller::getCounter(const QString& text)
     return counter;
 }
 
+bool ThreadUnroller::hasThreadCount(const QString& text)
+{
+    const QString counter = getCounter(text);
+    return counter.size() > 1;
+}
+
 void ThreadUnroller::removeCounterFromPlainText(QString& text, const QString& counter)
 {
     if (counter.isEmpty())

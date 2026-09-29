@@ -68,6 +68,8 @@ Rectangle {
     required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
+    required property int postThreadPostCount
+    required property int postThreadPostIndex
     required property bool postIsThread
     required property bool postIsThreadReply
     required property bool postIsPinned
@@ -419,6 +421,8 @@ Rectangle {
             postContentWarning: videoPage.postContentWarning
             postContentLabeler: videoPage.postContentLabeler
             postMuted: videoPage.postMutedReason
+            postThreadPostCount: videoPage.postThreadPostCount
+            postThreadPostIndex: videoPage.postThreadPostIndex
             postIsThread: videoPage.postIsThread
             postIsThreadReply: videoPage.postIsThreadReply
             postDateTime: videoPage.postIndexedDateTime

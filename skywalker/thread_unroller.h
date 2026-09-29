@@ -11,6 +11,7 @@ class ThreadUnroller
 public:
     static std::deque<Post> unrollThread(const std::deque<Post>& thread);
     static QString getCounter(const QString& text);
+    static bool hasThreadCount(const QString& text);
     static void removeCounterFromPlainText(QString& text, const QString& counter);
     static void removeCounterFromFormattedText(QString& text, const QString& counter);
 

@@ -67,6 +67,8 @@ Item {
     required property basicprofile postContentLabeler
     required property int postMutedReason // QEnums::MutedPostReason
     required property string postHighlightColor
+    required property int postThreadPostCount
+    required property int postThreadPostIndex
     required property bool postIsThread
     required property bool postIsThreadReply
     required property bool postIsPinned
