@@ -86,6 +86,7 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
 
     beginInsertRows({}, 0, newRowCount - 1);
     insertPage(mFeed.end(), *page, pageInsertCount);
+    setThreadPostCounters();
 
     if (page->mFirstHiddenReplyIndex != -1)
         mFeed.push_back(Post::createHiddenPosts());
@@ -156,7 +157,8 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
     postBeforeInsert.removeThreadType(QEnums::THREAD_LEAF);
     postBeforeInsert.setEndOfFeed(false);
     mFeed.back().setEndOfFeed(true);
-    changeData({ int(Role::PostThreadType), int(Role::EndOfFeed) });
+    setThreadPostCounters();
+    changeData({ int(Role::PostThreadPostIndex), int(Role::PostThreadPostCount), int(Role::PostThreadType), int(Role::EndOfFeed) });
 
     return true;
 }
@@ -196,7 +198,8 @@ void PostThreadModel::addOlderPosts(const ATProto::AppBskyFeed::PostThread::Shar
     endInsertRows();
 
     mFeed.front().addThreadType(QEnums::THREAD_TOP);
-    changeData({ int(Role::PostThreadType) });
+    setThreadPostCounters();
+    changeData({ int(Role::PostThreadPostIndex), int(Role::PostThreadPostCount), int(Role::PostThreadType) });
 }
 
 QString PostThreadModel::getRootUri() const
@@ -794,6 +797,39 @@ void PostThreadModel::replyRestrictionListsChanged()
 {
     AbstractPostFeedModel::replyRestrictionListsChanged();
     emit threadReplyRestrictionListsChanged();
+}
+
+void PostThreadModel::setThreadPostCounters()
+{
+    if (mFeed.size() < 2)
+        return;
+
+    bool inThread = (mFeed[0].getAuthorDid() == mFeed[1].getAuthorDid());
+    const QString threadAuthorDid = mFeed[0].getAuthorDid();
+    int count = 0;
+
+    for (auto& post : mFeed)
+    {
+        if (inThread)
+        {
+            if (post.getAuthorDid() == threadAuthorDid)
+                post.setThreadPostIndex(++count);
+            else
+                inThread = false;
+        }
+
+        if (!inThread)
+        {
+            post.setThreadPostCount(0);
+            post.setThreadPostIndex(0);
+        }
+    }
+
+    for (int i = 0; i < count; ++i)
+    {
+        auto& post = mFeed[i];
+        post.setThreadPostCount(count);
+    }
 }
 
 }

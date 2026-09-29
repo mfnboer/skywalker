@@ -114,6 +114,7 @@ private:
     bool isHiddenReply(const QString& uri) const;
     bool isHiddenReply(const ATProto::AppBskyFeed::ThreadElementType& reply) const;
     bool isPinPost(const ATProto::AppBskyFeed::PostView& post) const;
+    void setThreadPostCounters();
 
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr mThreadgateView;
     std::deque<Post> mHiddenRepliesFeed;
