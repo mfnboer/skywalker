@@ -1,6 +1,7 @@
 next
 ====
 * Show thread post index and counts in feeds
+* Translate link on posts in foreign language
 * Added Noto Sans Symbols to the font
 * Faster upload for large videos
 

@@ -99,6 +99,17 @@ bool LanguageUtils::translate(const QString& text, QEnums::TranslateApp app)
     return AndroidUtils::translate(text, app);
 }
 
+bool LanguageUtils::contains(const LanguageList& languageList, const QString& shortCode)
+{
+    for (const auto& language : languageList)
+    {
+        if (language.getShortCode() == shortCode)
+            return true;
+    }
+
+    return false;
+}
+
 LanguageUtils::LanguageUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {

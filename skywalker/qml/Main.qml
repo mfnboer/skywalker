@@ -2625,6 +2625,14 @@ ApplicationWindow {
         linkUtils.openInBrowser(url)
     }
 
+    function getDefaultPostLanguage() {
+        return languageUtils.defaultPostLanguage
+    }
+
+    function containsLanguageCode(languageList, code) {
+        return languageUtils.contains(languageList, code)
+    }
+
     function getFavoritesSwipeView() {
         return homePageStack.get(0)
     }

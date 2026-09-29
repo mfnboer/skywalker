@@ -257,23 +257,49 @@ Column {
         }
     }
 
-    Loader {
+    Item {
         width: parent.width
-        active: showThreadCounter
-        sourceComponent: Column {
-            Item {
-                width: parent.width
-                height: 2
-            }
-            ThreadCountLabel {
-                postCount: postThreadPostCount
-                postIndex: postThreadPostIndex
+        height: Math.max(threadCounter.active ? threadCounter.height : 0,
+                         translateLink.active ? translateLink.height : 0)
 
-                onClicked: postBody.unrollThread()
+        Loader {
+            id: threadCounter
+            active: showThreadCounter
+            sourceComponent: Column {
+                Item {
+                    width: parent.width
+                    height: 3
+                }
+                ThreadCountLabel {
+                    postCount: postThreadPostCount
+                    postIndex: postThreadPostIndex
+
+                    onClicked: postBody.unrollThread()
+                }
+                Item {
+                    width: parent.width
+                    height: hasAttachment ? 10 : 0
+                }
             }
-            Item {
-                width: parent.width
-                height: hasAttachment ? 5 : 0
+        }
+
+        Loader {
+            id: translateLink
+            anchors.right: parent.right
+            active: postPlainText && !root.containsLanguageCode(postLanguageLabels, root.getDefaultPostLanguage())
+
+            sourceComponent: AccessibleText {
+                topPadding: 5
+                bottomPadding: hasAttachment ? 10 : 0
+                horizontalAlignment: Text.AlignRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.linkColor
+                text: qsTr("Translate")
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: root.translateText(postPlainText)
+                }
             }
         }
     }

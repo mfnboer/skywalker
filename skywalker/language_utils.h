@@ -57,6 +57,7 @@ public:
     static LanguageList getLanguages(const QStringList& langCodes);
     static QString getInputLanguage();
     Q_INVOKABLE static bool translate(const QString& text, QEnums::TranslateApp app);
+    Q_INVOKABLE static bool contains(const LanguageList& languageList, const QString& shortCode);
 
     explicit LanguageUtils(QObject* parent = nullptr);
 
