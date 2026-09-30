@@ -94,6 +94,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(UriWithExpirySet* blocksWithExpiry READ getBlocksWithExpiry NOTIFY blocksWithExpiryChanged FINAL)
     Q_PROPERTY(UriWithExpirySet* mutesWithExpiry READ getMutesWithExpiry NOTIFY mutesWithExpiryChanged FINAL)
     Q_PROPERTY(QEnums::FeedOrder globalFeedOrder READ getGlobalFeedOrder WRITE setGlobalFeedOrder NOTIFY globalFeedOrderChanged FINAL)
+    Q_PROPERTY(bool showTranslateLink READ getShowTranslateLink WRITE setShowTranslateLink NOTIFY showTranslateLinkChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -561,6 +562,17 @@ public:
     Q_INVOKABLE bool getShowLanguageTags() const;
     Q_INVOKABLE void setShowLanguageTags(bool show);
 
+    bool getShowTranslateLink() const;
+    void setShowTranslateLink(bool show);
+
+    // Returns a sorted list
+    Q_INVOKABLE QStringList getExcludeTranslateLanguages(const QString& did) const;
+    Q_INVOKABLE void setExcludeTranslateLanguages(const QString& did, const QStringList& languages);
+    Q_INVOKABLE bool isExcludedTranslateLanguage(const QString& did, const QString& code) const;
+
+    Q_INVOKABLE QEnums::LanguageDetectionMethod getLanguageDetectionMethod() const;
+    Q_INVOKABLE void setLanguageDetectionMethod(QEnums::LanguageDetectionMethod method);
+
     Q_INVOKABLE QEnums::TranslateApp getTranslateApp() const;
     Q_INVOKABLE void setTranslateApp(QEnums::TranslateApp app);
 
@@ -640,6 +652,7 @@ signals:
     void mutesWithExpiryChanged();
     void notificationsForAllAccountsChanged();
     void globalFeedOrderChanged();
+    void showTranslateLinkChanged();
     void syncFeedChanged(const QString& did, const QString& feedUri);
     void syncSearchFeedChanged(const QString& did, const QString& searchKey);
     void rewindToLastSeenPostChanged(const QString& did);

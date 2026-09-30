@@ -693,6 +693,16 @@ public:
         TRANSLATE_APP_LAST = TRANSLATE_APP_OTHER
     };
     Q_ENUM(TranslateApp)
+
+    enum LanguageDetectionMethod
+    {
+        LANGUAGE_DETECTION_TAG = 0,
+        LANGUAGE_DETECTION_AUTO,
+        LANGUAGE_DETECTION_TAG_AUTO,
+
+        LANGUAGE_DETECTION_LAST = LANGUAGE_DETECTION_TAG_AUTO
+    };
+    Q_ENUM(LanguageDetectionMethod)
 };
 
 }

@@ -40,18 +40,40 @@ ColumnLayout {
         onCheckedChanged: userSettings.setShowLanguageTags(checked)
     }
 
+    AccessibleCheckBox {
+        text: qsTr("Translate link for foreign post language")
+        checked: userSettings.showTranslateLink
+        onCheckedChanged: userSettings.showTranslateLink = checked
+    }
+
     AccessibleText {
         Layout.fillWidth: true
         wrapMode: Text.Wrap
-        text: qsTr("Exclude these languages from auto detection:")
+        text: qsTr("Post language detection:")
+    }
+    SkyComboBox {
+        Layout.fillWidth: true
+        model: ListModel {
+            ListElement { value: QEnums.LANGUAGE_DETECTION_TAG; text: qsTr("Language tag from post") }
+            ListElement { value: QEnums.LANGUAGE_DETECTION_AUTO; text: qsTr("Guess from text") }
+            ListElement { value: QEnums.LANGUAGE_DETECTION_TAG_AUTO; text: qsTr("Guess when tag is missing") }
+        }
+        currentIndex: userSettings.getLanguageDetectionMethod()
+        onCurrentValueChanged: userSettings.setLanguageDetectionMethod(currentValue)
+    }
+
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: qsTr("Exclude languages for translate link:")
     }
     LanguageComboCheckBox {
         Layout.fillWidth: true
         allLanguages: languageUtils.languages
         usedLanguages: languageUtils.usedLanguages
-        checkedLangCodes: userSettings.getExcludeDetectLanguages(userDid)
+        checkedLangCodes: userSettings.getExcludeTranslateLanguages(userDid)
         noneCheckedMeansAll: false
-        onCheckedLangCodesChanged: userSettings.setExcludeDetectLanguages(userDid, checkedLangCodes)
+        onCheckedLangCodesChanged: userSettings.setExcludeTranslateLanguages(userDid, checkedLangCodes)
     }
 
     AccessibleText {
@@ -68,6 +90,20 @@ ColumnLayout {
         }
         currentIndex: userSettings.getTranslateApp()
         onCurrentValueChanged: userSettings.setTranslateApp(currentValue)
+    }
+
+    AccessibleText {
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+        text: qsTr("Exclude languages from auto detection for post writing:")
+    }
+    LanguageComboCheckBox {
+        Layout.fillWidth: true
+        allLanguages: languageUtils.languages
+        usedLanguages: languageUtils.usedLanguages
+        checkedLangCodes: userSettings.getExcludeDetectLanguages(userDid)
+        noneCheckedMeansAll: false
+        onCheckedLangCodesChanged: userSettings.setExcludeDetectLanguages(userDid, checkedLangCodes)
     }
 
     LanguageUtils {

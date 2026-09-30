@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "post_language_cache.h"
 #include "post.h"
+#include "skywalker.h"
 
 namespace Skywalker {
 
@@ -49,6 +50,24 @@ void PostLanguageCache::putPost(const Post& post)
 {
     const QString& uri = post.getUri();
     qDebug() << "Put post:" << uri;
+    auto* userSettings = mSkywalker->getUserSettings();
+
+    // HACK: language identification is only needed to show translate links
+    if (!userSettings->getShowTranslateLink())
+        return;
+
+    switch (userSettings->getLanguageDetectionMethod())
+    {
+    case QEnums::LANGUAGE_DETECTION_TAG:
+        return;
+    case QEnums::LANGUAGE_DETECTION_AUTO:
+        break;
+    case QEnums::LANGUAGE_DETECTION_TAG_AUTO:
+        if (post.hasLanguage())
+            return;
+
+        break;
+    }
 
     if (contains(uri))
     {

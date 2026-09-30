@@ -1968,7 +1968,7 @@ void UserSettings::setThreadAutoNumber(bool autoNumber)
 
 bool UserSettings::getThreadAutoNumber() const
 {
-    return mSettings.value("threadAutoNumber", true).toBool();
+    return mSettings.value("threadAutoNumber", false).toBool();
 }
 
 void UserSettings::setThreadPrefix(QString prefix)
@@ -2488,6 +2488,56 @@ bool UserSettings::getShowLanguageTags() const
 void UserSettings::setShowLanguageTags(bool show)
 {
     mSettings.setValue("showLanguageTags", show);
+}
+
+bool UserSettings::getShowTranslateLink() const
+{
+    return mSettings.value("showTranslateLink", true).toBool();
+}
+
+void UserSettings::setShowTranslateLink(bool show)
+{
+    if (show != getShowTranslateLink())
+    {
+        mSettings.setValue("showTranslateLink", show);
+        emit showTranslateLinkChanged();
+    }
+}
+
+QStringList UserSettings::getExcludeTranslateLanguages(const QString& did) const
+{
+    return mSettings.value(key(did, "excludeTranslateLanguages")).toStringList();
+}
+
+void UserSettings::setExcludeTranslateLanguages(const QString& did, const QStringList& languages)
+{
+    const auto oldLangs = getExcludeDetectLanguages(did);
+    QStringList sortedLangs = languages;
+    std::sort(sortedLangs.begin(), sortedLangs.end());
+
+    if (oldLangs != sortedLangs)
+        mSettings.setValue(key(did, "excludeTranslateLanguages"), sortedLangs);
+}
+
+bool UserSettings::isExcludedTranslateLanguage(const QString& did, const QString& code) const
+{
+    const auto languages = getExcludeTranslateLanguages(did);
+    return languages.contains(code);
+}
+
+QEnums::LanguageDetectionMethod UserSettings::getLanguageDetectionMethod() const
+{
+    int method = mSettings.value("languageDetection", (int)QEnums::LANGUAGE_DETECTION_TAG_AUTO).toInt();
+
+    if (method < 0 || method > (int)QEnums::LANGUAGE_DETECTION_LAST)
+        return QEnums::LANGUAGE_DETECTION_TAG_AUTO;
+
+    return QEnums::LanguageDetectionMethod(method);
+}
+
+void UserSettings::setLanguageDetectionMethod(QEnums::LanguageDetectionMethod method)
+{
+    mSettings.setValue("languageDetection", (int)method);
 }
 
 QEnums::TranslateApp UserSettings::getTranslateApp() const

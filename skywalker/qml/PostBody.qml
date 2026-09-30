@@ -8,6 +8,7 @@ import skywalker
 Column {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
+    property UserSettings userSettings: skywalker.getUserSettings()
     readonly property int margin: 10
     required property basicprofile postAuthor
     required property string postText
@@ -289,7 +290,11 @@ Column {
         Loader {
             id: translateLink
             anchors.right: parent.right
-            active: showTranslateOption && postPlainText.length > 0 && postIdentifiedLanguage !== root.getDefaultPostLanguage()
+            active: userSettings.showTranslateLink &&
+                    showTranslateOption &&
+                    postPlainText.length > 0 &&
+                    postIdentifiedLanguage !== root.getDefaultPostLanguage() &&
+                    !userSettings.isExcludedTranslateLanguage(userDid, postIdentifiedLanguage)
 
             sourceComponent: AccessibleText {
                 topPadding: 5
@@ -493,7 +498,7 @@ Column {
     }
 
     function getPostFontSize() {
-        if (!skywalker.getUserSettings().giantEmojis)
+        if (!userSettings.giantEmojis)
             return guiSettings.scaledFont(1)
 
         return onlyEmojisPost() ?
@@ -512,7 +517,7 @@ Column {
     }
 
     function mustShowLanguages() {
-        return skywalker.getUserSettings().getShowLanguageTags()
+        return userSettings.getShowLanguageTags()
     }
 
     onBodyBackgroundColorChanged: {
