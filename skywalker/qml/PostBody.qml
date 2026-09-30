@@ -44,6 +44,7 @@ Column {
     property bool isDraft: false
     property bool swipeMode: false
     property bool showRecord: true
+    property bool showTranslateOption: true
     property bool moving: false
     readonly property bool showThreadCounter: postThreadPostCount > 0 && postThreadPostIndex > 0 && !UnicodeFonts.hasThreadCount(postText)
     readonly property bool hasAttachment: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed
@@ -60,6 +61,7 @@ Column {
 
     signal activateSwipe(int imgIndex, var previewImg)
     signal unrollThread
+    signal translate
 
     id: postBody
 
@@ -286,7 +288,7 @@ Column {
         Loader {
             id: translateLink
             anchors.right: parent.right
-            active: postPlainText && !root.containsLanguageCode(postLanguageLabels, root.getDefaultPostLanguage())
+            active: showTranslateOption && postPlainText && !root.containsLanguageCode(postLanguageLabels, root.getDefaultPostLanguage())
 
             sourceComponent: AccessibleText {
                 topPadding: 5
@@ -298,7 +300,7 @@ Column {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: root.translateText(postPlainText)
+                    onClicked: postBody.translate()
                 }
             }
         }

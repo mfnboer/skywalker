@@ -110,6 +110,11 @@ bool LanguageUtils::contains(const LanguageList& languageList, const QString& sh
     return false;
 }
 
+Language LanguageUtils::makeLanguage(const QString& code)
+{
+    return Language(code, getLanguageName(code));
+}
+
 LanguageUtils::LanguageUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {

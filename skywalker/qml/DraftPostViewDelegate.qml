@@ -110,6 +110,7 @@ Rectangle {
                 postIsThread: false
                 postIsThreadReply: false
                 isDraft: true
+                showTranslateOption: false
                 moving: draftPostView.ListView.view.fastMoving
             }
 

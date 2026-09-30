@@ -675,10 +675,12 @@ Rectangle {
                     postHighlightColor: postEntry.postHighlightColor
                     swipeMode: postEntry.swipeMode
                     showRecord: postEntry.showRecord
+                    showTranslateOption: !postEntry.unrollThread || postEntry.isLastPost
                     moving: postEntry.ListView.view.fastMoving
 
                     onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
                     onUnrollThread: unrollPostThread()
+                    onTranslate: root.translateText(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                 }
 
                 // Reposts and likes in detailed view of post entry in thread view

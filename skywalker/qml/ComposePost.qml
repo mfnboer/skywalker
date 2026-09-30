@@ -309,6 +309,7 @@ SkyPage {
             userDid: postByDid
             postText: replyToPostText
             postDateTime: replyToPostDateTime
+            postLanguageLabels: [languageUtils.makeLanguage(replyToLanguage)]
             postBackgroundColor: guiSettings.postHighLightColor
             visible: replyToPostUri
         }

@@ -9,6 +9,7 @@ Column {
     property string postText
     property textmetainfo postTextMetaInfo
     property date postDateTime
+    property list<language> postLanguageLabels: []
     property string postBackgroundColor: guiSettings.backgroundColor
     property bool showCloseButton: false
 
@@ -63,12 +64,12 @@ Column {
             userDid: quoteColumn.userDid
             postAuthor: author
             postText: quoteColumn.postText
-            postPlainText: quoteColumn.postText
+            postPlainText: UnicodeFonts.toPlainText(quoteColumn.postText)
             postTextMetaInfo: quoteColumn.postTextMetaInfo
             postHasUnknownEmbed: false
             postUnknownEmbedType: ""
             postImages: []
-            postLanguageLabels: []
+            postLanguageLabels: quoteColumn.postLanguageLabels
             postContentLabels: []
             postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
             postContentWarning: ""
@@ -81,6 +82,9 @@ Column {
             postDateTime: postDateTime
             initialShowMaxTextLines: maxTextLines
             bodyBackgroundColor: quoteColumn.postBackgroundColor
+            showTranslateOption: quoteColumn.postLanguageLabels.length > 0
+
+            onTranslate: root.translateText(postPlainText)
         }
     }
 

@@ -433,6 +433,8 @@ Rectangle {
                 if (!postIsPlaceHolder && postUri)
                     skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
             }
+
+            onTranslate: root.translateText(videoPage.postPlainText)
         }
 
         Loader {

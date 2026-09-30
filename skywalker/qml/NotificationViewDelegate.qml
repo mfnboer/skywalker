@@ -394,6 +394,7 @@ Rectangle {
                     moving: notification.ListView.view.fastMoving
 
                     onUnrollThread: unrollPostThread()
+                    onTranslate: root.translateText(postPlainText)
                 }
 
                 Loader {
@@ -677,6 +678,8 @@ Rectangle {
                     bodyBackgroundColor: notification.color
                     moving: notification.ListView.view.fastMoving
                     visible: showPostForAggregatableReason()
+
+                    onTranslate: root.translateText(postPlainText)
                 }
             }
         }
