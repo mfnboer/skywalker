@@ -18,6 +18,7 @@ Rectangle {
     required property string postPlainText
     required property textmetainfo postTextMetaInfo
     required property list<language> postLanguages
+    required property string postIdentifiedLanguage
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
     required property basicprofile postRepostedByAuthor
@@ -655,6 +656,7 @@ Rectangle {
                     postUnknownEmbedType: postEntry.postUnknownEmbedType
                     postImages: postEntry.postImages
                     postLanguageLabels: postLanguages
+                    postIdentifiedLanguage: postEntry.postIdentifiedLanguage
                     postContentLabels: postLabels
                     postContentVisibility: postEntry.postContentVisibility
                     postContentWarning: postEntry.postContentWarning

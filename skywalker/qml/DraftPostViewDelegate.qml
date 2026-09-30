@@ -96,6 +96,7 @@ Rectangle {
                 postUnknownEmbedType: ""
                 postImages: draftPostView.postImages
                 postLanguageLabels: draftPostView.postLanguages
+                postIdentifiedLanguage: ""
                 postContentLabels: draftPostView.postLabels
                 postContentVisibility: draftPostView.postContentVisibility
                 postContentWarning: draftPostView.postContentWarning

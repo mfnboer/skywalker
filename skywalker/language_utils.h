@@ -24,6 +24,8 @@ public:
         CODE
     };
 
+    static constexpr char const* UNDEFINED_CODE = "und";
+
     Language() = default;
     Language(const QString& code, const QString& nativeName);
 
@@ -70,7 +72,7 @@ public:
     Q_INVOKABLE bool getDefaultLanguageNoticeSeen() const;
     Q_INVOKABLE void setDefaultLanguageNoticeSeen(bool seen);
 
-    int identifyLanguage(QString text);
+    int identifyLanguage(QString text, const QStringList& excludeLanguages);
 
 signals:
     void defaultPostLanguageChanged();

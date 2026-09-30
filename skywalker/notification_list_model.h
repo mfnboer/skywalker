@@ -43,6 +43,7 @@ public:
         NotificationReasonPostIsReply,
         NotificationReasonPostReplyToAuthor,
         NotificationReasonPostLanguages,
+        NotificationReasonPostIdentifiedLanguage,
         NotificationReasonPostTimestamp,
         NotificationReasonPostHasUnknownEmbed,
         NotificationReasonPostUnknownEmbedType,
@@ -65,6 +66,7 @@ public:
         NotificationPostPlainText,
         NotificationPostTextMetaInfo,
         NotificationPostLanguages,
+        NotificationPostIdentifiedLanguage,
         NotificationPostTimestamp,
         NotificationPostHasUnknownEmbed,
         NotificationPostUnknownEmbedType,
@@ -192,6 +194,8 @@ protected:
 
 private:
     void postIsThreadChanged(const QString& postUri);
+    void postIdentifiedLanguageChanged(const QString& postUri);
+    void postAndRecordChanged(const QString& postUri, Role role);
     void authorAdded(const QString& did);
     void labelerAdded(const QString& did);
     void reportActivity(const Notification& notification) const;

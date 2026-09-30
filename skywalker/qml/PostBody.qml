@@ -17,6 +17,7 @@ Column {
     required property list<imageview> postImages
     required property date postDateTime
     required property list<language> postLanguageLabels
+    required property string postIdentifiedLanguage
     required property list<contentlabel> postContentLabels
     property contentlabel filteredContentLabel
     required property int postContentVisibility // QEnums::PostContentVisibility
@@ -288,7 +289,7 @@ Column {
         Loader {
             id: translateLink
             anchors.right: parent.right
-            active: showTranslateOption && postPlainText && !root.containsLanguageCode(postLanguageLabels, root.getDefaultPostLanguage())
+            active: showTranslateOption && postPlainText.length > 0 && postIdentifiedLanguage !== root.getDefaultPostLanguage()
 
             sourceComponent: AccessibleText {
                 topPadding: 5
@@ -313,10 +314,11 @@ Column {
         // NOTE: without an explicit height, the full image animation is off by this height ??
         height: active ? guiSettings.labelHeight + 5 : 0
 
-        active: postLanguageLabels.length > 0 && mustShowLanguages() && postVisible()
+        active: (postLanguageLabels.length > 0 || postIdentifiedLanguage.length > 0) && mustShowLanguages() && postVisible()
         sourceComponent: LanguageLabels {
             parentWidth: postBody.width
             languageLabels: postLanguageLabels
+            identifiedLanguage: postIdentifiedLanguage
         }
     }
 

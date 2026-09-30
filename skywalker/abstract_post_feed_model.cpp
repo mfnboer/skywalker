@@ -7,6 +7,7 @@
 #include "focus_hashtags.h"
 #include "list_cache.h"
 #include "list_store.h"
+#include "post_language_cache.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/post_master.h>
 
@@ -52,6 +53,9 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
                 labelerAdded(did);
             },
             Qt::QueuedConnection);
+
+    connect(&PostLanguageCache::instance(), &PostLanguageCache::postAdded, this,
+            [this](const QString& uri){ postIdentifiedLanguageChanged(uri); }, Qt::QueuedConnection);
 
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
             [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
@@ -569,6 +573,8 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(post.getTextMetaInfo());
     case Role::PostLanguages:
         return QVariant::fromValue(post.getLanguages());
+    case Role::PostIdentifiedLanguage:
+        return post.identifyLanguage(true);
     case Role::PostUri:
         return post.getUri();
     case Role::PostCid:
@@ -983,6 +989,7 @@ QHash<int, QByteArray> AbstractPostFeedModel::roleNames() const
         { int(Role::PostPlainText), "postPlainText" },
         { int(Role::PostTextMetaInfo), "postTextMetaInfo" },
         { int(Role::PostLanguages), "postLanguages" },
+        { int(Role::PostIdentifiedLanguage), "postIdentifiedLanguage" },
         { int(Role::PostIndexedDateTime), "postIndexedDateTime" },
         { int(Role::PostIndexedSecondsAgo), "postIndexedSecondsAgo" },
         { int(Role::PostRepostedByAuthor), "postRepostedByAuthor" },
@@ -1223,12 +1230,17 @@ void AbstractPostFeedModel::postIsThreadChanged(const QString& postUri)
     if (!isThread || *isThread == false)
         return;
 
+    postAndRecordChanged(postUri, Role::PostIsThread);
+}
+
+void AbstractPostFeedModel::postAndRecordChanged(const QString& postUri, Role role)
+{
     for (int i = 0; i < (int)mFeed.size(); ++i)
     {
         const auto& post = mFeed[i];
 
         if (post.getUri() == postUri)
-            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostIsThread) });
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(role) });
 
         const auto postRecord = post.getRecordView();
 
@@ -1245,6 +1257,16 @@ void AbstractPostFeedModel::postIsThreadChanged(const QString& postUri)
                 emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostRecordWithMedia) });
         }
     }
+}
+
+void AbstractPostFeedModel::postIdentifiedLanguageChanged(const QString& postUri)
+{
+    const auto* languageInfo = PostLanguageCache::instance().getLanguageInfo(postUri);
+
+    if (!languageInfo || languageInfo->mFromLanguageCode.isEmpty())
+        return;
+
+    postAndRecordChanged(postUri, Role::PostIdentifiedLanguage);
 }
 
 void AbstractPostFeedModel::authorAdded(const QString& did)

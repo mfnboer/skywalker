@@ -284,7 +284,7 @@ void LanguageUtils::setDefaultLanguageNoticeSeen(bool seen)
 }
 
 
-int LanguageUtils::identifyLanguage(QString text)
+int LanguageUtils::identifyLanguage(QString text, const QStringList& excludeLanguages)
 {
     if (text.length() < MIN_LANGUAGE_IDENTIFICATION_LENGTH)
         return -1;
@@ -292,7 +292,6 @@ int LanguageUtils::identifyLanguage(QString text)
 #if defined(Q_OS_ANDROID)
     auto jsText  = QJniObject::fromString(text);
     const int requestId = sNextRequestId++;
-    const QStringList excludeLanguages = mSkywalker->getUserSettings()->getExcludeDetectLanguages(mSkywalker->getUserDid());
     auto jsExcludeLanguages = QJniObject::fromString(excludeLanguages.join(','));
 
     // Async call to guarantee that the caller gets requestId before results from detection.

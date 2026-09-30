@@ -13,6 +13,7 @@ Rectangle {
     required property string postPlainText
     required property textmetainfo postTextMetaInfo
     required property list<language> postLanguages
+    required property string postIdentifiedLanguage
     required property date postIndexedDateTime
     required property double postIndexedSecondsAgo
     required property basicprofile postRepostedByAuthor
@@ -416,6 +417,7 @@ Rectangle {
             postUnknownEmbedType: ""
             postImages: []
             postLanguageLabels: videoPage.postLanguages
+            postIdentifiedLanguage: videoPage.postIdentifiedLanguage
             postContentLabels: videoPage.postLabels
             postContentVisibility: videoPage.postContentVisibility
             postContentWarning: videoPage.postContentWarning

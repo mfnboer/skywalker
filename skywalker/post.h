@@ -171,7 +171,9 @@ public:
     const ContentLabelList& getLabelsIncludingAuthorLabels() const;
 
     const LanguageList& getLanguages() const;
+    const Language* getFirstLanguage() const;
     bool hasLanguage() const;
+    QString identifyLanguage(bool autoIdentify) const;
 
     QStringList getMentionDids() const;
     std::vector<QString> getHashtags() const override;

@@ -4,6 +4,7 @@
 #include "post_utils.h"
 #include "author_cache.h"
 #include "content_filter.h"
+#include "post_language_cache.h"
 #include "post_thread_cache.h"
 #include "unicode_fonts.h"
 #include "user_settings.h"
@@ -1077,9 +1078,33 @@ const LanguageList& Post::getLanguages() const
     return mLanguages;
 }
 
+const Language* Post::getFirstLanguage() const
+{
+    const auto& languageList = getLanguages();
+    return !languageList.empty() ? &languageList.first() : nullptr;
+}
+
 bool Post::hasLanguage() const
 {
     return !getLanguages().empty();
+}
+
+QString Post::identifyLanguage(bool autoIdentify) const
+{
+    if (isPlaceHolder())
+        return {};
+
+    auto& cache = PostLanguageCache::instance();
+    auto* languageInfo = cache.getLanguageInfo(getUri());
+
+    if (languageInfo)
+        return languageInfo->mFromLanguageCode;
+
+    if (autoIdentify)
+        cache.putPost(*this);
+
+    auto* language = getFirstLanguage();
+    return language ? language->getShortCode() : QString{};
 }
 
 QStringList Post::getMentionDids() const

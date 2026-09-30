@@ -5,6 +5,7 @@
 #include "convo_view.h"
 #include "content_filter.h"
 #include "enums.h"
+#include "post_language_cache.h"
 #include "post_thread_cache.h"
 #include <atproto/lib/at_uri.h>
 #include <unordered_map>
@@ -27,6 +28,9 @@ NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
                 labelerAdded(did);
             },
             Qt::QueuedConnection);
+
+    connect(&PostLanguageCache::instance(), &PostLanguageCache::postAdded, this,
+            [this](const QString& uri){ postIdentifiedLanguageChanged(uri); }, Qt::QueuedConnection);
 
     connect(&PostThreadCache::instance(), &PostThreadCache::postAdded, this,
             [this](const QString& uri){ postIsThreadChanged(uri); }, Qt::QueuedConnection);
@@ -329,6 +333,11 @@ void NotificationListModel::postIsThreadChanged(const QString& postUri)
     if (!isThread || *isThread == false)
         return;
 
+    postAndRecordChanged(postUri, Role::NotificationPostIsThread);
+}
+
+void NotificationListModel::postAndRecordChanged(const QString& postUri, Role role)
+{
     for (int i = 0; i < (int)mList.size(); ++i)
     {
         const auto& notification = mList[i];
@@ -345,7 +354,7 @@ void NotificationListModel::postIsThreadChanged(const QString& postUri)
         }
 
         if (notification.getUri() == postUri)
-            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationPostIsThread) });
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(role) });
 
         const auto post = notification.getNotificationPost(mPostCache);
 
@@ -364,6 +373,17 @@ void NotificationListModel::postIsThreadChanged(const QString& postUri)
                 emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::NotificationPostRecordWithMedia) });
         }
     }
+}
+
+void NotificationListModel::postIdentifiedLanguageChanged(const QString& postUri)
+{
+    const auto* languageInfo = PostLanguageCache::instance().getLanguageInfo(postUri);
+
+    if (!languageInfo || languageInfo->mFromLanguageCode.isEmpty())
+        return;
+
+    postAndRecordChanged(postUri, Role::NotificationPostIdentifiedLanguage);
+    postAndRecordChanged(postUri, Role::NotificationReasonPostIdentifiedLanguage);
 }
 
 void NotificationListModel::authorAdded(const QString& did)
@@ -829,6 +849,11 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     }
     case Role::NotificationReasonPostLanguages:
         return QVariant::fromValue(notification.getReasonPost(mReasonPostCache).getLanguages());
+    case Role::NotificationReasonPostIdentifiedLanguage:
+    {
+        const auto& post = notification.getReasonPost(mReasonPostCache);
+        return post.identifyLanguage(true);
+    }
     case Role::NotificationReasonPostTimestamp:
         return notification.getReasonPost(mReasonPostCache).getTimelineTimestamp();
     case Role::NotificationReasonPostNotFound:
@@ -877,6 +902,11 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     {
         const auto& postRecord = notification.getPostRecord();
         return QVariant::fromValue(postRecord.getLanguages());
+    }
+    case Role::NotificationPostIdentifiedLanguage:
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.identifyLanguage(true);
     }
     case Role::NotificationPostTimestamp:
     {
@@ -1194,6 +1224,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationReasonPostImages), "notificationReasonPostImages" },
         { int(Role::NotificationReasonPostVideo), "notificationReasonPostVideo" },
         { int(Role::NotificationReasonPostLanguages), "notificationReasonPostLanguages" },
+        { int(Role::NotificationReasonPostIdentifiedLanguage), "notificationReasonPostIdentifiedLanguage" },
         { int(Role::NotificationReasonPostTimestamp), "notificationReasonPostTimestamp" },
         { int(Role::NotificationReasonPostExternal), "notificationReasonPostExternal" },
         { int(Role::NotificationReasonPostRecord), "notificationReasonPostRecord" },
@@ -1212,6 +1243,7 @@ QHash<int, QByteArray> NotificationListModel::roleNames() const
         { int(Role::NotificationPostPlainText), "notificationPostPlainText" },
         { int(Role::NotificationPostTextMetaInfo), "notificationPostTextMetaInfo" },
         { int(Role::NotificationPostLanguages), "notificationPostLanguages" },
+        { int(Role::NotificationPostIdentifiedLanguage), "notificationPostIdentifiedLanguage" },
         { int(Role::NotificationPostTimestamp), "notificationPostTimestamp" },
         { int(Role::NotificationPostHasUnknownEmbed), "notificationPostHasUnknownEmbed" },
         { int(Role::NotificationPostUnknownEmbedType), "notificationPostUnknownEmbedType" },

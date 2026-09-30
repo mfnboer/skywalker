@@ -1571,7 +1571,8 @@ void PostUtils::savePostInteractionSettings(bool allowMention, bool allowFollowe
 
 void PostUtils::identifyLanguage(QString text, int index)
 {
-    const int requestId = languageUtils()->identifyLanguage(text);
+    const QStringList excludeLanguages = mSkywalker->getUserSettings()->getExcludeDetectLanguages(mSkywalker->getUserDid());
+    const int requestId = languageUtils()->identifyLanguage(text, excludeLanguages);
 
     if (requestId < 0)
         return;

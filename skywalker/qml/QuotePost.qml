@@ -70,6 +70,7 @@ Column {
             postUnknownEmbedType: ""
             postImages: []
             postLanguageLabels: quoteColumn.postLanguageLabels
+            postIdentifiedLanguage: ""
             postContentLabels: []
             postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
             postContentWarning: ""
@@ -82,7 +83,7 @@ Column {
             postDateTime: postDateTime
             initialShowMaxTextLines: maxTextLines
             bodyBackgroundColor: quoteColumn.postBackgroundColor
-            showTranslateOption: quoteColumn.postLanguageLabels.length > 0
+            showTranslateOption: false
 
             onTranslate: root.translateText(postPlainText)
         }

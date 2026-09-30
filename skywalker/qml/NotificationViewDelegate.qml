@@ -32,6 +32,7 @@ Rectangle {
     required property date notificationReasonPostTimestamp
     required property bool notificationReasonPostNotFound
     required property list<language> notificationReasonPostLanguages
+    required property string notificationReasonPostIdentifiedLanguage
     required property list<contentlabel> notificationReasonPostLabels
     required property bool notificationReasonPostLocallyDeleted
     required property date notificationTimestamp
@@ -78,6 +79,7 @@ Rectangle {
     required property bool notificationPostNotFound
     required property bool notificationPostBlocked
     required property list<language> notificationPostLanguages
+    required property string notificationPostIdentifiedLanguage
     required property list<contentlabel> notificationPostLabels
     required property int notificationPostContentVisibility // QEnums::PostContentVisibility
     required property string notificationPostContentWarning
@@ -376,6 +378,7 @@ Rectangle {
                     postUnknownEmbedType: notificationPostUnknownEmbedType
                     postImages: notificationPostImages
                     postLanguageLabels: notificationPostLanguages
+                    postIdentifiedLanguage: notificationPostIdentifiedLanguage
                     postContentLabels: notificationPostLabels
                     postContentVisibility: notificationPostContentVisibility
                     postContentWarning: notificationPostContentWarning
@@ -661,6 +664,7 @@ Rectangle {
                     postUnknownEmbedType: notificationReasonPostUnknownEmbedType
                     postImages: notificationReasonPostImages
                     postLanguageLabels: notificationReasonPostLanguages
+                    postIdentifiedLanguage: notificationReasonPostIdentifiedLanguage
                     postContentLabels: notificationReasonPostLabels
                     postContentVisibility: QEnums.CONTENT_VISIBILITY_SHOW // User's own post
                     postContentWarning: ""

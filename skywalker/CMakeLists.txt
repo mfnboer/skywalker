@@ -755,6 +755,8 @@ qt_add_qml_module(libskywalker
         SOURCES search_options.cpp
         QML_FILES qml/WordsInput.qml
         QML_FILES qml/ThreadCountLabel.qml
+        SOURCES post_language_cache.h
+        SOURCES post_language_cache.cpp
 )
 
 target_link_libraries(libskywalker

@@ -4,6 +4,7 @@ import skywalker
 
 ScrollView {
     required property list<language> languageLabels
+    property string identifiedLanguage
     property int parentWidth: parent.width
 
     id: labelView
@@ -12,7 +13,7 @@ ScrollView {
     anchors.right: parent.right
     contentWidth: labelRow.width
     contentHeight: height
-    visible: languageLabels.length > 0
+    visible: languageLabels.length > 0 || identifiedLanguage.length > 0
 
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
     ScrollBar.vertical.policy: ScrollBar.AlwaysOff
@@ -42,6 +43,18 @@ ScrollView {
                     onClicked: showInfo(modelData)
                 }
             }
+        }
+
+        SkyLabel {
+            backgroundColor: guiSettings.contentLabelColor
+            font.pointSize: guiSettings.scaledFont(5/8)
+            font.italic: true
+            color: guiSettings.textColor
+            text: qsTr(`identified: ${identifiedLanguage}`)
+            visible: identifiedLanguage.length > 0
+
+            Accessible.role: Accessible.StaticText
+            Accessible.name: qsTr(`language indication: ${text}`)
         }
     }
 

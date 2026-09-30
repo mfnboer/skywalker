@@ -16,6 +16,7 @@
 #include "oauth_controller.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
+#include "post_language_cache.h"
 #include "post_thread_cache.h"
 #include "search_utils.h"
 #include "share_utils.h"
@@ -111,6 +112,7 @@ Skywalker::Skywalker(QObject* parent) :
 
     AuthorCache::instance().setSkywalker(this);
     ListCache::instance().setSkywalker(this);
+    PostLanguageCache::instance().setSkywalker(this);
     PostThreadCache::instance().setSkywalker(this);
     OffLineMessageChecker::init(&mUserSettings);
 
