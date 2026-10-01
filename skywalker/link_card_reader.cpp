@@ -367,7 +367,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         }
         else if (auto htmlTitle = matchRegexes(htmlTitleREs, data, "title"); !htmlTitle.isEmpty())
         {
-            card->setTitle(htmlTitle);
+            card->setTitle(toPlainText(htmlTitle));
             qDebug() << "Got title from HTML document:" << htmlTitle;
         }
         else
@@ -376,6 +376,19 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
             qDebug() << url << "has no link card.";
             emit linkCardFailed();
             return;
+        }
+    }
+    else
+    {
+        if (card->getTitle().isEmpty())
+        {
+            const auto htmlTitle = matchRegexes(htmlTitleREs, data, "title");
+
+            if (!htmlTitle.isEmpty())
+            {
+                card->setTitle(toPlainText(htmlTitle));
+                qDebug() << "Add title from HTML document:" << htmlTitle;
+            }
         }
     }
 
