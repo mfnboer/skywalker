@@ -8,6 +8,8 @@ ComboBox {
     property string borderColor: guiSettings.buttonColor
     property string textColor: guiSettings.textColor
     property bool indexChangeEnabled: true
+    property bool valid: true
+    readonly property string textInputText: textInput.text
 
     signal inputTextChanged(var textInput)
     signal editingFinished(string text)
@@ -72,7 +74,7 @@ ComboBox {
         radius: comboBox.radius
         border.color: comboBox.borderColor
         border.width: comboBox.activeFocus ? 1 : 0
-        color: guiSettings.textInputBackgroundColor
+        color: comboBox.valid ? guiSettings.textInputBackgroundColor : guiSettings.textInputInvalidColor
     }
 
     Timer {
@@ -84,7 +86,13 @@ ComboBox {
 
     function setSelection(value) {
         indexChangeEnabled = false
-        comboBox.currentIndex = comboBox.indexOfValue(value)
+        const index = comboBox.indexOfValue(value)
+
+        if (index >= 0)
+            currentIndex = index
+        else
+            currentIndex = editableIndex
+
         indexChangeEnabled = true
     }
 }

@@ -2,6 +2,7 @@ next
 ====
 * Show thread post index and counts in feeds
 * Translate link on posts in foreign language
+* Presets for Blacksky, Bluesky and Eurosky appviews
 * Added Noto Sans Symbols to the font
 * Faster upload for large videos
 

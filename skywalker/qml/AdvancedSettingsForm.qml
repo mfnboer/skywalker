@@ -66,15 +66,40 @@ SkyPage {
                 text: "AppView service"
             }
 
-            SkyTextInput {
+            EditComboBox {
+                property string fieldValue: newUser ? userSettings.getDefaultServiceAppView() : userSettings.getServiceAppView(userDid)
+
                 id: appViewField
                 Layout.fillWidth: true
-                parentFlick: flick
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                initialText: newUser ? userSettings.getDefaultServiceAppView() : userSettings.getServiceAppView(userDid)
-                placeholderText: qsTr("did:web:api.bsky.app#bsky_appview")
+                textRole: "name"
+                valueRole: "service"
+                model: userSettings.getServiceAppViewList()
+                editableIndex: model.length - 1
+                initialEditValue: newUser ? userSettings.getDefaultServiceAppView() : userSettings.getServiceAppView(userDid)
                 validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
-                valid: !displayText || linkUtils.isValidService(displayText)
+                valid: isValid()
+
+                onCurrentIndexChanged: {
+                    if (currentIndex < 0)
+                        return
+
+                    if (currentIndex !== editableIndex) {
+                        fieldValue = valueAt(currentIndex)
+                        return
+                    }
+
+                    fieldValue = textInputText
+                }
+
+                onInputTextChanged: (textInput) => fieldValue = textInput.displayText
+                onEditingFinished: (text) => fieldValue = text
+
+                function isValid() {
+                    if (currentIndex !== editableIndex)
+                        return true
+
+                    return linkUtils.isValidService(fieldValue)
+                }
             }
 
             SvgPlainButton {
@@ -84,7 +109,7 @@ SkyPage {
                 imageMargin: 0
                 svg: SvgOutline.undo
                 accessibleName: qsTr("reset to default")
-                onClicked: appViewField.text = userSettings.getDefaultServiceAppView()
+                onClicked: appViewField.setSelection(userSettings.getDefaultServiceAppView())
             }
 
             AccessibleText {
@@ -193,13 +218,13 @@ SkyPage {
 
     function changesMade() {
         if (newUser) {
-            return appViewField.displayText !== userSettings.getDefaultServiceAppView() ||
+            return appViewField.fieldValue !== userSettings.getDefaultServiceAppView() ||
                     chatField.displayText !== userSettings.getDefaultServiceChat() ||
                     videoHostField.displayText !== userSettings.getDefaultServiceVideoHost() ||
                     videoDidField.displayText !== userSettings.getDefaultServiceVideoDid()
         }
 
-        return appViewField.displayText !== userSettings.getServiceAppView(userDid) ||
+        return appViewField.fieldValue !== userSettings.getServiceAppView(userDid) ||
                 chatField.displayText !== userSettings.getServiceChat(userDid) ||
                 videoHostField.displayText !== userSettings.getServiceVideoHost(userDid) ||
                 videoDidField.displayText !== userSettings.getServiceVideoDid(userDid)
@@ -214,11 +239,11 @@ SkyPage {
 
     function saveSettings() {
         if (newUser) {
-            settings(appViewField.displayText, chatField.displayText, videoHostField.displayText, videoDidField.displayText)
+            settings(appViewField.fieldValue, chatField.displayText, videoHostField.displayText, videoDidField.displayText)
             return
         }
 
-        userSettings.setServiceAppView(userDid, appViewField.displayText)
+        userSettings.setServiceAppView(userDid, appViewField.fieldValue)
         userSettings.setServiceChat(userDid, chatField.displayText)
         userSettings.setServiceVideoHost(userDid, videoHostField.displayText)
         userSettings.setServiceVideoDid(userDid, videoDidField.displayText)
@@ -237,6 +262,6 @@ SkyPage {
     }
 
     Component.onCompleted: {
-        appViewField.setFocus()
+        appViewField.setSelection(newUser ? userSettings.getDefaultServiceAppView() : userSettings.getServiceAppView(userDid))
     }
 }

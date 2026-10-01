@@ -629,6 +629,13 @@ QString UserSettings::getDefaultServiceAppView() const
     return ATProto::Client::SERVICE_APP_VIEW;
 }
 
+QList<ATProto::ServiceInfo> UserSettings::getServiceAppViewList() const
+{
+    QList<ATProto::ServiceInfo> appViewList{ATProto::Client::SERIVCE_APP_VIEW_LIST.begin(), ATProto::Client::SERIVCE_APP_VIEW_LIST.end()};
+    appViewList.push_back(ATProto::ServiceInfo{ "Other", "other" });
+    return appViewList;
+}
+
 void UserSettings::setServiceChat(const QString& did, const QString& service)
 {
     if (service != getServiceChat(did))

@@ -176,6 +176,8 @@ public:
     Q_INVOKABLE QString getServiceAppView(const QString& did) const;
     Q_INVOKABLE QString getDefaultServiceAppView() const;
 
+    Q_INVOKABLE QList<ATProto::ServiceInfo> getServiceAppViewList() const;
+
     Q_INVOKABLE void setServiceChat(const QString& did, const QString& service);
     Q_INVOKABLE QString getServiceChat(const QString& did) const;
     Q_INVOKABLE QString getDefaultServiceChat() const;

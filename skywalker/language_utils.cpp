@@ -307,6 +307,7 @@ int LanguageUtils::identifyLanguage(QString text, const QStringList& excludeLang
 
     return requestId;
 #else
+    Q_UNUSED(excludeLanguages)
     qDebug() << "Language identification not supported:" << text;
     return -1;
 #endif
