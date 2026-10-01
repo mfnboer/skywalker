@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "cached_image_provider.h"
 #include "font_downloader.h"
+#include "http1_network_access_manager.h"
 #include "shared_image_provider.h"
 #include "sky_application.h"
 #include "skywalker.h"
@@ -70,6 +71,10 @@ int main(int argc, char *argv[])
     engine.addImageProvider(providerId, Skywalker::SharedImageProvider::getProvider(providerId));
     providerId = Skywalker::CachedImageProvider::AVATAR;
     engine.addImageProvider(providerId, Skywalker::CachedImageProvider::getProvider(providerId));
+
+    // Some image servers don't support HTTP/2
+    auto namFactory = std::make_unique<Skywalker::Http1NetworkAccessManagerFactory>();
+    engine.setNetworkAccessManagerFactory(namFactory.get());
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
         &app, []() { QCoreApplication::exit(-1); },

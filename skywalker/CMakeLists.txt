@@ -757,6 +757,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ThreadCountLabel.qml
         SOURCES post_language_cache.h
         SOURCES post_language_cache.cpp
+        SOURCES http1_network_access_manager.h
+        SOURCES http1_network_access_manager.cpp
 )
 
 target_link_libraries(libskywalker
