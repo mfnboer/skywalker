@@ -16,7 +16,7 @@ class VerificationUtils : public WrappedSkywalker, public Presence
     Q_PROPERTY(int MAX_VERIFIERS MEMBER MAX_VERIFIERS CONSTANT)
 
 public:
-    static constexpr int MAX_VERIFIERS = 10;
+    static constexpr int MAX_VERIFIERS = 20;
 
     explicit VerificationUtils(Constellation& constellation, QObject* parent = nullptr);
 
