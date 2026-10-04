@@ -1284,7 +1284,7 @@ void PostUtils::batchDeletePosts(const QStringList& postUris)
     const QString& repo = mSkywalker->getUserDid();
 
     bskyClient()->applyWrites(repo, writes, false,
-        []{
+        [](auto){
             qDebug() << "Deleted posts";
         },
         [](const QString& error, const QString& msg) {

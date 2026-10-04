@@ -12,6 +12,7 @@ class StarterPackViewBasic
 {
     Q_GADGET
     Q_PROPERTY(int MAX_FEEDS MEMBER MAX_FEEDS CONSTANT)
+    Q_PROPERTY(int MAX_MEMBERS MEMBER MAX_MEMBERS CONSTANT)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(BasicProfile creator READ getCreator FINAL)
@@ -24,6 +25,7 @@ class StarterPackViewBasic
 
 public:
     static constexpr int MAX_FEEDS = ATProto::AppBskyGraph::StarterPack::MAX_FEEDS;
+    static constexpr int MAX_MEMBERS = 500;
 
     StarterPackViewBasic() = default;
     explicit StarterPackViewBasic(const ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr& view);

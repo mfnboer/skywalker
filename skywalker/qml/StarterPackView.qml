@@ -42,8 +42,8 @@ SkyPage {
             userDid: page.userDid
             modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, starterPack.list.uri)
             modelPageLimit: editMode ? 100 : 50
-            modelMaxPages: editMode ? 3 : 1
-            modelMinEntries: editMode ? 300 : 1
+            modelMaxPages: editMode ? Math.ceil(starterPack.MAX_MEMBERS / 100) : 1
+            modelMinEntries: editMode ? starterPack.MAX_MEMBERS : 1
             listUri: starterPack.list.uri
             allowDeleteItem: editMode
             clip: true
@@ -172,7 +172,8 @@ SkyPage {
                     id: addUserButton
                     svg: feedsBar.currentIndex === feedsBar.indexUsers ? SvgOutline.addUser : SvgOutline.feed
                     accessibleName: feedsBar.currentIndex === feedsBar.indexUsers ? qsTr("add user to starter pack") : qsTr("add feed")
-                    enabled: feedsBar.currentIndex === feedsBar.indexUsers || feedListView.count < starterPack.MAX_FEEDS
+                    enabled: (feedsBar.currentIndex === feedsBar.indexUsers && feedListView.count < starterPack.MAX_MEMBERS) ||
+                             feedListView.count < starterPack.MAX_FEEDS
                     visible: editMode && feedsBar.currentIndex <= feedsBar.indexFeeds
                     onClicked: {
                         if (feedsBar.currentIndex === feedsBar.indexUsers)
@@ -302,6 +303,17 @@ SkyPage {
         }
     }
 
+    SkyButton {
+        id: followAllButton
+        parent: page.header.visible ? page.header : page
+        height: 40
+        anchors.right: moreButton.left
+        anchors.verticalCenter: moreButton.verticalCenter
+        text: qsTr("Follow all")
+        visible: !editMode
+        onClicked: graphUtils.followStarterPack(starterPack)
+    }
+
     // Give the network some time after creating a list before retrieving it.
     // Sometimes you get a not-found error when you retrieve it too quickly.
     Timer {
@@ -364,6 +376,9 @@ SkyPage {
         }
 
         onRemoveStarterPackFeedFailed: (error) => skywalker.showStatusMessage(qsTr(`Failed to remove feed: ${error}`), QEnums.STATUS_LEVEL_ERROR)
+
+        onFollowStarterPackOk: skywalker.showStatusMessage(qsTr('Following all starter pack members'), QEnums.STATUS_LEVEL_INFO)
+        onFollowStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
         function addFeedToStarterPack(feed) {
             addingFeed = feed

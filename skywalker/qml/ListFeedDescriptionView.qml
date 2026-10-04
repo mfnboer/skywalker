@@ -56,8 +56,8 @@ SkyPage {
         userDid: page.userDid
         modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
         modelPageLimit: isOwnList() ? 100 : 50
-        modelMaxPages: isOwnList() ? 3 : 1
-        modelMinEntries: isOwnList() ? 300 : 1
+        modelMaxPages: isOwnList() ? 5 : 1
+        modelMinEntries: isOwnList() ? 500 : 1
         allowDeleteItem: isOwnList()
         listUri: list.uri
         clip: true

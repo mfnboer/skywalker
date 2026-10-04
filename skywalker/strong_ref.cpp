@@ -9,6 +9,12 @@ StrongRef::StrongRef(const ATProto::ComATProtoRepo::StrongRef::SharedPtr& ref) :
 {
 }
 
+StrongRef::StrongRef(const QString& uri, const QString& cid) :
+    mUri(uri),
+    mCid(cid)
+{
+}
+
 StrongRef::List StrongRef::makeList(const ATProto::ComATProtoRepo::StrongRef::List& refs)
 {
     List refList;
@@ -33,17 +39,28 @@ ATProto::ComATProtoRepo::StrongRef::List StrongRef::toATProtoList(const List& st
 
 QString StrongRef::getUri() const
 {
-    return mRef ? mRef->mUri : "";
+    return mRef ? mRef->mUri : mUri;
 }
 
 QString StrongRef::getCid() const
 {
-    return mRef ? mRef->mCid : "";
+    return mRef ? mRef->mCid : mCid;
 }
 
 ATProto::ComATProtoRepo::StrongRef::SharedPtr StrongRef::getRef() const
 {
-    return mRef;
+    if (mRef)
+        return mRef;
+
+    if (!mUri.isEmpty() && !mUri.isEmpty())
+    {
+        auto ref = std::make_shared<ATProto::ComATProtoRepo::StrongRef>();
+        ref->mUri = mUri;
+        ref->mCid = mCid;
+        return ref;
+    }
+
+    return nullptr;
 }
 
 }

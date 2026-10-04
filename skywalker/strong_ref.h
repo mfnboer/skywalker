@@ -19,14 +19,17 @@ public:
 
     StrongRef() = default;
     explicit StrongRef(const ATProto::ComATProtoRepo::StrongRef::SharedPtr& ref);
+    StrongRef(const QString& uri, const QString& cid);
 
-    Q_INVOKABLE bool isNull() const { return mRef == nullptr; }
+    Q_INVOKABLE bool isNull() const { return mRef == nullptr && mUri.isEmpty() && mCid.isEmpty(); }
     QString getUri() const;
     QString getCid() const;
     ATProto::ComATProtoRepo::StrongRef::SharedPtr getRef() const;
 
 private:
     ATProto::ComATProtoRepo::StrongRef::SharedPtr mRef;
+    QString mUri;
+    QString mCid;
 };
 
 }

@@ -119,6 +119,161 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
         });
 }
 
+void GraphUtils::followAll(const std::vector<QString> dids, const std::optional<StrongRef>& via)
+{
+    followAll(dids, via,
+        [this, presence=getPresence()](const StrongRef::List& refs){
+            if (!presence)
+                return;
+
+            emit followAllOk(refs);
+        },
+        [this, presence=getPresence()](const QString&, const QString& msg){
+            if (!presence)
+                return;
+
+            emit followAllFailed(msg);
+        });
+}
+
+void GraphUtils::followAll(const std::vector<QString> dids, const std::optional<StrongRef>& via,
+                           const FollowAllSuccessCb& successCb, const ErrorCb& errorCb)
+{
+    if (!graphMaster())
+        return;
+
+    ATProto::ComATProtoRepo::StrongRef::SharedPtr viaPtr = via ? via->getRef() : nullptr;
+
+    graphMaster()->followAll(dids, viaPtr,
+        [this, presence=getPresence(), dids, successCb](const ATProto::ComATProtoRepo::StrongRef::List& refs){
+            if (!presence)
+                return;
+
+            if (dids.size() == refs.size())
+            {
+                for (int i = 0; i < (int)dids.size(); ++i)
+                {
+                    const auto& did = dids[i];
+                    const auto& ref = refs[i];
+
+                    mSkywalker->makeLocalModelChange(
+                        [did, ref](LocalAuthorModelChanges* model){
+                            model->updateFollowingUri(did, ref->mUri);
+                        });
+
+                    mSkywalker->getFollowing()->follow(did);
+                }
+            }
+            else
+            {
+                qWarning() << "Size mismatch DIDs and created records:" << dids.size() << refs.size();
+
+                for (const auto& did : dids)
+                    mSkywalker->getFollowing()->follow(did);
+            }
+
+            if (successCb)
+                successCb(StrongRef::makeList(refs));
+        },
+        [errorCb](const QString& error, const QString& msg){
+            qDebug() << "Follow failed:" << error << " - " << msg;
+
+            if (errorCb)
+                errorCb(error, msg);
+        });
+}
+
+void GraphUtils::followStarterPack(const StarterPackView& starterPack)
+{
+    if (!bskyClient())
+        return;
+
+    qDebug() << "Follow starter pack:" << starterPack.getUri();
+    const auto list = starterPack.getList();
+
+    if (list.isNull())
+    {
+        qWarning() << "No list is starterpack:" << starterPack.getUri();
+        return;
+    }
+
+    followStarterPackContinue(starterPack, list.getUri());
+}
+
+void GraphUtils::followStarterPackContinue(const StarterPackView& starterPack, const QString& listUri, int maxPages, const std::optional<QString>& cursor)
+{
+    if (maxPages <= 0)
+    {
+        qWarning() << "Max pages exhausted";
+        return;
+    }
+
+    bskyClient()->getList(listUri, 50, cursor,
+        [this, presence=getPresence(), starterPack, listUri, maxPages, cursor](ATProto::AppBskyGraph::GetListOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            const auto newCursor = output->mCursor;
+            std::vector<QString> dids;
+
+            for (const auto& item : output->mItems)
+            {
+                if (item->mSubject->mViewer && item->mSubject->mViewer->mFollowing)
+                {
+                    qDebug() << "Already following:" << item->mSubject->mHandle;
+                }
+                else if (item->mSubject->mDid == mSkywalker->getUserDid())
+                {
+                    qDebug() << "This is you:" << item->mSubject->mHandle;
+                }
+                else
+                {
+                    qDebug() << "Follow:" << item->mSubject->mHandle;
+                    dids.push_back(item->mSubject->mDid);
+                }
+            }
+
+            if (dids.empty())
+            {
+                qDebug() << "All users already followed";
+
+                if (!newCursor)
+                    emit followStarterPackOk();
+                else
+                    followStarterPackContinue(starterPack, listUri, maxPages - 1, newCursor);
+
+                return;
+            }
+
+            const StrongRef ref{starterPack.getUri(), starterPack.getCid()};
+
+            followAll(dids, ref,
+                [this, presence=getPresence(), starterPack, listUri, maxPages, newCursor](const StrongRef::List&){
+                    if (!presence)
+                        return;
+
+                    if (!newCursor)
+                        emit followStarterPackOk();
+                    else
+                        followStarterPackContinue(starterPack, listUri, maxPages - 1, newCursor);
+                },
+                [this, presence=getPresence()](const QString& error, const QString& msg){
+                    if (!presence)
+                        return;
+
+                    qWarning() << "Failed to follow all:" << error << " - " << msg;
+                    emit followStarterPackFailed(msg);
+                });
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to get list:" << error << " - " << msg;
+            emit followStarterPackFailed(msg);
+        });
+}
+
 void GraphUtils::block(const QString& did, QDateTime expiresAt)
 {
     if (mBlockBusy)

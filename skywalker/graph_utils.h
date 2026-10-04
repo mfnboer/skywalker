@@ -3,9 +3,10 @@
 #pragma once
 #include "list_view.h"
 #include "enums.h"
+#include "named_link.h"
 #include "presence.h"
 #include "starter_pack.h"
-#include "named_link.h"
+#include "strong_ref.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/graph_master.h>
 #include <QTimer>
@@ -20,6 +21,7 @@ class GraphUtils : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
+    using FollowAllSuccessCb = std::function<void(const StrongRef::List& refs)>;
     using ListSuccessCb = std::function<void(const QString& uri, const QString& cid)>;
     using ErrorCb = std::function<void(const QString& error, const QString& message)>;
 
@@ -27,6 +29,10 @@ public:
 
     Q_INVOKABLE void follow(const BasicProfile& profile);
     Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
+    Q_INVOKABLE void followAll(const std::vector<QString> dids, const std::optional<StrongRef>& via);
+    void followAll(const std::vector<QString> dids, const std::optional<StrongRef>& via,
+                   const FollowAllSuccessCb& successCb, const ErrorCb& errorCb);
+    Q_INVOKABLE void followStarterPack(const StarterPackView& starterPack);
 
     Q_INVOKABLE void block(const QString& did, QDateTime expiresAt = QDateTime{});
     void unblock(const QString& blockingUri);
@@ -103,6 +109,10 @@ signals:
     void followFailed(QString error);
     void unfollowOk();
     void unfollowFailed(QString error);
+    void followAllOk(StrongRef::List refs);
+    void followAllFailed(QString error);
+    void followStarterPackOk();
+    void followStarterPackFailed(QString error);
     void blockOk(QString uri, QDateTime expiresAt);
     void blockFailed(QString error);
     void unblockOk();
@@ -169,6 +179,7 @@ private:
                             const QString& description, const NamedLink::List& embeddedLinks,
                             ATProto::Blob::SharedPtr blob, bool updateAvatar);
     void continueCreateListFromStarterPack(const StarterPackView& starterPack, const QString &listUri, const QString& listCid, int maxPages = 3, const std::optional<QString> cursor = {});
+    void followStarterPackContinue(const StarterPackView& starterPack, const QString& listUri, int maxPages = 5, const std::optional<QString>& cursor = {});
     void expireBlocks();
     void expireMutes();
     void checkExpiry();
