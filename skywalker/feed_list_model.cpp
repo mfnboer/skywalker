@@ -157,6 +157,12 @@ void FeedListModel::deleteEntry(int index)
     endRemoveRows();
 }
 
+bool FeedListModel::hasFeed(const QString& feedUri) const
+{
+    return std::find_if(mFeeds.begin(), mFeeds.end(),
+                        [feedUri](const auto& feed){ return feed.getUri() == feedUri; }) != mFeeds.end();
+}
+
 void FeedListModel::setGetFeedInProgress(bool inProgress)
 {
     if (inProgress != mGetFeedInProgress) {

@@ -55,9 +55,9 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     Q_INVOKABLE void clear();
-    void addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor);
-    void addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
-    void addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor);
+    int addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor);
+    int addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
+    int addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor);
     Q_INVOKABLE void prependAuthor(const Profile& author, const QString& listItemUri);
     Q_INVOKABLE void prependBasicProfile(const BasicProfile& author, const QString& listItemUri);
     Q_INVOKABLE void deleteEntry(int index);
@@ -71,6 +71,7 @@ public:
     Q_INVOKABLE void setAtId(QString atId) { mAtId = atId; }
 
     std::vector<QString> getActiveFollowsDids(QString& cursor) const;
+    Q_INVOKABLE bool containsDid(const QString& did) const;
 
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
@@ -102,6 +103,7 @@ private:
     const ContentFilter& mContentFilter;
 
     AuthorList mList;
+    std::unordered_set<QString> mDidSet;
     std::deque<ATProto::AppBskyActor::ProfileView::List> mRawLists;
     std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
     std::deque<ATProto::AppBskyGraph::ListItemView::List> mRawItemLists;

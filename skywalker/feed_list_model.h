@@ -55,6 +55,9 @@ public:
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
+    // Linear search
+    Q_INVOKABLE bool hasFeed(const QString& feedUri) const;
+
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 

@@ -476,7 +476,7 @@ ApplicationWindow {
                 viewFeedDescription(generatorView, did)
         }
 
-        onGetStarterPackViewOk: (did, starterPack, editMode) => viewStarterPack(starterPack, did, editMode) // qmllint disable signal-handler-parameters
+        onGetStarterPackViewOk: (did, starterPack) => viewStarterPack(starterPack, did) // qmllint disable signal-handler-parameters
 
         onSharedTextReceived: (text) => {
             closeStartupStatus() // close startup status if sharing started the app                      
@@ -2281,12 +2281,11 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
-    function viewStarterPack(starterPack, viewByDid = "", editMode = false) {
+    function viewStarterPack(starterPack, viewByDid = "") {
         let component = guiSettings.createComponent("StarterPackView.qml")
         let view = component.createObject(root, {
                     userDid: viewByDid,
-                    starterPack: starterPack,
-                    editMode: editMode })
+                    starterPack: starterPack })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }

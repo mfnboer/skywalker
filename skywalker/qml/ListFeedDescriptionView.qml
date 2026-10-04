@@ -55,6 +55,9 @@ SkyPage {
         title: ""
         userDid: page.userDid
         modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, list.uri)
+        modelPageLimit: isOwnList() ? 100 : 50
+        modelMaxPages: isOwnList() ? 3 : 1
+        modelMinEntries: isOwnList() ? 300 : 1
         allowDeleteItem: isOwnList()
         listUri: list.uri
         clip: true
@@ -474,7 +477,11 @@ SkyPage {
         let component = guiSettings.createComponent("SearchAuthor.qml")
         let searchPage = component.createObject(page, { skywalker: skywalker })
         searchPage.onAuthorClicked.connect((profile) => { // qmllint disable missing-property
-            graphUtils.addListUser(list.uri, profile)
+            if (authorListView.model.containsDid(profile.did))
+                skywalker.showStatusMessage(qsTr(`${profile.name} already added`), QEnums.STATUS_LEVEL_ERROR)
+            else
+                graphUtils.addListUser(list.uri, profile)
+
             root.popStack()
         })
         searchPage.onClosed.connect(() => { root.popStack() })

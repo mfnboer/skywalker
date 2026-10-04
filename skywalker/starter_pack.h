@@ -11,6 +11,7 @@ namespace Skywalker {
 class StarterPackViewBasic
 {
     Q_GADGET
+    Q_PROPERTY(int MAX_FEEDS MEMBER MAX_FEEDS CONSTANT)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(BasicProfile creator READ getCreator FINAL)
@@ -22,6 +23,8 @@ class StarterPackViewBasic
     QML_VALUE_TYPE(starterpackviewbasic)
 
 public:
+    static constexpr int MAX_FEEDS = ATProto::AppBskyGraph::StarterPack::MAX_FEEDS;
+
     StarterPackViewBasic() = default;
     explicit StarterPackViewBasic(const ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr& view);
     explicit StarterPackViewBasic(const ATProto::AppBskyGraph::StarterPackView::SharedPtr& view);

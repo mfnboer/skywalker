@@ -9,7 +9,7 @@ SkyPage {
     required property starterpackview starterPack
     readonly property int postFeedModelId: skywalker.createPostFeedModel(starterPack.list)
     readonly property int feedListModelId: skywalker.createFeedListModel()
-    readonly property bool editMode: false
+    readonly property bool editMode: starterPack.creator.did === userDid
     readonly property int margin: 10
     readonly property string sideBarTitle: qsTr("Starter pack")
     readonly property SvgImage sideBarSvg: SvgOutline.starterpack
@@ -41,15 +41,18 @@ SkyPage {
             title: ""
             userDid: page.userDid
             modelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_LIST_MEMBERS, starterPack.list.uri)
+            modelPageLimit: editMode ? 100 : 50
+            modelMaxPages: editMode ? 3 : 1
+            modelMinEntries: editMode ? 300 : 1
             listUri: starterPack.list.uri
-            allowDeleteItem: true
+            allowDeleteItem: editMode
             clip: true
 
             header: PlaceholderHeader { height: feedStack.headerHeight }
             headerPositioning: ListView.InlineHeader
             footer: null
 
-            Component.onCompleted: skywalker.getAuthorList(modelId, 100)
+            Component.onCompleted: skywalker.getAuthorList(modelId, modelPageLimit, modelMaxPages, modelMinEntries)
         }
 
         SkyListView {
@@ -66,7 +69,7 @@ SkyPage {
 
                 width: feedListView.width
                 userDid: page.userDid
-                allowDelete: true
+                allowDelete: editMode
 
                 onHideFollowing: (feed, hide) => feedUtils.hideFollowing(feed.uri, hide)
                 onSyncFeed: (feed, sync) => feedUtils.syncFeed(feed.uri, sync)
@@ -169,6 +172,7 @@ SkyPage {
                     id: addUserButton
                     svg: feedsBar.currentIndex === feedsBar.indexUsers ? SvgOutline.addUser : SvgOutline.feed
                     accessibleName: feedsBar.currentIndex === feedsBar.indexUsers ? qsTr("add user to starter pack") : qsTr("add feed")
+                    enabled: feedsBar.currentIndex === feedsBar.indexUsers || feedListView.count < starterPack.MAX_FEEDS
                     visible: editMode && feedsBar.currentIndex <= feedsBar.indexFeeds
                     onClicked: {
                         if (feedsBar.currentIndex === feedsBar.indexUsers)
@@ -385,7 +389,11 @@ SkyPage {
         let component = guiSettings.createComponent("SearchAuthor.qml")
         let searchPage = component.createObject(page, { skywalker: skywalker })
         searchPage.onAuthorClicked.connect((profile) => { // qmllint disable missing-property
-            graphUtils.addListUser(starterPack.list.uri, profile)
+            if (authorListView.model.containsDid(profile.did))
+                skywalker.showStatusMessage(qsTr(`${profile.name} already added`), QEnums.STATUS_LEVEL_ERROR)
+            else
+                graphUtils.addListUser(starterPack.list.uri, profile)
+
             root.popStack()
         })
         searchPage.onClosed.connect(() => { root.popStack() })
@@ -396,7 +404,11 @@ SkyPage {
         let component = guiSettings.createComponent("SearchFeed.qml")
         let searchPage = component.createObject(page, { skywalker: skywalker })
         searchPage.onFeedClicked.connect((feed) => { // qmllint disable missing-property
-            graphUtils.addFeedToStarterPack(feed)
+            if (feedListView.model.hasFeed(feed.uri))
+                skywalker.showStatusMessage(qsTr(`${feed.name} already added`), QEnums.STATUS_LEVEL_ERROR)
+            else
+                graphUtils.addFeedToStarterPack(feed)
+
             root.popStack()
         })
         searchPage.onClosed.connect(() => { root.popStack() })

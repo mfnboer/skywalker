@@ -76,6 +76,7 @@ void AuthorListModel::clear()
     {
         beginRemoveRows({}, 0, mList.size() - 1);
         mList.clear();
+        mDidSet.clear();
         clearLocalChanges();
         endRemoveRows();
     }
@@ -89,7 +90,7 @@ void AuthorListModel::clear()
         mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
 }
 
-void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor)
+int AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor)
 {
     qDebug() << "Add authors:" << authors.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -101,12 +102,16 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileView::List author
     mList.insert(mList.end(), list.begin(), list.end());
     endInsertRows();
 
+    for (const auto& author : list)
+        mDidSet.insert(author.mProfile.getDid());
+
     mRawLists.push_back(std::forward<ATProto::AppBskyActor::ProfileView::List>(authors));
     qDebug() << "New list size:" << mList.size();
     setEndOfList();
+    return list.size();
 }
 
-void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor)
+int AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor)
 {
     qDebug() << "Add authors:" << authors.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -118,6 +123,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::Lis
         const ListEntry entry{Profile{author}};
         AuthorCache::instance().put(entry.mProfile);
         list.push_back(entry);
+        mDidSet.insert(entry.mProfile.getDid());
     }
 
     const size_t newRowCount = mList.size() + list.size();
@@ -129,9 +135,10 @@ void AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::Lis
     mRawDetailedLists.push_back(std::forward<ATProto::AppBskyActor::ProfileViewDetailed::List>(authors));
     qDebug() << "New list size:" << mList.size();
     setEndOfList();
+    return list.size();
 }
 
-void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor)
+int AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor)
 {
     qDebug() << "Add list item authors:" << listItems.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -144,6 +151,7 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listI
         ListEntry entry(Profile(item->mSubject), item->mUri);
         AuthorCache::instance().put(entry.mProfile);
         mList.push_back(entry);
+        mDidSet.insert(entry.mProfile.getDid());
     }
 
     endInsertRows();
@@ -151,12 +159,14 @@ void AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listI
     mRawItemLists.push_back(std::forward<ATProto::AppBskyGraph::ListItemView::List>(listItems));
     qDebug() << "New list size:" << mList.size();
     setEndOfList();
+    return listItems.size();
 }
 
 void AuthorListModel::prependAuthor(const Profile& author, const QString& listItemUri)
 {
     qDebug() << "Preprend author:" << author.getHandle();
     AuthorCache::instance().put(author);
+    mDidSet.insert(author.getDid());
 
     beginInsertRows({}, 0, 0);
     mList.push_front(ListEntry(author, listItemUri));
@@ -184,9 +194,16 @@ void AuthorListModel::deleteEntry(int index)
         return;
     }
 
+    const QString did = mList[index].mProfile.getDid();
+
     beginRemoveRows({}, index, index);
     mList.erase(mList.begin() + index);
     endRemoveRows();
+
+    auto it = std::find_if(mList.begin(), mList.end(), [did](const auto& entry){ return entry.mProfile.getDid() == did; });
+
+    if (it == mList.end())
+        mDidSet.erase(did);
 
     if (index == (int)mList.size())
         setEndOfList();
@@ -218,6 +235,11 @@ std::vector<QString> AuthorListModel::getActiveFollowsDids(QString& cursor) cons
         cursor.setNum(endIndex);
 
     return std::vector<QString>{mActiveFollowsDids.begin() + startIndex, mActiveFollowsDids.begin() + endIndex};
+}
+
+bool AuthorListModel::containsDid(const QString& did) const
+{
+    return mDidSet.contains(did);
 }
 
 AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBskyActor::ProfileView::List& authors) const

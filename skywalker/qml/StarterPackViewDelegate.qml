@@ -116,7 +116,7 @@ Rectangle {
     SkyMouseArea {
         z: -2 // Let other mouse areas on top
         anchors.fill: parent
-        onClicked: root.getSkywalker(userDid).getStarterPackView(starterPack.uri, allowEdit)
+        onClicked: root.getSkywalker(userDid).getStarterPackView(starterPack.uri)
     }
 
     SkyMenu {

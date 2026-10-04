@@ -183,7 +183,7 @@ public:
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
     Q_INVOKABLE void getFeedGenerator(const QString& feedUri, bool viewPosts = false);
-    Q_INVOKABLE void getStarterPackView(const QString& starterPackUri, bool editMode = false);
+    Q_INVOKABLE void getStarterPackView(const QString& starterPackUri);
     int createSearchPostFeedModel(const QString& searchKey, const QString& feedName, bool ignoreReverseSetting = false);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
@@ -205,8 +205,8 @@ public:
     Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor);
     Q_INVOKABLE PostFeedModel* getPostFeedModel(int id) const;
     Q_INVOKABLE void removePostFeedModel(int id);
-    Q_INVOKABLE void getAuthorList(int id, int limit = 50, const QString& cursor = {});
-    Q_INVOKABLE void getAuthorListNextPage(int id);
+    Q_INVOKABLE void getAuthorList(int id, int limit = 50, int maxPages = 1, int minEntries = 1, const QString& cursor = {});
+    Q_INVOKABLE void getAuthorListNextPage(int id, int limit = 50, int maxPages = 1, int minEntries = 1);
     Q_INVOKABLE int createAuthorListModel(AuthorListModel::Type type, const QString& atId);
     Q_INVOKABLE AuthorListModel* getAuthorListModel(int id) const;
     Q_INVOKABLE void removeAuthorListModel(int id);
@@ -341,7 +341,7 @@ signals:
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
     void getDetailedProfileOK(QString userDid, DetailedProfile profile, QString labelPrefsListUri);
     void getFeedGeneratorOK(QString userDid, GeneratorView generatorView, bool viewPosts);
-    void getStarterPackViewOk(QString userDid, StarterPackView starterPack, bool editMode);
+    void getStarterPackViewOk(QString userDid, StarterPackView starterPack);
     void getPostThreadInProgressChanged();
     void hideVerificationBadgesChanged();
     void sharedTextReceived(QString text); // Shared from another app
@@ -363,17 +363,17 @@ private:
     void getAuthorRepostFeed(int id, int limit = ATProto::PostMaster::MAX_GET_REPOSTS, const QString& cursor = {});
     void getLabelersAuthorList(int modelId);
     void getActiveFollowsAuthorList(int modelId, const QString& cursor);
-    void getFollowsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getKnownFollowersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getBlocksAuthorList(int limit, const QString& cursor, int modelId);
-    void getMutesAuthorList(int limit, const QString& cursor, int modelId);
-    void getActivitySubscriptionsAuthorList(int limit, const QString& cursor, int modelId);
-    void getSuggestionsAuthorList(int limit, const QString& cursor, int modelId);
-    void getLikesAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getRepostsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getVerificationsAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
-    void getListMembersAuthorList(const QString& atId, int limit, const QString& cursor, int modelId);
+    void getFollowsAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getFollowersAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getKnownFollowersAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getBlocksAuthorList(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getMutesAuthorList(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getActivitySubscriptionsAuthorList(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getSuggestionsAuthorList(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getLikesAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getRepostsAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getVerificationsAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getListMembersAuthorList(const QString& atId, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);

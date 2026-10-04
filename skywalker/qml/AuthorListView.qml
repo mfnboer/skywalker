@@ -8,6 +8,9 @@ SkyListView {
     required property string title
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
+    property int modelPageLimit: 50
+    property int modelMaxPages: 1
+    property int modelMinEntries: 1
     property string description
     property bool showFollow: true
     property bool showActivitySubscription: false
@@ -175,7 +178,7 @@ SkyListView {
     }
 
     function refresh() {
-        skywalker.getAuthorList(modelId)
+        skywalker.getAuthorList(modelId, modelPageLimit, modelMaxPages, modelMinEntries)
     }
 
     Component.onDestruction: {
