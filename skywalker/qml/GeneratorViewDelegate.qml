@@ -18,11 +18,13 @@ Rectangle {
     required property bool feedHideFollowing
     required property bool feedSync
     required property bool endOfFeed
+    property bool allowDelete: false
     property bool showFeed: feedVisible()
     property int maxTextLines: 1000
 
     signal hideFollowing(generatorview feed, bool hide)
     signal syncFeed(generatorview feed, bool sync)
+    signal deleteFeed(generatorview feed)
 
     id: generatorView
     height: grid.height
@@ -124,7 +126,7 @@ Rectangle {
         }
 
         Rectangle {
-            Layout.preferredWidth: 80
+            Layout.preferredWidth: allowDelete ? 120 : 80
             Layout.fillHeight: true
             Layout.rightMargin: generatorView.margin
             color: "transparent"
@@ -155,7 +157,7 @@ Rectangle {
 
             SvgButton {
                 id: addIcon
-                anchors.right: parent.right
+                anchors.right: deleteIcon.left
                 width: 40
                 height: width
                 flat: feedSaved
@@ -164,6 +166,17 @@ Rectangle {
                 svg: feedSaved ? SvgOutline.remove : SvgOutline.add
                 accessibleName: feedSaved ? qsTr("remove from saved feeds") : qsTr("save feed")
                 onClicked: addClicked(feed, !feedSaved)
+            }
+
+            SvgButton {
+                id: deleteIcon
+                anchors.right: parent.right
+                width: allowDelete ? 40 : 0
+                height: width
+                svg: SvgOutline.delete
+                accessibleName: qsTr("delete feed")
+                visible: allowDelete
+                onClicked: confirmDeleteFeed(feed)
             }
         }
 
@@ -353,6 +366,14 @@ Rectangle {
         skywalker.favoriteFeeds.pinFeed(feed, add)
         skywalker.saveFavoriteFeeds()
     }
+
+    function confirmDeleteFeed(feed) {
+        guiSettings.askYesNoQuestion(
+                    generatorView,
+                    qsTr(`Do you really want to delete feed: ${feed.name} ?`),
+                    () => deleteFeed(feed))
+    }
+
 
     function feedVisible() {
         return guiSettings.feedContentVisible(feed, userDid)

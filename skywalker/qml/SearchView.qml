@@ -791,6 +791,7 @@ SkyPage {
 
                 delegate: StarterPackViewDelegate {
                     width: suggestedUsersView.width
+                    allowEdit: false
                 }
 
                 EmptyListIndication {

@@ -80,6 +80,19 @@ public:
     // Check if a list is a list internally used by Skywalker
     static bool isInternalList(const ATProto::AppBskyGraph::ListView& listView);
 
+    Q_INVOKABLE void createStarterPack(const QString& name,
+                                       const QString& description,
+                                       const NamedLink::List& embeddedLinks);
+    Q_INVOKABLE void updateStarterPack(const QString& starterPackUri, const QString& name,
+                                       const QString& description, const NamedLink::List& embeddedLinks);
+    Q_INVOKABLE void deleteStarterPack(const QString& starterPackUri);
+    Q_INVOKABLE void addStarterPackFeed(const QString& starterPackUri, const QString& feedUri);
+    Q_INVOKABLE void removeStarterPackFeed(const QString& starterPackUri, const QString& feedUri);
+    Q_INVOKABLE StarterPackViewBasic makeStarterPackViewBasic(const QString& uri, const QString& cid,
+                                                    const QString& name, const Profile& creator,
+                                                    const QString& description,
+                                                    const NamedLink::List& embeddedLinks);
+
     void startExpiryCheckTimer();
     void stopExpiryCheckTimer();
 
@@ -134,6 +147,16 @@ signals:
     void hideListOk();
     void hideListFailed(QString error);
     void cachedList(ListViewBasic list);
+    void createStarterPackOk(QString starterPackUri, QString starterPackCid, QString listUri, QString listCid);
+    void createStarterPackFailed(QString error);
+    void updateStarterPackOk(QString uri, QString cid);
+    void updateStarterPackFailed(QString error);
+    void deleteStarterPackOk();
+    void deleteStarterPackFailed(QString error);
+    void addStarterPackFeedOk(QString starterPackUri, QString feedUri);
+    void addStarterPackFeedFailed(QString error);
+    void removeStarterPackFeedOk(QString starterPackUri, QString feedUri);
+    void removeStarterPackFeedFailed(QString error);
 
 private:
     void migrateMutedRepostsToBskyContinue(const std::vector<BasicProfile>& profiles, const std::function<void()>& doneCb, int index = 0, bool hasError = false);

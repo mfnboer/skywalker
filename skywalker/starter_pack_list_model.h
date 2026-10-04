@@ -27,6 +27,13 @@ public:
     Q_INVOKABLE void clear();
     void addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor);
     void addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor);
+
+    Q_INVOKABLE void prependList(const StarterPackViewBasic& starterPack);
+    Q_INVOKABLE StarterPackViewBasic updateEntry(int index, const QString& cid, const QString& name,
+                                                 const QString& description, const NamedLink::List& embeddedLinks);
+    Q_INVOKABLE void deleteEntry(int index);
+    Q_INVOKABLE StarterPackViewBasic getEntry(int index) const;
+
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 

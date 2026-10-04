@@ -21,6 +21,7 @@ class SearchUtils : public WrappedSkywalker, public Presence
     Q_OBJECT
     Q_PROPERTY(BasicProfileList authorTypeaheadList READ getAuthorTypeaheadList WRITE setAuthorTypeaheadList NOTIFY authorTypeaheadListChanged FINAL)
     Q_PROPERTY(QStringList hashtagTypeaheadList READ getHashtagTypeaheadList WRITE setHashtagTypeaheadList NOTIFY hashtagTypeaheadListChanged FINAL)
+    Q_PROPERTY(GeneratorView::List feedTypeaheadList READ getFeedTypeaheadList WRITE setFeedTypeaheadList NOTIFY feedTypeaheadListChanged FINAL)
     Q_PROPERTY(BasicProfileList lastSearchedProfiles READ getLastSearchedProfiles WRITE setLastSearchedProfiles NOTIFY lastSearchedProfilesChanged FINAL)
     Q_PROPERTY(TrendingTopicListModel* trendingTopicsListModel READ getTrendingTopicsListModel NOTIFY trendingTopicsListModelChanged FINAL)
     Q_PROPERTY(QEnums::ContentVisibility overrideAdultVisibility READ getOverrideAdultVisibility WRITE setOverrideAdultVisibility NOTIFY overrideAdultVisibilityChanged FINAL)
@@ -47,6 +48,8 @@ public:
     Q_INVOKABLE void publicSearchAuthorsTypeahead(const QString& typed, int limit = 20);
 
     Q_INVOKABLE void searchHashtagsTypeahead(const QString& typed, int limit = 20);
+
+    Q_INVOKABLE void searchFeedsTypeahead(const QString& typed, int limit = 20);
 
     Q_INVOKABLE void searchPosts(const QString& text, const SearchOptions& searchOptions = {},
                                  int maxPages = 10, int minEntries = 10, const QString& cursor = {});
@@ -89,6 +92,8 @@ public:
     void setAuthorTypeaheadList(const BasicProfileList& list);
     const QStringList& getHashtagTypeaheadList() const { return mHashtagTypeaheadList; }
     void setHashtagTypeaheadList(const QStringList& list);
+    const GeneratorView::List& getFeedTypeaheadList() const { return mFeedTypeaheadList; }
+    void setFeedTypeaheadList(const GeneratorView::List list);
     const BasicProfileList& getLastSearchedProfiles() const { return mLastSearchedProfiles; }
     void setLastSearchedProfiles(const BasicProfileList& list);
     TrendingTopicListModel* getTrendingTopicsListModel() { return mTrendingTopicsListModel.get(); }
@@ -100,6 +105,7 @@ public:
 signals:
     void authorTypeaheadListChanged();
     void hashtagTypeaheadListChanged();
+    void feedTypeaheadListChanged();
     void lastSearchedProfilesChanged();
     void trendingTopicsListModelChanged();
     void overrideAdultVisibilityChanged();
@@ -127,6 +133,7 @@ private:
 
     BasicProfileList mAuthorTypeaheadList;
     QStringList mHashtagTypeaheadList;
+    GeneratorView::List mFeedTypeaheadList;
     BasicProfileList mLastSearchedProfiles;
     std::unordered_map<QString, int> mSearchPostFeedModelId; // sort order -> model id
     int mSearchUsersModelId = -1;

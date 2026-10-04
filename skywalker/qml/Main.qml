@@ -476,7 +476,7 @@ ApplicationWindow {
                 viewFeedDescription(generatorView, did)
         }
 
-        onGetStarterPackViewOk: (did, starterPack) => viewStarterPack(starterPack, did) // qmllint disable signal-handler-parameters
+        onGetStarterPackViewOk: (did, starterPack, editMode) => viewStarterPack(starterPack, did, editMode) // qmllint disable signal-handler-parameters
 
         onSharedTextReceived: (text) => {
             closeStartupStatus() // close startup status if sharing started the app                      
@@ -961,8 +961,9 @@ ApplicationWindow {
             }
 
             onUserLists: {
-                let modelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
-                viewUserLists(modelId)
+                let listsModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
+                let starterPacksModelId = skywalker.createStarterPackListModel()
+                viewUserLists(listsModelId, starterPacksModelId)
                 close()
             }
 
@@ -2280,9 +2281,12 @@ ApplicationWindow {
         root.pushStack(view)
     }
 
-    function viewStarterPack(starterPack, viewByDid = "") {
+    function viewStarterPack(starterPack, viewByDid = "", editMode = false) {
         let component = guiSettings.createComponent("StarterPackView.qml")
-        let view = component.createObject(root, { userDid: viewByDid, starterPack: starterPack })
+        let view = component.createObject(root, {
+                    userDid: viewByDid,
+                    starterPack: starterPack,
+                    editMode: editMode })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }
@@ -2437,20 +2441,22 @@ ApplicationWindow {
         dialog.open()
     }
 
-    function viewUserLists(modelId) {
+    function viewUserLists(listsModelId, starterPacksModelId) {
         let component = guiSettings.createComponent("UserListsPage.qml")
         let page = component.createObject(root, {
-                modelId: modelId
+                listsModelId: listsModelId,
+                starterPacksModelId: starterPacksModelId
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
-        skywalker.getListList(modelId)
+        skywalker.getListList(listsModelId)
+        skywalker.getAuthorStarterPackList(skywalker.getUserDid(), starterPacksModelId)
     }
 
     function viewModerationLists(modelId) {
         let component = guiSettings.createComponent("ModerationListsPage.qml")
         let page = component.createObject(root, {
-                modelId: modelId
+                listsModelId: modelId
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
@@ -2586,6 +2592,34 @@ ApplicationWindow {
 
                 if (listModel)
                     listModel.prependList(list)
+            }
+
+            root.popStack()
+            doneCb()
+        })
+        page.onClosed.connect(() => {
+            root.popStack()
+            doneCb()
+        })
+        root.pushStack(page)
+    }
+
+    function newStarterPack(starterPackModel, userDid = "", doneCb = () => {}){
+        const sw = getSkywalker(userDid)
+        let component = guiSettings.createComponent("EditStarterPack.qml")
+        let page = component.createObject(root, {
+                skywalker: sw
+            })
+        page.onStarterPackCreated.connect((starterPack) => {
+            if (starterPack.isNull()) {
+                // This should rarely happen. Let the user refresh.
+                sw.showStatusMessage(qsTr("Starter pack created. Please refresh page."), QEnums.STATUS_LEVEL_INFO)
+            }
+            else {
+                sw.showStatusMessage(qsTr("Starter pack created."), QEnums.STATUS_LEVEL_INFO, 2)
+
+                if (starterPackModel)
+                    starterPackModel.prependList(starterPack)
             }
 
             root.popStack()

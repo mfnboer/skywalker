@@ -1249,6 +1249,7 @@ SkyPage {
                     delegate: StarterPackViewDelegate {
                         width: authorFeedView.width
                         userDid: page.userDid
+                        allowEdit: false
                     }
 
                     FlickableRefresher {

@@ -47,7 +47,11 @@ public:
 
     Q_INVOKABLE void clear();
     void addFeeds(ATProto::AppBskyFeed::GeneratorView::List feeds, const QString& cursor);
-    Q_INVOKABLE void addFeeds(const GeneratorViewList& feeds);
+    Q_INVOKABLE void addFeeds(const GeneratorView::List& feeds);
+
+    Q_INVOKABLE void prependFeed(const GeneratorView& feed);
+    Q_INVOKABLE void deleteEntry(int index);
+
     const QString& getCursor() const { return mCursor; }
     bool isEndOfList() const { return mCursor.isEmpty(); }
 

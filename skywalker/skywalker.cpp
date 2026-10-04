@@ -253,7 +253,7 @@ Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::S
     connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
     connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile, auto labelPrefsListUri){ emit getDetailedProfileOK(did, profile, labelPrefsListUri); });
     connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
-    connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack){ emit getStarterPackViewOk(did, starterPack); });
+    connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack, bool editMode){ emit getStarterPackViewOk(did, starterPack, editMode); });
 
     emit skywalkerCreated(did, skywalker.get());
     return skywalker;
@@ -3228,14 +3228,14 @@ void Skywalker::getFeedGenerator(const QString& feedUri, bool viewPosts)
         });
 }
 
-void Skywalker::getStarterPackView(const QString& starterPackUri)
+void Skywalker::getStarterPackView(const QString& starterPackUri, bool editMode)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get starter pack view:" << starterPackUri;
+    qDebug() << "Get starter pack view:" << starterPackUri << "editMode:" << editMode;
 
     mBsky->getStarterPack(starterPackUri,
-        [this](auto starterPackView){
-            emit getStarterPackViewOk(mUserDid, StarterPackView(starterPackView));
+        [this, editMode](auto starterPackView){
+            emit getStarterPackViewOk(mUserDid, StarterPackView(starterPackView), editMode);
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getStarterPackView failed:" << error << " - " << msg;

@@ -164,6 +164,12 @@ void SearchUtils::setHashtagTypeaheadList(const QStringList& list)
     }
 }
 
+void SearchUtils::setFeedTypeaheadList(const GeneratorView::List list)
+{
+    mFeedTypeaheadList = list;
+    emit feedTypeaheadListChanged();
+}
+
 void SearchUtils::setLastSearchedProfiles(const BasicProfileList& list)
 {
     mLastSearchedProfiles = list;
@@ -261,6 +267,28 @@ void SearchUtils::searchHashtagsTypeahead(const QString& typed, int limit)
     }
 
     setHashtagTypeaheadList(results);
+}
+
+void SearchUtils::searchFeedsTypeahead(const QString& typed, int limit)
+{
+    bskyClient()->getPopularFeedGenerators(typed, limit, {},
+        [this, presence=getPresence()](ATProto::AppBskyUnspecced::GetPopularFeedGeneratorsOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            GeneratorView::List feeds;
+
+            for (const auto& feed : output->mFeeds)
+                feeds.push_back(GeneratorView(feed));
+
+            setFeedTypeaheadList(feeds);
+        },
+        [presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Type ahead search failed:" << error << " - " << msg;
+        });
 }
 
 void SearchUtils::localSearchAuthorsTypeahead(const QString&, int, const IProfileMatcher&)

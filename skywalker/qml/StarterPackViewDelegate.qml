@@ -7,7 +7,11 @@ Rectangle {
     readonly property int margin: 10
     property string userDid
     required property starterpackviewbasic starterPack
+    property bool allowEdit: true
     property int maxTextLines: 25
+
+    signal updateStarterPack(starterpackviewbasic starterPack)
+    signal deleteStarterPack(starterpackviewbasic starterPack)
 
     id: view
     height: viewColumn.height
@@ -19,7 +23,7 @@ Rectangle {
         width: parent.width - 2 * margin
 
         GridLayout {
-            columns: 2
+            columns: 3
             rowSpacing: 0
             width: parent.width
 
@@ -46,6 +50,23 @@ Rectangle {
                 font.bold: true
                 color: guiSettings.textColor
                 text: starterPack.name
+            }
+
+            Rectangle {
+                Layout.preferredWidth: 40
+                Layout.fillHeight: true
+                color: "transparent"
+
+                SvgButton {
+                    id: moreButton
+                    anchors.right: parent.right
+                    width: 40
+                    height: width
+                    svg: SvgOutline.moreVert
+                    accessibleName: qsTr("more options")
+
+                    onClicked: moreMenu.popup(moreButton)
+                }
             }
 
             AccessibleText {
@@ -95,7 +116,61 @@ Rectangle {
     SkyMouseArea {
         z: -2 // Let other mouse areas on top
         anchors.fill: parent
-        onClicked: root.getSkywalker(userDid).getStarterPackView(starterPack.uri)
+        onClicked: root.getSkywalker(userDid).getStarterPackView(starterPack.uri, allowEdit)
     }
 
+    SkyMenu {
+        id: moreMenu
+
+        SkyMenuButton {
+            text: qsTr("Edit")
+            svg: SvgOutline.edit
+            popup: moreMenu
+            visible: allowEdit && isOwnStarterPack()
+            onClicked: updateStarterPack(starterPack)
+        }
+
+        SkyMenuButton {
+            text: qsTr("Delete")
+            svg: SvgOutline.delete
+            popup: moreMenu
+            visible: allowEdit && isOwnStarterPack()
+            onClicked: deleteStarterPack(starterPack)
+        }
+
+        TranslateMenuButton {
+            popup: moreMenu
+            enabled: starterPack.description
+            onClicked: root.translateText(starterPack.description)
+        }
+        SkyMenuButton {
+            text: qsTr("Share")
+            svg: SvgOutline.share
+            popup: moreMenu
+            onClicked: skywalker.getShareUtils().shareStarterPack(starterPack)
+        }
+        SkyMenuButton {
+            text: qsTr("Copy starter pack link")
+            svg: SvgOutline.link
+            popup: moreMenu
+            onClicked: skywalker.getShareUtils().copyUriToClipboard(starterPack.uri)
+        }
+        SkyMenuButton {
+            text: qsTr("Report starter pack")
+            svg: SvgOutline.report
+            popup: moreMenu
+            onClicked: root.reportStarterPack(starterPack, userDid)
+        }
+        SkyMenuButton {
+            text: qsTr("Emoji names")
+            svg: SvgOutline.emojiLanguage
+            popup: moreMenu
+            visible: UnicodeFonts.hasEmoji(starterPack.description)
+            onClicked: root.showEmojiNamesList(starterPack.description)
+        }
+    }
+
+    function isOwnStarterPack() {
+        return skywalker.getUserDid() === starterPack.creator.did
+    }
 }

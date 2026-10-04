@@ -183,7 +183,7 @@ public:
     Q_INVOKABLE const AuthorFeedModel* getAuthorFeedModel(int id) const;
     Q_INVOKABLE void removeAuthorFeedModel(int id);
     Q_INVOKABLE void getFeedGenerator(const QString& feedUri, bool viewPosts = false);
-    Q_INVOKABLE void getStarterPackView(const QString& starterPackUri);
+    Q_INVOKABLE void getStarterPackView(const QString& starterPackUri, bool editMode = false);
     int createSearchPostFeedModel(const QString& searchKey, const QString& feedName, bool ignoreReverseSetting = false);
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(int id) const;
     Q_INVOKABLE void removeSearchPostFeedModel(int id);
@@ -341,7 +341,7 @@ signals:
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
     void getDetailedProfileOK(QString userDid, DetailedProfile profile, QString labelPrefsListUri);
     void getFeedGeneratorOK(QString userDid, GeneratorView generatorView, bool viewPosts);
-    void getStarterPackViewOk(QString userDid, StarterPackView starterPack);
+    void getStarterPackViewOk(QString userDid, StarterPackView starterPack, bool editMode);
     void getPostThreadInProgressChanged();
     void hideVerificationBadgesChanged();
     void sharedTextReceived(QString text); // Shared from another app

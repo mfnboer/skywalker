@@ -48,6 +48,8 @@ class GeneratorView
     QML_VALUE_TYPE(generatorview)
 
 public:
+    using List = QList<GeneratorView>;
+
     GeneratorView() = default;
     explicit GeneratorView(const ATProto::AppBskyFeed::GeneratorView::SharedPtr& view);
 
@@ -75,8 +77,6 @@ public:
 private:
     ATProto::AppBskyFeed::GeneratorView::SharedPtr mGeneratorView;
 };
-
-using GeneratorViewList = QList<GeneratorView>;
 
 }
 

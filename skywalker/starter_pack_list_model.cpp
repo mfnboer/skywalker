@@ -79,6 +79,72 @@ void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, 
     qDebug() << "New starter packs size:" << mStarterPacks.size();
 }
 
+void StarterPackListModel::prependList(const StarterPackViewBasic& starterPack)
+{
+    qDebug() << "Prepend starter pack:" << starterPack.getName();
+
+    beginInsertRows({}, 0, 0);
+    mStarterPacks.push_front(starterPack);
+    endInsertRows();
+
+    qDebug() << "New starter packs size:" << mStarterPacks.size();
+}
+
+StarterPackViewBasic StarterPackListModel::updateEntry(
+    int index, const QString& cid, const QString& name,
+    const QString& description, const NamedLink::List& embeddedLinks)
+{
+    qDebug() << "Update entry:" << name << "index:" << index;
+
+    if (index < 0 || (size_t)index >= mStarterPacks.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mStarterPacks.size();
+        return {};
+    }
+
+    auto& starterPack = mStarterPacks[index];
+
+    if (cid != starterPack.getCid())
+        starterPack.setCid(cid);
+
+    if (name != starterPack.getName())
+        starterPack.setName(name);
+
+    if (description != starterPack.getDescription())
+        starterPack.setDescription(description, embeddedLinks);
+
+    emit dataChanged(createIndex(index, 0), createIndex(index, 0));
+    return starterPack;
+}
+
+void StarterPackListModel::deleteEntry(int index)
+{
+    qDebug() << "Delete entry:" << index;
+
+    if (index < 0 || (size_t)index >= mStarterPacks.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mStarterPacks.size();
+        return;
+    }
+
+    beginRemoveRows({}, index, index);
+    mStarterPacks.erase(mStarterPacks.begin() + index);
+    endRemoveRows();
+}
+
+StarterPackViewBasic StarterPackListModel::getEntry(int index) const
+{
+    qDebug() << "Get entry:" << index;
+
+    if (index < 0 || (size_t)index >= mStarterPacks.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mStarterPacks.size();
+        return {};
+    }
+
+    return mStarterPacks[index];
+}
+
 void StarterPackListModel::setGetFeedInProgress(bool inProgress)
 {
     if (inProgress != mGetFeedInProgress) {

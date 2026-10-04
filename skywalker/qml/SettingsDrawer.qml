@@ -179,7 +179,7 @@ SkyDrawer {
             SkyMenuItem {
                 id: userListsItem
                 icon: SvgOutline.list
-                text: qsTr("User Lists & Feeds")
+                text: qsTr("Lists, Feeds, Starter packs")
                 onClicked: userLists()
             }
 

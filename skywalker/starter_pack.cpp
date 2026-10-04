@@ -19,8 +19,23 @@ StarterPackViewBasic::StarterPackViewBasic(const ATProto::AppBskyGraph::StarterP
     Q_ASSERT(mView);
 }
 
+StarterPackViewBasic::StarterPackViewBasic(const QString& uri, const QString& cid, const QString& name,
+                     const BasicProfile& creator, const QString& description,
+                     const NamedLink::List& embeddedLinks) :
+    mUri(uri),
+    mCid(cid),
+    mName(name),
+    mCreator(creator),
+    mDescription(description),
+    mEmbeddedLinksDescription(embeddedLinks)
+{
+}
+
 QString StarterPackViewBasic::getUri() const
 {
+    if (mUri)
+        return *mUri;
+
     if (mBasicView)
         return mBasicView->mUri;
 
@@ -32,6 +47,9 @@ QString StarterPackViewBasic::getUri() const
 
 QString StarterPackViewBasic::getCid() const
 {
+    if (mCid)
+        return *mCid;
+
     if (mBasicView)
         return mBasicView->mCid;
 
@@ -43,6 +61,9 @@ QString StarterPackViewBasic::getCid() const
 
 BasicProfile StarterPackViewBasic::getCreator() const
 {
+    if (mCreator)
+        return *mCreator;
+
     if (mBasicView)
         return BasicProfile(mBasicView->mCreator);
 
@@ -54,24 +75,50 @@ BasicProfile StarterPackViewBasic::getCreator() const
 
 QString StarterPackViewBasic::getName() const
 {
+    if (mName)
+        return *mName;
+
     const auto* starterPack = getStarterPack();
     return starterPack ? starterPack->mName : QString();
 }
 
 QString StarterPackViewBasic::getDescription() const
 {
+    if (mDescription)
+        return *mDescription;
+
     const auto* starterPack = getStarterPack();
     return starterPack ? starterPack->mDescription.value_or("") : QString();
 }
 
 QString StarterPackViewBasic::getFormattedDescription() const
 {
+    if (mDescription)
+    {
+        const auto facets = NamedLink::toFacetList(mEmbeddedLinksDescription);
+        return ATProto::RichTextMaster::linkiFy(*mDescription, facets, UserSettings::getCurrentLinkColor());
+    }
+
     const auto* starterPack = getStarterPack();
 
     if (!starterPack)
         return {};
 
     return ATProto::RichTextMaster::getFormattedStarterPackDescription(*starterPack, UserSettings::getCurrentLinkColor());
+}
+
+NamedLink::List StarterPackViewBasic::getEmbeddedLinksDescription() const
+{
+    if (mDescription)
+        return mEmbeddedLinksDescription;
+
+    const auto* starterPack = getStarterPack();
+
+    if (!starterPack)
+        return {};
+
+    const auto facets = ATProto::RichTextMaster::getEmbeddedLinks(*starterPack->mDescription, starterPack->mDescriptionFacets);
+    return NamedLink::fromFacetList(facets);
 }
 
 ContentLabelList StarterPackViewBasic::getContentLabels() const
@@ -101,23 +148,37 @@ const ATProto::AppBskyGraph::StarterPack* StarterPackViewBasic::getStarterPack()
     return nullptr;
 }
 
+void StarterPackViewBasic::setDescription(const QString& description, const NamedLink::List& embeddedLinks)
+{
+    mDescription = description;
+    mEmbeddedLinksDescription = embeddedLinks;
+}
+
 
 StarterPackView::StarterPackView(const ATProto::AppBskyGraph::StarterPackView::SharedPtr& view) :
     StarterPackViewBasic(view)
 {
 }
 
+StarterPackView::StarterPackView(const QString& uri, const QString& cid, const QString& name,
+                                 const BasicProfile& creator, const QString& description,
+                                 const NamedLink::List& embeddedLinks) :
+    StarterPackViewBasic(uri, cid, name, creator, description, embeddedLinks)
+{
+}
+
+
 ListViewBasic StarterPackView::getList() const
 {
     return mView ? ListViewBasic(mView->mList) : ListViewBasic();
 }
 
-GeneratorViewList StarterPackView::getFeeds() const
+GeneratorView::List StarterPackView::getFeeds() const
 {
     if (!mView)
         return {};
 
-    GeneratorViewList feedList;
+    GeneratorView::List feedList;
 
     for (const auto& feed : mView->mFeeds)
         feedList.emplaceBack(feed);

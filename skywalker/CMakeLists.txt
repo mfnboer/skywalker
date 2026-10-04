@@ -759,6 +759,11 @@ qt_add_qml_module(libskywalker
         SOURCES post_language_cache.cpp
         SOURCES http1_network_access_manager.h
         SOURCES http1_network_access_manager.cpp
+        QML_FILES qml/StarterPackListView.qml
+        QML_FILES qml/EditStarterPack.qml
+        QML_FILES qml/SimpleFeedTypeaheadListView.qml
+        QML_FILES qml/SimpleFeedListView.qml
+        QML_FILES qml/SearchFeed.qml
 )
 
 target_link_libraries(libskywalker

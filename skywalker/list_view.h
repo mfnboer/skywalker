@@ -2,8 +2,8 @@
 // License: GPLv3
 #pragma once
 #include "list_view_include.h"
-#include "profile.h"
 #include "named_link.h"
+#include "profile.h"
 
 namespace Skywalker {
 

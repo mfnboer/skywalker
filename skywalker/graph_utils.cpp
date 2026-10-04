@@ -646,36 +646,26 @@ void GraphUtils::deleteList(const QString& listUri)
     if (!graphMaster())
         return;
 
-    mGraphMaster->batchDeleteAllUsersFromList(listUri,
+    mGraphMaster->deleteList(listUri,
         [this, presence=getPresence(), listUri]{
-            graphMaster()->undo(listUri,
-                [this, presence=getPresence(), listUri]{
-                    if (!presence)
-                        return;
+            if (!presence)
+                return;
 
-                    const bool listHidden = mSkywalker->getTimelineHide()->hasList(listUri);
-                    emit GraphListener::instance().listDeleted(listUri);
+            const bool listHidden = mSkywalker->getTimelineHide()->hasList(listUri);
+            emit GraphListener::instance().listDeleted(listUri);
 
-                    if (listHidden)
-                        unhideList(listUri);
+            if (listHidden)
+                unhideList(listUri);
 
-                    syncList(listUri, false);
+            syncList(listUri, false);
 
-                    emit deleteListOk();
-                },
-                [this, presence=getPresence()](const QString& error, const QString& msg){
-                    if (!presence)
-                        return;
-
-                    qDebug() << "Delete list failed:" << error << " - " << msg;
-                    emit deleteListFailed(msg);
-                });
+            emit deleteListOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qDebug() << "Delete list users failed:" << error << " - " << msg;
+            qDebug() << "Delete list failed:" << error << " - " << msg;
             emit deleteListFailed(msg);
         });
 }
@@ -1275,6 +1265,114 @@ bool GraphUtils::isInternalList(const ATProto::AppBskyGraph::ListView& listView)
 
     return listView.mName == LIST_NAME_MUTED_REPOSTS ||
            listView.mName == LIST_NAME_TRUSTED_VERIFIERS;
+}
+
+void GraphUtils::createStarterPack(const QString& name,
+                                   const QString& description,
+                                   const NamedLink::List& embeddedLinks)
+{
+    if (!bskyClient())
+        return;
+
+    const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
+
+    graphMaster()->createStarterPack(name, description, embeddedFacets,
+        [this, presence=getPresence()](const QString& starterPackUri, const QString& starterPackCid, const QString& listUri, const QString& listCid){
+            if (!presence)
+                return;
+
+            emit createStarterPackOk(starterPackUri, starterPackCid, listUri, listCid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Create starter pack failed:" << error << " - " << msg;
+            emit createStarterPackFailed(msg);
+        });
+}
+
+void GraphUtils::updateStarterPack(const QString& starterPackUri, const QString& name,
+                                   const QString& description, const NamedLink::List& embeddedLinks)
+{
+    const auto embeddedFacets = NamedLink::toFacetList(embeddedLinks);
+
+    graphMaster()->updateStarterPack(starterPackUri, name, description, embeddedFacets,
+        [this, presence=getPresence()](const QString& uri, const QString& cid){
+            if (!presence)
+                return;
+
+            emit updateStarterPackOk(uri, cid);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Update starter pack failed:" << error << " - " << msg;
+            emit updateStarterPackFailed(msg);
+        });
+}
+
+void GraphUtils::deleteStarterPack(const QString& starterPackUri)
+{
+    graphMaster()->deleteStarterPack(starterPackUri,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            emit deleteStarterPackOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Delete starter pack failed:" << error << " - " << msg;
+            emit deleteStarterPackFailed(msg);
+        });
+}
+
+void GraphUtils::addStarterPackFeed(const QString& starterPackUri, const QString& feedUri)
+{
+    graphMaster()->addFeedToStarterPack(starterPackUri, feedUri,
+        [this, presence=getPresence(), feedUri](const QString& uri, const QString&){
+            if (!presence)
+                return;
+
+            emit addStarterPackFeedOk(uri, feedUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Add starter pack feed failed:" << error << " - " << msg;
+            emit addStarterPackFeedFailed(msg);
+        });
+}
+
+void GraphUtils::removeStarterPackFeed(const QString& starterPackUri, const QString& feedUri)
+{
+    graphMaster()->removeFeedFromStarterPack(starterPackUri, feedUri,
+        [this, presence=getPresence(), feedUri](const QString& uri, const QString&){
+            if (!presence)
+                return;
+
+            emit removeStarterPackFeedOk(uri, feedUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Add starter pack feed failed:" << error << " - " << msg;
+            emit removeStarterPackFeedFailed(msg);
+        });
+}
+
+StarterPackViewBasic GraphUtils::makeStarterPackViewBasic(const QString& uri, const QString& cid,
+                                    const QString& name, const Profile& creator,
+                                    const QString& description,
+                                    const NamedLink::List& embeddedLinks)
+{
+    return StarterPackViewBasic{uri, cid, name, creator, description, embeddedLinks};
 }
 
 void GraphUtils::expireBlocks()

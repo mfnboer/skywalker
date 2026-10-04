@@ -109,7 +109,7 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorView::List feeds, co
     qDebug() << "New feeds size:" << mFeeds.size();
 }
 
-void FeedListModel::addFeeds(const GeneratorViewList& feeds)
+void FeedListModel::addFeeds(const GeneratorView::List& feeds)
 {
     qDebug() << "Add feeds:" << feeds.size();
     if (feeds.empty())
@@ -129,6 +129,32 @@ void FeedListModel::addFeeds(const GeneratorViewList& feeds)
     endInsertRows();
 
     qDebug() << "New feeds size:" << mFeeds.size();
+}
+
+void FeedListModel::prependFeed(const GeneratorView& feed)
+{
+    qDebug() << "Prepend feed:" << feed.getName();
+
+    beginInsertRows({}, 0, 0);
+    mFeeds.push_front(feed);
+    endInsertRows();
+
+    qDebug() << "New feeds size:" << mFeeds.size();
+}
+
+void FeedListModel::deleteEntry(int index)
+{
+    qDebug() << "Delete entry:" << index;
+
+    if (index < 0 || (size_t)index >= mFeeds.size())
+    {
+        qWarning() << "Invalid index:" << index << "size:" << mFeeds.size();
+        return;
+    }
+
+    beginRemoveRows({}, index, index);
+    mFeeds.erase(mFeeds.begin() + index);
+    endRemoveRows();
 }
 
 void FeedListModel::setGetFeedInProgress(bool inProgress)

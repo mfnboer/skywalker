@@ -34,6 +34,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             font.pointSize: guiSettings.scaledFont(9/8)
             elide: Text.ElideRight
+            wrapMode: Text.Wrap
             text: menuItem.text
         }
     }

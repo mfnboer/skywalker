@@ -5,8 +5,9 @@ import skywalker
 
 SkyPage {
     property Skywalker skywalker: root.getSkywalker()
-    required property int modelId
-    readonly property string sideBarTitle: qsTr("User Lists & Feeds")
+    required property int listsModelId
+    required property int starterPacksModelId
+    readonly property string sideBarTitle: qsTr("Lists, Feeds, Starter packs")
     readonly property SvgImage sideBarSvg: SvgOutline.list
 
     id: page
@@ -34,6 +35,9 @@ SkyPage {
         AccessibleTabButton {
             text: qsTr("Saved feeds")
         }
+        AccessibleTabButton {
+            text: qsTr("Starter packs")
+        }
     }
 
     SwipeView {
@@ -46,7 +50,7 @@ SkyPage {
 
         ListListView {
             id: yourLists
-            modelId: page.modelId
+            modelId: page.listsModelId
             ownLists: true
             description: qsTr("Public, shareable lists of users which can be used as feeds or reply restrictions.")
         }
@@ -141,6 +145,12 @@ SkyPage {
                 anchors.centerIn: parent
                 running: skywalker.favoriteFeeds.updateSavedFeedsModelInProgress
             }
+        }
+
+        StarterPackListView {
+            id: yourStarterPacks
+            modelId: page.starterPacksModelId
+            description: qsTr("Public, shareable starter packs.")
         }
     }
 
