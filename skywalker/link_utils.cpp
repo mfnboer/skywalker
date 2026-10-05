@@ -204,23 +204,37 @@ void LinkUtils::openStarterPackLink(const ATProto::ATUri& atUri)
     openLink(atUri, [this](const QString& uri){ emit starterPackLink(uri); });
 }
 
+static bool isWebAppDomain(const QString& domain)
+{
+    static const std::unordered_set<QString> WEB_APP_DOMAINS = {
+        "bsky.app",
+        "mu.social",
+        "blacksky.community",
+        "northsky.app"
+    };
+
+    return WEB_APP_DOMAINS.contains(domain);
+}
+
 QString LinkUtils::isAuthorLink(const QString& link)
 {
     static const QRegularExpression authorHandleRE(
-            QString(R"(^https:\/\/%1\/profile\/(?<handle>%2)$)").arg(
+            QString(R"(^https:\/\/(?<domain>%1)\/profile\/(?<handle>%2)\/?$)").arg(
                 ATProto::ATRegex::DOMAIN.pattern(), // e.g. bksy.app or mu.social
                 ATProto::ATRegex::HANDLE.pattern()));
     static const QRegularExpression authorDidRE(
-            QString(R"(^https:\/\/%1\/profile\/(?<did>%2)$)").arg(
+            QString(R"(^https:\/\/(?<domain>%1)\/profile\/(?<did>%2)\/?$)").arg(
                 ATProto::ATRegex::DOMAIN.pattern(), // e.g. bksy.app or mu.social
                 ATProto::ATRegex::DID.pattern()));
 
     auto match = authorHandleRE.match(link);
-    if (match.hasMatch())
+
+    if (match.hasMatch() && isWebAppDomain(match.captured("domain")))
         return match.captured("handle");
 
     match = authorDidRE.match(link);
-    if (match.hasMatch())
+
+    if (match.hasMatch() && isWebAppDomain(match.captured("domain")))
         return match.captured("did");
 
     return {};
