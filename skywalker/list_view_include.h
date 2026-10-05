@@ -16,6 +16,7 @@ class ListViewerState
     Q_GADGET
     Q_PROPERTY(bool muted READ getMuted FINAL)
     Q_PROPERTY(QString blocked READ getBlocked FINAL)
+    Q_PROPERTY(QString referenceListOptOut READ getReferenceListOptOut FINAL)
     QML_VALUE_TYPE(listviewerstate)
 
 public:
@@ -24,6 +25,7 @@ public:
 
     bool getMuted() const;
     QString getBlocked() const;
+    QString getReferenceListOptOut() const;
 
 private:
     ATProto::AppBskyGraph::ListViewerState::SharedPtr mViewerState;
@@ -43,6 +45,7 @@ class ListViewBasic
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     Q_PROPERTY(ListViewerState viewer READ getViewer FINAL)
+    Q_PROPERTY(int listItemCount READ getListItemCount FINAL)
     QML_VALUE_TYPE(listviewbasic)
 
 public:
@@ -67,6 +70,7 @@ public:
     ImageView getImageView() const;
     ContentLabelList getContentLabels() const;
     ListViewerState getViewer() const;
+    int getListItemCount() const; // -1 = unknown
 
     void setCid(const QString& cid) { mCid = cid; }
     void setName(const QString& name) { mName = name; }

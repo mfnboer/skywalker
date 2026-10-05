@@ -582,6 +582,71 @@ void GraphUtils::setMuteBusy(bool busy)
     }
 }
 
+void GraphUtils::referenceListOptOut(const QString& listUri)
+{
+    if (mReferenceListOptOutBusy)
+        return;
+
+    if (!graphMaster())
+        return;
+
+    setReferenceListOptOutBusy(true);
+
+    graphMaster()->referenceListOptOut(listUri,
+        [this, presence=getPresence(), listUri](const auto& optOutUri, const auto&){
+            if (!presence)
+                return;
+
+            setReferenceListOptOutBusy(false);
+            emit referenceListOptOutOk(optOutUri);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Reference list out out failed:" << error << " - " << msg;
+            setReferenceListOptOutBusy(false);
+            emit referenceListOptOutFailed(msg);
+        });
+}
+
+void GraphUtils::undoReferenceListOptOut(const QString& optOutUri)
+{
+    if (mReferenceListOptOutBusy)
+        return;
+
+    if (!graphMaster())
+        return;
+
+    setReferenceListOptOutBusy(true);
+
+    graphMaster()->undo(optOutUri,
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            setReferenceListOptOutBusy(false);
+            emit undoReferenceListOptOutOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Unfollow failed:" << error << " - " << msg;
+            setReferenceListOptOutBusy(false);
+            emit undoReferenceListOptOutFailed(msg);
+        });
+}
+
+void GraphUtils::setReferenceListOptOutBusy(bool busy)
+{
+    if (mReferenceListOptOutBusy != busy)
+    {
+        mReferenceListOptOutBusy = busy;
+        emit referenceListOptOutBusyChanged();
+    }
+}
+
 void GraphUtils::createList(const QEnums::ListPurpose purpose, const QString& name,
                 const QString& description, const NamedLink::List& embeddedLinks,
                 const QString& avatarImgSource)

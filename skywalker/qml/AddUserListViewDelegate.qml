@@ -5,6 +5,7 @@ import skywalker
 
 Rectangle {
     required property listview list
+    required property int memberCountDelta
     required property int memberCheck // QEnums.TripleBool
     required property string memberListItemUri
     property int margin: 10
@@ -68,6 +69,15 @@ Rectangle {
                 text: guiSettings.listTypeName(list.purpose)
 
                 Accessible.ignored: true
+            }
+
+            AccessibleText {
+                width: parent.width
+                elide: Text.ElideRight
+                font.pointSize: guiSettings.scaledFont(7/8)
+                color: guiSettings.handleColor
+                text: guiSettings.getMemberCountString(list.listItemCount + memberCountDelta)
+                visible: list.listItemCount >= 0
             }
         }
 

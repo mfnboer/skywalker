@@ -7,6 +7,7 @@ SkyPage {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property starterpackview starterPack
+    property string optOutUri: starterPack.list.viewer.referenceListOptOut
     readonly property int postFeedModelId: skywalker.createPostFeedModel(starterPack.list)
     readonly property int feedListModelId: skywalker.createFeedListModel()
     readonly property bool editMode: starterPack.creator.did === userDid
@@ -170,7 +171,7 @@ SkyPage {
 
                 SvgButton {
                     id: addUserButton
-                    svg: feedsBar.currentIndex === feedsBar.indexUsers ? SvgOutline.addUser : SvgOutline.feed
+                    svg: feedsBar.currentIndex === feedsBar.indexUsers ? SvgOutline.addUser : SvgOutline.feedAdd
                     accessibleName: feedsBar.currentIndex === feedsBar.indexUsers ? qsTr("add user to starter pack") : qsTr("add feed")
                     enabled: (feedsBar.currentIndex === feedsBar.indexUsers && feedListView.count < starterPack.MAX_MEMBERS) ||
                              feedListView.count < starterPack.MAX_FEEDS
@@ -304,6 +305,18 @@ SkyPage {
                 onClicked: root.reportStarterPack(starterPack, userDid)
             }
             SkyMenuButton {
+                text: optOutUri ? qsTr("Undo opt-out") : qsTr("Opt-out")
+                svg: optOutUri ? SvgOutline.unblock : SvgOutline.block
+                popup: moreMenu
+                visible: !starterPack.list.isNull() && !editMode
+                onClicked: {
+                    if (optOutUri)
+                        graphUtils.undoReferenceListOptOut(optOutUri)
+                    else
+                        page.optOut()
+                }
+            }
+            SkyMenuButton {
                 text: qsTr("Emoji names")
                 svg: SvgOutline.emojiLanguage
                 popup: moreMenu
@@ -390,6 +403,19 @@ SkyPage {
         onFollowStarterPackOk: skywalker.showStatusMessage(qsTr('Following all starter pack members'), QEnums.STATUS_LEVEL_INFO)
         onFollowStarterPackFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 
+        onReferenceListOptOutOk: (uri) => {
+            optOutUri = uri
+            skywalker.showStatusMessage(qsTr("Opted out"), QEnums.STATUS_LEVEL_INFO)
+        }
+
+        onReferenceListOptOutFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+        onUndoReferenceListOptOutOk: {
+            optOutUri = ""
+            skywalker.showStatusMessage(qsTr("Opt-out undone"), QEnums.STATUS_LEVEL_INFO)
+        }
+        onUndoReferenceListOptOutFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
         function addFeedToStarterPack(feed) {
             addingFeed = feed
             addStarterPackFeed(starterPack.uri, feed.uri)
@@ -402,12 +428,24 @@ SkyPage {
         }
     }
 
+    BusyIndicator {
+        anchors.centerIn: parent
+        running: graphUtils.referenceListOptOutBusy
+    }
+
     ProfileUtils {
         id: profileUtils
         skywalker: page.skywalker
 
         onProfileViewOk: (profile, listItemUri) => authorListView.model.prependAuthor(profile, listItemUri)
         onProfileViewFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function optOut() {
+        guiSettings.noticeOkCancel(page,
+            qsTr("You will no longer appear in this starter pack. The creator will be able to see that you have opted out."),
+            () => { graphUtils.referenceListOptOut(starterPack.list.uri) }
+        )
     }
 
     function addUser() {

@@ -228,6 +228,16 @@ SkyPage {
                 author: list.creator
             }
         }
+
+        AccessibleText {
+            bottomPadding: 10
+            width: parent.width
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            text: guiSettings.getMemberCountString(list.listItemCount + authorListView.model.countDelta)
+            visible: list.listItemCount >= 0
+        }
     }
 
     SkyMenu {

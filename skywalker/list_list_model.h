@@ -37,6 +37,7 @@ public:
         ListSync,
         ListHideReplies,
         ListHideFollowing,
+        MemberCountDelta,
         MemberCheck,
         MemberListItemUri
     };

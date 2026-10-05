@@ -22,6 +22,11 @@ QString ListViewerState::getBlocked() const
     return mViewerState ? mViewerState->mBlocked.value_or("") : "";
 }
 
+QString ListViewerState::getReferenceListOptOut() const
+{
+    return mViewerState ? mViewerState->mReferenceListOutput.value_or("") : "";
+}
+
 ListViewBasic::ListViewBasic(const ATProto::AppBskyGraph::ListViewBasic::SharedPtr& view) :
     mListViewBasic(view)
 {
@@ -145,6 +150,17 @@ ListViewerState ListViewBasic::getViewer() const
         return mListView->mViewer ? ListViewerState(mListView->mViewer) : ListViewerState{};
 
     return {};
+}
+
+int ListViewBasic::getListItemCount() const
+{
+    if (mListViewBasic)
+        return mListViewBasic->mListItemCount.value_or(-1);
+
+    if (mListView)
+        return mListView->mListItemCount.value_or(-1);
+
+    return -1;
 }
 
 void ListViewBasic::setAvatar(const QString& avatar)

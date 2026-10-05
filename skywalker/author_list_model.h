@@ -29,6 +29,7 @@ public:
         BlockingUri,
         ActivitySubscription,
         ListItemUri,
+        ListItemOptedOut,
         AuthorMuted,
         MutedReposts,
         HideFromTimeline,
@@ -39,9 +40,10 @@ public:
     {
         Profile mProfile;
         QString mListItemUri; // empty when not part of a list
+        bool mOptedOut = false;
         bool mEndOfList = false;
 
-        explicit ListEntry(const Profile& profile, const QString& listItemUri = {});
+        explicit ListEntry(const Profile& profile, const QString& listItemUri = {}, bool optedOut = false);
     };
 
     using Type = QEnums::AuthorListType;

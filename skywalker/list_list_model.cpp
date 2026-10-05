@@ -71,6 +71,18 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return mUserSettings.getFeedHideReplies(mUserDid, list.getUri());
     case Role::ListHideFollowing:
         return mUserSettings.getFeedHideFollowing(mUserDid, list.getUri());
+    case Role::MemberCountDelta:
+        switch (memberCheck(list.getUri()))
+        {
+        case QEnums::TRIPLE_BOOL_UNKNOWN:
+            return 0;
+        case QEnums::TRIPLE_BOOL_NO:
+            return (change && change->mMemberListItemUri && !change->mMemberListItemUri->isEmpty()) ? 1 : 0;
+        case QEnums::TRIPLE_BOOL_YES:
+            return (change && change->mMemberListItemUri && change->mMemberListItemUri->isEmpty()) ? -1 : 0;
+        }
+
+        return 0;
     case Role::MemberCheck:
         if (change && change->mMemberListItemUri)
             return change->mMemberListItemUri->isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
@@ -315,6 +327,7 @@ QHash<int, QByteArray> ListListModel::roleNames() const
         { int(Role::ListSync), "listSync" },
         { int(Role::ListHideReplies), "listHideReplies" },
         { int(Role::ListHideFollowing), "listHideFollowing" },
+        { int(Role::MemberCountDelta), "memberCountDelta" },
         { int(Role::MemberCheck), "memberCheck" },
         { int(Role::MemberListItemUri), "memberListItemUri" }
     };
@@ -386,7 +399,7 @@ void ListListModel::hideFollowingChanged()
 
 void ListListModel::memberListItemUriChanged()
 {
-    changeData({ int(Role::MemberCheck), int(Role::MemberListItemUri) });
+    changeData({ int(Role::MemberCountDelta), int(Role::MemberCheck), int(Role::MemberListItemUri) });
 }
 
 void ListListModel::profileChanged()

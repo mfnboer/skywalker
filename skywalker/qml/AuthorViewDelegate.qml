@@ -12,6 +12,7 @@ Rectangle {
     required property string blockingUri
     required property activitysubscription activitySubscription
     required property string listItemUri // empty when the author list is not an item list
+    required property bool listItemOptedOut
     required property bool authorMuted
     required property bool mutedReposts
     required property bool hideFromTimeline
@@ -49,10 +50,17 @@ Rectangle {
         rowSpacing: 10
         columnSpacing: 10
 
+        // Create empty space (rowSpacing)
+        Item {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            height: 0
+        }
+
         // Avatar
         Rectangle {
             id: avatar
-            Layout.rowSpan: showVerificationDate ? 4 : 3
+            Layout.rowSpan: 5
             Layout.preferredWidth: guiSettings.threadColumnWidth
             Layout.fillHeight: true
             color: "transparent"
@@ -201,18 +209,33 @@ Rectangle {
             }
         }
 
+        Loader {
+            Layout.columnSpan: 2
+            Layout.fillWidth: true
+            Layout.rightMargin: authorRect.margin
+            active: listItemOptedOut
+
+            sourceComponent: AccessibleText {
+                id: optedOutText
+                padding: 10
+                elide: Text.ElideRight
+                text: qsTr("⚠️ Opted out of this starter pack")
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: guiSettings.radius
+                    color: "transparent"
+                    border.width: 1
+                    border.color: authorRect.highlight ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
+                }
+            }
+        }
+
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: authorRect.highlight ? guiSettings.separatorHighLightColor : guiSettings.separatorColor
-        }
-
-        // Create empty space (rowSpacing)
-        Item {
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            height: 0
         }
 
         AccessibleText {
@@ -221,7 +244,6 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             bottomPadding: 20
             elide: Text.ElideRight
-            color: guiSettings.textColor
             text: qsTr("End of list")
             font.italic: true
             visible: endOfList

@@ -215,6 +215,18 @@ Rectangle {
             }
         }
 
+        AccessibleText {
+            topPadding: 10
+            Layout.fillWidth: true
+            Layout.leftMargin: view.margin
+            Layout.rightMargin: view.margin
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            text: guiSettings.getMemberCountString(list.listItemCount)
+            visible: list.listItemCount >= 0 && showList
+        }
+
         Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true

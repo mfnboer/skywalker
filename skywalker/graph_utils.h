@@ -18,6 +18,7 @@ class GraphUtils : public WrappedSkywalker, public Presence
     Q_OBJECT
     Q_PROPERTY(bool blockBusy READ isBlockBusy NOTIFY blockBusyChanged FINAL)
     Q_PROPERTY(bool muteBusy READ isMuteBusy NOTIFY muteBusyChanged FINAL)
+    Q_PROPERTY(bool referenceListOptOutBusy READ isReferenceListOptOutBusy NOTIFY referenceListOptOutBusyChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -44,6 +45,11 @@ public:
     Q_INVOKABLE void unmute(const QString& did, bool unmuteRepostsQuotes = false);
     bool isMuteBusy() const { return mMuteBusy; }
     void setMuteBusy(bool busy);
+
+    Q_INVOKABLE void referenceListOptOut(const QString& listUri);
+    Q_INVOKABLE void undoReferenceListOptOut(const QString& optOutUri);
+    bool isReferenceListOptOutBusy() const { return mReferenceListOptOutBusy; }
+    void setReferenceListOptOutBusy(bool busy);
 
     // avatarImgSource must be a 'file://' or 'image://' reference.
     Q_INVOKABLE void createList(const QEnums::ListPurpose purpose, const QString& name,
@@ -123,6 +129,11 @@ signals:
     void unmuteOk(bool onlyReposts, bool onlyQuotes);
     void unmuteFailed(QString error);
     void muteBusyChanged();
+    void referenceListOptOutOk(QString uri);
+    void referenceListOptOutFailed(QString error);
+    void undoReferenceListOptOutOk();
+    void undoReferenceListOptOutFailed(QString error);
+    void referenceListOptOutBusyChanged();
     void createListProgress(QString msg);
     void createListOk(QString uri, QString cid);
     void createListFailed(QString error);
@@ -188,6 +199,7 @@ private:
     QTimer mExpiryCheckTimer;
     bool mBlockBusy = false;
     bool mMuteBusy = false;
+    bool mReferenceListOptOutBusy = false;
 };
 
 }

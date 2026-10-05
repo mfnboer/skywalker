@@ -5,9 +5,10 @@
 
 namespace Skywalker {
 
-AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& listItemUri) :
+AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& listItemUri, bool optedOut) :
     mProfile(profile),
-    mListItemUri(listItemUri)
+    mListItemUri(listItemUri),
+    mOptedOut(optedOut)
 {
 }
 
@@ -56,6 +57,8 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
         return change && change->mActivitySubscription ? QVariant::fromValue(*change->mActivitySubscription) : QVariant::fromValue(author.getViewer().getActivitySubscription());
     case Role::ListItemUri:
         return entry.mListItemUri;
+    case Role::ListItemOptedOut:
+        return entry.mOptedOut;
     case Role::AuthorMuted:
         return change && change->mMuted ? *change->mMuted : author.getViewer().isMuted();
     case Role::MutedReposts:
@@ -148,7 +151,7 @@ int AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listIt
 
     for (const auto& item : listItems)
     {
-        ListEntry entry(Profile(item->mSubject), item->mUri);
+        ListEntry entry(Profile(item->mSubject), item->mUri, item->mSubjectOptedOut);
         AuthorCache::instance().put(entry.mProfile);
         mList.push_back(entry);
         mDidSet.insert(entry.mProfile.getDid());
@@ -301,6 +304,7 @@ QHash<int, QByteArray> AuthorListModel::roleNames() const
         { int(Role::BlockingUri), "blockingUri" },
         { int(Role::ActivitySubscription), "activitySubscription" },
         { int(Role::ListItemUri), "listItemUri" },
+        { int(Role::ListItemOptedOut), "listItemOptedOut" },
         { int(Role::AuthorMuted), "authorMuted" },
         { int(Role::MutedReposts), "mutedReposts" },
         { int(Role::HideFromTimeline), "hideFromTimeline" },
