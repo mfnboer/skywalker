@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "starter_pack_list_model.h"
+#include "search_utils.h"
 
 namespace Skywalker {
 
@@ -21,11 +22,31 @@ QVariant StarterPackListModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& starterPack = mStarterPacks[index.row()];
+    const auto* listChange = !starterPack.isNull() ? LocalListModelChanges::getLocalChange(starterPack.getList().getUri()) : nullptr;
 
     switch (Role(role))
     {
     case Role::StarterPack:
         return QVariant::fromValue(starterPack);
+    case Role::MemberCountDelta:
+        switch (memberCheck(starterPack.getUri()))
+        {
+        case QEnums::TRIPLE_BOOL_UNKNOWN:
+            return 0;
+        case QEnums::TRIPLE_BOOL_NO:
+            return (listChange && listChange->mMemberListItemUri && !listChange->mMemberListItemUri->isEmpty()) ? 1 : 0;
+        case QEnums::TRIPLE_BOOL_YES:
+            return (listChange && listChange->mMemberListItemUri && listChange->mMemberListItemUri->isEmpty()) ? -1 : 0;
+        }
+
+        return 0;
+    case Role::MemberCheck:
+        if (listChange && listChange->mMemberListItemUri)
+            return listChange->mMemberListItemUri->isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
+
+        return memberCheck(starterPack.getUri());
+    case Role::MemberListItemUri:
+        return listChange && listChange->mMemberListItemUri ? *listChange->mMemberListItemUri : getMemberListItemUri(starterPack.getUri());
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -56,6 +77,24 @@ void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackVie
     _addStarterPacks(starterPacks, cursor);
 }
 
+void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackWithMembership::List starterPacksWithMembership, const QString& cursor)
+{
+    qDebug() << "Add starter pack with membership:" << starterPacksWithMembership.size() << "cursor:" << cursor;
+    Q_ASSERT(!mMemberCheckDid.isEmpty());
+    mCursor = cursor;
+    ATProto::AppBskyGraph::StarterPackView::List starterPacks;
+    starterPacks.reserve(starterPacksWithMembership.size());
+
+    for (const auto& starterPack : starterPacksWithMembership)
+    {
+        qDebug() << "NAME:" << starterPack->mStarterPack->getName() << "ITEM:" << (starterPack->mListItem ? starterPack->mListItem->mUri : "");
+        starterPacks.push_back(starterPack->mStarterPack);
+        mMemberCheckResults[starterPack->mStarterPack->mUri] = (starterPack->mListItem ? starterPack->mListItem->mUri : "");
+    }
+
+    _addStarterPacks(starterPacks, cursor);
+}
+
 template<typename T>
 void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor)
 {
@@ -68,18 +107,25 @@ void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, 
         return;
     }
 
-    const size_t newRowCount = mStarterPacks.size() + starterPacks.size();
+    auto sortedStarterPacks = starterPacks;
+
+    std::sort(sortedStarterPacks.begin(), sortedStarterPacks.end(),
+              [](const auto& lhs, const auto& rhs){
+                  return SearchUtils::normalizedCompare(lhs->getName(), rhs->getName()) < 0;
+              });
+
+    const size_t newRowCount = mStarterPacks.size() + sortedStarterPacks.size();
 
     beginInsertRows({}, mStarterPacks.size(), newRowCount - 1);
 
-    for (auto& starterPack : starterPacks)
+    for (auto& starterPack : sortedStarterPacks)
         mStarterPacks.emplace_back(starterPack);
 
     endInsertRows();
     qDebug() << "New starter packs size:" << mStarterPacks.size();
 }
 
-void StarterPackListModel::prependList(const StarterPackViewBasic& starterPack)
+void StarterPackListModel::prependStarterPack(const StarterPackView& starterPack)
 {
     qDebug() << "Prepend starter pack:" << starterPack.getName();
 
@@ -156,10 +202,55 @@ void StarterPackListModel::setGetFeedInProgress(bool inProgress)
 QHash<int, QByteArray> StarterPackListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
-        { int(Role::StarterPack), "starterPack" }
+        { int(Role::StarterPack), "starterPack" },
+        { int(Role::MemberCountDelta), "memberCountDelta" },
+        { int(Role::MemberCheck), "memberCheck" },
+        { int(Role::MemberListItemUri), "memberListItemUri" }
     };
 
     return roles;
+}
+
+QEnums::TripleBool StarterPackListModel::memberCheck(const QString& starterPackUri) const
+{
+    if (mMemberCheckDid.isEmpty())
+        return QEnums::TRIPLE_BOOL_UNKNOWN;
+
+    auto it = mMemberCheckResults.find(starterPackUri);
+
+    if (it != mMemberCheckResults.end())
+    {
+        const QString& listItemUri = it->second;
+        return listItemUri.isEmpty() ? QEnums::TRIPLE_BOOL_NO : QEnums::TRIPLE_BOOL_YES;
+    }
+
+    return QEnums::TRIPLE_BOOL_UNKNOWN;
+}
+
+QString StarterPackListModel::getMemberListItemUri(const QString& starterPackUri) const
+{
+    qDebug() << "Get member, starter pack:" << starterPackUri;
+
+    if (mMemberCheckDid.isEmpty())
+        return {};
+
+    auto it = mMemberCheckResults.find(starterPackUri);
+
+    if (it == mMemberCheckResults.end())
+        return {};
+
+    qDebug() << "Get member, starter pack:" << starterPackUri << "item:" << it->second;
+    return it->second;
+}
+
+void StarterPackListModel::memberListItemUriChanged()
+{
+    changeData({ int(Role::MemberCountDelta), int(Role::MemberCheck), int(Role::MemberListItemUri) });
+}
+
+void StarterPackListModel::changeData(const QList<int>& roles)
+{
+    emit dataChanged(createIndex(0, 0), createIndex(mStarterPacks.size() - 1, 0), roles);
 }
 
 }

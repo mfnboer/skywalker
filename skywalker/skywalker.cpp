@@ -3061,6 +3061,9 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalListModelChan
 {
     for (auto& [_, model] : mListListModels.items())
         update(model.get());
+
+    for (auto& [_, model] : mStarterPackListModels.items())
+        update(model.get());
 }
 
 void Skywalker::addFeedInteraction(const QString& feedDid, ATProto::AppBskyFeed::Interaction::EventType event,
@@ -3674,10 +3677,21 @@ void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QStri
         return;
     }
 
+    if ((*model)->needsMembershipInfo())
+        getStarterPackListWithMembershipAll((*model)->getMemberCheckDid(), 100, cursor, id);
+    else
+        getStarterPackListAll(did, 100, cursor, id);
+}
+
+void Skywalker::getStarterPackListAll(const QString& did, int limit, const QString& cursor, int modelId)
+{
+    auto* model = mStarterPackListModels.get(modelId);
+    Q_ASSERT(model);
     (*model)->setGetFeedInProgress(true);
-    mBsky->getActorStarterPacks(did, {}, Utils::makeOptionalString(cursor),
-        [this, id, cursor](auto output){
-            const auto* model = mStarterPackListModels.get(id);
+
+    mBsky->getActorStarterPacks(did, limit, Utils::makeOptionalString(cursor),
+        [this, modelId, cursor](auto output){
+            const auto* model = mStarterPackListModels.get(modelId);
 
             if (!model)
                 return; // user has closed the view
@@ -3689,10 +3703,44 @@ void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QStri
 
             (*model)->addStarterPacks(std::move(output->mStarterPacks), output->mCursor.value_or(""));
         },
-        [this, id](const QString& error, const QString& msg){
+        [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getActorStarterPacks failed:" << error << " - " << msg;
 
-            const auto* model = mStarterPackListModels.get(id);
+            const auto* model = mStarterPackListModels.get(modelId);
+
+            if (model)
+                (*model)->setGetFeedInProgress(false);
+
+            emit statusMessage(mUserDid, msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void Skywalker::getStarterPackListWithMembershipAll(const QString& did, int limit, const QString& cursor, int modelId)
+{
+    qDebug() << "Get starter packs with membership:" << did;
+
+    auto* model = mStarterPackListModels.get(modelId);
+    Q_ASSERT(model);
+    (*model)->setGetFeedInProgress(true);
+
+    mBsky->getStarterpacksWithMembership(did, limit, Utils::makeOptionalString(cursor),
+        [this, modelId, cursor](auto output){
+            const auto* model = mStarterPackListModels.get(modelId);
+
+            if (!model)
+                return; // user has closed the view
+
+            (*model)->setGetFeedInProgress(false);
+
+            if (cursor.isEmpty())
+                (*model)->clear();
+
+            (*model)->addStarterPacks(std::move(output->mStarterPacksWithMembership), output->mCursor.value_or(""));
+        },
+        [this, modelId](const QString& error, const QString& msg){
+            qDebug() << "getActorStarterPacksWithMembership failed:" << error << " - " << msg;
+
+            const auto* model = mStarterPackListModels.get(modelId);
 
             if (model)
                 (*model)->setGetFeedInProgress(false);

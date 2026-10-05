@@ -18,6 +18,7 @@ class AuthorListModel : public QAbstractListModel,
                         public LocalAuthorModelChanges
 {
     Q_OBJECT
+    Q_PROPERTY(int countDelta READ getCountDelta NOTIFY countDeltaChanged FINAL)
     Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QEnums::AuthorListType type READ getType CONSTANT FINAL)
 
@@ -73,10 +74,14 @@ public:
     std::vector<QString> getActiveFollowsDids(QString& cursor) const;
     Q_INVOKABLE bool containsDid(const QString& did) const;
 
+    void setCountDelta(int delta);
+    int getCountDelta() const { return mCountDelta; }
+
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
 signals:
+    void countDeltaChanged();
     void getFeedInProgressChanged();
 
 protected:
@@ -108,6 +113,7 @@ private:
     std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
     std::deque<ATProto::AppBskyGraph::ListItemView::List> mRawItemLists;
     std::vector<QString> mActiveFollowsDids;
+    int mCountDelta = 0;
 
     QString mCursor;
     bool mGetFeedInProgress = false;

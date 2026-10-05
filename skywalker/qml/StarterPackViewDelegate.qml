@@ -6,12 +6,12 @@ import skywalker
 Rectangle {
     readonly property int margin: 10
     property string userDid
-    required property starterpackviewbasic starterPack
+    required property starterpackview starterPack
     property bool allowEdit: true
     property int maxTextLines: 25
 
-    signal updateStarterPack(starterpackviewbasic starterPack)
-    signal deleteStarterPack(starterpackviewbasic starterPack)
+    signal updateStarterPack(starterpackview starterPack)
+    signal deleteStarterPack(starterpackview starterPack)
 
     id: view
     height: viewColumn.height
@@ -98,6 +98,16 @@ Rectangle {
             color: guiSettings.textColor
             text: starterPack.description
             visible: starterPack.description
+        }
+
+        AccessibleText {
+            topPadding: 10
+            width: parent.width
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            text: guiSettings.getMemberCountString(starterPack.listItemCount)
+            visible: starterPack.listItemCount >= 0
         }
 
         Rectangle {

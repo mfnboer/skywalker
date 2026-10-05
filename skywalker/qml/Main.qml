@@ -2618,7 +2618,7 @@ ApplicationWindow {
                 sw.showStatusMessage(qsTr("Starter pack created."), QEnums.STATUS_LEVEL_INFO, 2)
 
                 if (starterPackModel)
-                    starterPackModel.prependList(starterPack)
+                    starterPackModel.prependStarterPack(starterPack)
             }
 
             root.popStack()

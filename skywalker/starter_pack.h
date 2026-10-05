@@ -21,6 +21,7 @@ class StarterPackViewBasic
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription FINAL)
     Q_PROPERTY(NamedLink::List embeddedLinksDescription READ getEmbeddedLinksDescription FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
+    Q_PROPERTY(int listItemCount READ getListItemCount FINAL)
     QML_VALUE_TYPE(starterpackviewbasic)
 
 public:
@@ -43,6 +44,7 @@ public:
     NamedLink::List getEmbeddedLinksDescription() const;
     BasicProfile getCreator() const;
     ContentLabelList getContentLabels() const;
+    int getListItemCount() const; // -1 = unbknown
 
     void setCid(const QString& cid) { mCid = cid; }
     void setName(const QString& name) { mName = name; }
@@ -74,6 +76,7 @@ class StarterPackView : public StarterPackViewBasic
 public:
     StarterPackView() = default;
     explicit StarterPackView(const ATProto::AppBskyGraph::StarterPackView::SharedPtr& view);
+    explicit StarterPackView(const ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr& view);
     StarterPackView(const QString& uri, const QString& cid, const QString& name,
                     const BasicProfile& creator, const QString& description,
                     const NamedLink::List& embeddedLinks);

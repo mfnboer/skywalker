@@ -378,6 +378,8 @@ private:
     void getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getStarterPackListAll(const QString& did, int limit, const QString& cursor, int modelId);
+    void getStarterPackListWithMembershipAll(const QString& did, int limit, const QString& cursor, int modelId);
     void getQuoteChain(int modelId, const QString& nextPostUri, std::deque<Post> quoteChain);
     void setQuoteChainInModel(int modelId, std::deque<Post> quoteChain);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user);

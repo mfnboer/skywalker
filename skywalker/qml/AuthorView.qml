@@ -361,6 +361,13 @@ SkyPage {
                             }
 
                             SkyMenuButton {
+                                text: qsTr("Update starter packs")
+                                svg: SvgOutline.starterpack
+                                popup: moreMenu
+                                onClicked: updateStarterPacks()
+                            }
+
+                            SkyMenuButton {
                                text: isVerifier ? qsTr("Remove trusted verifier") : qsTr("Add trusted verifier")
                                svg: isVerifier ? SvgOutline.verifierOff : SvgOutline.verifier
                                popup: moreMenu
@@ -1903,6 +1910,21 @@ SkyPage {
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
         skywalker.getListList(listModelId)
+    }
+
+    function updateStarterPacks() {
+        let starterPackModelId = skywalker.createStarterPackListModel()
+        let starterPackModel = skywalker.getStarterPackListModel(starterPackModelId)
+        starterPackModel.setMemberCheckDid(author.did)
+        let component = guiSettings.createComponent("AddUserStarterPackListView.qml")
+        let view = component.createObject(page, {
+                userDid: page.userDid,
+                author: author,
+                modelId: starterPackModelId
+        })
+        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(view)
+        skywalker.getAuthorStarterPackList(skywalker.getUserDid() , starterPackModelId)
     }
 
     function mustGetFeed() {

@@ -4,20 +4,21 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    required property listview list
+    required property starterpackview starterPack
+    required property int memberCountDelta
     required property int memberCheck // QEnums.TripleBool
     required property string memberListItemUri
     property int margin: 10
 
-    signal addToList(string listUri)
-    signal removeFromList(string listUri, string listItemUri)
+    signal addToStarterPack(starterpackview starterPack)
+    signal removeFromStarterPack(starterpackview starterPack, string listItemUri)
 
     id: view
     height: grid.height
     color: guiSettings.backgroundColor
 
     Accessible.role: Accessible.StaticText
-    Accessible.name: `${listTypeNameText.text} ${list.name}`
+    Accessible.name: starterPack.name
 
     GridLayout {
         id: grid
@@ -26,48 +27,44 @@ Rectangle {
         rowSpacing: 0
 
         Rectangle {
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            height: 10
-            color: "transparent"
-        }
-
-        ListAvatar {
             Layout.leftMargin: view.margin
             Layout.rightMargin: view.margin
-            x: 8
-            y: 5
-            width: 44
+            Layout.preferredWidth: 44
+            Layout.preferredHeight: 44
             Layout.alignment: Qt.AlignTop
-            avatarUrl: list.avatarThumb
+            color: "transparent"
+
+            SkySvg {
+                // y: height + 10
+                width: parent.width
+                height: width
+                color: guiSettings.starterpackColor
+                svg: SvgOutline.starterpack
+            }
         }
 
         Column {
             spacing: 0
             Layout.fillWidth: true
-            Layout.fillHeight: true
             Layout.rightMargin: view.margin
+            Layout.alignment: Qt.AlignVCenter
 
             AccessibleText {
-                id: listNameText
                 width: parent.width
                 elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
-                text: list.name
+                text: starterPack.name
 
                 Accessible.ignored: true
             }
 
             AccessibleText {
-                id: listTypeNameText
                 width: parent.width
                 elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
-                text: guiSettings.listTypeName(list.purpose)
-
-                Accessible.ignored: true
+                text: guiSettings.getMemberCountString(starterPack.listItemCount + memberCountDelta)
+                visible: starterPack.listItemCount >= 0
             }
         }
 
@@ -75,18 +72,12 @@ Rectangle {
             width: undefined
             Layout.fillWidth: false
             Layout.preferredWidth: 38
-            Layout.alignment: Qt.AlignTop
-            Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("in list") : qsTr("not in list")
+            Layout.alignment: Qt.AlignVCenter
+            Accessible.name: memberCheck === QEnums.TRIPLE_BOOL_YES ? qsTr("in starter pack") : qsTr("not in starter pack")
             checked: memberCheck === QEnums.TRIPLE_BOOL_YES
+            enabled: memberCheck === QEnums.TRIPLE_BOOL_YES || starterPack.listItemCount < starterPack.MAX_MEMBERS
             visible: memberCheck !== QEnums.TRIPLE_BOOL_UNKNOWN
-            onCheckedChanged: updateList(checked)
-        }
-
-        Rectangle {
-            Layout.columnSpan: 3
-            Layout.fillWidth: true
-            Layout.preferredHeight: 10
-            color: "transparent"
+            onCheckedChanged: updateStarterPack(checked)
         }
 
         Rectangle {
@@ -98,15 +89,15 @@ Rectangle {
     }
 
 
-    function updateList(add) {
+    function updateStarterPack(add) {
         switch (memberCheck) {
         case QEnums.TRIPLE_BOOL_NO:
             if (add)
-                addToList(list.uri)
+                addToStarterPack(starterPack)
             break
         case QEnums.TRIPLE_BOOL_YES:
             if (!add)
-                removeFromList(list.uri, memberListItemUri)
+                removeFromStarterPack(starterPack, memberListItemUri)
             break
         }
     }

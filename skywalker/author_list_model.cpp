@@ -176,6 +176,8 @@ void AuthorListModel::prependAuthor(const Profile& author, const QString& listIt
 
     if (mList.size() == 1)
         setEndOfList();
+
+    setCountDelta(mCountDelta + 1);
 }
 
 void AuthorListModel::prependBasicProfile(const BasicProfile& author, const QString& listItemUri)
@@ -207,6 +209,8 @@ void AuthorListModel::deleteEntry(int index)
 
     if (index == (int)mList.size())
         setEndOfList();
+
+    setCountDelta(mCountDelta - 1);
 }
 
 void AuthorListModel::setEndOfList()
@@ -271,9 +275,19 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
     return list;
 }
 
+void AuthorListModel::setCountDelta(int delta)
+{
+    if (delta != mCountDelta)
+    {
+        mCountDelta = delta;
+        emit countDeltaChanged();
+    }
+}
+
 void AuthorListModel::setGetFeedInProgress(bool inProgress)
 {
-    if (inProgress != mGetFeedInProgress) {
+    if (inProgress != mGetFeedInProgress)
+    {
         mGetFeedInProgress = inProgress;
         emit getFeedInProgressChanged();
     }

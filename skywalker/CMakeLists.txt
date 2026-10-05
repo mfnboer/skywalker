@@ -764,6 +764,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SimpleFeedTypeaheadListView.qml
         QML_FILES qml/SimpleFeedListView.qml
         QML_FILES qml/SearchFeed.qml
+        QML_FILES qml/AddUserStarterPackListView.qml
+        QML_FILES qml/AddUserStarterPackViewDelegate.qml
 )
 
 target_link_libraries(libskywalker

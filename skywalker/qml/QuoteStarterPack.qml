@@ -72,6 +72,16 @@ Column {
         visible: starterPack.description
     }
 
+    AccessibleText {
+        topPadding: 10
+        width: parent.width - 2 * margin
+        elide: Text.ElideRight
+        font.pointSize: guiSettings.scaledFont(7/8)
+        color: guiSettings.handleColor
+        text: guiSettings.getMemberCountString(starterPack.listItemCount)
+        visible: starterPack.listItemCount >= 0
+    }
+
     AccessibilityUtils {
         id: accessibilityUtils
     }

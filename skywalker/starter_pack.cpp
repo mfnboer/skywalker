@@ -132,6 +132,17 @@ ContentLabelList StarterPackViewBasic::getContentLabels() const
     return {};
 }
 
+int StarterPackViewBasic::getListItemCount() const
+{
+    if (mBasicView)
+        return mBasicView->mListItemCount.value_or(-1);
+
+    if (mView && mView->mList)
+        return mView->mList->mListItemCount.value_or(-1);
+
+    return -1;
+}
+
 const ATProto::AppBskyGraph::StarterPack* StarterPackViewBasic::getStarterPack() const
 {
     try {
@@ -156,6 +167,11 @@ void StarterPackViewBasic::setDescription(const QString& description, const Name
 
 
 StarterPackView::StarterPackView(const ATProto::AppBskyGraph::StarterPackView::SharedPtr& view) :
+    StarterPackViewBasic(view)
+{
+}
+
+StarterPackView::StarterPackView(const ATProto::AppBskyGraph::StarterPackViewBasic::SharedPtr& view) :
     StarterPackViewBasic(view)
 {
 }

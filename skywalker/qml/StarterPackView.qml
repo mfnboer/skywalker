@@ -215,6 +215,16 @@ SkyPage {
             plainText: starterPack.formattedDescription
             visible: starterPack.description
         }
+
+        AccessibleText {
+            topPadding: 10
+            width: parent.width
+            elide: Text.ElideRight
+            font.pointSize: guiSettings.scaledFont(7/8)
+            color: guiSettings.handleColor
+            text: guiSettings.getMemberCountString(starterPack.listItemCount + authorListView.model.countDelta)
+            visible: starterPack.listItemCount >= 0
+        }
     }
 
     SkyTabBar {

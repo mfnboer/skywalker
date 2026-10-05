@@ -5,14 +5,14 @@ import skywalker
 
 SkyPage {
     required property var skywalker
-    property starterpackviewbasic starterPack
+    property starterpackview starterPack
     readonly property string sideBarTitle: starterPack.isNull() ? qsTr("New starter pack") : qsTr("Edit starter pack")
     readonly property SvgImage sideBarSvg: SvgOutline.list
     readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
 
     signal closed
-    signal starterPackCreated(starterpackviewbasic starterPack)
+    signal starterPackCreated(starterpackview starterPack)
     signal starterPackUpdated(string cid, string name, string description, list<namedlink> embeddedLinks)
 
     id: editPage

@@ -614,6 +614,10 @@ Item {
         return imageCount > guiSettings.maxPreviewImageGridThreshold
     }
 
+    function getMemberCountString(count) {
+        return count === 1 ? qsTr("1 member") : qsTr(`${count} members`)
+    }
+
     Component.onCompleted: {
         console.debug("Font scale factor:", fontScaleFactor)
         console.debug("Font line spacing:", fontMetrics.lineSpacing)

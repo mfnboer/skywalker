@@ -1,6 +1,7 @@
 next
 ====
 * Create and edit starter packs
+* Follow all button on starter packs
 * Show thread post index and counts in feeds
 * Translate link on posts in foreign language
 * Presets for Blacksky, Bluesky and Eurosky appviews
