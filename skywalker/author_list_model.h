@@ -94,6 +94,7 @@ protected:
     virtual void activitySubscriptionChanged() override;
     virtual void mutedChanged() override;
     virtual void mutedRepostsChanged() override;
+    virtual void listItemOptedOutChanged() override;
     virtual void hideFromTimelineChanged() override;
 
 private:

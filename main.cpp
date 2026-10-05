@@ -20,15 +20,6 @@ extern "C" const char* __lsan_default_options()
 {
     return LEAK_SUPPRESSIONS;
 }
-
-void myMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-    // Filter excessive FFmpeg warnings
-    if (type == QtWarningMsg && msg.contains("co located POCs"))
-        return;
-
-    const QString formatted = qFormatLogMessage(type, context, msg);
-    fprintf(stderr, "%s\n", formatted.toUtf8().constData());
-}
 #endif
 
 #ifdef Q_OS_ANDROID
@@ -54,7 +45,6 @@ int main(int argc, char *argv[])
 
 #ifdef DEBUG
     qputenv("QSG_INFO", "1");
-    qInstallMessageHandler(myMessageHandler);
     //qputenv("QSG_RENDER_TIMING", "1");
     //qputenv("QSG_VISUALIZE", "batches"); // batches, overdraw, clip, changes
 #endif

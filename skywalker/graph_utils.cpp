@@ -598,6 +598,12 @@ void GraphUtils::referenceListOptOut(const QString& listUri)
                 return;
 
             setReferenceListOptOutBusy(false);
+
+            mSkywalker->makeLocalModelChange(
+                [did=mSkywalker->getUserDid()](LocalAuthorModelChanges* model){
+                    model->updateListItemOptedOut(did, true);
+                });
+
             emit referenceListOptOutOk(optOutUri);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -626,6 +632,12 @@ void GraphUtils::undoReferenceListOptOut(const QString& optOutUri)
                 return;
 
             setReferenceListOptOutBusy(false);
+
+            mSkywalker->makeLocalModelChange(
+                [did=mSkywalker->getUserDid()](LocalAuthorModelChanges* model){
+                    model->updateListItemOptedOut(did, false);
+                });
+
             emit undoReferenceListOptOutOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){

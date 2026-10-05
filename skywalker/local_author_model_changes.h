@@ -19,6 +19,7 @@ public:
         std::optional<ActivitySubscription> mActivitySubscription;
         std::optional<bool> mMuted;
         std::optional<bool> mMutedReposts;
+        std::optional<bool> mListItemOptedOut;
     };
 
     LocalAuthorModelChanges() = default;
@@ -32,6 +33,7 @@ public:
     void updateActivitySubscription(const QString& did, const ActivitySubscription& subscription);
     void updateMuted(const QString& did, bool muted);
     void updateMutedReposts(const QString& did, bool mutedReposts);
+    void updateListItemOptedOut(const QString& did, bool optedOut);
     void updateHideFromTimeline();
 
 protected:
@@ -40,6 +42,7 @@ protected:
     virtual void activitySubscriptionChanged() = 0;
     virtual void mutedChanged() = 0;
     virtual void mutedRepostsChanged() = 0;
+    virtual void listItemOptedOutChanged() = 0;
     virtual void hideFromTimelineChanged() = 0;
 
 private:

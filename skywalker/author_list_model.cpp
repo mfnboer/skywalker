@@ -58,7 +58,7 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
     case Role::ListItemUri:
         return entry.mListItemUri;
     case Role::ListItemOptedOut:
-        return entry.mOptedOut;
+        return change && change->mListItemOptedOut ? *change->mListItemOptedOut : entry.mOptedOut;
     case Role::AuthorMuted:
         return change && change->mMuted ? *change->mMuted : author.getViewer().isMuted();
     case Role::MutedReposts:
@@ -337,6 +337,11 @@ void AuthorListModel::mutedChanged()
 void AuthorListModel::mutedRepostsChanged()
 {
     changeData({ int(Role::MutedReposts) });
+}
+
+void AuthorListModel::listItemOptedOutChanged()
+{
+    changeData({ int(Role::ListItemOptedOut) });
 }
 
 void AuthorListModel::hideFromTimelineChanged()

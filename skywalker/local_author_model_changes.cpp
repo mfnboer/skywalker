@@ -45,6 +45,12 @@ void LocalAuthorModelChanges::updateMutedReposts(const QString& did, bool mutedR
     mutedRepostsChanged();
 }
 
+void LocalAuthorModelChanges::updateListItemOptedOut(const QString& did, bool optedOut)
+{
+    mChanges[did].mListItemOptedOut = optedOut;
+    listItemOptedOutChanged();
+}
+
 void LocalAuthorModelChanges::updateHideFromTimeline()
 {
     // No need to actual store the changed value here as the value in mTimelineHide

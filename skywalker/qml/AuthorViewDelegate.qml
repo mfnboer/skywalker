@@ -214,6 +214,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             active: listItemOptedOut
+            visible: active
 
             sourceComponent: AccessibleText {
                 id: optedOutText
