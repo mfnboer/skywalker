@@ -22,10 +22,13 @@ Column {
     readonly property bool isGif: videoView.presentation === QEnums.VIDEO_PRESENTATION_GIF
 
     // HACK:
-    // Short video streams often do not loop well in the media player. GIFs are
+    // Short video streams often do not loop well in the media player (< Qt6.11.2). GIFs are
     // often short. Their purpose is too loop. Therefore we do not stream GIF
     // video's. Instead we download and transcode them to MP4.
-    property bool streamingEnabled: userSettings.videoStreamingEnabled && !isGif
+
+    property bool streamingEnabled: (utils.qtVersion() < utils.qtVersionCheck(6, 11, 2)) ?
+                                        userSettings.videoStreamingEnabled && !isGif :
+                                        userSettings.videoStreamingEnabled
 
     property string videoSource: streamingEnabled ? videoView.playlistUrl : ""
     property string transcodedSource
@@ -273,10 +276,11 @@ Column {
                 id: videoPlayer
                 source: transcodedSource
 
-                // TODO: video looping is broken for HLS. The first 2-3 seconds get skipped
-                // on subsequent loops
-                // loops: loopPlay ? MediaPlayer.Infinite : 1
-                loops: (loopPlay && !streamingEnabled) ? MediaPlayer.Infinite : 1
+                // Video looping is broken for HLS before Qt6.11.1.
+                // The first 2-3 scd econds get skipped on subsequent loops
+                loops: (utils.qtVersion() < utils.qtVersionCheck(6, 11, 2)) ?
+                           ((loopPlay && !streamingEnabled) ? MediaPlayer.Infinite : 1) :
+                           (loopPlay ? MediaPlayer.Infinite : 1)
 
                 videoOutput: videoOutput
                 audioOutput: audioOutput
@@ -300,13 +304,15 @@ Column {
                     if (!streamingEnabled)
                         return
 
-                    // HACK: reload HLS stream to overcome loop/replay bug
-                    source = ""
-                    source = transcodedSource
+                    // HACK: reload HLS stream to overcome loop/replay bug (< Qt6.11.2)
+                    if (utils.qtVersion() < utils.qtVersionCheck(6, 11, 2)) {
+                        source = ""
+                        source = transcodedSource
 
-                    if (loopPlay && !manualStop) {
-                        console.debug("Loop video")
-                        start()
+                        if (loopPlay && !manualStop) {
+                            console.debug("Loop video")
+                            start()
+                        }
                     }
                 }
 

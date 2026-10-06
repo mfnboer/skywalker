@@ -15,6 +15,8 @@ class Utils : public WrappedSkywalker
 public:
     explicit Utils(QObject* parent = nullptr);
 
+    Q_INVOKABLE static int qtVersion() { return QT_VERSION; }
+    Q_INVOKABLE static int qtVersionCheck(int major, int minor, int patch) { return QT_VERSION_CHECK(major, minor, patch); }
     static std::optional<QString> makeOptionalString(const QString& str);
     Q_INVOKABLE static QColor determineForegroundColor(const QColor& background, const QColor& lightColor, const QColor& darkColor);
     Q_INVOKABLE static bool similarColors(const QColor& lhs, const QColor& rhs);
@@ -23,7 +25,6 @@ public:
     Q_INVOKABLE static bool isEmojiPickerShown() { return sEmojiPickerShown; }
     Q_INVOKABLE static bool isFollowingListUri(const QString& uri);
     Q_INVOKABLE static QString getFollowingUri();
-
 
 signals:
     void emojiPicked(QString emoji);

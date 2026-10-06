@@ -8,6 +8,7 @@ next
 * Presets for Blacksky, Bluesky and Eurosky appviews
 * Added Noto Sans Symbols to the font
 * Faster upload for large videos
+* Improved video loop playing
 * Increased number of trusted verifiers to 20
 * Bug fixes
 
