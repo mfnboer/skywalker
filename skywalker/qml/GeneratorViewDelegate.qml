@@ -329,7 +329,6 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: generatorView.margin
             elide: Text.ElideRight
-            color: guiSettings.textColor
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfFeed

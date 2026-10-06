@@ -127,11 +127,6 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListView::List lists, const Q
         return 0;
     }
 
-    std::sort(filteredLists.begin(), filteredLists.end(),
-            [](const auto& lhs, const auto& rhs){
-                return SearchUtils::normalizedCompare(lhs.getName(), rhs.getName()) < 0;
-            });
-
     const size_t newRowCount = mLists.size() + filteredLists.size();
 
     beginInsertRows({}, mLists.size(), newRowCount - 1);

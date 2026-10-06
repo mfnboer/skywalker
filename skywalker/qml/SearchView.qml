@@ -187,6 +187,11 @@ SkyPage {
             text: qsTr("Feeds")
             width: implicitWidth;
         }
+        AccessibleTabButton {
+            id: tabStarterPacks
+            text: qsTr("Starter packs")
+            width: implicitWidth;
+        }
 
         function setTopPosts() {
             currentIndex = tabTopPosts.TabBar.index
@@ -482,6 +487,48 @@ SkyPage {
 
             function refreshSearch() {
                 searchUtils?.searchFeeds(page.getSearchText())
+            }
+        }
+
+        SkyListView {
+            id: starterPackListView
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: parent.height
+            model: searchUtils.getSearchStarterPacksModel()
+            clip: true
+
+            Accessible.role: Accessible.List
+
+            delegate: StarterPackViewDelegate {
+                width: starterPackListView.width
+                allowEdit: false
+            }
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (SwipeView.isCurrentItem) {
+                    if (count === 0)
+                        refreshSearch()
+                }
+            }
+
+            FlickableRefresher {
+                inProgress: starterPackListView.model && starterPackListView.model.getFeedInProgress
+                bottomOvershootFun: () => searchUtils.getNextPageSearchStarterPacks(page.getSearchText())
+            }
+
+            EmptyListIndication {
+                svg: SvgOutline.noPosts
+                text: qsTr("No starter packs found")
+                list: starterPackListView
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: starterPackListView.model && starterPackListView.model.getFeedInProgress
+            }
+
+            function refreshSearch() {
+                searchUtils?.searchStarterPacks(page.getSearchText())
             }
         }
     }
@@ -1270,6 +1317,7 @@ SkyPage {
     }
 
     function resetSearch() {
+        starterPackListView.model.clear()
         feedListView.model.clear()
         usersView.model.clear()
         postsViewTop.model.clear()

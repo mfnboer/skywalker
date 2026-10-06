@@ -143,6 +143,11 @@ void SearchUtils::removeModels()
         mSuggestedFeedsModelId = -1;
     }
 
+    if (mSearchStarterPacksModelId >= 0) {
+        mSkywalker->removeStarterPackListModel(mSearchStarterPacksModelId);
+        mSearchStarterPacksModelId = -1;
+    }
+
     if (mSuggestedStarterPacksModelId >= 0) {
         mSkywalker->removeStarterPackListModel(mSuggestedStarterPacksModelId);
         mSuggestedStarterPacksModelId = -1;
@@ -927,6 +932,65 @@ Q_INVOKABLE void SearchUtils::getNextPageSearchFeeds(const QString& text)
     searchFeeds(text, cursor);
 }
 
+void SearchUtils::searchStarterPacks(const QString& text, const QString& cursor)
+{
+    qDebug() << "Search starter packs:" << text << "cursor:" << cursor;
+    auto& model = *getSearchStarterPacksModel();
+
+    if (model.isGetFeedInProgress())
+    {
+        qDebug() << "Search starter packs still in progress";
+        return;
+    }
+
+    model.setGetFeedInProgress(true);
+    bskyClient()->searchStarterPacksV2(text, 20, Utils::makeOptionalString(cursor),
+        [this, presence=getPresence(), cursor](auto output){
+            if (!presence)
+                return;
+
+            auto& model = *getSearchStarterPacksModel();
+            model.setGetFeedInProgress(false);
+
+            if (cursor.isEmpty())
+                model.clear();
+
+            model.addStarterPacks(std::move(output->mStarterPacks), output->mCursor.value_or(""));
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            auto& model = *getSearchStarterPacksModel();
+            model.setGetFeedInProgress(false);
+
+            qDebug() << "searchStarterOacks failed:" << error << " - " << msg;
+            mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void SearchUtils::getNextPageSearchStarterPacks(const QString& text)
+{
+    qDebug() << "Get next page search starter packs:" << text;
+    auto& model = *getSearchStarterPacksModel();
+
+    if (model.isGetFeedInProgress())
+    {
+        qDebug() << "Search starter packs still in progress";
+        return;
+    }
+
+    const auto& cursor = model.getCursor();
+
+    if (cursor.isEmpty())
+    {
+        qDebug() << "End of feed reached.";
+        return;
+    }
+
+    searchStarterPacks(text, cursor);
+}
+
 void SearchUtils::getSuggestedFeeds()
 {
     qDebug() << "Get suggested feeds";
@@ -1058,6 +1122,16 @@ FeedListModel* SearchUtils::getSuggestedFeedsModel()
     return mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
 }
 
+StarterPackListModel* SearchUtils::getSearchStarterPacksModel()
+{
+    Q_ASSERT(mSkywalker);
+
+    if (mSearchStarterPacksModelId < 0)
+        mSearchStarterPacksModelId = mSkywalker->createStarterPackListModel();
+
+    return mSkywalker->getStarterPackListModel(mSearchStarterPacksModelId);
+}
+
 StarterPackListModel* SearchUtils::getSuggestedStarterPacksModel()
 {
     Q_ASSERT(mSkywalker);
@@ -1100,6 +1174,12 @@ void SearchUtils::clearAllSearchResults()
     if (mSuggestedFeedsModelId >= 0)
     {
         auto* model = mSkywalker->getFeedListModel(mSuggestedFeedsModelId);
+        model->clear();
+    }
+
+    if (mSearchStarterPacksModelId >= 0)
+    {
+        auto* model = mSkywalker->getStarterPackListModel(mSearchStarterPacksModelId);
         model->clear();
     }
 

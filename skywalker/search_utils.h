@@ -66,15 +66,22 @@ public:
     Q_INVOKABLE void getNextPageSuggestedActors();
 
     Q_INVOKABLE void getSuggestedFollows(const QString& user);
+
     Q_INVOKABLE void searchFeeds(const QString& text, const QString& cursor = {});
     Q_INVOKABLE void getNextPageSearchFeeds(const QString& text);
+
+    Q_INVOKABLE void searchStarterPacks(const QString& text, const QString& cursor = {});
+    Q_INVOKABLE void getNextPageSearchStarterPacks(const QString& text);
+
     Q_INVOKABLE void getSuggestedFeeds();
     Q_INVOKABLE void getSuggestedStarterPacks();
+
     Q_INVOKABLE SearchPostFeedModel* getSearchPostFeedModel(const QString& sortOrder, const QString& searchKey = "", const QString& feedName = "SearchFeed", bool ignoreReverseSetting = false);
     Q_INVOKABLE AuthorListModel* getSearchUsersModel();
     Q_INVOKABLE AuthorListModel* getSearchSuggestedUsersModel();
     Q_INVOKABLE FeedListModel* getSearchFeedsModel();
     Q_INVOKABLE FeedListModel* getSuggestedFeedsModel();
+    Q_INVOKABLE StarterPackListModel* getSearchStarterPacksModel();
     Q_INVOKABLE StarterPackListModel* getSuggestedStarterPacksModel();
     Q_INVOKABLE void clearAllSearchResults();
     Q_INVOKABLE QStringList getLastSearches() const;
@@ -140,6 +147,7 @@ private:
     int mSearchSuggestedUsersModelId = -1;
     int mSearchFeedsModelId = -1;
     int mSuggestedFeedsModelId = -1;
+    int mSearchStarterPacksModelId = -1;
     int mSuggestedStarterPacksModelId = -1;
     AnyProfileMatcher mAnyProfileMatcher;
     CanChatProfileMatcher mCanChatProfileMatcher;

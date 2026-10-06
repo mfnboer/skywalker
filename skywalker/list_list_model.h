@@ -58,11 +58,12 @@ public:
 
     Q_INVOKABLE void clear();
 
+    int addLists(ATProto::AppBskyGraph::ListView::List lists, const QString& cursor);
+
     // The lists are sorted by name before the are added.
     // Sorting per page is not ideal. By retrieving large pages (100 entries), it should work
     // fine for most users.
     // Returns the number of lists added
-    int addLists(ATProto::AppBskyGraph::ListView::List lists, const QString& cursor);
     int addLists(ATProto::AppBskyGraph::ListWithMembership::List listsWithMembership, const QString& cursor);
 
     // No sorting here

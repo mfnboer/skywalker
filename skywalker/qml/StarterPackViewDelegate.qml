@@ -7,6 +7,7 @@ Rectangle {
     readonly property int margin: 10
     property string userDid
     required property starterpackview starterPack
+    required property bool endOfFeed
     property bool allowEdit: true
     property int maxTextLines: 25
 
@@ -120,6 +121,17 @@ Rectangle {
             width: parent.width
             height: 1
             color: guiSettings.separatorColor
+        }
+
+        // End of feed indication
+        AccessibleText {
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            topPadding: view.margin
+            elide: Text.ElideRight
+            text: qsTr("End of feed")
+            font.italic: true
+            visible: endOfFeed
         }
     }
 

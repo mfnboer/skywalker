@@ -3,12 +3,13 @@ next
 * Create and edit starter packs
 * Follow all button on starter packs
 * Option to opt-out from a starter pack
+* Search starter packs
 * Show thread post index and counts in feeds
 * Translate link on posts in foreign language
-* Presets for Blacksky, Bluesky and Eurosky appviews
 * Added Noto Sans Symbols to the font
 * Faster upload for large videos
 * Improved video loop playing
+* Presets for Blacksky, Bluesky and Eurosky appviews
 * Increased number of trusted verifiers to 20
 * Bug fixes
 

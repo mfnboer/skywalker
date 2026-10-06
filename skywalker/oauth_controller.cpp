@@ -90,6 +90,7 @@ const QStringList SCOPE = {
     "rpc:app.bsky.graph.getStarterPack?aud=*",
     "rpc:app.bsky.graph.getStarterPacks?aud=*",
     "rpc:app.bsky.graph.getStarterPacksWithMembership?aud=*",
+    "rpc:app.bsky.graph.searchStarterPacksV2?aud=*",
     "rpc:app.bsky.graph.getSuggestedFollowsByActor?aud=*",
     "rpc:app.bsky.graph.muteActor?aud=*",
     "rpc:app.bsky.graph.muteActorList?aud=*",
@@ -177,8 +178,8 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "repo:app.bsky.actor.contentVisibilityDeclaration",
-        "Please login again to get authorization to opt out from algorithmic recommendations."
+        "rpc:app.bsky.graph.searchStarterPacksV2?aud=*",
+        "Please login again to get the latest features."
     }};
 }
 

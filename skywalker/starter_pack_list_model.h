@@ -21,7 +21,8 @@ public:
         StarterPack = Qt::UserRole,
         MemberCountDelta,
         MemberCheck,
-        MemberListItemUri
+        MemberListItemUri,
+        EndOfFeed
     };
 
     using Ptr = std::unique_ptr<StarterPackListModel>;
@@ -35,11 +36,12 @@ public:
 
     Q_INVOKABLE void clear();
 
+    void addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor);
+    void addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor);
+
     // The lists are sorted by name before the are added.
     // Sorting per page is not ideal. By retrieving large pages (100 entries), it should work
     // fine for most users.
-    void addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor);
-    void addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor);
     void addStarterPacks(ATProto::AppBskyGraph::StarterPackWithMembership::List starterPacksWithMembership, const QString& cursor);
 
     Q_INVOKABLE void prependStarterPack(const StarterPackView& starterPack);
@@ -75,7 +77,7 @@ protected:
 
 private:
     template<typename T>
-    void _addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor);
+    void _addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor, bool sort = false);
 
     using StarterPackList = std::deque<StarterPackView>;
 

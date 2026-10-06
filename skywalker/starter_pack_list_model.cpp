@@ -47,6 +47,8 @@ QVariant StarterPackListModel::data(const QModelIndex& index, int role) const
         return memberCheck(starterPack.getUri());
     case Role::MemberListItemUri:
         return listChange && listChange->mMemberListItemUri ? *listChange->mMemberListItemUri : getMemberListItemUri(starterPack.getUri());
+    case Role::EndOfFeed:
+        return index.row() == (int)mStarterPacks.size() - 1 && isEndOfList();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -92,11 +94,11 @@ void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackWit
         mMemberCheckResults[starterPack->mStarterPack->mUri] = (starterPack->mListItem ? starterPack->mListItem->mUri : "");
     }
 
-    _addStarterPacks(starterPacks, cursor);
+    _addStarterPacks(starterPacks, cursor, true);
 }
 
 template<typename T>
-void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor)
+void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor, bool sort)
 {
     qDebug() << "Add starter packs:" << starterPacks.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -104,15 +106,22 @@ void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, 
     if (starterPacks.empty())
     {
         qDebug() << "No new starter packs";
+
+        if (!mStarterPacks.empty())
+            emit dataChanged(createIndex(mStarterPacks.size() - 1, 0), createIndex(mStarterPacks.size() - 1, 0), { (int)Role::EndOfFeed });
+
         return;
     }
 
     auto sortedStarterPacks = starterPacks;
 
-    std::sort(sortedStarterPacks.begin(), sortedStarterPacks.end(),
-              [](const auto& lhs, const auto& rhs){
-                  return SearchUtils::normalizedCompare(lhs->getName(), rhs->getName()) < 0;
-              });
+    if (sort)
+    {
+        std::sort(sortedStarterPacks.begin(), sortedStarterPacks.end(),
+                  [](const auto& lhs, const auto& rhs){
+                      return SearchUtils::normalizedCompare(lhs->getName(), rhs->getName()) < 0;
+                  });
+    }
 
     const size_t newRowCount = mStarterPacks.size() + sortedStarterPacks.size();
 
@@ -205,7 +214,8 @@ QHash<int, QByteArray> StarterPackListModel::roleNames() const
         { int(Role::StarterPack), "starterPack" },
         { int(Role::MemberCountDelta), "memberCountDelta" },
         { int(Role::MemberCheck), "memberCheck" },
-        { int(Role::MemberListItemUri), "memberListItemUri" }
+        { int(Role::MemberListItemUri), "memberListItemUri" },
+        { int(Role::EndOfFeed), "endOfFeed" }
     };
 
     return roles;
