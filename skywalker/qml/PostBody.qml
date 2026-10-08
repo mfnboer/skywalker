@@ -48,7 +48,7 @@ Column {
     property bool showRecord: true
     property bool showTranslateOption: true
     property bool moving: false
-    readonly property bool showThreadCounter: postThreadPostCount > 0 && postThreadPostIndex > 0 && !UnicodeFonts.hasThreadCount(postText)
+    readonly property bool showThreadCounter: postThreadPostCount > 0 && postThreadPostIndex > 0 && !UnicodeFonts.hasThreadCount(postPlainText)
     readonly property bool hasAttachment: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed
     readonly property bool showThreadIndicator: !showThreadCounter && postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
     readonly property bool replaceThreadIndicator: !showThreadCounter && (postIsThread || postIsThreadReply) && !showThreadIndicator
