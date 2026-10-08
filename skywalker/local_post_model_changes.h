@@ -12,11 +12,18 @@
 
 namespace Skywalker {
 
+class Post;
+
 class  LocalPostModelChanges
 {
 public:
     struct Change
     {
+        int getReplyCountDelta() const;
+        int getRepostCountDelta(const Post& post) const;
+        int getLikeCountDelta(const Post& post) const;
+        int getQuoteCountDelta() const;
+
         int mLikeCountDelta = 0;
 
         // Not-set means not changed.

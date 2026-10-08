@@ -787,13 +787,13 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
     case Role::PostFeedContext:
         return post.getFeedContext();
     case Role::PostReplyCount:
-        return post.getReplyCount() + (change ? change->mReplyCountDelta : 0);
+        return post.getReplyCount() + (change ? change->getReplyCountDelta() : 0);
     case Role::PostRepostCount:
-        return post.getRepostCount() + (change ? change->mRepostCountDelta : 0);
+        return post.getRepostCount() + (change ? change->getRepostCountDelta(post) : 0);
     case Role::PostLikeCount:
-        return post.getLikeCount() + (change ? change->mLikeCountDelta : 0);
+        return post.getLikeCount() + (change ? change->getLikeCountDelta(post) : 0);
     case Role::PostQuoteCount:
-        return post.getQuoteCount() + (change ? change->mQuoteCountDelta : 0);
+        return post.getQuoteCount() + (change ? change->getQuoteCountDelta() : 0);
     case Role::PostRepostUri:
         return change && change->mRepostUri ? *change->mRepostUri : post.getRepostUri();
     case Role::PostRepostTransient:

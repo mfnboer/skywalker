@@ -1084,13 +1084,25 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return rootChange && rootChange->mHiddenReplies ? rootChange->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
     }
     case Role::NotificationPostRepostCount:
-        return notification.getNotificationPost(mPostCache).getRepostCount() + (change ? change->mRepostCountDelta : 0);
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.getRepostCount() + (change ? change->getRepostCountDelta(post) : 0);
+    }
     case Role::NotificationPostLikeCount:
-        return notification.getNotificationPost(mPostCache).getLikeCount() + (change ? change->mLikeCountDelta : 0);
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.getLikeCount() + (change ? change->getLikeCountDelta(post) : 0);
+    }
     case Role::NotificationPostQuoteCount:
-        return notification.getNotificationPost(mPostCache).getQuoteCount() + (change ? change->mQuoteCountDelta : 0);
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.getQuoteCount() + (change ? change->mQuoteCountDelta : 0);
+    }
     case Role::NotificationPostReplyCount:
-        return notification.getNotificationPost(mPostCache).getReplyCount() + (change ? change->mReplyCountDelta : 0);
+    {
+        const auto& post = notification.getNotificationPost(mPostCache);
+        return post.getReplyCount() + (change ? change->mReplyCountDelta : 0);
+    }
     case Role::NotificationPostBookmarked:
         return change && change->mBookmarked ? *change->mBookmarked :  notification.getNotificationPost(mPostCache).isBookmarked();
     case Role::NotificationPostBookmarkTransient:

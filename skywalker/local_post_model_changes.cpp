@@ -1,8 +1,46 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "local_post_model_changes.h"
+#include "post.h"
 
 namespace Skywalker {
+
+int LocalPostModelChanges::Change::getReplyCountDelta() const
+{
+    // Count may be off by 1 when you replied to a post through a notification and the
+    // post comes in later into your feed. Not easy to detect though.
+    return mReplyCountDelta;
+}
+
+int LocalPostModelChanges::Change::getRepostCountDelta(const Post& post) const
+{
+    if (mRepostCountDelta == 1)
+        return post.getRepostUri().isEmpty() ? mRepostCountDelta : 0;
+
+    if (mRepostCountDelta == -1)
+        return post.getRepostUri().isEmpty() ? 0 : mRepostCountDelta;
+
+    return mRepostCountDelta;
+}
+
+int LocalPostModelChanges::Change::getLikeCountDelta(const Post& post) const
+{
+    // If you like a post through a notification and it shows up later in a feed
+    // *with* the like, then the delta should not be applied
+
+    if (mLikeCountDelta == 1)
+        return post.getLikeUri().isEmpty() ? mLikeCountDelta : 0;
+
+    if (mLikeCountDelta == -1)
+        return post.getLikeUri().isEmpty() ? 0 : mLikeCountDelta;
+
+    return mLikeCountDelta;
+}
+
+int LocalPostModelChanges::Change::getQuoteCountDelta() const
+{
+    return mQuoteCountDelta;
+}
 
 const LocalPostModelChanges::Change* LocalPostModelChanges::getLocalChange(const QString& cid) const
 {
