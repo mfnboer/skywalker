@@ -87,10 +87,12 @@ LanguageList LanguageUtils::getLanguages(const QStringList& langCodes)
 
 QString LanguageUtils::getInputLanguage()
 {
-    if (!qGuiApp)
+    auto* guiApp = qobject_cast<QGuiApplication*>(QCoreApplication::instance());
+
+    if (!guiApp)
         return {};
 
-    auto* inputMethod = qGuiApp->inputMethod();
+    auto* inputMethod = guiApp->inputMethod();
     return languageCodeToShortCode(inputMethod->locale().name());
 }
 
@@ -120,11 +122,11 @@ LanguageUtils::LanguageUtils(QObject* parent) :
 {
     initLanguages();
 
-    if (qGuiApp)
+    if (auto* guiApp = qobject_cast<QGuiApplication*>(QCoreApplication::instance()))
     {
-        auto* inputMethod = qGuiApp->inputMethod();
+        auto* inputMethod = guiApp->inputMethod();
         connect(inputMethod, &QInputMethod::localeChanged, this, [this]{
-            qDebug() << "Input language changed:", getInputLanguage();
+            qDebug() << "Input language changed:" << getInputLanguage();
             emit defaultPostLanguageChanged();
         });
     }
