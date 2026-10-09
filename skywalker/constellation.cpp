@@ -18,7 +18,7 @@ Constellation::Constellation(QNetworkAccessManager* network) :
 }
 
 void Constellation::getBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,
-                                 std::optional<int> limit,
+                                 std::optional<int> limit, const std::optional<QString> cursor,
                                  const BacklinksCb& successCb, const ErrorCb& errorCb)
 {
     qDebug() << "Get backlinks:" << subject << "source:" << source << "filterDids:" << filterDids.size() << "limit:" << limit;
@@ -37,6 +37,7 @@ void Constellation::getBackLinks(const QString& subject, const QString& source, 
 
     Params params{{"subject", subject}, {"source", source}};
     addOptionalIntParam(params, "limit", limit);
+    addOptionalStringParam(params, "cursor", cursor);
     addStringListParam(params, "did", filterDids);
 
     sendRequest("blue.microcosm.links.getBacklinks", params,
@@ -124,6 +125,12 @@ Constellation::Backlinks::SharedPtr Constellation::Backlinks::fromJson(const QJs
     auto backlinks = std::make_shared<Constellation::Backlinks>();
     backlinks->mTotal = xjson.getRequiredInt("total");
     backlinks->mRecords = xjson.getRequiredVector<Record>("records");
+    backlinks->mCursor = xjson.getOptionalString("cursor");
+
+    if (backlinks->mCursor && backlinks->mCursor->isEmpty())
+        backlinks->mCursor = {};
+
+
     return backlinks;
 }
 

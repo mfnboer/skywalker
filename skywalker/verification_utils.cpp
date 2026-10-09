@@ -138,7 +138,7 @@ void VerificationUtils::getVerifications(const BasicProfile& profile)
 
     mVerificationCache.insert(did, new VerificationView::List);
 
-    mConstellation.getBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids, {},
+    mConstellation.getBackLinks(did, "app.bsky.graph.verification:subject", mVerifierDids, {}, {},
         [this, presence=getPresence(), profile](Constellation::Backlinks::SharedPtr backlinks){
             if (!presence)
                 return;

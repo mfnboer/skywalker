@@ -72,7 +72,7 @@ SkyPage {
     property bool requireAltText: skywalker.getUserSettings().getRequireAltText(userDid)
     property bool autoLinkCard: skywalker.getUserSettings().getAutoLinkCard()
     property bool threadAutoNumber: skywalker.getUserSettings().getThreadAutoNumber()
-    property string threadPrefix: skywalker.getUserSettings().getThreadPrefix()
+    readonly property string threadPrefix: skywalker.getUserSettings().threadPrefix
     property bool threadAutoSplit: skywalker.getUserSettings().getThreadAutoSplit()
 
     property int currentPostIndex: 0
@@ -239,7 +239,7 @@ SkyPage {
                             text: qsTr(`${(threadPrefix ? UnicodeFonts.toCleanedHtml(threadPrefix) : qsTr("<i>&lt;none&gt;</i>"))}`)
                         }
                     }
-                    enabled: autoNumberItem.checked
+
                     onTriggered: editThreadPrefix()
                 }
                 AccessibleMenuItem {
@@ -2415,8 +2415,7 @@ SkyPage {
         let dialog = component.createObject(page, { prefix: threadPrefix })
 
         dialog.onAccepted.connect(() => {
-            threadPrefix = dialog.getPrefix()
-            skywalker.getUserSettings().setThreadPrefix(threadPrefix)
+            skywalker.getUserSettings().threadPrefix = dialog.getPrefix()
             dialog.close()
         })
 

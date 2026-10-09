@@ -454,6 +454,47 @@ ColumnLayout {
                 text: parent.to
             }
         }
+        AccessibleText {
+            Layout.preferredWidth: labelSize
+            wrapMode: Text.Wrap
+            text: qsTr("Thread numbering prefix")
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: textInput.height
+            radius: guiSettings.radius
+            border.width: textInput.activeFocus ? 1 : 0
+            border.color: guiSettings.buttonColor
+            color: guiSettings.textInputBackgroundColor
+
+            SkyTextEdit {
+                id: textInput
+                width: parent.width
+                topPadding: 10
+                bottomPadding: 10
+                maxLength: 5
+                font.pointSize: guiSettings.scaledFont(1)
+                strictMax: true
+                singleLine: true
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                placeholderText: qsTr("<none>")
+                initialText: userSettings.threadPrefix
+
+                onTextChanged: userSettings.threadPrefix = text
+            }
+
+            SvgPlainButton {
+                id: clearButton
+                anchors.right: parent.right
+                imageMargin: 8
+                y: parent.y - parent.padding
+                width: height
+                height: parent.height
+                svg: SvgOutline.close
+                accessibleName: qsTr("reset prefix")
+                onClicked: textInput.text = UnicodeFonts.THREAD_SYMBOL
+            }
+        }
         Rectangle {
             Layout.columnSpan: 2
             Layout.fillWidth: true

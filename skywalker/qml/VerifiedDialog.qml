@@ -208,6 +208,6 @@ SkyDialog {
     }
 
     Component.onCompleted: {
-        skywalker.getVerificationUtils().getVerifications(author)
+        skywalker.getVerificationUtils().getTrustedVerifications(author, true)
     }
 }

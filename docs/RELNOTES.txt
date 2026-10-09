@@ -1,5 +1,6 @@
 next
 ====
+* Show thread symbol in front of thread numbering
 * Bug fixes
 
 4.46

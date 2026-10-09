@@ -1980,7 +1980,11 @@ bool UserSettings::getThreadAutoNumber() const
 
 void UserSettings::setThreadPrefix(QString prefix)
 {
-    mSettings.setValue("threadPrefix", prefix);
+    if (prefix != getThreadPrefix())
+    {
+        mSettings.setValue("threadPrefix", prefix);
+        emit threadPrefixChanged();
+    }
 }
 
 QString UserSettings::getThreadPrefix() const

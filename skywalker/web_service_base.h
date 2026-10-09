@@ -21,6 +21,7 @@ protected:
     using SslErrorsCb = std::function<void(QNetworkReply*)>;
 
     static void addOptionalIntParam(Params& params, const QString& name, std::optional<int> value);
+    static void addOptionalStringParam(Params& params, const QString& name, std::optional<QString> value);
     static void addStringListParam(Params& params, const QString& name, const std::vector<QString>& list);
 
     void setBaseUrl(const QString& baseUrl) { mBaseUrl = baseUrl; }

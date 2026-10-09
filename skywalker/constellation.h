@@ -25,6 +25,7 @@ public:
     {
         int mTotal = 0;
         Record::List mRecords;
+        std::optional<QString> mCursor;
 
         using SharedPtr = std::shared_ptr<Backlinks>;
         static SharedPtr fromJson(const QJsonObject& json);
@@ -37,7 +38,7 @@ public:
     explicit Constellation(QNetworkAccessManager* network);
 
     void getBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,
-                      std::optional<int> limit,
+                      std::optional<int> limit, const std::optional<QString> cursor,
                       const BacklinksCb& successCb, const ErrorCb& errorCb);
 
     void hasBackLinks(const QString& subject, const QString& source, const std::vector<QString>& filterDids,

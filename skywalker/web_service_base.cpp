@@ -12,6 +12,12 @@ void WebServiceBase::addOptionalIntParam(Params& params, const QString& name, st
         params.append({name, QString::number(*value)});
 }
 
+void WebServiceBase::addOptionalStringParam(Params& params, const QString& name, std::optional<QString> value)
+{
+    if (value)
+        params.append({name, *value});
+}
+
 void WebServiceBase::addStringListParam(Params& params, const QString& name, const std::vector<QString>& list)
 {
     for (const auto& str : list)

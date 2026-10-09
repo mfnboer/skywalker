@@ -64,6 +64,7 @@ class UserSettings : public QObject,
     Q_PROPERTY(QString linkColor READ getLinkColor WRITE setLinkColor NOTIFY linkColorChanged FINAL)
     Q_PROPERTY(QEnums::ThreadStyle threadStyle READ getThreadStyle WRITE setThreadStyle NOTIFY threadStyleChanged FINAL)
     Q_PROPERTY(QString threadColor READ getThreadColor WRITE setThreadColor NOTIFY threadColorChanged FINAL)
+    Q_PROPERTY(QString threadPrefix READ getThreadPrefix WRITE setThreadPrefix NOTIFY threadPrefixChanged FINAL)
     Q_PROPERTY(double fontScale READ getFontScale WRITE setFontScale NOTIFY fontScaleChanged FINAL)
     Q_PROPERTY(QEnums::FavoritesBarPosition favoritesBarPosition READ getFavoritesBarPosition WRITE setFavoritesBarPosition NOTIFY favoritesBarPositionChanged FINAL)
     Q_PROPERTY(QEnums::ImagePreview imagePreview READ getImagePreview WRITE setImagePreview NOTIFY imagePreviewChanged FINAL)
@@ -442,8 +443,8 @@ public:
     Q_INVOKABLE void setThreadAutoNumber(bool autoNumber);
     Q_INVOKABLE bool getThreadAutoNumber() const;
 
-    Q_INVOKABLE void setThreadPrefix(QString prefix);
-    Q_INVOKABLE QString getThreadPrefix() const;
+    void setThreadPrefix(QString prefix);
+    QString getThreadPrefix() const;
 
     Q_INVOKABLE void setThreadAutoSplit(bool autoSplit);
     Q_INVOKABLE bool getThreadAutoSplit() const;
@@ -624,6 +625,7 @@ signals:
     void linkColorChanged();
     void threadStyleChanged();
     void threadColorChanged();
+    void threadPrefixChanged();
     void fontScaleChanged();
     void favoritesBarPositionChanged();
     void imagePreviewChanged();
