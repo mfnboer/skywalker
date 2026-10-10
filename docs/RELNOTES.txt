@@ -1,3 +1,7 @@
+next
+====
+* Show users that have blocked you
+
 4.46.1
 ======
 * Show thread symbol in front of thread numbering

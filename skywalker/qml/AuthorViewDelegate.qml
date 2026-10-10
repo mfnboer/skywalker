@@ -195,6 +195,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             active: showVerificationDate
+            visible: active
 
             sourceComponent: AccessibleText {
                 readonly property list<verificationview> verifications: author.verificationState.verifications

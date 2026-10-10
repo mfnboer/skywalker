@@ -216,6 +216,12 @@ void AuthorListModel::deleteEntry(int index)
     setCountDelta(mCountDelta - 1);
 }
 
+void AuthorListModel::setCursor(const QString& cursor)
+{
+    mCursor = cursor;
+    setEndOfList();
+}
+
 void AuthorListModel::setEndOfList()
 {
     if (isEndOfList() && !mList.empty())

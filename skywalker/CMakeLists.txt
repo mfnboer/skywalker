@@ -766,6 +766,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SearchFeed.qml
         QML_FILES qml/AddUserStarterPackListView.qml
         QML_FILES qml/AddUserStarterPackViewDelegate.qml
+        SOURCES backlinks.h
+        SOURCES backlinks.cpp
+        QML_FILES qml/AuthorList.qml
 )
 
 target_link_libraries(libskywalker

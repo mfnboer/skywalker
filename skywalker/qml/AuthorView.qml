@@ -44,6 +44,7 @@ SkyPage {
     readonly property bool hasStarterPacks: author.associated.starterPacks > 0
     readonly property int starterPackListModelId: skywalker.createStarterPackListModel()
     readonly property int verificationModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFICATIONS, author.did)
+    readonly property int blockedByModelId: isUser(author) ? skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKED_BY, author.did) : -1
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
     property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
@@ -809,13 +810,19 @@ SkyPage {
                     id: verificationsTab
                     text: qsTr("Verifications")
                 }
+                AccessibleTabButton {
+                    id: blockedByTab
+                    text: qsTr("Blocked by")
+                }
 
                 Component.onCompleted: {
                     if (!isLabeler)
                         removeItem(labelsTab)
 
-                    if (!page.isUser(author))
+                    if (!page.isUser(author)) {
                         removeItem(likesTab)
+                        removeItem(blockedByTab)
+                    }
 
                     if (!hasFeeds)
                         removeItem(feedsTab)
@@ -1177,13 +1184,19 @@ SkyPage {
                 active: hasFeeds
                 asynchronous: true
 
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && !item.model) {
+                        getFeedList(feedListModelId)
+                        item.model = skywalker.getFeedListModel(feedListModelId)
+                    }
+                }
+
                 sourceComponent: ListView {
                     id: authorFeedList
                     width: parent.width
                     height: parent.height
                     clip: true
                     spacing: 0
-                    model: skywalker.getFeedListModel(feedListModelId)
                     flickDeceleration: guiSettings.flickDeceleration
                     maximumFlickVelocity: guiSettings.maxFlickVelocity
                     pixelAligned: guiSettings.flickPixelAligned
@@ -1235,13 +1248,19 @@ SkyPage {
                 active: hasStarterPacks
                 asynchronous: true
 
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && !item.model) {
+                        getStarterPackList(starterPackListModelId)
+                        item.model = skywalker.getStarterPackListModel(starterPackListModelId)
+                    }
+                }
+
                 sourceComponent: ListView {
                     id: authorStarterPackList
                     width: parent.width
                     height: parent.height
                     clip: true
                     spacing: 0
-                    model: skywalker.getStarterPackListModel(starterPackListModelId)
                     flickDeceleration: guiSettings.flickDeceleration
                     maximumFlickVelocity: guiSettings.maxFlickVelocity
                     pixelAligned: guiSettings.flickPixelAligned
@@ -1291,13 +1310,19 @@ SkyPage {
                 active: hasLists
                 asynchronous: true
 
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && !item.model) {
+                        getListList(listListModelId)
+                        item.model = skywalker.getListListModel(listListModelId)
+                    }
+                }
+
                 sourceComponent: ListView {
                     id: authorListList
                     width: parent.width
                     height: parent.height
                     clip: true
                     spacing: 0
-                    model: skywalker.getListListModel(listListModelId)
                     flickDeceleration: guiSettings.flickDeceleration
                     maximumFlickVelocity: guiSettings.maxFlickVelocity
                     pixelAligned: guiSettings.flickPixelAligned
@@ -1326,13 +1351,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: authorListList.model?.getFeedInProgress
+                        inProgress: Boolean(authorListList.model?.getFeedInProgress)
                         bottomOvershootFun: () => getListListNextPage(listListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: authorListList.model?.getFeedInProgress
+                        running: Boolean(authorListList.model?.getFeedInProgress)
                     }
 
                     EmptyListIndication {
@@ -1357,50 +1382,51 @@ SkyPage {
                 active: true
                 asynchronous: true
 
-                sourceComponent: SkyListView {
-                    id: authorVerificationList
-                    width: parent.width
-                    height: parent.height
-                    clip: true
-                    spacing: 0
-                    model: skywalker.getAuthorListModel(verificationModelId)
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && item.modelId < 0) {
+                        getAuthorList(verificationModelId)
+                        item.modelId = verificationModelId
+                    }
+                }
+
+                sourceComponent: AuthorList {
+                    userDid: page.userDid
                     interactive: !authorFeedView.interactive
-                    preloadNextPageFunc: () => getAuthorListNextPage(verificationModelId)
+                    getAuthorListFunc: (id) => getAuthorList(id)
+                    getAuthorListNextPageFunc: (id) => getAuthorListNextPage(id)
+                    showFollow: false
+                    showshowVerificationDate: true
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
                     }
+                }
+            }
 
-                    delegate: AuthorViewDelegate {
-                        width: authorFeedView.width
-                        userDid: page.userDid
-                        showFollow: false
-                        showVerificationDate: true
+            // Blocked by
+            Loader {
+                id: blockedByView
+                active: page.isUser(author)
+                asynchronous: true
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && item.modelId < 0) {
+                        getAuthorList(blockedByModelId)
+                        item.modelId = blockedByModelId
                     }
+                }
 
-                    FlickableRefresher {
-                        inProgress: authorVerificationList.model?.getFeedInProgress
-                        bottomOvershootFun: () => getAuthorListNextPage(verificationModelId)
-                    }
+                sourceComponent: AuthorList {
+                    userDid: page.userDid
+                    interactive: !authorFeedView.interactive
+                    getAuthorListFunc: (id) => getAuthorList(id)
+                    getAuthorListNextPageFunc: (id) => getAuthorListNextPage(id)
+                    showFollow: false
 
-                    BusyIndicator {
-                        anchors.centerIn: parent
-                        running: authorVerificationList.model?.getFeedInProgress
-                    }
-
-                    EmptyListIndication {
-                        svg: SvgOutline.noUsers
-                        text: qsTr("No verifications")
-                        list: authorVerificationList
-                    }
-
-                    function refresh() {
-                        getAuthorList(verificationModelId)
-                    }
-
-                    function clear() {
-                        model.clear()
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
                     }
                 }
             }
@@ -1409,8 +1435,10 @@ SkyPage {
                 if (!isLabeler)
                     removeItem(labelsView)
 
-                if (!page.isUser(author))
+                if (!page.isUser(author)) {
                     removeItem(likesView)
+                    removeItem(blockedByView)
+                }
 
                 if (!hasFeeds)
                     removeItem(feedsView)
@@ -2051,6 +2079,9 @@ SkyPage {
         skywalker.removeStarterPackListModel(starterPackListModelId)
         skywalker.removeAuthorListModel(verificationModelId)
 
+        if (blockedByModelId > -1)
+            skywalker.removeAuthorListModel(blockedByModelId)
+
         if (contentGroupListModelId > -1) {
             // Tracking for new labels is only done for the default settings
             if (!showLabelPrefsForListUri)
@@ -2094,19 +2125,8 @@ SkyPage {
 
         profileUtils.getPds(author.did)
 
-        if (hasFeeds)
-            getFeedList(feedListModelId)
-
-        if (hasLists)
-            getListList(listListModelId)
-
-        if (hasStarterPacks)
-            getStarterPackList(starterPackListModelId)
-
         if (isLabeler)
             profileUtils.getLabelerViewDetailed(author.did)
-
-        getAuthorList(verificationModelId)
 
         // HACK: directly setting the current index does not work...
         Qt.callLater(() => {

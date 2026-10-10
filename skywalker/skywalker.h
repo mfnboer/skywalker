@@ -38,6 +38,7 @@
 
 namespace Skywalker {
 
+class Backlinks;
 class Chat;
 class Constellation;
 class OAuthController;
@@ -441,6 +442,7 @@ private:
     ATProto::PostMaster* postMaster();
     ForYou* getForYou();
     Constellation* getConstellation();
+    Backlinks* getBacklinks();
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
@@ -451,6 +453,7 @@ private:
     std::unique_ptr<ATProto::PostMaster> mPostMaster;
     std::unique_ptr<ForYou> mForYou;
     std::unique_ptr<Constellation> mConstellation;
+    std::unique_ptr<Backlinks> mBacklinks;
     std::unique_ptr<VerificationUtils> mVerificationUtils;
 
     QString mUserDid;

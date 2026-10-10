@@ -66,6 +66,7 @@ public:
     Q_INVOKABLE void deleteEntry(int index);
 
     const QString& getCursor() const { return mCursor; }
+    void setCursor(const QString& cursor);
     bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Type getType() const { return mType; }

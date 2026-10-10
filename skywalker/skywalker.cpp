@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "backlinks.h"
 #include "chat.h"
 #include "constellation.h"
 #include "definitions.h"
@@ -4508,6 +4509,9 @@ void Skywalker::getAuthorList(int id, int limit, int maxPages, int minEntries, c
     case AuthorListModel::Type::AUTHOR_LIST_VERIFICATIONS:
         getVerificationsAuthorList(atId, limit, maxPages, minEntries, cursor, id);
         break;
+    case AuthorListModel::Type::AUTHOR_LIST_BLOCKED_BY:
+        getBacklinks()->getBlockedByAuthorList(atId, cursor, id);
+        break;
     }
 }
 
@@ -5643,6 +5647,18 @@ Constellation* Skywalker::getConstellation()
     return mConstellation.get();
 }
 
+Backlinks* Skywalker::getBacklinks()
+{
+    if (!mBacklinks)
+    {
+        auto* constellation = getConstellation();
+        mBacklinks = std::make_unique<Backlinks>(*constellation, this);
+        mBacklinks->setSkywalker(this);
+    }
+
+    return mBacklinks.get();
+}
+
 void Skywalker::signOut()
 {
     if (mUserDid.isEmpty())
@@ -5679,6 +5695,7 @@ void Skywalker::signOut()
         mVerificationUtils = nullptr;
     }
 
+    mBacklinks = nullptr;
     mPostMaster = nullptr;
 
     stopTimelineAutoUpdate();
