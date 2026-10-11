@@ -1,6 +1,7 @@
 next
 ====
-* Show users that have blocked you
+* View users that have blocked you
+* View who has verified an account
 
 4.46.1
 ======

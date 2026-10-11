@@ -13,8 +13,10 @@ public:
     explicit Backlinks(Constellation& constellation, QObject* parent = nullptr);
 
     void getBlockedByAuthorList(const QString& atId, const QString& cursor, int modelId);
+    void getVerifiedByAuthorList(const QString& atId, const QString& cursor, int modelId);
 
 private:
+    void getAuthorList(const QString& source, const QString& atId, const QString& cursor, int modelId);
     void getProfiles(const std::vector<QString>& dids, const QString& cursor, int modelId);
 
     Constellation& mConstellation;

@@ -45,6 +45,7 @@ SkyPage {
     readonly property int starterPackListModelId: skywalker.createStarterPackListModel()
     readonly property int verificationModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFICATIONS, author.did)
     readonly property int blockedByModelId: isUser(author) ? skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKED_BY, author.did) : -1
+    readonly property int verifiedByModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFIED_BY, author.did)
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
     property var contentGroupListModel: contentGroupListModelId > -1 ? skywalker.getContentGroupListModel(contentGroupListModelId) : null
@@ -814,6 +815,10 @@ SkyPage {
                     id: blockedByTab
                     text: qsTr("Blocked by")
                 }
+                AccessibleTabButton {
+                    id: verifiedByTab
+                    text: qsTr("Verified by")
+                }
 
                 Component.onCompleted: {
                     if (!isLabeler)
@@ -1414,6 +1419,33 @@ SkyPage {
                     if (item && item.modelId < 0) {
                         getAuthorList(blockedByModelId)
                         item.modelId = blockedByModelId
+                    }
+                }
+
+                sourceComponent: AuthorList {
+                    userDid: page.userDid
+                    interactive: !authorFeedView.interactive
+                    getAuthorListFunc: (id) => getAuthorList(id)
+                    getAuthorListNextPageFunc: (id) => getAuthorListNextPage(id)
+                    showFollow: false
+
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
+                }
+            }
+
+            // Verified by
+            Loader {
+                id: verifiedByView
+                active: true
+                asynchronous: true
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && item.modelId < 0) {
+                        getAuthorList(verifiedByModelId)
+                        item.modelId = verifiedByModelId
                     }
                 }
 
@@ -2078,6 +2110,7 @@ SkyPage {
         skywalker.removeListListModel(listListModelId)
         skywalker.removeStarterPackListModel(starterPackListModelId)
         skywalker.removeAuthorListModel(verificationModelId)
+        skywalker.removeAuthorListModel(verifiedByModelId)
 
         if (blockedByModelId > -1)
             skywalker.removeAuthorListModel(blockedByModelId)

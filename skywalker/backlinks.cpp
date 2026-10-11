@@ -6,6 +6,8 @@
 
 namespace Skywalker {
 
+static constexpr int BACKLINKS_PAGE_SIZE = 25;
+
 Backlinks::Backlinks(Constellation& constellation, QObject* parent) :
     WrappedSkywalker(parent),
     mConstellation(constellation)
@@ -13,6 +15,16 @@ Backlinks::Backlinks(Constellation& constellation, QObject* parent) :
 }
 
 void Backlinks::getBlockedByAuthorList(const QString& atId, const QString& cursor, int modelId)
+{
+    getAuthorList("app.bsky.graph.block:subject", atId, cursor, modelId);
+}
+
+void Backlinks::getVerifiedByAuthorList(const QString& atId, const QString& cursor, int modelId)
+{
+    getAuthorList("app.bsky.graph.verification:subject", atId, cursor, modelId);
+}
+
+void Backlinks::getAuthorList(const QString& source, const QString& atId, const QString& cursor, int modelId)
 {
     Q_ASSERT(mSkywalker);
     if (!mSkywalker)
@@ -23,7 +35,7 @@ void Backlinks::getBlockedByAuthorList(const QString& atId, const QString& curso
     if (model)
         model->setGetFeedInProgress(true);
 
-    mConstellation.getBackLinks(atId, "app.bsky.graph.block:subject", {}, 25, Utils::makeOptionalString(cursor),
+    mConstellation.getBackLinks(atId, source, {}, BACKLINKS_PAGE_SIZE, Utils::makeOptionalString(cursor),
         [this, presence=getPresence(), modelId](Constellation::Backlinks::SharedPtr backlinks){
             if (!presence)
                 return;
@@ -35,11 +47,11 @@ void Backlinks::getBlockedByAuthorList(const QString& atId, const QString& curso
 
             getProfiles(dids, backlinks->mCursor.value_or(""), modelId);
         },
-        [this, presence=getPresence(), modelId](const QString& error, const QString& msg){
+        [this, presence=getPresence(), source, modelId](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qWarning() << "getBlockedByAuthorList failed:" << error << "-" << msg;
+            qWarning() << "getAuthorList failed:" << source << error << "-" << msg;
             auto* model = mSkywalker->getAuthorListModel(modelId);
 
             if (model)

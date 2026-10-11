@@ -4512,6 +4512,9 @@ void Skywalker::getAuthorList(int id, int limit, int maxPages, int minEntries, c
     case AuthorListModel::Type::AUTHOR_LIST_BLOCKED_BY:
         getBacklinks()->getBlockedByAuthorList(atId, cursor, id);
         break;
+    case AuthorListModel::Type::AUTHOR_LIST_VERIFIED_BY:
+        getBacklinks()->getVerifiedByAuthorList(atId, cursor, id);
+        break;
     }
 }
 
