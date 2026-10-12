@@ -175,7 +175,7 @@ public:
         AUTHOR_LIST_ACTIVE_FOLLOWS,
         AUTHOR_LIST_VERIFICATIONS,
         AUTHOR_LIST_BLOCKED_BY,
-        AUTHOR_LIST_VERIFIED_BY,
+        AUTHOR_LIST_VERIFIED_BY
     };
     Q_ENUM(AuthorListType)
 
@@ -330,7 +330,8 @@ public:
         LIST_TYPE_ALL,
         LIST_TYPE_BLOCKS,
         LIST_TYPE_MUTES,
-        LIST_TYPE_SAVED
+        LIST_TYPE_SAVED,
+        LIST_TYPE_MEMBER_OF_LIST
     };
     Q_ENUM(ListType)
 

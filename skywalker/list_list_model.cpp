@@ -90,6 +90,8 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
         return memberCheck(list.getUri());
     case Role::MemberListItemUri:
         return change && change->mMemberListItemUri ? *change->mMemberListItemUri : getMemberListItemUri(list.getUri());
+    case Role::EndOfList:
+        return isEndOfList() && index.row() == (int)mLists.size() - 1;
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -107,6 +109,7 @@ void ListListModel::clear()
         endRemoveRows();
     }
 
+    mListUriSet.clear();
     mMemberCheckResults.clear();
     mCursor.clear();
     clearLocalChanges();
@@ -124,6 +127,7 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListView::List lists, const Q
     if (filteredLists.empty())
     {
         qDebug() << "No new lists";
+        setEndOfList();
         return 0;
     }
 
@@ -132,6 +136,9 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListView::List lists, const Q
     beginInsertRows({}, mLists.size(), newRowCount - 1);
     mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
+
+    for (const auto& list : filteredLists)
+        mListUriSet.insert(list.getUri());
 
     qDebug() << "New lists size:" << mLists.size();
     return filteredLists.size();
@@ -161,6 +168,7 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListWithMembership::List list
     if (filteredLists.empty())
     {
         qDebug() << "No new lists";
+        setEndOfList();
         return 0;
     }
 
@@ -169,6 +177,9 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListWithMembership::List list
     beginInsertRows({}, mLists.size(), newRowCount - 1);
     mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
+
+    for (const auto& list : filteredLists)
+        mListUriSet.insert(list.getUri());
 
     qDebug() << "New lists size:" << mLists.size();
     return filteredLists.size();
@@ -191,6 +202,9 @@ void ListListModel::addLists(const QList<ListView>& lists)
     mLists.insert(mLists.end(), lists.begin(), lists.end());
     endInsertRows();
 
+    for (const auto& list : lists)
+        mListUriSet.insert(list.getUri());
+
     qDebug() << "New lists size:" << mLists.size();
 }
 
@@ -201,6 +215,7 @@ void ListListModel::prependList(const ListView& list)
     beginInsertRows({}, 0, 0);
 
     mLists.push_front(list);
+    mListUriSet.insert(list.getUri());
 
     if (!mMemberCheckDid.isEmpty())
         mMemberCheckResults[list.getUri()] = "";
@@ -255,6 +270,8 @@ void ListListModel::deleteEntry(int index)
     mLists.erase(mLists.begin() + index);
     endRemoveRows();
 
+    mListUriSet.erase(listUri);
+
     if (!mMemberCheckDid.isEmpty())
         mMemberCheckResults.erase(listUri);
 }
@@ -270,6 +287,21 @@ ListView ListListModel::getEntry(int index) const
     }
 
     return mLists[index];
+}
+
+void ListListModel::setCursor(const QString& cursor)
+{
+    mCursor = cursor;
+    setEndOfList();
+}
+
+void ListListModel::setEndOfList()
+{
+    if (isEndOfList() && !mLists.empty())
+    {
+        const auto index = createIndex(mLists.size() - 1, 0);
+        emit dataChanged(index, index, { int(Role::EndOfList) });
+    }
 }
 
 ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListView::List lists) const
@@ -324,7 +356,8 @@ QHash<int, QByteArray> ListListModel::roleNames() const
         { int(Role::ListHideFollowing), "listHideFollowing" },
         { int(Role::MemberCountDelta), "memberCountDelta" },
         { int(Role::MemberCheck), "memberCheck" },
-        { int(Role::MemberListItemUri), "memberListItemUri" }
+        { int(Role::MemberListItemUri), "memberListItemUri" },
+        { int(Role::EndOfList), "endOfList" }
     };
 
     return roles;

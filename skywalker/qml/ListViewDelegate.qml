@@ -17,6 +17,7 @@ Rectangle {
     required property bool listHideReplies
     required property bool listHideFollowing
     required property bool listSync
+    required property bool endOfList
     property bool showList: listVisible()
     property bool allowEdit: true
     property int margin: 10
@@ -89,7 +90,6 @@ Rectangle {
         Column {
             spacing: 0
             Layout.fillWidth: true
-            Layout.fillHeight: true
             Layout.rightMargin: view.margin
 
             AccessibleText {
@@ -154,7 +154,6 @@ Rectangle {
 
         Rectangle {
             Layout.preferredWidth: 80
-            Layout.fillHeight: true
             color: "transparent"
 
             SvgButton {
@@ -217,6 +216,7 @@ Rectangle {
 
         AccessibleText {
             topPadding: 10
+            Layout.columnSpan: 3
             Layout.fillWidth: true
             Layout.leftMargin: view.margin
             Layout.rightMargin: view.margin
@@ -239,6 +239,18 @@ Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 1
             color: guiSettings.separatorColor
+        }
+
+        AccessibleText {
+            Layout.columnSpan: 3
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            topPadding: 10
+            bottomPadding: 50
+            elide: Text.ElideRight
+            text: qsTr("End of list")
+            font.italic: true
+            visible: endOfList
         }
     }
 

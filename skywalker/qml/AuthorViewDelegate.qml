@@ -70,7 +70,7 @@ Rectangle {
             Avatar {
                 id: avatarImg
                 x: parent.x + 8
-                y: parent.y + 5
+                //y: parent.y + 5
                 width: parent.width - 13
                 userDid: authorRect.userDid
                 author: authorRect.author
@@ -244,7 +244,7 @@ Rectangle {
             Layout.columnSpan: 3
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            bottomPadding: 20
+            bottomPadding: 50
             elide: Text.ElideRight
             text: qsTr("End of list")
             font.italic: true

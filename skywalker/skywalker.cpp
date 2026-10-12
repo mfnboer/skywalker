@@ -4598,14 +4598,15 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
 
     const auto type = (*model)->getType();
     const auto& atId = (*model)->getAtId();
+    const auto purpose = (*model)->getPurpose();
     qDebug() << "Get list list:" << atId << "type:" << int(type);
 
     switch (type) {
     case ListListModel::Type::LIST_TYPE_ALL:
         if ((*model)->needsMembershipInfo())
-            getListListWithMembershipAll((*model)->getMemberCheckDid(), (*model)->getPurpose(), limit, maxPages, minEntries, cursor, id);
+            getListListWithMembershipAll((*model)->getMemberCheckDid(), purpose, limit, maxPages, minEntries, cursor, id);
         else
-            getListListAll(atId, (*model)->getPurpose(), limit, maxPages, minEntries, cursor, id);
+            getListListAll(atId, purpose, limit, maxPages, minEntries, cursor, id);
 
         break;
     case ListListModel::Type::LIST_TYPE_BLOCKS:
@@ -4615,6 +4616,9 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
         getListListMutes(limit, maxPages, minEntries, cursor, id);
         break;
     case ListListModel::Type::LIST_TYPE_SAVED:
+        break;
+    case ListListModel::Type::LIST_TYPE_MEMBER_OF_LIST:
+        getBacklinks()->getMemberOfListList(atId, purpose, maxPages, minEntries, cursor, id);
         break;
     }
 }

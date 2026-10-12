@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-ListView {
+SkyListView {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property int modelId
@@ -16,13 +16,8 @@ ListView {
     signal closed
 
     id: view
-    spacing: 0
     model: skywalker.getListListModel(modelId)
-    flickDeceleration: guiSettings.flickDeceleration
-    maximumFlickVelocity: guiSettings.maxFlickVelocity
-    pixelAligned: guiSettings.flickPixelAligned
     clip: true
-    ScrollIndicator.vertical: ScrollIndicator {}
 
     header: Item {
         width: parent.width

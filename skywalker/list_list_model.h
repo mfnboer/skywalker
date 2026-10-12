@@ -39,7 +39,8 @@ public:
         ListHideFollowing,
         MemberCountDelta,
         MemberCheck,
-        MemberListItemUri
+        MemberListItemUri,
+        EndOfList
     };
 
     using Type = QEnums::ListType;
@@ -77,13 +78,16 @@ public:
     Q_INVOKABLE ListView getEntry(int index) const;
 
     const QString& getCursor() const { return mCursor; }
+    void setCursor(const QString& cursor);
     bool isEndOfList() const { return mCursor.isEmpty(); }
+    void setEndOfList();
 
     Type getType() const { return mType; }
     Q_INVOKABLE Purpose getPurpose() const { return mPurpose; }
     const QString& getAtId() const { return mAtId; }
     bool needsMembershipInfo() const { return !mMemberCheckDid.isEmpty(); }
     const QString& getMemberCheckDid() const { return mMemberCheckDid; }
+    bool containsList(const QString& listUri) const { return mListUriSet.contains(listUri); }
 
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
@@ -122,6 +126,7 @@ private:
     Purpose mPurpose;
     QString mAtId;
     ListList mLists;
+    std::unordered_set<QString> mListUriSet;
     QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
     QString mUserDid;

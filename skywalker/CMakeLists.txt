@@ -769,6 +769,7 @@ qt_add_qml_module(libskywalker
         SOURCES backlinks.h
         SOURCES backlinks.cpp
         QML_FILES qml/AuthorList.qml
+        QML_FILES qml/ListList.qml
 )
 
 target_link_libraries(libskywalker

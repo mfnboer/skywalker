@@ -45,6 +45,8 @@ SkyPage {
     readonly property int starterPackListModelId: skywalker.createStarterPackListModel()
     readonly property int verificationModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFICATIONS, author.did)
     readonly property int blockedByModelId: isUser(author) ? skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKED_BY, author.did) : -1
+    readonly property int onUserListModelId: isUser(author) ? skywalker.createListListModel(QEnums.LIST_TYPE_MEMBER_OF_LIST, QEnums.LIST_PURPOSE_CURATE, author.did) : -1
+    readonly property int onModListModelId: isUser(author) ? skywalker.createListListModel(QEnums.LIST_TYPE_MEMBER_OF_LIST, QEnums.LIST_PURPOSE_MOD, author.did) : -1
     readonly property int verifiedByModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFIED_BY, author.did)
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
@@ -800,20 +802,28 @@ SkyPage {
                     text: qsTr("Feeds")
                 }
                 AccessibleTabButton {
-                    id: starterPacksTab
-                    text: qsTr("Starter packs")
-                }
-                AccessibleTabButton {
                     id: listsTab
                     text: qsTr("Lists")
                 }
                 AccessibleTabButton {
-                    id: verificationsTab
-                    text: qsTr("Verifications")
+                    id: starterPacksTab
+                    text: qsTr("Starter packs")
+                }
+                AccessibleTabButton {
+                    id: onUserListsTab
+                    text: qsTr("On user lists")
+                }
+                AccessibleTabButton {
+                    id: onModListsTab
+                    text: qsTr("On moderation lists")
                 }
                 AccessibleTabButton {
                     id: blockedByTab
                     text: qsTr("Blocked by")
+                }
+                AccessibleTabButton {
+                    id: verificationsTab
+                    text: qsTr("Verifications")
                 }
                 AccessibleTabButton {
                     id: verifiedByTab
@@ -826,6 +836,8 @@ SkyPage {
 
                     if (!page.isUser(author)) {
                         removeItem(likesTab)
+                        removeItem(onUserListsTab)
+                        removeItem(onModListsTab)
                         removeItem(blockedByTab)
                     }
 
@@ -1247,6 +1259,33 @@ SkyPage {
                 }
             }
 
+            // Lists
+            Loader {
+                id: listsView
+                active: hasLists
+                asynchronous: true
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && !item.model) {
+                        getListList(listListModelId)
+                        item.modelId = listListModelId
+                    }
+                }
+
+                sourceComponent: ListList {
+                    userDid: page.userDid
+                    interactive: !authorFeedView.interactive
+                    getListListFunc: (id) => getListList(id)
+                    getListListNextPageFunc: (id) => getListListNextPage(id)
+                    graphUtils: page.getGraphUtils()
+
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
+                }
+            }
+
             // Starter packs
             Loader {
                 id: starterPacksView
@@ -1309,98 +1348,52 @@ SkyPage {
                 }
             }
 
-            // Lists
+            // On moderation lists
             Loader {
-                id: listsView
-                active: hasLists
+                id: onUserListsView
+                active: page.isUser(author)
                 asynchronous: true
 
                 SwipeView.onIsCurrentItemChanged: {
                     if (item && !item.model) {
-                        getListList(listListModelId)
-                        item.model = skywalker.getListListModel(listListModelId)
+                        getListList(onUserListModelId)
+                        item.modelId = onUserListModelId
                     }
                 }
 
-                sourceComponent: ListView {
-                    id: authorListList
-                    width: parent.width
-                    height: parent.height
-                    clip: true
-                    spacing: 0
-                    flickDeceleration: guiSettings.flickDeceleration
-                    maximumFlickVelocity: guiSettings.maxFlickVelocity
-                    pixelAligned: guiSettings.flickPixelAligned
-                    ScrollIndicator.vertical: ScrollIndicator {}
+                sourceComponent: ListList {
+                    userDid: page.userDid
                     interactive: !authorFeedView.interactive
+                    getListListFunc: (id) => getListList(id)
+                    getListListNextPageFunc: (id) => getListListNextPage(id)
+                    graphUtils: page.getGraphUtils()
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
                     }
-
-                    delegate: ListViewDelegate {
-                        width: authorFeedView.width
-                        userDid: page.userDid
-                        allowEdit: false
-
-                        onBlockList: (list) => graphUtils.blockList(list.uri)
-                        onUnblockList: (list, blockedUri) => graphUtils.unblockList(list.uri, blockedUri)
-                        onMuteList: (list) => graphUtils.muteList(list.uri)
-                        onUnmuteList: (list) => graphUtils.unmuteList(list.uri)
-                        onHideList: (list) => graphUtils.hideList(list.uri)
-                        onUnhideList: (list) => graphUtils.unhideList(list.uri)
-                        onHideReplies: (list, hide) => graphUtils.hideReplies(list.uri, hide)
-                        onHideFollowing: (list, hide) => graphUtils.hideFollowing(list.uri, hide)
-                        onSyncList: (list, sync) => graphUtils.syncList(list.uri, sync)
-                    }
-
-                    FlickableRefresher {
-                        inProgress: Boolean(authorListList.model?.getFeedInProgress)
-                        bottomOvershootFun: () => getListListNextPage(listListModelId)
-                    }
-
-                    BusyIndicator {
-                        anchors.centerIn: parent
-                        running: Boolean(authorListList.model?.getFeedInProgress)
-                    }
-
-                    EmptyListIndication {
-                        svg: SvgOutline.noLists
-                        text: qsTr("No lists")
-                        list: authorListList
-                    }
-
-                    function refresh() {
-                        getListList(listListModelId)
-                    }
-
-                    function clear() {
-                        model.clear()
-                    }
                 }
             }
 
-            // Verifications
+            // On user lists
             Loader {
-                id: verificationsView
-                active: true
+                id: onModListsView
+                active: page.isUser(author)
                 asynchronous: true
 
                 SwipeView.onIsCurrentItemChanged: {
-                    if (item && item.modelId < 0) {
-                        getAuthorList(verificationModelId)
-                        item.modelId = verificationModelId
+                    if (item && !item.model) {
+                        getListList(onModListModelId)
+                        item.modelId = onModListModelId
                     }
                 }
 
-                sourceComponent: AuthorList {
+                sourceComponent: ListList {
                     userDid: page.userDid
                     interactive: !authorFeedView.interactive
-                    getAuthorListFunc: (id) => getAuthorList(id)
-                    getAuthorListNextPageFunc: (id) => getAuthorListNextPage(id)
-                    showFollow: false
-                    showshowVerificationDate: true
+                    getListListFunc: (id) => getListList(id)
+                    getListListNextPageFunc: (id) => getListListNextPage(id)
+                    graphUtils: page.getGraphUtils()
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
@@ -1428,6 +1421,34 @@ SkyPage {
                     getAuthorListFunc: (id) => getAuthorList(id)
                     getAuthorListNextPageFunc: (id) => getAuthorListNextPage(id)
                     showFollow: false
+
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
+                }
+            }
+
+            // Verifications
+            Loader {
+                id: verificationsView
+                active: true
+                asynchronous: true
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && item.modelId < 0) {
+                        getAuthorList(verificationModelId)
+                        item.modelId = verificationModelId
+                    }
+                }
+
+                sourceComponent: AuthorList {
+                    userDid: page.userDid
+                    interactive: !authorFeedView.interactive
+                    getAuthorListFunc: (id) => getAuthorList(id)
+                    getAuthorListNextPageFunc: (id) => getAuthorListNextPage(id)
+                    showFollow: false
+                    showshowVerificationDate: true
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
@@ -1470,6 +1491,8 @@ SkyPage {
                 if (!page.isUser(author)) {
                     removeItem(likesView)
                     removeItem(blockedByView)
+                    removeItem(onUserListsView)
+                    removeItem(onModListsView)
                 }
 
                 if (!hasFeeds)
@@ -1643,6 +1666,10 @@ SkyPage {
             skywalker.showStatusMessage(qsTr(`${author.name} removed from trusted verifiers`), QEnums.STATUS_LEVEL_INFO)
         }
         onRemoveTrustedVerifierFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function getGraphUtils() {
+        return graphUtils
     }
 
     BusyIndicator {
@@ -2114,6 +2141,12 @@ SkyPage {
 
         if (blockedByModelId > -1)
             skywalker.removeAuthorListModel(blockedByModelId)
+
+        if (onUserListModelId > -1)
+            skywalker.removeListListModel(onUserListModelId)
+
+        if (onModListModelId > -1)
+            skywalker.removeListListModel(onModListModelId)
 
         if (contentGroupListModelId > -1) {
             // Tracking for new labels is only done for the default settings

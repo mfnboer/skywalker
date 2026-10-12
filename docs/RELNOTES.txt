@@ -1,5 +1,6 @@
 next
 ====
+* View on which lists you are
 * View users that have blocked you
 * View who has verified an account
 

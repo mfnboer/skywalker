@@ -21,7 +21,7 @@ SkyListView {
     preloadNextPageFunc: () => getAuthorListNextPageFunc(modelId)
 
     delegate: AuthorViewDelegate {
-        width: authorFeedView.width
+        width: authorList.width
         userDid: authorList.userDid
         showFollow: authorList.showFollow
         showDescription: authorList.showDescription
