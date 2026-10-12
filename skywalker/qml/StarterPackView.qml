@@ -142,6 +142,8 @@ SkyPage {
 
             Rectangle {
                 Layout.rowSpan: 2
+                Layout.alignment: Qt.AlignTop
+                Layout.topMargin: 10
                 Layout.preferredWidth: guiSettings.threadColumnWidth
                 Layout.preferredHeight: guiSettings.threadColumnWidth
                 color: "transparent"
@@ -159,13 +161,15 @@ SkyPage {
                 bottomPadding: 10
                 Layout.fillWidth: true
                 elide: Text.ElideRight
+                wrapMode: Text.Wrap
+                maximumLineCount: 2
                 font.bold: true
-                color: guiSettings.textColor
+                font.pointSize: guiSettings.scaledFont(12/8)
                 text: starterPack.name
             }
 
             Item {
-                Layout.preferredWidth: addUserButton.width
+                Layout.preferredWidth: addUserButton.visible ? addUserButton.width : 0
                 Layout.preferredHeight: addUserButton.height
                 Layout.rowSpan: 2
                 Layout.alignment: Qt.AlignVCenter

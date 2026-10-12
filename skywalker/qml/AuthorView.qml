@@ -1301,55 +1301,19 @@ SkyPage {
                 SwipeView.onIsCurrentItemChanged: {
                     if (item && !item.model) {
                         getStarterPackList(starterPackListModelId)
-                        item.model = skywalker.getStarterPackListModel(starterPackListModelId)
+                        item.modelId = starterPackListModelId
                     }
                 }
 
-                sourceComponent: ListView {
-                    id: authorStarterPackList
-                    width: parent.width
-                    height: parent.height
-                    clip: true
-                    spacing: 0
-                    flickDeceleration: guiSettings.flickDeceleration
-                    maximumFlickVelocity: guiSettings.maxFlickVelocity
-                    pixelAligned: guiSettings.flickPixelAligned
-                    ScrollIndicator.vertical: ScrollIndicator {}
+                sourceComponent: StarterPackList {
+                    userDid: page.userDid
                     interactive: !authorFeedView.interactive
+                    getStarterPackListFunc: (id) => getStarterPackList(id)
+                    getStarterPackListNextPageFunc: (id) => getStarterPackListNextPage(id)
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
-                    }
-
-                    delegate: StarterPackViewDelegate {
-                        width: authorFeedView.width
-                        userDid: page.userDid
-                        allowEdit: false
-                    }
-
-                    FlickableRefresher {
-                        inProgress: Boolean(authorStarterPackList.model?.getFeedInProgress)
-                        bottomOvershootFun: () => getStarterPackListNextPage(starterPackListModelId)
-                    }
-
-                    BusyIndicator {
-                        anchors.centerIn: parent
-                        running: Boolean(authorStarterPackList.model?.getFeedInProgress)
-                    }
-
-                    EmptyListIndication {
-                        svg: SvgOutline.noLists
-                        text: qsTr("No starter packs")
-                        list: authorStarterPackList
-                    }
-
-                    function refresh() {
-                        getStarterPackList(starterPackListModelId)
-                    }
-
-                    function clear() {
-                        model.clear()
                     }
                 }
             }
@@ -1417,55 +1381,19 @@ SkyPage {
                 SwipeView.onIsCurrentItemChanged: {
                     if (item && !item.model) {
                         getStarterPackList(onStarterPackModelId)
-                        item.model = skywalker.getStarterPackListModel(onStarterPackModelId)
+                        item.modelId = onStarterPackModelId
                     }
                 }
 
-                sourceComponent: ListView {
-                    id: memberStarterPackList
-                    width: parent.width
-                    height: parent.height
-                    clip: true
-                    spacing: 0
-                    flickDeceleration: guiSettings.flickDeceleration
-                    maximumFlickVelocity: guiSettings.maxFlickVelocity
-                    pixelAligned: guiSettings.flickPixelAligned
-                    ScrollIndicator.vertical: ScrollIndicator {}
+                sourceComponent: StarterPackList {
+                    userDid: page.userDid
                     interactive: !authorFeedView.interactive
+                    getStarterPackListFunc: (id) => getStarterPackList(id)
+                    getStarterPackListNextPageFunc: (id) => getStarterPackListNextPage(id)
 
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
-                    }
-
-                    delegate: StarterPackViewDelegate {
-                        width: authorFeedView.width
-                        userDid: page.userDid
-                        allowEdit: false
-                    }
-
-                    FlickableRefresher {
-                        inProgress: Boolean(memberStarterPackList.model?.getFeedInProgress)
-                        bottomOvershootFun: () => getStarterPackListNextPage(onStarterPackModelId)
-                    }
-
-                    BusyIndicator {
-                        anchors.centerIn: parent
-                        running: Boolean(memberStarterPackList.model?.getFeedInProgress)
-                    }
-
-                    EmptyListIndication {
-                        svg: SvgOutline.noLists
-                        text: qsTr("No starter packs")
-                        list: memberStarterPackList
-                    }
-
-                    function refresh() {
-                        getStarterPackList(onStarterPackModelId)
-                    }
-
-                    function clear() {
-                        model.clear()
                     }
                 }
             }
