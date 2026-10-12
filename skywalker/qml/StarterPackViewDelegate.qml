@@ -6,6 +6,7 @@ import skywalker
 Rectangle {
     readonly property int margin: 10
     property string userDid
+    property Skywalker skywalker: root.getSkywalker(userDid)
     required property starterpackview starterPack
     required property bool endOfFeed
     property bool allowEdit: true
@@ -46,6 +47,7 @@ Rectangle {
 
             AccessibleText {
                 topPadding: 10
+                bottomPadding: 10
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 font.bold: true
@@ -54,8 +56,10 @@ Rectangle {
             }
 
             Rectangle {
+                Layout.alignment: Qt.AlignTop
                 Layout.preferredWidth: 40
-                Layout.fillHeight: true
+                Layout.preferredHeight: 40
+                Layout.topMargin: 8
                 color: "transparent"
 
                 SvgButton {
@@ -70,13 +74,41 @@ Rectangle {
                 }
             }
 
-            AccessibleText {
+            Column {
+                spacing: 0
                 Layout.fillWidth: true
-                Layout.fillHeight: true
-                elide: Text.ElideRight
-                font.pointSize: guiSettings.scaledFont(7/8)
-                color: guiSettings.handleColor
-                text: qsTr(`by @${starterPack.creator.handle}`)
+
+                AuthorNameAndStatus {
+                    width: parent.width
+                    userDid: view.userDid
+                    author: starterPack.creator
+
+                    Accessible.role: Accessible.Link
+                    Accessible.name: starterPack.creator.name
+                    Accessible.onPressAction: skywalker.getDetailedProfile(starterPack.creator.did)
+
+                    SkyMouseArea {
+                        anchors.fill:  parent
+                        onClicked: skywalker.getDetailedProfile(starterPack.creator.did)
+                    }
+                }
+
+                AccessibleText {
+                    width: parent.width
+                    elide: Text.ElideRight
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    color: guiSettings.handleColor
+                    text: `@${starterPack.creator.handle}`
+
+                    Accessible.role: Accessible.Link
+                    Accessible.name: text
+                    Accessible.onPressAction: skywalker.getDetailedProfile(starterPack.creator.did)
+
+                    SkyMouseArea {
+                        anchors.fill:  parent
+                        onClicked: skywalker.getDetailedProfile(starterPack.creator.did)
+                    }
+                }
             }
         }
 
@@ -128,6 +160,7 @@ Rectangle {
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             topPadding: view.margin
+            bottomPadding: 50
             elide: Text.ElideRight
             text: qsTr("End of feed")
             font.italic: true

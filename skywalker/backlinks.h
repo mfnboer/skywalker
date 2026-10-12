@@ -17,12 +17,28 @@ public:
     void getBlockedByAuthorList(const QString& atId, const QString& cursor, int modelId);
     void getVerifiedByAuthorList(const QString& atId, const QString& cursor, int modelId);
     void getMemberOfListList(const QString& atId, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getMemberOfStarterPackList(const QString& atId, int maxPages, int minEntries, const QString& cursor, int modelId);
 
 private:
+    template<class ModelType>
+    void getMemberOf(const QString& atId, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId);
+
     void getAuthorList(const QString& source, const QString& atId, const QString& cursor, int modelId);
     void getProfiles(const std::vector<QString>& dids, const QString& cursor, int modelId);
+
+    template<typename ModelType>
     void getListsFromListItems(const std::vector<QString>& listItemUris, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId);
+
     void getLists(const std::vector<QString>& listUris, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getStarterPackLists(const std::vector<QString>& listUris, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getStarterPacks(const std::vector<QString>& starterPackUris, int maxPages, int minEntries, const QString& cursor, int modelId);
+
+    template<class ModelType>
+    void setModelInProgress(bool progress, int modelId);
+
+    template<class ModelType>
+    bool modelContainsUri(const QString& uri, int modelId) const;
+
     ATProto::RepoMaster* repoMaster();
 
     Constellation& mConstellation;

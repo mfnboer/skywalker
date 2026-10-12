@@ -3658,10 +3658,10 @@ void Skywalker::removeFeedListModel(int id)
     mFeedListModels.remove(id);
 }
 
-void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QString& cursor)
+void Skywalker::getStarterPackList(int id, int limit, int maxPages, int minEntries, const QString& cursor)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get author starter pack list:" << id << "did:" << did << "cursor:" << cursor;
+    qDebug() << "Get author starter pack list:" << id << "cursor:" << cursor;
 
     const auto* model = mStarterPackListModels.get(id);
     Q_ASSERT(model);
@@ -3678,20 +3678,36 @@ void Skywalker::getAuthorStarterPackList(const QString& did, int id, const QStri
         return;
     }
 
-    if ((*model)->needsMembershipInfo())
-        getStarterPackListWithMembershipAll((*model)->getMemberCheckDid(), 100, cursor, id);
-    else
-        getStarterPackListAll(did, 100, cursor, id);
+    const auto type = (*model)->getType();
+    const auto& atId = (*model)->getAtId();
+    qDebug() << "Get starter pack list:" << atId << "type:" << int(type);
+
+    switch (type)
+    {
+    case StarterPackListModel::Type::STARTER_PACK_TYPE_AUTHOR:
+        if ((*model)->needsMembershipInfo())
+            getStarterPackListWithMembershipAll((*model)->getMemberCheckDid(), limit, maxPages, minEntries, cursor, id);
+        else
+            getStarterPackListAll(atId, limit, maxPages, minEntries, cursor, id);
+
+        break;
+    case StarterPackListModel::Type::STARTER_PACK_TYPE_SEARCH:
+        qWarning() << "Should not get here";
+        break;
+    case StarterPackListModel::Type::STARTER_PACK_TYPE_MEMBER_OF:
+        getBacklinks()->getMemberOfStarterPackList(atId, maxPages, minEntries, cursor, id);
+        break;
+    }
 }
 
-void Skywalker::getStarterPackListAll(const QString& did, int limit, const QString& cursor, int modelId)
+void Skywalker::getStarterPackListAll(const QString& did, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     auto* model = mStarterPackListModels.get(modelId);
     Q_ASSERT(model);
     (*model)->setGetFeedInProgress(true);
 
     mBsky->getActorStarterPacks(did, limit, Utils::makeOptionalString(cursor),
-        [this, modelId, cursor](auto output){
+        [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             const auto* model = mStarterPackListModels.get(modelId);
 
             if (!model)
@@ -3702,7 +3718,11 @@ void Skywalker::getStarterPackListAll(const QString& did, int limit, const QStri
             if (cursor.isEmpty())
                 (*model)->clear();
 
-            (*model)->addStarterPacks(std::move(output->mStarterPacks), output->mCursor.value_or(""));
+            const int added = (*model)->addStarterPacks(std::move(output->mStarterPacks), output->mCursor.value_or(""));
+            const int toAdd = minEntries - added;
+
+            if (toAdd > 0)
+                getStarterPackListNextPage(modelId, limit, maxPages - 1, toAdd);
         },
         [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getActorStarterPacks failed:" << error << " - " << msg;
@@ -3716,7 +3736,7 @@ void Skywalker::getStarterPackListAll(const QString& did, int limit, const QStri
         });
 }
 
-void Skywalker::getStarterPackListWithMembershipAll(const QString& did, int limit, const QString& cursor, int modelId)
+void Skywalker::getStarterPackListWithMembershipAll(const QString& did, int limit, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     qDebug() << "Get starter packs with membership:" << did;
 
@@ -3725,7 +3745,7 @@ void Skywalker::getStarterPackListWithMembershipAll(const QString& did, int limi
     (*model)->setGetFeedInProgress(true);
 
     mBsky->getStarterpacksWithMembership(did, limit, Utils::makeOptionalString(cursor),
-        [this, modelId, cursor](auto output){
+        [this, modelId, limit, maxPages, minEntries, cursor](auto output){
             const auto* model = mStarterPackListModels.get(modelId);
 
             if (!model)
@@ -3736,7 +3756,11 @@ void Skywalker::getStarterPackListWithMembershipAll(const QString& did, int limi
             if (cursor.isEmpty())
                 (*model)->clear();
 
-            (*model)->addStarterPacks(std::move(output->mStarterPacksWithMembership), output->mCursor.value_or(""));
+            const int added = (*model)->addStarterPacks(std::move(output->mStarterPacksWithMembership), output->mCursor.value_or(""));
+            const int toAdd = minEntries - added;
+
+            if (toAdd > 0)
+                getStarterPackListNextPage(modelId, limit, maxPages - 1, toAdd);
         },
         [this, modelId](const QString& error, const QString& msg){
             qDebug() << "getActorStarterPacksWithMembership failed:" << error << " - " << msg;
@@ -3750,9 +3774,15 @@ void Skywalker::getStarterPackListWithMembershipAll(const QString& did, int limi
         });
 }
 
-void Skywalker::getAuthorStarterPackListNextPage(const QString& did, int id)
+void Skywalker::getStarterPackListNextPage(int id, int limit, int maxPages, int minEntries)
 {
-    qDebug() << "Get author starter pack list next page:" << id << "did:" << did;
+    qDebug() << "Get starter pack list next page:" << id;
+
+    if (maxPages <= 0)
+    {
+        qDebug() << "Max pages reached";
+        return;
+    }
 
     const auto* model = mStarterPackListModels.get(id);
     Q_ASSERT(model);
@@ -3760,12 +3790,6 @@ void Skywalker::getAuthorStarterPackListNextPage(const QString& did, int id)
     if (!model)
     {
         qWarning() << "Model does not exist:" << id;
-        return;
-    }
-
-    if ((*model)->isGetFeedInProgress())
-    {
-        qDebug() << "Get author starter pack list still in progress";
         return;
     }
 
@@ -3777,13 +3801,13 @@ void Skywalker::getAuthorStarterPackListNextPage(const QString& did, int id)
         return;
     }
 
-    getAuthorStarterPackList(did, id, cursor);
+    getStarterPackList(id, limit, maxPages, minEntries, cursor);
 }
 
-int Skywalker::createStarterPackListModel()
+int Skywalker::createStarterPackListModel(StarterPackListModel::Type type, const QString& atId)
 {
     qDebug() << "Create starter pack list model";
-    auto model = std::make_unique<StarterPackListModel>(this);
+    auto model = std::make_unique<StarterPackListModel>(type, atId, this);
     const int id = mStarterPackListModels.put(std::move(model));
     return id;
 }
@@ -4599,9 +4623,10 @@ void Skywalker::getListList(int id, int limit, int maxPages, int minEntries, con
     const auto type = (*model)->getType();
     const auto& atId = (*model)->getAtId();
     const auto purpose = (*model)->getPurpose();
-    qDebug() << "Get list list:" << atId << "type:" << int(type);
+    qDebug() << "Get list list:" << atId << "type:" << int(type) << "purpose:" << purpose;
 
-    switch (type) {
+    switch (type)
+    {
     case ListListModel::Type::LIST_TYPE_ALL:
         if ((*model)->needsMembershipInfo())
             getListListWithMembershipAll((*model)->getMemberCheckDid(), purpose, limit, maxPages, minEntries, cursor, id);

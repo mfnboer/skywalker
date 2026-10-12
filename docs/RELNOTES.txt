@@ -1,6 +1,7 @@
 next
 ====
 * View on which lists you are
+* View on which starter packs you are
 * View users that have blocked you
 * View who has verified an account
 

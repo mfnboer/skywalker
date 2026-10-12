@@ -335,6 +335,14 @@ public:
     };
     Q_ENUM(ListType)
 
+    enum StarterPackType
+    {
+        STARTER_PACK_TYPE_AUTHOR,
+        STARTER_PACK_TYPE_SEARCH,
+        STARTER_PACK_TYPE_MEMBER_OF
+    };
+    Q_ENUM(StarterPackType)
+
     enum TripleBool
     {
         TRIPLE_BOOL_UNKNOWN,

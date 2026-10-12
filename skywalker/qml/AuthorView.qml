@@ -42,11 +42,12 @@ SkyPage {
     readonly property bool hasLists: author.associated.lists > 0
     readonly property int listListModelId: skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_UNKNOWN, author.did)
     readonly property bool hasStarterPacks: author.associated.starterPacks > 0
-    readonly property int starterPackListModelId: skywalker.createStarterPackListModel()
+    readonly property int starterPackListModelId: skywalker.createStarterPackListModel(QEnums.STARTER_PACK_TYPE_AUTHOR, author.did)
     readonly property int verificationModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFICATIONS, author.did)
     readonly property int blockedByModelId: isUser(author) ? skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_BLOCKED_BY, author.did) : -1
     readonly property int onUserListModelId: isUser(author) ? skywalker.createListListModel(QEnums.LIST_TYPE_MEMBER_OF_LIST, QEnums.LIST_PURPOSE_CURATE, author.did) : -1
     readonly property int onModListModelId: isUser(author) ? skywalker.createListListModel(QEnums.LIST_TYPE_MEMBER_OF_LIST, QEnums.LIST_PURPOSE_MOD, author.did) : -1
+    readonly property int onStarterPackModelId: isUser(author) ? skywalker.createStarterPackListModel(QEnums.STARTER_PACK_TYPE_MEMBER_OF, author.did) : -1
     readonly property int verifiedByModelId: skywalker.createAuthorListModel(QEnums.AUTHOR_LIST_VERIFIED_BY, author.did)
     readonly property bool isLabeler: author.associated.isLabeler
     property int contentGroupListModelId: -1
@@ -818,6 +819,10 @@ SkyPage {
                     text: qsTr("On moderation lists")
                 }
                 AccessibleTabButton {
+                    id: onStarterPacksTab
+                    text: qsTr("On starter packs")
+                }
+                AccessibleTabButton {
                     id: blockedByTab
                     text: qsTr("Blocked by")
                 }
@@ -838,6 +843,7 @@ SkyPage {
                         removeItem(likesTab)
                         removeItem(onUserListsTab)
                         removeItem(onModListsTab)
+                        removeItem(onStarterPacksTab)
                         removeItem(blockedByTab)
                     }
 
@@ -1234,13 +1240,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: model.getFeedInProgress
+                        inProgress: Boolean(model?.getFeedInProgress)
                         bottomOvershootFun: () => getFeedListNextPage(feedListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: model.getFeedInProgress
+                        running: Boolean(model?.getFeedInProgress)
                     }
 
                     EmptyListIndication {
@@ -1323,13 +1329,13 @@ SkyPage {
                     }
 
                     FlickableRefresher {
-                        inProgress: authorStarterPackList.model?.getFeedInProgress
+                        inProgress: Boolean(authorStarterPackList.model?.getFeedInProgress)
                         bottomOvershootFun: () => getStarterPackListNextPage(starterPackListModelId)
                     }
 
                     BusyIndicator {
                         anchors.centerIn: parent
-                        running: authorStarterPackList.model?.getFeedInProgress
+                        running: Boolean(authorStarterPackList.model?.getFeedInProgress)
                     }
 
                     EmptyListIndication {
@@ -1348,7 +1354,7 @@ SkyPage {
                 }
             }
 
-            // On moderation lists
+            // On user lists
             Loader {
                 id: onUserListsView
                 active: page.isUser(author)
@@ -1375,7 +1381,7 @@ SkyPage {
                 }
             }
 
-            // On user lists
+            // On moderation lists
             Loader {
                 id: onModListsView
                 active: page.isUser(author)
@@ -1398,6 +1404,68 @@ SkyPage {
                     onVerticalOvershootChanged: {
                         if (verticalOvershoot < 0)
                             authorFeedView.interactive = true
+                    }
+                }
+            }
+
+            // On starter packs
+            Loader {
+                id: onStarterPacksView
+                active: page.isUser(author)
+                asynchronous: true
+
+                SwipeView.onIsCurrentItemChanged: {
+                    if (item && !item.model) {
+                        getStarterPackList(onStarterPackModelId)
+                        item.model = skywalker.getStarterPackListModel(onStarterPackModelId)
+                    }
+                }
+
+                sourceComponent: ListView {
+                    id: memberStarterPackList
+                    width: parent.width
+                    height: parent.height
+                    clip: true
+                    spacing: 0
+                    flickDeceleration: guiSettings.flickDeceleration
+                    maximumFlickVelocity: guiSettings.maxFlickVelocity
+                    pixelAligned: guiSettings.flickPixelAligned
+                    ScrollIndicator.vertical: ScrollIndicator {}
+                    interactive: !authorFeedView.interactive
+
+                    onVerticalOvershootChanged: {
+                        if (verticalOvershoot < 0)
+                            authorFeedView.interactive = true
+                    }
+
+                    delegate: StarterPackViewDelegate {
+                        width: authorFeedView.width
+                        userDid: page.userDid
+                        allowEdit: false
+                    }
+
+                    FlickableRefresher {
+                        inProgress: Boolean(memberStarterPackList.model?.getFeedInProgress)
+                        bottomOvershootFun: () => getStarterPackListNextPage(onStarterPackModelId)
+                    }
+
+                    BusyIndicator {
+                        anchors.centerIn: parent
+                        running: Boolean(memberStarterPackList.model?.getFeedInProgress)
+                    }
+
+                    EmptyListIndication {
+                        svg: SvgOutline.noLists
+                        text: qsTr("No starter packs")
+                        list: memberStarterPackList
+                    }
+
+                    function refresh() {
+                        getStarterPackList(onStarterPackModelId)
+                    }
+
+                    function clear() {
+                        model.clear()
                     }
                 }
             }
@@ -1493,6 +1561,7 @@ SkyPage {
                     removeItem(blockedByView)
                     removeItem(onUserListsView)
                     removeItem(onModListsView)
+                    removeItem(onStarterPacksView)
                 }
 
                 if (!hasFeeds)
@@ -1965,12 +2034,12 @@ SkyPage {
 
     function getStarterPackList(modelId) {
         if (mustGetFeed())
-            skywalker.getAuthorStarterPackList(author.did, modelId)
+            skywalker.getStarterPackList(modelId)
     }
 
     function getStarterPackListNextPage(modelId) {
         if (mustGetFeed())
-            skywalker.getAuthorStarterPackListNextPage(author.did, modelId)
+            skywalker.getStarterPackListNextPage(modelId)
     }
 
     function getAuthorList(modelId) {
@@ -2000,7 +2069,7 @@ SkyPage {
     }
 
     function updateStarterPacks() {
-        let starterPackModelId = skywalker.createStarterPackListModel()
+        let starterPackModelId = skywalker.createStarterPackListModel(QEnums.STARTER_PACK_TYPE_AUTHOR, skywalker.getUserDid())
         let starterPackModel = skywalker.getStarterPackListModel(starterPackModelId)
         starterPackModel.setMemberCheckDid(author.did)
         let component = guiSettings.createComponent("AddUserStarterPackListView.qml")
@@ -2011,7 +2080,7 @@ SkyPage {
         })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(view)
-        skywalker.getAuthorStarterPackList(skywalker.getUserDid() , starterPackModelId)
+        skywalker.getStarterPackList(starterPackModelId)
     }
 
     function mustGetFeed() {
@@ -2147,6 +2216,9 @@ SkyPage {
 
         if (onModListModelId > -1)
             skywalker.removeListListModel(onModListModelId)
+
+        if (onStarterPackModelId > -1)
+            skywalker.removeStarterPackListModel(onStarterPackModelId)
 
         if (contentGroupListModelId > -1) {
             // Tracking for new labels is only done for the default settings

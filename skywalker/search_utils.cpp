@@ -1127,7 +1127,7 @@ StarterPackListModel* SearchUtils::getSearchStarterPacksModel()
     Q_ASSERT(mSkywalker);
 
     if (mSearchStarterPacksModelId < 0)
-        mSearchStarterPacksModelId = mSkywalker->createStarterPackListModel();
+        mSearchStarterPacksModelId = mSkywalker->createStarterPackListModel(QEnums::STARTER_PACK_TYPE_SEARCH, {});
 
     return mSkywalker->getStarterPackListModel(mSearchStarterPacksModelId);
 }
@@ -1137,7 +1137,7 @@ StarterPackListModel* SearchUtils::getSuggestedStarterPacksModel()
     Q_ASSERT(mSkywalker);
 
     if (mSuggestedStarterPacksModelId < 0)
-        mSuggestedStarterPacksModelId = mSkywalker->createStarterPackListModel();
+        mSuggestedStarterPacksModelId = mSkywalker->createStarterPackListModel(QEnums::STARTER_PACK_TYPE_SEARCH, {});
 
     return mSkywalker->getStarterPackListModel(mSuggestedStarterPacksModelId);
 }

@@ -962,7 +962,7 @@ ApplicationWindow {
 
             onUserLists: {
                 let listsModelId = skywalker.createListListModel(QEnums.LIST_TYPE_ALL, QEnums.LIST_PURPOSE_CURATE, skywalker.getUserDid())
-                let starterPacksModelId = skywalker.createStarterPackListModel()
+                let starterPacksModelId = skywalker.createStarterPackListModel(QEnums.STARTER_PACK_TYPE_AUTHOR, skywalker.getUserDid())
                 viewUserLists(listsModelId, starterPacksModelId)
                 close()
             }
@@ -2449,7 +2449,7 @@ ApplicationWindow {
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
         skywalker.getListList(listsModelId)
-        skywalker.getAuthorStarterPackList(skywalker.getUserDid(), starterPacksModelId)
+        skywalker.getStarterPackList(starterPacksModelId)
     }
 
     function viewModerationLists(modelId) {

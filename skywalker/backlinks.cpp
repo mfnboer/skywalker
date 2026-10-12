@@ -8,6 +8,38 @@ namespace Skywalker {
 
 static constexpr int BACKLINKS_PAGE_SIZE = 25;
 
+template<>
+void Backlinks::setModelInProgress<ListListModel>(bool progress, int modelId)
+{
+    auto* model = mSkywalker->getListListModel(modelId);
+
+    if (model)
+        model->setGetFeedInProgress(progress);
+}
+
+template<>
+void Backlinks::setModelInProgress<StarterPackListModel>(bool progress, int modelId)
+{
+    auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+    if (model)
+        model->setGetFeedInProgress(progress);
+}
+
+template<>
+bool Backlinks::modelContainsUri<ListListModel>(const QString& uri, int modelId) const
+{
+    auto* model = mSkywalker->getListListModel(modelId);
+    return model ? model->containsUri(uri) : false;
+}
+
+template<>
+bool Backlinks::modelContainsUri<StarterPackListModel>(const QString& uri, int modelId) const
+{
+    auto* model = mSkywalker->getStarterPackListModel(modelId);
+    return model ? model->containsUri(uri) : false;
+}
+
 Backlinks::Backlinks(Constellation& constellation, QObject* parent) :
     WrappedSkywalker(parent),
     mConstellation(constellation)
@@ -27,15 +59,23 @@ void Backlinks::getVerifiedByAuthorList(const QString& atId, const QString& curs
 void Backlinks::getMemberOfListList(const QString& atId, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     qDebug() << "Get member of list list:" << atId << "purpose:" << purpose << "maxPages:" << maxPages << "minEntries:" << minEntries << "cursor" << cursor << "modelId:" << modelId;
+    getMemberOf<ListListModel>(atId, purpose, maxPages, minEntries, cursor, modelId);
+}
 
+void Backlinks::getMemberOfStarterPackList(const QString& atId, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
+    qDebug() << "Get member of starter pack list:" << atId << "maxPages:" << maxPages << "minEntries:" << minEntries << "cursor" << cursor << "modelId:" << modelId;
+    getMemberOf<StarterPackListModel>(atId, QEnums::LIST_PURPOSE_REFERENCE, maxPages, minEntries, cursor, modelId);
+}
+
+template<class ModelType>
+void Backlinks::getMemberOf(const QString& atId, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
     Q_ASSERT(mSkywalker);
     if (!mSkywalker)
         return;
 
-    auto* model = mSkywalker->getListListModel(modelId);
-
-    if (model)
-        model->setGetFeedInProgress(true);
+    setModelInProgress<ModelType>(true, modelId);
 
     mConstellation.getBackLinks(atId, "app.bsky.graph.listitem:subject", {}, BACKLINKS_PAGE_SIZE, Utils::makeOptionalString(cursor),
         [this, presence=getPresence(), purpose, maxPages, minEntries, modelId](Constellation::Backlinks::SharedPtr backlinks){
@@ -54,18 +94,14 @@ void Backlinks::getMemberOfListList(const QString& atId, QEnums::ListPurpose pur
                     qWarning() << "Invalid at-uri:" << record->mDid << record->mCollection << record->mRkey;
             }
 
-            getListsFromListItems(uris, purpose, maxPages, minEntries, backlinks->mCursor.value_or(""), modelId);
+            getListsFromListItems<ModelType>(uris, purpose, maxPages, minEntries, backlinks->mCursor.value_or(""), modelId);
         },
         [this, presence=getPresence(), modelId](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qWarning() << "getMemberOfListList failed:" << error << "-" << msg;
-            auto* model = mSkywalker->getListListModel(modelId);
-
-            if (model)
-                model->setGetFeedInProgress(false);
-
+            qWarning() << "getMemberOf failed:" << error << "-" << msg;
+            setModelInProgress<ModelType>(false, modelId);
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -154,6 +190,7 @@ void Backlinks::getProfiles(const std::vector<QString>& dids, const QString& cur
         });
 }
 
+template<typename ModelType>
 void Backlinks::getListsFromListItems(const std::vector<QString>& listItemUris, QEnums::ListPurpose purpose, int maxPages, int minEntries, const QString& cursor, int modelId)
 {
     qDebug() << "Get lists from list items:" << listItemUris.size() << "purpose:" << purpose << "maxPages:" << maxPages << "minEntries:" << minEntries << "cursor:" << cursor;
@@ -167,25 +204,24 @@ void Backlinks::getListsFromListItems(const std::vector<QString>& listItemUris, 
             if (!presence)
                 return;
 
-            auto* model = mSkywalker->getListListModel(modelId);
-
-            if (!model)
-                return;
-
             std::unordered_set<QString> seenUris;
             std::vector<QString> uris;
             uris.reserve(listItems.size());
 
             for (const auto& listItem : listItems)
             {
-                if (!seenUris.contains(listItem->mList) && !model->containsList(listItem->mList))
+                if (!seenUris.contains(listItem->mList) &&
+                    (std::is_same_v<ModelType, StarterPackListModel> || !modelContainsUri<ModelType>(listItem->mList, modelId)))
                 {
                     uris.push_back(listItem->mList);
                     seenUris.insert(listItem->mList);
                 }
             }
 
-            getLists(uris, purpose, maxPages, minEntries, cursor, modelId);
+            if (std::is_same_v<ModelType, ListListModel>)
+                getLists(uris, purpose, maxPages, minEntries, cursor, modelId);
+            else
+                getStarterPackLists(uris, maxPages, minEntries, cursor, modelId);
         });
 }
 
@@ -214,6 +250,7 @@ void Backlinks::getLists(const std::vector<QString>& listUris, QEnums::ListPurpo
 
     auto todo = std::make_shared<int>(listUris.size());
     auto lists = std::make_shared<ATProto::AppBskyGraph::ListView::List>();
+    lists->reserve(listUris.size());
 
     for (const auto& uri : listUris)
     {
@@ -259,6 +296,133 @@ void Backlinks::getLists(const std::vector<QString>& listUris, QEnums::ListPurpo
 
                     if (toAdd > 0)
                         mSkywalker->getListListNextPage(modelId, {}, maxPages - 1, toAdd);
+                }
+            });
+    }
+}
+
+void Backlinks::getStarterPackLists(const std::vector<QString>& listUris, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
+    qDebug() << "Get starter pack lists:" << listUris.size() << "maxPages:" << maxPages << "minEntries:" << minEntries << "cursor:" << cursor;
+
+    Q_ASSERT(mSkywalker);
+    if (!mSkywalker)
+        return;
+
+    if (listUris.empty())
+    {
+        getStarterPacks({}, maxPages, minEntries, cursor, modelId);
+        return;
+    }
+
+    auto todo = std::make_shared<int>(listUris.size());
+    auto starterPackUris = std::make_shared<std::vector<QString>>();
+    starterPackUris->reserve(listUris.size());
+
+    for (const auto& listUri : listUris)
+    {
+        // Only 1 backlink is expected. In theory multiple starter packs could share the
+        // same list.
+        mConstellation.getBackLinks(listUri, "app.bsky.graph.starterpack:list", {}, {}, {},
+        [this, presence=getPresence(), todo, starterPackUris, maxPages, minEntries, cursor, modelId](Constellation::Backlinks::SharedPtr backlinks){
+            if (!presence)
+                return;
+
+            for (const auto& record : backlinks->mRecords)
+            {
+                const ATProto::ATUri atUri(record->mDid, record->mCollection, record->mRkey);
+
+                if (atUri.isValid())
+                    starterPackUris->push_back(atUri.toString());
+                else
+                    qWarning() << "Invalid at-uri:" << record->mDid << record->mCollection << record->mRkey;
+            }
+
+            if (--*todo <= 0)
+                getStarterPacks(*starterPackUris, maxPages, minEntries, cursor, modelId);
+        },
+        [this, presence=getPresence(), todo, starterPackUris, maxPages, minEntries, cursor, modelId](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "getStarterPackLists failed:" << error << "-" << msg;
+
+            if (--*todo <= 0)
+                getStarterPacks(*starterPackUris, maxPages, minEntries, cursor, modelId);
+        });
+    }
+}
+
+void Backlinks::getStarterPacks(const std::vector<QString>& starterPackUris, int maxPages, int minEntries, const QString& cursor, int modelId)
+{
+    qDebug() << "Get starter packs:" << starterPackUris.size() << "maxPages:" << maxPages << "minEntries:" << minEntries << "cursor:" << cursor;
+
+    Q_ASSERT(mSkywalker);
+    if (!mSkywalker)
+        return;
+
+    if (starterPackUris.empty())
+    {
+        qDebug() << "No starter packs to get, modelId:" << modelId;
+        auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+        if (model)
+        {
+            model->setGetFeedInProgress(false);
+            model->setCursor(cursor);
+            mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, minEntries);
+        }
+
+        return;
+    }
+
+    auto todo = std::make_shared<int>(starterPackUris.size());
+    auto starterPacks = std::make_shared<ATProto::AppBskyGraph::StarterPackView::List>();
+    starterPacks->reserve(starterPackUris.size());
+
+    for (const auto& uri : starterPackUris)
+    {
+        bskyClient()->getStarterPack(uri,
+            [this, presence=getPresence(), todo, starterPacks, maxPages, minEntries, cursor, modelId](ATProto::AppBskyGraph::StarterPackView::SharedPtr starterPackView){
+                if (!presence)
+                    return;
+
+                starterPacks->push_back(starterPackView);
+
+                if (--*todo > 0)
+                    return;
+
+                auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+                if (model)
+                {
+                    model->setGetFeedInProgress(false);
+                    const int added = model->addStarterPacks(*starterPacks, cursor);
+                    const int toAdd = minEntries - added;
+
+                    if (toAdd > 0)
+                        mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, toAdd);
+                }
+            },
+            [this, presence=getPresence(), uri, todo, starterPacks, maxPages, minEntries, modelId, cursor](const QString& error, const QString& msg){
+                if (!presence)
+                    return;
+
+                qWarning() << "getStarterPacks failed:" << uri << error << "-" << msg;
+
+                if (--*todo > 0)
+                    return;
+
+                auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+                if (model)
+                {
+                    model->setGetFeedInProgress(false);
+                    const int added = model->addStarterPacks(*starterPacks, cursor);
+                    const int toAdd = minEntries - added;
+
+                    if (toAdd > 0)
+                        mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, toAdd);
                 }
             });
     }

@@ -5,8 +5,10 @@
 
 namespace Skywalker {
 
-StarterPackListModel::StarterPackListModel(QObject* parent) :
-    QAbstractListModel(parent)
+StarterPackListModel::StarterPackListModel(Type type, const QString& atId, QObject* parent) :
+    QAbstractListModel(parent),
+    mType(type),
+    mAtId(atId)
 {
 }
 
@@ -66,20 +68,21 @@ void StarterPackListModel::clear()
         endRemoveRows();
     }
 
+    mStarterPackUriSet.clear();
     mCursor.clear();
 }
 
-void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor)
+int StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor)
 {
-    _addStarterPacks(starterPacks, cursor);
+    return _addStarterPacks(starterPacks, cursor);
 }
 
-void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor)
+int StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor)
 {
-    _addStarterPacks(starterPacks, cursor);
+    return _addStarterPacks(starterPacks, cursor);
 }
 
-void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackWithMembership::List starterPacksWithMembership, const QString& cursor)
+int StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackWithMembership::List starterPacksWithMembership, const QString& cursor)
 {
     qDebug() << "Add starter pack with membership:" << starterPacksWithMembership.size() << "cursor:" << cursor;
     Q_ASSERT(!mMemberCheckDid.isEmpty());
@@ -94,11 +97,11 @@ void StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackWit
         mMemberCheckResults[starterPack->mStarterPack->mUri] = (starterPack->mListItem ? starterPack->mListItem->mUri : "");
     }
 
-    _addStarterPacks(starterPacks, cursor, true);
+    return _addStarterPacks(starterPacks, cursor, true);
 }
 
 template<typename T>
-void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor, bool sort)
+int StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor, bool sort)
 {
     qDebug() << "Add starter packs:" << starterPacks.size() << "cursor:" << cursor;
     mCursor = cursor;
@@ -110,7 +113,7 @@ void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, 
         if (!mStarterPacks.empty())
             emit dataChanged(createIndex(mStarterPacks.size() - 1, 0), createIndex(mStarterPacks.size() - 1, 0), { (int)Role::EndOfFeed });
 
-        return;
+        return 0;
     }
 
     auto sortedStarterPacks = starterPacks;
@@ -128,10 +131,14 @@ void StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, 
     beginInsertRows({}, mStarterPacks.size(), newRowCount - 1);
 
     for (auto& starterPack : sortedStarterPacks)
+    {
         mStarterPacks.emplace_back(starterPack);
+        mStarterPackUriSet.insert(starterPack->mUri);
+    }
 
     endInsertRows();
     qDebug() << "New starter packs size:" << mStarterPacks.size();
+    return sortedStarterPacks.size();
 }
 
 void StarterPackListModel::prependStarterPack(const StarterPackView& starterPack)
@@ -140,6 +147,7 @@ void StarterPackListModel::prependStarterPack(const StarterPackView& starterPack
 
     beginInsertRows({}, 0, 0);
     mStarterPacks.push_front(starterPack);
+    mStarterPackUriSet.insert(starterPack.getUri());
     endInsertRows();
 
     qDebug() << "New starter packs size:" << mStarterPacks.size();
@@ -182,8 +190,11 @@ void StarterPackListModel::deleteEntry(int index)
         return;
     }
 
+    const QString starterPackUri = mStarterPacks[index].getUri();
+
     beginRemoveRows({}, index, index);
     mStarterPacks.erase(mStarterPacks.begin() + index);
+    mStarterPackUriSet.erase(starterPackUri);
     endRemoveRows();
 }
 
@@ -198,6 +209,21 @@ StarterPackViewBasic StarterPackListModel::getEntry(int index) const
     }
 
     return mStarterPacks[index];
+}
+
+void StarterPackListModel::setCursor(const QString& cursor)
+{
+    mCursor = cursor;
+    setEndOfList();
+}
+
+void StarterPackListModel::setEndOfList()
+{
+    if (isEndOfList() && !mStarterPacks.empty())
+    {
+        const auto index = createIndex(mStarterPacks.size() - 1, 0);
+        emit dataChanged(index, index, { int(Role::EndOfFeed) });
+    }
 }
 
 void StarterPackListModel::setGetFeedInProgress(bool inProgress)

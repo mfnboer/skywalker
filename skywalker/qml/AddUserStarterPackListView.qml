@@ -47,8 +47,8 @@ ListView {
 
     FlickableRefresher {
         inProgress: view.model?.getFeedInProgress
-        topOvershootFun: () => skywalker.getAuthorStarterPackList(userDid, modelId)
-        bottomOvershootFun: () => skywalker.getAuthorStarterPackListNextPage(userDid, modelId)
+        topOvershootFun: () => skywalker.getStarterPackList(modelId)
+        bottomOvershootFun: () => skywalker.getStarterPackListNextPage(modelId)
         topText: qsTr("Refresh starter packs")
     }
 
@@ -73,7 +73,7 @@ ListView {
     }
 
     function refresh() {
-        skywalker.getAuthorStarterPackList(userDid, modelId)
+        skywalker.getStarterPackList(modelId)
     }
 
     Component.onDestruction: {

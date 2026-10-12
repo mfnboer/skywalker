@@ -193,9 +193,9 @@ public:
     Q_INVOKABLE int createFeedListModel();
     Q_INVOKABLE FeedListModel* getFeedListModel(int id) const;
     Q_INVOKABLE void removeFeedListModel(int id);
-    Q_INVOKABLE void getAuthorStarterPackList(const QString& did, int id, const QString& cursor = {});
-    Q_INVOKABLE void getAuthorStarterPackListNextPage(const QString& did, int id);
-    Q_INVOKABLE int createStarterPackListModel();
+    Q_INVOKABLE void getStarterPackList(int id, int limit = 100, int maxPages = 20, int minEntries = 10, const QString& cursor = {});
+    Q_INVOKABLE void getStarterPackListNextPage(int id, int limit = 100, int maxPages = 20, int minEntries = 10);
+    Q_INVOKABLE int createStarterPackListModel(StarterPackListModel::Type type, const QString& atId);
     Q_INVOKABLE StarterPackListModel* getStarterPackListModel(int id) const;
     Q_INVOKABLE void removeStarterPackListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
@@ -379,8 +379,8 @@ private:
     void getListListWithMembershipAll(const QString& atId, QEnums::ListPurpose purpose, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListBlocks(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getListListMutes(int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
-    void getStarterPackListAll(const QString& did, int limit, const QString& cursor, int modelId);
-    void getStarterPackListWithMembershipAll(const QString& did, int limit, const QString& cursor, int modelId);
+    void getStarterPackListAll(const QString& did, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
+    void getStarterPackListWithMembershipAll(const QString& did, int limit, int maxPages, int minEntries, const QString& cursor, int modelId);
     void getQuoteChain(int modelId, const QString& nextPostUri, std::deque<Post> quoteChain);
     void setQuoteChainInModel(int modelId, std::deque<Post> quoteChain);
     void signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr user);

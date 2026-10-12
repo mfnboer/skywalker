@@ -87,7 +87,7 @@ public:
     const QString& getAtId() const { return mAtId; }
     bool needsMembershipInfo() const { return !mMemberCheckDid.isEmpty(); }
     const QString& getMemberCheckDid() const { return mMemberCheckDid; }
-    bool containsList(const QString& listUri) const { return mListUriSet.contains(listUri); }
+    bool containsUri(const QString& listUri) const { return mListUriSet.contains(listUri); }
 
     void setGetFeedInProgress(bool inProgress);
     bool isGetFeedInProgress() const { return mGetFeedInProgress; }
