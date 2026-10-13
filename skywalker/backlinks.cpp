@@ -20,38 +20,6 @@ StarterPackListModel* Backlinks::getModel<StarterPackListModel>(int modelId) con
     return mSkywalker->getStarterPackListModel(modelId);
 }
 
-template<>
-void Backlinks::setModelInProgress<ListListModel>(bool progress, int modelId)
-{
-    auto* model = mSkywalker->getListListModel(modelId);
-
-    if (model)
-        model->setGetFeedInProgress(progress);
-}
-
-template<>
-void Backlinks::setModelInProgress<StarterPackListModel>(bool progress, int modelId)
-{
-    auto* model = mSkywalker->getStarterPackListModel(modelId);
-
-    if (model)
-        model->setGetFeedInProgress(progress);
-}
-
-template<>
-bool Backlinks::modelContainsUri<ListListModel>(const QString& uri, int modelId) const
-{
-    auto* model = mSkywalker->getListListModel(modelId);
-    return model ? model->containsUri(uri) : false;
-}
-
-template<>
-bool Backlinks::modelContainsUri<StarterPackListModel>(const QString& uri, int modelId) const
-{
-    auto* model = mSkywalker->getStarterPackListModel(modelId);
-    return model ? model->containsUri(uri) : false;
-}
-
 Backlinks::Backlinks(Constellation& constellation, QObject* parent) :
     WrappedSkywalker(parent),
     mConstellation(constellation)
