@@ -36,12 +36,6 @@ private:
     template<class ModelType>
     ModelType* getModel(int modelId) const;
 
-    template<class ModelType>
-    void setModelInProgress(bool progress, int modelId);
-
-    template<class ModelType>
-    bool modelContainsUri(const QString& uri, int modelId) const;
-
     ATProto::RepoMaster* repoMaster();
 
     Constellation& mConstellation;
