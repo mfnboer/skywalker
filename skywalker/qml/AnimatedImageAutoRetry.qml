@@ -4,6 +4,7 @@ AnimatedImage {
     property int retryCount: 0
 
     id: img
+    cache: false
 
     Timer {
         id: retryTimer

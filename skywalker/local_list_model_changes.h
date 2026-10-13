@@ -20,6 +20,7 @@ public:
         std::optional<bool> mMuted;
         std::optional<bool> mHideFromTimeline;
         std::optional<QString> mMemberListItemUri;
+        std::optional<QString> mOptOutUri;
     };
 
     LocalListModelChanges() = default;
@@ -35,6 +36,7 @@ public:
     void hideReplies(const QString& uri, bool hide);
     void hideFollowing(const QString& uri, bool hide);
     void updateMemberListItemUri(const QString& uri, const QString& listItemUri);
+    void updateOutOutUri(const QString& uri, const QString& optOutUri);
 
 protected:
     virtual void blockedChanged() = 0;
@@ -44,6 +46,7 @@ protected:
     virtual void hideRepliesChanged() = 0;
     virtual void hideFollowingChanged() = 0;
     virtual void memberListItemUriChanged() = 0;
+    virtual void optOutUriChanged() = 0;
 
 private:
     // URI to change

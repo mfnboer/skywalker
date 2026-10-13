@@ -47,7 +47,7 @@ public:
     void setMuteBusy(bool busy);
 
     Q_INVOKABLE void referenceListOptOut(const QString& listUri);
-    Q_INVOKABLE void undoReferenceListOptOut(const QString& optOutUri);
+    Q_INVOKABLE void undoReferenceListOptOut(const QString& listUri, const QString& optOutUri);
     bool isReferenceListOptOutBusy() const { return mReferenceListOptOutBusy; }
     void setReferenceListOptOutBusy(bool busy);
 

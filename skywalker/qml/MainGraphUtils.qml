@@ -29,4 +29,15 @@ GraphUtils {
     }
 
     onMuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+
+    onReferenceListOptOutOk: (uri) => {
+        skywalker.showStatusMessage(qsTr("Opted out"), QEnums.STATUS_LEVEL_INFO)
+    }
+
+    onReferenceListOptOutFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+
+    onUndoReferenceListOptOutOk: {
+        skywalker.showStatusMessage(qsTr("Opt-out undone"), QEnums.STATUS_LEVEL_INFO)
+    }
+    onUndoReferenceListOptOutFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
 }

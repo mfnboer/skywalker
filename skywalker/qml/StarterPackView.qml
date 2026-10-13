@@ -259,6 +259,22 @@ SkyPage {
             text: guiSettings.getMemberCountString(starterPack.listItemCount + authorListView.model.countDelta)
             visible: starterPack.listItemCount >= 0
         }
+
+        AccessibleText {
+            padding: 10
+            width: parent.width
+            elide: Text.ElideRight
+            text: qsTr("⚠️ You opted out of this starter pack")
+            visible: optOutUri
+
+            Rectangle {
+                anchors.fill: parent
+                radius: guiSettings.radius
+                color: "transparent"
+                border.width: 1
+                border.color: guiSettings.separatorColor
+            }
+        }
     }
 
     SkyTabBar {
@@ -344,7 +360,7 @@ SkyPage {
                 visible: !starterPack.list.isNull() && !editMode
                 onClicked: {
                     if (optOutUri)
-                        graphUtils.undoReferenceListOptOut(optOutUri)
+                        graphUtils.undoReferenceListOptOut(starterPack.list.uri, optOutUri)
                     else
                         page.optOut()
                 }

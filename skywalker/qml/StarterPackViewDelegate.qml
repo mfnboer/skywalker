@@ -8,6 +8,7 @@ Rectangle {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
     required property starterpackview starterPack
+    required property string optOutUri
     required property bool endOfFeed
     property bool allowEdit: true
     property int maxTextLines: 25
@@ -143,10 +144,35 @@ Rectangle {
             visible: starterPack.listItemCount >= 0
         }
 
-        Rectangle {
+        Item {
             width: parent.width
             height: 10
-            color: "transparent"
+            visible: optOutUri
+        }
+
+        Loader {
+            width: parent.width
+            active: optOutUri
+            visible: active
+
+            sourceComponent: AccessibleText {
+                padding: 10
+                elide: Text.ElideRight
+                text: qsTr("⚠️ You opted out of this starter pack")
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: guiSettings.radius
+                    color: "transparent"
+                    border.width: 1
+                    border.color: guiSettings.separatorColor
+                }
+            }
+        }
+
+        Item {
+            width: parent.width
+            height: 10
         }
 
         Rectangle {
@@ -217,12 +243,31 @@ Rectangle {
             onClicked: root.reportStarterPack(starterPack, userDid)
         }
         SkyMenuButton {
+            text: optOutUri ? qsTr("Undo opt-out") : qsTr("Opt-out")
+            svg: optOutUri ? SvgOutline.unblock : SvgOutline.block
+            popup: moreMenu
+            visible: !starterPack.list.isNull()
+            onClicked: {
+                if (optOutUri)
+                    root.getGraphUtils(view.userDid).undoReferenceListOptOut(starterPack.list.uri, optOutUri)
+                else
+                    view.optOutFromReferenceList()
+            }
+        }
+        SkyMenuButton {
             text: qsTr("Emoji names")
             svg: SvgOutline.emojiLanguage
             popup: moreMenu
             visible: UnicodeFonts.hasEmoji(starterPack.description)
             onClicked: root.showEmojiNamesList(starterPack.description)
         }
+    }
+
+    function optOutFromReferenceList() {
+        guiSettings.noticeOkCancel(view,
+            qsTr("You will no longer appear in this starter pack. The creator will be able to see that you have opted out."),
+            () => { root.getGraphUtils(view.userDid).referenceListOptOut(starterPack.list.uri) }
+        )
     }
 
     function isOwnStarterPack() {

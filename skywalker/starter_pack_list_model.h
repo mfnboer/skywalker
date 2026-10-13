@@ -22,6 +22,7 @@ public:
         MemberCountDelta,
         MemberCheck,
         MemberListItemUri,
+        OptOutUri,
         EndOfFeed
     };
 
@@ -80,7 +81,7 @@ protected:
     virtual void hideRepliesChanged() override {}
     virtual void hideFollowingChanged() override {}
     virtual void memberListItemUriChanged() override;
-
+    virtual void optOutUriChanged() override;
 
 private:
     template<typename T>

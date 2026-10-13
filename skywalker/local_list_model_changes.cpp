@@ -54,4 +54,10 @@ void LocalListModelChanges::updateMemberListItemUri(const QString& uri, const QS
     memberListItemUriChanged();
 }
 
+void LocalListModelChanges::updateOutOutUri(const QString& uri, const QString& optOutUri)
+{
+    mChanges[uri].mOptOutUri = optOutUri;
+    optOutUriChanged();
+}
+
 }

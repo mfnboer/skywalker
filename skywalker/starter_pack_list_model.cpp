@@ -49,6 +49,8 @@ QVariant StarterPackListModel::data(const QModelIndex& index, int role) const
         return memberCheck(starterPack.getUri());
     case Role::MemberListItemUri:
         return listChange && listChange->mMemberListItemUri ? *listChange->mMemberListItemUri : getMemberListItemUri(starterPack.getUri());
+    case Role::OptOutUri:
+        return listChange && listChange->mOptOutUri ? *listChange->mOptOutUri : starterPack.getList().getViewer().getReferenceListOptOut();
     case Role::EndOfFeed:
         return index.row() == (int)mStarterPacks.size() - 1 && isEndOfList();
     }
@@ -241,6 +243,7 @@ QHash<int, QByteArray> StarterPackListModel::roleNames() const
         { int(Role::MemberCountDelta), "memberCountDelta" },
         { int(Role::MemberCheck), "memberCheck" },
         { int(Role::MemberListItemUri), "memberListItemUri" },
+        { int(Role::OptOutUri), "optOutUri" },
         { int(Role::EndOfFeed), "endOfFeed" }
     };
 
@@ -282,6 +285,11 @@ QString StarterPackListModel::getMemberListItemUri(const QString& starterPackUri
 void StarterPackListModel::memberListItemUriChanged()
 {
     changeData({ int(Role::MemberCountDelta), int(Role::MemberCheck), int(Role::MemberListItemUri) });
+}
+
+void StarterPackListModel::optOutUriChanged()
+{
+    changeData({ int(Role::OptOutUri) });
 }
 
 void StarterPackListModel::changeData(const QList<int>& roles)

@@ -17,6 +17,7 @@ ListView {
     property bool fastMoving: false
     property var preloadNextPageFunc
     property int preloadThreshold: 10
+    property int origCacheBuffer: cacheBuffer
 
     signal contentMoved()
 
@@ -117,6 +118,26 @@ ListView {
 
     function uncover() {
         uncovered()
+    }
+
+    function disableCacheBuffer() {
+        if (cacheBuffer > 0) {
+            console.debug("Disable cache buffer:", cacheBuffer)
+            origCacheBuffer = cacheBuffer
+            cacheBuffer = 0
+        }
+        else {
+            console.debug("No cache buffer, orig:", origCacheBuffer)
+        }
+    }
+
+    function enableCacheBuffer() {
+        if (origCacheBuffer > 0 && cacheBuffer === 0) {
+            console.debug("Enable cache buffer:", origCacheBuffer)
+            cacheBuffer = origCacheBuffer
+        } else {
+            console.debug("Not disabled cache buffer:", cacheBuffer, "orig:", origCacheBuffer)
+        }
     }
 
     function getFirstVisibleIndex() {

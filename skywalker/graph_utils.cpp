@@ -604,6 +604,11 @@ void GraphUtils::referenceListOptOut(const QString& listUri)
                     model->updateListItemOptedOut(did, true);
                 });
 
+            mSkywalker->makeLocalModelChange(
+                [listUri, optOutUri](LocalListModelChanges* model){
+                    model->updateOutOutUri(listUri, optOutUri);
+                });
+
             emit referenceListOptOutOk(optOutUri);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
@@ -616,7 +621,7 @@ void GraphUtils::referenceListOptOut(const QString& listUri)
         });
 }
 
-void GraphUtils::undoReferenceListOptOut(const QString& optOutUri)
+void GraphUtils::undoReferenceListOptOut(const QString& listUri, const QString& optOutUri)
 {
     if (mReferenceListOptOutBusy)
         return;
@@ -627,7 +632,7 @@ void GraphUtils::undoReferenceListOptOut(const QString& optOutUri)
     setReferenceListOptOutBusy(true);
 
     graphMaster()->undo(optOutUri,
-        [this, presence=getPresence()]{
+        [this, presence=getPresence(), listUri]{
             if (!presence)
                 return;
 
@@ -636,6 +641,11 @@ void GraphUtils::undoReferenceListOptOut(const QString& optOutUri)
             mSkywalker->makeLocalModelChange(
                 [did=mSkywalker->getUserDid()](LocalAuthorModelChanges* model){
                     model->updateListItemOptedOut(did, false);
+                });
+
+            mSkywalker->makeLocalModelChange(
+                [listUri](LocalListModelChanges* model){
+                    model->updateOutOutUri(listUri, "");
                 });
 
             emit undoReferenceListOptOutOk();
