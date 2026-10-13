@@ -34,6 +34,9 @@ private:
     void getStarterPacks(const std::vector<QString>& starterPackUris, int maxPages, int minEntries, const QString& cursor, int modelId);
 
     template<class ModelType>
+    ModelType* getModel(int modelId) const;
+
+    template<class ModelType>
     void setModelInProgress(bool progress, int modelId);
 
     template<class ModelType>

@@ -9,6 +9,18 @@ namespace Skywalker {
 static constexpr int BACKLINKS_PAGE_SIZE = 25;
 
 template<>
+ListListModel* Backlinks::getModel<ListListModel>(int modelId) const
+{
+    return mSkywalker->getListListModel(modelId);
+}
+
+template<>
+StarterPackListModel* Backlinks::getModel<StarterPackListModel>(int modelId) const
+{
+    return mSkywalker->getStarterPackListModel(modelId);
+}
+
+template<>
 void Backlinks::setModelInProgress<ListListModel>(bool progress, int modelId)
 {
     auto* model = mSkywalker->getListListModel(modelId);
@@ -75,11 +87,21 @@ void Backlinks::getMemberOf(const QString& atId, QEnums::ListPurpose purpose, in
     if (!mSkywalker)
         return;
 
-    setModelInProgress<ModelType>(true, modelId);
+    auto* model = getModel<ModelType>(modelId);
+
+    if (!model)
+        return;
+
+    model->setGetFeedInProgress(true);
 
     mConstellation.getBackLinks(atId, "app.bsky.graph.listitem:subject", {}, BACKLINKS_PAGE_SIZE, Utils::makeOptionalString(cursor),
         [this, presence=getPresence(), purpose, maxPages, minEntries, modelId](Constellation::Backlinks::SharedPtr backlinks){
             if (!presence)
+                return;
+
+            auto* model = getModel<ModelType>(modelId);
+
+            if (!model)
                 return;
 
             std::vector<QString> uris;
@@ -101,7 +123,13 @@ void Backlinks::getMemberOf(const QString& atId, QEnums::ListPurpose purpose, in
                 return;
 
             qWarning() << "getMemberOf failed:" << error << "-" << msg;
-            setModelInProgress<ModelType>(false, modelId);
+
+            auto* model = getModel<ModelType>(modelId);
+
+            if (!model)
+                return;
+
+            model->setGetFeedInProgress(false);
             mSkywalker->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
         });
 }
@@ -204,6 +232,11 @@ void Backlinks::getListsFromListItems(const std::vector<QString>& listItemUris, 
             if (!presence)
                 return;
 
+            auto* model = getModel<ModelType>(modelId);
+
+            if (!model)
+                return;
+
             std::unordered_set<QString> seenUris;
             std::vector<QString> uris;
             uris.reserve(listItems.size());
@@ -211,7 +244,7 @@ void Backlinks::getListsFromListItems(const std::vector<QString>& listItemUris, 
             for (const auto& listItem : listItems)
             {
                 if (!seenUris.contains(listItem->mList) &&
-                    (std::is_same_v<ModelType, StarterPackListModel> || !modelContainsUri<ModelType>(listItem->mList, modelId)))
+                    (std::is_same_v<ModelType, StarterPackListModel> || !model->containsUri(listItem->mList)))
                 {
                     uris.push_back(listItem->mList);
                     seenUris.insert(listItem->mList);
@@ -259,23 +292,24 @@ void Backlinks::getLists(const std::vector<QString>& listUris, QEnums::ListPurpo
                 if (!presence)
                     return;
 
+                auto* model = mSkywalker->getListListModel(modelId);
+
+                if (!model)
+                    return;
+
                 if ((QEnums::ListPurpose)output->mList->mPurpose == purpose)
                     lists->push_back(output->mList);
 
                 if (--*todo > 0)
                     return;
 
-                auto* model = mSkywalker->getListListModel(modelId);
+                model->setGetFeedInProgress(false);
+                const int added = model->addLists(*lists, cursor);
+                const int toAdd = minEntries - added;
 
-                if (model)
-                {
-                    model->setGetFeedInProgress(false);
-                    const int added = model->addLists(*lists, cursor);
-                    const int toAdd = minEntries - added;
+                if (toAdd > 0)
+                    mSkywalker->getListListNextPage(modelId, {}, maxPages - 1, toAdd);
 
-                    if (toAdd > 0)
-                        mSkywalker->getListListNextPage(modelId, {}, maxPages - 1, toAdd);
-                }
             },
             [this, presence=getPresence(), uri, todo, lists, maxPages, minEntries, modelId, cursor](const QString& error, const QString& msg){
                 if (!presence)
@@ -283,20 +317,20 @@ void Backlinks::getLists(const std::vector<QString>& listUris, QEnums::ListPurpo
 
                 qWarning() << "getLists failed:" << uri << error << "-" << msg;
 
+                auto* model = mSkywalker->getListListModel(modelId);
+
+                if (!model)
+                    return;
+
                 if (--*todo > 0)
                     return;
 
-                auto* model = mSkywalker->getListListModel(modelId);
+                model->setGetFeedInProgress(false);
+                const int added = model->addLists(*lists, cursor);
+                const int toAdd = minEntries - added;
 
-                if (model)
-                {
-                    model->setGetFeedInProgress(false);
-                    const int added = model->addLists(*lists, cursor);
-                    const int toAdd = minEntries - added;
-
-                    if (toAdd > 0)
-                        mSkywalker->getListListNextPage(modelId, {}, maxPages - 1, toAdd);
-                }
+                if (toAdd > 0)
+                    mSkywalker->getListListNextPage(modelId, {}, maxPages - 1, toAdd);
             });
     }
 }
@@ -328,6 +362,11 @@ void Backlinks::getStarterPackLists(const std::vector<QString>& listUris, int ma
             if (!presence)
                 return;
 
+            auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+            if (!model)
+                return;
+
             for (const auto& record : backlinks->mRecords)
             {
                 const ATProto::ATUri atUri(record->mDid, record->mCollection, record->mRkey);
@@ -346,6 +385,11 @@ void Backlinks::getStarterPackLists(const std::vector<QString>& listUris, int ma
                 return;
 
             qWarning() << "getStarterPackLists failed:" << error << "-" << msg;
+
+            auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+            if (!model)
+                return;
 
             if (--*todo <= 0)
                 getStarterPacks(*starterPackUris, maxPages, minEntries, cursor, modelId);
@@ -387,43 +431,42 @@ void Backlinks::getStarterPacks(const std::vector<QString>& starterPackUris, int
                 if (!presence)
                     return;
 
+                auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+                if (!model)
+                    return;
+
                 starterPacks->push_back(starterPackView);
 
                 if (--*todo > 0)
                     return;
 
-                auto* model = mSkywalker->getStarterPackListModel(modelId);
+                model->setGetFeedInProgress(false);
+                const int added = model->addStarterPacks(*starterPacks, cursor);
+                const int toAdd = minEntries - added;
 
-                if (model)
-                {
-                    model->setGetFeedInProgress(false);
-                    const int added = model->addStarterPacks(*starterPacks, cursor);
-                    const int toAdd = minEntries - added;
-
-                    if (toAdd > 0)
-                        mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, toAdd);
-                }
+                if (toAdd > 0)
+                    mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, toAdd);
             },
             [this, presence=getPresence(), uri, todo, starterPacks, maxPages, minEntries, modelId, cursor](const QString& error, const QString& msg){
                 if (!presence)
                     return;
 
                 qWarning() << "getStarterPacks failed:" << uri << error << "-" << msg;
+                auto* model = mSkywalker->getStarterPackListModel(modelId);
+
+                if (!model)
+                    return;
 
                 if (--*todo > 0)
                     return;
 
-                auto* model = mSkywalker->getStarterPackListModel(modelId);
+                model->setGetFeedInProgress(false);
+                const int added = model->addStarterPacks(*starterPacks, cursor);
+                const int toAdd = minEntries - added;
 
-                if (model)
-                {
-                    model->setGetFeedInProgress(false);
-                    const int added = model->addStarterPacks(*starterPacks, cursor);
-                    const int toAdd = minEntries - added;
-
-                    if (toAdd > 0)
-                        mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, toAdd);
-                }
+                if (toAdd > 0)
+                    mSkywalker->getStarterPackListNextPage(modelId, {}, maxPages - 1, toAdd);
             });
     }
 }
