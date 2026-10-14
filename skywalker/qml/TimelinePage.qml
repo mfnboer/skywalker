@@ -15,6 +15,7 @@ SkyPage {
     property var userSettings: skywalker.getUserSettings()
     readonly property int favoritesY: (currentViewItem && currentViewItem.favoritesY !== 'undefined') ? currentViewItem.favoritesY : 0
     readonly property int extraFooterMargin: 0 // Before 6.10.3 viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
+    property bool hidden: false
 
     id: page
 
@@ -40,6 +41,7 @@ SkyPage {
             Layout.preferredHeight: viewStack.height
             headerMargin: viewBar.visible && viewBar.position == TabBar.Header ? viewBar.height : 0
             footerMargin: viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
+            hidden: page.hidden
 
             skywalker: page.skywalker
 
@@ -59,6 +61,7 @@ SkyPage {
                 Layout.preferredHeight: viewStack.height
                 headerMargin: viewBar.position == TabBar.Header ? viewBar.height : 0
                 footerMargin: viewBar.position == TabBar.Footer ? viewBar.height : 0
+                hidden: page.hidden
 
                 skywalker: page.skywalker
                 isView: true

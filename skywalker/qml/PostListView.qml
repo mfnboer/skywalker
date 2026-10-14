@@ -20,6 +20,7 @@ SkyListView {
     readonly property bool reverseFeed: model ? model.reverseFeed : false
     readonly property var underlyingModel: model ? model.getUnderlyingModel() : null
     property int initialContentMode: underlyingModel ? underlyingModel.contentMode : QEnums.CONTENT_MODE_UNSPECIFIED
+    property bool hidden: false
     readonly property var mediaTilesLoader: mediaTilesViewLoader
     readonly property int favoritesY: getFavoritesY()
     readonly property string syncWarning: model?.syncWarning
@@ -55,6 +56,7 @@ SkyListView {
             showAsHome: postListView.showAsHome
             model: postListView.model
             virtualFooterHeight: postListView.virtualFooterHeight
+            hidden: postListView.hidden
 
             // HACK: grid view does not have a pullback header
             Loader {
@@ -75,6 +77,10 @@ SkyListView {
                 return 0
             }
         }
+    }
+
+    onHiddenChanged: {
+        console.debug((model ? model.feedName : "no feed yet"), "hidden:", hidden)
     }
 
     onContentMoved: updateOnMovement()

@@ -11,6 +11,7 @@ Loader {
     property bool isDraft: false
     property bool postVisible: true
     property bool moving: false
+    property bool hidden: false
     readonly property int margin: 10
 
     signal activateSwipe(int imgIndex, var previewImg)
@@ -19,14 +20,14 @@ Loader {
     x: swipeMode ? -margin - 1 : 0
     width: calcWidth()
     height: calcHeight() + (item ? item.extraInlineHeight : 0)
-    active: Boolean(postVideo) && postVisible && !moving
+    active: Boolean(postVideo) && postVisible && !moving && !hidden
     asynchronous: true
 
     sourceComponent: isDraft ? videoThumbnailComponent : videoViewComponent
 
     onStatusChanged: {
         if (status == Loader.Ready)
-            active = true
+            active = Qt.binding(() => !videoLoader.hidden)
     }
 
     LoaderCanvas {

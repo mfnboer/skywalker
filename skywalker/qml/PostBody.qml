@@ -48,6 +48,7 @@ Column {
     property bool showRecord: true
     property bool showTranslateOption: true
     property bool moving: false
+    property bool hidden: false
     readonly property bool showThreadCounter: postThreadPostCount > 0 && postThreadPostIndex > 0 && !UnicodeFonts.hasThreadCount(postPlainText)
     readonly property bool hasAttachment: postImages.length > 0 || postVideo || postExternal || postRecord || postRecordWithMedia || postHasUnknownEmbed
     readonly property bool showThreadIndicator: !showThreadCounter && postIsThread && !postPlainText.includes(UnicodeFonts.THREAD_SYMBOL)
@@ -339,6 +340,7 @@ Column {
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
         moving: postBody.moving
+        hidden: postBody.hidden
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -355,6 +357,7 @@ Column {
         swipeMode: postBody.swipeMode
         postVisible: postBody.postVisible()
         moving: postBody.moving
+        hidden: postBody.hidden
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -372,6 +375,7 @@ Column {
         isDraft: postBody.isDraft
         postVisible: postBody.postVisible()
         moving: postBody.moving
+        hidden: postBody.hidden
 
         onActivateSwipe: (imgIndex, previewImg) => postBody.activateSwipe(imgIndex, previewImg)
     }
@@ -387,6 +391,7 @@ Column {
         bodyBackgroundColor: postBody.bodyBackgroundColor
         postVisible: postBody.postVisible()
         moving: postBody.moving
+        hidden: postBody.hidden
     }
 
     // Unknown embed
@@ -409,7 +414,7 @@ Column {
     Loader {
         id: recordLoader
         width: parent.width
-        active: Boolean(postRecord) && showRecord && postVisible()
+        active: Boolean(postRecord) && showRecord && postVisible() && !postBody.hidden
 
         sourceComponent: RecordView {
             userDid: postBody.userDid
@@ -423,7 +428,7 @@ Column {
     Loader {
         id: recordWithMediaLoader
         width: parent.width
-        active: Boolean(postRecordWithMedia) && postVisible()
+        active: Boolean(postRecordWithMedia) && postVisible() && !postBody.hidden
 
         sourceComponent: RecordWithMediaView {
             userDid: postBody.userDid
@@ -443,7 +448,7 @@ Column {
 
         onStatusChanged: {
             if (status == Loader.Ready)
-                active = true
+                active = Qt.binding(() => !postBody.hidden)
         }
     }
 

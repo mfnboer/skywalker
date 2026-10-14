@@ -80,6 +80,7 @@ Item {
     property string feedDid: ""
     property string feedUri: ""
     property bool moving: false
+    property bool hidden: false
 
     readonly property bool isLeftCell: index % GridView.view.columns == 0
     readonly property bool isRightCell: index % GridView.view.columns == GridView.view.columns - 1
@@ -116,7 +117,7 @@ Item {
 
         Loader {
             id: videoLoader
-            active: Boolean(postOrRecordVideo) && !moving
+            active: Boolean(postOrRecordVideo) && !moving && !hidden
 
             sourceComponent: VideoView {
                 id: video
@@ -137,7 +138,7 @@ Item {
 
             onStatusChanged: {
                 if (status == Loader.Ready)
-                    active = true
+                    active = Qt.binding(() => !page.hidden)
             }
         }
 
@@ -145,7 +146,7 @@ Item {
             property int imageIndex: 0
 
             id: imageLoader
-            active: postOrRecordImages.length > 0 && !moving
+            active: postOrRecordImages.length > 0 && !moving && !hidden
 
             sourceComponent: ImageAutoRetry {
                 property alias contentFilter: filter
@@ -199,7 +200,7 @@ Item {
 
             onStatusChanged: {
                 if (status == Loader.Ready)
-                    active = true
+                    active = Qt.binding(() => !page.hidden)
             }
 
             function imageVisible() {

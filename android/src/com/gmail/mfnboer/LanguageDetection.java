@@ -25,7 +25,7 @@ public class LanguageDetection {
     public static native void emitLanguageIdentified(String languageCode, int requestId);
 
     public static void detectLanguage(String text, String excludeLanguages, int requestId) {
-        Log.d(LOGTAG, "Identify language: " + text + " exclude languages: " + excludeLanguages + " request: " + requestId + " length:" + text.length());
+        // Log.d(LOGTAG, "Identify language: " + text + " exclude languages: " + excludeLanguages + " request: " + requestId + " length:" + text.length());
         float confidenceThreshold = calcConfidenceThreshold(text);
         String[] excludeLanguagesArray = excludeLanguages.split(",");
         Set<String> excludeLanguagesSet = Set.copyOf(Arrays.asList(excludeLanguagesArray));

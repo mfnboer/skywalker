@@ -23,6 +23,7 @@ SwipeView {
         SwipeView.onIsCurrentItemChanged: {
             if (SwipeView.isCurrentItem) {
                 console.debug("Current favorite: timeline")
+                hidden = false
 
                 if (syncWarning) {
                     console.debug("Sync warning: home - ", syncWarning)
@@ -35,6 +36,7 @@ SwipeView {
             }
             else {
                 cover()
+                hidden = true
             }
 
             resetHeaderPosition()
@@ -99,12 +101,16 @@ SwipeView {
                     if (item && trackLastViewedFeed)
                         item.saveAsLastViewedFeed()
 
-                    if (item)
+                    if (item) {
+                        item.hidden = false
                         item.forceActiveFocus()
+                    }
                 }
                 else {
-                    if (item)
+                    if (item) {
                         item.cover()
+                        item.hidden = true
+                    }
                 }
 
                 if (item)

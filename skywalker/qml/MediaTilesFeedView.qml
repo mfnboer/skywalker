@@ -32,6 +32,7 @@ GridView {
 
     property int prevContentY: 0
     property bool fastMoving: false
+    property bool hidden: false
     property bool inSync: true
 
     signal contentMoved
@@ -98,6 +99,7 @@ GridView {
         feedDid: mediaTilesView.feedDid
         feedUri: mediaTilesView.feedUri
         moving: GridView.view.fastMoving
+        hidden: mediaTilesView.hidden
 
         onActivateSwipe: (imgIndex, previewImg) => {
             let item = mediaTilesView

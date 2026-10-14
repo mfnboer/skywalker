@@ -11,9 +11,10 @@ Loader {
     property bool highlight: bodyBackgroundColor === guiSettings.postHighLightColor
     property bool postVisible: true
     property bool moving: false
+    property bool hidden: false
 
     id: loaderExternal
-    active: Boolean(postExternal) && postVisible
+    active: Boolean(postExternal) && postVisible && !hidden
 
     sourceComponent: ExternalView {
         userDid: loaderExternal.userDid

@@ -10,6 +10,7 @@ Loader {
     property bool swipeMode: false
     property bool postVisible: true
     property bool moving: false
+    property bool hidden: false
     property int maxImageHeight: guiSettings.maxImageHeight
 
     signal activateSwipe(int imgIndex, var previewImg)
@@ -17,7 +18,7 @@ Loader {
     id: loader
     width: parent.width
     height: guiSettings.mustShowImageCarousel(postImages.length) ? calcImageHeight() : 0
-    active: guiSettings.mustShowImageCarousel(postImages.length) && postVisible && !moving
+    active: guiSettings.mustShowImageCarousel(postImages.length) && postVisible && !moving && !hidden
 
     sourceComponent: ImageCarouselPreview {
         images: postImages
@@ -34,7 +35,7 @@ Loader {
     onStatusChanged: {
         // Avoid unloading when moving becomes true again
         if (status == Loader.Ready)
-            active = true
+            active = Qt.binding(() => !loader.hidden)
     }
 
     function calcImageHeight() {

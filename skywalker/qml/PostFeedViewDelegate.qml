@@ -89,6 +89,7 @@ Rectangle {
     required property bool endOfFeed
     readonly property bool reverseFeed: ListView.view.model.reverseFeed
     readonly property bool isLastPost: reverseFeed ? index === 0 : index === ListView.view.count - 1
+    property bool hidden: false
     property bool showRecord: true
     property bool showAlsoLiked: false
     property bool unrollThread: false
@@ -679,6 +680,7 @@ Rectangle {
                     showRecord: postEntry.showRecord
                     showTranslateOption: !postEntry.unrollThread || postEntry.isLastPost
                     moving: postEntry.ListView.view.fastMoving
+                    hidden: postEntry.hidden
 
                     onActivateSwipe: (imgIndex, previewImg) => postEntry.activateSwipe(imgIndex, previewImg)
                     onUnrollThread: unrollPostThread()
