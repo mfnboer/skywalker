@@ -9,6 +9,7 @@ SkyPage {
     readonly property int margin: 10
 
     signal closed
+    signal memoryFreed
 
     id: page
 
@@ -216,6 +217,17 @@ SkyPage {
         onUnblockFailed: (error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
+    Timer {
+        id: freeMemoryTimer
+        interval: 30000
+        onTriggered: freeMemory()
+    }
+
+    function freeMemory() {
+        console.debug("Chat, free memory")
+        memoryFreed()
+    }
+
     function positionViewAtBeginning() {
         let item = swipeView.currentItem
 
@@ -326,11 +338,21 @@ SkyPage {
         chat.onFailure.disconnect(failureHandler)
     }
 
+    function startView() {
+        freeMemoryTimer.stop()
+    }
+
+    function reset() {
+        freeMemoryTimer.start()
+    }
+
     Component.onDestruction: {
+        console.debug("Chat view destroyed")
         destroyHandlers()
     }
 
     Component.onCompleted: {
+        console.debug("Chat view created")
         initHandlers()
     }
 }

@@ -741,6 +741,10 @@ ApplicationWindow {
                     getSearchView().reset()
                     unwindStack(searchStack)
                 }
+                else if (prevIndex === chatIndex) {
+                    getChatView().reset()
+                    unwindStack(chatStack)
+                }
 
                 prevIndex = currentIndex
                 let currentItem = currentStackItem()
@@ -2131,6 +2135,7 @@ ApplicationWindow {
     function viewChat(refreshIfNeeded = true) {
         rootContent.currentIndex = rootContent.chatIndex
         console.debug("Unread accepted:", skywalker.chat.acceptedConvoListModel.unreadCount, "request:", skywalker.chat.requestConvoListModel.unreadCount)
+        getChatView().startView()
 
         if (!refreshIfNeeded)
             return
@@ -2688,6 +2693,9 @@ ApplicationWindow {
     }
 
     function getChatView() {
+        if (chatStack.depth === 0)
+            createChatView()
+
         return chatStack.get(0)
     }
 
@@ -2946,6 +2954,22 @@ ApplicationWindow {
         }
     }
 
+    function createChatView() {
+        let chatComponent = guiSettings.createComponent("ConvoListView.qml")
+        let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
+        chatView.onMemoryFreed.connect(() => { destroyChatView() })
+        chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
+        chatStack.push(chatView)
+    }
+
+    function destroyChatView() {
+        if (chatStack.depth > 0) {
+            let item = chatStack.get(0)
+            item.destroy()
+            chatStack.clear()
+        }
+    }
+
     // DEBUG focus change issues
     // onActiveFocusItemChanged: {
     //     console.debug("Focus changed to:", activeFocusItem)
@@ -2975,10 +2999,10 @@ ApplicationWindow {
         homePageStack.push(homePage)
         favoritesTabBar.favoritesSwipeView = homePage
 
-        let chatComponent = guiSettings.createComponent("ConvoListView.qml")
-        let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
-        chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
-        chatStack.push(chatView)
+        // let chatComponent = guiSettings.createComponent("ConvoListView.qml")
+        // let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
+        // chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
+        // chatStack.push(chatView)
 
         favoritesTabBar.update()
 

@@ -4,6 +4,8 @@ next
 * View on which starter packs you are
 * View users that have blocked you
 * View who has verified an account
+* Reduce memory usage
+* Bug fixes
 
 4.46.1
 ======
