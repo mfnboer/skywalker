@@ -2675,6 +2675,9 @@ ApplicationWindow {
     }
 
     function getNotificationView() {
+        if (notificationStack.depth === 0)
+            createNotificationListView()
+
         return notificationStack.get(0)
     }
 
@@ -2920,6 +2923,23 @@ ApplicationWindow {
         skywalker.favoriteFeeds.onInitialized.connect(showStartupFeed)
     }
 
+    function createNotificationListView() {
+        let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
+        let notificationsView = notificationsComponent.createObject(root,
+                { skywalker: skywalker, timeline: getFavoritesSwipeView() })
+        notificationsView.onMemoryFreed.connect(() => { destroyNotificationListView() })
+        notificationsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
+        notificationStack.push(notificationsView)
+    }
+
+    function destroyNotificationListView() {
+        if (notificationStack.depth > 0) {
+            let item = notificationStack.get(0)
+            item.destroy()
+            notificationStack.clear()
+        }
+    }
+
     // DEBUG focus change issues
     // onActiveFocusItemChanged: {
     //     console.debug("Focus changed to:", activeFocusItem)
@@ -2948,12 +2968,6 @@ ApplicationWindow {
         })
         homePageStack.push(homePage)
         favoritesTabBar.favoritesSwipeView = homePage
-
-        let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
-        let notificationsView = notificationsComponent.createObject(root,
-                { skywalker: skywalker, timeline: homePage })
-        notificationsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
-        notificationStack.push(notificationsView)
 
         let chatComponent = guiSettings.createComponent("ConvoListView.qml")
         let chatView = chatComponent.createObject(root, { chat: skywalker.chat })

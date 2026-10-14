@@ -10,6 +10,7 @@ SkyPage {
     readonly property int margin: 10
 
     signal closed
+    signal memoryFreed
 
     id: page
 
@@ -274,6 +275,19 @@ SkyPage {
         }
     }
 
+    Timer {
+        id: freeMemoryTimer
+        interval: 30000
+        onTriggered: freeMemory()
+    }
+
+    function freeMemory() {
+        console.debug("Notifications, free memory")
+        skywalker.notificationListModel.clear()
+        skywalker.mentionListModel.clear()
+        memoryFreed()
+    }
+
     function moveToNotification(index, mentions) {
         console.debug("Move to:", index, "mentionsOnly:", mentions)
 
@@ -291,10 +305,12 @@ SkyPage {
     }
 
     function showOwnNotificationsTab() {
+        freeMemoryTimer.stop()
         tabBar.setCurrentIndex(0)
     }
 
     function showFirstTabWithUnreadNotifications() {
+        freeMemoryTimer.stop()
         let index = 2
 
         for (const user of sessionManager.nonActiveNotifications) {
@@ -324,9 +340,19 @@ SkyPage {
             if (nonActiveUser.notificationListModel)
                 nonActiveUser.notificationListModel.clear()
         }
+
+        freeMemoryTimer.start()
     }
 
     function getHeaderHeight() {
         return header.height + tabBar.height + guiSettings.headerMargin
+    }
+
+    Component.onDestruction: {
+        console.debug("Destroyed notification list view")
+    }
+
+    Component.onCompleted: {
+        console.debug("Created notification list view")
     }
 }

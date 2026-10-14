@@ -1,10 +1,10 @@
 import QtQuick
 
+// Do not disable cache as it will prevent loop play
 AnimatedImage {
     property int retryCount: 0
 
     id: img
-    cache: false
 
     Timer {
         id: retryTimer
