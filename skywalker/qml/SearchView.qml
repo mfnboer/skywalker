@@ -37,6 +37,7 @@ SkyPage {
     property date nullDate
 
     signal closed
+    signal memoryFreed()
 
     id: page
 
@@ -1169,6 +1170,18 @@ SkyPage {
         onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 
+    Timer {
+        id: freeMemoryTimer
+        interval: 30000
+        onTriggered: freeMemory()
+    }
+
+    function freeMemory() {
+        console.debug("Search, free memory")
+        resetSearch()
+        memoryFreed()
+    }
+
     function clearSearchPostScope() {
         exactPhrase = false
         postFilter = SearchOptions.POST_FILTER_ALL
@@ -1343,6 +1356,7 @@ SkyPage {
     }
 
     function showSearchFeed(searchFeed) {
+        freeMemoryTimer.stop()
         adultContent = skywalker.getContentFilter().getAdultContent()
         page.header.forceFocus()
         searchBar.setLatestPosts()
@@ -1363,6 +1377,7 @@ SkyPage {
     }
 
     function show(searchText = "", searchScope = "") {
+        freeMemoryTimer.stop()
         adultContent = skywalker.getContentFilter().getAdultContent()
 
         if (searchText)
@@ -1393,7 +1408,16 @@ SkyPage {
         suggestionsView.resetPosition()
     }
 
+    function reset() {
+        freeMemoryTimer.start()
+    }
+
+    Component.onDestruction: {
+        console.debug("Destroyed search view")
+    }
+
     Component.onCompleted: {
+        console.debug("Created search view")
         userSettings.onShowSuggestedUsersChanged.connect(() => { if (userSettings.showSuggestedUsers) firstSearch = true })
         userSettings.onShowSuggestedFeedsChanged.connect(() => { if (userSettings.showSuggestedFeeds) firstSearch = true })
         userSettings.onShowSuggestedStarterPacksChanged.connect(() => { if (userSettings.showSuggestedStarterPacks) firstSearch = true })

@@ -737,6 +737,10 @@ ApplicationWindow {
                     getNotificationView().reset()
                     unwindStack(notificationStack)
                 }
+                else if (prevIndex === searchIndex) {
+                    getSearchView().reset()
+                    unwindStack(searchStack)
+                }
 
                 prevIndex = currentIndex
                 let currentItem = currentStackItem()
@@ -2159,6 +2163,7 @@ ApplicationWindow {
         let searchComponent = guiSettings.createComponent("SearchView.qml")
         let searchView = searchComponent.createObject(root,
                 { skywalker: skywalker, timeline: getTimelineView(), })
+        searchView.onMemoryFreed.connect(() => { destroySearchView() })
         searchView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
         searchStack.push(searchView)
     }
@@ -2173,22 +2178,16 @@ ApplicationWindow {
 
     function viewSearchView(searchText = "", searchScope = "") {
         rootContent.currentIndex = rootContent.searchIndex
-
-        if (searchStack.depth === 0)
-            createSearchView()
-
+        let view = getSearchView()
         unwindStack()
-        currentStackItem().show(searchText, searchScope)
+        view.show(searchText, searchScope)
     }
 
     function viewSearchViewFeed(searchFeed) {
         rootContent.currentIndex = rootContent.searchIndex
-
-        if (searchStack.depth === 0)
-            createSearchView()
-
+        let view = getSearchView()
         unwindStack()
-        currentStackItem().showSearchFeed(searchFeed)
+        view.showSearchFeed(searchFeed)
     }
 
     function viewFollowingFeed() {
@@ -2674,6 +2673,13 @@ ApplicationWindow {
         return getFavoritesSwipeView().itemAt(0)
     }
 
+    function getSearchView() {
+        if (searchStack.depth === 0)
+            createSearchView()
+
+        return searchStack.get(0)
+    }
+
     function getNotificationView() {
         if (notificationStack.depth === 0)
             createNotificationListView()
@@ -2926,7 +2932,7 @@ ApplicationWindow {
     function createNotificationListView() {
         let notificationsComponent = guiSettings.createComponent("NotificationListView.qml")
         let notificationsView = notificationsComponent.createObject(root,
-                { skywalker: skywalker, timeline: getFavoritesSwipeView() })
+                { skywalker: skywalker, timeline: getTimelineView() })
         notificationsView.onMemoryFreed.connect(() => { destroyNotificationListView() })
         notificationsView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
         notificationStack.push(notificationsView)
