@@ -35,6 +35,7 @@ public:
     QString getTitle() const;
     QString getDescription() const;
     QString getThumbUrl() const;
+    QString getThumbHttpUrl() const;
     QDateTime getCreatedAt() const;
     QDateTime getUpdatedAt() const;
     int getReadingTime() const; // minutes

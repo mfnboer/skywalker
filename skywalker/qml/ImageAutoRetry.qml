@@ -92,4 +92,8 @@ Image {
     function setVisible(v) {
         visible = v
     }
+
+    Component.onCompleted: {
+        console.debug("MICHEL source:", sourceSize, "size:", Qt.size(width, height), source)
+    }
 }

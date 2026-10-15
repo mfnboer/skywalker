@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "external_view.h"
+#include "cached_image_provider.h"
 #include "content_filter.h"
 #include "profile.h"
 
@@ -33,6 +34,13 @@ QString ExternalView::getDescription() const
 }
 
 QString ExternalView::getThumbUrl() const
+{
+    static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::THUMB_IMG);
+    const QString thumbUrl = QUrl::fromPercentEncoding(getThumbHttpUrl().toUtf8());
+    return provider->createImageUrl(thumbUrl);
+}
+
+QString ExternalView::getThumbHttpUrl() const
 {
     return mExternal ? mExternal->mThumb.value_or("") : "";
 }

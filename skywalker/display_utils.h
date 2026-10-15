@@ -19,6 +19,8 @@ public:
 
     QColor getStatusBarColor() const { return mStatusBarColor; }
 
+    Q_INVOKABLE static qreal getDevicePixelRatio();
+    Q_INVOKABLE static void setDevicePixelRatio(qreal devicePixelRatio);
     Q_INVOKABLE ScopedHandle* keepScreenOn();
     Q_INVOKABLE static bool sendAppToBackground();
     Q_INVOKABLE static void showSystemBars();
@@ -38,6 +40,7 @@ private:
     void setInternalStatusBarColor(QColor color);
     static void disableScreenOn();
 
+    static qreal sDevicePixelRatio;
     static int sScreenOnCount;
     QColor mStatusBarColor;
     bool mIsLightMode = false;

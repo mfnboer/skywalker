@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "image_view.h"
+#include "cached_image_provider.h"
 
 namespace Skywalker {
 
@@ -9,14 +10,20 @@ ImageView::ImageView(const QString& fullSizeUrl, const QString& alt, const QStri
     mAlt(alt),
     mMemeTopText(memeTopText),
     mMemeBottomText(memeBottomText)
-{}
+{
+    if (mFullSizeUrl.startsWith("image://"))
+        mFullSizeUrl = CachedImageProvider::createHttpUrl(mFullSizeUrl);
+}
 
 ImageView::ImageView(const QString& fullSizeUrl, const QString& alt, int width, int height) :
     mFullSizeUrl(fullSizeUrl),
     mAlt(alt),
     mWidth(width),
     mHeight(height)
-{}
+{
+    if (mFullSizeUrl.startsWith("image://"))
+        mFullSizeUrl = CachedImageProvider::createHttpUrl(mFullSizeUrl);
+}
 
 ImageView::ImageView(const ATProto::AppBskyEmbed::ImagesViewImage::SharedPtr& viewImage) :
     mViewImage(viewImage)
@@ -27,6 +34,13 @@ ImageView::ImageView(const ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr& v
 {}
 
 QString ImageView::getThumbUrl() const
+{
+    static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::THUMB_IMG);
+    const QString thumbUrl = QUrl::fromPercentEncoding(getThumbHttpUrl().toUtf8());
+    return provider->createImageUrl(thumbUrl);
+}
+
+QString ImageView::getThumbHttpUrl() const
 {
     if (ATProto::isNullVariant(mViewImage))
         return mFullSizeUrl;

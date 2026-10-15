@@ -8,25 +8,29 @@
 
 namespace Skywalker {
 
-// Currently only square images will be loaded to avoid unnecessary loads.
 class CachedImageProvider : public QQuickAsyncImageProvider
 {
 public:
     static constexpr char const* AVATAR = "cached_avatar";
+    static constexpr char const* THUMB_IMG = "cached_thumb_img";
     static CachedImageProvider* getProvider(const QString& name);
 
     explicit CachedImageProvider(const QString& name);
 
     QString createImageUrl(const QString& webUrl) const;
+    static QString createHttpUrl(const QString& imgUrl);
+
     void addImage(const QString& id, const QImage& img, const QSize& requestedSize, const QString& format);
     std::pair<QImage, QString> getImage(const QString& id, const QSize& requestedSize);
+
+    bool mustLoadImage(const QString& id, const QSize& requestedSize) const;
 
     // id = image url without scheme
     QQuickImageResponse *requestImageResponse(const QString& id, const QSize& requestedSize) override;
 
 private:
-    QString createFileName(const QString& baseName) const;
-    QString getBaseName(const QString& id) const;
+    QString createFileName(const QString& baseName, const QString& extension) const;
+    std::pair<QString, QString> getBaseNameAndExtension(const QString& id) const;
     QString getFileName(const QString& id, const QSize& requestedSize) const;
     void cleanupCache();
 
@@ -34,6 +38,7 @@ private:
     QMutex mCacheMutex;
     QString mCachePath;
     QThreadPool mThreadPool;
+    bool mSquareImagesOnly = false;
 
     static std::unordered_map<QString, CachedImageProvider*> sProviders; // name -> provider
 };

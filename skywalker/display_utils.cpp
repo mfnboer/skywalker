@@ -6,11 +6,23 @@
 
 namespace Skywalker {
 
+qreal DisplayUtils::sDevicePixelRatio = 1.0;
 int DisplayUtils::sScreenOnCount = 0;
 
 DisplayUtils::DisplayUtils(QObject* parent) :
     WrappedSkywalker(parent)
 {
+}
+
+qreal DisplayUtils::getDevicePixelRatio()
+{
+    return sDevicePixelRatio;
+}
+
+void DisplayUtils::setDevicePixelRatio(qreal devicePixelRatio)
+{
+    qDebug() << "DPR:" << devicePixelRatio;
+    sDevicePixelRatio = devicePixelRatio;
 }
 
 ScopedHandle* DisplayUtils::keepScreenOn()

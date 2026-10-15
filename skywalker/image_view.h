@@ -11,6 +11,7 @@ class ImageView
 {
     Q_GADGET
     Q_PROPERTY(QString thumbUrl READ getThumbUrl FINAL)
+    Q_PROPERTY(QString thumbHttpUrl READ getThumbHttpUrl FINAL) // TODO
     Q_PROPERTY(QString fullSizeUrl READ getFullSizeUrl FINAL)
     Q_PROPERTY(QString alt READ getAlt FINAL)
     Q_PROPERTY(int width READ getWidth FINAL)
@@ -30,6 +31,7 @@ public:
 
     Q_INVOKABLE bool isNull() const { return getFullSizeUrl().isEmpty(); }
     QString getThumbUrl() const;
+    QString getThumbHttpUrl() const;
     QString getFullSizeUrl() const;
     QString getAlt() const;
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const;

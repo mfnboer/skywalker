@@ -67,9 +67,12 @@ int main(int argc, char *argv[])
     qInfo() << "Image writer supported:" << QImageWriter::supportedImageFormats();
 
     QQmlApplicationEngine engine;
+
     auto* providerId = Skywalker::SharedImageProvider::SHARED_IMAGE;
     engine.addImageProvider(providerId, Skywalker::SharedImageProvider::getProvider(providerId));
     providerId = Skywalker::CachedImageProvider::AVATAR;
+    engine.addImageProvider(providerId, Skywalker::CachedImageProvider::getProvider(providerId));
+    providerId = Skywalker::CachedImageProvider::THUMB_IMG;
     engine.addImageProvider(providerId, Skywalker::CachedImageProvider::getProvider(providerId));
 
     // Some image servers don't support HTTP/2

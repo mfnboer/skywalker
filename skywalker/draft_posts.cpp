@@ -424,7 +424,7 @@ static void setExternal(DraftPostData* data, const ExternalView* externalView)
         TenorGif gif("", externalView->getTitle(), "",
                      uri.toString(QUrl::RemoveQuery), gifSize,
                      smallUrl, QSize(smallWidth, smallHeight),
-                     externalView->getThumbUrl(), gifSize,
+                     externalView->getThumbHttpUrl(), gifSize,
                      mp4Url);
 
         if (gifUtils.isKlipyLink(link))

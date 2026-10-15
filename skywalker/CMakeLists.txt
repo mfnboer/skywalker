@@ -771,6 +771,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/AuthorList.qml
         QML_FILES qml/ListList.qml
         QML_FILES qml/StarterPackList.qml
+        SOURCES video_view.cpp
 )
 
 target_link_libraries(libskywalker

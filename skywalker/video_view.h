@@ -40,7 +40,8 @@ public:
         mNewHeight(newHeight) {}
 
     Q_INVOKABLE bool isNull() const { return getPlaylistUrl().isEmpty(); }
-    QString getThumbUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
+    QString getThumbUrl() const;
+    QString getThumbHttpUrl() const { return mVideoView && mVideoView->mThumbnail ? *mVideoView->mThumbnail : ""; }
     QString getPlaylistUrl() const { return mVideoView ? mVideoView->mPlaylist : mPlayListUrl; }
     const ATProto::AppBskyEmbed::AspectRatio* getAspectRatio() const { return mVideoView ? mVideoView->mAspectRatio.get() : nullptr; }
     int getWidth() const { auto* r = getAspectRatio(); return r ? r->mWidth : 0;  }
@@ -55,7 +56,7 @@ public:
     }
 
     ImageView getImageView() const {
-        ImageView imageView(getThumbUrl(), getAlt(), getWidth(), getHeight());
+        ImageView imageView(getThumbHttpUrl(), getAlt(), getWidth(), getHeight());
 
         if (hasHtmlAlt())
             imageView.setHtmlAlt(mHtmlAlt);

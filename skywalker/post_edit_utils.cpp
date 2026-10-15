@@ -86,7 +86,7 @@ static void setGif(DraftPostData* data, const Post& post)
     TenorGif gif("", externalView->getTitle(), "",
                  gifUrl, gifSize,
                  gifUrl, gifSize,
-                 externalView->getThumbUrl(), QSize(1, 1));
+                 externalView->getThumbHttpUrl(), QSize(1, 1));
 
     data->setGif(gif);
 }

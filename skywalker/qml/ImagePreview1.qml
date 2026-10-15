@@ -47,6 +47,7 @@ Item {
         SkyMouseArea {
             enabled: filter.imageVisible()
             anchors.fill: img
+
             onClicked: {
                 if (img.item && img.item.failedCanReload)
                     img.item.reload()

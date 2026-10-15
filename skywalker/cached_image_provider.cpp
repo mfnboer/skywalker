@@ -1,7 +1,10 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "cached_image_provider.h"
+#include "display_utils.h"
 #include "file_utils.h"
+#include <atproto/lib/at_regex.h>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QImageReader>
 #include <QTimer>
@@ -9,6 +12,7 @@
 namespace Skywalker {
 
 static constexpr int MAX_CACHE_SIZE = 512;
+static constexpr qint64 MAX_CACHE_BYTES = 128 * 1024 * 1024;
 
 std::unordered_map<QString, CachedImageProvider*> CachedImageProvider::sProviders;
 
@@ -17,7 +21,12 @@ CachedImageProvider* CachedImageProvider::getProvider(const QString& name)
     auto& provider = sProviders[name];
 
     if (!provider)
+    {
         provider = new CachedImageProvider(name);
+
+        if (name == AVATAR)
+            provider->mSquareImagesOnly = true;
+    }
 
     return provider;
 }
@@ -25,7 +34,7 @@ CachedImageProvider* CachedImageProvider::getProvider(const QString& name)
 CachedImageProvider::CachedImageProvider(const QString& name) :
     mName(name),
     mCachePath(FileUtils::getCachePath(mName))
-{
+{   
     qDebug() << "Image provider:" << mName << "cache:" << mCachePath;
 }
 
@@ -47,6 +56,23 @@ QString CachedImageProvider::createImageUrl(const QString& webUrl) const
     return imageUrl;
 }
 
+QString CachedImageProvider::createHttpUrl(const QString& imgUrl)
+{
+    static const QRegularExpression sourceRE(R"(image:\/\/[^\/]+\/(.+))");
+
+    auto match = sourceRE.match(imgUrl);
+
+    if (!match.hasMatch())
+    {
+        qWarning() << "Invalid image url:" << imgUrl;
+        return imgUrl;
+    }
+
+    const QString httpUrl = "https://" + match.captured(1);
+    qDebug() << "Converted:" << imgUrl << "to:" << httpUrl;
+    return httpUrl;
+}
+
 void CachedImageProvider::addImage(const QString& id, const QImage& img, const QSize& requestedSize, const QString& format)
 {
     const QString fileName = getFileName(id, requestedSize);
@@ -54,7 +80,7 @@ void CachedImageProvider::addImage(const QString& id, const QImage& img, const Q
     if (fileName.isEmpty())
         return;
 
-    if (!img.save(fileName, format.toUtf8()))
+    if (!img.save(fileName, !format.isEmpty() ? format.toUtf8() : nullptr))
         qWarning() << "Failed to save image:" << fileName;
     else
         qDebug() << "Cached image:" << fileName;
@@ -84,51 +110,81 @@ std::pair<QImage, QString> CachedImageProvider::getImage(const QString& id, cons
     else
         FileUtils::updateModificationTime(fileName);
 
+    qDebug() << "Image loaded from cache:" << id << "size:" << requestedSize << "file:" << fileName << "provider:" << mName;
     const QString format = reader.format();
     return { img, format };
 }
 
-QString CachedImageProvider::createFileName(const QString& baseName) const
+QString CachedImageProvider::createFileName(const QString& baseName, const QString& extension) const
 {
-    const QString fileName = QString("%1/%2").arg(mCachePath, baseName);
+    const QString fileName = extension.isEmpty() ?
+        QString("%1/%2").arg(mCachePath, baseName) :
+        QString("%1/%2.%3").arg(mCachePath, baseName, extension);
     return fileName;
 }
-QString CachedImageProvider::getBaseName(const QString& id) const
+std::pair<QString, QString> CachedImageProvider::getBaseNameAndExtension(const QString& id) const
 {
-    const auto idParts = id.split('/');
-    const QString& baseName = idParts.back();
-
-    if (baseName.isEmpty())
+    if (id.isEmpty())
+    {
         qWarning() << "Invalid id:" << id << "provider:" << mName;
+        return {};
+    }
 
-    return baseName;
+    const QString baseName = QCryptographicHash::hash(id.toUtf8(), QCryptographicHash::Sha256).
+                             toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
+    const QString extension = QFileInfo(id).suffix();
+
+    return { baseName, extension };
 }
 
 QString CachedImageProvider::getFileName(const QString& id, const QSize& requestedSize) const
 {
-    const QString baseName = getBaseName(id);
+    const auto [baseName, extension] = getBaseNameAndExtension(id);
 
     if (baseName.isEmpty())
         return {};
 
     if (!requestedSize.isValid())
-        return createFileName(baseName);
+        return createFileName(baseName, extension);
 
     const int width = requestedSize.isValid() ? requestedSize.width() : 0;
     const int height = requestedSize.isValid() ? requestedSize.height() : 0;
     const QString newBaseName = QString("%1-%2_%3").arg(baseName).arg(width).arg(height);
-    return createFileName(newBaseName);
+    return createFileName(newBaseName, extension);
+}
+
+bool CachedImageProvider::mustLoadImage(const QString& id,const QSize& requestedSize) const
+{
+    if (requestedSize.isEmpty())
+    {
+        qDebug() << "Empty size:" << id << "size:" << requestedSize << "provider:" << mName;
+        return false;
+    }
+
+    if (mSquareImagesOnly && requestedSize.width() != requestedSize.height())
+    {
+        qDebug() << "Image is not square:" << id << "size:" << requestedSize << "provider:" << mName;
+        return false;
+    }
+
+    return true;
 }
 
 QQuickImageResponse* CachedImageProvider::requestImageResponse(const QString& id, const QSize& requestedSize)
 {
-    auto* response = new CachedImageResponse(mName, id, requestedSize, &mThreadPool);
+    // HACK
+    // The sourceSize on an image is set in device pixels (need images fetched by Qt itself over
+    // HTTP). For an image provide Qt multiplies the sourceSize by the DPR to get the
+    // requestedSize. This causes the DPR to apply twice. So we divide by DPR again.
+
+    const auto size = requestedSize / DisplayUtils::getDevicePixelRatio();
+    auto* response = new CachedImageResponse(mName, id, size, &mThreadPool);
     return response;
 }
 
 void CachedImageProvider::cleanupCache()
 {
-    qDebug() << "Cleanup cache";
+    qDebug() << "Cleanup cache:" << mName;
 
     if (!mCacheMutex.tryLock())
     {
@@ -137,23 +193,38 @@ void CachedImageProvider::cleanupCache()
     }
 
     QDir cacheDir(mCachePath, "", QDir::Time | QDir::Reversed, QDir::Files);
-    const QStringList fileNames = cacheDir.entryList();
-    qDebug() << "Cache size:" << fileNames.size();
+    const QFileInfoList fileInfos = cacheDir.entryInfoList();
+    qint64 cacheBytes = 0;
 
-    if (fileNames.size() <= MAX_CACHE_SIZE)
+    for (const auto& info : fileInfos)
+        cacheBytes += info.size();
+
+    qDebug() << "Cache size:" << fileInfos.size() << "bytes:" << cacheBytes;
+
+    if (fileInfos.size() <= MAX_CACHE_SIZE && cacheBytes <= MAX_CACHE_BYTES)
     {
         mCacheMutex.unlock();
         return;
     }
 
-    const int cleanCount = fileNames.size() - MAX_CACHE_SIZE;
+    const int cleanCount = fileInfos.size() - MAX_CACHE_SIZE;
 
-    for (int i = 0; i < cleanCount; ++i)
+    for (int i = 0; i < cleanCount || cacheBytes > MAX_CACHE_BYTES; ++i)
     {
-        qDebug() << "Remove:" << fileNames[i];
+        if (i >= fileInfos.size())
+        {
+            qWarning() << "No more files left";
+            break;
+        }
 
-        if (!cacheDir.remove(fileNames[i]))
-            qWarning() << "Failed to remove:" << fileNames[i];
+        const QString fileName = fileInfos[i].fileName();
+        const qint64 fileBytes = fileInfos[i].size();
+        qDebug() << "Remove:" << fileName << "bytes:" << fileBytes << "cacheBytes:" << cacheBytes;
+
+        if (!cacheDir.remove(fileName))
+            qWarning() << "Failed to remove:" << fileName;
+        else
+            cacheBytes -= fileBytes;
     }
 
     mCacheMutex.unlock();
@@ -181,20 +252,13 @@ QQuickTextureFactory* CachedImageResponse::textureFactory() const
 
 void CachedImageResponse::loadImage(const QString& id)
 {   
-    if (mRequestedSize.isEmpty())
-    {
-        handleDone(QImage(), {}, false);
-        return;
-    }
-
-    if (mRequestedSize.width() != mRequestedSize.height())
-    {
-        qDebug() << "Image is not square:" << id << "size:" << mRequestedSize << "provider:" << mProviderName;
-        handleDone(QImage(), {}, false);
-        return;
-    }
-
     auto* provider = CachedImageProvider::getProvider(mProviderName);
+
+    if (!provider->mustLoadImage(id, mRequestedSize))
+    {
+        handleDone(QImage(), {}, false);
+        return;
+    }
 
     const auto [image, format] = provider->getImage(id, mRequestedSize);
 
@@ -227,6 +291,7 @@ void CachedImageResponse::handleDone(QImage img, const QString& format, bool cac
     if (cached || img.isNull() || !mRequestedSize.isValid())
     {
         mImage = img;
+        mImage.setDevicePixelRatio(DisplayUtils::getDevicePixelRatio());
         emit finished();
         return;
     }
@@ -235,6 +300,7 @@ void CachedImageResponse::handleDone(QImage img, const QString& format, bool cac
     connect(runnable, &CachedImageProcessor::done, this,
             [this](QImage image){
                 mImage = image;
+                mImage.setDevicePixelRatio(DisplayUtils::getDevicePixelRatio());
                 emit finished();
             });
     mThreadPool->start(runnable);
