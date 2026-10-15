@@ -11,6 +11,8 @@ namespace Skywalker {
 class CachedImageProvider : public QQuickAsyncImageProvider
 {
 public:
+    using ImageCb = std::function<void(QImage)>;
+
     static constexpr char const* AVATAR = "cached_avatar";
     static constexpr char const* THUMB_IMG = "cached_thumb_img";
     static CachedImageProvider* getProvider(const QString& name);
@@ -20,10 +22,15 @@ public:
     QString createImageUrl(const QString& webUrl) const;
     static QString createHttpUrl(const QString& imgUrl);
 
-    void addImage(const QString& id, const QImage& img, const QSize& requestedSize, const QString& format);
-    std::pair<QImage, QString> getImage(const QString& id, const QSize& requestedSize);
+    void addImage(const QString& id, const QImage& img, const QString& format);
+    std::pair<QImage, QString> getImage(const QString& id);
 
     bool mustLoadImage(const QString& id, const QSize& requestedSize) const;
+
+    // Returns true if it was not yet pending, false if a request is pending already
+    // In both cases imageCb will be called when the request is done.
+    bool addPendingRequest(const QString& id, const ImageCb& imageCb);
+    void finishPendingRequest(const QString& id, QImage img);
 
     // id = image url without scheme
     QQuickImageResponse *requestImageResponse(const QString& id, const QSize& requestedSize) override;
@@ -31,7 +38,7 @@ public:
 private:
     QString createFileName(const QString& baseName, const QString& extension) const;
     std::pair<QString, QString> getBaseNameAndExtension(const QString& id) const;
-    QString getFileName(const QString& id, const QSize& requestedSize) const;
+    QString getFileName(const QString& id) const;
     void cleanupCache();
 
     QString mName;
@@ -39,6 +46,8 @@ private:
     QString mCachePath;
     QThreadPool mThreadPool;
     bool mSquareImagesOnly = false;
+    QMutex mPendingRequestsMutex;
+    std::unordered_map<QString, std::vector<ImageCb>> mPendingRequests; // id -> callback
 
     static std::unordered_map<QString, CachedImageProvider*> sProviders; // name -> provider
 };
@@ -47,13 +56,13 @@ class CachedImageResponse : public QQuickImageResponse
 {
 public:
     CachedImageResponse(const QString& providerName, const QString& id, const QSize& requestedSize, QThreadPool* pool);
-    ~CachedImageResponse();
 
     QQuickTextureFactory* textureFactory() const override;
 
 private:
-    void loadImage(const QString& id);
-    void handleDone(QImage img, const QString& format, bool cached);
+    void loadImage();
+    void handleDone(QImage img);
+    void setImage(QImage img);
 
     QString mProviderName;
     QString mId;
@@ -69,7 +78,7 @@ class CachedImageProcessor : public QObject, public QRunnable
 
 public:
     CachedImageProcessor(const QString& providerName, const QString& id, const QSize& requestedSize,
-                         QImage image, const QString& format);
+                         QImage image);
     void run() override;
 
 signals:
@@ -80,7 +89,6 @@ private:
     QString mId;
     QSize mRequestedSize;
     QImage mImage;
-    QString mFormat;
 };
 
 }

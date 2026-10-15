@@ -22,7 +22,6 @@ SkyListView {
         SimpleHeader {
             id: portraitHeader
             text: sideBarTitle
-            subTitle: sideBarSubTitle
             visible: !root.showSideBar
             onBack: bookmarksView.closed()
         }

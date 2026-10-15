@@ -49,6 +49,7 @@ Item {
                 height: thumbImage.height
                 fillMode: thumbImage.fillMode
                 source: thumbImage.source
+                sourceSize: thumbImage.sourceSize
 
                 onStatusChanged: {
                     console.debug("Zoom image status:", status)

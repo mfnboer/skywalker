@@ -293,8 +293,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/DraftPostsView.qml
         QML_FILES qml/DraftPostViewDelegate.qml
         SOURCES draft_post_data.h
-        SOURCES atproto_image_provider.h
-        SOURCES atproto_image_provider.cpp
+        SOURCES
+        SOURCES
         SOURCES hashtag_index.h
         SOURCES hashtag_index.cpp
         QML_FILES qml/HashtagTypeaheadView.qml

@@ -14,6 +14,11 @@ namespace Skywalker {
 static constexpr int MAX_CACHE_SIZE = 512;
 static constexpr qint64 MAX_CACHE_BYTES = 128 * 1024 * 1024;
 
+static bool mustResize(const QSize& requestedSize)
+{
+    return requestedSize.isValid() && !requestedSize.isNull();
+}
+
 std::unordered_map<QString, CachedImageProvider*> CachedImageProvider::sProviders;
 
 CachedImageProvider* CachedImageProvider::getProvider(const QString& name)
@@ -73,9 +78,9 @@ QString CachedImageProvider::createHttpUrl(const QString& imgUrl)
     return httpUrl;
 }
 
-void CachedImageProvider::addImage(const QString& id, const QImage& img, const QSize& requestedSize, const QString& format)
+void CachedImageProvider::addImage(const QString& id, const QImage& img, const QString& format)
 {
-    const QString fileName = getFileName(id, requestedSize);
+    const QString fileName = getFileName(id);
 
     if (fileName.isEmpty())
         return;
@@ -88,30 +93,34 @@ void CachedImageProvider::addImage(const QString& id, const QImage& img, const Q
     cleanupCache();
 }
 
-std::pair<QImage, QString> CachedImageProvider::getImage(const QString& id, const QSize& requestedSize)
+std::pair<QImage, QString> CachedImageProvider::getImage(const QString& id)
 {
-    const QString fileName = getFileName(id, requestedSize);
+    const QString fileName = getFileName(id);
 
     if (fileName.isEmpty())
         return {};
 
     if (!QFile::exists(fileName))
     {
-        qDebug() << "Image not in cache:" << id << "size:" << requestedSize << "provider:" << mName;
+        qDebug() << "Image not in cache:" << id << "provider:" << mName;
         return {};
     }
 
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     QImage img = reader.read();
+    QString format = reader.format();
 
     if (img.isNull())
-        qWarning() << "Failed to read:" << fileName;
+    {
+        qWarning() << "Failed to read:" << fileName << "error:" << reader.errorString() << "format:" << format;
+    }
     else
+    {
         FileUtils::updateModificationTime(fileName);
+        qDebug() << "Image loaded from cache:" << id << "file:" << fileName << "format:" << format << "provider:" << mName;
+    }
 
-    qDebug() << "Image loaded from cache:" << id << "size:" << requestedSize << "file:" << fileName << "provider:" << mName;
-    const QString format = reader.format();
     return { img, format };
 }
 
@@ -137,24 +146,22 @@ std::pair<QString, QString> CachedImageProvider::getBaseNameAndExtension(const Q
     return { baseName, extension };
 }
 
-QString CachedImageProvider::getFileName(const QString& id, const QSize& requestedSize) const
+QString CachedImageProvider::getFileName(const QString& id) const
 {
     const auto [baseName, extension] = getBaseNameAndExtension(id);
 
     if (baseName.isEmpty())
         return {};
 
-    if (!requestedSize.isValid())
-        return createFileName(baseName, extension);
-
-    const int width = requestedSize.isValid() ? requestedSize.width() : 0;
-    const int height = requestedSize.isValid() ? requestedSize.height() : 0;
-    const QString newBaseName = QString("%1-%2_%3").arg(baseName).arg(width).arg(height);
-    return createFileName(newBaseName, extension);
+    return createFileName(baseName, extension);
 }
 
 bool CachedImageProvider::mustLoadImage(const QString& id,const QSize& requestedSize) const
 {
+    // If the requested size is invalid, then no resizing is requested.
+    if (!mustResize(requestedSize))
+        return true;
+
     if (requestedSize.isEmpty())
     {
         qDebug() << "Empty size:" << id << "size:" << requestedSize << "provider:" << mName;
@@ -230,6 +237,32 @@ void CachedImageProvider::cleanupCache()
     mCacheMutex.unlock();
 }
 
+bool CachedImageProvider::addPendingRequest(const QString& id, const ImageCb& imageCb)
+{
+    qDebug() << "Add pending request:" << id;
+    QMutexLocker locker(&mPendingRequestsMutex);
+
+    const bool alreadyPending = mPendingRequests.contains(id);
+    mPendingRequests[id].push_back(imageCb);
+    return !alreadyPending;
+}
+
+void CachedImageProvider::finishPendingRequest(const QString& id, QImage img)
+{
+    std::vector<ImageCb> callbacks;
+
+    {
+        QMutexLocker locker(&mPendingRequestsMutex);
+        callbacks = std::move(mPendingRequests[id]);
+        mPendingRequests.erase(id);
+    }
+
+    qDebug() << "Finish pending request:" << id << "count:" << callbacks.size();
+
+    for (const auto& cb : callbacks)
+        cb(img);
+}
+
 CachedImageResponse::CachedImageResponse(const QString& providerName, const QString& id,
                                          const QSize& requestedSize, QThreadPool* pool) :
     mProviderName(providerName),
@@ -238,11 +271,7 @@ CachedImageResponse::CachedImageResponse(const QString& providerName, const QStr
     mThreadPool(pool)
 {
     Q_ASSERT(mThreadPool);
-    loadImage(id);
-}
-
-CachedImageResponse::~CachedImageResponse()
-{
+    loadImage();
 }
 
 QQuickTextureFactory* CachedImageResponse::textureFactory() const
@@ -250,84 +279,90 @@ QQuickTextureFactory* CachedImageResponse::textureFactory() const
     return QQuickTextureFactory::textureFactoryForImage(mImage);
 }
 
-void CachedImageResponse::loadImage(const QString& id)
+void CachedImageResponse::loadImage()
 {   
     auto* provider = CachedImageProvider::getProvider(mProviderName);
 
-    if (!provider->mustLoadImage(id, mRequestedSize))
+    if (!provider->mustLoadImage(mId, mRequestedSize))
     {
-        handleDone(QImage(), {}, false);
+        handleDone(QImage());
         return;
     }
 
-    const auto [image, format] = provider->getImage(id, mRequestedSize);
+    const auto [image, format] = provider->getImage(mId);
 
     if (!image.isNull())
     {
-        handleDone(image, format, true);
+        handleDone(image);
         return;
     }
 
+    if (!provider->addPendingRequest(mId, [this](QImage img){ handleDone(img); }))
+        return;
+
     mImageReader = new ImageReader(this);
 
-    const bool success = mImageReader->getImageFromWeb(id,
-        [this](QImage image, const QString& format){ handleDone(image, format, false); },
+    const bool success = mImageReader->getImageFromWeb(mId,
+        [this](QImage image, const QString& format){
+            auto* provider = CachedImageProvider::getProvider(mProviderName);
+
+            // Save the unscaled image
+            if (!image.isNull())
+                provider->addImage(mId, image, format);
+
+            provider->finishPendingRequest(mId, image);
+        },
         [this](const QString& error){
             qWarning() << "Failed to load image:" << mId << "provider:" << mProviderName << "error:" << error;
-            handleDone(QImage(), {}, false);
+            auto* provider = CachedImageProvider::getProvider(mProviderName);
+            provider->finishPendingRequest(mId, QImage());
         });
 
     if (!success)
     {
-        qWarning() << "Invalid id:" << id << "provider:" << mProviderName;
-        handleDone(QImage(), {}, false);
-        return;
+        qWarning() << "Invalid id:" << mId << "provider:" << mProviderName;
+        provider->finishPendingRequest(mId, QImage());
     }
 }
 
-void CachedImageResponse::handleDone(QImage img, const QString& format, bool cached)
+void CachedImageResponse::handleDone(QImage img)
 {
-    // NOTE: cached images have the requested size
-    if (cached || img.isNull() || !mRequestedSize.isValid())
+    if (img.isNull() || !mustResize(mRequestedSize))
     {
-        mImage = img;
-        mImage.setDevicePixelRatio(DisplayUtils::getDevicePixelRatio());
+        setImage(img);
         emit finished();
         return;
     }
 
-    auto* runnable = new CachedImageProcessor(mProviderName, mId, mRequestedSize, img, format);
+    auto* runnable = new CachedImageProcessor(mProviderName, mId, mRequestedSize, img);
     connect(runnable, &CachedImageProcessor::done, this,
             [this](QImage image){
-                mImage = image;
-                mImage.setDevicePixelRatio(DisplayUtils::getDevicePixelRatio());
+                setImage(image);
                 emit finished();
             });
     mThreadPool->start(runnable);
 }
 
+void CachedImageResponse::setImage(QImage img)
+{
+    mImage = img;
+    mImage.setDevicePixelRatio(DisplayUtils::getDevicePixelRatio());
+}
+
 
 CachedImageProcessor::CachedImageProcessor(const QString& providerName, const QString& id, const QSize& requestedSize,
-                                           QImage image, const QString& format) :
+                                           QImage image) :
     mProviderName(providerName),
     mId(id),
     mRequestedSize(requestedSize),
-    mImage(image),
-    mFormat(format)
+    mImage(image)
 {
 }
 
 void CachedImageProcessor::run()
 {
-    // NOTE: cached images have the requested size
-    const QImage img =  mRequestedSize.isValid() ? mImage.scaled(mRequestedSize) : mImage;
-
-    if (!img.isNull())
-    {
-        auto* provider = CachedImageProvider::getProvider(mProviderName);
-        provider->addImage(mId, img, mRequestedSize, mFormat);
-    }
-
+    // Expanding ratio as the image will be cropped if it exceeds the requested size
+    const QImage img =  !mustResize(mRequestedSize) ? mImage.scaled(mRequestedSize, Qt::KeepAspectRatioByExpanding) : mImage;
     emit done(img);
 }
 
