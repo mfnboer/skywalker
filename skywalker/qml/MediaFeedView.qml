@@ -47,7 +47,6 @@ SkyListView {
             height: previewImage.height
             fillMode: previewImage.fillMode
             source: previewImage.source
-            sourceSize: previewImage.sourceSize
         }
     }
 
