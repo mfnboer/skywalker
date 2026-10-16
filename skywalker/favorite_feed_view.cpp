@@ -94,7 +94,18 @@ QString FavoriteFeedView::getAvatar() const
 
 QString FavoriteFeedView::getAvatarThumb() const
 {
-    return ATProto::createAvatarThumbUrl(getAvatar());
+    switch (getType())
+    {
+    case QEnums::FAVORITE_FEED:
+        return std::get<GeneratorView>(mView).getAvatarThumbUrl();
+    case QEnums::FAVORITE_LIST:
+        return std::get<ListView>(mView).getAvatarThumbUrl();
+    case QEnums::FAVORITE_SEARCH:
+        return "";
+    }
+
+    Q_ASSERT(false);
+    return "";
 }
 
 QEnums::ContentMode FavoriteFeedView::getContentMode() const

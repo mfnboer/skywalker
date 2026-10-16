@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "generator_view.h"
+#include "cached_image_provider.h"
 #include "content_filter.h"
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
@@ -70,7 +71,14 @@ QString GeneratorView::getAvatar() const
     return mGeneratorView ? mGeneratorView->mAvatar.value_or("") : "";
 }
 
-QString GeneratorView::getAvatarThumb() const
+QString GeneratorView::getAvatarThumbUrl() const
+{
+    static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::AVATAR);
+    const QString thumbUrl = QUrl::fromPercentEncoding(getAvatarThumbHttpUrl().toUtf8());
+    return provider->createImageUrl(thumbUrl);
+}
+
+QString GeneratorView::getAvatarThumbHttpUrl() const
 {
     return ATProto::createAvatarThumbUrl(getAvatar());
 }

@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "list_view.h"
+#include "cached_image_provider.h"
 #include "content_filter.h"
 #include "user_settings.h"
 #include <atproto/lib/rich_text_master.h>
@@ -117,7 +118,14 @@ QString ListViewBasic::getAvatar() const
     return {};
 }
 
-QString ListViewBasic::getAvatarThumb() const
+QString ListViewBasic::getAvatarThumbUrl() const
+{
+    static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::AVATAR);
+    const QString thumbUrl = QUrl::fromPercentEncoding(getAvatarThumbHttpUrl().toUtf8());
+    return provider->createImageUrl(thumbUrl);
+}
+
+QString ListViewBasic::getAvatarThumbHttpUrl() const
 {
     return ATProto::createAvatarThumbUrl(getAvatar());
 }

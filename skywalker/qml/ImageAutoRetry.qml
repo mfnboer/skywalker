@@ -32,6 +32,10 @@ Image {
 
         console.debug("Failed to load image:", img.source)
 
+        // Retrying is already done by the image provider
+        if (img.source.toString().startsWith("image://"))
+            return
+
         if (retryCount >= maxRetry)
             return
 

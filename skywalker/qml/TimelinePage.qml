@@ -190,6 +190,21 @@ SkyPage {
         }
     }
 
+    Timer {
+        id: hideTimer
+        interval: 10000
+        onTriggered: postListView.hidden = true
+    }
+
+    function hide() {
+        hideTimer.start()
+    }
+
+    function unhide() {
+        hideTimer.stop()
+        hidden = false
+    }
+
     function getHeaderHeight() {
         if (currentViewItem && typeof currentViewItem.getHeaderHeight == 'function')
             return currentViewItem.getHeaderHeight()

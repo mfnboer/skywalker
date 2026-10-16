@@ -136,6 +136,21 @@ SkyListView {
         }
     }
 
+    Timer {
+        id: hideTimer
+        interval: 10000
+        onTriggered: postListView.hidden = true
+    }
+
+    function hide() {
+        hideTimer.start()
+    }
+
+    function unhide() {
+        hideTimer.stop()
+        hidden = false
+    }
+
     function isRewinding() {
         return !inSync && rewindStatus.isFirstRewind
     }

@@ -38,7 +38,7 @@ class GeneratorView
     Q_PROPERTY(QString description READ getDescription FINAL)
     Q_PROPERTY(QString formattedDescription READ getFormattedDescription FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
-    Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
+    Q_PROPERTY(QString avatarThumb READ getAvatarThumbUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(int likeCount READ getLikeCount FINAL)
     Q_PROPERTY(bool acceptsInteractions READ acceptsInteractions FINAL)
@@ -66,7 +66,8 @@ public:
     QString getDescription() const;
     QString getFormattedDescription() const;
     QString getAvatar() const;
-    QString getAvatarThumb() const;
+    QString getAvatarThumbUrl() const;
+    QString getAvatarThumbHttpUrl() const;
     ImageView getImageView() const;
     int getLikeCount() const;
     bool acceptsInteractions() const;

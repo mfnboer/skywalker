@@ -41,7 +41,7 @@ class ListViewBasic
     Q_PROPERTY(QString name READ getName FINAL)
     Q_PROPERTY(QEnums::ListPurpose purpose READ getPurpose FINAL)
     Q_PROPERTY(QString avatar READ getAvatar FINAL)
-    Q_PROPERTY(QString avatarThumb READ getAvatarThumb FINAL)
+    Q_PROPERTY(QString avatarThumb READ getAvatarThumbUrl FINAL)
     Q_PROPERTY(ImageView imageView READ getImageView FINAL)
     Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     Q_PROPERTY(ListViewerState viewer READ getViewer FINAL)
@@ -66,7 +66,8 @@ public:
     QString getName() const;
     QEnums::ListPurpose getPurpose() const;
     QString getAvatar() const;
-    QString getAvatarThumb() const;
+    QString getAvatarThumbUrl() const;
+    QString getAvatarThumbHttpUrl() const;
     ImageView getImageView() const;
     ContentLabelList getContentLabels() const;
     ListViewerState getViewer() const;
