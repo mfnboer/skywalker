@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #pragma once
+#include "video_view.h"
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -20,6 +21,7 @@ public:
     Q_INVOKABLE bool isKlipyLink(const QString& link) const;
     Q_INVOKABLE bool isGif(const QString& link) const;
     Q_INVOKABLE QString getGifUrl(const QString& link) const;
+    Q_INVOKABLE VideoView getGifVideoView(const QString& link, const QString& title, const QString& description, const QString& thumbUrl) const;
     Q_INVOKABLE QSize getGifSize(const QString& link) const;
 
 private:
@@ -30,6 +32,7 @@ private:
     QString getTenorMediaGif(const QString& link) const;
     QSize getGifSize(const QUrlQuery& query, const QString& widthTag, const QString& heightTag) const;
     QString convertGrayskyToTenor(const QString& link) const;
+    QString getGifVideoUrl(const QString& link) const;
 };
 
 }

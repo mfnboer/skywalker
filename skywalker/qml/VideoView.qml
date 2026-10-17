@@ -815,10 +815,16 @@ Column {
         if (streamingEnabled) {
             console.debug("Streaming enabled, autoLoad:", autoLoad, "autoPlay:", autoPlay, "videoSource:", videoSource)
 
-            if (autoLoad)
+            if (autoLoad) {
                 transcodedSource = videoSource
-            else
+            }
+            else if (videoView.playlistUrl.endsWith(".m3u8")) {
                 m3u8Reader.getVideoStream(videoView.playlistUrl) // set duration
+            }
+            else {
+                videoSource = videoView.playlistUrl
+                transcodedSource = videoSource
+            }
 
             if (autoPlay)
                 videoPlayer.start()

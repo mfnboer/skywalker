@@ -1,6 +1,7 @@
 // Copyright (C) 2024 Michel de Boer
 // License: GPLv3
 #include "gif_utils.h"
+#include "cached_image_provider.h"
 #include <QUrl>
 
 namespace Skywalker {
@@ -71,6 +72,83 @@ QString GifUtils::getGifUrl(const QString& link) const
     return {};
 }
 
+QString GifUtils::getGifVideoUrl(const QString& link) const
+{
+    qDebug() << "Get GIF video URL for:" << link;
+
+    if (!isKlipyLink(link))
+        return {};
+
+    const QString gifUrl = getGifUrl(link);
+
+    if (gifUrl.isEmpty())
+        return {};
+
+    static const QRegularExpression RE_KLIPY{R"(^(.+)\/([[:alnum:]_]+)\.gif$)"};
+    auto match = RE_KLIPY.matchView(gifUrl);
+
+    if (!match.hasMatch())
+    {
+        qWarning() << "Cannot match Klipy URL:" << gifUrl;
+        return {};
+    }
+
+    const QUrl linkUrl(link);
+    const QUrlQuery query(linkUrl.query());
+
+    for (const auto& format : {"webm", "mp4"})
+    {
+        const auto& formatId = query.queryItemValue(format);
+
+        if (formatId.isEmpty())
+            continue;
+
+        const auto prefix = match.captured(1);
+        const auto videoUrl = QString("%1/%2.%3").arg(prefix, formatId, format);
+        qDebug() << "Video:" << format << "url:" << videoUrl;
+        return videoUrl;
+    }
+
+    return {};
+}
+
+VideoView GifUtils::getGifVideoView(const QString& link, const QString& title, const QString& description, const QString& thumbUrl) const
+{
+    const QString& videoUrl = getGifVideoUrl(link);
+
+    if (videoUrl.isEmpty())
+        return {};
+
+    auto video = std::make_shared<ATProto::AppBskyEmbed::VideoView>();
+    video->mPlaylist = videoUrl;
+    video->mPresentation = ATProto::AppBskyEmbed::VideoPresentation::GIF;
+
+    // HACK: Alt text for a GIF is stored in the description with this prefix "Alt: ".
+    if (description.startsWith("Alt: "))
+        video->mAlt = description.sliced(5);
+    else if (!description.isEmpty())
+        video->mAlt = description;
+    else if (!title.isEmpty())
+        video->mAlt = title;
+
+    if (!thumbUrl.isEmpty())
+    {
+        const auto thumb = thumbUrl.startsWith("image://") ? CachedImageProvider::createHttpUrl(thumbUrl) : thumbUrl;
+        video->mThumbnail = thumb;
+    }
+
+    const QSize gifSize = getGifSize(link);
+
+    if (gifSize.isValid())
+    {
+        video->mAspectRatio = std::make_shared<ATProto::AppBskyEmbed::AspectRatio>();
+        video->mAspectRatio->mWidth = gifSize.width();
+        video->mAspectRatio->mHeight = gifSize.height();
+    }
+
+    return VideoView(video);
+}
+
 QSize GifUtils::getGifSize(const QString& link) const
 {
     qDebug() << link;
@@ -87,7 +165,7 @@ QSize GifUtils::getGifSize(const QString& link) const
     if (sz.isValid())
         return sz;
 
-    // URL in draft has gifwidth and gifHeight as tafgs
+    // URL in draft has gifwidth and gifHeight as tags
     return getGifSize(query, "gifWidth", "gifHeight");
 }
 

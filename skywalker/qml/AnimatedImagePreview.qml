@@ -15,7 +15,7 @@ RoundCornerMask {
     readonly property double aspectRatio: (imgSize.width > 0 && imgSize.height > 0) ? imgSize.height / imgSize.width : 0.0
     property alias status: img.status
 
-    // HACK: Alt text for a GIF is stored in the description iwth this prefix.
+    // HACK: Alt text for a GIF is stored in the description with this prefix.
     readonly property string altPrefix: "Alt: "
 
     id: frame
