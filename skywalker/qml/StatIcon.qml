@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-Rectangle {
+Item {
     property int statistic: -1
     property SvgImage svg
     property string iconColor: guiSettings.statsColor
@@ -14,7 +14,6 @@ Rectangle {
     id: control
     height: statIcon.height
     width: statIcon.width + (statText.active ? statText.width : 0)
-    color: "transparent"
 
     Accessible.role: Accessible.Button
     Accessible.onPressAction: {

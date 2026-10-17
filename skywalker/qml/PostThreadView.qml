@@ -53,13 +53,12 @@ SkyListView {
             Accessible.role: Accessible.StaticText
             Accessible.name: UnicodeFonts.toPlainText(restrictionText.text)
 
-            Rectangle {
+            Item {
                 id: restrictionRow
                 x: guiSettings.threadColumnWidth - restrictionIcon.width
                 anchors.bottom: parent.bottom
                 width: parent.width - x - 10
                 height: restrictionText.height + 10
-                color: "transparent"
 
                 SkySvg {
                     id: restrictionIcon

@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import skywalker
 
-Rectangle {
+Item {
     readonly property int margin: 10
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
@@ -18,7 +18,6 @@ Rectangle {
 
     id: view
     height: viewColumn.height
-    color: "transparent"
 
     Column {
         id: viewColumn
@@ -30,12 +29,11 @@ Rectangle {
             rowSpacing: 0
             width: parent.width
 
-            Rectangle {
+            Item {
                 Layout.rowSpan: 2
                 Layout.preferredWidth: 34
                 Layout.preferredHeight: 44
                 Layout.fillHeight: true
-                color: "transparent"
 
                 SkySvg {
                     y: height + 10
@@ -56,12 +54,11 @@ Rectangle {
                 text: starterPack.name
             }
 
-            Rectangle {
+            Item {
                 Layout.alignment: Qt.AlignTop
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 Layout.topMargin: 8
-                color: "transparent"
 
                 SvgButton {
                     id: moreButton

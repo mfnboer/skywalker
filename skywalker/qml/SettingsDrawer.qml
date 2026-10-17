@@ -262,6 +262,8 @@ SkyDrawer {
                 width: parent.width - 60
                 fillMode: Image.PreserveAspectFit
                 source: "/images/buycoffee.png"
+                sourceSize.width: width * Screen.devicePixelRatio
+                sourceSize.height: height * Screen.devicePixelRatio
                 asynchronous: true
 
                 SkyMouseArea {

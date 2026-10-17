@@ -4,11 +4,10 @@ Item {
     width: parent.width
     height: spaceBefore.height + separator.height + spaceAfter.height
 
-    Rectangle {
+    Item {
         id: spaceBefore
         width: parent.width
         height: parent.visible ? 10 : 0
-        color: "transparent"
         visible: parent.visible
     }
 
@@ -21,12 +20,11 @@ Item {
         visible: parent.visible
     }
 
-    Rectangle {
+    Item {
         id: spaceAfter
         anchors.top: separator.bottom
         width: parent.width
         height: parent.visible ? 10 : 0
-        color: "transparent"
         visible: parent.visible
     }
 

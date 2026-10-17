@@ -236,17 +236,15 @@ GridView {
     Component {
         id: loadMoreComponent
 
-        Rectangle {
+        Item {
             z: guiSettings.footerZLevel
             width: mediaTilesView.width
             height: 150 + footerMargin.height
-            color: "transparent"
 
-            Rectangle {
+            Item {
                 id: footerMargin
                 width: parent.width
                 height: emptyListIndication.visible ? emptyListIndication.height : 0
-                color: "transparent"
             }
 
             AccessibleText {

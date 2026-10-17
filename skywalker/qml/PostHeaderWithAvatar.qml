@@ -76,10 +76,9 @@ Column {
         width: parent.width
         visible: active
 
-        sourceComponent: Rectangle {
+        sourceComponent: Item {
             width: parent.width
             height: contentLabels.height + guiSettings.labelRowPadding
-            color: "transparent"
 
             ContentLabels {
                 id: contentLabels

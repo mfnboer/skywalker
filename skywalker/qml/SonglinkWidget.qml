@@ -11,10 +11,9 @@ Loader {
     width: parent.width
     active: showWidget && skywalker.getUserSettings().songlinkEnabled && songlink.isMusicLink(uri)
 
-    sourceComponent: Rectangle {
+    sourceComponent: Item {
         width: parent.width
         height: (songlinkRow.visible ? songlinkRow.height : songlinkFlow.height + songlinkAttribution.height) + 10
-        color: "transparent"
 
         Rectangle {
             id: songlinkRow
@@ -63,13 +62,12 @@ Loader {
             Repeater {
                 model: songlinkFlow.links.linkInfoList
 
-                Rectangle {
+                Item {
                     required property songlinkinfo modelData
 
                     id: linkItem
                     width: songlinkFlow.logoWidth
                     height: itemCol.height
-                    color: "transparent"
 
                     Column {
                         id: itemCol

@@ -104,17 +104,15 @@ Column {
             width: parent.width
             spacing: 3
 
-            Rectangle {
+            Item {
                 width: parent.width
                 height: filter.height > 0 ? filter.height + 20 : 0
-                color: "transparent"
             }
 
-            Rectangle {
+            Item {
                 id: imgPreview
                 width: parent.width
                 height: tileMode ? videoStack.height : (defaultThumbImg.visible ? defaultThumbImg.height : thumbImg.getDisplayHeight())
-                color: "transparent"
 
                 onWidthChanged: {
                     // Force image to resize
@@ -439,14 +437,13 @@ Column {
         onActivateSwipe: (imgIndex, previewImg) => videoStack.activateSwipe(imgIndex, previewImg)
     }
 
-    Rectangle {
+    Item {
         property bool show: true
 
         id: playControls
         x: (parent.width - width) / 2
         width: 2 + (defaultThumbImg.visible ? defaultThumbImg.width : thumbImg.getDisplayWidth())
         height: visible ? playPauseButton.height : 0
-        color: "transparent"
         visible: show && videoPlayingOrPaused && !isGif
 
         Loader {
@@ -590,10 +587,9 @@ Column {
 
             indicator: Item {}
 
-            background: Rectangle {
+            background: Item {
                 implicitWidth: speedComboBox.contentItem.implicitWidth
                 implicitHeight: speedComboBox.height
-                color: "transparent"
             }
 
             contentItem: AccessibleText {

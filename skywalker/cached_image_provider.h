@@ -48,6 +48,7 @@ private:
     bool mSquareImagesOnly = false;
     QMutex mPendingRequestsMutex;
     std::unordered_map<QString, std::vector<ImageCb>> mPendingRequests; // id -> callback
+    int mLoadCount = 0;
 
     static std::unordered_map<QString, CachedImageProvider*> sProviders; // name -> provider
 };

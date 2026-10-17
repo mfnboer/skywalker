@@ -33,10 +33,9 @@ Repeater {
             active: labelRect.labeler.avatarThumbUrl
             asynchronous: true
 
-            sourceComponent: Rectangle {
+            sourceComponent: Item {
                 width: height
                 height: label.height
-                color: "transparent"
 
                 Avatar {
                     x: 2

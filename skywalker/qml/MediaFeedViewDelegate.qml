@@ -126,7 +126,7 @@ Rectangle {
             videoItem.pause()
     }
 
-    Rectangle {
+    Item {
         property int bottomMargin: videoItem ? videoItem.playControlsHeight : 0
         property int mediaWidth: videoItem ? videoItem.playControlsWidth : (imageItem ? imageItem.imageWidth : width)
         property bool showDetails: videoItem ? videoItem.showPlayControls : imageLoader.showDetails
@@ -135,7 +135,6 @@ Rectangle {
         y: extraHeaderHeight
         width: root.width
         height: root.height
-        color: "transparent"
 
         onShowDetailsChanged: {
             if (showDetails)
@@ -197,14 +196,13 @@ Rectangle {
                 Repeater {
                     model: postOrRecordImages.length
 
-                    Rectangle {
+                    Item {
                         required property int index
                         property int imageWidth: filter.imageVisible() ? img.paintedWidth : filter.width
                         property bool zooming: img.zooming
 
                         width: mediaRect.width
                         height: root.height
-                        color: "transparent"
 
                         ImageWithZoom {
                             id: img
@@ -382,10 +380,9 @@ Rectangle {
             return w
         }
 
-        Rectangle {
+        Item {
             width: parent.width
             height: 5
-            color: "transparent"
         }
 
         PostHeaderWithAvatar {
@@ -585,10 +582,9 @@ Rectangle {
             }
         }
 
-        Rectangle {
+        Item {
             width: parent.width
             height: 5
-            color: "transparent"
         }
     }
 
@@ -611,10 +607,9 @@ Rectangle {
     Component {
         id: endOfFeedComp
 
-        Rectangle {
+        Item {
             width: mediaRect.width
             height: root.height
-            color: "transparent"
 
             SvgButton {
                 x: 10

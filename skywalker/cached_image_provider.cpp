@@ -100,6 +100,9 @@ std::pair<QImage, QString> CachedImageProvider::getImage(const QString& id)
     if (fileName.isEmpty())
         return {};
 
+    ++mLoadCount;
+    qDebug() << mName << "Load count:" << mLoadCount << id;
+
     if (!QFile::exists(fileName))
     {
         qDebug() << "Image not in cache:" << id << "provider:" << mName;
@@ -280,7 +283,7 @@ QQuickTextureFactory* CachedImageResponse::textureFactory() const
 }
 
 void CachedImageResponse::loadImage()
-{   
+{
     auto* provider = CachedImageProvider::getProvider(mProviderName);
 
     if (!provider->mustLoadImage(mId, mRequestedSize))
