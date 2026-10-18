@@ -217,14 +217,22 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(htmlTitleStr)
     };
 
-    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?description[\"']? [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
-    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?description[\"']?[^>]*>)");
+    // First try to find a qualified description og:description or twitter:description
+    // When that if no found just try description
+    static const QString ogDescriptionStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)description[\"']? [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
+    static const QString ogDescriptionStr2(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)description[\"']?[^>]*>)");
+    static const QString ogDescriptionStr3(R"(<meta [^>]*(property|name) *=[\"']?description[\"']? [^>]*content=%1(?<description>[^%1]+?)%1[^>]*>)");
+    static const QString ogDescriptionStr4(R"(<meta [^>]*content=%1(?<description>[^%1]+?)%1 [^>]*(property|name)=[\"']?description[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogDescriptionREs = {
         QRegularExpression(ogDescriptionStr1.arg('"')),
         QRegularExpression(ogDescriptionStr1.arg('\'')),
         QRegularExpression(ogDescriptionStr2.arg('"')),
-        QRegularExpression(ogDescriptionStr2.arg('\''))
+        QRegularExpression(ogDescriptionStr2.arg('\'')),
+        QRegularExpression(ogDescriptionStr3.arg('"')),
+        QRegularExpression(ogDescriptionStr3.arg('\'')),
+        QRegularExpression(ogDescriptionStr4.arg('"')),
+        QRegularExpression(ogDescriptionStr4.arg('\''))
     };
 
     static const QString ogImageStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?image(?!:)[\"']? [^>]*content=%1(?<image>[^%1]+?)%1[^>]*>)");
