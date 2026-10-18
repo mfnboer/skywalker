@@ -1,4 +1,4 @@
-next
+4.47
 ====
 * View on which lists you are
 * View on which starter packs you are
