@@ -5,6 +5,7 @@ import QtQuick.Dialogs
 import QtQuick.Layouts
 import QtQuick.Window
 import skywalker
+import atproto.lib
 
 ApplicationWindow {
     property bool appIsRunning: false
@@ -2231,10 +2232,10 @@ ApplicationWindow {
 
     function viewQuotePostFeed(quoteUri, viewByDid = "") {
         const sw = getSkywalker(viewByDid)
-        const modelId = sw.createQuotePostFeedModel(quoteUri)
+        const modelId = sw.createQuotePostFeedModel(quoteUri, SortOrder.TOP)
         sw.getQuotesFeed(modelId)
         let component = guiSettings.createComponent("QuotePostFeedView.qml")
-        let view = component.createObject(root, { userDid: viewByDid, modelId: modelId })
+        let view = component.createObject(root, { userDid: viewByDid, topModelId: modelId, quoteUri: quoteUri })
         view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         root.pushStack(view)
     }

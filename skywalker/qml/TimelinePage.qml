@@ -193,7 +193,7 @@ SkyPage {
     Timer {
         id: hideTimer
         interval: 10000
-        onTriggered: postListView.hidden = true
+        onTriggered: page.hidden = true
     }
 
     function hide() {

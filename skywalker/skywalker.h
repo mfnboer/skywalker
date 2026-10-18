@@ -200,7 +200,7 @@ public:
     Q_INVOKABLE void removeStarterPackListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
-    Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri);
+    Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri, const QString& sortOrder);
     Q_INVOKABLE int createQuoteChainPostFeedModel(const QString& quoteUri);
     Q_INVOKABLE int createAlsoLikedPostFeedModel(const QString& postUri);
     Q_INVOKABLE int createFilteredPostFeedModel(QEnums::HideReasonType hideReason, const QString& highlightColor);

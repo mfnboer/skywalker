@@ -83,6 +83,9 @@ public:
     LanguageList getFilterdLanguages() const;
     bool showPostWithMissingLanguage() const;
 
+    const QString& getSortOrder() const { return mSortOrder; }
+    void setSortOrder(const QString& sortOrder) { mSortOrder = sortOrder; }
+
     void setFeed(const std::deque<Post>& filteredPosts,
                  const ContentFilterStats::PostHideInfoMap* postHideInfoMap,
                  ContentFilterStats::Details& hideDetails);
@@ -253,6 +256,7 @@ private:
 
     std::vector<FilteredPostFeedModel::Ptr> mFilteredPostFeedModels;
     InteractionSender::Ptr mInteractionSender;
+    QString mSortOrder;
 };
 
 }

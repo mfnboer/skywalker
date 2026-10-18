@@ -2349,7 +2349,7 @@ void Skywalker::getQuotesFeed(int modelId, int limit, int maxPages, int minEntri
     const QString& quoteUri = model->getQuoteUri();
     model->setGetFeedInProgress(true);
 
-    mBsky->getQuotes(quoteUri, {}, limit, Utils::makeOptionalString(cursor), {},
+    mBsky->getQuotes(quoteUri, {}, limit, Utils::makeOptionalString(cursor), model->getSortOrder(),
         [this, modelId, maxPages, minEntries, cursor](auto feed){
             int addedPosts = 0;
             auto* model = getPostFeedModel(modelId);
@@ -3864,7 +3864,7 @@ int Skywalker::createPostFeedModel(const ListViewBasic& listView)
     return id;
 }
 
-int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
+int Skywalker::createQuotePostFeedModel(const QString& quoteUri, const QString& sortOrder)
 {
     const PostFeedModel::FeedVariant feedVariant{quoteUri};
     auto model = std::make_unique<PostFeedModel>(tr("Quote posts"), &feedVariant,
@@ -3872,6 +3872,7 @@ int Skywalker::createQuotePostFeedModel(const QString& quoteUri)
                                                  mContentFilter, mMutedWords, *mFocusHashtags,
                                                  mSeenHashtags, mUserPreferences, mUserSettings,
                                                  mFollowsActivityStore, mBsky, this);
+    model->setSortOrder(sortOrder);
     const int id = addModelToStore<PostFeedModel>(std::move(model), mPostFeedModels);
     return id;
 }

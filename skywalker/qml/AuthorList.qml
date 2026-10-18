@@ -16,7 +16,6 @@ SkyListView {
     width: parent.width
     height: parent.height
     clip: true
-    spacing: 0
     model: modelId >= 0 ? skywalker.getAuthorListModel(modelId) : null
     preloadNextPageFunc: () => getAuthorListNextPageFunc(modelId)
 

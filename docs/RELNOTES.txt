@@ -4,6 +4,7 @@ next
 * View on which starter packs you are
 * View users that have blocked you
 * View who has verified an account
+* View quotes in top (most likes) or latest order
 * Reduce memory usage
 * Bug fixes
 
