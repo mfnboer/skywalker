@@ -13,7 +13,7 @@ Item {
 
     id: view
     width: parent.width
-    height: Math.max(gifImage.height + (tenorAttribution.item ? tenorAttribution.item.height : 0) + (giphyAttribution.item ? giphyAttribution.item.height : 0), gifLoadingIndicator.height)
+    height: Math.max(gifImage.height, gifLoadingIndicator.height)
 
     AnimatedImagePreview {
         id: gifImage
@@ -33,51 +33,13 @@ Item {
         anchors.centerIn: parent
         running: gifImage.status === Image.Loading
     }
-    Loader {
-        id: klipyAttribution
+    GifAttribution {
         anchors.right: gifImage.right
         anchors.rightMargin: 5
         anchors.bottom: gifImage.bottom
         anchors.bottomMargin: 5
-        active: gifUtils.isKlipyLink(view.uri) && gifImage.getFilter().imageVisible()
-
-        sourceComponent: Image {
-            width: guiSettings.gifAttributionWidth
-            height: guiSettings.gifAttributionHeight
-            fillMode: Image.PreserveAspectFit
-            source: "/images/klipy_watermark.svg"
-            asynchronous: true
-        }
-    }
-    Loader {
-        id: tenorAttribution
-        anchors.right: gifImage.right
-        anchors.top: gifImage.bottom
-        anchors.topMargin: 5
-        active: gifUtils.isTenorLink(view.uri)
-
-        sourceComponent: Image {
-            width: guiSettings.gifAttributionWidth
-            height: guiSettings.gifAttributionHeight
-            fillMode: Image.PreserveAspectFit
-            source: "/images/via_tenor_logo_blue.svg"
-            asynchronous: true
-        }
-    }
-    Loader {
-        id: giphyAttribution
-        anchors.right: gifImage.right
-        anchors.top: gifImage.bottom
-        anchors.topMargin: 5
-        active: gifUtils.isGiphyLink(view.uri)
-
-        sourceComponent: Image {
-            width: guiSettings.gifAttributionWidth
-            height: guiSettings.gifAttributionHeight
-            fillMode: Image.PreserveAspectFit
-            source: "/images/giphy_logo.png"
-            asynchronous: true
-        }
+        gifUri: view.uri
+        show: gifImage.getFilter().imageVisible()
     }
 
     GifUtils {

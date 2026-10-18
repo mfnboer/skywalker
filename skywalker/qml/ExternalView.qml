@@ -111,7 +111,7 @@ Item {
         }
     }
 
-    LoaderGifVideoPreview {
+    LoaderVideoPreview {
         id: gifVideoLoader
         postVideo: isGifVideo ? gifVideo : null
         postContentVisibility: view.contentVisibility

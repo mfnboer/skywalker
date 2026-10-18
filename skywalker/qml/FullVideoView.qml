@@ -147,6 +147,7 @@ SkyPage {
                 text: qsTr("Save video")
                 svg: SvgOutline.save
                 popup: moreMenu
+                visible: !gifUtils.isGifLink(videoView.playlistUrl)
                 onClicked: root.saveVideo(view.videoSource, videoView.playlistUrl)
             }
 
@@ -163,6 +164,10 @@ SkyPage {
         isLightMode: false
         backgroundColor: guiSettings.fullScreenColor
         textColor: "white"
+    }
+
+    GifUtils {
+        id: gifUtils
     }
 
     function setSystemBarsColor() {

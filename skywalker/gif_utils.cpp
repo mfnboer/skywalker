@@ -40,6 +40,11 @@ bool GifUtils::isKlipyLink(const QString& link) const
     return link.startsWith(KLIPY_PREFIX);
 }
 
+bool GifUtils::isGifLink(const QString& link) const
+{
+    return isKlipyLink(link) || isGiphyLink(link) || isTenorLink(link);
+}
+
 Q_INVOKABLE bool GifUtils::isGif(const QString& link) const
 {
     return !getGifUrl(link).isEmpty();
@@ -76,20 +81,33 @@ QString GifUtils::getGifVideoUrl(const QString& link) const
 {
     qDebug() << "Get GIF video URL for:" << link;
 
-    if (!isKlipyLink(link))
-        return {};
-
     const QString gifUrl = getGifUrl(link);
 
     if (gifUrl.isEmpty())
         return {};
 
-    static const QRegularExpression RE_KLIPY{R"(^(.+)\/([[:alnum:]_]+)\.gif$)"};
-    auto match = RE_KLIPY.matchView(gifUrl);
+    if (isGiphyLink(link))
+    {
+        auto giphyVideoUrl = gifUrl;
+
+        if (giphyVideoUrl.endsWith(".gif"))
+        {
+            giphyVideoUrl.chop(4);
+            giphyVideoUrl += ".mp4";
+
+            qDebug() << "Giphy video url:" << giphyVideoUrl;
+            return giphyVideoUrl;
+        }
+
+        return {};
+    }
+
+    static const QRegularExpression RE_KLIPY_TENOR{R"(^(.+)\/([[:alnum:]_\-]+)\.gif$)"};
+    auto match = RE_KLIPY_TENOR.matchView(gifUrl);
 
     if (!match.hasMatch())
     {
-        qWarning() << "Cannot match Klipy URL:" << gifUrl;
+        qWarning() << "Cannot match URL:" << gifUrl;
         return {};
     }
 
@@ -295,7 +313,7 @@ QString GifUtils::getTenorMediaGif(const QString& link) const
     }
 
     if (url.path().endsWith(".gif"))
-        return link;
+        return url.toString(QUrl::RemoveQuery);
 
     return {};
 }

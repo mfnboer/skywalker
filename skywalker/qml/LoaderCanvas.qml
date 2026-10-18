@@ -6,5 +6,5 @@ Rectangle {
     anchors.fill: parent
     radius: guiSettings.radius
     color: guiSettings.highLightColor(backgroundColor)
-    visible: parent.status !== Loader.Ready
+    visible: parent.active && parent.status !== Loader.Ready
 }

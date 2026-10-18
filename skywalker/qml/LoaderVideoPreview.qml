@@ -38,6 +38,9 @@ Loader {
         if (isDraft)
             return Math.min(guiSettings.draftImageHeight * 1.777, parent.width)
 
+        if (postVideo && (gifUtils.isKlipyLink(postVideo.playlistUrl) || gifUtils.isTenorLink(postVideo.playlistUrl)) && postVideo.width > 0)
+            return Math.min(postVideo.width, parent.width)
+
         return parent.width + (swipeMode ? 2 * margin + 2 : 0)
     }
 
@@ -67,6 +70,10 @@ Loader {
         const idealHeight = (image.height / image.width) * width
         const exceedsMaxHeight = guiSettings.maxImageHeight > 0 && idealHeight > guiSettings.maxImageHeight
         return exceedsMaxHeight ? guiSettings.maxImageHeight : idealHeight
+    }
+
+    GifUtils {
+        id: gifUtils
     }
 
     Component {

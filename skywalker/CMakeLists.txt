@@ -772,7 +772,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ListList.qml
         QML_FILES qml/StarterPackList.qml
         SOURCES video_view.cpp
-        QML_FILES qml/LoaderGifVideoPreview.qml
+        QML_FILES
+        QML_FILES qml/GifAttribution.qml
 )
 
 target_link_libraries(libskywalker

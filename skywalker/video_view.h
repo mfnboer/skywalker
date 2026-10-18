@@ -13,7 +13,11 @@ class VideoView
 {
     Q_GADGET
     Q_PROPERTY(QString thumbUrl READ getThumbUrl FINAL)
+
+    // For streaming video, the url is a m3u8 url
+    // For external GIFs is a webm or mp4 url
     Q_PROPERTY(QString playlistUrl READ getPlaylistUrl FINAL)
+
     Q_PROPERTY(QString alt READ getAlt FINAL)
     Q_PROPERTY(int width READ getWidth FINAL)
     Q_PROPERTY(int height READ getHeight FINAL)

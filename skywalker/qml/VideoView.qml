@@ -54,7 +54,7 @@ Column {
     // I have seen 2160 x 3840 whereas the video and the thumbnail are 1080 x 1920
     // I have also seen a correct size for the video 1080 x 1920, but with a thumbnail image
     // having size 1080 x 1080
-    // The meta information is most importan for timeline views, to know the size of a
+    // The meta information is most important for timeline views, to know the size of a
     // full post in advance. For full screen video, use as much of the screen and ignore
     // meta information.
     readonly property bool videoSizeIsKnown: videoView.width > 0 && videoView.height > 0 && !isFullViewMode
@@ -205,8 +205,8 @@ Column {
                     backgroundColor: "black"
                     backgroundOpacity: 0.6
                     color: "white"
-                    text: isGif ? "GIF" : guiSettings.videoDurationToString(videoPlayer.getDuration())
-                    visible: !isFullViewMode && !tileMode && filter.imageVisible()
+                    text: guiSettings.videoDurationToString(videoPlayer.getDuration())
+                    visible: !isGif && !isFullViewMode && !tileMode && filter.imageVisible()
                 }
             }
         }
@@ -401,6 +401,27 @@ Column {
             AltLabel {
                 backgroundColor: videoView.hasHtmlAlt() ? guiSettings.hideReasonLabelColor : "black"
                 visible: videoView.alt && !isFullViewMode
+            }
+
+            SkyLabel {
+                anchors.right: parent.right
+                anchors.rightMargin: 10
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 5
+                backgroundColor: "black"
+                backgroundOpacity: 0.6
+                color: "white"
+                text: "GIF"
+                visible: isGif && !gifUtils.isGifLink(videoView.playlistUrl) && !isFullViewMode && !tileMode && filter.imageVisible()
+            }
+
+            GifAttribution {
+                anchors.right: parent.right
+                anchors.rightMargin: 5
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 5
+                gifUri: videoView.playlistUrl
+                show: gifUtils.isGifLink(videoView.playlistUrl) && !isFullViewMode && !tileMode && filter.imageVisible()
             }
         }
 
@@ -733,6 +754,10 @@ Column {
         }
     }
 
+    GifUtils {
+        id: gifUtils
+    }
+
     SkyImageUtils {
         id: imageUtils
     }
@@ -883,5 +908,7 @@ Column {
             setVideoSource()
         else if (autoPlay)
             videoPlayer.start()
+
+        console.debug("MICHEL:", videoRect.width, videoRect.height, videoView.width, videoView.height)
     }
 }
