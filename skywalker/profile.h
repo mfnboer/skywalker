@@ -258,6 +258,34 @@ private:
     ATProto::AppBskyActor::ProfileAssociated::SharedPtr mAssociated;
 };
 
+class ProfileLinkView
+{
+    Q_GADGET
+    Q_PROPERTY(QString uri READ getUri FINAL)
+    Q_PROPERTY(QString cid READ getCid FINAL)
+    Q_PROPERTY(QString url READ getUrl FINAL)
+    Q_PROPERTY(QString title READ getTitle FINAL)
+    Q_PROPERTY(QString icon READ getIcon FINAL)
+    Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
+    QML_VALUE_TYPE(profilelinkview)
+
+public:
+    using List = QList<ProfileLinkView>;
+
+    ProfileLinkView() = default;
+    explicit ProfileLinkView(const  ATProto::AppBskyActor::ProfileLinkView::SharedPtr& linkView);
+
+    QString getUri() const { return mLinkView ? mLinkView->mUri : ""; }
+    QString getCid() const { return mLinkView ? mLinkView->mCid : ""; }
+    QString getUrl() const { return mLinkView ? mLinkView->mUrl : ""; }
+    QString getTitle() const { return mLinkView ? mLinkView->mTitle.value_or("") : ""; }
+    QString getIcon() const { return mLinkView ? mLinkView->mIcon.value_or("") : ""; }
+    ContentLabelList getContentLabels() const;
+
+private:
+    ATProto::AppBskyActor::ProfileLinkView::SharedPtr mLinkView;
+};
+
 class BasicProfile
 {
     Q_GADGET
@@ -413,6 +441,7 @@ class DetailedProfile : public Profile
     Q_PROPERTY(int followsCount READ getFollowsCount FINAL)
     Q_PROPERTY(int postsCount READ getPostsCount FINAL)
     Q_PROPERTY(QString pinnedPostUri READ getPinnedPostUri FINAL)
+    Q_PROPERTY(ProfileLinkView::List links READ getLinks FINAL)
     QML_VALUE_TYPE(detailedprofile)
 
 public:
@@ -426,6 +455,7 @@ public:
     int getFollowsCount() const;
     int getPostsCount() const;
     QString getPinnedPostUri() const;
+    ProfileLinkView::List getLinks() const;
 };
 
 class BlockedAuthor

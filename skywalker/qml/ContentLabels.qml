@@ -64,7 +64,6 @@ Item {
                     contentAuthor: labelView.contentAuthor
                     filteredContentLabel: labelView.filteredContentLabel
                     labelsToShow: labelView.labelsToShow
-                    parentWidth: labelView.parentWidth
                 }
             }
         }
@@ -85,7 +84,6 @@ Item {
                 contentAuthor: labelView.contentAuthor
                 filteredContentLabel: labelView.filteredContentLabel
                 labelsToShow: labelView.labelsToShow
-                parentWidth: labelView.parentWidth
             }
         }
     }

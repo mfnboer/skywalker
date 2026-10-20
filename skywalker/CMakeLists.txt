@@ -774,6 +774,7 @@ qt_add_qml_module(libskywalker
         SOURCES video_view.cpp
         QML_FILES
         QML_FILES qml/GifAttribution.qml
+        QML_FILES qml/ProfileLinks.qml
 )
 
 target_link_libraries(libskywalker

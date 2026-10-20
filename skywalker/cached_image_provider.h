@@ -32,6 +32,8 @@ public:
     bool addPendingRequest(const QString& id, const ImageCb& imageCb);
     void finishPendingRequest(const QString& id, QImage img);
 
+    QNetworkAccessManager* getNetwork() const { return mNetwork; }
+
     // id = image url without scheme
     QQuickImageResponse *requestImageResponse(const QString& id, const QSize& requestedSize) override;
 
@@ -49,6 +51,7 @@ private:
     QMutex mPendingRequestsMutex;
     std::unordered_map<QString, std::vector<ImageCb>> mPendingRequests; // id -> callback
     int mLoadCount = 0;
+    QNetworkAccessManager* mNetwork;
 
     static std::unordered_map<QString, CachedImageProvider*> sProviders; // name -> provider
 };

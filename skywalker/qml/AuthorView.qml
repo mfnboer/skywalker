@@ -660,6 +660,14 @@ SkyPage {
                 onLinkActivated: (link) => root.openLink(link, "", page.userDid)
             }
 
+            ProfileLinks {
+                width: parent.width - (parent.leftPadding + parent.rightPadding)
+                topPadding: 10
+                userDid: page.userDid
+                links: author.links
+                visible: contentVisible() && author.links.length > 0
+            }
+
             AccessibleText {
                 readonly property date lastActive: avatarImg.lastActive
                 readonly property string statusIcon: avatarImg.isActive ? "🟢" : "🟡"

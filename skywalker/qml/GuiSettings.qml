@@ -28,9 +28,11 @@ Item {
     readonly property int headerZLevel: 10
     readonly property int labelHeight: labelFontHeight + 2
     readonly property int labelRowPadding: 5
+    readonly property int linkButtonHeight: linkButtonFontHeight + 2
     readonly property int maxImageCarouselHeight: 400
     readonly property int maxImageHeight: root.height - headerHeight - headerMargin - (root.isPortrait ? footerHeight + footerMargin + tabBarHeight : 0)
     readonly property int maxLabelWidth: 175
+    readonly property int maxLinkButtonWidth: 175
     readonly property int radius: 8
     readonly property int sideBarHeaderHeight: 44
     readonly property int sideBarMinWidth: 180
@@ -79,6 +81,7 @@ Item {
     readonly property string likeColor: "palevioletred"
     readonly property string linkColorDarkMode: "#58a6ff"
     property string linkColor: userSettings ? userSettings.linkColor : (isLightMode ? "blue" : linkColorDarkMode)
+    readonly property string linkButtonColor: isLightMode ? "#f3f3f3" : "#1d3030"
     readonly property string liveColor: "red"
     readonly property string liveTextColor: "white"
 
@@ -121,6 +124,8 @@ Item {
     readonly property real appFontHeight: fontMetrics.height * fontScaleFactor
     readonly property real labelFontHeight: appFontHeight * 6/8
     readonly property real labelFontSize: scaledFont(6/8)
+    readonly property real linkButtonFontHeight: appFontHeight * 7/8
+    readonly property real linkButtonFontSize: scaledFont(7/8)
 
     // Misc
     readonly property real flickDeceleration: 900

@@ -322,6 +322,19 @@ ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssocia
 {
 }
 
+ProfileLinkView::ProfileLinkView(const  ATProto::AppBskyActor::ProfileLinkView::SharedPtr& linkView) :
+    mLinkView(linkView)
+{
+}
+
+ContentLabelList ProfileLinkView::getContentLabels() const
+{
+    if(!mLinkView)
+        return {};
+
+    return ContentFilter::getContentLabels(mLinkView->mLabels);
+}
+
 BasicProfile::List BasicProfile::makeList(const ATProto::AppBskyActor::ProfileViewBasic::List& profiles)
 {
     BasicProfile::List profileList;
@@ -946,6 +959,19 @@ int DetailedProfile::getPostsCount() const
 QString DetailedProfile::getPinnedPostUri() const
 {
     return mProfileDetailedView && mProfileDetailedView->mPinnedPost ? mProfileDetailedView->mPinnedPost->mUri : "";
+}
+
+ProfileLinkView::List DetailedProfile::getLinks() const
+{
+    if (!mProfileDetailedView)
+        return {};
+
+    ProfileLinkView::List links;
+
+    for (const auto& link : mProfileDetailedView->mLinks)
+        links.push_back(ProfileLinkView(link));
+
+    return links;
 }
 
 

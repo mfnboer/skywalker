@@ -7,7 +7,6 @@ Repeater {
     required property basicprofile contentAuthor
     property contentlabel filteredContentLabel
     property list<contentlabel> labelsToShow
-    property int parentWidth: parent.width
 
     model: labelsToShow
 
@@ -52,10 +51,9 @@ Repeater {
             anchors.left: labelerAvatar.right
             width: Math.min(implicitWidth, guiSettings.maxLabelWidth)
             backgroundColor: "transparent"
-            font.pointSize: guiSettings.scaledFont(6/8)
+            font.pointSize: guiSettings.labelFontSize
             font.italic: true
             elide: Text.ElideRight
-            color: guiSettings.textColor
             text: getDisplayText(modelData)
         }
 

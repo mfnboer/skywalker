@@ -41,6 +41,9 @@ CachedImageProvider::CachedImageProvider(const QString& name) :
     mCachePath(FileUtils::getCachePath(mName))
 {   
     qDebug() << "Image provider:" << mName << "cache:" << mCachePath;
+    mNetwork = new QNetworkAccessManager(this);
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setTransferTimeout(10000);
 }
 
 QString CachedImageProvider::createImageUrl(const QString& webUrl) const
@@ -303,7 +306,7 @@ void CachedImageResponse::loadImage()
     if (!provider->addPendingRequest(mId, [this](QImage img){ handleDone(img); }))
         return;
 
-    mImageReader = new ImageReader(this);
+    mImageReader = new ImageReader(provider->getNetwork(), this);
 
     const bool success = mImageReader->getImageFromWeb(mId,
         [this](QImage image, const QString& format){
