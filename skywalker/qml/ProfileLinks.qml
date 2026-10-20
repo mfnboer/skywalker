@@ -15,7 +15,7 @@ Flow {
             required property profilelinkview modelData
 
             id: linkRect
-            width: link.width + (linkIcon.active ? link.height : 0) + 10
+            width: link.width + (linkIcon.active ? link.height + 2 : 0) + 10
             height: link.height + 4
             radius: height / 2
             color: guiSettings.linkButtonColor
@@ -23,13 +23,13 @@ Flow {
             Loader {
                 id: linkIcon
                 x: 5
-                y: 2
+                y: 4
                 active: modelData.icon
                 asynchronous: true
 
                 sourceComponent: RoundCornerMask {
                     width: height
-                    height: link.height
+                    height: link.height - 4
                     cornerRadius: width * 0.1
                     maskColor: linkRect.color
 
@@ -48,6 +48,7 @@ Flow {
             SkyLabel {
                 id: link
                 anchors.left: linkIcon.right
+                anchors.leftMargin: linkIcon.active ? 2 : 0
                 y: 2
                 width: Math.min(implicitWidth, guiSettings.maxLinkButtonWidth)
                 backgroundColor: "transparent"
