@@ -775,6 +775,8 @@ qt_add_qml_module(libskywalker
         QML_FILES
         QML_FILES qml/GifAttribution.qml
         QML_FILES qml/ProfileLinks.qml
+        SOURCES network_holder.h
+        SOURCES network_holder.cpp
 )
 
 target_link_libraries(libskywalker

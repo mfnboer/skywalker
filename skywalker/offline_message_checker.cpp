@@ -387,7 +387,7 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
     const auto pdsDpopNonce = mUserSettings.getPdsDpopNonce(did);
 
     // Need a longer network transfer timeout for an Android background process.
-    auto xrpc = std::make_unique<Xrpc::Client>("", 30000, pdsDpopNonce);
+    auto xrpc = std::make_unique<Xrpc::Client>(mNetwork, "", pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     xrpc->setOAuthNewTokensCb(mUserSettings.getTokenSetter(did));
 

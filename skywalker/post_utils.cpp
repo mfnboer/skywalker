@@ -4,6 +4,7 @@
 #include "file_utils.h"
 #include "jni_callback.h"
 #include "language_utils.h"
+#include "network_holder.h"
 #include "photo_picker.h"
 #include "shared_image_provider.h"
 #include "skywalker.h"
@@ -18,11 +19,8 @@ namespace Skywalker {
 PostUtils::PostUtils(QObject* parent) :
     WrappedSkywalker(parent),
     Presence(),
-    mNetwork(new QNetworkAccessManager(this))
+    mNetwork(NetworkHolder::network())
 {
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
-
     auto& jniCallbackListener = JNICallbackListener::getInstance();
 
     connect(&jniCallbackListener, &JNICallbackListener::photoPicked,

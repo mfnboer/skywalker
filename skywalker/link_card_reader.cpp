@@ -3,6 +3,7 @@
 #include "link_card_reader.h"
 #include "chat.h"
 #include "definitions.h"
+#include "network_holder.h"
 #include "skywalker.h"
 #include "unicode_fonts.h"
 #include <QRegularExpression>
@@ -56,13 +57,10 @@ public:
 
 LinkCardReader::LinkCardReader(QObject* parent):
     WrappedSkywalker(parent),
-    mNetwork(new QNetworkAccessManager(this)),
+    mNetwork(NetworkHolder::network()),
     mCardCache(100),
     mGifUtils(this)
 {
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
-
     QLocale locale;
     mAcceptLanguage = QString("%1_%2, *;q=0.5").arg(
         QLocale::languageToCode(locale.language()),

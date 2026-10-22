@@ -4,11 +4,24 @@
 #include <QImage>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QQuickImageResponse>
 
 namespace Skywalker {
 
+class ImageReaderResponse : public QQuickImageResponse
+{
+    Q_OBJECT
+public:
+    virtual ~ImageReaderResponse() = default;
+
+    void onRawData(QByteArray data);
+    virtual void onError(QString error) = 0;
+    virtual void onImage(QImage image, QString format) = 0;
+};
+
 class ImageReader : public QObject
 {
+    Q_OBJECT
 public:
     using ImageCb = std::function<void(QImage)>;
     using ImageAndFormatCb = std::function<void(QImage, const QString& format)>;
@@ -22,7 +35,10 @@ public:
 
     bool getImageFromWeb(const QString& urlString, const ImageAndFormatCb& imageCb, const ErrorCb& errorCb);
 
+    Q_INVOKABLE void getAsyncImageFromWeb(const QString& urlString, QPointer<ImageReaderResponse> response);
+
 private:
+    QNetworkReply* sendRequest(const QUrl& url);
     void replyFinished(QNetworkReply* reply, const ImageAndFormatCb& imageCb, const ErrorCb& errorCb);
 
     QNetworkAccessManager* mNetwork;

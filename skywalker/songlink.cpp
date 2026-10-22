@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "songlink.h"
+#include "network_holder.h"
 #include "songlink_cache.h"
 #include <QNetworkReply>
 #include <QUrl>
@@ -22,9 +23,7 @@ void Songlink::init()
     if (mNetwork)
         return;
 
-    mNetwork = new QNetworkAccessManager(this);
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
+    mNetwork = NetworkHolder::network();
 
     QLocale locale;
     mCountryCode = QLocale::territoryToCode(locale.territory());

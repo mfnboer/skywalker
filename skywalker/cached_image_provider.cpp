@@ -3,6 +3,7 @@
 #include "cached_image_provider.h"
 #include "display_utils.h"
 #include "file_utils.h"
+#include "network_holder.h"
 #include <atproto/lib/at_regex.h>
 #include <QCryptographicHash>
 #include <QDir>
@@ -38,12 +39,10 @@ CachedImageProvider* CachedImageProvider::getProvider(const QString& name)
 
 CachedImageProvider::CachedImageProvider(const QString& name) :
     mName(name),
-    mCachePath(FileUtils::getCachePath(mName))
+    mCachePath(FileUtils::getCachePath(mName)),
+    mImageReader(NetworkHolder::network(), this)
 {   
     qDebug() << "Image provider:" << mName << "cache:" << mCachePath;
-    mNetwork = new QNetworkAccessManager(this);
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
 }
 
 QString CachedImageProvider::createImageUrl(const QString& webUrl) const
@@ -192,6 +191,7 @@ QQuickImageResponse* CachedImageProvider::requestImageResponse(const QString& id
 
     const auto size = requestedSize / DisplayUtils::getDevicePixelRatio();
     auto* response = new CachedImageResponse(mName, id, size, &mThreadPool);
+    response->loadImage();
     return response;
 }
 
@@ -277,7 +277,6 @@ CachedImageResponse::CachedImageResponse(const QString& providerName, const QStr
     mThreadPool(pool)
 {
     Q_ASSERT(mThreadPool);
-    loadImage();
 }
 
 QQuickTextureFactory* CachedImageResponse::textureFactory() const
@@ -306,29 +305,29 @@ void CachedImageResponse::loadImage()
     if (!provider->addPendingRequest(mId, [this](QImage img){ handleDone(img); }))
         return;
 
-    mImageReader = new ImageReader(provider->getNetwork(), this);
+    auto* imageReader = provider->getImageReader();
+    QMetaObject::invokeMethod(imageReader, [self=QPointer<ImageReaderResponse>(this), url=mId, imageReader]{
+        if (self)
+            imageReader->getAsyncImageFromWeb(url, self);
+    });
+}
 
-    const bool success = mImageReader->getImageFromWeb(mId,
-        [this](QImage image, const QString& format){
-            auto* provider = CachedImageProvider::getProvider(mProviderName);
+void CachedImageResponse::onError(QString error)
+{
+    qWarning() << "Failed to load image:" << mId << "provider:" << mProviderName << "error:" << error;
+    auto* provider = CachedImageProvider::getProvider(mProviderName);
+    provider->finishPendingRequest(mId, QImage());
+}
 
-            // Save the unscaled image
-            if (!image.isNull())
-                provider->addImage(mId, image, format);
+void CachedImageResponse::onImage(QImage image, QString format)
+{
+    auto* provider = CachedImageProvider::getProvider(mProviderName);
 
-            provider->finishPendingRequest(mId, image);
-        },
-        [this](const QString& error){
-            qWarning() << "Failed to load image:" << mId << "provider:" << mProviderName << "error:" << error;
-            auto* provider = CachedImageProvider::getProvider(mProviderName);
-            provider->finishPendingRequest(mId, QImage());
-        });
+    // Save the unscaled image
+    if (!image.isNull())
+        provider->addImage(mId, image, format);
 
-    if (!success)
-    {
-        qWarning() << "Invalid id:" << mId << "provider:" << mProviderName;
-        provider->finishPendingRequest(mId, QImage());
-    }
+    provider->finishPendingRequest(mId, image);
 }
 
 void CachedImageResponse::handleDone(QImage img)

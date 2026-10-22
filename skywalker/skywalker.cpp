@@ -14,6 +14,7 @@
 #include "for_you.h"
 #include "jni_callback.h"
 #include "list_cache.h"
+#include "network_holder.h"
 #include "oauth_controller.h"
 #include "offline_message_checker.h"
 #include "photo_picker.h"
@@ -55,7 +56,6 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
-    mNetwork(new QNetworkAccessManager(this)),
     mFollowing(this),
     mFollowsActivityStore(mFollowing, this),
     mTimelineHide(this),
@@ -78,9 +78,7 @@ Skywalker::Skywalker(QObject* parent) :
                    mContentFilter, mMutedWords, *mFocusHashtags, mSeenHashtags,
                    mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
-    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork,
+    mPlcDirectory = new ATProto::PlcDirectoryClient(NetworkHolder::network(),
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_PRIMARY_HOST,
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_SECONDARY_HOST,
                                                     this);
@@ -171,7 +169,6 @@ Skywalker::Skywalker(QObject* parent) :
 
 Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent) :
     IFeedPager(parent),
-    mNetwork(new QNetworkAccessManager(this)),
     mBsky(bsky),
     mUserDid(did),
     mIsActiveUser(false),
@@ -196,9 +193,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
                    mUserPreferences, mUserSettings, mFollowsActivityStore, mBsky, this)
 {
     Q_ASSERT(!mUserSettings.getUser(did).isNull());
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
-    mPlcDirectory = new ATProto::PlcDirectoryClient(mNetwork,
+    mPlcDirectory = new ATProto::PlcDirectoryClient(NetworkHolder::network(),
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_PRIMARY_HOST,
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_SECONDARY_HOST,
                                                     this);
@@ -281,7 +276,7 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
                                   const QString serviceVideoDid)
 {
     qDebug() << "Login with password:" << user << "host:" << host;
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    auto xrpc = std::make_unique<Xrpc::Client>(NetworkHolder::network(), host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
@@ -322,7 +317,7 @@ void Skywalker::loginWithOAuth(const QString host, QString handle, const QString
 {
     qDebug() << "Login with OAuth:" << handle << "did:" << did << "host:" << host;
     const QString user = did.isEmpty() ? handle : did;
-    auto xrpc = std::make_unique<Xrpc::Client>(host);
+    auto xrpc = std::make_unique<Xrpc::Client>(NetworkHolder::network(), host);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     mBsky = std::make_shared<ATProto::Client>(std::move(xrpc), this);
 
@@ -486,7 +481,7 @@ bool Skywalker::resumeAndRefreshSession()
     qDebug() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
 
     const auto pdsDpopNonce = mUserSettings.getPdsDpopNonce(session->mDid);
-    auto xrpc = std::make_unique<Xrpc::Client>("", Xrpc::Client::DEFAULT_TIMEOUT_MS, pdsDpopNonce);
+    auto xrpc = std::make_unique<Xrpc::Client>(NetworkHolder::network(), "", pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     xrpc->setOAuthNewTokensCb(mUserSettings.getTokenSetter(session->mDid));
 
@@ -5665,7 +5660,7 @@ ForYou* Skywalker::getForYou()
 {
     if (!mForYou)
     {
-        mForYou = std::make_unique<ForYou>(mNetwork);
+        mForYou = std::make_unique<ForYou>(NetworkHolder::network());
         mForYou->setSkywalker(this);
     }
 
@@ -5675,7 +5670,7 @@ ForYou* Skywalker::getForYou()
 Constellation* Skywalker::getConstellation()
 {
     if (!mConstellation)
-        mConstellation = std::make_unique<Constellation>(mNetwork);
+        mConstellation = std::make_unique<Constellation>(NetworkHolder::network());
 
     return mConstellation.get();
 }

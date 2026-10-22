@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "account_utils.h"
+#include "network_holder.h"
 #include "skywalker.h"
 #include "utils.h"
 
@@ -301,7 +302,7 @@ ATProto::Client* AccountUtils::bskyClientNotLoggedIn(const QString& host)
     if (!mBskyClientNotLoggedIn || mHost != host)
     {
         qDebug() << "Create client:" << host;
-        auto xrpc = std::make_unique<Xrpc::Client>(host);
+        auto xrpc = std::make_unique<Xrpc::Client>(NetworkHolder::network(), host);
         xrpc->setUserAgent(Skywalker::getUserAgentString());
         mBskyClientNotLoggedIn = std::make_shared<ATProto::Client>(std::move(xrpc), this);
         mHost = host;

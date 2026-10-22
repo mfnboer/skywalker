@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "giphy.h"
 #include "giphy_gif.h"
+#include "network_holder.h"
 #include "skywalker.h"
 #include <atproto/lib/xjson.h>
 
@@ -31,7 +32,7 @@ TenorGif toTenorGif(GiphyGif::SharedPtr giphyGif, const QString& query)
 
 Giphy::Giphy(QObject* parent) :
     WrappedSkywalker(parent),
-    WebServiceBase(GIPHY_BASE_URL, new QNetworkAccessManager(this)),
+    WebServiceBase(GIPHY_BASE_URL, NetworkHolder::network()),
     mApiKey(GIPHY_API_KEY),
     mOverviewModel(mWidth, mSpacing, this)
 {

@@ -1,6 +1,7 @@
 // Copyright (C) 2025 Michel de Boer
 // License: GPLv3
 #include "session_manager.h"
+#include "network_holder.h"
 #include "oauth_controller.h"
 #include "skywalker.h"
 
@@ -88,7 +89,7 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     qDebug() << "Session:" << session->mDid << session->mAccessJwt << session->mRefreshJwt;
     const auto pdsDpopNonce = mUserSettings->getPdsDpopNonce(did);
 
-    auto xrpc = std::make_unique<Xrpc::Client>("", Xrpc::Client::DEFAULT_TIMEOUT_MS, pdsDpopNonce);
+    auto xrpc = std::make_unique<Xrpc::Client>(NetworkHolder::network(), "", pdsDpopNonce);
     xrpc->setUserAgent(Skywalker::getUserAgentString());
     xrpc->setOAuthNewTokensCb(mUserSettings->getTokenSetter(did));
 

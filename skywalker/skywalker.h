@@ -447,7 +447,6 @@ private:
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);
 
-    QNetworkAccessManager* mNetwork;
     ATProto::Client::SharedPtr mBsky;
     ATProto::PlcDirectoryClient* mPlcDirectory = nullptr;
     std::unique_ptr<ATProto::PostMaster> mPostMaster;

@@ -3,6 +3,7 @@
 #include "m3u8_reader.h"
 #include "file_utils.h"
 #include "m3u8_parser.h"
+#include "network_holder.h"
 #include "network_utils.h"
 
 namespace Skywalker {
@@ -11,10 +12,8 @@ static constexpr int HD_BANDWIDTH_THRESHOLD_KBPS = 2000;
 
 M3U8Reader::M3U8Reader(QObject* parent) :
     QObject(parent),
-    mNetwork(new QNetworkAccessManager(this))
+    mNetwork(NetworkHolder::network())
 {
-    mNetwork->setAutoDeleteReplies(true);
-    mNetwork->setTransferTimeout(10000);
 }
 
 void M3U8Reader::setVideoQuality(QEnums::VideoQuality quality)

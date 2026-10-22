@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "tenor.h"
+#include "network_holder.h"
 #include "skywalker.h"
 #include <atproto/lib/xjson.h>
 
@@ -18,7 +19,7 @@ constexpr int MAX_RECENT_GIFS = 50;
 
 Tenor::Tenor(QObject* parent) :
     WrappedSkywalker(parent),
-    WebServiceBase(TENOR_BASE_URL, new QNetworkAccessManager(this)),
+    WebServiceBase(TENOR_BASE_URL, NetworkHolder::network()),
     mClientKey("com.gmail.mfnboer.skywalker"),
     mOverviewModel(mWidth, mSpacing, this)
 {

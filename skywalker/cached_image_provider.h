@@ -32,7 +32,7 @@ public:
     bool addPendingRequest(const QString& id, const ImageCb& imageCb);
     void finishPendingRequest(const QString& id, QImage img);
 
-    QNetworkAccessManager* getNetwork() const { return mNetwork; }
+    ImageReader* getImageReader() { return &mImageReader; }
 
     // id = image url without scheme
     QQuickImageResponse *requestImageResponse(const QString& id, const QSize& requestedSize) override;
@@ -51,20 +51,24 @@ private:
     QMutex mPendingRequestsMutex;
     std::unordered_map<QString, std::vector<ImageCb>> mPendingRequests; // id -> callback
     int mLoadCount = 0;
-    QNetworkAccessManager* mNetwork;
+    ImageReader mImageReader;
 
     static std::unordered_map<QString, CachedImageProvider*> sProviders; // name -> provider
 };
 
-class CachedImageResponse : public QQuickImageResponse
+class CachedImageResponse : public ImageReaderResponse
 {
 public:
     CachedImageResponse(const QString& providerName, const QString& id, const QSize& requestedSize, QThreadPool* pool);
 
     QQuickTextureFactory* textureFactory() const override;
 
-private:
+    virtual void onError(QString error) override;
+    virtual void onImage(QImage image, QString format) override;
+
     void loadImage();
+
+private:
     void handleDone(QImage img);
     void setImage(QImage img);
 
@@ -73,7 +77,6 @@ private:
     QSize mRequestedSize;
     QImage mImage;
     QThreadPool* mThreadPool;
-    ImageReader* mImageReader = nullptr;
 };
 
 class CachedImageProcessor : public QObject, public QRunnable
