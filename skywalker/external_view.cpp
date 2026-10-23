@@ -36,7 +36,7 @@ QString ExternalView::getDescription() const
 QString ExternalView::getThumbUrl() const
 {
     static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::THUMB_IMG);
-    const QString thumbUrl = QUrl::fromPercentEncoding(getThumbHttpUrl().toUtf8());
+    const QString thumbUrl = getThumbHttpUrl().toUtf8();
     return provider->createImageUrl(thumbUrl);
 }
 

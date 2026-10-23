@@ -121,7 +121,7 @@ QString ListViewBasic::getAvatar() const
 QString ListViewBasic::getAvatarThumbUrl() const
 {
     static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::AVATAR);
-    const QString thumbUrl = QUrl::fromPercentEncoding(getAvatarThumbHttpUrl().toUtf8());
+    const QString thumbUrl = getAvatarThumbHttpUrl().toUtf8();
     return provider->createImageUrl(thumbUrl);
 }
 

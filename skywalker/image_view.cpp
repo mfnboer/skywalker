@@ -36,7 +36,9 @@ ImageView::ImageView(const ATProto::AppBskyEmbed::GalleryViewImage::SharedPtr& v
 QString ImageView::getThumbUrl() const
 {
     static const auto* provider = CachedImageProvider::getProvider(CachedImageProvider::THUMB_IMG);
-    const QString thumbUrl = QUrl::fromPercentEncoding(getThumbHttpUrl().toUtf8());
+    // Don't remove percent encoding like this: QUrl::fromPercentEncoding(getThumbHttpUrl().toUtf8())
+    // It breaks a signature over the complete url if there is one.
+    const QString thumbUrl = getThumbHttpUrl().toUtf8();
     return provider->createImageUrl(thumbUrl);
 }
 
