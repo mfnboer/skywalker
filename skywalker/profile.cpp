@@ -5,6 +5,7 @@
 #include "cached_image_provider.h"
 #include "content_filter.h"
 #include "definitions.h"
+#include "link_utils.h"
 #include "list_cache.h"
 #include "utils.h"
 
@@ -333,6 +334,28 @@ ContentLabelList ProfileLinkView::getContentLabels() const
         return {};
 
     return ContentFilter::getContentLabels(mLinkView->mLabels);
+}
+
+QEnums::ContentVisibility ProfileLinkView::getContentVisibility(const ContentFilter* contentFilter, const BasicProfile& author) const
+{
+    Q_ASSERT(contentFilter);
+
+    if (!contentFilter || !mLinkView)
+        return QEnums::CONTENT_VISIBILITY_SHOW;
+
+    const auto [visibility, _] = contentFilter->getVisibilityAndWarning(author, mLinkView->mLabels);
+    return visibility;
+}
+
+QString ProfileLinkView::getContentWarning(const ContentFilter* contentFilter, const BasicProfile& author) const
+{
+    Q_ASSERT(contentFilter);
+
+    if (!contentFilter || !mLinkView)
+        return {};
+
+    const auto [_, warning] = contentFilter->getVisibilityAndWarning(author, mLinkView->mLabels);
+    return warning;
 }
 
 BasicProfile::List BasicProfile::makeList(const ATProto::AppBskyActor::ProfileViewBasic::List& profiles)
@@ -972,6 +995,24 @@ ProfileLinkView::List DetailedProfile::getLinks() const
         links.push_back(ProfileLinkView(link));
 
     return links;
+}
+
+bool DetailedProfile::linksContainWebsite() const
+{
+    const QString website = getWebsite();
+
+    if (website.isEmpty())
+        return false;
+
+    const auto links = getLinks();
+
+    for (const auto& link : links)
+    {
+        if (LinkUtils::equalLinks(website, link.getUrl()))
+            return true;
+    }
+
+    return false;
 }
 
 

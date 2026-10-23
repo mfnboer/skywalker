@@ -100,11 +100,11 @@ QString LinkUtils::toHttpsLink(const QString& atUri)
     return httpsLink;
 }
 
-void LinkUtils::openLink(const QString& link, const QString& containingText)
+void LinkUtils::openLink(const QString& link, const QString& containingText, const QString& warning)
 {
     const auto atUri = getPostUri(link);
 
-    qDebug() << "LinkUtils is opening: " << link << " with text " << containingText;
+    qDebug() << "LinkUtils is opening: " << link << " with text " << containingText << "warning:" << warning;
 
     if (atUri.isValid())
     {
@@ -147,7 +147,7 @@ void LinkUtils::openLink(const QString& link, const QString& containingText)
     const QUrl url(link);
     bool hostPresent = url.isValid() && containingText.contains(url.host(), Qt::CaseInsensitive);
     qDebug() << "LinkUtils is emitting webLink with hostPresent: " << hostPresent;
-    emit webLink(link, containingText, hostPresent);
+    emit webLink(link, containingText, hostPresent, warning);
 }
 
 void LinkUtils::openInAppBrowser(const QString& link)

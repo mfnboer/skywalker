@@ -17,16 +17,20 @@ LinkUtils {
         Qt.openUrlExternally(link)
     }
 
-    onWebLink: (link, containingText, hostPresent) => {
-        if (!containingText || hostPresent) {
+    onWebLink: (link, containingText, hostPresent, warning) => {
+        if ((!containingText || hostPresent) && !warning) {
             openInBrowser(link)
             return
         }
 
-        const linkText = `<font color="${guiSettings.linkColor}">${link}</font>`
+        const linkText = `<a href="l" style="color: ${guiSettings.linkColor}; text-decoration: none">${link}</a>`
+        const warnText = warning ? "<br><br>⚠️ " + warning : ""
+
         guiSettings.noticeOkCancel(rootContent,
-            qsTr("This link will open the following website:") + "<br><br>" + linkText,
-            () => openInBrowser(link))
+            qsTr("This link will open the following website:") + "<br><br>" + linkText + warnText,
+            () => openInBrowser(link),
+            () => {},
+            (l) => openInBrowser(link))
     }
 
     onPostLink: (atUri) => skywalker.getPostThread(atUri)

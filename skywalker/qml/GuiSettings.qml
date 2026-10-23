@@ -274,11 +274,12 @@ Item {
         message.show(question)
     }
 
-    function noticeOkCancel(parent, question, onOkCb, onCancelCb = () => {}) {
+    function noticeOkCancel(parent, question, onOkCb, onCancelCb = () => {}, onLinkCb = (link) => {}) {
         let component = guiSettings.createComponent("Message.qml")
         let message = component.createObject(parent, { standardButtons: Dialog.Ok | Dialog.Cancel })
         message.onAccepted.connect(() => { message.close(); onOkCb() })
         message.onRejected.connect(() => { message.close(); onCancelCb() })
+        message.onLinkActivated.connect((link) => { message.close(); onLinkCb(link) })
         message.show(question)
     }
 

@@ -4,15 +4,17 @@ import skywalker
 Flow {
     property string userDid
     property Skywalker skywalker: root.getSkywalker(userDid)
-    required property list<profilelinkview> links
+    required property detailedprofile author
 
     spacing: 5
 
     Repeater {
-        model: links
+        model: filterLinksToShow() // list<link, visibility>
 
         Rectangle {
-            required property profilelinkview modelData
+            required property var modelData
+            readonly property profilelinkview linkView: modelData[0]
+            readonly property int visibility: modelData[1] // QEnums::ContentVisibility
 
             id: linkRect
             width: link.width + (linkIcon.active ? link.height + 2 : 0) + 10
@@ -24,7 +26,7 @@ Flow {
                 id: linkIcon
                 x: 5
                 y: 4
-                active: modelData.icon
+                active: linkRect.linkView.icon && linkRect.visibility === QEnums.CONTENT_VISIBILITY_SHOW
                 asynchronous: true
 
                 sourceComponent: RoundCornerMask {
@@ -38,7 +40,7 @@ Flow {
                         anchors.fill: parent
                         sourceSize.width: width * Screen.devicePixelRatio
                         sourceSize.height: height * Screen.devicePixelRatio
-                        source: linkRect.modelData.icon
+                        source: linkRect.linkView.icon
                         fillMode: Image.PreserveAspectFit
                         indicateLoading: false
                     }
@@ -55,17 +57,48 @@ Flow {
                 font.pointSize: guiSettings.linkButtonFontSize
                 font.weight: Font.Medium
                 elide: Text.ElideRight
-                text: (modelData.icon ? "" : "🌐 ") + getDisplayText()
+                text: getDisplayIconPrefix() + getDisplayText()
             }
 
             SkyMouseArea {
                 anchors.fill: parent
-                onClicked: root.openLink(modelData.url, getDisplayText())
+                onClicked: {
+                    const warning = getWarning(linkView, visibility)
+                    root.openLink(linkView.url, getDisplayText(), userDid, warning)
+                }
             }
 
             function getDisplayText() {
-                return modelData.title ? modelData.title : modelData.url
+                return linkView.title ? linkView.title : linkView.url
+            }
+
+            function getDisplayIconPrefix() {
+                if (visibility === QEnums.CONTENT_VISIBILITY_SHOW)
+                    return linkView.icon ? "" : "🌐 "
+
+                return "⚠️ "
             }
         }
+    }
+
+    function filterLinksToShow() {
+        let linksToSow = []
+        const contentFilter = skywalker.getContentFilter()
+
+        for (const link of author.links) {
+            const visibility = link.getContentVisibility(contentFilter, author)
+            if (visibility < QEnums.CONTENT_VISIBILITY_HIDE_MEDIA)
+                linksToSow.push([link, visibility])
+        }
+
+        return linksToSow
+    }
+
+    function getWarning(linkView, visibility) {
+        if (visibility === QEnums.CONTENT_VISIBILITY_SHOW)
+            return ""
+
+        const contentFilter = skywalker.getContentFilter()
+        return linkView.getContentVisibility(contentFilter, author)
     }
 }

@@ -1301,7 +1301,7 @@ ApplicationWindow {
         switchUserLoader.show()
     }
 
-    function openLink(link, containingText, openByDid = "") {
+    function openLink(link, containingText, openByDid = "", warning = "") {
         if (link.startsWith("@")) {
             console.debug("@-MENTION:", link)
             getSkywalker(openByDid).getDetailedProfile(link.slice(1))
@@ -1318,7 +1318,7 @@ ApplicationWindow {
             console.debug("JOIN LINK:", link)
             viewJoinLink(link)
         } else {
-            getLinkUtils(openByDid).openLink(link, containingText)
+            getLinkUtils(openByDid).openLink(link, containingText, warning)
         }
     }
 

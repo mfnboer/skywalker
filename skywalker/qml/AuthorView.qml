@@ -655,7 +655,7 @@ SkyPage {
                 textFormat: Text.RichText
                 elide: Text.ElideRight
                 text: qsTr(`🌐 ${guiSettings.toHtmlLink(authorWebsite)}`)
-                visible: contentVisible() && Boolean(authorWebsite)
+                visible: contentVisible() && Boolean(authorWebsite) && !author.linksContainWebsite()
 
                 onLinkActivated: (link) => root.openLink(link, "", page.userDid)
             }
@@ -664,7 +664,7 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
                 userDid: page.userDid
-                links: author.links
+                author: page.author
                 visible: contentVisible() && author.links.length > 0
             }
 

@@ -13,6 +13,7 @@
 namespace Skywalker {
 
 class BasicProfile;
+class ContentFilter;
 
 class VerificationView
 {
@@ -260,6 +261,8 @@ private:
 
 class ProfileLinkView
 {
+    Q_MOC_INCLUDE("content_filter.h")
+
     Q_GADGET
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
@@ -281,6 +284,9 @@ public:
     QString getTitle() const { return mLinkView ? mLinkView->mTitle.value_or("") : ""; }
     QString getIcon() const { return mLinkView ? mLinkView->mIcon.value_or("") : ""; }
     ContentLabelList getContentLabels() const;
+
+    Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentFilter* contentFilter, const BasicProfile& author) const;
+    Q_INVOKABLE QString getContentWarning(const ContentFilter* contentFilter, const BasicProfile& author) const;
 
 private:
     ATProto::AppBskyActor::ProfileLinkView::SharedPtr mLinkView;
@@ -456,6 +462,8 @@ public:
     int getPostsCount() const;
     QString getPinnedPostUri() const;
     ProfileLinkView::List getLinks() const;
+
+    Q_INVOKABLE bool linksContainWebsite() const;
 };
 
 class BlockedAuthor
