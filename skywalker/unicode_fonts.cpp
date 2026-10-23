@@ -613,7 +613,7 @@ QString UnicodeFonts::scaleHtmlImgTags(const QString& text, int width)
     int prevPos = 0;
     QString newText;
 
-    for (const auto &match : IMG_RE.globalMatch(text))
+    for (const auto& match : IMG_RE.globalMatch(text))
     {
         if (!match.hasMatch())
             continue;

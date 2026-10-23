@@ -82,6 +82,43 @@ LinkCard* LinkCardReader::makeLinkCard(const QString& link, const QString& title
     return mCardCache[url];
 }
 
+static QUrl cleanLink(const QString& link)
+{
+    QString cleanedLink = link.startsWith("http") ? link : "https://" + link;
+
+    if (cleanedLink.endsWith("/"))
+        cleanedLink = cleanedLink.sliced(0, cleanedLink.size() - 1);
+
+    return QUrl(cleanedLink);
+}
+
+QNetworkReply* LinkCardReader::sendRequest(const QUrl& url, bool retry, bool cookieSaveControl)
+{
+    QNetworkRequest request(url);
+
+    // Without cookieSaveControl YouTube Shorts does not load
+    // With cookieSaveControl www.noordhollandsdagblad.nl fails
+    request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, cookieSaveControl);
+
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
+    request.setRawHeader("Accept", "*/*");
+    request.setRawHeader("Accept-Encoding", "identity");
+    request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
+    request.setRawHeader("Priority", "i"); // For Reuters
+    request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters, WSJ
+    // NOTE: WSJ requires a User-Agent with comment: Skywalker/version (android)
+    //       When (android) is replaced by (ubuntu) it does not work??
+    //       For NYT and Reuters this is sufficient: Skywalker/version
+
+    QNetworkReply* reply = mNetwork->get(request);
+    mInProgress = reply;
+    mPrevDestination = url;
+    mRetry = retry;
+    mCookieSaveControl = cookieSaveControl;
+
+    return reply;
+}
+
 void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSaveControl)
 {
     qDebug() << "Get link card:" << link << "retry:" << retry << "cookieSaveControl:" << cookieSaveControl;
@@ -92,11 +129,8 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSav
         mInProgress = nullptr;
     }
 
-    QString cleanedLink = link.startsWith("http") ? link : "https://" + link;
-    if (cleanedLink.endsWith("/"))
-        cleanedLink = cleanedLink.sliced(0, cleanedLink.size() - 1);
+    QUrl url = cleanLink(link);
 
-    QUrl url(cleanedLink);
     if (!url.isValid())
     {
         qWarning() << "Invalid link:" << link;
@@ -156,31 +190,11 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSav
         mNetwork->setCookieJar(new CookieJar);
     }
 
-    QNetworkRequest request(url);
-
-    // Without cookieSaveControl YouTube Shorts does not load
-    // With cookieSaveControl www.noordhollandsdagblad.nl fails
-    request.setAttribute(QNetworkRequest::CookieSaveControlAttribute, cookieSaveControl);
-
-    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::UserVerifiedRedirectPolicy);
-    request.setRawHeader("Accept", "*/*");
-    request.setRawHeader("Accept-Encoding", "identity");
-    request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
-    request.setRawHeader("Priority", "i"); // For Reuters
-    request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters, WSJ
-    // NOTE: WSJ requires a User-Agent with comment: Skywalker/version (android)
-    //       When (android) is replaced by (ubuntu) it does not work??
-    //       For NYT and Reuters this is sufficient: Skywalker/version
-
-    QNetworkReply* reply = mNetwork->get(request);
-    mInProgress = reply;
-    mPrevDestination = url;
-    mRetry = retry;
-    mCookieSaveControl = cookieSaveControl;
+    QNetworkReply* reply = sendRequest(url, retry, cookieSaveControl);
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractLinkCard(reply); });
-    connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ requestFailed(reply, errCode); });
-    connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ requestSslFailed(reply); });
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ linkCardRequestFailed(reply, errCode); });
+    connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ linkCardRequestSslFailed(reply); });
     connect(reply, &QNetworkReply::redirected, this, [this, reply](const QUrl& url){ redirect(reply, url); });
 }
 
@@ -197,10 +211,10 @@ static QString matchRegexes(const std::vector<QRegularExpression>& regexes, cons
     return {};
 }
 
-void LinkCardReader::extractLinkCard(QNetworkReply* reply)
+static const std::vector<QRegularExpression>& getOgTitleREs()
 {
-    static const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?title[\"']? [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
-    static const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?title[\"']?[^>]*>)");
+    const QString ogTitleStr1(R"(<meta [^>]*(property|name) *=[\"']?(og:|twitter:)?title[\"']? [^>]*content=%1(?<title>[^%1]+?)%1[^>]*>)");
+    const QString ogTitleStr2(R"(<meta [^>]*content=%1(?<title>[^%1]+?)%1 [^>]*(property|name)=[\"']?(og:|twitter:)?title[\"']?[^>]*>)");
 
     static const std::vector<QRegularExpression> ogTitleREs = {
         QRegularExpression(ogTitleStr1.arg('"')),
@@ -209,11 +223,24 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(ogTitleStr2.arg('\''))
     };
 
-    static const QString htmlTitleStr(R"(<title>(?<title>[^<]+)</title>)");
+    return ogTitleREs;
+}
+
+static const std::vector<QRegularExpression>& getHtmlTitleREs()
+{
+    const QString htmlTitleStr(R"(<title>(?<title>[^<]+)</title>)");
 
     static const std::vector<QRegularExpression> htmlTitleREs = {
         QRegularExpression(htmlTitleStr)
     };
+
+    return htmlTitleREs;
+}
+
+void LinkCardReader::extractLinkCard(QNetworkReply* reply)
+{
+    static const std::vector<QRegularExpression>& ogTitleREs = getOgTitleREs();
+    static const std::vector<QRegularExpression>& htmlTitleREs = getHtmlTitleREs();
 
     // First try to find a qualified description og:description or twitter:description
     // When that if no found just try description
@@ -265,7 +292,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     if (reply->error() != QNetworkReply::NoError)
     {
-        requestFailed(reply, reply->error());
+        linkCardRequestFailed(reply, reply->error());
         return;
     }
 
@@ -493,7 +520,7 @@ void LinkCardReader::getEmbedExternalView(LinkCard* card, const std::vector<QStr
         });
 }
 
-void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
+void LinkCardReader::linkCardRequestFailed(QNetworkReply* reply, int errCode)
 {
     mInProgress = nullptr;
     const auto url = reply->request().url();
@@ -520,7 +547,7 @@ void LinkCardReader::requestFailed(QNetworkReply* reply, int errCode)
     }
 }
 
-void LinkCardReader::requestSslFailed(QNetworkReply* reply)
+void LinkCardReader::linkCardRequestSslFailed(QNetworkReply* reply)
 {
     mInProgress = nullptr;
     qDebug() << "SSL error, failed to get link:" << reply->request().url();
@@ -600,6 +627,322 @@ void LinkCardReader::getJoinRequestLinkCard(const QUrl& url)
             qWarning() << "Failed to get join link:" << error << " - " << msg;
             emit linkCardFailed();
         });
+}
+
+void LinkCardReader::getFavIcon(const QString& link, bool retry, bool cookieSaveControl)
+{
+    qDebug() << "Get fav icon:" << link << "retry:" << retry << "cookieSaveControl:" << cookieSaveControl;
+
+    if (mInProgress)
+    {
+        mInProgress->abort();
+        mInProgress = nullptr;
+    }
+
+    QUrl url = cleanLink(link);
+
+    if (!url.isValid())
+    {
+        qWarning() << "Invalid link:" << link;
+        emit favIconFailed();
+        return;
+    }
+
+    if (!retry)
+    {
+        qDebug() << "Reset cookie jar";
+        mNetwork->setCookieJar(new CookieJar);
+    }
+
+    QNetworkReply* reply = sendRequest(url, retry, cookieSaveControl);
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractFavIcon(reply); });
+    connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ favIconRequestFailed(reply, errCode); });
+    connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ favIconRequestSslFailed(reply); });
+    connect(reply, &QNetworkReply::redirected, this, [this, reply](const QUrl& url){ redirect(reply, url); });
+}
+
+void LinkCardReader::extractFavIcon(QNetworkReply* reply)
+{
+    mInProgress = nullptr;
+
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        favIconRequestFailed(reply, reply->error());
+        return;
+    }
+
+    const auto data = reply->readAll();
+    QString iconUrlString = getIconUrl(data);
+
+    if (!iconUrlString.isEmpty())
+    {
+        const QUrl iconUrl = reply->url().resolved(iconUrlString);
+        iconUrlString = iconUrl.toString();
+    }
+
+    static const std::vector<QRegularExpression>& ogTitleREs = getOgTitleREs();
+    QString title = matchRegexes(ogTitleREs, data, "title");
+
+    if (title.isEmpty())
+    {
+        static const std::vector<QRegularExpression>& htmlTitleREs = getHtmlTitleREs();
+        title = matchRegexes(htmlTitleREs, data, "title");
+    }
+
+    // Shorten title by splitting on -, : or | if possible
+    static const QRegularExpression TITLE_RE(R"(([^\-:\|]+)[\-:\|].*)");
+    const auto match = TITLE_RE.match(title);
+
+    if (match.hasMatch())
+        title = match.captured(1).trimmed();
+
+    if (iconUrlString.isEmpty() && title.isEmpty())
+    {
+        qDebug() << "Fav icon not found:" << reply->url();
+        emit favIconFailed();
+    }
+
+    emit favIcon(title, iconUrlString);
+}
+
+QString LinkCardReader::getIconUrl(const QByteArray& data)
+{
+    static const QString iconLinkReStr1(R"(<link[^>]*rel=%1[^%1]*icon[^%1]*%1[^>]*>)");
+    static const std::vector<QRegularExpression> iconLinkREs = {
+        QRegularExpression(iconLinkReStr1.arg('"')),
+        QRegularExpression(iconLinkReStr1.arg('\''))
+    };
+
+    QStringList iconLinks;
+
+    for (const auto& RE : iconLinkREs)
+    {
+        for (const auto& match : RE.globalMatch(data))
+        {
+            if (!match.hasMatch())
+                continue;
+
+            iconLinks.push_back(match.captured());
+        }
+    }
+
+    return selectBestIconUrl(iconLinks);
+}
+
+static int getSize(const QString& sizes)
+{
+    static const QRegularExpression SIZES_RE(R"(([0-9])+x[0-9]+)");
+    const auto match = SIZES_RE.match(sizes);
+
+    if (!match.hasMatch())
+        return 0;
+
+    const QString size = match.captured(1);
+    return size.toInt();
+}
+
+static QString getAttr(const std::unordered_map<QString, QString>& linkAttrs, const QString& attr)
+{
+    return linkAttrs.contains(attr) ? linkAttrs.at(attr) : "";
+}
+
+static QString getImageType(const std::unordered_map<QString, QString>& linkAttrs)
+{
+    QString type = getAttr(linkAttrs, "type");
+
+    if (!type.isEmpty())
+    {
+        if (type.startsWith("image/"))
+        {
+            const QString imageType = type.slice(6);
+            return imageType == "x-icon" ? "ico" : imageType;
+        }
+    }
+
+    QString href = getAttr(linkAttrs, "href");
+    const auto hrefParts = href.split('.');
+
+    if (hrefParts.size() < 2)
+        return {};
+
+    if (hrefParts.last().size() > 4 || hrefParts.last().size() < 3)
+        return {};
+
+    return hrefParts.last();
+}
+
+static bool isBetterIconLink(const QString& lhsLink, const QString& rhsLink,
+                         const std::unordered_map<QString, std::unordered_map<QString, QString>>& linkAttrs)
+{
+    static const int PREFERRED_SIZE = 48;
+
+    if (rhsLink.isEmpty())
+        return true;
+
+    const auto& lhsAttrs = linkAttrs.at(lhsLink);
+    const auto& rhsAttrs = linkAttrs.at(rhsLink);
+    const QString lhsRel = getAttr(lhsAttrs, "rel");
+    const QString rhsRel = getAttr(rhsAttrs, "rel");
+
+    if (lhsRel != rhsRel)
+    {
+        if (lhsRel == "apple-touch-icon")
+            return true;
+
+        if (rhsRel == "apple-touch-icon")
+            return false;
+
+        if (lhsRel == "icon")
+            return true;
+
+        if (rhsRel == "icon")
+            return false;
+
+        if (lhsRel == "mask-icon")
+            return false;
+
+        if (rhsRel == "mask-icon")
+            return true;
+    }
+
+    if (lhsRel != "apple-touch-icon")
+    {
+        QString lhsType = getImageType(lhsAttrs);
+        QString rhsType = getImageType(rhsAttrs);
+
+        if (lhsType != rhsType)
+        {
+            if (lhsType == "png")
+                return true;
+
+            if (rhsType == "png")
+                return false;
+
+            if (lhsType == "jpeg" || lhsType == "jpg")
+                return true;
+
+            if (rhsType == "jpeg" || rhsType == "jpg")
+                return false;
+
+            if (lhsType == "webp")
+                return true;
+
+            if (rhsType == "webp")
+                return false;
+
+            if (lhsType == "ico")
+                return true;
+
+            if (rhsType == "ico")
+                return false;
+        }
+    }
+
+    if (lhsAttrs.contains("sizes") && rhsAttrs.contains("sizes"))
+    {
+        const int lhsSize = getSize(getAttr(lhsAttrs, "sizes"));
+
+        if (lhsSize == PREFERRED_SIZE)
+            return true;
+
+        if (lhsSize <= 0)
+            return false;
+
+        const int rhsSize = getSize(getAttr(rhsAttrs, "sizes"));
+
+        if (rhsSize <= 0)
+            return true;
+
+        if (rhsSize == PREFERRED_SIZE)
+            return false;
+
+        if (lhsSize < PREFERRED_SIZE)
+            return rhsSize > lhsSize;
+        else
+            return rhsSize < lhsSize;
+    }
+
+    return false;
+}
+
+QString LinkCardReader::selectBestIconUrl(const QStringList& iconLinks)
+{
+    static const QString attrReStr(R"([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s\"'>]+))");
+    static const QRegularExpression ATTR_RE(attrReStr);
+
+    // link -> (attr, value)
+    std::unordered_map<QString, std::unordered_map<QString, QString>> linkAttrs;
+
+    for (const auto& link : iconLinks)
+    {
+        auto& attrs = linkAttrs[link];
+
+        for (const auto& match : ATTR_RE.globalMatch(link))
+        {
+            if (!match.hasMatch())
+                continue;
+
+            const QString attr = match.captured(1).trimmed().toLower();
+            const QString value = !match.captured(2).isEmpty() ? match.captured(2).trimmed().toLower() :
+                                      !match.captured(3).isEmpty() ? match.captured(3).trimmed().toLower() :
+                                      match.captured(4).trimmed().toLower();
+
+            attrs[attr] = value;
+        }
+
+        if (!attrs.contains("rel") || !attrs.contains("href"))
+        {
+            qWarning() << "Invalid link:" << link;
+            linkAttrs.erase(link);
+        }
+    }
+
+    QString bestLink;
+
+    for (const auto& [link, attrMap] : linkAttrs)
+    {
+        if (isBetterIconLink(link, bestLink, linkAttrs))
+            bestLink = link;
+    }
+
+    const auto bestAttrs = linkAttrs.at(bestLink);
+    const QString href = bestAttrs.contains("href") ? bestAttrs.at("href").trimmed().toLower() : "";
+    return href;
+}
+
+void LinkCardReader::favIconRequestFailed(QNetworkReply* reply, int errCode)
+{
+    mInProgress = nullptr;
+    const auto url = reply->request().url();
+    qDebug() << "Failed to get fav icon:" << url;
+    qDebug() << "Error:" << errCode << reply->errorString();
+    qDebug() << reply->readAll();
+
+    auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
+    Q_ASSERT(cookieJar);
+
+    if (!mRetry && cookieJar->setCookiesFromReply(*reply))
+    {
+        qDebug() << "Cookies stored, retry";
+        getFavIcon(url.toString(), true, mCookieSaveControl);
+    }
+    else if (!mCookieSaveControl)
+    {
+        qDebug() << "Retry with cookie save control on";
+        getFavIcon(url.toString(), false, true);
+    }
+    else
+    {
+        emit favIconFailed();
+    }
+}
+
+void LinkCardReader::favIconRequestSslFailed(QNetworkReply* reply)
+{
+    mInProgress = nullptr;
+    qDebug() << "SSL error, failed to get fav icon:" << reply->request().url();
+    emit favIconFailed();
 }
 
 }

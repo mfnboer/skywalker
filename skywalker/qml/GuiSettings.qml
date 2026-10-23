@@ -595,8 +595,20 @@ Item {
         return text
     }
 
-    function toHtmlLink(link) {
+    function toLinkDisplayText(link) {
         let text = stripHttpFromLink(link)
+
+        if (text.startsWith("www."))
+            text = text.slice(4)
+
+        if (text.endsWith("/"))
+            text = text.slice(0, -1)
+
+        return text
+    }
+
+    function toHtmlLink(link) {
+        let text = toLinkDisplayText(link)
         return `<a href="${link}" style="color: ${guiSettings.linkColor}; text-decoration: none">${text}</a>`
     }
 

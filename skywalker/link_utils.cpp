@@ -145,7 +145,12 @@ void LinkUtils::openLink(const QString& link, const QString& containingText, con
     }
 
     const QUrl url(link);
-    bool hostPresent = url.isValid() && containingText.contains(url.host(), Qt::CaseInsensitive);
+    QString host = url.host();
+
+    if (host.startsWith("www."))
+        host = host.slice(4);
+
+    bool hostPresent = url.isValid() && containingText.contains(host, Qt::CaseInsensitive);
     qDebug() << "LinkUtils is emitting webLink with hostPresent: " << hostPresent;
     emit webLink(link, containingText, hostPresent, warning);
 }

@@ -69,7 +69,7 @@ Flow {
             }
 
             function getDisplayText() {
-                return linkView.title ? linkView.title : linkView.url
+                return linkView.title ? linkView.title : guiSettings.toLinkDisplayText(linkView.url)
             }
 
             function getDisplayIconPrefix() {
