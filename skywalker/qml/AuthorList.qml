@@ -44,7 +44,8 @@ SkyListView {
     }
 
     function refresh() {
-        getAuthorListFunc(modelId)
+        if (modelId >= 0)
+            getAuthorListFunc(modelId)
     }
 
     function clear() {
