@@ -196,7 +196,7 @@ void Backlinks::getListsFromListItems(const std::vector<QString>& listItemUris, 
         return;
 
     repoMaster()->getRecords<ATProto::AppBskyGraph::ListItem>(listItemUris,
-        [this, presence=getPresence(), purpose, maxPages, minEntries, cursor, modelId](ATProto::AppBskyGraph::ListItem::List listItems){
+        [this, presence=getPresence(), purpose, maxPages, minEntries, cursor, modelId](auto listItemRecords){
             if (!presence)
                 return;
 
@@ -207,10 +207,12 @@ void Backlinks::getListsFromListItems(const std::vector<QString>& listItemUris, 
 
             std::unordered_set<QString> seenUris;
             std::vector<QString> uris;
-            uris.reserve(listItems.size());
+            uris.reserve(listItemRecords.size());
 
-            for (const auto& listItem : listItems)
+            for (const auto& listItemRecord : listItemRecords)
             {
+                ATProto::AppBskyGraph::ListItem::SharedPtr listItem = listItemRecord->mEntity;
+
                 if (!seenUris.contains(listItem->mList) &&
                     (std::is_same_v<ModelType, StarterPackListModel> || !model->containsUri(listItem->mList)))
                 {

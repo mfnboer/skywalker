@@ -23,6 +23,7 @@ SkyPage {
     property string authorWebsite
     property string authorAvatar
     property string authorBanner
+    property list<profilelinkview> authorLinks: author.links
     property actorstatusview authorStatus: author.actorStatus
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
     property string following: author.viewer.following
@@ -665,7 +666,8 @@ SkyPage {
                 topPadding: 10
                 userDid: page.userDid
                 author: page.author
-                visible: contentVisible() && author.links.length > 0
+                links: page.authorLinks
+                visible: contentVisible() && page.authorLinks.length > 0
             }
 
             AccessibleText {
@@ -1869,16 +1871,17 @@ SkyPage {
                 authorWebsite: authorWebsite,
                 authorAvatar: authorAvatar,
                 authorBanner: authorBanner,
-                authorVerified: authorVerified
+                authorVerified: authorVerified,
+                links: authorLinks
             })
-        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website) => {
-            skywalker.showStatusMessage(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
+        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website, links) => {
             authorName = name
             authorPronouns = pronouns
             authorDescription = description
             authorWebsite = website
             authorAvatar = avatar
             setAuthorBanner(banner)
+            authorLinks = links
 
             // NOTE: if avatar is an "image://" source, then the profile takes ownership
             skywalker.updateUserProfile(name, description, avatar, pronouns)

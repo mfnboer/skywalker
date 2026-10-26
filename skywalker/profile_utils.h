@@ -32,6 +32,9 @@ public:
                                    const QString& bannerImgSource, bool updateBanner,
                                    const QString& pronouns, const QString& website);
 
+    Q_INVOKABLE void updateProfileLinks(const QString& did, const ProfileLinkView::List& links,
+                                        const QStringList& uploadIcons);
+
     Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
     Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
     Q_INVOKABLE void undoLikeLabeler(const QString& likeUri);
@@ -54,6 +57,8 @@ signals:
     void updateProfileProgress(QString msg);
     void updateProfileOk();
     void updateProfileFailed(QString error);
+    void updateProfileLinksOk(bool partial);
+    void updateProfileLinksFailed(QString error);
     void getLabelerViewDetailedOk(LabelerViewDetailed);
     void getLabelerViewDetailedFailed(QString error);
     void likeLabelerOk(QString likeUri);
@@ -85,6 +90,11 @@ private:
                                ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
                                ATProto::Blob::SharedPtr bannerBlob, bool updateBanner,
                                const QString& pronouns, const QString& website);
+    void continueUpdateProfileLinks(const QString& did, const ProfileLinkView::List& links,
+                                    QStringList uploadIcons,
+                                    std::unordered_map<QString, ATProto::Blob::SharedPtr> iconBlobs = {});
+    void continueUpdateProfileLinks(const QString& did, const ProfileLinkView::List& links,
+                                    const std::unordered_map<QString, ATProto::Blob::SharedPtr>& iconBlobs);
     void continueSetPinnedPost(const QString& did, const QString& uri, const QString& cid);
     void continueUpdateStatus(const QString& did, const QString& uri, const QString& title,
                               const QString& description, QImage thumb, const QString& thumbUri, int durationMinutes);

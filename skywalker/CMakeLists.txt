@@ -777,6 +777,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ProfileLinks.qml
         SOURCES network_holder.h
         SOURCES network_holder.cpp
+        QML_FILES qml/ProfileLinkButton.qml
+        QML_FILES qml/EditProfileLinkButton.qml
+        QML_FILES qml/ProfileLinksSorter.qml
 )
 
 target_link_libraries(libskywalker

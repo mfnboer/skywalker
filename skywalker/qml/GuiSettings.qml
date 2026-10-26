@@ -598,10 +598,10 @@ Item {
     function toLinkDisplayText(link) {
         let text = stripHttpFromLink(link)
 
-        if (text.startsWith("www."))
+        if (text.length > 4 && text.startsWith("www."))
             text = text.slice(4)
 
-        if (text.endsWith("/"))
+        if (text.length > 1 && text.endsWith("/"))
             text = text.slice(0, -1)
 
         return text

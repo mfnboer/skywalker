@@ -97,15 +97,24 @@ void ImageReader::replyFinished(QNetworkReply* reply, const ImageAndFormatCb& im
         return;
     }
 
-    QImageReader reader(reply);
+    QByteArray data;
+    QBuffer dataBuffer(&data);
+
+    // ICO files cannot be read from a sequential device (needs to seek)
+    if (reply->request().url().toString().endsWith(".ico"))
+        data = reply->readAll();
+
+    QImageReader reader(data.isEmpty() ? (QIODevice*)reply : (QIODevice*)&dataBuffer);
     reader.setAutoTransform(true);
     QImage img = reader.read();
 
     if (img.isNull())
     {
-        qWarning() << "Failed to read:" << reply->request().url();
+        const QString error = reader.errorString();
+        qWarning() << "Failed to read:" << reply->request().url() << "error:" << error;
+
         if (errorCb)
-            errorCb(tr("Could not read image"));
+            errorCb(tr("Could not read image: %1").arg(error));
 
         return;
     }

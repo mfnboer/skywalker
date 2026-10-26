@@ -37,7 +37,6 @@ SkyPage {
                 id: rect
                 width: listView.width
                 height: row.height + 10
-                color: guiSettings.backgroundColor
 
                 Row {
                     id: row

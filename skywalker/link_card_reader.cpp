@@ -92,6 +92,15 @@ static QUrl cleanLink(const QString& link)
     return QUrl(cleanedLink);
 }
 
+void LinkCardReader::setInProgress(QNetworkReply* reply)
+{
+    if (mInProgress != reply)
+    {
+        mInProgress = reply;
+        emit inProgressChanged();
+    }
+}
+
 QNetworkReply* LinkCardReader::sendRequest(const QUrl& url, bool retry, bool cookieSaveControl)
 {
     QNetworkRequest request(url);
@@ -111,7 +120,7 @@ QNetworkReply* LinkCardReader::sendRequest(const QUrl& url, bool retry, bool coo
     //       For NYT and Reuters this is sufficient: Skywalker/version
 
     QNetworkReply* reply = mNetwork->get(request);
-    mInProgress = reply;
+    setInProgress(reply);
     mPrevDestination = url;
     mRetry = retry;
     mCookieSaveControl = cookieSaveControl;
@@ -126,7 +135,7 @@ void LinkCardReader::getLinkCard(const QString& link, bool retry, bool cookieSav
     if (mInProgress)
     {
         mInProgress->abort();
-        mInProgress = nullptr;
+        setInProgress(nullptr);
     }
 
     QUrl url = cleanLink(link);
@@ -237,6 +246,41 @@ static const std::vector<QRegularExpression>& getHtmlTitleREs()
     return htmlTitleREs;
 }
 
+bool LinkCardReader::retryHack(const QUrl& requestUrl, const QString& title, const GetFun& getFun)
+{
+    // HACK: for some reason Twitch does not give the linkcard for a channel on the first call
+    // NOTE: that a delay (500ms) is needed. Immediate retry does not work.
+    if (!mRetry && requestUrl.host().endsWith("twitch.tv") && title.toLower() == "twitch")
+    {
+        qDebug() << "Retry Twitch:" << requestUrl.toString();
+        QTimer::singleShot(500ms, this, [this, requestUrl, getFun]{ getFun(requestUrl.toString(), true, mCookieSaveControl); });
+        return true;
+    }
+
+    return false;
+}
+
+bool LinkCardReader::retryCookie(QNetworkReply* reply, const GetFun& getFun)
+{
+    auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
+    Q_ASSERT(cookieJar);
+
+    if (!mRetry && cookieJar->setCookiesFromReply(*reply))
+    {
+        qDebug() << "Cookies stored, retry";
+        getFun(reply->request().url().toString(), true, mCookieSaveControl);
+        return true;
+    }
+    else if (!mCookieSaveControl)
+    {
+        qDebug() << "Retry with cookie save control on";
+        getFun(reply->request().url().toString(), false, true);
+        return true;
+    }
+
+    return false;
+}
+
 void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 {
     static const std::vector<QRegularExpression>& ogTitleREs = getOgTitleREs();
@@ -288,7 +332,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         QRegularExpression(linkStandardSitePublication.arg('\''))
     };
 
-    mInProgress = nullptr;
+    setInProgress(nullptr);
 
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -312,16 +356,13 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     qDebug() << QString(data.sliced(0, std::min(data.size(), (qsizetype)1024)));
     QString imgUrlString = matchRegexes(ogImageREs, data, "image");
     qDebug() << "img url:" << imgUrlString;
-    const auto& url = reply->request().url();
+    const auto& requestUrl = reply->request().url();
 
-    // HACK: for some reason Twitch does not give the linkcard for a channel on the first call
-    // NOTE: that a delay (500ms) is needed. Immediate retry does not work.
-    if (!mRetry && url.host().endsWith("twitch.tv") && card->getTitle().toLower() == "twitch")
-    {
-        qDebug() << "Retry Twitch:" << url.toString();
-        QTimer::singleShot(500ms, this, [this, url]{ getLinkCard(url.toString(), true, mCookieSaveControl); });
+    auto getFun = [this](const QString& url, bool retry, bool cookieSaveControl){
+        getLinkCard(url, retry, cookieSaveControl); };
+
+    if (retryHack(requestUrl, card->getTitle(), getFun))
         return;
-    }
 
     // Washington post wraps the IMG url in a PHP query like this:
     // https://www.washingtonpost.com/wp-apps/imrs.php?src=https://<img-url>&w=1440
@@ -358,14 +399,14 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         {
             if (QDir::isAbsolutePath(imgUrlString))
             {
-                imgUrl.setHost(url.host());
-                imgUrl.setScheme(url.scheme());
-                imgUrl.setPort(url.port());
+                imgUrl.setHost(requestUrl.host());
+                imgUrl.setScheme(requestUrl.scheme());
+                imgUrl.setPort(requestUrl.port());
                 card->setThumb(imgUrl.toString());
             }
             else
             {
-                card->setThumb(url.toString() + imgUrlString);
+                card->setThumb(requestUrl.toString() + imgUrlString);
             }
 
             qDebug() << "Relative img url:" << imgUrlString << "url:" << imgUrl << "valid:" << imgUrl.isValid() << "thumb:" << card->getThumb();
@@ -383,19 +424,8 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
 
     if (card->isEmpty())
     {
-        auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
-        Q_ASSERT(cookieJar);
-
-        if (!mRetry && cookieJar->setCookiesFromReply(*reply))
+        if (retryCookie(reply, getFun))
         {
-            qDebug() << "Cookies stored, retry";
-            getLinkCard(url.toString(), true, mCookieSaveControl);
-            return;
-        }
-        else if (!mCookieSaveControl)
-        {
-            qDebug() << "Retry with cookie save control on";
-            getLinkCard(url.toString(), false, true);
             return;
         }
         else if (auto htmlTitle = matchRegexes(htmlTitleREs, data, "title"); !htmlTitle.isEmpty())
@@ -405,8 +435,8 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         }
         else
         {
-            mCardCache.insert(url, card.release());
-            qDebug() << url << "has no link card.";
+            mCardCache.insert(requestUrl, card.release());
+            qDebug() << requestUrl << "has no link card.";
             emit linkCardFailed();
             return;
         }
@@ -442,8 +472,8 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
         associatedUris.push_back(publicationUri);
     }
 
-    card->setLink(url.toString());
-    mCardCache.insert(url, card.get());
+    card->setLink(requestUrl.toString());
+    mCardCache.insert(requestUrl, card.get());
     getEmbedExternalView(card.release(), associatedUris);
 }
 
@@ -522,7 +552,7 @@ void LinkCardReader::getEmbedExternalView(LinkCard* card, const std::vector<QStr
 
 void LinkCardReader::linkCardRequestFailed(QNetworkReply* reply, int errCode)
 {
-    mInProgress = nullptr;
+    setInProgress(nullptr);
     const auto url = reply->request().url();
     qDebug() << "Failed to get link:" << url;
     qDebug() << "Error:" << errCode << reply->errorString();
@@ -549,7 +579,7 @@ void LinkCardReader::linkCardRequestFailed(QNetworkReply* reply, int errCode)
 
 void LinkCardReader::linkCardRequestSslFailed(QNetworkReply* reply)
 {
-    mInProgress = nullptr;
+    setInProgress(nullptr);
     qDebug() << "SSL error, failed to get link:" << reply->request().url();
     emit linkCardFailed();
 }
@@ -636,7 +666,7 @@ void LinkCardReader::getFavIcon(const QString& link, bool retry, bool cookieSave
     if (mInProgress)
     {
         mInProgress->abort();
-        mInProgress = nullptr;
+        setInProgress(nullptr);
     }
 
     QUrl url = cleanLink(link);
@@ -656,15 +686,23 @@ void LinkCardReader::getFavIcon(const QString& link, bool retry, bool cookieSave
 
     QNetworkReply* reply = sendRequest(url, retry, cookieSaveControl);
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply]{ extractFavIcon(reply); });
+    connect(reply, &QNetworkReply::finished, this, [this, link, reply]{ extractFavIcon(link, reply); });
     connect(reply, &QNetworkReply::errorOccurred, this, [this, reply](auto errCode){ favIconRequestFailed(reply, errCode); });
     connect(reply, &QNetworkReply::sslErrors, this, [this, reply]{ favIconRequestSslFailed(reply); });
     connect(reply, &QNetworkReply::redirected, this, [this, reply](const QUrl& url){ redirect(reply, url); });
 }
 
-void LinkCardReader::extractFavIcon(QNetworkReply* reply)
+static QString shortenTitle(const QString& title)
 {
-    mInProgress = nullptr;
+    // Shorten title by splitting on a separator symbol if possible
+    static const QRegularExpression TITLE_RE(R"(([^\-:\|—•\(]+)[\-:\|—•\()].*)");
+    const auto match = TITLE_RE.match(title);
+    return match.hasMatch() ? match.captured(1).trimmed() : title;
+}
+
+void LinkCardReader::extractFavIcon(const QString& link, QNetworkReply* reply)
+{
+    setInProgress(nullptr);
 
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -672,6 +710,7 @@ void LinkCardReader::extractFavIcon(QNetworkReply* reply)
         return;
     }
 
+    const auto& requestUrl = reply->request().url();
     const auto data = reply->readAll();
     QString iconUrlString = getIconUrl(data);
 
@@ -684,18 +723,26 @@ void LinkCardReader::extractFavIcon(QNetworkReply* reply)
     static const std::vector<QRegularExpression>& ogTitleREs = getOgTitleREs();
     QString title = matchRegexes(ogTitleREs, data, "title");
 
+    auto getFun = [this](const QString& url, bool retry, bool cookieSaveControl){
+        getFavIcon(url, retry, cookieSaveControl); };
+
+    if (retryHack(requestUrl, title, getFun))
+        return;
+
+    if (iconUrlString.isEmpty() && title.isEmpty())
+    {
+        if (retryCookie(reply, getFun))
+            return;
+    }
+
     if (title.isEmpty())
     {
         static const std::vector<QRegularExpression>& htmlTitleREs = getHtmlTitleREs();
         title = matchRegexes(htmlTitleREs, data, "title");
     }
 
-    // Shorten title by splitting on -, : or | if possible
-    static const QRegularExpression TITLE_RE(R"(([^\-:\|]+)[\-:\|].*)");
-    const auto match = TITLE_RE.match(title);
-
-    if (match.hasMatch())
-        title = match.captured(1).trimmed();
+    title = toPlainText(title.trimmed());
+    title = shortenTitle(title);
 
     if (iconUrlString.isEmpty() && title.isEmpty())
     {
@@ -703,7 +750,7 @@ void LinkCardReader::extractFavIcon(QNetworkReply* reply)
         emit favIconFailed();
     }
 
-    emit favIcon(title, iconUrlString);
+    emit favIcon(ProfileLinkView("", "", link, title, iconUrlString));
 }
 
 QString LinkCardReader::getIconUrl(const QByteArray& data)
@@ -723,8 +770,16 @@ QString LinkCardReader::getIconUrl(const QByteArray& data)
             if (!match.hasMatch())
                 continue;
 
+            const QString& link = match.captured();
+            qDebug() << "Link candidate:" << link;
             iconLinks.push_back(match.captured());
         }
+    }
+
+    if (iconLinks.empty())
+    {
+        qDebug() << "No links found";
+        return {};
     }
 
     return selectBestIconUrl(iconLinks);
@@ -775,10 +830,14 @@ static QString getImageType(const std::unordered_map<QString, QString>& linkAttr
 static bool isBetterIconLink(const QString& lhsLink, const QString& rhsLink,
                          const std::unordered_map<QString, std::unordered_map<QString, QString>>& linkAttrs)
 {
+    qDebug() << "lhs:" << lhsLink << "rhs:" << rhsLink;
     static const int PREFERRED_SIZE = 48;
 
     if (rhsLink.isEmpty())
         return true;
+
+    if (lhsLink.isEmpty())
+        return false;
 
     const auto& lhsAttrs = linkAttrs.at(lhsLink);
     const auto& rhsAttrs = linkAttrs.at(rhsLink);
@@ -868,27 +927,36 @@ static bool isBetterIconLink(const QString& lhsLink, const QString& rhsLink,
 
 QString LinkCardReader::selectBestIconUrl(const QStringList& iconLinks)
 {
-    static const QString attrReStr(R"([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s\"'>]+))");
-    static const QRegularExpression ATTR_RE(attrReStr);
+    static const QString attrReStr(R"(([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*%1([^%1]*)%1)");
+    static const std::vector<QRegularExpression> attrREs = {
+        QRegularExpression(attrReStr.arg('"')),
+        QRegularExpression(attrReStr.arg('\''))
+    };
 
     // link -> (attr, value)
     std::unordered_map<QString, std::unordered_map<QString, QString>> linkAttrs;
 
     for (const auto& link : iconLinks)
     {
+        qDebug() << "get attrs from:" << link;
         auto& attrs = linkAttrs[link];
 
-        for (const auto& match : ATTR_RE.globalMatch(link))
+        for (const auto& ATTR_RE : attrREs)
         {
-            if (!match.hasMatch())
-                continue;
+            for (const auto& match : ATTR_RE.globalMatch(link))
+            {
+                if (!match.hasMatch())
+                    continue;
 
-            const QString attr = match.captured(1).trimmed().toLower();
-            const QString value = !match.captured(2).isEmpty() ? match.captured(2).trimmed().toLower() :
-                                      !match.captured(3).isEmpty() ? match.captured(3).trimmed().toLower() :
-                                      match.captured(4).trimmed().toLower();
+                const QString attr = match.captured(1).trimmed().toLower();
+                QString value = match.captured(2).trimmed();
 
-            attrs[attr] = value;
+                if (attr != "href")
+                    value = value.toLower();
+
+                qDebug() << attr << "=" << value;
+                attrs[attr] = value;
+            }
         }
 
         if (!attrs.contains("rel") || !attrs.contains("href"))
@@ -902,18 +970,20 @@ QString LinkCardReader::selectBestIconUrl(const QStringList& iconLinks)
 
     for (const auto& [link, attrMap] : linkAttrs)
     {
+        qDebug() << link << "best:" << bestLink;
+
         if (isBetterIconLink(link, bestLink, linkAttrs))
             bestLink = link;
     }
 
     const auto bestAttrs = linkAttrs.at(bestLink);
-    const QString href = bestAttrs.contains("href") ? bestAttrs.at("href").trimmed().toLower() : "";
+    const QString href = getAttr(bestAttrs, "href");
     return href;
 }
 
 void LinkCardReader::favIconRequestFailed(QNetworkReply* reply, int errCode)
 {
-    mInProgress = nullptr;
+    setInProgress(nullptr);
     const auto url = reply->request().url();
     qDebug() << "Failed to get fav icon:" << url;
     qDebug() << "Error:" << errCode << reply->errorString();
@@ -940,9 +1010,14 @@ void LinkCardReader::favIconRequestFailed(QNetworkReply* reply, int errCode)
 
 void LinkCardReader::favIconRequestSslFailed(QNetworkReply* reply)
 {
-    mInProgress = nullptr;
+    setInProgress(nullptr);
     qDebug() << "SSL error, failed to get fav icon:" << reply->request().url();
     emit favIconFailed();
+}
+
+ProfileLinkView LinkCardReader::makeProfileLinkView(const QString& uri, const QString& cid, const QString& url, const QString& title, const QString& icon)
+{
+    return ProfileLinkView(uri, cid, url, title, icon);
 }
 
 }

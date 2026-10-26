@@ -13,6 +13,8 @@ SkyPage {
     required property string authorAvatar
     required property string authorBanner
     required property bool authorVerified
+    required property list<profilelinkview> links
+    property bool linkChangesMade: false
     property int imageType: QEnums.PHOTO_TYPE_AVATAR
     property string createdAvatarSource
     property string createdBannerSource
@@ -22,7 +24,8 @@ SkyPage {
     readonly property int usableHeight: height - (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
 
     signal closed
-    signal profileUpdated(string name, string description, string avatar, string banner, string pronouns, string website)
+    signal profileUpdated(string name, string description, string avatar, string banner,
+                          string pronouns, string website, list<profilelinkview> links)
 
     id: editProfilePage
     // width: parent.width
@@ -48,7 +51,11 @@ SkyPage {
 
             onClicked: {
                 updateProfileButton.enabled = false
-                updateProfile()
+
+                if (profileChangesMade())
+                    updateProfile()
+                else
+                    updateProfileLinks()
             }
         }
     }
@@ -271,7 +278,6 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Pronouns")
             }
 
@@ -302,7 +308,6 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Description")
             }
 
@@ -334,7 +339,6 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                color: guiSettings.textColor
                 text: qsTr("Website")
             }
 
@@ -345,6 +349,28 @@ SkyPage {
                 padding: 5
                 initialText: authorWebsite
                 placeholderText: qsTr("Your website")
+            }
+
+            AccessibleText {
+                Layout.fillWidth: true
+                topPadding: 10
+                font.bold: true
+                text: qsTr("Link buttons")
+            }
+
+            ProfileLinksSorter {
+                id: profileLinkSorter
+                Layout.fillWidth: true
+                Layout.preferredHeight: contentHeight
+                links: editProfilePage.links
+                onClicked: (index) => editProfilePage.editLink(index)
+                onOrderChanged: editProfilePage.checkLinkChangesMade()
+            }
+
+            SkyButton {
+                Layout.preferredHeight: 40
+                text: qsTr("Add link")
+                onClicked: editProfilePage.addLink()
             }
         }
     }
@@ -383,11 +409,75 @@ SkyPage {
 
         onUpdateProfileProgress: (msg) => editProfilePage.updateProfileProgress(msg)
         onUpdateProfileFailed: (error) => editProfilePage.updatProfileFailed(error)
-        onUpdateProfileOk: () => editProfilePage.updateProfileDone()
+        onUpdateProfileOk: () => editProfilePage.updateProfileOk()
+        onUpdateProfileLinksOk: (partial) => editProfilePage.updateProfileDone(partial)
+        onUpdateProfileLinksFailed: (error) => editProfilePage.updatProfileFailed(error)
     }
 
     VirtualKeyboardHandler {
         id: keyboardHandler
+    }
+
+    function addLink() {
+        let component = guiSettings.createComponent("EditProfileLinkButton.qml")
+        let dialog = component.createObject(editProfilePage, {})
+
+        dialog.onAccepted.connect(() => {
+                const linkView = dialog.getLinkView()
+
+                if (!linkView.isEmpty()) {
+                    let links = profileLinkSorter.getLinks()
+                    links.push(linkView)
+                    profileLinkSorter.links = links
+                    checkLinkChangesMade()
+                } else {
+                    console.warn("Empty link button")
+                }
+
+                dialog.close()
+            })
+        dialog.onRejected.connect(() => dialog.close())
+
+        dialog.open()
+    }
+
+    function editLink(linkIndex) {
+        const links = profileLinkSorter.getLinks()
+
+        if (linkIndex < 0 || linkIndex >= links.length) {
+            console.warn("Invalid link index:", linkIndex, "links:", links)
+            return
+        }
+
+        const linkView = links[linkIndex]
+        let component = guiSettings.createComponent("EditProfileLinkButton.qml")
+        let dialog = component.createObject(editProfilePage, { linkView: linkView })
+
+        dialog.onAccepted.connect(() => {
+                const linkView = dialog.getLinkView()
+
+                if (!linkView.isEmpty()) {
+                    let links = profileLinkSorter.getLinks()
+                    links[linkIndex] = linkView
+                    profileLinkSorter.links = links
+                    checkLinkChangesMade()
+                } else {
+                    console.warn("Empty link button")
+                }
+
+                dialog.close()
+            })
+        dialog.onDiscarded.connect(() => {
+                let links = profileLinkSorter.getLinks()
+                links.splice(linkIndex, 1)
+                profileLinkSorter.links = links
+                checkLinkChangesMade()
+
+                dialog.close()
+            })
+        dialog.onRejected.connect(() => dialog.close())
+
+        dialog.open()
     }
 
     function updateProfileProgress(msg) {
@@ -408,15 +498,61 @@ SkyPage {
                                    pronounsField.text.trim(), websiteField.getLink())
     }
 
-    function updateProfileDone() {
+    function updateProfileOk() {
+        if (linkChangesMade)
+            updateProfileLinks()
+        else
+            updateProfileDone(false)
+    }
+
+    function updateProfileDone(partial) {
         // Erase the created image sources such that the image will not be dropped
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
         createdBannerSource = ""
         skywalker.clearStatusMessage()
+
+        if (partial)
+            skywalker.showStatusMessage(qsTr("Failed to update all link buttons"), QEnums.STATUS_LEVEL_ERROR)
+        else
+            skywalker.showStatusMessage(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
+
         editProfilePage.profileUpdated(nameField.text.trim(), descriptionField.text.trim(),
                                        avatar.avatarUrl, banner.source,
-                                       pronounsField.text.trim(), websiteField.getLink())
+                                       pronounsField.text.trim(), websiteField.getLink(),
+                                       profileLinkSorter.getLinks())
+        // TODO: links should be modified when update was partial
+    }
+
+    function updateProfileLinks() {
+        let origIcons = new Set()
+        let origLinks = new Map()
+
+        for (const origLink of links) {
+            origIcons.add(origLink.icon)
+
+            if (origLink.uri)
+                origLinks.set(origLink.uri, origLink)
+        }
+
+        let newIcons = []
+        let newLinks = profileLinkSorter.getLinks()
+
+        for (const link of newLinks) {
+            if (!origIcons.has(link.icon)) {
+                console.debug("New icon:", link.icon)
+                newIcons.push(link.icon)
+            }
+
+            if (origLinks.has(link.uri)) {
+                const l = origLinks.get(link.uri)
+
+                if (!l.equals(link))
+                    link.setDirty(true)
+            }
+        }
+
+        profileUtils.updateProfileLinks(authorDid, newLinks, newIcons)
     }
 
     function pickAvatarPhoto() {
@@ -498,13 +634,35 @@ SkyPage {
         }
     }
 
-    function changesMade() {
+    function profileChangesMade() {
         return authorName !== nameField.text.trim() ||
                 authorDescription !== descriptionField.text.trim() ||
                 authorAvatar !== avatar.avatarUrl ||
                 authorBanner !== banner.source.toString() ||
                 authorPronouns !== pronounsField.text.trim() ||
                 authorWebsite !== websiteField.getLink()
+    }
+
+    function checkLinkChangesMade() {
+        const newLinks = profileLinkSorter.getLinks()
+
+        if (links.length !== newLinks.length) {
+            linkChangesMade = true
+            return
+        }
+
+        for (let i = 0; i < links.length; ++i) {
+            if (!links[i].equals(newLinks[i])) {
+                linkChangesMade = true
+                return
+            }
+        }
+
+        linkChangesMade = false
+    }
+
+    function changesMade() {
+        return profileChangesMade() || linkChangesMade
     }
 
     function allFieldsValid() {
@@ -546,6 +704,7 @@ SkyPage {
     }
 
     Component.onCompleted: {
+        checkLinkChangesMade()
         nameField.forceActiveFocus()
     }
 }

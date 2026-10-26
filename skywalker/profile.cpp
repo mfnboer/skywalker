@@ -328,12 +328,30 @@ ProfileLinkView::ProfileLinkView(const  ATProto::AppBskyActor::ProfileLinkView::
 {
 }
 
+ProfileLinkView::ProfileLinkView(const QString& uri, const QString& cid, const QString& url, const QString& title, const QString& icon) :
+    mUri(uri),
+    mCid(cid),
+    mUrl(url),
+    mTitle(title),
+    mIcon(icon)
+{
+}
+
 ContentLabelList ProfileLinkView::getContentLabels() const
 {
     if(!mLinkView)
         return {};
 
     return ContentFilter::getContentLabels(mLinkView->mLabels);
+}
+
+bool ProfileLinkView::equals(const  ProfileLinkView& other) const
+{
+    return getUri() == other.getUri() &&
+           getCid() == other.getCid() &&
+           getUrl() == other.getUrl() &&
+           getTitle() == other.getTitle() &&
+           getIcon() == other.getIcon();
 }
 
 QEnums::ContentVisibility ProfileLinkView::getContentVisibility(const ContentFilter* contentFilter, const BasicProfile& author) const

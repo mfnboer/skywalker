@@ -26,7 +26,6 @@ SkyPage {
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        spacing: 0
         boundsBehavior: Flickable.StopAtBounds
 
         model: DelegateModel {
@@ -38,7 +37,6 @@ SkyPage {
                 id: rect
                 width: listView.width
                 height: row.height + 10
-                color: guiSettings.backgroundColor
 
                 Row {
                     id: row

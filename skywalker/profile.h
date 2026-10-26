@@ -264,6 +264,7 @@ class ProfileLinkView
     Q_MOC_INCLUDE("content_filter.h")
 
     Q_GADGET
+    Q_PROPERTY(int MAX_GRAPHEMES_TITLE MEMBER MAX_GRAPHEMES_TITLE CONSTANT)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QString url READ getUrl FINAL)
@@ -275,21 +276,35 @@ class ProfileLinkView
 public:
     using List = QList<ProfileLinkView>;
 
+    static constexpr int MAX_GRAPHEMES_TITLE = ATProto::AppBskyActor::Link::MAX_GRAPHEMES_TITLE;
+
     ProfileLinkView() = default;
     explicit ProfileLinkView(const  ATProto::AppBskyActor::ProfileLinkView::SharedPtr& linkView);
+    ProfileLinkView(const QString& uri, const QString& cid, const QString& url, const QString& title, const QString& icon);
 
-    QString getUri() const { return mLinkView ? mLinkView->mUri : ""; }
-    QString getCid() const { return mLinkView ? mLinkView->mCid : ""; }
-    QString getUrl() const { return mLinkView ? mLinkView->mUrl : ""; }
-    QString getTitle() const { return mLinkView ? mLinkView->mTitle.value_or("") : ""; }
-    QString getIcon() const { return mLinkView ? mLinkView->mIcon.value_or("") : ""; }
+    QString getUri() const { return mLinkView ? mLinkView->mUri : mUri; }
+    QString getCid() const { return mLinkView ? mLinkView->mCid : mCid; }
+    QString getUrl() const { return mLinkView ? mLinkView->mUrl : mUrl; }
+    QString getTitle() const { return mLinkView ? mLinkView->mTitle.value_or("") : mTitle; }
+    QString getIcon() const { return mLinkView ? mLinkView->mIcon.value_or("") : mIcon; }
     ContentLabelList getContentLabels() const;
 
+    Q_INVOKABLE bool isEmpty() const { return getTitle().isEmpty() && getIcon().isEmpty(); }
+    Q_INVOKABLE bool equals(const  ProfileLinkView& other) const;
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentFilter* contentFilter, const BasicProfile& author) const;
     Q_INVOKABLE QString getContentWarning(const ContentFilter* contentFilter, const BasicProfile& author) const;
 
+    bool isDirty() const { return mDirty; }
+    Q_INVOKABLE void setDirty(bool dirty) { mDirty = dirty; }
+
 private:
     ATProto::AppBskyActor::ProfileLinkView::SharedPtr mLinkView;
+    QString mUri;
+    QString mCid;
+    QString mUrl;
+    QString mTitle;
+    QString mIcon;
+    bool mDirty = false; // used for updating links
 };
 
 class BasicProfile

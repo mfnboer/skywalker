@@ -52,7 +52,7 @@ bool LinkUtils::isWebLink(const QString& link)
         return false;
 
     const QUrl url(link);
-    return url.isValid() && (url.scheme() == "https" || url.scheme() == "http");
+    return url.isValid() && isDomain(url.host()) && (url.scheme() == "https" || url.scheme() == "http");
 }
 
 bool LinkUtils::hasScheme(const QString& link)

@@ -18,6 +18,7 @@ const QStringList SCOPE = {
     "account:email?action=read",
 
     "repo:app.bsky.actor.contentVisibilityDeclaration",
+    "repo:app.bsky.actor.link",
     "repo:app.bsky.actor.profile",
     "repo:app.bsky.actor.status",
     "repo:app.bsky.feed.like",
@@ -178,7 +179,7 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "rpc:app.bsky.graph.searchStarterPacksV2?aud=*",
+        "repo:app.bsky.actor.link",
         "Please login again to get the latest features."
     }};
 }

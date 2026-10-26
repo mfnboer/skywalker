@@ -1,10 +1,16 @@
 import QtQuick
+import skywalker
 
 Rectangle {
     required property var modelData
     property int visualIndex: DelegateModel.itemsIndex
+    property Skywalker skywalker: root.getSkywalker()
+
+    signal clicked
+    signal dragged
 
     id: rect
+    color: guiSettings.backgroundColor
 
     Drag.active: mouseArea.drag.active
     Drag.source: rect
@@ -14,7 +20,7 @@ Rectangle {
         anchors.fill: parent
 
         onEntered: (drag) => {
-                       console.debug("Entered:", parent.modelData.name, "src:", drag.source.modelData.name)
+                       console.debug("Entered:", parent.modelData, "src:", drag.source.modelData)
                        drag.source.setDragStartingPoint(parent)
                        visualModel.items.move(drag.source.visualIndex, parent.visualIndex)
                    }
@@ -53,7 +59,10 @@ Rectangle {
                 parent.restoreDragStartingPoint()
                 parent.color = guiSettings.backgroundColor
                 drag.target = undefined
+                rect.dragged()
             }
         }
+
+        onClicked: rect.clicked()
     }
 }

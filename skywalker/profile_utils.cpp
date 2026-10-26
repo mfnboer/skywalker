@@ -236,6 +236,125 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         });
 }
 
+void ProfileUtils::updateProfileLinks(const QString& did, const ProfileLinkView::List& links,
+                                      const QStringList& uploadIcons)
+{
+    qDebug() << "Update links:" << did << "links:" << links.size();
+
+    if (!bskyClient())
+        return;
+
+    continueUpdateProfileLinks(did, links, uploadIcons);
+}
+
+void ProfileUtils::continueUpdateProfileLinks(
+    const QString& did, const ProfileLinkView::List& links,
+    QStringList uploadIcons,
+    std::unordered_map<QString, ATProto::Blob::SharedPtr> iconBlobs)
+{
+    qDebug() << "Upload icons:" << uploadIcons.size() << "did:" << did;;
+
+    if (uploadIcons.empty())
+    {
+        continueUpdateProfileLinks(did, links, iconBlobs);
+        return;
+    }
+
+    emit updateProfileProgress(tr("Uploading icons: %1").arg(uploadIcons.size()));
+
+    const QString iconSrc = uploadIcons.back();
+    uploadIcons.pop_back();
+
+    imageReader()->getImageFromWeb(iconSrc,
+        [this, presence=getPresence(), did, links, uploadIcons, iconBlobs, iconSrc](QImage img, const QString& /*format*/){
+            if (!presence)
+                return;
+
+            QByteArray blob;
+            const auto [mimeType, imgSize] = PhotoPicker::createBlob(
+                blob, ATProto::AppBskyActor::Link::MAX_BYTES_ICON, img);
+
+            if (blob.isEmpty())
+            {
+                emit updateProfileLinksFailed(tr("Could not load icon image"));
+                return;
+            }
+
+            bskyClient()->uploadBlob(blob, mimeType,
+                [this, presence=getPresence(), did, links, uploadIcons, iconBlobs, iconSrc](auto blob){
+                    if (!presence)
+                        return;
+
+                    std::unordered_map<QString, ATProto::Blob::SharedPtr> newIconBlobs = iconBlobs;
+                    newIconBlobs[iconSrc] = blob;
+                    continueUpdateProfileLinks(did, links, uploadIcons, newIconBlobs);
+                },
+                [this, presence=getPresence()](const QString& error, const QString& msg){
+                    if (!presence)
+                        return;
+
+                    qWarning() << "Update link icon blob failed:" << error << " - " << msg;
+                    emit updateProfileLinksFailed(msg);
+                });
+        },
+        [this, presence=getPresence()](const QString& error){
+            if (!presence)
+                return;
+
+            qWarning() << "Get link icon failed:" << error;
+            emit updateProfileLinksFailed(error);
+        });
+}
+
+void ProfileUtils::continueUpdateProfileLinks(
+    const QString& did, const ProfileLinkView::List& links,
+    const std::unordered_map<QString, ATProto::Blob::SharedPtr>& iconBlobs)
+{
+    qDebug() << "Update links:" << did << "blobs:" << iconBlobs.size();
+    emit updateProfileProgress(tr("Updating profile links"));
+
+    ATProto::ProfileMaster::Link::List profileLinks;
+    profileLinks.reserve(links.size());
+
+    for (const auto& link : links)
+    {
+        ATProto::ProfileMaster::Link profileLink;
+        profileLink.mUri = link.getUri();
+        profileLink.mCid = link.getCid();
+
+        // TODO: labels
+        auto record = std::make_shared<ATProto::AppBskyActor::Link>();
+        record->mUrl = link.getUrl();
+        ATProto::setOptionalString(record->mTitle, link.getTitle());
+        record->mCreatedAt = QDateTime::currentDateTimeUtc();
+
+        if (iconBlobs.contains(link.getIcon()))
+        {
+            record->mIcon = iconBlobs.at(link.getIcon());
+            profileLink.mHasNewIcon = true;
+        }
+
+        profileLink.mUpdate = link.isDirty();
+        profileLink.mLink = record;
+        profileLinks.push_back(profileLink);
+    }
+
+    profileMaster()->updateLinks(did, profileLinks,
+        [this, presence=getPresence()](bool partial){
+            if (!presence)
+                return;
+
+            emit updateProfileLinksOk(partial);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Failed to update links:" << error << "-" << msg;
+            emit updateProfileLinksFailed(msg);
+        });
+}
+
 void ProfileUtils::getLabelerViewDetailed(const QString& did)
 {
     if (!bskyClient())
