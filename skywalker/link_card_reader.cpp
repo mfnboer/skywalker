@@ -55,12 +55,17 @@ public:
     }
 };
 
+// NOTE: we cannot use the NetworkAccessManager from NetworkHolder.
+// We need an isolated NAM to handle the cookies.
 LinkCardReader::LinkCardReader(QObject* parent):
     WrappedSkywalker(parent),
-    mNetwork(NetworkHolder::network()),
+    mNetwork(new QNetworkAccessManager(this)),
     mCardCache(100),
     mGifUtils(this)
 {
+    mNetwork->setAutoDeleteReplies(true);
+    mNetwork->setAutoDeleteReplies(10000);
+
     QLocale locale;
     mAcceptLanguage = QString("%1_%2, *;q=0.5").arg(
         QLocale::languageToCode(locale.language()),
@@ -586,6 +591,7 @@ void LinkCardReader::linkCardRequestSslFailed(QNetworkReply* reply)
 
 void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
 {
+    qDebug() << "Status:" << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
     qDebug() << "Prev url:" << mPrevDestination;
     qDebug() << "Redirect url:" << redirectUrl;
 
@@ -604,9 +610,10 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
     }
 
     // For DPG media
-    auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
-    Q_ASSERT(cookieJar);
-    cookieJar->setCookiesFromReply(*reply);
+    // 27-10-26: It seems this is not needed anymore. It breaks link cards from YouTube Shorts!
+    // auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
+    // Q_ASSERT(cookieJar);
+    // cookieJar->setCookiesFromReply(*reply);
 
     mPrevDestination = redirectUrl;
 }
