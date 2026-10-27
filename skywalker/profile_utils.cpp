@@ -322,7 +322,6 @@ void ProfileUtils::continueUpdateProfileLinks(
         profileLink.mUri = link.getUri();
         profileLink.mCid = link.getCid();
 
-        // TODO: labels
         auto record = std::make_shared<ATProto::AppBskyActor::Link>();
         record->mUrl = link.getUrl();
         ATProto::setOptionalString(record->mTitle, link.getTitle());
@@ -335,16 +334,19 @@ void ProfileUtils::continueUpdateProfileLinks(
         }
 
         profileLink.mUpdate = link.isDirty();
-        profileLink.mLink = record;
+        profileLink.mLink = std::move(record);
         profileLinks.push_back(profileLink);
     }
 
     profileMaster()->updateLinks(did, profileLinks,
-        [this, presence=getPresence()](bool partial){
+        [this, presence=getPresence(), linkSize=profileLinks.size()](bool partial, ATProto::ComATProtoRepo::StrongRef::List linkRefs){
             if (!presence)
                 return;
 
-            emit updateProfileLinksOk(partial);
+            const auto refs = StrongRef::makeList(linkRefs);
+            const bool partialUpdate = partial || (refs.size() != (int)linkSize);
+
+            emit updateProfileLinksOk(partialUpdate, refs);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)

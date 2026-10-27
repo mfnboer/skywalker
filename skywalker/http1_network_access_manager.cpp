@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "http1_network_access_manager.h"
+#include "network_utils.h"
 #include "skywalker.h"
 
 namespace Skywalker {
@@ -11,7 +12,8 @@ QNetworkReply* Http1NetworkAccessManager::createRequest(Operation op, const QNet
     QNetworkRequest request(req);
 
     // Some image servers don't support HTTP/2, e.g. www.itmagazine.ch
-    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+    if (NetworkUtils::hostNeedsHttp1(req.url()))
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
 
     // Required for www.itmagazine.ch
     request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8());

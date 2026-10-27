@@ -45,6 +45,15 @@ SkyPage {
                     width: parent.width - 20
                     spacing: 5
 
+                    SkySvg {
+                        id: dragIcon
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: height
+                        width: parent.height
+                        height: width
+                        svg: SvgOutline.dragIndicator
+                    }
+
                     Avatar {
                         id: avatar
                         anchors.verticalCenter: parent.verticalCenter
@@ -55,7 +64,8 @@ SkyPage {
 
                     AccessibleText {
                         anchors.verticalCenter: parent.verticalCenter
-                        color: guiSettings.textColor
+                        width: parent.width - avatar.width - dragIcon.width - parent.spacing * 2
+                        elide: Text.ElideRight
                         text: modelData.feedName
                     }
                 }

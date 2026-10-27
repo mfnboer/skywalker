@@ -9,6 +9,8 @@ namespace Skywalker {
 class StrongRef
 {
     Q_GADGET
+    Q_PROPERTY(QString uri READ getUri FINAL)
+    Q_PROPERTY(QString cid READ getCid FINAL)
     QML_VALUE_TYPE(strongref)
 
 public:

@@ -1874,7 +1874,7 @@ SkyPage {
                 authorVerified: authorVerified,
                 links: authorLinks
             })
-        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website, links) => {
+        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website, links, partial) => {
             authorName = name
             authorPronouns = pronouns
             authorDescription = description
@@ -1887,6 +1887,12 @@ SkyPage {
             skywalker.updateUserProfile(name, description, avatar, pronouns)
 
             root.popStack()
+
+            // HACK: after a parital update the information on this page is incorrect.
+            // Should not happen often, let's close for now instead of rebuilding the current
+            // information (profile link buttons)
+            if (partial)
+                page.closed()
         })
         editPage.onClosed.connect(() => { root.popStack() })
         root.pushStack(editPage)

@@ -25,7 +25,8 @@ SkyPage {
 
     signal closed
     signal profileUpdated(string name, string description, string avatar, string banner,
-                          string pronouns, string website, list<profilelinkview> links)
+                          string pronouns, string website, list<profilelinkview> links,
+                          bool partial)
 
     id: editProfilePage
     // width: parent.width
@@ -340,8 +341,10 @@ SkyPage {
                 topPadding: 10
                 font.bold: true
                 text: qsTr("Website")
+                visible: authorWebsite
             }
 
+            // Deprecated. Allow users to clear the field.
             SkyWebLinkInput {
                 id: websiteField
                 Layout.fillWidth: true
@@ -349,6 +352,7 @@ SkyPage {
                 padding: 5
                 initialText: authorWebsite
                 placeholderText: qsTr("Your website")
+                visible: authorWebsite
             }
 
             AccessibleText {
@@ -371,6 +375,7 @@ SkyPage {
                 Layout.preferredHeight: 40
                 text: qsTr("Add link")
                 onClicked: editProfilePage.addLink()
+                enabled: profileLinkSorter.links.length < profileUtils.MAX_PROFILE_LINKS
             }
         }
     }
@@ -410,8 +415,13 @@ SkyPage {
         onUpdateProfileProgress: (msg) => editProfilePage.updateProfileProgress(msg)
         onUpdateProfileFailed: (error) => editProfilePage.updatProfileFailed(error)
         onUpdateProfileOk: () => editProfilePage.updateProfileOk()
-        onUpdateProfileLinksOk: (partial) => editProfilePage.updateProfileDone(partial)
+        onUpdateProfileLinksOk: (partial,refs) => editProfilePage.updateProfileDone(partial, refs)
         onUpdateProfileLinksFailed: (error) => editProfilePage.updatProfileFailed(error)
+    }
+
+    LinkCardReader {
+        id: linkCardReader
+        skywalker: editProfilePage.skywalker
     }
 
     VirtualKeyboardHandler {
@@ -426,10 +436,14 @@ SkyPage {
                 const linkView = dialog.getLinkView()
 
                 if (!linkView.isEmpty()) {
-                    let links = profileLinkSorter.getLinks()
-                    links.push(linkView)
-                    profileLinkSorter.links = links
-                    checkLinkChangesMade()
+                    if (profileLinkSorter.containsLink(linkView.url)) {
+                        skywalker.showStatusMessage(qsTr("Link already added"), QEnums.STATUS_LEVEL_ERROR)
+                    } else {
+                        let links = profileLinkSorter.getLinks()
+                        links.push(linkView)
+                        profileLinkSorter.links = links
+                        checkLinkChangesMade()
+                    }
                 } else {
                     console.warn("Empty link button")
                 }
@@ -457,10 +471,14 @@ SkyPage {
                 const linkView = dialog.getLinkView()
 
                 if (!linkView.isEmpty()) {
-                    let links = profileLinkSorter.getLinks()
-                    links[linkIndex] = linkView
-                    profileLinkSorter.links = links
-                    checkLinkChangesMade()
+                    if (profileLinkSorter.containsLink(linkView.url, linkIndex)) {
+                        skywalker.showStatusMessage(qsTr("Link already added"), QEnums.STATUS_LEVEL_ERROR)
+                    } else {
+                        let links = profileLinkSorter.getLinks()
+                        links[linkIndex] = linkView
+                        profileLinkSorter.links = links
+                        checkLinkChangesMade()
+                    }
                 } else {
                     console.warn("Empty link button")
                 }
@@ -505,23 +523,49 @@ SkyPage {
             updateProfileDone(false)
     }
 
-    function updateProfileDone(partial) {
+    function updateProfileDone(partial, refs = []) {
         // Erase the created image sources such that the image will not be dropped
         // from the image provider in Component.onDestruction
         createdAvatarSource = ""
         createdBannerSource = ""
-        skywalker.clearStatusMessage()
 
         if (partial)
             skywalker.showStatusMessage(qsTr("Failed to update all link buttons"), QEnums.STATUS_LEVEL_ERROR)
         else
             skywalker.showStatusMessage(qsTr("Profile updated."), QEnums.STATUS_LEVEL_INFO, 2)
 
+        const updatedLinks = getUpdatedLinks(refs)
+
         editProfilePage.profileUpdated(nameField.text.trim(), descriptionField.text.trim(),
                                        avatar.avatarUrl, banner.source,
                                        pronounsField.text.trim(), websiteField.getLink(),
-                                       profileLinkSorter.getLinks())
-        // TODO: links should be modified when update was partial
+                                       updatedLinks, partial)
+    }
+
+    function getUpdatedLinks(refs) {
+        let links = profileLinkSorter.getLinks()
+
+        if (!refs)
+            return links
+
+        let updatedLinks = []
+
+        for (let i = 0; i < Math.min(refs.length, links.length); ++i) {
+            let link = links[i]
+            const ref = refs[i]
+
+            if (!link.uri) {
+                const createdLink = linkCardReader.makeProfileLinkView(ref.uri, ref.cid, link.url, link.title, link.icon)
+                updatedLinks.push(createdLink)
+            } else {
+                if (link.uri !== ref.uri || link.cid !== ref.cid)
+                    console.warn("Ref mismatch:" << ref << "link:" << link)
+
+                updatedLinks.push(link)
+            }
+        }
+
+        return updatedLinks
     }
 
     function updateProfileLinks() {

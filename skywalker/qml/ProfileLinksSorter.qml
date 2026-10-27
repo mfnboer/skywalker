@@ -23,14 +23,28 @@ SkyListView {
             onClicked: listView.clicked(visualIndex)
             onDragged: listView.orderChanged()
 
-            ProfileLinkButton {
-                id: linkButton
+            Row {
                 anchors.verticalCenter: parent.verticalCenter
-                linkView: rect.modelData
-                enabled: false
-                visibility: QEnums.CONTENT_VISIBILITY_SHOW
+
+                SkySvg {
+                    width: height
+                    height: linkButton.height
+                    svg: SvgOutline.dragIndicator
+                }
+
+                ProfileLinkButton {
+                    id: linkButton
+                    linkView: rect.modelData
+                    enabled: false
+                    visibility: QEnums.CONTENT_VISIBILITY_SHOW
+                }
             }
         }
+    }
+
+    LinkUtils {
+        id: linkUtils
+        skywalker: listView.skywalker
     }
 
     function getLinks() {
@@ -42,5 +56,21 @@ SkyListView {
         }
 
         return links
+    }
+
+    function containsLink(url, skipIndex = -1) {
+        const links = getLinks()
+
+        for (let i = 0; i < links.length; ++i) {
+            if (i === skipIndex)
+                continue
+
+            const link = links[i]
+
+            if (linkUtils.equalLinks(url, link.url))
+                return true
+        }
+
+        return false
     }
 }

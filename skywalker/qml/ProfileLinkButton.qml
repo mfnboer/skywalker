@@ -8,48 +8,63 @@ Rectangle {
     signal clicked
 
     id: linkRect
-    width: link.width + (linkIcon.active ? link.height + 2 : 0) + 10
+    width: link.width + linkIcon.width + 2 + 20
     height: link.height + 4
     radius: height / 2
     color: guiSettings.linkButtonColor
 
-    Loader {
+    Item {
         id: linkIcon
-        x: 5
+        x: 10
         y: 4
-        active: linkRect.linkView.icon && linkRect.visibility === QEnums.CONTENT_VISIBILITY_SHOW
-        asynchronous: true
-        visible: status == Loader.Ready
+        width: height
+        height: link.height - 4
 
-        sourceComponent: RoundCornerMask {
-            width: height
-            height: link.height - 4
-            cornerRadius: width * 0.1
-            maskColor: linkRect.color
+        Loader {
+            active: linkRect.linkView.icon && linkRect.visibility === QEnums.CONTENT_VISIBILITY_SHOW
+            asynchronous: true
+            visible: status == Loader.Ready
 
-            ImageAutoRetry {
-                id: iconImg
-                anchors.fill: parent
-                sourceSize.width: width * Screen.devicePixelRatio
-                sourceSize.height: height * Screen.devicePixelRatio
-                source: linkRect.linkView.icon
-                fillMode: Image.PreserveAspectFit
-                indicateLoading: false
+            sourceComponent: RoundCornerMask {
+                width: linkIcon.width
+                height: linkIcon.height
+                cornerRadius: width * 0.15
+                maskColor: linkRect.color
+
+                ImageAutoRetry {
+                    id: iconImg
+                    anchors.fill: parent
+                    sourceSize.width: width * Screen.devicePixelRatio
+                    sourceSize.height: height * Screen.devicePixelRatio
+                    source: linkRect.linkView.icon
+                    fillMode: Image.PreserveAspectFit
+                    indicateLoading: false
+                }
+            }
+        }
+
+        Loader {
+            anchors.centerIn: parent
+            active: !linkRect.linkView.icon || linkRect.visibility !== QEnums.CONTENT_VISIBILITY_SHOW
+            visible: status == Loader.Ready
+
+            sourceComponent: AccessibleText {
+                text: visibility === QEnums.CONTENT_VISIBILITY_SHOW ? "🌐" : "⚠️"
             }
         }
     }
 
     SkyLabel {
         id: link
-        anchors.left: linkIcon.active ? linkIcon.right : linkIcon.left
-        anchors.leftMargin: linkIcon.active ? 2 : 0
+        anchors.left: linkIcon.right
+        anchors.leftMargin: 2
         y: 2
         width: Math.min(implicitWidth, guiSettings.maxLinkButtonWidth)
         backgroundColor: "transparent"
         font.pointSize: guiSettings.linkButtonFontSize
         font.weight: Font.Medium
         elide: Text.ElideRight
-        text: getDisplayIconPrefix() + getDisplayText()
+        text: getDisplayText()
     }
 
     SkyMouseArea {
@@ -60,12 +75,5 @@ Rectangle {
 
     function getDisplayText() {
         return linkView.title ? linkView.title : guiSettings.toLinkDisplayText(linkView.url)
-    }
-
-    function getDisplayIconPrefix() {
-        if (visibility === QEnums.CONTENT_VISIBILITY_SHOW)
-            return linkView.icon ? "" : "🌐 "
-
-        return "⚠️ "
     }
 }

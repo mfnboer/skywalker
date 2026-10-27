@@ -695,7 +695,7 @@ void LinkCardReader::getFavIcon(const QString& link, bool retry, bool cookieSave
 static QString shortenTitle(const QString& title)
 {
     // Shorten title by splitting on a separator symbol if possible
-    static const QRegularExpression TITLE_RE(R"(([^\-:\|—•\(]+)[\-:\|—•\()].*)");
+    static const QRegularExpression TITLE_RE(R"(([^\-:\|—•·\(]+)[\-:\|—•·\()].*)");
     const auto match = TITLE_RE.match(title);
     return match.hasMatch() ? match.captured(1).trimmed() : title;
 }
@@ -831,7 +831,7 @@ static bool isBetterIconLink(const QString& lhsLink, const QString& rhsLink,
                          const std::unordered_map<QString, std::unordered_map<QString, QString>>& linkAttrs)
 {
     qDebug() << "lhs:" << lhsLink << "rhs:" << rhsLink;
-    static const int PREFERRED_SIZE = 48;
+    static const int PREFERRED_SIZE = 48 * 4;
 
     if (rhsLink.isEmpty())
         return true;

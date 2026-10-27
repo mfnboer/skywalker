@@ -908,7 +908,5 @@ Column {
             setVideoSource()
         else if (autoPlay)
             videoPlayer.start()
-
-        console.debug("MICHEL:", videoRect.width, videoRect.height, videoView.width, videoView.height)
     }
 }

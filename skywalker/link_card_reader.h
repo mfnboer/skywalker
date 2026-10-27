@@ -31,7 +31,7 @@ public:
     Q_INVOKABLE LinkCard* makeLinkCard(const QString& link, const QString& title,
                                   const QString& description, const QString& thumb);
     Q_INVOKABLE void getFavIcon(const QString& link, bool retry = false, bool cookieSaveControl = false);
-    Q_INVOKABLE ProfileLinkView makeProfileLinkView(const QString& uri, const QString& cid, const QString& url, const QString& title, const QString& icon);
+    Q_INVOKABLE static ProfileLinkView makeProfileLinkView(const QString& uri, const QString& cid, const QString& url, const QString& title, const QString& icon);
 
 signals:
     void linkCard(LinkCard*);

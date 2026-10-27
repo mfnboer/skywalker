@@ -1264,20 +1264,7 @@ void PostUtils::batchDeletePosts(const QStringList& postUris)
     ATProto::ComATProtoRepo::ApplyWritesList writes;
 
     for (const auto& uri : postUris)
-    {
-        const ATProto::ATUri atUri(uri);
-
-        if (!atUri.isValid())
-        {
-            qWarning() << "Invalid post URI:" << uri;
-            continue;
-        }
-
-        auto deleteRecord = std::make_shared<ATProto::ComATProtoRepo::ApplyWritesDelete>();
-        deleteRecord->mCollection = atUri.getCollection();
-        deleteRecord->mRKey = atUri.getRkey();
-        writes.push_back(std::move(deleteRecord));
-    }
+        ATProto::RepoMaster::addDeleteByUri(writes, uri);
 
     const QString& repo = mSkywalker->getUserDid();
 

@@ -264,7 +264,6 @@ class ProfileLinkView
     Q_MOC_INCLUDE("content_filter.h")
 
     Q_GADGET
-    Q_PROPERTY(int MAX_GRAPHEMES_TITLE MEMBER MAX_GRAPHEMES_TITLE CONSTANT)
     Q_PROPERTY(QString uri READ getUri FINAL)
     Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QString url READ getUrl FINAL)
@@ -275,8 +274,6 @@ class ProfileLinkView
 
 public:
     using List = QList<ProfileLinkView>;
-
-    static constexpr int MAX_GRAPHEMES_TITLE = ATProto::AppBskyActor::Link::MAX_GRAPHEMES_TITLE;
 
     ProfileLinkView() = default;
     explicit ProfileLinkView(const  ATProto::AppBskyActor::ProfileLinkView::SharedPtr& linkView);

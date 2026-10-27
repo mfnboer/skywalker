@@ -4,6 +4,7 @@
 #include "labeler.h"
 #include "presence.h"
 #include "profile.h"
+#include "strong_ref.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/post_master.h>
 #include <atproto/lib/profile_master.h>
@@ -15,9 +16,12 @@ class ImageReader;
 class ProfileUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
+    Q_PROPERTY(int MAX_PROFILE_LINKS MEMBER MAX_PROFILE_LINKS CONSTANT)
     QML_ELEMENT
 
 public:
+    static constexpr int MAX_PROFILE_LINKS = ATProto::AppBskyActor::Profile::MAX_LINKS;
+
     explicit ProfileUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE void getBasicProfile(const QString& did);
@@ -57,7 +61,7 @@ signals:
     void updateProfileProgress(QString msg);
     void updateProfileOk();
     void updateProfileFailed(QString error);
-    void updateProfileLinksOk(bool partial);
+    void updateProfileLinksOk(bool partial, StrongRef::List refs);
     void updateProfileLinksFailed(QString error);
     void getLabelerViewDetailedOk(LabelerViewDetailed);
     void getLabelerViewDetailedFailed(QString error);

@@ -39,4 +39,9 @@ bool isUnmetered()
 #endif
 }
 
+bool hostNeedsHttp1(const QUrl& url)
+{
+    return url.host().endsWith("itmagazine.ch");
+}
+
 }

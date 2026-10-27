@@ -2,6 +2,7 @@
 // License: GPLv3
 #include "image_reader.h"
 #include "network_holder.h"
+#include "network_utils.h"
 #include "photo_picker.h"
 #include "skywalker.h"
 #include <QImageReader>
@@ -75,7 +76,8 @@ QNetworkReply* ImageReader::sendRequest(const QUrl& url)
     QNetworkRequest request(url);
 
     // Some image servers don't support HTTP/2, e.g. www.itmagazine.ch
-    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
+    if (NetworkUtils::hostNeedsHttp1(url))
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, false);
 
     // Required for www.itmagazine.ch
     request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8());

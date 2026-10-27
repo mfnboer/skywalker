@@ -103,12 +103,18 @@ SkyDialog {
             visibility: QEnums.CONTENT_VISIBILITY_SHOW
             onClicked: skywalker.showStatusMessage(qsTr("It works!"), QEnums.STATUS_LEVEL_INFO)
 
-            BusyIndicator {
-                id: busyIndicator
+            Rectangle {
                 x: 5
                 width: height
                 height: parent.height
-                running: false
+                color: parent.color
+                visible: busyIndicator.running
+
+                BusyIndicator {
+                    id: busyIndicator
+                    anchors.fill: parent
+                    running: false
+                }
             }
         }
     }
@@ -177,6 +183,10 @@ SkyDialog {
 
     Component.onCompleted: {
         initalized = true
-        linkField.setFocus()
+
+        if (linkView.url)
+            titleField.setFocus()
+        else
+            linkField.setFocus()
     }
 }

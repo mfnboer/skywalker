@@ -166,7 +166,7 @@ std::tuple<QString, QString> determineImageFormat(const QImage& img, const QStri
     QString format = "jpg";
     QString mimeType = "image/jpeg";
 
-    if (name.startsWith("image://"))
+    if (name.isEmpty() || name.startsWith("image://"))
     {
         if (img.hasAlphaChannel())
         {

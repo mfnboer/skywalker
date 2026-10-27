@@ -13,7 +13,7 @@ Item {
     readonly property bool isGif: gifUtils.isGif(postExternal.uri)
     readonly property var gifVideo: isGif ? gifUtils.getGifVideoView(postExternal.uri, postExternal.title, postExternal.description, postExternal.thumbUrl) : null
     readonly property bool isGifVideo: gifVideo && !gifVideo.isNull()
-    readonly property bool isJoinLink: skywalker.chat?.isJoinLinkUri(postExternal.uri)
+    readonly property bool isJoinLink: Boolean(skywalker.chat?.isJoinLinkUri(postExternal.uri))
     property bool moving: false
 
     id: view
