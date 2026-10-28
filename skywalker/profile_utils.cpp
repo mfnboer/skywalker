@@ -236,37 +236,44 @@ void ProfileUtils::continueUpdateProfile(const QString& did, const QString& name
         });
 }
 
-void ProfileUtils::updateProfileLinks(const QString& did, const ProfileLinkView::List& links,
-                                      const QStringList& uploadIcons)
+void ProfileUtils::updateProfileLinks(const QString& did, const ProfileLinkView::List& links)
 {
     qDebug() << "Update links:" << did << "links:" << links.size();
 
     if (!bskyClient())
         return;
 
-    continueUpdateProfileLinks(did, links, uploadIcons);
+    std::unordered_map<QString, QString> linkUrlIconMap; // link url -> icon url
+
+    for (const auto& link : links)
+    {
+        if (link.hasNewIcon())
+            linkUrlIconMap[link.getUrl()] = link.getIcon();
+    }
+
+    continueUpdateProfileLinks(did, links, linkUrlIconMap);
 }
 
 void ProfileUtils::continueUpdateProfileLinks(
     const QString& did, const ProfileLinkView::List& links,
-    QStringList uploadIcons,
-    std::unordered_map<QString, ATProto::Blob::SharedPtr> iconBlobs)
+    std::unordered_map<QString, QString> uploadLinkUrlIconMap,
+    std::unordered_map<QString, ATProto::Blob::SharedPtr> linkUrlIconBlobMap)
 {
-    qDebug() << "Upload icons:" << uploadIcons.size() << "did:" << did;;
+    qDebug() << "Upload icons:" << uploadLinkUrlIconMap.size() << "did:" << did;;
 
-    if (uploadIcons.empty())
+    if (uploadLinkUrlIconMap.empty())
     {
-        continueUpdateProfileLinks(did, links, iconBlobs);
+        continueUpdateProfileLinks(did, links, linkUrlIconBlobMap);
         return;
     }
 
-    emit updateProfileProgress(tr("Uploading icons: %1").arg(uploadIcons.size()));
+    emit updateProfileProgress(tr("Uploading icons: %1").arg(uploadLinkUrlIconMap.size()));
 
-    const QString iconSrc = uploadIcons.back();
-    uploadIcons.pop_back();
+    const auto [linkUrl, iconSrc] = *uploadLinkUrlIconMap.begin();
+    uploadLinkUrlIconMap.erase(uploadLinkUrlIconMap.begin());
 
     imageReader()->getImageFromWeb(iconSrc,
-        [this, presence=getPresence(), did, links, uploadIcons, iconBlobs, iconSrc](QImage img, const QString& /*format*/){
+        [this, presence=getPresence(), did, links, uploadLinkUrlIconMap, linkUrlIconBlobMap, linkUrl, iconSrc](QImage img, const QString& /*format*/){
             if (!presence)
                 return;
 
@@ -276,41 +283,45 @@ void ProfileUtils::continueUpdateProfileLinks(
 
             if (blob.isEmpty())
             {
-                emit updateProfileLinksFailed(tr("Could not load icon image"));
+                qWarning() << "Could not load icon image";
+                // Continue without the icon. Probably we cannot recover this.
+                continueUpdateProfileLinks(did, links, uploadLinkUrlIconMap, linkUrlIconBlobMap);
                 return;
             }
 
             bskyClient()->uploadBlob(blob, mimeType,
-                [this, presence=getPresence(), did, links, uploadIcons, iconBlobs, iconSrc](auto blob){
+                [this, presence=getPresence(), did, links, uploadLinkUrlIconMap, linkUrlIconBlobMap, linkUrl, iconSrc](auto blob){
                     if (!presence)
                         return;
 
-                    auto newIconBlobs = iconBlobs;
-                    newIconBlobs[iconSrc] = blob;
-                    continueUpdateProfileLinks(did, links, uploadIcons, newIconBlobs);
+                    auto newLinkUrlIconBlobMap = linkUrlIconBlobMap;
+                    newLinkUrlIconBlobMap[linkUrl] = blob;
+                    continueUpdateProfileLinks(did, links, uploadLinkUrlIconMap, newLinkUrlIconBlobMap);
                 },
                 [this, presence=getPresence()](const QString& error, const QString& msg){
                     if (!presence)
                         return;
 
                     qWarning() << "Update link icon blob failed:" << error << " - " << msg;
+                    // Do not continue without icon. This looks like an atmosphere network issue.
                     emit updateProfileLinksFailed(msg);
                 });
         },
-        [this, presence=getPresence()](const QString& error){
+        [this, presence=getPresence(), did, links, uploadLinkUrlIconMap, linkUrlIconBlobMap](const QString& error){
             if (!presence)
                 return;
 
             qWarning() << "Get link icon failed:" << error;
-            emit updateProfileLinksFailed(error);
+            // Continue without the icon. Probably we cannot recover this.
+            continueUpdateProfileLinks(did, links, uploadLinkUrlIconMap, linkUrlIconBlobMap);
         });
 }
 
 void ProfileUtils::continueUpdateProfileLinks(
     const QString& did, const ProfileLinkView::List& links,
-    const std::unordered_map<QString, ATProto::Blob::SharedPtr>& iconBlobs)
+    const std::unordered_map<QString, ATProto::Blob::SharedPtr>& linkUrlIconBlobMap)
 {
-    qDebug() << "Update links:" << did << "blobs:" << iconBlobs.size();
+    qDebug() << "Update links:" << did << "blobs:" << linkUrlIconBlobMap.size();
     emit updateProfileProgress(tr("Updating profile links"));
 
     ATProto::ProfileMaster::Link::List profileLinks;
@@ -327,9 +338,9 @@ void ProfileUtils::continueUpdateProfileLinks(
         ATProto::setOptionalString(record->mTitle, link.getTitle());
         record->mCreatedAt = QDateTime::currentDateTimeUtc();
 
-        if (iconBlobs.contains(link.getIcon()))
+        if (linkUrlIconBlobMap.contains(link.getUrl()))
         {
-            record->mIcon = iconBlobs.at(link.getIcon());
+            record->mIcon = linkUrlIconBlobMap.at(link.getUrl());
             profileLink.mHasNewIcon = true;
         }
 

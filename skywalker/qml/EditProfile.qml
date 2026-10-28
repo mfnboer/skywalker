@@ -561,35 +561,31 @@ SkyPage {
     }
 
     function updateProfileLinks() {
-        let origIcons = new Set()
         let origLinks = new Map()
 
         for (const origLink of links) {
-            origIcons.add(origLink.icon)
-
             if (origLink.uri)
                 origLinks.set(origLink.uri, origLink)
         }
 
-        let newIcons = []
         let newLinks = profileLinkSorter.getLinks()
 
-        // TODO: 2 links with same icon?
         for (const link of newLinks) {
-            if (!origIcons.has(link.icon)) {
-                console.debug("New icon:", link.icon)
-                newIcons.push(link.icon)
-            }
-
             if (origLinks.has(link.uri)) {
                 const l = origLinks.get(link.uri)
 
                 if (!l.equals(link))
                     link.setDirty(true)
+
+                if (l.icon !== link.icon)
+                    link.setNewIcon(true)
+            } else {
+                // New link, so the icon is new too
+                link.setNewIcon(true)
             }
         }
 
-        profileUtils.updateProfileLinks(authorDid, newLinks, newIcons)
+        profileUtils.updateProfileLinks(authorDid, newLinks)
     }
 
     function pickAvatarPhoto() {

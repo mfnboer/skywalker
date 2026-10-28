@@ -293,6 +293,8 @@ public:
 
     bool isDirty() const { return mDirty; }
     Q_INVOKABLE void setDirty(bool dirty) { mDirty = dirty; }
+    bool hasNewIcon() const { return mNewIcon; }
+    Q_INVOKABLE void setNewIcon(bool newIcon) { mNewIcon = newIcon; }
 
 private:
     ATProto::AppBskyActor::ProfileLinkView::SharedPtr mLinkView;
@@ -301,7 +303,10 @@ private:
     QString mUrl;
     QString mTitle;
     QString mIcon;
-    bool mDirty = false; // used for updating links
+
+    // used for updating links
+    bool mDirty = false;
+    bool mNewIcon = false;
 };
 
 class BasicProfile

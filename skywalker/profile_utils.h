@@ -36,8 +36,7 @@ public:
                                    const QString& bannerImgSource, bool updateBanner,
                                    const QString& pronouns, const QString& website);
 
-    Q_INVOKABLE void updateProfileLinks(const QString& did, const ProfileLinkView::List& links,
-                                        const QStringList& uploadIcons);
+    Q_INVOKABLE void updateProfileLinks(const QString& did, const ProfileLinkView::List& links);
 
     Q_INVOKABLE void getLabelerViewDetailed(const QString& did);
     Q_INVOKABLE void likeLabeler(const QString& uri, const QString& cid);
@@ -95,10 +94,10 @@ private:
                                ATProto::Blob::SharedPtr bannerBlob, bool updateBanner,
                                const QString& pronouns, const QString& website);
     void continueUpdateProfileLinks(const QString& did, const ProfileLinkView::List& links,
-                                    QStringList uploadIcons,
-                                    std::unordered_map<QString, ATProto::Blob::SharedPtr> iconBlobs = {});
+                                    std::unordered_map<QString, QString> uploadLinkUrlIconMap,
+                                    std::unordered_map<QString, ATProto::Blob::SharedPtr> linkUrlIconBlobMap = {});
     void continueUpdateProfileLinks(const QString& did, const ProfileLinkView::List& links,
-                                    const std::unordered_map<QString, ATProto::Blob::SharedPtr>& iconBlobs);
+                                    const std::unordered_map<QString, ATProto::Blob::SharedPtr>& linkUrlIconBlobMap);
     void continueSetPinnedPost(const QString& did, const QString& uri, const QString& cid);
     void continueUpdateStatus(const QString& did, const QString& uri, const QString& title,
                               const QString& description, QImage thumb, const QString& thumbUri, int durationMinutes);

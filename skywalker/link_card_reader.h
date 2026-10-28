@@ -58,6 +58,8 @@ private:
     void getJoinRequestLinkCard(const QUrl& url);
 
     void extractFavIcon(const QString& link, QNetworkReply* reply);
+    void tryDefaultFavIcon(const QString& link, const QString& title);
+    void processDefaultFavIcon(const QString& link, const QString& title, QNetworkReply* reply);
     QString getIconUrl(const QByteArray& data);
     QString selectBestIconUrl(const QStringList& iconLinks);
     void favIconRequestFailed(QNetworkReply* reply, int errCode);

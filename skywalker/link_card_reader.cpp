@@ -3,7 +3,6 @@
 #include "link_card_reader.h"
 #include "chat.h"
 #include "definitions.h"
-#include "network_holder.h"
 #include "skywalker.h"
 #include "unicode_fonts.h"
 #include <QRegularExpression>
@@ -242,7 +241,7 @@ static const std::vector<QRegularExpression>& getOgTitleREs()
 
 static const std::vector<QRegularExpression>& getHtmlTitleREs()
 {
-    const QString htmlTitleStr(R"(<title>(?<title>[^<]+)</title>)");
+    const QString htmlTitleStr(R"(<title[^>]*>(?<title>[^<]+)</title>)");
 
     static const std::vector<QRegularExpression> htmlTitleREs = {
         QRegularExpression(htmlTitleStr)
@@ -612,8 +611,8 @@ void LinkCardReader::redirect(QNetworkReply* reply, const QUrl& redirectUrl)
     // For DPG media
     // 27-10-26: It seems this is not needed anymore. It breaks link cards from YouTube Shorts!
     // auto* cookieJar = static_cast<CookieJar*>(mNetwork->cookieJar());
-    // Q_ASSERT(cookieJar);
-    // cookieJar->setCookiesFromReply(*reply);
+    // if (cookieJar)
+    //     cookieJar->setCookiesFromReply(*reply);
 
     mPrevDestination = redirectUrl;
 }
@@ -702,7 +701,7 @@ void LinkCardReader::getFavIcon(const QString& link, bool retry, bool cookieSave
 static QString shortenTitle(const QString& title)
 {
     // Shorten title by splitting on a separator symbol if possible
-    static const QRegularExpression TITLE_RE(R"(([^\-:\|—•·\(]+)[\-:\|—•·\()].*)");
+    static const QRegularExpression TITLE_RE(R"(([^\-:\|–—•·\(]+)[\-:\|–—•·\()].*)");
     const auto match = TITLE_RE.match(title);
     return match.hasMatch() ? match.captured(1).trimmed() : title;
 }
@@ -751,12 +750,47 @@ void LinkCardReader::extractFavIcon(const QString& link, QNetworkReply* reply)
     title = toPlainText(title.trimmed());
     title = shortenTitle(title);
 
-    if (iconUrlString.isEmpty() && title.isEmpty())
+    if (iconUrlString.isEmpty())
     {
-        qDebug() << "Fav icon not found:" << reply->url();
-        emit favIconFailed();
+        tryDefaultFavIcon(link, title);
+        return;
     }
 
+    emit favIcon(ProfileLinkView("", "", link, title, iconUrlString));
+}
+
+void LinkCardReader::tryDefaultFavIcon(const QString& link, const QString& title)
+{
+    qDebug() << "Try default favicon:" << link << "title:" << title;
+    QUrl url = cleanLink(link);
+    QString favIconLink = QString("https://%1/favicon.ico").arg(url.host());
+    qDebug() << "Default favicon link:" << favIconLink;
+    QUrl favIconUrl(favIconLink);
+    QNetworkReply* reply = sendRequest(favIconUrl, false, false);
+
+    connect(reply, &QNetworkReply::finished, this, [this, link, title, reply]{ processDefaultFavIcon(link, title, reply); });
+    connect(reply, &QNetworkReply::redirected, this, [this, reply](const QUrl& url){ redirect(reply, url); });
+}
+
+void LinkCardReader::processDefaultFavIcon(const QString& link, const QString& title, QNetworkReply* reply)
+{
+    qDebug() << "Default favicon reply:" << reply->error();
+    setInProgress(nullptr);
+
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        qDebug() << "No default favicon found.";
+
+        if (title.isEmpty())
+            emit favIconFailed();
+        else
+            emit favIcon(ProfileLinkView("", "", link, title, ""));
+
+        return;
+    }
+
+    const QString iconUrlString = reply->request().url().toString();
+    qDebug() << "Default favicon found:" << iconUrlString;
     emit favIcon(ProfileLinkView("", "", link, title, iconUrlString));
 }
 
