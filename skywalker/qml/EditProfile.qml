@@ -553,16 +553,8 @@ SkyPage {
         for (let i = 0; i < Math.min(refs.length, links.length); ++i) {
             let link = links[i]
             const ref = refs[i]
-
-            if (!link.uri) {
-                const createdLink = linkCardReader.makeProfileLinkView(ref.uri, ref.cid, link.url, link.title, link.icon)
-                updatedLinks.push(createdLink)
-            } else {
-                if (link.uri !== ref.uri || link.cid !== ref.cid)
-                    console.warn("Ref mismatch:" << ref << "link:" << link)
-
-                updatedLinks.push(link)
-            }
+            const createdLink = linkCardReader.makeProfileLinkView(ref.uri, ref.cid, link.url, link.title, link.icon)
+            updatedLinks.push(createdLink)
         }
 
         return updatedLinks
@@ -582,6 +574,7 @@ SkyPage {
         let newIcons = []
         let newLinks = profileLinkSorter.getLinks()
 
+        // TODO: 2 links with same icon?
         for (const link of newLinks) {
             if (!origIcons.has(link.icon)) {
                 console.debug("New icon:", link.icon)

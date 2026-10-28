@@ -285,7 +285,7 @@ void ProfileUtils::continueUpdateProfileLinks(
                     if (!presence)
                         return;
 
-                    std::unordered_map<QString, ATProto::Blob::SharedPtr> newIconBlobs = iconBlobs;
+                    auto newIconBlobs = iconBlobs;
                     newIconBlobs[iconSrc] = blob;
                     continueUpdateProfileLinks(did, links, uploadIcons, newIconBlobs);
                 },
