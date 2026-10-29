@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "normalized_word_index.h"
+#include "link_utils.h"
 #include "search_utils.h"
 
 namespace Skywalker {
@@ -109,6 +110,27 @@ const std::unordered_map<QString, std::vector<int>>& NormalizedWordIndex::getUni
     }
 
     return mUniqueNormalizedWords;
+}
+
+bool NormalizedWordIndex::mustShowBridgyOriginalText(const ATProto::AppBskyFeed::Record::Post& post) const
+{
+    if (!post.mBridgyOriginalText || post.mBridgyOriginalText->isEmpty())
+        return false;
+
+    if (!post.mBridgyOriginalUrl)
+        return true;
+
+    const auto externalView = getExternalView();
+
+    if (!externalView)
+        return true;
+
+    // A cut off Mastodon post has as external a link to the Mastodon post where the description
+    // of the external is empty and its URI the original bridgy URL.
+    // However some have an article as URL and a true Bluesky post to accompany the article,
+    // e.g. @leicestergazette.leicester.news
+    return externalView->getDescription().isEmpty() &&
+        LinkUtils::equalLinks(externalView->getUri(), *post.mBridgyOriginalUrl);
 }
 
 }

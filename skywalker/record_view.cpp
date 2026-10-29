@@ -113,7 +113,7 @@ QString RecordView::getFormattedText() const
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPrivate->mRecord->mValue);
 
-        if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
+        if (mPrivate->mRecordWordIndex && mPrivate->mRecordWordIndex->mustShowBridgyOriginalText(*recordValue))
             return *recordValue->mBridgyOriginalText;
 
         return ATProto::RichTextMaster::getFormattedPostText(*recordValue, UserSettings::getCurrentLinkColor());

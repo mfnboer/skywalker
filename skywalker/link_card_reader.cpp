@@ -3,6 +3,7 @@
 #include "link_card_reader.h"
 #include "chat.h"
 #include "definitions.h"
+#include "html_utils.h"
 #include "skywalker.h"
 #include "unicode_fonts.h"
 #include <QRegularExpression>
@@ -803,26 +804,7 @@ void LinkCardReader::processDefaultFavIcon(const QString& link, const QString& t
 
 QString LinkCardReader::getIconUrl(const QByteArray& data)
 {
-    static const QString iconLinkReStr1(R"(<link[^>]*rel=%1[^%1]*icon[^%1]*%1[^>]*>)");
-    static const std::vector<QRegularExpression> iconLinkREs = {
-        QRegularExpression(iconLinkReStr1.arg('"')),
-        QRegularExpression(iconLinkReStr1.arg('\''))
-    };
-
-    QStringList iconLinks;
-
-    for (const auto& RE : iconLinkREs)
-    {
-        for (const auto& match : RE.globalMatch(data))
-        {
-            if (!match.hasMatch())
-                continue;
-
-            const QString& link = match.captured();
-            qDebug() << "Link candidate:" << link;
-            iconLinks.push_back(match.captured());
-        }
-    }
+    QStringList iconLinks = HtmlUtils::extractIconLinkElements(data);
 
     if (iconLinks.empty())
     {
@@ -847,7 +829,8 @@ static int getSize(const QString& sizes)
 
 static QString getAttr(const std::unordered_map<QString, QString>& linkAttrs, const QString& attr)
 {
-    return linkAttrs.contains(attr) ? linkAttrs.at(attr) : "";
+    const QString value = HtmlUtils::getAttrValue(linkAttrs, attr);
+    return attr != "href" ? value.toLower() : value;
 }
 
 static QString getImageType(const std::unordered_map<QString, QString>& linkAttrs)
@@ -982,30 +965,11 @@ QString LinkCardReader::selectBestIconUrl(const QStringList& iconLinks)
     };
 
     // link -> (attr, value)
-    std::unordered_map<QString, std::unordered_map<QString, QString>> linkAttrs;
+    HtmlUtils::ElementAttrs linkAttrs = HtmlUtils::getAttributes(iconLinks);
 
     for (const auto& link : iconLinks)
     {
-        qDebug() << "get attrs from:" << link;
-        auto& attrs = linkAttrs[link];
-
-        for (const auto& ATTR_RE : attrREs)
-        {
-            for (const auto& match : ATTR_RE.globalMatch(link))
-            {
-                if (!match.hasMatch())
-                    continue;
-
-                const QString attr = match.captured(1).trimmed().toLower();
-                QString value = match.captured(2).trimmed();
-
-                if (attr != "href")
-                    value = value.toLower();
-
-                qDebug() << attr << "=" << value;
-                attrs[attr] = value;
-            }
-        }
+        const auto& attrs = linkAttrs[link];
 
         if (!attrs.contains("rel") || !attrs.contains("href"))
         {
@@ -1024,8 +988,12 @@ QString LinkCardReader::selectBestIconUrl(const QStringList& iconLinks)
             bestLink = link;
     }
 
+    if (bestLink.isEmpty())
+        return {};
+
     const auto bestAttrs = linkAttrs.at(bestLink);
     const QString href = getAttr(bestAttrs, "href");
+    qDebug() << "Best icon url:" << href;
     return href;
 }
 

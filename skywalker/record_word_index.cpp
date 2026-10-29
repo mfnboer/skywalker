@@ -20,7 +20,7 @@ QString RecordWordIndex::getText() const
     {
         const auto& recordValue = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mRecord->mValue);
 
-        if (recordValue->mBridgyOriginalText && !recordValue->mBridgyOriginalText->isEmpty())
+        if (mustShowBridgyOriginalText(*recordValue))
             return UnicodeFonts::toPlainText(*recordValue->mBridgyOriginalText);
         else
             return recordValue->mText;

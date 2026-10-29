@@ -194,10 +194,10 @@ QString Post::getText() const
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
-        if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
+        if (mustShowBridgyOriginalText(*record))
             return UnicodeFonts::toPlainText(*record->mBridgyOriginalText);
-        else
-            return record->mText;
+
+        return record->mText;
     }
 
     qWarning() << "Record type not supported";
@@ -218,7 +218,7 @@ QString Post::getFormattedText(const std::set<QString>& emphasizeHashtags, const
     {
         const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
 
-        if (record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty())
+        if (mustShowBridgyOriginalText(*record))
             return *record->mBridgyOriginalText;
 
         return ATProto::RichTextMaster::getFormattedPostText(
@@ -253,7 +253,7 @@ TextMetaInfo Post::getTextMetaInfo() const
     const auto& record = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(mPost->mRecord);
     const QString text = getText();
     auto metaInfo = UnicodeFonts::getTextMetaInfo(text, !record->mFacets.empty());
-    metaInfo.setHasFullHtml(record->mBridgyOriginalText && !record->mBridgyOriginalText->isEmpty());
+    metaInfo.setHasFullHtml(mustShowBridgyOriginalText(*record));
 
     return metaInfo;
 }

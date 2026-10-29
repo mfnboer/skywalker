@@ -33,6 +33,8 @@ public:
     const std::vector<QString>& getNormalizedWords() const;
     const std::unordered_map<QString, std::vector<int>>& getUniqueNormalizedWords() const;
 
+    bool mustShowBridgyOriginalText(const ATProto::AppBskyFeed::Record::Post& post) const;
+
 private:
     std::unordered_set<QString> mHashtags; // normalized
     std::unordered_set<QString> mCashtags; // normalized

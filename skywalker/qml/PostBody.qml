@@ -84,7 +84,7 @@ Column {
             elide: Text.ElideRight
             textFormat: Text.RichText
             font.pointSize: getPostFontSize()
-            plainText: displayText
+            plainText: postTextMetaInfo.hasFullHtml ? UnicodeFonts.scaleHtmlImgTags(displayText, width) : displayText
             bottomPadding: hasAttachment && !showThreadCounter ? 5 : 0
 
             LinkCatcher {
