@@ -1,6 +1,7 @@
 next
 ====
 * Link buttons on profile page
+* Link card improvements
 * Bug fixes
 
 4.47

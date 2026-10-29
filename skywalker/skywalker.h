@@ -82,7 +82,7 @@ public:
 
     static constexpr const char* APP_NAME = "Skywalker";
     static constexpr const char* VERSION = APP_VERSION;
-    static QString getUserAgentString();
+    static QString getUserAgentString(const QString& comment = "android");
 
     static constexpr int NOTIFICATION_PAGE_SIZE = 25;
     static constexpr int TIMELINE_PREPEND_PAGE_SIZE = 50;

@@ -118,10 +118,17 @@ QNetworkReply* LinkCardReader::sendRequest(const QUrl& url, bool retry, bool coo
     request.setRawHeader("Accept-Encoding", "identity");
     request.setRawHeader("Accept-Language", mAcceptLanguage.toUtf8()); // For Reuters
     request.setRawHeader("Priority", "i"); // For Reuters
-    request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For NYT, Reuters, WSJ
+
+
+    if (url.host().endsWith("nytimes.com"))
+        request.setRawHeader("User-Agent", Skywalker::getUserAgentString("Bluesky").toUtf8());
+    else
+        request.setRawHeader("User-Agent", Skywalker::getUserAgentString().toUtf8()); // For Reuters, WSJ
+
     // NOTE: WSJ requires a User-Agent with comment: Skywalker/version (android)
     //       When (android) is replaced by (ubuntu) it does not work??
-    //       For NYT and Reuters this is sufficient: Skywalker/version
+    //       For Reuters this is sufficient: Skywalker/version
+    //       29-10-2026: NYT only works when Bluesky is in the User-Agent: Skywalker/version (Bluesky)
 
     QNetworkReply* reply = mNetwork->get(request);
     setInProgress(reply);

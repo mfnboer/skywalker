@@ -262,10 +262,10 @@ void Skywalker::initNonActiveUser()
     getUserPreferences();
 }
 
-QString Skywalker::getUserAgentString()
+QString Skywalker::getUserAgentString(const QString& comment)
 {
-    // NOTE: The "(android)" part is needed for LinkCardReader
-    return QString("%1/%2 (android)").arg(APP_NAME, VERSION);
+    // NOTE: The "(%3)" part is needed for LinkCardReader
+    return QString("%1/%2 (%3)").arg(APP_NAME, VERSION, comment);
 }
 
 // NOTE: user can be handle or DID
