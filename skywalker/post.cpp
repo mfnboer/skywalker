@@ -1241,7 +1241,7 @@ int Post::getThreadPostIndex() const
     return mFeedViewPost->mOpThreadPostIndex.value_or(0);
 }
 
-QEnums::TripleBool Post::isThread() const
+QEnums::TripleBool Post::isThread(bool forceCheck) const
 {
     if (isPlaceHolder())
         return QEnums::TRIPLE_BOOL_NO;
@@ -1252,7 +1252,7 @@ QEnums::TripleBool Post::isThread() const
     if (getThreadPostIndex() == 1)
         return QEnums::TRIPLE_BOOL_YES;
 
-    if (getIndexedAt().date() > DATE_OP_THREAD_COUNT_GUARANTEED)
+    if (getIndexedAt().date() > DATE_OP_THREAD_COUNT_GUARANTEED && !forceCheck)
         return QEnums::TRIPLE_BOOL_NO;
 
     const bool* isThread = PostThreadCache::instance().getIsThread(getUri());

@@ -192,7 +192,7 @@ public:
     int getThreadPostIndex() const; // 1-indexed, 0=no thread
     void setThreadPostIndex(int postIndex) { mThreadPostIndex = postIndex; }
 
-    QEnums::TripleBool isThread() const;
+    QEnums::TripleBool isThread(bool forceCheck = false) const;
     bool isThreadReply() const;
 
     QJsonObject toJson() const;

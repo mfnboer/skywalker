@@ -1156,7 +1156,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
     case Role::NotificationPostIsThread:
     {
         const auto& post = notification.getNotificationPost(mPostCache);
-        const auto isThread = post.isThread();
+        const auto isThread = post.isThread(true);
         qDebug() << "isThread:" << isThread << "post:" << post.getText();
 
         switch (isThread)
