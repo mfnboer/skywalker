@@ -1,4 +1,4 @@
-next
+4.48
 ====
 * Link buttons on profile page
 * Link card improvements
