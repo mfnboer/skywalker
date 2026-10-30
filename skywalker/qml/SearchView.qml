@@ -160,7 +160,7 @@ SkyPage {
 
     SkyTabBar {
         id: searchBar
-        width: parent.width
+        width: parent.width - (moreButton.visible ? moreButton.width : 0)
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
         rightPadding: page.margin
@@ -203,23 +203,30 @@ SkyPage {
         }
     }
 
-    SvgPlainButton {
+    Rectangle {
         id: moreButton
         anchors.right: parent.right
-        anchors.rightMargin: 5
-        imageMargin: 0
-        y: (searchBar.height - height) / 2
         width: height
-        height: 30
-        svg: SvgOutline.menu
-        accessibleName: qsTr("tag options")
+        height: searchBar.height
+        color: guiSettings.backgroundColor
         visible: isHashtagSearch || isCashtagSearch
 
-        onClicked: moreMenu.show(page.getSearchText())
+        SvgPlainButton {
+            anchors.right: parent.right
+            anchors.rightMargin: 5
+            y: (searchBar.height - height) / 2
+            width: height
+            height: 30
+            imageMargin: 0
+            svg: SvgOutline.menu
+            accessibleName: qsTr("tag options")
 
-        HashtagContextMenu {
-            id: moreMenu
-            searchOptions: searchUtils.getSearchOptions(SearchSortOrder.RECENT)
+            onClicked: moreMenu.show(page.getSearchText())
+
+            HashtagContextMenu {
+                id: moreMenu
+                searchOptions: searchUtils.getSearchOptions(SearchSortOrder.RECENT)
+            }
         }
     }
 
