@@ -39,7 +39,8 @@ SkyListView {
     }
 
     function refresh() {
-        getStarterPackListFunc(modelId)
+        if (modelId >= 0)
+            getStarterPackListFunc(modelId)
     }
 
     function clear() {
