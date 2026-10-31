@@ -50,7 +50,8 @@ SkyListView {
     }
 
     function refresh() {
-        getListListFunc(modelId)
+        if (modelId >= 0)
+            getListListFunc(modelId)
     }
 
     function clear() {
