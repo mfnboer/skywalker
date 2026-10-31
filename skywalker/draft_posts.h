@@ -132,7 +132,7 @@ private:
     ATProto::AppBskyFeed::ViewerState::SharedPtr createViewerState(Draft::Draft& draft) const;
     ATProto::AppBskyFeed::ThreadgateView::SharedPtr createThreadgateView(Draft::Draft& draft) const;
     ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::AppBskyFeed::Record::Post& post, const QString& recordUri) const;
-    ATProto::ComATProtoLabel::Label::List createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const;
+    ATProto::ComATProtoLabel::Label::List createContentLabels(const std::optional<ATProto::ComATProtoLabel::SelfLabels::Variant>& selfLabels, QDateTime createdAt, const QString& recordUri) const;
     std::optional<ATProto::AppBskyEmbed::EmbedViewUnion> createEmbedView(
         const std::optional<ATProto::AppBskyFeed::Record::Post::EmbedType>& embed,
         Draft::Quote::SharedPtr quote);

@@ -1,3 +1,7 @@
+next
+====
+* Bug fixes
+
 4.48
 ====
 * Link buttons on profile page

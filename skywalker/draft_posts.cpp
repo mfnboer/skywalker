@@ -946,15 +946,15 @@ ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATPr
     return createContentLabels(post.mLabels, post.mCreatedAt, recordUri);
 }
 
-ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const ATProto::ComATProtoLabel::SelfLabels::SharedPtr& selfLabels, QDateTime createdAt, const QString& recordUri) const
+ATProto::ComATProtoLabel::Label::List DraftPosts::createContentLabels(const std::optional<ATProto::ComATProtoLabel::SelfLabels::Variant>& selfLabels, QDateTime createdAt, const QString& recordUri) const
 {
-    if (!selfLabels)
+    if (!selfLabels || !ATProto::holdsNonNull<ATProto::ComATProtoLabel::SelfLabels::SharedPtr>(*selfLabels))
         return {};
 
     const QString userDid = mSkywalker->getUserDid();
     ATProto::ComATProtoLabel::Label::List labels;
 
-    for (const auto& selfLabel : selfLabels->mValues)
+    for (const auto& selfLabel : std::get<ATProto::ComATProtoLabel::SelfLabels::SharedPtr>(*selfLabels)->mValues)
     {
         auto label = std::make_shared<ATProto::ComATProtoLabel::Label>();
         label->mVal = selfLabel->mVal;
