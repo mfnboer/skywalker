@@ -65,7 +65,7 @@ QString CachedImageProvider::createImageUrl(const QString& webUrl) const
 
 QString CachedImageProvider::createHttpUrl(const QString& imgUrl)
 {
-    static const QRegularExpression sourceRE(R"(image:\/\/[^\/]+\/(.+))");
+    static const QRegularExpression sourceRE(R"(image:\/\/cached_[^\/]+\/(.+))");
 
     auto match = sourceRE.match(imgUrl);
 
