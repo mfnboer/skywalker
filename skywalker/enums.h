@@ -569,10 +569,10 @@ public:
 
     enum VerifiedStatus
     {
-        VERIFIED_STATUS_VALID = (int)ATProto::AppBskyActor::VerifiedStatus::VALID,
-        VERIFIED_STATUS_INVALID = (int)ATProto::AppBskyActor::VerifiedStatus::INVALID,
-        VERIFIED_STATUS_NONE = (int)ATProto::AppBskyActor::VerifiedStatus::NONE,
-        VERIFIED_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::VerifiedStatus::UNKNOWN
+        VERIFIED_STATUS_VALID = (int)ATProto::AppBskyActor::VerifiedStatusEnum::VALID,
+        VERIFIED_STATUS_INVALID = (int)ATProto::AppBskyActor::VerifiedStatusEnum::INVALID,
+        VERIFIED_STATUS_NONE = (int)ATProto::AppBskyActor::VerifiedStatusEnum::NONE,
+        VERIFIED_STATUS_UNKNOWN = (int)ATProto::AppBskyActor::VerifiedStatusEnum::UNKNOWN
     };
     Q_ENUM(VerifiedStatus)
 
