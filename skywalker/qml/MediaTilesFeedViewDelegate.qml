@@ -326,7 +326,7 @@ Item {
 
     function confirmDelete() {
         guiSettings.askYesNoQuestion(
-                    page,
+                    root,
                     qsTr("Do you really want to delete your post?"),
                     () => root.deletePost(postUri, postCid, userDid))
     }
