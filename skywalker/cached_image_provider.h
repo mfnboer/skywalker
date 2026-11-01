@@ -13,6 +13,7 @@ class CachedImageProvider : public QQuickAsyncImageProvider
 public:
     using ImageCb = std::function<void(QImage)>;
 
+    // NOTE: names must start with "cached_"
     static constexpr char const* AVATAR = "cached_avatar";
     static constexpr char const* THUMB_IMG = "cached_thumb_img";
     static CachedImageProvider* getProvider(const QString& name);

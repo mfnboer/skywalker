@@ -11,7 +11,7 @@ ImageView::ImageView(const QString& fullSizeUrl, const QString& alt, const QStri
     mMemeTopText(memeTopText),
     mMemeBottomText(memeBottomText)
 {
-    if (mFullSizeUrl.startsWith("image://"))
+    if (mFullSizeUrl.startsWith("image://cached_"))
         mFullSizeUrl = CachedImageProvider::createHttpUrl(mFullSizeUrl);
 }
 
@@ -21,7 +21,7 @@ ImageView::ImageView(const QString& fullSizeUrl, const QString& alt, int width, 
     mWidth(width),
     mHeight(height)
 {
-    if (mFullSizeUrl.startsWith("image://"))
+    if (mFullSizeUrl.startsWith("image://cached_"))
         mFullSizeUrl = CachedImageProvider::createHttpUrl(mFullSizeUrl);
 }
 
