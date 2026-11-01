@@ -1211,7 +1211,7 @@ Rectangle {
 
     function confirmDelete() {
         guiSettings.askYesNoQuestion(
-                    postEntry,
+                    root,
                     qsTr("Do you really want to delete your post?"),
                     () => root.deletePost(postUri, postCid, userDid))
     }
