@@ -782,6 +782,16 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ProfileLinksSorter.qml
         SOURCES html_utils.h
         SOURCES html_utils.cpp
+        SOURCES ozone_utils.h
+        SOURCES ozone_report_view.h
+        SOURCES convo_ref.h
+        SOURCES convo_ref.cpp
+        SOURCES convo_message_ref.h
+        SOURCES convo_message_ref.cpp
+        SOURCES ozone_report_view.cpp
+        SOURCES ozone_report_list_model.cpp
+        SOURCES ozone_report_list_model.h
+        SOURCES ozone_utils.cpp
 )
 
 target_link_libraries(libskywalker
