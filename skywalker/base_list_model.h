@@ -42,7 +42,10 @@ public:
 protected:
     using EntityList = std::deque<EntityType>;
 
-    virtual void changeData(const QList<int>& roles) = 0;
+    virtual void changeData(const QList<int>& roles)
+    {
+        emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
+    }
 
     EntityList mList;
     QString mCursor;

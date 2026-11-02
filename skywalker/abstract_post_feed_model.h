@@ -298,8 +298,6 @@ protected:
     virtual void profileChanged() override;
     virtual void locallyBlockedChanged() override;
 
-    void changeData(const QList<int>& roles) override;
-
     TimelineFeed mBackupFeed;
     bool mReverseFeed = false;
 

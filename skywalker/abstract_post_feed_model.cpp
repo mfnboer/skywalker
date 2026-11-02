@@ -1203,11 +1203,6 @@ void AbstractPostFeedModel::feedbackTransientChanged()
     changeData({ int(Role::PostFeedbackTransient) });
 }
 
-void AbstractPostFeedModel::changeData(const QList<int>& roles)
-{
-    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
-}
-
 // Easier would be to do this:
 //
 // changeData({ int(Role::PostIsThread), int(Role::PostRecord), int(Role::PostRecordWithMedia) });

@@ -74,11 +74,8 @@ private:
     template<typename T>
     int _addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor, bool sort = false);
 
-    using StarterPackList = EntityList;
-
     QEnums::TripleBool memberCheck(const QString& starterPackUri) const;
     QString getMemberListItemUri(const QString& starterPackUri) const;
-    void changeData(const QList<int>& roles) override;
 
     Type mType;
     QString mAtId;

@@ -12,6 +12,7 @@ SkyDrawer {
 
     signal profile()
     signal contentFiltering()
+    signal moderationInbox()
     signal blockedAccounts()
     signal mutedAccounts()
     signal modLists()
@@ -123,6 +124,13 @@ SkyDrawer {
                         popup: moderationMenu
                         onClicked: contentFiltering()
                     }
+                    SkyMenuButton {
+                        text: qsTr("Moderation Inbox")
+                        svg: SvgOutline.list
+                        popup: moderationMenu
+                        onClicked: moderationInbox()
+                    }
+
                     SkyMenuButton {
                         text: qsTr("Blocked Accounts")
                         svg: SvgOutline.block

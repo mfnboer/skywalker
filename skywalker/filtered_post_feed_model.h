@@ -30,7 +30,7 @@ public:
     QEnums::FeedType getFeedType() const;
     QString getFeedName() const override;
 
-    void clear();
+    void clear() override;
     void setPosts(const TimelineFeed& posts, size_t numPosts, bool isLast);
     void addPosts(const TimelineFeed& posts, size_t numPosts, bool isLast);
     void prependPosts(const TimelineFeed& posts, size_t numPosts);

@@ -10,8 +10,8 @@ namespace Skywalker {
 
 ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
                              const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
-                             QObject* parent) :
-    BaseType(skywalker->getUserDid(), parent),
+                             const QString& userDid, QObject* parent) :
+    BaseType(userDid, parent),
     mType(type),
     mPurpose(purpose),
     mAtId(atId),
@@ -420,11 +420,6 @@ void ListListModel::listSavedChanged()
 void ListListModel::listPinnedChanged()
 {
     changeData({ int(Role::ListPinned) });
-}
-
-void ListListModel::changeData(const QList<int>& roles)
-{
-    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

@@ -82,7 +82,6 @@ private:
 
     void setEndOfList();
     AuthorList filterAuthors(const ATProto::ChatBskyActor::ProfileViewBasic::List& authors) const;
-    void changeData(const QList<int>& roles) override;
 
     Type mType;
     const IProfileStore& mTimelineHide;

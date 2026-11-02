@@ -270,9 +270,4 @@ void StarterPackListModel::optOutUriChanged()
     changeData({ int(Role::OptOutUri) });
 }
 
-void StarterPackListModel::changeData(const QList<int>& roles)
-{
-    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
-}
-
 }

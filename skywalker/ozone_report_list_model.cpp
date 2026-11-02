@@ -1,12 +1,17 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "ozone_report_list_model.h"
+#include "author_cache.h"
 
 namespace Skywalker {
 
-OzoneReportListModel::OzoneReportListModel(const QString& userDid, QObject* parent) :
-    BaseType(userDid, parent)
+OzoneReportListModel::OzoneReportListModel(const QString& filter, const QString& userDid, QObject* parent) :
+    BaseType(userDid, parent),
+    mReportsFilter(filter)
 {
+    connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
+        [this](const QString& did) { authorAdded(did); },
+        Qt::QueuedConnection);
 }
 
 QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
@@ -20,6 +25,23 @@ QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
     {
     case Role::Report:
         return QVariant::fromValue(report);
+    case Role::Author:
+    {
+        const QString did = report.getSubjectDid();
+
+        if (did.isEmpty())
+            return {};
+
+        const auto* author = AuthorCache::instance().get(did);
+
+        if (!author)
+        {
+            QTimer::singleShot(0, this, [did]{ AuthorCache::instance().putProfile(did); });
+            return {};
+        }
+
+        return QVariant::fromValue(*author);
+    }
     case Role::EndOfList:
         return isEndOfList() && index.row() == (int)mList.size() - 1;
     }
@@ -70,10 +92,22 @@ QHash<int, QByteArray> OzoneReportListModel::roleNames() const
 {
     static const QHash<int, QByteArray> roles{
         { int(Role::Report), "report" },
+        { int(Role::Author), "author" },
         { int(Role::EndOfList), "endOfList" }
     };
 
     return roles;
+}
+
+void OzoneReportListModel::authorAdded(const QString& did)
+{
+    for (int i = 0; i < (int)mList.size(); ++i)
+    {
+        const auto& report = mList[i];
+
+        if (report.getSubjectDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::Author) });
+    }
 }
 
 }

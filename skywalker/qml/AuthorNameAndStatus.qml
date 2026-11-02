@@ -4,7 +4,7 @@ import skywalker
 Item {
     property string userDid
     required property basicprofile author
-    property string authorName: author.name
+    property string authorName: !author.isNull() ? author.name : qsTr("Unknown user")
     property double pointSize: guiSettings.scaledFont(1)
     property string textColor: guiSettings.textColor
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID

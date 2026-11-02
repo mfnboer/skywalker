@@ -163,7 +163,9 @@ const QStringList SCOPE = {
 
     "rpc:com.atproto.moderation.createReport?aud=*",
 
-    "rpc:com.atproto.repo.uploadBlob?aud=*"
+    "rpc:com.atproto.repo.uploadBlob?aud=*",
+
+    "rpc:tools.ozone.inbox.listReports?aud=*"
 };
 
 QString OAuthController::getClientId()
@@ -179,7 +181,7 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "repo:app.bsky.actor.link",
+        "rpc:tools.ozone.inbox.listReports?aud=*",
         "Please login again to get the latest features."
     }};
 }

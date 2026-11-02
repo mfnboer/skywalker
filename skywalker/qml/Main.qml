@@ -967,6 +967,11 @@ ApplicationWindow {
                 close()
             }
 
+            onModerationInbox: {
+                viewModerationInbox()
+                close()
+            }
+
             onActiveFollows: {
                 let userSettings = skywalker.getUserSettings()
                 const interval = userSettings.getActiveOnlineIntervalMins()
@@ -2486,10 +2491,20 @@ ApplicationWindow {
         skywalker.getStarterPackList(starterPacksModelId)
     }
 
+    function viewModerationInbox() {
+        const modelId = skywalker.createOzoneReportListModel(ReportsFilter.ALL)
+        let component = guiSettings.createComponent("ModerationInbox.qml")
+        let page = component.createObject(root, {
+                reportsModelId: modelId
+        })
+        page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(page)
+    }
+
     function viewModerationLists(modelId) {
         let component = guiSettings.createComponent("ModerationListsPage.qml")
         let page = component.createObject(root, {
-                listsModelId: modelId
+                modelId: modelId
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)

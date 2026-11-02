@@ -198,7 +198,6 @@ private:
     void getPosts(ATProto::Client& bsky, const NotificationList& list, const std::function<void()>& cb);
     void getPosts(ATProto::Client& bsky, std::unordered_set<QString> uris, const std::function<void()>& cb);
 
-    void changeData(const QList<int>& roles) override;
     void clearLocalState();
     void clearRows();
     void addInviteCodeUsageNotificationRows();

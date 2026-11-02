@@ -36,7 +36,7 @@ public:
     using Ptr = std::unique_ptr<FeedListModel>;
 
     explicit FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
-                           QObject* parent = nullptr);
+                           const QString& userDid, QObject* parent = nullptr);
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
@@ -74,9 +74,7 @@ protected:
 private:
     void feedSavedChanged();
     void feedPinnedChanged();
-    void changeData(const QList<int>& roles) override;
 
-    using FeedList = EntityList;
     const FavoriteFeeds& mFavoriteFeeds;
     const UserSettings& mUserSettings;
     QString mFeedError;

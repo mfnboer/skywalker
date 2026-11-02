@@ -68,7 +68,7 @@ SkyListView {
     }
 
     FlickableRefresher {
-        inProgress: view.model?.getFeedInProgress
+        inProgress: Boolean(view.model?.getFeedInProgress)
         topOvershootFun: () => refresh()
         bottomOvershootFun: () => skywalker.getListListNextPage(modelId)
         topText: qsTr("Refresh lists")
@@ -83,7 +83,7 @@ SkyListView {
 
     BusyIndicator {
         anchors.centerIn: parent
-        running: view.model?.getFeedInProgress
+        running: Boolean(view.model?.getFeedInProgress)
     }
 
     GraphUtils {

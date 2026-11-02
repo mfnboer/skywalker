@@ -45,7 +45,7 @@ public:
 
     ListListModel(Type type, Purpose purpose, const QString& atId,
                   const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
-                  QObject* parent = nullptr);
+                  const QString& userDid, QObject* parent = nullptr);
 
     Q_INVOKABLE void setMemberCheckDid(const QString& did) { mMemberCheckDid = did; }
     Q_INVOKABLE void setExcludeInternalLists(bool exclude) { mExcludeInternalLists = exclude; }
@@ -106,7 +106,6 @@ private:
     QString getMemberListItemUri(const QString& listUri) const;
     void listSavedChanged();
     void listPinnedChanged();
-    void changeData(const QList<int>& roles) override;
 
     ListList filterLists(ATProto::AppBskyGraph::ListView::List lists) const;
 

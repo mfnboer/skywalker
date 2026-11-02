@@ -93,7 +93,6 @@ private:
 
     void setEndOfList();
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileView::List& authors) const;
-    void changeData(const QList<int>& roles) override;
 
     Type mType;
     QString mAtId;
