@@ -7,6 +7,7 @@
 #include <atproto/lib/lexicon/app_bsky_unspecced.h>
 #include <atproto/lib/lexicon/chat_bsky_convo.h>
 #include <atproto/lib/lexicon/com_atproto_moderation.h>
+#include <atproto/lib/lexicon/tools_ozone_inbox.h>
 #include <QObject>
 #include <QtQmlIntegration>
 
@@ -714,6 +715,24 @@ public:
         LANGUAGE_DETECTION_LAST = LANGUAGE_DETECTION_TAG_AUTO
     };
     Q_ENUM(LanguageDetectionMethod)
+
+    enum OzoneReportSubjectType
+    {
+        OZONE_REPORT_SUBJECT_REPO_REF,
+        OZONE_REPORT_SUBJECT_STRONG_REF,
+        OZONE_REPORT_SUBJECT_CONVO_REF,
+        OZONE_REPORT_SUBJECT_MESSAGE_REF,
+        OZONE_REPORT_SUBJECT_UNKNOW
+    };
+    Q_ENUM(OzoneReportSubjectType)
+
+    enum OzoneReportStatus
+    {
+        OZONE_REPORT_STATUS_PENDING = (int)ATProto::ToolsOzoneInbox::ReportStatusEnum::PENDING,
+        OZONE_REPORT_STATUS_RESOLVED = (int)ATProto::ToolsOzoneInbox::ReportStatusEnum::RESOLVED,
+        OZONE_REPORT_STATUS_UNKNOWN = (int)ATProto::ToolsOzoneInbox::ReportStatusEnum::UNKNOWN
+    };
+    Q_ENUM(OzoneReportStatus)
 };
 
 }
