@@ -23,8 +23,7 @@ const FocusHashtags AbstractPostFeedModel::NULL_FOCUS_HASHTAGS;
 HashtagIndex AbstractPostFeedModel::NULL_HASHTAG_INDEX{0};
 
 AbstractPostFeedModel::AbstractPostFeedModel(QObject* parent) :
-    QAbstractListModel(parent),
-    mUserDid{NULL_STRING},
+    BaseType(NULL_STRING, parent),
     mFeedHide(NULL_LIST_STORE),
     mContentFilter(NULL_CONTENT_FILTER),
     mMutedWords(NULL_MATCH_WORDS),
@@ -39,8 +38,7 @@ AbstractPostFeedModel::AbstractPostFeedModel(const QString& userDid,
                                              const IMatchWords& mutedWords, const FocusHashtags& focusHashtags,
                                              HashtagIndex& hashtags,
                                              QObject* parent) :
-    QAbstractListModel(parent),
-    mUserDid(userDid),
+    BaseType(userDid, parent),
     mFeedHide(feedHide),
     mContentFilter(contentFilter),
     mMutedWords(mutedWords),
@@ -98,7 +96,7 @@ int AbstractPostFeedModel::toPhysicalIndex(int visibleIndex) const
     if (!mReverseFeed)
         return visibleIndex;
 
-    return mFeed.size() - 1 - visibleIndex;
+    return mList.size() - 1 - visibleIndex;
 }
 
 int AbstractPostFeedModel::toVisibleIndex(int physicalIndex, std::optional<int> feedSize) const
@@ -107,17 +105,18 @@ int AbstractPostFeedModel::toVisibleIndex(int physicalIndex, std::optional<int> 
         return physicalIndex;
 
     if (!feedSize)
-        feedSize = mFeed.size();
+        feedSize = mList.size();
 
     return *feedSize - 1 - physicalIndex;
 }
 
 void AbstractPostFeedModel::clearFeed()
 {
-    mFeed.clear();
+    mList.clear();
     mStoredCids.clear();
     mStoredCidQueue = {};
     mContentFilterStats.clear();
+    mCursor.clear();
     setEndOfFeed(false);
     setChronological(true);
     clearLocalChanges();
@@ -126,7 +125,7 @@ void AbstractPostFeedModel::clearFeed()
 
 void AbstractPostFeedModel::deletePost(int visibleIndex)
 {
-    mFeed.erase(mFeed.begin() + toPhysicalIndex(visibleIndex));
+    mList.erase(mList.begin() + toPhysicalIndex(visibleIndex));
 }
 
 void AbstractPostFeedModel::storeCid(const QString& cid)
@@ -233,14 +232,14 @@ void AbstractPostFeedModel::preprocess(const Post& post)
 
 std::tuple<std::optional<size_t>, bool> AbstractPostFeedModel::findOverlapStart(const AbstractPage& page, size_t feedIndex) const
 {
-    Q_ASSERT(mFeed.size() > feedIndex);
+    Q_ASSERT(mList.size() > feedIndex);
     QString cidFirstStoredPost;
     QDateTime timestampFirstStoredPost;
     bool overlapDiscardedPost = false;
 
-    for (size_t i = feedIndex; i < mFeed.size(); ++i)
+    for (size_t i = feedIndex; i < mList.size(); ++i)
     {
-        const auto& post = mFeed[i];
+        const auto& post = mList[i];
 
         if (post.skipChronoCheck())
             continue;
@@ -295,9 +294,9 @@ std::optional<size_t> AbstractPostFeedModel::findOverlapEnd(const AbstractPage& 
     const auto& cidLastPagePost = page.mFeed.back().getCid();
     const auto& timestampLastPagePost = page.mFeed.back().getTimelineTimestamp();
 
-    for (size_t i = feedIndex; i < mFeed.size(); ++ i)
+    for (size_t i = feedIndex; i < mList.size(); ++ i)
     {
-        const auto& post = mFeed[i];
+        const auto& post = mList[i];
 
         if (post.skipChronoCheck())
             continue;
@@ -354,39 +353,39 @@ void AbstractPostFeedModel::identifyThreadPost(const Post& post)
 
 const Post& AbstractPostFeedModel::firstPost() const
 {
-    if (mFeed.empty())
+    if (mList.empty())
     {
         qWarning() << "Feed is empty:" << getFeedName();
         return NULL_POST;
     }
 
-    return mFeed.front();
+    return mList.front();
 }
 
 const Post& AbstractPostFeedModel::getPost(int visibleIndex) const
 {
-    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mList.size())
     {
-        qWarning() << "Invalid index:" << visibleIndex << "size:" << mFeed.size() << "modelId:" << mModelId;
+        qWarning() << "Invalid index:" << visibleIndex << "size:" << mList.size() << "modelId:" << mModelId;
         return NULL_POST;
     }
 
-    return mFeed.at(toPhysicalIndex(visibleIndex));
+    return mList.at(toPhysicalIndex(visibleIndex));
 }
 
 void AbstractPostFeedModel::unfoldPosts(int startVisibleIndex)
 {
     qDebug() << "Unfold posts:" << startVisibleIndex;
 
-    if (startVisibleIndex < 0 || startVisibleIndex >= (int)mFeed.size())
+    if (startVisibleIndex < 0 || startVisibleIndex >= (int)mList.size())
     {
-        qWarning() << "Invalid index:" << startVisibleIndex << "size:" << mFeed.size();
+        qWarning() << "Invalid index:" << startVisibleIndex << "size:" << mList.size();
         return;
     }
 
-    for (int i = startVisibleIndex; i < (int)mFeed.size(); ++i)
+    for (int i = startVisibleIndex; i < (int)mList.size(); ++i)
     {
-        auto& post = mFeed[toPhysicalIndex(i)];
+        auto& post = mList[toPhysicalIndex(i)];
 
         if (post.getFoldedPostType() == QEnums::FOLDED_POST_NONE)
             break;
@@ -399,12 +398,12 @@ void AbstractPostFeedModel::unfoldPosts(int startVisibleIndex)
 
 QDateTime AbstractPostFeedModel::lastTimestamp() const
 {
-    auto it = mFeed.rbegin();
+    auto it = mList.rbegin();
 
-    while (it != mFeed.rend() && it->skipChronoCheck())
+    while (it != mList.rend() && it->skipChronoCheck())
         ++it;
 
-    if (it == mFeed.rend())
+    if (it == mList.rend())
         return {};
 
     return it->getTimelineTimestamp();
@@ -415,9 +414,9 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
     qDebug() << "Find timestamp:" << timestamp << "cid:" << cid;
     int foundIndex = 0;
 
-    for (int i = mFeed.size() - 1; i >= 0; --i)
+    for (int i = mList.size() - 1; i >= 0; --i)
     {
-        const Post& post = mFeed[i];
+        const Post& post = mList[i];
 
         if (post.skipChronoCheck())
             continue;
@@ -441,9 +440,9 @@ int AbstractPostFeedModel::findTimestamp(QDateTime timestamp, const QString& cid
 
 int AbstractPostFeedModel::findPost(const QString& cid) const
 {
-    for (int i = mFeed.size() - 1; i >= 0; --i)
+    for (int i = mList.size() - 1; i >= 0; --i)
     {
-        const Post& post = mFeed[i];
+        const Post& post = mList[i];
 
         if (post.getCid() == cid)
             return toVisibleIndex(i);
@@ -454,7 +453,7 @@ int AbstractPostFeedModel::findPost(const QString& cid) const
 
 int AbstractPostFeedModel::lastRowIndex() const
 {
-    return mFeed.empty() ? -1 : toVisibleIndex(mFeed.size() - 1);
+    return mList.empty() ? -1 : toVisibleIndex(mList.size() - 1);
 }
 
 int AbstractPostFeedModel::nextPostVisibleIndex(int visibleIndex) const
@@ -466,26 +465,25 @@ int AbstractPostFeedModel::nextPostVisibleIndex(int visibleIndex) const
 
 QDateTime AbstractPostFeedModel::getPostTimelineTimestamp(int visibleIndex) const
 {
-    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mList.size())
         return {};
 
-    return mFeed[toPhysicalIndex(visibleIndex)].getTimelineTimestamp();
+    return mList[toPhysicalIndex(visibleIndex)].getTimelineTimestamp();
 }
 
 QString AbstractPostFeedModel::getPostCid(int visibleIndex) const
 {
-    if (visibleIndex < 0 || visibleIndex >= (int)mFeed.size())
+    if (visibleIndex < 0 || visibleIndex >= (int)mList.size())
         return {};
 
-    return mFeed[toPhysicalIndex(visibleIndex)].getCid();
+    return mList[toPhysicalIndex(visibleIndex)].getCid();
 }
 
 void AbstractPostFeedModel::setGetFeedInProgress(bool inProgress)
 {
     if (inProgress != mGetFeedInProgress)
     {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
+        BaseType::setGetFeedInProgress(inProgress);
 
         if (mGetFeedInProgress)
             clearFeedError();
@@ -523,36 +521,30 @@ void AbstractPostFeedModel::backupAndClearFeed()
 {
     beginResetModel();
     mBackupFeed.clear();
-    mFeed.swap(mBackupFeed);
+    mList.swap(mBackupFeed);
     endResetModel();
 }
 
 void AbstractPostFeedModel::restoreFeed()
 {
     beginResetModel();
-    mFeed.clear();
-    mFeed.swap(mBackupFeed);
+    mList.clear();
+    mList.swap(mBackupFeed);
     endResetModel();
 }
 
 bool AbstractPostFeedModel::empty() const
 {
-    return mFeed.empty();
-}
-
-int AbstractPostFeedModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mFeed.size();
+    return mList.empty();
 }
 
 QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
     const int physicalIndex = toPhysicalIndex(index.row());
-    const auto& post = mFeed[physicalIndex];
+    const auto& post = mList[physicalIndex];
     const auto* change = getLocalChange(post.getCid());
 
     switch (Role(role))
@@ -1080,7 +1072,7 @@ void AbstractPostFeedModel::beginInsertRowsPhysical(int firstPhysicalIndex, int 
     }
     else
     {
-        const int newFeedSize = mFeed.size() + (lastPhysicalIndex - firstPhysicalIndex) + 1;
+        const int newFeedSize = mList.size() + (lastPhysicalIndex - firstPhysicalIndex) + 1;
         beginInsertRows({}, toVisibleIndex(lastPhysicalIndex, newFeedSize),
                         toVisibleIndex(firstPhysicalIndex, newFeedSize));
     }
@@ -1213,7 +1205,7 @@ void AbstractPostFeedModel::feedbackTransientChanged()
 
 void AbstractPostFeedModel::changeData(const QList<int>& roles)
 {
-    emit dataChanged(createIndex(0, 0), createIndex(mFeed.size() - 1, 0), roles);
+    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 // Easier would be to do this:
@@ -1235,9 +1227,9 @@ void AbstractPostFeedModel::postIsThreadChanged(const QString& postUri)
 
 void AbstractPostFeedModel::postAndRecordChanged(const QString& postUri, Role role)
 {
-    for (int i = 0; i < (int)mFeed.size(); ++i)
+    for (int i = 0; i < (int)mList.size(); ++i)
     {
-        const auto& post = mFeed[i];
+        const auto& post = mList[i];
 
         if (post.getUri() == postUri)
             emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(role) });
@@ -1271,9 +1263,9 @@ void AbstractPostFeedModel::postIdentifiedLanguageChanged(const QString& postUri
 
 void AbstractPostFeedModel::authorAdded(const QString& did)
 {
-    for (int i = 0; i < (int)mFeed.size(); ++i)
+    for (int i = 0; i < (int)mList.size(); ++i)
     {
-        const auto& post = mFeed[i];
+        const auto& post = mList[i];
 
         if (post.getReplyToAuthorDid() == did)
             emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostReplyToAuthor) });
@@ -1314,9 +1306,9 @@ void AbstractPostFeedModel::labelerAdded(const QString& did)
 
 void AbstractPostFeedModel::listAdded(const QString& uri)
 {
-    for (int i = 0; i < (int)mFeed.size(); ++i)
+    for (int i = 0; i < (int)mList.size(); ++i)
     {
-        const auto& post = mFeed[i];
+        const auto& post = mList[i];
 
         if (post.getBlockedAuthor().getBlockingByListUri() == uri)
             emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::PostBlockedAuthor) });
@@ -1364,25 +1356,25 @@ BasicProfile AbstractPostFeedModel::getContentLabeler(QEnums::ContentVisibility 
 
 ContentFilterStatsModel* AbstractPostFeedModel::createContentFilterStatsModel()
 {
-    qDebug() << "Feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
+    qDebug() << "Feed size:" << mList.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     auto* model = new ContentFilterStatsModel(mContentFilterStats, mContentFilter, this);
     return model;
 }
 
 void AbstractPostFeedModel::addEndOfFeedPlaceHolder()
 {
-    beginInsertRowsPhysical(mFeed.size(), mFeed.size());
-    mFeed.push_back(Post::createEndOfFeedPlaceHolder());
+    beginInsertRowsPhysical(mList.size(), mList.size());
+    mList.push_back(Post::createEndOfFeedPlaceHolder());
     endInsertRows();
 }
 
 void AbstractPostFeedModel::removeEndOfFeedPlaceHolder()
 {
-    if (mFeed.empty() || !mFeed.back().isPlaceHolder() || !mFeed.back().isEndOfFeed())
+    if (mList.empty() || !mList.back().isPlaceHolder() || !mList.back().isEndOfFeed())
         return;
 
-    beginRemoveRowsPhysical(mFeed.size() - 1, mFeed.size() - 1);
-    mFeed.pop_back();
+    beginRemoveRowsPhysical(mList.size() - 1, mList.size() - 1);
+    mList.pop_back();
     endRemoveRows();
 }
 
@@ -1391,13 +1383,13 @@ void AbstractPostFeedModel::flipPostsOrder()
     qDebug() << "Flip feed order, current reverse:" << mReverseFeed;
     beginResetModel();
 
-    const int endIndex = mFeed.size() - 1;
+    const int endIndex = mList.size() - 1;
     int threadStartIndex = -1;
     int threadEndIndex = -1;
 
     for (int i = 0; i <= endIndex; ++i)
     {
-        auto& post = mReverseFeed ? mFeed[endIndex - i] : mFeed[i];
+        auto& post = mReverseFeed ? mList[endIndex - i] : mList[i];
 
         switch (post.getPostType())
         {
@@ -1435,19 +1427,19 @@ void AbstractPostFeedModel::reversePosts(int startPhysicalIndex, int endPhysical
         return;
     }
 
-    if (endPhysicalIndex >= (int)mFeed.size())
+    if (endPhysicalIndex >= (int)mList.size())
     {
-        qWarning() << "Thread out of range:" << startPhysicalIndex << endPhysicalIndex << "size:" << mFeed.size();
+        qWarning() << "Thread out of range:" << startPhysicalIndex << endPhysicalIndex << "size:" << mList.size();
         return;
     }
 
-    if (mFeed[endPhysicalIndex].isEndOfFeed())
+    if (mList[endPhysicalIndex].isEndOfFeed())
     {
-        mFeed[startPhysicalIndex].setEndOfFeed(true);
-        mFeed[endPhysicalIndex].setEndOfFeed(false);
+        mList[startPhysicalIndex].setEndOfFeed(true);
+        mList[endPhysicalIndex].setEndOfFeed(false);
     }
 
-    std::reverse(mFeed.begin() + startPhysicalIndex, mFeed.begin() + endPhysicalIndex + 1);
+    std::reverse(mList.begin() + startPhysicalIndex, mList.begin() + endPhysicalIndex + 1);
 }
 
 

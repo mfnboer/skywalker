@@ -5,29 +5,23 @@
 namespace Skywalker {
 
 OzoneReportListModel::OzoneReportListModel(const QString& userDid, QObject* parent) :
-    QAbstractListModel(parent),
-    mUserDid(userDid)
+    BaseType(userDid, parent)
 {
-}
-
-int OzoneReportListModel::rowCount(const QModelIndex&) const
-{
-    return mReports.size();
 }
 
 QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mReports.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& report = mReports[index.row()];
+    const auto& report = mList[index.row()];
 
     switch (Role(role))
     {
     case Role::Report:
         return QVariant::fromValue(report);
     case Role::EndOfList:
-        return isEndOfList() && index.row() == (int)mReports.size() - 1;
+        return isEndOfList() && index.row() == (int)mList.size() - 1;
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -37,13 +31,7 @@ QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
 void OzoneReportListModel::clear()
 {
     qDebug() << "Clear reports";
-
-    if (!mReports.empty())
-    {
-        beginRemoveRows({}, 0, mReports.size() - 1);
-        mReports.clear();
-        endRemoveRows();
-    }
+    BaseType::clear();
 }
 
 int OzoneReportListModel::addReports(ATProto::ToolsOzoneInbox::ReportView::List reports, const QString& cursor)
@@ -51,32 +39,30 @@ int OzoneReportListModel::addReports(ATProto::ToolsOzoneInbox::ReportView::List 
     qDebug() << "Add reports:" << reports.size() << "cursor:" << cursor;
     mCursor = cursor;
 
-    const size_t newRowCount = mReports.size() + reports.size();
+    const size_t newRowCount = mList.size() + reports.size();
 
-    beginInsertRows({}, mReports.size(), newRowCount - 1);
+    beginInsertRows({}, mList.size(), newRowCount - 1);
 
     for (const auto& report : reports)
-        mReports.emplace_back(report);
+        mList.emplace_back(report);
 
     endInsertRows();
 
     return reports.size();
 }
 
-void OzoneReportListModel::setEndOfList()
+void OzoneReportListModel::setCursor(const QString& cursor)
 {
-    if (isEndOfList() && !mReports.empty())
-    {
-        const auto index = createIndex(mReports.size() - 1, 0);
-        emit dataChanged(index, index, { int(Role::EndOfList) });
-    }
+    BaseListModel<OzoneReportView>::setCursor(cursor);
+    setEndOfList();
 }
 
-void OzoneReportListModel::setGetFeedInProgress(bool inProgress)
+void OzoneReportListModel::setEndOfList()
 {
-    if (inProgress != mGetFeedInProgress) {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
+    if (isEndOfList() && !mList.empty())
+    {
+        const auto index = createIndex(mList.size() - 1, 0);
+        emit dataChanged(index, index, { int(Role::EndOfList) });
     }
 }
 

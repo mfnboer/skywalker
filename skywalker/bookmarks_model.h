@@ -18,17 +18,14 @@ public:
                             HashtagIndex& hashtags,
                             QObject* parent = nullptr);
 
-    void clear();
+    void clear() override;
     QString getFeedName() const override { return "bookmarks"; }
     void addBookmarks(const ATProto::AppBskyBookmark::GetBookmarksOutput& output);
-    const QString& getCursorNextPage() const { return mCursorNextPage; }
 
 private:
     void addPost(const ATProto::AppBskyFeed::PostView::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject);
     void addPost(const ATProto::AppBskyFeed::NotFoundPost::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject);
     void addPost(const ATProto::AppBskyFeed::BlockedPost::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject);
-
-    QString mCursorNextPage;
 };
 
 }

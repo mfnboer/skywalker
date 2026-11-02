@@ -25,12 +25,11 @@ public:
 
     void setDraftPosts(DraftPosts* draftPosts);
     QString getFeedName() const override { return "Draft posts"; }
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
     void setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed, const QString& cursor);
     void deleteDraft(int index);
     std::vector<Post> getThread(int index) const;
     QString getStoredMediaWarning(int index) const;
-    const QString& getCursor() const { return mCursor; }
 
     QVariant data(const QModelIndex& index, int role) const override;
 
@@ -43,7 +42,6 @@ private:
     void getPostExternal(int index) const;
     void getPostRecord(int index) const;
 
-    QString mCursor;
     std::vector<ATProto::AppBskyFeed::PostFeed> mRawFeed;
     std::unordered_map<QString, QList<ImageView>> mPostUriDraftImagesMap;
     std::vector<SharedImageSource::Ptr> mMemeSources;

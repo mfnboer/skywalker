@@ -66,8 +66,8 @@ Skywalker::Skywalker(QObject* parent) :
     mMutedWords(this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
-    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
-    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, mUserDid, this),
+    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, mUserDid, this),
     mChat(std::make_unique<Chat>(mBsky, mUserDid, mTimelineHide,
                                  mContentFilter, mFollowsActivityStore, this)),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
@@ -181,8 +181,8 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     mMutedWords(this),
     mFocusHashtags(new FocusHashtags(this)),
     mGraphUtils(this),
-    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
-    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, this),
+    mNotificationListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, mUserDid, this),
+    mMentionListModel(mContentFilter, mMutedWords, &mFollowsActivityStore, mUserDid, this),
     mChat(nullptr),
     mUserHashtags(USER_HASHTAG_INDEX_SIZE),
     mSeenHashtags(SEEN_HASHTAG_INDEX_SIZE),
@@ -3376,7 +3376,7 @@ void Skywalker::getAuthorFeedNextPage(int id, int maxPages, int minEntries)
     }
 
     auto* authorFeedModel = (*model).get();
-    const auto& cursor = authorFeedModel->getCursorNextPage();
+    const auto& cursor = authorFeedModel->getCursor();
 
     if (cursor.isEmpty())
     {
@@ -3472,7 +3472,7 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
     }
 
     auto* authorFeedModel = (*model).get();
-    const auto& cursor = authorFeedModel->getCursorNextPage();
+    const auto& cursor = authorFeedModel->getCursor();
 
     if (cursor.isEmpty())
     {
@@ -3485,7 +3485,7 @@ void Skywalker::getAuthorLikesNextPage(int id, int maxPages, int minEntries)
 
 int Skywalker::createNotificationListModel()
 {
-    auto model = std::make_unique<NotificationListModel>(mContentFilter, mMutedWords, &mFollowsActivityStore, this);
+    auto model = std::make_unique<NotificationListModel>(mContentFilter, mMutedWords, &mFollowsActivityStore, mUserDid, this);
     const int id = addModelToStore<NotificationListModel>(std::move(model), mNotificationListModels);
     return id;
 }
@@ -3802,7 +3802,7 @@ void Skywalker::getStarterPackListNextPage(int id, int limit, int maxPages, int 
 int Skywalker::createStarterPackListModel(StarterPackListModel::Type type, const QString& atId)
 {
     qDebug() << "Create starter pack list model";
-    auto model = std::make_unique<StarterPackListModel>(type, atId, this);
+    auto model = std::make_unique<StarterPackListModel>(type, atId, mUserDid, this);
     const int id = mStarterPackListModels.put(std::move(model));
     return id;
 }
@@ -4578,7 +4578,8 @@ void Skywalker::getAuthorListNextPage(int id, int limit, int maxPages, int minEn
 int Skywalker::createAuthorListModel(AuthorListModel::Type type, const QString& atId)
 {
     auto model = std::make_unique<AuthorListModel>(type, atId, mTimelineHide,
-                                                   mFollowsActivityStore, mContentFilter, this);
+                                                   mFollowsActivityStore, mContentFilter,
+                                                   mUserDid, this);
     const int id = mAuthorListModels.put(std::move(model));
     return id;
 }

@@ -25,20 +25,19 @@ QString AuthorFeedModel::getFeedName() const
 
 void AuthorFeedModel::clear()
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRows({}, 0, mList.size() - 1);
         clearFeed();
         endRemoveRows();
     }
 
-    mCursorNextPage.clear();
     qDebug() << "All posts removed";
 }
 
 int AuthorFeedModel::setFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
         clear();
 
     return addFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
@@ -49,36 +48,36 @@ int AuthorFeedModel::addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
     qDebug() << "Add raw posts:" << feed->mFeed.size();
     auto page = createPage(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
 
-    mCursorNextPage = feed->mCursor.value_or("");
+    mCursor = feed->mCursor.value_or("");
 
-    if (mCursorNextPage.isEmpty())
+    if (mCursor.isEmpty())
         setEndOfFeed(true);
 
     if (page->mFeed.empty())
     {
         qDebug() << "All posts have been filtered from page";
 
-        if (mCursorNextPage.isEmpty() && !mFeed.empty())
+        if (mCursor.isEmpty() && !mList.empty())
         {
-            mFeed.back().setEndOfFeed(true);
-            const auto index = createIndex(mFeed.size() - 1, 0);
+            mList.back().setEndOfFeed(true);
+            const auto index = createIndex(mList.size() - 1, 0);
             emit dataChanged(index, index, { int(Role::EndOfFeed) });
         }
 
         return 0;
     }
 
-    const size_t newRowCount = mFeed.size() + page->mFeed.size();
+    const size_t newRowCount = mList.size() + page->mFeed.size();
 
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
-    mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), page->mFeed.begin(), page->mFeed.end());
 
-    if (mCursorNextPage.isEmpty())
-        mFeed.back().setEndOfFeed(true);
+    if (mCursor.isEmpty())
+        mList.back().setEndOfFeed(true);
 
     endInsertRows();
 
-    qDebug() << "New feed size:" << mFeed.size();
+    qDebug() << "New feed size:" << mList.size();
     return page->mFeed.size();
 }
 

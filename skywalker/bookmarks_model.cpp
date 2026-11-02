@@ -18,63 +18,62 @@ BookmarksModel::BookmarksModel(const QString& userDid,
 
 void BookmarksModel::clear()
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRows({}, 0, mList.size() - 1);
         clearFeed();
         endRemoveRows();
     }
 
-    mCursorNextPage.clear();
     qDebug() << "All bookmarks removed";
 }
 
 void BookmarksModel::addBookmarks(const ATProto::AppBskyBookmark::GetBookmarksOutput& output)
 {
     qDebug() << "Add bookmarks:" << output.mBookmarks.size() << "cursor:" << output.mCursor.value_or("");
-    mCursorNextPage = output.mCursor.value_or("");
+    mCursor = output.mCursor.value_or("");
 
     // HACK: Bluesky never returns an empty cursor
     if (output.mBookmarks.empty())
-        mCursorNextPage = "";
+        mCursor = "";
 
-    if (mCursorNextPage.isEmpty())
+    if (mCursor.isEmpty())
         setEndOfFeed(true);
 
-    const size_t newRowCount = mFeed.size() + output.mBookmarks.size();
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
+    const size_t newRowCount = mList.size() + output.mBookmarks.size();
+    beginInsertRows({}, mList.size(), newRowCount - 1);
 
     for (const auto& bookmark : output.mBookmarks)
         std::visit([this, subject=bookmark->mSubject](auto&& post){ addPost(post, subject); }, bookmark->mItem);
 
     endInsertRows();
-    qDebug() << "New bookmarks count:" << mFeed.size();
+    qDebug() << "New bookmarks count:" << mList.size();
 
-    if (isEndOfFeed() && !mFeed.empty())
+    if (isEndOfFeed() && !mList.empty())
     {
-        mFeed.back().setEndOfFeed(true);
-        const auto index = createIndex(mFeed.size() - 1, 0);
+        mList.back().setEndOfFeed(true);
+        const auto index = createIndex(mList.size() - 1, 0);
         emit dataChanged(index, index, { int(Role::EndOfFeed) });
     }
 }
 
 void BookmarksModel::addPost(const ATProto::AppBskyFeed::PostView::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr&)
 {
-    mFeed.push_back(Post(post));
+    mList.push_back(Post(post));
 }
 
 void BookmarksModel::addPost(const ATProto::AppBskyFeed::NotFoundPost::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject)
 {
     Post p = Post::createNotFound(post->mUri, subject->mCid);
     p.setBookmarked(true);
-    mFeed.push_back(p);
+    mList.push_back(p);
 }
 
 void BookmarksModel::addPost(const ATProto::AppBskyFeed::BlockedPost::SharedPtr& post, const ATProto::ComATProtoRepo::StrongRef::SharedPtr& subject)
 {
     Post p = Post::createBlocked(post->mUri, subject->mCid);
     p.setBookmarked(true);
-    mFeed.push_back(p);
+    mList.push_back(p);
 }
 
 }

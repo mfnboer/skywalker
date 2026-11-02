@@ -116,7 +116,7 @@ public:
     int getLastInsertedRowIndex() const { return mLastInsertedRowIndex; }
 
     // Clear model and filter models
-    void clear();
+    void clear() override;
 
     // Clear model and destroy filter models
     void reset();

@@ -15,9 +15,11 @@ namespace Skywalker {
 using namespace std::chrono_literals;
 
 NotificationListModel::NotificationListModel(const ContentFilter& contentFilter,
-                                             const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
+                                             const MutedWords& mutedWords,
+                                             FollowsActivityStore* followsActivityStore,
+                                             const QString& userDid,
                                              QObject* parent) :
-    QAbstractListModel(parent),
+    BaseType(userDid, parent),
     mContentFilter(contentFilter),
     mMutedWords(mutedWords),
     mFollowsActivityStore(followsActivityStore)
@@ -55,12 +57,7 @@ void NotificationListModel::clearLocalState()
 
 void NotificationListModel::clearRows()
 {
-    if (!mList.empty())
-    {
-        beginRemoveRows({}, 0, mList.size() - 1);
-        mList.clear();
-        endRemoveRows();
-    }
+    BaseType::clear();
 }
 
 void NotificationListModel::addInviteCodeUsageNotificationRows()
@@ -710,12 +707,6 @@ QDateTime NotificationListModel::getTimestampLatestNotifcation() const
     return mList.front().getTimestamp();
 }
 
-int NotificationListModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mList.size();
-}
-
 QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 {
     if (index.row() < 0 || index.row() >= (int)mList.size())
@@ -1204,14 +1195,6 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
 
     qWarning() << "Uknown role requested:" << role;
     return {};
-}
-
-void NotificationListModel::setGetFeedInProgress(bool inProgress)
-{
-    if (inProgress != mGetFeedInProgress) {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
-    }
 }
 
 QHash<int, QByteArray> NotificationListModel::roleNames() const

@@ -85,7 +85,7 @@ void Bookmarks::getBookmarksNextPage()
         return;
     }
 
-    const QString& cursor = model->getCursorNextPage();
+    const QString& cursor = model->getCursor();
     if (cursor.isEmpty())
     {
         qDebug() << "Last page reached, no more cursor";

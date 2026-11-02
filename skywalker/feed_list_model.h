@@ -6,21 +6,17 @@
 #include "local_feed_model_changes.h"
 #include "local_profile_changes.h"
 #include "user_settings.h"
-#include <QAbstractListModel>
-#include <deque>
 
 namespace Skywalker {
 
 class FavoriteFeeds;
 class Skywalker;
 
-class FeedListModel : public QAbstractListModel,
-                      public BaseListModel,
+class FeedListModel : public BaseListModel<GeneratorView>,
                       public LocalFeedModelChanges,
                       public LocalProfileChanges
 {
     Q_OBJECT
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
 
 public:
@@ -42,31 +38,23 @@ public:
     explicit FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
                            QObject* parent = nullptr);
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
     void addFeeds(ATProto::AppBskyFeed::GeneratorView::List feeds, const QString& cursor);
     Q_INVOKABLE void addFeeds(const GeneratorView::List& feeds);
 
     Q_INVOKABLE void prependFeed(const GeneratorView& feed);
     Q_INVOKABLE void deleteEntry(int index);
 
-    const QString& getCursor() const { return mCursor; }
-    bool isEndOfList() const { return mCursor.isEmpty(); }
-
     // Linear search
     Q_INVOKABLE bool hasFeed(const QString& feedUri) const;
-
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
 
     void setFeedError(const QString& error);
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
 
 signals:
-    void getFeedInProgressChanged();
     void feedErrorChanged();
 
 protected:
@@ -88,13 +76,9 @@ private:
     void feedPinnedChanged();
     void changeData(const QList<int>& roles) override;
 
-    using FeedList = std::deque<GeneratorView>;
-    FeedList mFeeds;
-    QString mCursor;
+    using FeedList = EntityList;
     const FavoriteFeeds& mFavoriteFeeds;
-    QString mUserDid;
     const UserSettings& mUserSettings;
-    bool mGetFeedInProgress = false;
     QString mFeedError;
 };
 

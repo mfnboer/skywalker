@@ -5,25 +5,19 @@
 
 namespace Skywalker {
 
-StarterPackListModel::StarterPackListModel(Type type, const QString& atId, QObject* parent) :
-    QAbstractListModel(parent),
+StarterPackListModel::StarterPackListModel(Type type, const QString& atId, const QString& userDid, QObject* parent) :
+    BaseType(userDid, parent),
     mType(type),
     mAtId(atId)
 {
 }
 
-int StarterPackListModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mStarterPacks.size();
-}
-
 QVariant StarterPackListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mStarterPacks.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& starterPack = mStarterPacks[index.row()];
+    const auto& starterPack = mList[index.row()];
     const auto* listChange = !starterPack.isNull() ? LocalListModelChanges::getLocalChange(starterPack.getList().getUri()) : nullptr;
 
     switch (Role(role))
@@ -52,7 +46,7 @@ QVariant StarterPackListModel::data(const QModelIndex& index, int role) const
     case Role::OptOutUri:
         return listChange && listChange->mOptOutUri ? *listChange->mOptOutUri : starterPack.getList().getViewer().getReferenceListOptOut();
     case Role::EndOfFeed:
-        return index.row() == (int)mStarterPacks.size() - 1 && isEndOfList();
+        return index.row() == (int)mList.size() - 1 && isEndOfList();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -62,16 +56,8 @@ QVariant StarterPackListModel::data(const QModelIndex& index, int role) const
 void StarterPackListModel::clear()
 {
     qDebug() << "Clear starter packs";
-
-    if (!mStarterPacks.empty())
-    {
-        beginRemoveRows({}, 0, mStarterPacks.size() - 1);
-        mStarterPacks.clear();
-        endRemoveRows();
-    }
-
+    BaseType::clear();
     mStarterPackUriSet.clear();
-    mCursor.clear();
 }
 
 int StarterPackListModel::addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor)
@@ -112,8 +98,8 @@ int StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, c
     {
         qDebug() << "No new starter packs";
 
-        if (!mStarterPacks.empty())
-            emit dataChanged(createIndex(mStarterPacks.size() - 1, 0), createIndex(mStarterPacks.size() - 1, 0), { (int)Role::EndOfFeed });
+        if (!mList.empty())
+            emit dataChanged(createIndex(mList.size() - 1, 0), createIndex(mList.size() - 1, 0), { (int)Role::EndOfFeed });
 
         return 0;
     }
@@ -128,18 +114,18 @@ int StarterPackListModel::_addStarterPacks(const std::vector<T>& starterPacks, c
                   });
     }
 
-    const size_t newRowCount = mStarterPacks.size() + sortedStarterPacks.size();
+    const size_t newRowCount = mList.size() + sortedStarterPacks.size();
 
-    beginInsertRows({}, mStarterPacks.size(), newRowCount - 1);
+    beginInsertRows({}, mList.size(), newRowCount - 1);
 
     for (auto& starterPack : sortedStarterPacks)
     {
-        mStarterPacks.emplace_back(starterPack);
+        mList.emplace_back(starterPack);
         mStarterPackUriSet.insert(starterPack->mUri);
     }
 
     endInsertRows();
-    qDebug() << "New starter packs size:" << mStarterPacks.size();
+    qDebug() << "New starter packs size:" << mList.size();
     return sortedStarterPacks.size();
 }
 
@@ -148,11 +134,11 @@ void StarterPackListModel::prependStarterPack(const StarterPackView& starterPack
     qDebug() << "Prepend starter pack:" << starterPack.getName();
 
     beginInsertRows({}, 0, 0);
-    mStarterPacks.push_front(starterPack);
+    mList.push_front(starterPack);
     mStarterPackUriSet.insert(starterPack.getUri());
     endInsertRows();
 
-    qDebug() << "New starter packs size:" << mStarterPacks.size();
+    qDebug() << "New starter packs size:" << mList.size();
 }
 
 StarterPackViewBasic StarterPackListModel::updateEntry(
@@ -161,13 +147,13 @@ StarterPackViewBasic StarterPackListModel::updateEntry(
 {
     qDebug() << "Update entry:" << name << "index:" << index;
 
-    if (index < 0 || (size_t)index >= mStarterPacks.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mStarterPacks.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return {};
     }
 
-    auto& starterPack = mStarterPacks[index];
+    auto& starterPack = mList[index];
 
     if (cid != starterPack.getCid())
         starterPack.setCid(cid);
@@ -186,16 +172,16 @@ void StarterPackListModel::deleteEntry(int index)
 {
     qDebug() << "Delete entry:" << index;
 
-    if (index < 0 || (size_t)index >= mStarterPacks.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mStarterPacks.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return;
     }
 
-    const QString starterPackUri = mStarterPacks[index].getUri();
+    const QString starterPackUri = mList[index].getUri();
 
     beginRemoveRows({}, index, index);
-    mStarterPacks.erase(mStarterPacks.begin() + index);
+    mList.erase(mList.begin() + index);
     mStarterPackUriSet.erase(starterPackUri);
     endRemoveRows();
 }
@@ -204,35 +190,27 @@ StarterPackViewBasic StarterPackListModel::getEntry(int index) const
 {
     qDebug() << "Get entry:" << index;
 
-    if (index < 0 || (size_t)index >= mStarterPacks.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mStarterPacks.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return {};
     }
 
-    return mStarterPacks[index];
+    return mList[index];
 }
 
 void StarterPackListModel::setCursor(const QString& cursor)
 {
-    mCursor = cursor;
+    BaseType::setCursor(cursor);
     setEndOfList();
 }
 
 void StarterPackListModel::setEndOfList()
 {
-    if (isEndOfList() && !mStarterPacks.empty())
+    if (isEndOfList() && !mList.empty())
     {
-        const auto index = createIndex(mStarterPacks.size() - 1, 0);
+        const auto index = createIndex(mList.size() - 1, 0);
         emit dataChanged(index, index, { int(Role::EndOfFeed) });
-    }
-}
-
-void StarterPackListModel::setGetFeedInProgress(bool inProgress)
-{
-    if (inProgress != mGetFeedInProgress) {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
     }
 }
 
@@ -294,7 +272,7 @@ void StarterPackListModel::optOutUriChanged()
 
 void StarterPackListModel::changeData(const QList<int>& roles)
 {
-    emit dataChanged(createIndex(0, 0), createIndex(mStarterPacks.size() - 1, 0), roles);
+    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

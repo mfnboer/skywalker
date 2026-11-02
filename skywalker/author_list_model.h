@@ -8,18 +8,24 @@
 #include "local_author_model_changes.h"
 #include "profile.h"
 #include "profile_store.h"
-#include <QAbstractListModel>
-#include <deque>
 
 namespace Skywalker {
 
-class AuthorListModel : public QAbstractListModel,
-                        public BaseListModel,
+struct AuthorListEntry
+{
+    Profile mProfile;
+    QString mListItemUri; // empty when not part of a list
+    bool mOptedOut = false;
+    bool mEndOfList = false;
+
+    explicit AuthorListEntry(const Profile& profile, const QString& listItemUri = {}, bool optedOut = false);
+};
+
+class AuthorListModel : public BaseListModel<AuthorListEntry>,
                         public LocalAuthorModelChanges
 {
     Q_OBJECT
     Q_PROPERTY(int countDelta READ getCountDelta NOTIFY countDeltaChanged FINAL)
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QEnums::AuthorListType type READ getType CONSTANT FINAL)
 
 public:
@@ -36,28 +42,18 @@ public:
         EndOfList
     };
 
-    struct ListEntry
-    {
-        Profile mProfile;
-        QString mListItemUri; // empty when not part of a list
-        bool mOptedOut = false;
-        bool mEndOfList = false;
-
-        explicit ListEntry(const Profile& profile, const QString& listItemUri = {}, bool optedOut = false);
-    };
-
     using Type = QEnums::AuthorListType;
     using Ptr = std::unique_ptr<AuthorListModel>;
 
     AuthorListModel(Type type, const QString& atId,
                     const IProfileStore& timelineHide,
                     const FollowsActivityStore& followsActivityStore,
-                    const ContentFilter& contentFilter, QObject* parent = nullptr);
+                    const ContentFilter& contentFilter,
+                    const QString& userDid, QObject* parent = nullptr);
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
     int addAuthors(ATProto::AppBskyActor::ProfileView::List authors, const QString& cursor);
     int addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List authors, const QString& cursor);
     int addAuthors(ATProto::AppBskyGraph::ListItemView::List listItems, const QString& cursor);
@@ -65,9 +61,7 @@ public:
     Q_INVOKABLE void prependBasicProfile(const BasicProfile& author, const QString& listItemUri);
     Q_INVOKABLE void deleteEntry(int index);
 
-    const QString& getCursor() const { return mCursor; }
-    void setCursor(const QString& cursor);
-    bool isEndOfList() const { return mCursor.isEmpty(); }
+    void setCursor(const QString& cursor) override;
 
     Type getType() const { return mType; }
 
@@ -80,12 +74,8 @@ public:
     void setCountDelta(int delta);
     int getCountDelta() const { return mCountDelta; }
 
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
-
 signals:
     void countDeltaChanged();
-    void getFeedInProgressChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -99,7 +89,7 @@ protected:
     virtual void hideFromTimelineChanged() override;
 
 private:
-    using AuthorList = std::deque<ListEntry>;
+    using AuthorList = EntityList;
 
     void setEndOfList();
     AuthorList filterAuthors(const ATProto::AppBskyActor::ProfileView::List& authors) const;
@@ -111,16 +101,12 @@ private:
     const FollowsActivityStore& mFollowsActivityStore;
     const ContentFilter& mContentFilter;
 
-    AuthorList mList;
     std::unordered_set<QString> mDidSet;
     std::deque<ATProto::AppBskyActor::ProfileView::List> mRawLists;
     std::deque<ATProto::AppBskyActor::ProfileViewDetailed::List> mRawDetailedLists;
     std::deque<ATProto::AppBskyGraph::ListItemView::List> mRawItemLists;
     std::vector<QString> mActiveFollowsDids;
     int mCountDelta = 0;
-
-    QString mCursor;
-    bool mGetFeedInProgress = false;
 };
 
 }

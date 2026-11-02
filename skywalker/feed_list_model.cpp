@@ -8,9 +8,8 @@ namespace Skywalker {
 
 FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
                              QObject* parent) :
-    QAbstractListModel(parent),
+    BaseType(skywalker->getUserDid(), parent),
     mFavoriteFeeds(favoriteFeeds),
-    mUserDid(skywalker->getUserDid()),
     mUserSettings(*skywalker->getUserSettings())
 {
     connect(&mFavoriteFeeds, &FavoriteFeeds::feedSaved, this, [this]{ feedSavedChanged(); });
@@ -18,18 +17,12 @@ FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skyw
     connect(&mFavoriteFeeds, &FavoriteFeeds::feedUnpinned, this, [this](QString){ feedPinnedChanged(); });
 }
 
-int FeedListModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mFeeds.size();
-}
-
 QVariant FeedListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mFeeds.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& feed = mFeeds[index.row()];
+    const auto& feed = mList[index.row()];
     const auto* change = getLocalChange(feed.getCid());
 
     switch (Role(role))
@@ -57,7 +50,7 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
     case Role::FeedPinned:
         return mFavoriteFeeds.isPinnedFeed(feed.getUri());
     case Role::EndOfFeed:
-        return index.row() == (int)mFeeds.size() - 1 && isEndOfList();
+        return index.row() == (int)mList.size() - 1 && isEndOfList();
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -67,15 +60,7 @@ QVariant FeedListModel::data(const QModelIndex& index, int role) const
 void FeedListModel::clear()
 {
     qDebug() << "Clear feeds";
-
-    if (!mFeeds.empty())
-    {
-        beginRemoveRows({}, 0, mFeeds.size() - 1);
-        mFeeds.clear();
-        endRemoveRows();
-    }
-
-    mCursor.clear();
+    BaseType::clear();
     clearLocalChanges();
     clearLocalProfileChanges();
 }
@@ -89,24 +74,24 @@ void FeedListModel::addFeeds(ATProto::AppBskyFeed::GeneratorView::List feeds, co
     {
         qDebug() << "No new feeds";
 
-        if (!mFeeds.empty())
-            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfFeed });
+        if (!mList.empty())
+            emit dataChanged(createIndex(mList.size() - 1, 0), createIndex(mList.size() - 1, 0), { (int)Role::EndOfFeed });
 
         return;
     }
 
-    const size_t newRowCount = mFeeds.size() + feeds.size();
+    const size_t newRowCount = mList.size() + feeds.size();
 
-    beginInsertRows({}, mFeeds.size(), newRowCount - 1);
+    beginInsertRows({}, mList.size(), newRowCount - 1);
 
     for (auto& view : feeds)
     {
         qDebug() << view->mDisplayName;
-        mFeeds.emplace_back(view);
+        mList.emplace_back(view);
     }
 
     endInsertRows();
-    qDebug() << "New feeds size:" << mFeeds.size();
+    qDebug() << "New feeds size:" << mList.size();
 }
 
 void FeedListModel::addFeeds(const GeneratorView::List& feeds)
@@ -116,19 +101,19 @@ void FeedListModel::addFeeds(const GeneratorView::List& feeds)
     {
         qDebug() << "No new feeds";
 
-        if (!mFeeds.empty())
-            emit dataChanged(createIndex(mFeeds.size() - 1, 0), createIndex(mFeeds.size() - 1, 0), { (int)Role::EndOfFeed });
+        if (!mList.empty())
+            emit dataChanged(createIndex(mList.size() - 1, 0), createIndex(mList.size() - 1, 0), { (int)Role::EndOfFeed });
 
         return;
     }
 
-    const size_t newRowCount = mFeeds.size() + feeds.size();
+    const size_t newRowCount = mList.size() + feeds.size();
 
-    beginInsertRows({}, mFeeds.size(), newRowCount - 1);
-    mFeeds.insert(mFeeds.end(), feeds.begin(), feeds.end());
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), feeds.begin(), feeds.end());
     endInsertRows();
 
-    qDebug() << "New feeds size:" << mFeeds.size();
+    qDebug() << "New feeds size:" << mList.size();
 }
 
 void FeedListModel::prependFeed(const GeneratorView& feed)
@@ -136,39 +121,31 @@ void FeedListModel::prependFeed(const GeneratorView& feed)
     qDebug() << "Prepend feed:" << feed.getName();
 
     beginInsertRows({}, 0, 0);
-    mFeeds.push_front(feed);
+    mList.push_front(feed);
     endInsertRows();
 
-    qDebug() << "New feeds size:" << mFeeds.size();
+    qDebug() << "New feeds size:" << mList.size();
 }
 
 void FeedListModel::deleteEntry(int index)
 {
     qDebug() << "Delete entry:" << index;
 
-    if (index < 0 || (size_t)index >= mFeeds.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mFeeds.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return;
     }
 
     beginRemoveRows({}, index, index);
-    mFeeds.erase(mFeeds.begin() + index);
+    mList.erase(mList.begin() + index);
     endRemoveRows();
 }
 
 bool FeedListModel::hasFeed(const QString& feedUri) const
 {
-    return std::find_if(mFeeds.begin(), mFeeds.end(),
-                        [feedUri](const auto& feed){ return feed.getUri() == feedUri; }) != mFeeds.end();
-}
-
-void FeedListModel::setGetFeedInProgress(bool inProgress)
-{
-    if (inProgress != mGetFeedInProgress) {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
-    }
+    return std::find_if(mList.begin(), mList.end(),
+                        [feedUri](const auto& feed){ return feed.getUri() == feedUri; }) != mList.end();
 }
 
 void FeedListModel::setFeedError(const QString& error)
@@ -240,7 +217,7 @@ void FeedListModel::feedPinnedChanged()
 
 void FeedListModel::changeData(const QList<int>& roles)
 {
-    emit dataChanged(createIndex(0, 0), createIndex(mFeeds.size() - 1, 0), roles);
+    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

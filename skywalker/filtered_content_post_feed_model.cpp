@@ -26,7 +26,7 @@ FilteredContentPostFeedModel::FilteredContentPostFeedModel(
 
 QVariant FilteredContentPostFeedModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
     const auto roleData = PostFeedModel::data(index, role);
@@ -39,7 +39,7 @@ QVariant FilteredContentPostFeedModel::data(const QModelIndex& index, int role) 
     if (!isFilteredPostFeed())
         return roleData;
 
-    const auto& post = mFeed[index.row()];
+    const auto& post = mList[index.row()];
 
     switch (Role(role))
     {

@@ -8,17 +8,21 @@
 #include "local_author_model_changes.h"
 #include "profile_store.h"
 #include <atproto/lib/lexicon/chat_bsky_group.h>
-#include <QAbstractListModel>
-#include <deque>
 
 namespace Skywalker {
 
-class ChatAuthorListModel : public QAbstractListModel,
-                            public BaseListModel,
+struct ChatAuthorListEntry
+{
+    ChatBasicProfile mProfile;
+    QDateTime mJoinRequestedAt; // only set for a list of join requests
+
+    explicit ChatAuthorListEntry(const ChatBasicProfile& profile, QDateTime joinRequestedAt = {});
+};
+
+class ChatAuthorListModel : public BaseListModel<ChatAuthorListEntry>,
                             public LocalAuthorModelChanges
 {
     Q_OBJECT
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
 
 public:
@@ -33,25 +37,17 @@ public:
         EndOfList
     };
 
-    struct ListEntry
-    {
-        ChatBasicProfile mProfile;
-        QDateTime mJoinRequestedAt; // only set for a list of join requests
-
-        explicit ListEntry(const ChatBasicProfile& profile, QDateTime joinRequestedAt = {});
-    };
-
     using Type = QEnums::ChatAuthorListType;
     using Ptr = std::unique_ptr<ChatAuthorListModel>;
 
     ChatAuthorListModel(Type type,
                         const IProfileStore& timelineHide,
-                        const ContentFilter& contentFilter, QObject* parent = nullptr);
+                        const ContentFilter& contentFilter,
+                        const QString& userDid, QObject* parent = nullptr);
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
     void addAuthors(ATProto::ChatBskyActor::ProfileViewBasic::List authors, const QString& cursor);
     void addJoinRequests(ATProto::ChatBskyGroup::JoinRequestView::List joinRequests, const QString& cursor);
     void prependAuthor(const ATProto::ChatBskyActor::ProfileViewBasic& author);
@@ -59,20 +55,15 @@ public:
     void deleteAuthor(const QString& did);
     void deleteEntry(int index);
 
-    const QString& getCursor() const { return mCursor; }
-    bool isEndOfList() const { return mCursor.isEmpty(); }
-
     Type getType() const { return mType; }
 
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+    void setGetFeedInProgress(bool inProgress) override;
 
     virtual void setFeedError(const QString& error);
     void clearFeedError() { setFeedError({}); }
     const QString& getFeedError() const { return mFeedError; }
 
 signals:
-    void getFeedInProgressChanged();
     void feedErrorChanged();
 
 protected:
@@ -87,7 +78,7 @@ protected:
     virtual void hideFromTimelineChanged() override;
 
 private:
-    using AuthorList = std::deque<ListEntry>;
+    using AuthorList = EntityList;
 
     void setEndOfList();
     AuthorList filterAuthors(const ATProto::ChatBskyActor::ProfileViewBasic::List& authors) const;
@@ -97,12 +88,9 @@ private:
     const IProfileStore& mTimelineHide;
     const ContentFilter& mContentFilter;
 
-    AuthorList mList;
     std::deque<ATProto::ChatBskyActor::ProfileViewBasic::List> mRawLists;
     std::deque<ATProto::ChatBskyGroup::JoinRequestView::List> mRawRequestLists;
 
-    QString mCursor;
-    bool mGetFeedInProgress = false;
     QString mFeedError;
 };
 

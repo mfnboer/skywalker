@@ -4,7 +4,7 @@
 
 namespace Skywalker {
 
-ChatAuthorListModel::ListEntry::ListEntry(const ChatBasicProfile& profile, QDateTime joinRequestedAt) :
+ChatAuthorListEntry::ChatAuthorListEntry(const ChatBasicProfile& profile, QDateTime joinRequestedAt) :
     mProfile(profile),
     mJoinRequestedAt(joinRequestedAt)
 {
@@ -13,19 +13,14 @@ ChatAuthorListModel::ListEntry::ListEntry(const ChatBasicProfile& profile, QDate
 ChatAuthorListModel::ChatAuthorListModel(Type type,
                                  const IProfileStore& timelineHide,
                                  const ContentFilter& contentFilter,
+                                 const QString& userDid,
                                  QObject* parent) :
-    QAbstractListModel(parent),
+    BaseType(userDid, parent),
     mType(type),
     mTimelineHide(timelineHide),
     mContentFilter(contentFilter)
 {
     qDebug() << "New chat author list model type:" << type;
-}
-
-int ChatAuthorListModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mList.size();
 }
 
 QVariant ChatAuthorListModel::data(const QModelIndex& index, int role) const
@@ -64,15 +59,8 @@ QVariant ChatAuthorListModel::data(const QModelIndex& index, int role) const
 
 void ChatAuthorListModel::clear()
 {
-    if (!mList.empty())
-    {
-        beginRemoveRows({}, 0, mList.size() - 1);
-        mList.clear();
-        clearLocalChanges();
-        endRemoveRows();
-    }
-
-    mCursor.clear();
+    BaseType::clear();
+    clearLocalChanges();
     mRawLists.clear();
     mRawRequestLists.clear();
 }
@@ -105,7 +93,7 @@ void ChatAuthorListModel::addJoinRequests(ATProto::ChatBskyGroup::JoinRequestVie
 
     for (const auto& request : joinRequests)
     {
-        ListEntry entry(ChatBasicProfile(*request->mRequestedBy), request->mRequestedAt);
+        ChatAuthorListEntry entry(ChatBasicProfile(*request->mRequestedBy), request->mRequestedAt);
         mList.push_back(entry);
     }
 
@@ -122,7 +110,7 @@ void ChatAuthorListModel::prependAuthor(const ATProto::ChatBskyActor::ProfileVie
     const ChatBasicProfile profile(author);
 
     beginInsertRows({}, 0, 0);
-    mList.push_front(ListEntry{profile});
+    mList.push_front(ChatAuthorListEntry{profile});
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();
@@ -200,7 +188,7 @@ ChatAuthorListModel::AuthorList ChatAuthorListModel::filterAuthors(const ATProto
             continue;
         }
 
-        list.push_back(ListEntry{profile});
+        list.push_back(ChatAuthorListEntry{profile});
     }
 
     return list;
@@ -209,8 +197,7 @@ ChatAuthorListModel::AuthorList ChatAuthorListModel::filterAuthors(const ATProto
 void ChatAuthorListModel::setGetFeedInProgress(bool inProgress)
 {
     if (inProgress != mGetFeedInProgress) {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
+        BaseType::setGetFeedInProgress(inProgress);
 
         if (mGetFeedInProgress)
             clearFeedError();

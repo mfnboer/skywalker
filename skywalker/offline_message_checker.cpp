@@ -166,7 +166,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QC
     mImageReader(mNetwork),
     mContentFilterPolicies(this),
     mContentFilter(mUserDid, mContentFilterPolicies, mUserPreferences, &mUserSettings),
-    mNotificationListModel(mContentFilter, mMutedWords, nullptr)
+    mNotificationListModel(mContentFilter, mMutedWords, nullptr, mUserDid)
 {
     initNetwork();
     mNotificationListModel.enableRetrieveNotificationPosts(false);
@@ -179,7 +179,7 @@ OffLineMessageChecker::OffLineMessageChecker(const QString& settingsFileName, QE
     mImageReader(mNetwork),
     mContentFilterPolicies(this),
     mContentFilter(mUserDid, mContentFilterPolicies, mUserPreferences, &mUserSettings),
-    mNotificationListModel(mContentFilter, mMutedWords, nullptr)
+    mNotificationListModel(mContentFilter, mMutedWords, nullptr, mUserDid)
 {
     initNetwork();
     mNotificationListModel.enableRetrieveNotificationPosts(false);
