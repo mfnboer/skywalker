@@ -7,8 +7,8 @@
 namespace Skywalker {
 
 FeedListModel::FeedListModel(const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
-                             QObject* parent) :
-    BaseType(skywalker->getUserDid(), parent),
+                             const QString& userDid, QObject* parent) :
+    BaseType(userDid, parent),
     mFavoriteFeeds(favoriteFeeds),
     mUserSettings(*skywalker->getUserSettings())
 {
@@ -213,11 +213,6 @@ void FeedListModel::feedSavedChanged()
 void FeedListModel::feedPinnedChanged()
 {
     changeData({ int(Role::FeedPinned) });
-}
-
-void FeedListModel::changeData(const QList<int>& roles)
-{
-    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

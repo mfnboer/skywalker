@@ -2,15 +2,10 @@
 // License: GPLv3
 #pragma once
 #include "anniversary.h"
-#include "author_feed_model.h"
 #include "author_list_model.h"
-#include "bookmarks.h"
-#include "bookmarks_model.h"
-#include "content_group_list_model.h"
 #include "draft_posts_model.h"
 #include "edit_user_preferences.h"
 #include "favorite_feeds.h"
-#include "feed_list_model.h"
 #include "feed_pager.h"
 #include "following.h"
 #include "follows_activity_store.h"
@@ -23,9 +18,7 @@
 #include "muted_words.h"
 #include "notification_list_model.h"
 #include "post_feed_model.h"
-#include "post_thread_model.h"
 #include "profile_store.h"
-#include "search_post_feed_model.h"
 #include "session_manager.h"
 #include "starter_pack_list_model.h"
 #include "user_settings.h"
@@ -38,17 +31,26 @@
 
 namespace Skywalker {
 
+class AuthorFeedModel;
 class Backlinks;
+class Bookmarks;
+class BookmarksModel;
 class Chat;
 class Constellation;
-class OAuthController;
+class ContentGroupListModel;
+class FeedListModel;
 class FocusHashtags;
 class ForYou;
+class OAuthController;
+class OzoneReportListModel;
+class PostThreadModel;
+class SearchPostFeedModel;
 class ShareUtils;
 class VerificationUtils;
 
 class Skywalker : public IFeedPager
 {
+    Q_MOC_INCLUDE("bookmarks_model.h")
     Q_MOC_INCLUDE("share_utils.h")
     Q_MOC_INCLUDE("verification_utils.h")
 
@@ -198,6 +200,9 @@ public:
     Q_INVOKABLE int createStarterPackListModel(StarterPackListModel::Type type, const QString& atId);
     Q_INVOKABLE StarterPackListModel* getStarterPackListModel(int id) const;
     Q_INVOKABLE void removeStarterPackListModel(int id);
+    Q_INVOKABLE int createOzoneReportListModel(const QString& filter);
+    Q_INVOKABLE OzoneReportListModel* getOzoneReportListModel(int id);
+    Q_INVOKABLE void removeOzoneReportListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri, const QString& sortOrder);
@@ -296,7 +301,7 @@ public:
     HashtagIndex& getUserHashtags() { return mUserHashtags; }
     HashtagIndex& getSeenHashtags() { return mSeenHashtags; }
     FavoriteFeeds* getFavoriteFeeds() { return &mFavoriteFeeds; }
-    DraftPostsModel::Ptr createDraftPostsModel();
+    std::unique_ptr<DraftPostsModel> createDraftPostsModel();
     void saveUserPreferences(const ATProto::UserPreferences& prefs, std::function<void()> okCb = nullptr);
     bool getHideVerificationBadges() const { return mUserPreferences.getVerificationPrefs().mHideBadges; };
 
@@ -472,9 +477,9 @@ private:
     ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
-    ContentGroupListModel::Ptr mGlobalContentGroupListModel;
+    std::unique_ptr<ContentGroupListModel> mGlobalContentGroupListModel;
 
-    BookmarksModel::Ptr mBookmarksModel;
+    std::unique_ptr<BookmarksModel> mBookmarksModel;
     MutedWords mMutedWords;
     MutedWordsNoMutes mMutedWordsNoMutes;
     std::unique_ptr<FocusHashtags> mFocusHashtags;
@@ -489,15 +494,16 @@ private:
     QDateTime mTimelineUpdatePaused;
 
     // NOTE: update makeLocalModelChange() when you add models
-    ItemStore<PostThreadModel::Ptr> mPostThreadModels;
-    ItemStore<AuthorFeedModel::Ptr> mAuthorFeedModels;
-    ItemStore<SearchPostFeedModel::Ptr> mSearchPostFeedModels;
+    ItemStore<std::unique_ptr<PostThreadModel>> mPostThreadModels;
+    ItemStore<std::unique_ptr<AuthorFeedModel>> mAuthorFeedModels;
+    ItemStore<std::unique_ptr<SearchPostFeedModel>> mSearchPostFeedModels;
     ItemStore<AuthorListModel::Ptr> mAuthorListModels;
     ItemStore<ListListModel::Ptr> mListListModels;
-    ItemStore<FeedListModel::Ptr> mFeedListModels;
+    ItemStore<std::unique_ptr<FeedListModel>> mFeedListModels;
     ItemStore<StarterPackListModel::Ptr> mStarterPackListModels;
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
-    ItemStore<ContentGroupListModel::Ptr> mContentGroupListModels;
+    ItemStore<std::unique_ptr<ContentGroupListModel>> mContentGroupListModels;
+    ItemStore<std::unique_ptr<OzoneReportListModel>> mOzoneReportListModels;
     ItemStore<NotificationListModel::Ptr> mNotificationListModels;
     NotificationListModel mNotificationListModel; // All notifications
     NotificationListModel mMentionListModel; // Mentions only

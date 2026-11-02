@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include <atproto/lib/lexicon/com_atproto_moderation.h>
 #include <atproto/lib/lexicon/tools_ozone_inbox.h>
 
 namespace Skywalker {
@@ -17,6 +18,7 @@ class OzoneReportView
     Q_PROPERTY(QString lastActionTaken READ getLastActionTaken FINAL)
     Q_PROPERTY(QEnums::OzoneReportSubjectType subjectType READ getSubjectType FINAL)
     Q_PROPERTY(QVariant subject READ getSubjectType FINAL)
+    Q_PROPERTY(QEnums::OzoneReportStatus status READ getStatus FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(QDateTime updatedAt READ getUpdatedAt FINAL)
     QML_VALUE_TYPE(ozonereportview)
@@ -29,16 +31,20 @@ public:
     QString getSource() const { return mReport ? mReport->mSrc : ""; }
     int getId() const { return mReport ? mReport->mId : -1; }
     bool isRead() const { return mReport ? mReport->mIsRead : false; }
-    QString getReasonType() const { return mReport ? mReport->mReasonType : ""; }
+    QString getReasonType() const { return mReport ? ATProto::ComATProtoModeration::reasonStringToTitle(mReport->mReasonType) : ""; }
     QString getReason() const { return mReport ? mReport->mReason.value_or("") : ""; }
-    QString getLastActionTaken() const { return mReport ? mReport->mLastActionTaken.value_or("") : ""; }
+    QString getLastActionTaken() const;
     QEnums::OzoneReportSubjectType getSubjectType() const;
     QVariant getSubject() const;
     QEnums::OzoneReportStatus getStatus() const { return mReport ? (QEnums::OzoneReportStatus)mReport->mStatus.value() : QEnums::OZONE_REPORT_STATUS_UNKNOWN; }
     QDateTime getCreatedAt() const { return mReport ? mReport->mCreatedAt : QDateTime{}; }
     QDateTime getUpdatedAt() const { return mReport ? mReport->mUpdatedAt : QDateTime{}; }
 
+    QString getSubjectDid() const;
+
 private:
+    QString actionToDescription(const QString& action) const;
+
     ATProto::ToolsOzoneInbox::ReportView::SharedPtr mReport;
 };
 

@@ -1346,7 +1346,6 @@ void SearchUtils::getTrendingTopics()
 {
     qDebug() << "Get trending topics";
     Q_ASSERT(mSkywalker);
-    const QString& did = mSkywalker->getUserDid();
     const int limit = std::max(MAX_TRENDING_TOPICS, ATProto::Client::MAX_TRENDS);
 
     bskyClient()->getTrends(limit,

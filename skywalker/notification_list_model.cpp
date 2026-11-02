@@ -1394,12 +1394,6 @@ void NotificationListModel::bookmarkTransientChanged()
     changeData({ int(Role::NotificationPostBookmarkTransient) });
 }
 
-void NotificationListModel::changeData(const QList<int>& roles)
-{
-    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
-}
-
-
 BasicProfile NotificationListModel::getContentLabeler(QEnums::ContentVisibility visibility,
                                                       const ContentLabelList& labels,
                                                       int labelIndex) const

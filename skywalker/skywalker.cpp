@@ -2,11 +2,16 @@
 // License: GPLv3
 #include "skywalker.h"
 #include "author_cache.h"
+#include "author_feed_model.h"
 #include "backlinks.h"
+#include "bookmarks.h"
+#include "bookmarks_model.h"
 #include "chat.h"
 #include "constellation.h"
+#include "content_group_list_model.h"
 #include "definitions.h"
 #include "draft_orphaned_media_checker.h"
+#include "feed_list_model.h"
 #include "file_utils.h"
 #include "filtered_content_post_feed_model.h"
 #include "focus_hashtags.h"
@@ -17,9 +22,12 @@
 #include "network_holder.h"
 #include "oauth_controller.h"
 #include "offline_message_checker.h"
+#include "ozone_report_list_model.h"
 #include "photo_picker.h"
 #include "post_language_cache.h"
 #include "post_thread_cache.h"
+#include "post_thread_model.h"
+#include "search_post_feed_model.h"
 #include "search_utils.h"
 #include "share_utils.h"
 #include "shared_image_provider.h"
@@ -236,6 +244,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mContentGroupListModels.empty());
     Q_ASSERT(mNotificationListModels.empty());
+    Q_ASSERT(mOzoneReportListModels.empty());
 }
 
 Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent)
@@ -3557,7 +3566,7 @@ void Skywalker::removeSearchPostFeedModel(int id)
 int Skywalker::createFeedListModel()
 {
     qDebug() << "Create feed list model";
-    auto model = std::make_unique<FeedListModel>(mFavoriteFeeds, this, this);
+    auto model = std::make_unique<FeedListModel>(mFavoriteFeeds, this, mUserDid, this);
     const int id = mFeedListModels.put(std::move(model));
     return id;
 }
@@ -3818,6 +3827,28 @@ void Skywalker::removeStarterPackListModel(int id)
 {
     qDebug() << "Remove starter pack model:" << id;
     mStarterPackListModels.remove(id);
+}
+
+int Skywalker::createOzoneReportListModel(const QString& filter)
+{
+    qDebug() << "Create ozone report list model";
+    auto model = std::make_unique<OzoneReportListModel>(filter, mUserDid, this);
+    const int id = mOzoneReportListModels.put(std::move(model));
+    return id;
+}
+
+OzoneReportListModel* Skywalker::getOzoneReportListModel(int id)
+{
+    qDebug() << "Get ozone report list model:" << id;
+    auto* model = mOzoneReportListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+
+void Skywalker::removeOzoneReportListModel(int id)
+{
+    qDebug() << "Remove ozone report list model:" << id;
+    mOzoneReportListModels.remove(id);
 }
 
 template<typename ModelType>
@@ -4850,7 +4881,7 @@ void Skywalker::getListListNextPage(int id, int limit, int maxPages, int minEntr
 int Skywalker::createListListModel(ListListModel::Type type, ListListModel::Purpose purpose, const QString& atId)
 {
     qDebug() << "Create list list model";
-    auto model = std::make_unique<ListListModel>(type, purpose, atId, mFavoriteFeeds, this, this);
+    auto model = std::make_unique<ListListModel>(type, purpose, atId, mFavoriteFeeds, this, mUserDid, this);
     const int id = mListListModels.put(std::move(model));
     return id;
 }
@@ -5705,6 +5736,7 @@ void Skywalker::signOut()
     Q_ASSERT(mFeedListModels.empty());
     Q_ASSERT(mStarterPackListModels.empty());
     Q_ASSERT(mPostFeedModels.empty());
+    Q_ASSERT(mOzoneReportListModels.empty());
 
     mSignOutInProgress = true;
     saveHashtags();
@@ -5740,6 +5772,7 @@ void Skywalker::signOut()
     mStarterPackListModels.clear();
     mPostFeedModels.clear();
     mContentGroupListModels.clear();
+    mOzoneReportListModels.clear();
     mNotificationListModel.clear();
     mMentionListModel.clear();
     mChat->reset();

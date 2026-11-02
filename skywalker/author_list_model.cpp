@@ -334,9 +334,4 @@ void AuthorListModel::hideFromTimelineChanged()
     changeData({ int(Role::HideFromTimeline) });
 }
 
-void AuthorListModel::changeData(const QList<int>& roles)
-{
-    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
-}
-
 }

@@ -13,12 +13,15 @@ class OzoneReportListModel : public BaseListModel<OzoneReportView>
 public:
     enum class Role {
         Report = Qt::UserRole + 1,
+        Author,
         EndOfList
     };
 
     using Ptr = std::unique_ptr<OzoneReportListModel>;
 
-    OzoneReportListModel(const QString& userDid, QObject* parent = nullptr);
+    OzoneReportListModel(const QString& filter, const QString& userDid, QObject* parent = nullptr);
+
+    const QString& getReportsFilter() const { return mReportsFilter; }
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
@@ -33,7 +36,9 @@ protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    using ReportList = EntityList;
+    void authorAdded(const QString& did);
+
+    QString mReportsFilter;
 };
 
 }

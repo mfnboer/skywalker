@@ -10,9 +10,9 @@ SkyPage {
     readonly property string sideBarTitle: qsTr("Lists, Feeds, Starter packs")
     readonly property SvgImage sideBarSvg: SvgOutline.list
 
-    id: page
-
     signal closed
+
+    id: page
 
     Accessible.role: Accessible.Pane
 
@@ -57,7 +57,6 @@ SkyPage {
 
         SkyListView {
             id: savedListsView
-            spacing: 0
             clip: true
             model: skywalker.favoriteFeeds.getSavedListsModel()
             boundsBehavior: Flickable.StopAtBounds

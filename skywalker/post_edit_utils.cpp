@@ -6,6 +6,7 @@
 #include "draft_posts.h"
 #include "file_utils.h"
 #include "gif_utils.h"
+#include "post_thread_model.h"
 #include "shared_image_provider.h"
 #include "skywalker.h"
 #include "temp_file_holder.h"
