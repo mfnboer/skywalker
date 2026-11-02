@@ -11,12 +11,11 @@ namespace Skywalker {
 ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
                              const FavoriteFeeds& favoriteFeeds, Skywalker* skywalker,
                              QObject* parent) :
-    QAbstractListModel(parent),
+    BaseType(skywalker->getUserDid(), parent),
     mType(type),
     mPurpose(purpose),
     mAtId(atId),
     mFavoriteFeeds(favoriteFeeds),
-    mUserDid(skywalker->getUserDid()),
     mTimelineHide(*skywalker->getTimelineHide()),
     mUserSettings(*skywalker->getUserSettings())
 {
@@ -27,18 +26,12 @@ ListListModel::ListListModel(Type type, Purpose purpose, const QString& atId,
     connect(&mFavoriteFeeds, &FavoriteFeeds::listUnpinned, this, [this](QString){ listPinnedChanged(); });
 }
 
-int ListListModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mLists.size();
-}
-
 QVariant ListListModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mLists.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& list = mLists[index.row()];
+    const auto& list = mList[index.row()];
     const auto* change = getLocalChange(list.getUri());
 
     switch (Role(role))
@@ -91,7 +84,7 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
     case Role::MemberListItemUri:
         return change && change->mMemberListItemUri ? *change->mMemberListItemUri : getMemberListItemUri(list.getUri());
     case Role::EndOfList:
-        return isEndOfList() && index.row() == (int)mLists.size() - 1;
+        return isEndOfList() && index.row() == (int)mList.size() - 1;
     }
 
     qWarning() << "Uknown role requested:" << role;
@@ -101,17 +94,9 @@ QVariant ListListModel::data(const QModelIndex& index, int role) const
 void ListListModel::clear()
 {
     qDebug() << "Clear lists";
-
-    if (!mLists.empty())
-    {
-        beginRemoveRows({}, 0, mLists.size() - 1);
-        mLists.clear();
-        endRemoveRows();
-    }
-
+    BaseType::clear();
     mListUriSet.clear();
     mMemberCheckResults.clear();
-    mCursor.clear();
     clearLocalChanges();
     clearLocalProfileChanges();
 }
@@ -131,16 +116,16 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListView::List lists, const Q
         return 0;
     }
 
-    const size_t newRowCount = mLists.size() + filteredLists.size();
+    const size_t newRowCount = mList.size() + filteredLists.size();
 
-    beginInsertRows({}, mLists.size(), newRowCount - 1);
-    mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
 
     for (const auto& list : filteredLists)
         mListUriSet.insert(list.getUri());
 
-    qDebug() << "New lists size:" << mLists.size();
+    qDebug() << "New lists size:" << mList.size();
     return filteredLists.size();
 }
 
@@ -172,16 +157,16 @@ int ListListModel::addLists(ATProto::AppBskyGraph::ListWithMembership::List list
         return 0;
     }
 
-    const size_t newRowCount = mLists.size() + filteredLists.size();
+    const size_t newRowCount = mList.size() + filteredLists.size();
 
-    beginInsertRows({}, mLists.size(), newRowCount - 1);
-    mLists.insert(mLists.end(), filteredLists.begin(), filteredLists.end());
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), filteredLists.begin(), filteredLists.end());
     endInsertRows();
 
     for (const auto& list : filteredLists)
         mListUriSet.insert(list.getUri());
 
-    qDebug() << "New lists size:" << mLists.size();
+    qDebug() << "New lists size:" << mList.size();
     return filteredLists.size();
 }
 
@@ -196,16 +181,16 @@ void ListListModel::addLists(const QList<ListView>& lists)
         return;
     }
 
-    const size_t newRowCount = mLists.size() + lists.size();
+    const size_t newRowCount = mList.size() + lists.size();
 
-    beginInsertRows({}, mLists.size(), newRowCount - 1);
-    mLists.insert(mLists.end(), lists.begin(), lists.end());
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), lists.begin(), lists.end());
     endInsertRows();
 
     for (const auto& list : lists)
         mListUriSet.insert(list.getUri());
 
-    qDebug() << "New lists size:" << mLists.size();
+    qDebug() << "New lists size:" << mList.size();
 }
 
 void ListListModel::prependList(const ListView& list)
@@ -214,7 +199,7 @@ void ListListModel::prependList(const ListView& list)
 
     beginInsertRows({}, 0, 0);
 
-    mLists.push_front(list);
+    mList.push_front(list);
     mListUriSet.insert(list.getUri());
 
     if (!mMemberCheckDid.isEmpty())
@@ -222,7 +207,7 @@ void ListListModel::prependList(const ListView& list)
 
     endInsertRows();
 
-    qDebug() << "New lists size:" << mLists.size();
+    qDebug() << "New lists size:" << mList.size();
 }
 
 ListView ListListModel::updateEntry(int index, const QString& cid, const QString& name,
@@ -230,13 +215,13 @@ ListView ListListModel::updateEntry(int index, const QString& cid, const QString
 {
     qDebug() << "Update entry:" << name << "index:" << index;
 
-    if (index < 0 || (size_t)index >= mLists.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mLists.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return {};
     }
 
-    auto& list = mLists[index];
+    auto& list = mList[index];
 
     if (cid != list.getCid())
         list.setCid(cid);
@@ -258,16 +243,16 @@ void ListListModel::deleteEntry(int index)
 {
     qDebug() << "Delete entry:" << index;
 
-    if (index < 0 || (size_t)index >= mLists.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mLists.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return;
     }
 
-    const QString listUri = mLists[index].getUri();
+    const QString listUri = mList[index].getUri();
 
     beginRemoveRows({}, index, index);
-    mLists.erase(mLists.begin() + index);
+    mList.erase(mList.begin() + index);
     endRemoveRows();
 
     mListUriSet.erase(listUri);
@@ -280,26 +265,26 @@ ListView ListListModel::getEntry(int index) const
 {
     qDebug() << "Get entry:" << index;
 
-    if (index < 0 || (size_t)index >= mLists.size())
+    if (index < 0 || (size_t)index >= mList.size())
     {
-        qWarning() << "Invalid index:" << index << "size:" << mLists.size();
+        qWarning() << "Invalid index:" << index << "size:" << mList.size();
         return {};
     }
 
-    return mLists[index];
+    return mList[index];
 }
 
 void ListListModel::setCursor(const QString& cursor)
 {
-    mCursor = cursor;
+    BaseType::setCursor(cursor);
     setEndOfList();
 }
 
 void ListListModel::setEndOfList()
 {
-    if (isEndOfList() && !mLists.empty())
+    if (isEndOfList() && !mList.empty())
     {
-        const auto index = createIndex(mLists.size() - 1, 0);
+        const auto index = createIndex(mList.size() - 1, 0);
         emit dataChanged(index, index, { int(Role::EndOfList) });
     }
 }
@@ -329,14 +314,6 @@ ListListModel::ListList ListListModel::filterLists(ATProto::AppBskyGraph::ListVi
     }
 
     return filtered;
-}
-
-void ListListModel::setGetFeedInProgress(bool inProgress)
-{
-    if (inProgress != mGetFeedInProgress) {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
-    }
 }
 
 QHash<int, QByteArray> ListListModel::roleNames() const
@@ -447,7 +424,7 @@ void ListListModel::listPinnedChanged()
 
 void ListListModel::changeData(const QList<int>& roles)
 {
-    emit dataChanged(createIndex(0, 0), createIndex(mLists.size() - 1, 0), roles);
+    emit dataChanged(createIndex(0, 0), createIndex(mList.size() - 1, 0), roles);
 }
 
 }

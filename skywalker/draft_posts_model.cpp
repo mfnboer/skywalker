@@ -28,9 +28,9 @@ void DraftPostsModel::clear()
 {
     qDebug() << "Clear feed";
 
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRows({}, 0, mList.size() - 1);
         clearFeed();
         mRawFeed.clear();
         endRemoveRows();
@@ -43,7 +43,7 @@ void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed, 
 
     mCursor = cursor;
 
-    if (!mFeed.empty())
+    if (!mList.empty())
         clear();
 
     mRawFeed = std::move(feed);
@@ -55,16 +55,16 @@ void DraftPostsModel::setFeed(std::vector<ATProto::AppBskyFeed::PostFeed> feed, 
         for (int i = 0; i < (int)mRawFeed.size(); ++i)
         {
             Post post(mRawFeed[i][0]);
-            mFeed.push_back(post);
+            mList.push_back(post);
         }
 
         endInsertRows();
     }
 
-    if (!mFeed.empty() && mCursor.isEmpty())
+    if (!mList.empty() && mCursor.isEmpty())
     {
-        qDebug() << "End of feed:" << mFeed.back().getText();
-        mFeed.back().setEndOfFeed(true);
+        qDebug() << "End of feed:" << mList.back().getText();
+        mList.back().setEndOfFeed(true);
         changeData({ int(Role::EndOfFeed) });
     }
 }
@@ -73,7 +73,7 @@ void DraftPostsModel::deleteDraft(int index)
 {
     qDebug() << "Delete draft:" << index;
 
-    if (index < 0 || index >= (int)mFeed.size())
+    if (index < 0 || index >= (int)mList.size())
         return;
 
     const bool endOfFeed = getPost(index).isEndOfFeed();
@@ -83,9 +83,9 @@ void DraftPostsModel::deleteDraft(int index)
     mRawFeed.erase(mRawFeed.begin() + index);
     endRemoveRows();
 
-    if (endOfFeed && !mFeed.empty())
+    if (endOfFeed && !mList.empty())
     {
-        mFeed.back().setEndOfFeed(true);
+        mList.back().setEndOfFeed(true);
         changeData({ int(Role::EndOfFeed) });
     }
 }
@@ -110,10 +110,10 @@ std::vector<Post> DraftPostsModel::getThread(int index) const
 
 QString DraftPostsModel::getStoredMediaWarning(int index) const
 {
-    if (index < 0 || index >= (int)mFeed.size())
+    if (index < 0 || index >= (int)mList.size())
         return {};
 
-    const auto& post = mFeed[index];
+    const auto& post = mList[index];
 
     // NOTE: feedContext is abused to store the media storage warning
     return post.getFeedContext();
@@ -121,10 +121,10 @@ QString DraftPostsModel::getStoredMediaWarning(int index) const
 
 QVariant DraftPostsModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
-    const auto& post = mFeed[index.row()];
+    const auto& post = mList[index.row()];
 
     switch (Role(role))
     {
@@ -247,7 +247,7 @@ void DraftPostsModel::getPostExternal(int index) const
         return;
     }
 
-    const auto& post = mFeed[index];
+    const auto& post = mList[index];
 
     if (mGettingPostExternal.contains(post.getUri()))
         return;
@@ -268,14 +268,14 @@ void DraftPostsModel::updatePostExternal(const Post& post, int index)
 
     mGettingPostExternal.erase(post.getUri());
 
-    if (index < 0 || index >= (int)mFeed.size())
+    if (index < 0 || index >= (int)mList.size())
     {
         // This may happen if a draft gets delete while getting the external was still in progress
         qWarning() << "Invalid index:" << index;
         return;
     }
 
-    const auto& oldPost = mFeed[index];
+    const auto& oldPost = mList[index];
 
     if (oldPost.getUri() != post.getUri())
     {
@@ -284,8 +284,8 @@ void DraftPostsModel::updatePostExternal(const Post& post, int index)
     }
 
     bool endOfFeed = oldPost.isEndOfFeed();
-    mFeed[index] = post;
-    mFeed[index].setEndOfFeed(endOfFeed);
+    mList[index] = post;
+    mList[index].setEndOfFeed(endOfFeed);
     changeData({ int(Role::PostExternal) });
 }
 
@@ -297,7 +297,7 @@ void DraftPostsModel::getPostRecord(int index) const
         return;
     }
 
-    const auto& post = mFeed[index];
+    const auto& post = mList[index];
 
     if (mGettingPostRecord.contains(post.getUri()))
         return;
@@ -318,14 +318,14 @@ void DraftPostsModel::updatePostRecord(const Post& post, int index)
 
     mGettingPostRecord.erase(post.getUri());
 
-    if (index < 0 || index >= (int)mFeed.size())
+    if (index < 0 || index >= (int)mList.size())
     {
         // This may happen if a draft gets delete while getting the record was still in progress
         qWarning() << "Invalid index:" << index;
         return;
     }
 
-    const auto& oldPost = mFeed[index];
+    const auto& oldPost = mList[index];
 
     if (oldPost.getUri() != post.getUri())
     {
@@ -334,8 +334,8 @@ void DraftPostsModel::updatePostRecord(const Post& post, int index)
     }
 
     bool endOfFeed = oldPost.isEndOfFeed();
-    mFeed[index] = post;
-    mFeed[index].setEndOfFeed(endOfFeed);
+    mList[index] = post;
+    mList[index].setEndOfFeed(endOfFeed);
     changeData({ int(Role::PostRecord), int(Role::PostRecordWithMedia) });
 }
 

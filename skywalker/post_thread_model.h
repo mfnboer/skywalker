@@ -91,7 +91,7 @@ private:
         void addReplyThread(const ATProto::AppBskyFeed::ThreadElementType& reply, bool directReply, bool firstDirectReply, int indentLevel);
     };
 
-    void clear();
+    void clear() override;
     void sortReplies(ATProto::AppBskyFeed::ThreadViewPost* viewPost) const;
     bool smartLessThan(ATProto::AppBskyFeed::ThreadViewPost* viewPost,
                        const ATProto::AppBskyFeed::PostView& lhsReply,

@@ -668,7 +668,7 @@ ChatAuthorListModel* Chat::getConvoAuthorListModel(QEnums::ChatAuthorListType ty
     {
         qDebug() << "Create convo author list model for convo:" << convoId << "type:" << type;
         model = std::make_unique<ChatAuthorListModel>(
-            type, mTimelineHide, mContentFilter, this);
+            type, mTimelineHide, mContentFilter, mUserDid, this);
     }
 
     return model.get();

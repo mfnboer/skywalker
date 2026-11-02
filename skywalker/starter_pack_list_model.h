@@ -4,17 +4,13 @@
 #include "base_list_model.h"
 #include "local_list_model_changes.h"
 #include "starter_pack.h"
-#include <QAbstractListModel>
-#include <deque>
 
 namespace Skywalker {
 
-class StarterPackListModel : public QAbstractListModel,
-                             public BaseListModel,
+class StarterPackListModel : public BaseListModel<StarterPackView>,
                              public LocalListModelChanges
 {
     Q_OBJECT
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
 
 public:
     enum class Role {
@@ -29,14 +25,13 @@ public:
     using Type = QEnums::StarterPackType;
     using Ptr = std::unique_ptr<StarterPackListModel>;
 
-    StarterPackListModel(Type type, const QString& atId, QObject* parent = nullptr);
+    StarterPackListModel(Type type, const QString& atId, const QString& userDid, QObject* parent = nullptr);
 
     Q_INVOKABLE void setMemberCheckDid(const QString& did) { mMemberCheckDid = did; }
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
 
     int addStarterPacks(ATProto::AppBskyGraph::StarterPackViewBasic::List starterPacks, const QString& cursor);
     int addStarterPacks(ATProto::AppBskyGraph::StarterPackView::List starterPacks, const QString& cursor);
@@ -52,9 +47,7 @@ public:
     Q_INVOKABLE void deleteEntry(int index);
     Q_INVOKABLE StarterPackViewBasic getEntry(int index) const;
 
-    const QString& getCursor() const { return mCursor; }
-    void setCursor(const QString& cursor);
-    bool isEndOfList() const { return mCursor.isEmpty(); }
+    void setCursor(const QString& cursor) override;
     void setEndOfList();
 
     Type getType() const { return mType; }
@@ -63,12 +56,6 @@ public:
     bool needsMembershipInfo() const { return !mMemberCheckDid.isEmpty(); }
     const QString& getMemberCheckDid() const { return mMemberCheckDid; }
     bool containsUri(const QString& listUri) const { return mStarterPackUriSet.contains(listUri); }
-
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
-
-signals:
-    void getFeedInProgressChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -87,7 +74,7 @@ private:
     template<typename T>
     int _addStarterPacks(const std::vector<T>& starterPacks, const QString& cursor, bool sort = false);
 
-    using StarterPackList = std::deque<StarterPackView>;
+    using StarterPackList = EntityList;
 
     QEnums::TripleBool memberCheck(const QString& starterPackUri) const;
     QString getMemberListItemUri(const QString& starterPackUri) const;
@@ -95,12 +82,9 @@ private:
 
     Type mType;
     QString mAtId;
-    StarterPackList mStarterPacks;
     std::unordered_set<QString> mStarterPackUriSet;
-    QString mCursor;
     QString mMemberCheckDid;
     std::unordered_map<QString, QString> mMemberCheckResults; // starterPackUri -> listItemUri
-    bool mGetFeedInProgress = false;
 };
 
 }

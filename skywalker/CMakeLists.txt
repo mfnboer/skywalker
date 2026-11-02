@@ -796,6 +796,8 @@ qt_add_qml_module(libskywalker
         SOURCES ozone_report_list_model.cpp
         SOURCES ozone_report_list_model.h
         SOURCES ozone_utils.cpp
+        SOURCES abstract_base_list_model.h
+        SOURCES abstract_base_list_model.cpp
 )
 
 target_link_libraries(libskywalker

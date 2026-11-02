@@ -44,7 +44,7 @@ public:
     // Returns how many entries have been added.
     int setFeed(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr&& feed);
     int addFeed(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr&& feed);
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
 
     void setGetFeedInProgress(bool inProgress) override;
     void setAutoUpdateInProgress(bool inProgress) override;
@@ -53,8 +53,6 @@ public:
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
-
-    const QString& getCursorNextPage() const { return mCursorNextPage; }
 
     Q_INVOKABLE FilteredSearchPostFeedModel* addVideoFilter(int rowSize = 1);
     Q_INVOKABLE FilteredSearchPostFeedModel* addMediaFilter(int rowSize = 1);
@@ -91,7 +89,6 @@ private:
 
     QString mSearchKey;
     QString mFeedName;
-    QString mCursorNextPage;
 
     std::vector<FilteredSearchPostFeedModel::Ptr> mFilteredPostFeedModels;
 };

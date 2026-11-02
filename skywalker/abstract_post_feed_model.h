@@ -9,8 +9,6 @@
 #include "local_profile_changes.h"
 #include "muted_words.h"
 #include "post.h"
-#include <QAbstractListModel>
-#include <deque>
 #include <queue>
 #include <unordered_set>
 
@@ -32,8 +30,7 @@ class IListStore;
 // the same is the physical index.
 // When the view order is reversed, then visible index COUNT-1 is physical index 0 and v.v.
 
-class AbstractPostFeedModel : public QAbstractListModel,
-                              public BaseListModel,
+class AbstractPostFeedModel : public BaseListModel<Post>,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
 {
@@ -43,7 +40,6 @@ class AbstractPostFeedModel : public QAbstractListModel,
     Q_PROPERTY(QString feedName READ getFeedName CONSTANT FINAL)
     Q_PROPERTY(bool reverseFeed READ isReverseFeed WRITE setReverseFeed NOTIFY reverseFeedChanged FINAL)
     Q_PROPERTY(bool endOfFeed READ isEndOfFeed NOTIFY endOfFeedChanged FINAL)
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
     Q_PROPERTY(bool autoUpdateInProgress READ isAutoUpdateInProgress NOTIFY autoUpdateInProgressChanged FINAL)
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
     Q_PROPERTY(QString syncWarning READ getFeedSyncWarning WRITE setFeedSyncWarning NOTIFY feedSyncWarningChanged)
@@ -178,7 +174,6 @@ public:
     bool empty() const;
 
     // NOTE: QModelIndex is a visible index, i.e. an index in the ListView in the UI
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     virtual bool isEndOfFeed() const { return mEndOfFeed; }
@@ -212,8 +207,7 @@ public:
     // in subclasses having filter models. They propagate the value changes to all
     // filter models.
 
-    virtual void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
+    void setGetFeedInProgress(bool inProgress) override;
 
     virtual void setAutoUpdateInProgress(bool inProgress);
     bool isAutoUpdateInProgress() const { return mAutoUpdateInProgress; }
@@ -234,14 +228,13 @@ public:
 signals:
     void reverseFeedChanged();
     void endOfFeedChanged();
-    void getFeedInProgressChanged();
     void autoUpdateInProgressChanged();
     void feedErrorChanged();
     void feedSyncWarningChanged();
     void chronologicalChanged();
 
 protected:
-    using TimelineFeed = std::deque<Post>;
+    using TimelineFeed = EntityList;
 
     struct AbstractPage
     {
@@ -307,11 +300,9 @@ protected:
 
     void changeData(const QList<int>& roles) override;
 
-    TimelineFeed mFeed;
     TimelineFeed mBackupFeed;
     bool mReverseFeed = false;
 
-    const QString& mUserDid;
     const IListStore& mFeedHide;
     const IContentFilter& mContentFilter;
     const IMatchWords& mMutedWords;
@@ -351,7 +342,6 @@ private:
     std::optional<QEnums::ContentVisibility> mOverrideAdultVisibility;
     QString mOverrideLinkColor;
     bool mEndOfFeed = false;
-    bool mGetFeedInProgress = false;
     bool mAutoUpdateInProgress = false;
     QString mFeedError;
     QString mFeedSyncWarning;

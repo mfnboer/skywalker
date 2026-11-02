@@ -62,14 +62,14 @@ void PostThreadModel::setReplyOrder(QEnums::ReplyOrder replyOrder)
 
 void PostThreadModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const Page& page, int pageSize)
 {
-    mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
+    mList.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 }
 
 int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
     mRawPostThread = thread;
 
-    if (!mFeed.empty())
+    if (!mList.empty())
         clear();
 
     setThreadgateView(thread->mThreadgate);
@@ -85,27 +85,27 @@ int PostThreadModel::setPostThread(const ATProto::AppBskyFeed::PostThread::Share
     const size_t pageInsertCount = page->mFirstHiddenReplyIndex == -1 ? page->mFeed.size() : page->mFirstHiddenReplyIndex;
 
     beginInsertRows({}, 0, newRowCount - 1);
-    insertPage(mFeed.end(), *page, pageInsertCount);
+    insertPage(mList.end(), *page, pageInsertCount);
     setThreadPostCounters();
 
     if (page->mFirstHiddenReplyIndex != -1)
-        mFeed.push_back(Post::createHiddenPosts());
+        mList.push_back(Post::createHiddenPosts());
 
-    if (!mFeed.empty())
-        mFeed.back().setEndOfFeed(true);
+    if (!mList.empty())
+        mList.back().setEndOfFeed(true);
 
     endInsertRows();
 
     if (page->mFirstHiddenReplyIndex != -1)
         mHiddenRepliesFeed.assign(page->mFeed.begin() + page->mFirstHiddenReplyIndex, page->mFeed.end());
 
-    qDebug() << "New feed size:" << mFeed.size();
+    qDebug() << "New feed size:" << mList.size();
     return page->mEntryPostIndex;
 }
 
 bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
-    if (mFeed.empty())
+    if (mList.empty())
     {
         qWarning() << "Cannot add more posts to an empty thread";
         return false;
@@ -136,8 +136,8 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
     if (pageInsertCount > 0)
     {
         beginInsertRows({}, index + 1, index + pageInsertCount);
-        auto feedInsertIt = mFeed.begin() + index + 1;
-        mFeed.insert(feedInsertIt, page->mFeed.begin() + 1, page->mFeed.begin() + 1 + pageInsertCount);
+        auto feedInsertIt = mList.begin() + index + 1;
+        mList.insert(feedInsertIt, page->mFeed.begin() + 1, page->mFeed.begin() + 1 + pageInsertCount);
         endInsertRows();
     }
 
@@ -145,18 +145,18 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
     {
         mHiddenRepliesFeed.insert(mHiddenRepliesFeed.end(), page->mFeed.begin() + page->mFirstHiddenReplyIndex, page->mFeed.end());
 
-        if (!mFeed.back().isHiddenPosts())
+        if (!mList.back().isHiddenPosts())
         {
-            beginInsertRows({}, mFeed.size(), mFeed.size());
-            mFeed.push_back(Post::createHiddenPosts());
+            beginInsertRows({}, mList.size(), mList.size());
+            mList.push_back(Post::createHiddenPosts());
             endInsertRows();
         }
     }
 
-    auto& postBeforeInsert = mFeed[index];
+    auto& postBeforeInsert = mList[index];
     postBeforeInsert.removeThreadType(QEnums::THREAD_LEAF);
     postBeforeInsert.setEndOfFeed(false);
-    mFeed.back().setEndOfFeed(true);
+    mList.back().setEndOfFeed(true);
     setThreadPostCounters();
     changeData({ int(Role::PostThreadPostIndex), int(Role::PostThreadPostCount), int(Role::PostThreadType), int(Role::EndOfFeed) });
 
@@ -165,7 +165,7 @@ bool PostThreadModel::addMorePosts(const ATProto::AppBskyFeed::PostThread::Share
 
 void PostThreadModel::addOlderPosts(const ATProto::AppBskyFeed::PostThread::SharedPtr& thread)
 {
-    if (mFeed.empty())
+    if (mList.empty())
     {
         qWarning() << "Cannot add older posts to an empty thread";
         return;
@@ -191,31 +191,31 @@ void PostThreadModel::addOlderPosts(const ATProto::AppBskyFeed::PostThread::Shar
     // The leaf node must not be inserted as it is the same as the current root
     const size_t pageInsertCount = page->mFeed.size() - 1;
     Q_ASSERT(pageInsertCount > 0);
-    mFeed.front().removeThreadType(QEnums::THREAD_TOP);
+    mList.front().removeThreadType(QEnums::THREAD_TOP);
 
     beginInsertRows({}, 0, pageInsertCount - 1);
-    mFeed.insert(mFeed.begin(), page->mFeed.begin(), page->mFeed.begin() + pageInsertCount);
+    mList.insert(mList.begin(), page->mFeed.begin(), page->mFeed.begin() + pageInsertCount);
     endInsertRows();
 
-    mFeed.front().addThreadType(QEnums::THREAD_TOP);
+    mList.front().addThreadType(QEnums::THREAD_TOP);
     setThreadPostCounters();
     changeData({ int(Role::PostThreadPostIndex), int(Role::PostThreadPostCount), int(Role::PostThreadType) });
 }
 
 QString PostThreadModel::getRootUri() const
 {
-    return !mFeed.empty() ? mFeed.front().getUri() : QString{};
+    return !mList.empty() ? mList.front().getUri() : QString{};
 }
 
 QString PostThreadModel::getPostToAttachMore() const
 {
-    if (mFeed.empty())
+    if (mList.empty())
         return {};
 
-    const auto& firstPost = mFeed.front();
+    const auto& firstPost = mList.front();
     const auto authorDid = firstPost.getAuthorDid();
 
-    for (const auto& post : mFeed)
+    for (const auto& post : mList)
     {
         if (post.getThreadType() & QEnums::THREAD_LEAF)
         {
@@ -246,41 +246,41 @@ void PostThreadModel::showHiddenReplies()
     }
 
     // Remove hidden replies place holder
-    beginRemoveRows({}, mFeed.size() - 1, mFeed.size() - 1);
-    mFeed.erase(mFeed.begin() + mFeed.size() - 1);
+    beginRemoveRows({}, mList.size() - 1, mList.size() - 1);
+    mList.erase(mList.begin() + mList.size() - 1);
     endRemoveRows();
 
-    const size_t newRowCount = mFeed.size() + mHiddenRepliesFeed.size();
+    const size_t newRowCount = mList.size() + mHiddenRepliesFeed.size();
 
-    beginInsertRows({}, mFeed.size(), newRowCount - 1);
-    mFeed.insert(mFeed.end(), mHiddenRepliesFeed.begin(), mHiddenRepliesFeed.end());
-    mFeed.back().setEndOfFeed(true);
+    beginInsertRows({}, mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), mHiddenRepliesFeed.begin(), mHiddenRepliesFeed.end());
+    mList.back().setEndOfFeed(true);
     endInsertRows();
 
     mHiddenRepliesFeed.clear();
-    qDebug() << "New feed size:" << mFeed.size();
+    qDebug() << "New feed size:" << mList.size();
 }
 
 void PostThreadModel::unrollThread()
 {
-    qDebug() << "Unroll thread, feed size:" << mFeed.size();
+    qDebug() << "Unroll thread, feed size:" << mList.size();
 
-    if (mFeed.empty())
+    if (mList.empty())
         return;
 
     if (!mUnrollThread)
         return;
 
-    mFirstPostFromUnrolledThread = mFeed.front();
-    const auto unrolledFeed = ThreadUnroller::unrollThread(mFeed);
+    mFirstPostFromUnrolledThread = mList.front();
+    const auto unrolledFeed = ThreadUnroller::unrollThread(mList);
     qDebug() << "Unrolled feeds szie:" << unrolledFeed.size();
 
-    beginRemoveRows({}, 0, mFeed.size() - 1);
-    mFeed.clear();
+    beginRemoveRows({}, 0, mList.size() - 1);
+    mList.clear();
     endRemoveRows();
 
     beginInsertRows({}, 0, unrolledFeed.size() - 1);
-    mFeed = unrolledFeed;
+    mList = unrolledFeed;
     endInsertRows();
 }
 
@@ -302,14 +302,14 @@ QString PostThreadModel::getFirstUnrolledPostPlainText() const
 
 QString PostThreadModel::getFullThreadPlainText() const
 {
-    if (mFeed.empty())
+    if (mList.empty())
         return "";
 
-    QString text = mFeed.front().getText();
+    QString text = mList.front().getText();
 
-    for (int i = 1; i < (int)mFeed.size(); ++i)
+    for (int i = 1; i < (int)mList.size(); ++i)
     {
-        const Post& post = mFeed[i];
+        const Post& post = mList[i];
         text += '\n';
         text += post.getText();
     }
@@ -319,10 +319,10 @@ QString PostThreadModel::getFullThreadPlainText() const
 
 QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
 {
-    if (mFeed.empty())
+    if (mList.empty())
         return QEnums::REPLY_RESTRICTION_NONE;
 
-    const auto& post = mFeed[0];
+    const auto& post = mList[0];
     const auto* change = getLocalChange(post.getCid());
     const auto restriction = change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
@@ -334,10 +334,10 @@ QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
 
 BasicProfile PostThreadModel::getReplyRestrictionAuthor() const
 {
-    if (mFeed.empty())
+    if (mList.empty())
         return {};
 
-    const auto& post = mFeed[0];
+    const auto& post = mList[0];
     const auto* change = getLocalChange(post.getCid());
     const auto restriction = change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
@@ -349,19 +349,19 @@ BasicProfile PostThreadModel::getReplyRestrictionAuthor() const
 
 ListViewBasicList PostThreadModel::getReplyRestrictionLists() const
 {
-    if (mFeed.empty())
+    if (mList.empty())
         return {};
 
-    const auto& post = mFeed[0];
+    const auto& post = mList[0];
     const auto* change = getLocalChange(post.getCid());
     return change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists();
 }
 
 void PostThreadModel::clear()
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRows({}, 0, mFeed.size() - 1);
+        beginRemoveRows({}, 0, mList.size() - 1);
         clearFeed();
         endRemoveRows();
     }
@@ -801,14 +801,14 @@ void PostThreadModel::replyRestrictionListsChanged()
 
 void PostThreadModel::setThreadPostCounters()
 {
-    if (mFeed.size() < 2)
+    if (mList.size() < 2)
         return;
 
-    bool inThread = (mFeed[0].getAuthorDid() == mFeed[1].getAuthorDid());
-    const QString threadAuthorDid = mFeed[0].getAuthorDid();
+    bool inThread = (mList[0].getAuthorDid() == mList[1].getAuthorDid());
+    const QString threadAuthorDid = mList[0].getAuthorDid();
     int count = 0;
 
-    for (auto& post : mFeed)
+    for (auto& post : mList)
     {
         if (inThread)
         {
@@ -827,7 +827,7 @@ void PostThreadModel::setThreadPostCounters()
 
     for (int i = 0; i < count; ++i)
     {
-        auto& post = mFeed[i];
+        auto& post = mList[i];
         post.setThreadPostCount(count);
     }
 }

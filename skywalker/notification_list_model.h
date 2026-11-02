@@ -10,22 +10,18 @@
 #include "notification.h"
 #include "post_cache.h"
 #include <atproto/lib/client.h>
-#include <QAbstractListModel>
-#include <deque>
 
 namespace Skywalker {
 
-class NotificationListModel : public QAbstractListModel,
-                              public BaseListModel,
+class NotificationListModel : public BaseListModel<Notification>,
                               public LocalPostModelChanges,
                               public LocalProfileChanges
 {
     Q_OBJECT
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
 
 public:
     using Ptr = std::unique_ptr<NotificationListModel>;
-    using NotificationList = std::deque<Notification>;
+    using NotificationList = EntityList;
 
     enum class Role {
         NotificationAuthor = Qt::UserRole + 1,
@@ -115,16 +111,17 @@ public:
     };
 
     explicit NotificationListModel(const ContentFilter& contentFilter,
-                                   const MutedWords& mutedWords, FollowsActivityStore* followsActivityStore,
+                                   const MutedWords& mutedWords,
+                                   FollowsActivityStore* followsActivityStore,
+                                   const QString& userDid,
                                    QObject* parent = nullptr);
 
     void setModelId(int modelId) { mModelId = modelId; }
     int getModelId() const { return mModelId; }
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
     bool addNotifications(ATProto::AppBskyNotification::ListNotificationsOutput::SharedPtr notifications,
                           ATProto::Client::SharedPtr bsky, bool clearFirst = false,
                           const std::function<void()>& doneCb = nullptr);
@@ -133,8 +130,6 @@ public:
     void addJoinRequest(const ATProto::ChatBskyConvo::ConvoView& convo,
                         const ATProto::ChatBskyGroup::JoinRequestView& joinRequest,
                         const QString& userDid);
-    const QString& getCursor() const { return mCursor; }
-    bool isEndOfList() const { return mCursor.isEmpty(); }
 
     Q_INVOKABLE bool notificationsLoaded() const { return !mList.empty(); }
 
@@ -154,12 +149,6 @@ public:
     const PostCache& getPostCache() const { return mPostCache; }
     const PostCache& getReasonPostCache() const { return mReasonPostCache; }
     void enableRetrieveNotificationPosts(bool enable) { mRetrieveNotificationPosts = enable; }
-
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
-
-signals:
-    void getFeedInProgressChanged();
 
 protected:
     // LocalPostModelChanges
@@ -225,9 +214,6 @@ private:
     const MutedWords& mMutedWords;
     FollowsActivityStore* mFollowsActivityStore;
 
-    NotificationList mList;
-    QString mCursor;
-
     // This cache must be emptied when the notifications are refreshed, because
     // the counts (like, reposts, replies) will change over time and are displayed.
     PostCache mPostCache;
@@ -239,7 +225,6 @@ private:
     NotificationList mInviteCodeUsedNotifications;
     NotificationList mNewLabelsNotifications;
     bool mNotificationsSeen = false;
-    bool mGetFeedInProgress = false;
     int mModelId = -1;
 };
 

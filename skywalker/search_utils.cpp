@@ -445,7 +445,7 @@ void SearchUtils::getNextPageSearchPosts(const QString& text, const SearchOption
         return;
     }
 
-    const auto& cursor = model.getCursorNextPage();
+    const auto& cursor = model.getCursor();
 
     if (cursor.isEmpty())
     {
@@ -677,7 +677,7 @@ QString SearchUtils::processSyncPage(ATProto::AppBskyFeed::SearchPostsV2Output::
         return {};
     }
 
-    const QString& newCursor = model.getCursorNextPage();
+    const QString& newCursor = model.getCursor();
 
     if (newCursor.isEmpty())
     {

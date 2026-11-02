@@ -38,14 +38,13 @@ void SearchPostFeedModel::clear()
 {
     clearFilteredPostModels();
 
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRowsPhysical(0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mList.size() - 1);
         clearFeed();
         endRemoveRows();
     }
 
-    mCursorNextPage.clear();
     qDebug() << "All posts removed";
 }
 
@@ -93,7 +92,7 @@ void SearchPostFeedModel::getFeedNextPage(IFeedPager*)
 
 int SearchPostFeedModel::setFeed(ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr&& feed)
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
         clear();
 
     return addFeed(std::forward<ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr>(feed));
@@ -104,7 +103,7 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsV2Output::Shar
     qDebug() << "Add raw posts:" << feed->mPosts.size();
     auto page = createPage(std::forward<ATProto::AppBskyFeed::SearchPostsV2Output::SharedPtr>(feed));
 
-    mCursorNextPage = feed->mCursor.value_or("");
+    mCursor = feed->mCursor.value_or("");
 
     if (page->mFeed.empty())
     {
@@ -114,10 +113,10 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsV2Output::Shar
         // These will be added when this is the last page, even if it is empty.
         addPageToFilteredPostModels(*page, 0);
 
-        if (mCursorNextPage.isEmpty() && !mFeed.empty())
+        if (mCursor.isEmpty() && !mList.empty())
         {
-            mFeed.back().setEndOfFeed(true);
-            const auto index = createIndex(mFeed.size() - 1, 0);
+            mList.back().setEndOfFeed(true);
+            const auto index = createIndex(mList.size() - 1, 0);
             emit dataChanged(index, index, { int(Role::EndOfFeed) });
 
             setEndOfFeed(true);
@@ -127,25 +126,25 @@ int SearchPostFeedModel::addFeed(ATProto::AppBskyFeed::SearchPostsV2Output::Shar
         return 0;
     }
 
-    const size_t newRowCount = mFeed.size() + page->mFeed.size();
+    const size_t newRowCount = mList.size() + page->mFeed.size();
 
-    beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
-    mFeed.insert(mFeed.end(), page->mFeed.begin(), page->mFeed.end());
+    beginInsertRowsPhysical(mList.size(), newRowCount - 1);
+    mList.insert(mList.end(), page->mFeed.begin(), page->mFeed.end());
 
-    if (mCursorNextPage.isEmpty())
-        mFeed.back().setEndOfFeed(true);
+    if (mCursor.isEmpty())
+        mList.back().setEndOfFeed(true);
 
     endInsertRows();
 
     addPageToFilteredPostModels(*page, page->mFeed.size());
 
-    if (mCursorNextPage.isEmpty())
+    if (mCursor.isEmpty())
     {
         setEndOfFeed(true);
         setEndOfFeedFilteredPostModels(true);
     }
 
-    qDebug() << "New feed size:" << mFeed.size();
+    qDebug() << "New feed size:" << mList.size();
     return page->mFeed.size();
 }
 
@@ -300,7 +299,7 @@ SearchPostFeedModel::Page::Ptr SearchPostFeedModel::createPage(ATProto::AppBskyF
 void SearchPostFeedModel::addPageToFilteredPostModels(const Page& page, int pageSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-        model->addPosts(page.mFeed, pageSize, mCursorNextPage.isEmpty());
+        model->addPosts(page.mFeed, pageSize, mCursor.isEmpty());
 }
 
 void SearchPostFeedModel::clearFilteredPostModels()
@@ -341,7 +340,7 @@ FilteredSearchPostFeedModel* SearchPostFeedModel::addFilteredPostFeedModel(IPost
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
     model->setChronological(isChronological());
-    model->setPosts(mFeed, mFeed.size(), mCursorNextPage.isEmpty());
+    model->setPosts(mList, mList.size(), mCursor.isEmpty());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
     auto* retval = model.get();

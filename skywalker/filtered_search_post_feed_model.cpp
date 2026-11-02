@@ -37,9 +37,9 @@ QString FilteredSearchPostFeedModel::getFeedName() const
 
 void FilteredSearchPostFeedModel::clear()
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRowsPhysical(0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mList.size() - 1);
         clearFeed();
         endRemoveRows();
     }
@@ -110,14 +110,14 @@ void FilteredSearchPostFeedModel::addPage(Page::Ptr page, bool isLast)
         return;
     }
 
-    const size_t newRowCount = mFeed.size() + page->mFeed.size();
+    const size_t newRowCount = mList.size() + page->mFeed.size();
 
-    beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
+    beginInsertRowsPhysical(mList.size(), newRowCount - 1);
     auto posts = page->mFeed | std::views::transform([](const Post* p){ return *p; });
-    mFeed.insert(mFeed.end(), posts.begin(), posts.end());
+    mList.insert(mList.end(), posts.begin(), posts.end());
     endInsertRows();
 
-    qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
+    qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mList.size();
 }
 
 void FilteredSearchPostFeedModel::getFeed(IFeedPager* pager)

@@ -5,7 +5,7 @@
 
 namespace Skywalker {
 
-AuthorListModel::ListEntry::ListEntry(const Profile& profile, const QString& listItemUri, bool optedOut) :
+AuthorListEntry::AuthorListEntry(const Profile& profile, const QString& listItemUri, bool optedOut) :
     mProfile(profile),
     mListItemUri(listItemUri),
     mOptedOut(optedOut)
@@ -16,8 +16,9 @@ AuthorListModel::AuthorListModel(Type type, const QString& atId,
                                  const IProfileStore& timelineHide,
                                  const FollowsActivityStore& followsActivityStore,
                                  const ContentFilter& contentFilter,
+                                 const QString& userDid,
                                  QObject* parent) :
-    QAbstractListModel(parent),
+    BaseType(userDid ,parent),
     mType(type),
     mAtId(atId),
     mTimelineHide(timelineHide),
@@ -28,12 +29,6 @@ AuthorListModel::AuthorListModel(Type type, const QString& atId,
 
     if (mType == QEnums::AUTHOR_LIST_ACTIVE_FOLLOWS)
         mActiveFollowsDids = mFollowsActivityStore.getActiveFollowsDids();
-}
-
-int AuthorListModel::rowCount(const QModelIndex& parent) const
-{
-    Q_UNUSED(parent);
-    return mList.size();
 }
 
 QVariant AuthorListModel::data(const QModelIndex& index, int role) const
@@ -75,16 +70,9 @@ QVariant AuthorListModel::data(const QModelIndex& index, int role) const
 
 void AuthorListModel::clear()
 {
-    if (!mList.empty())
-    {
-        beginRemoveRows({}, 0, mList.size() - 1);
-        mList.clear();
-        mDidSet.clear();
-        clearLocalChanges();
-        endRemoveRows();
-    }
-
-    mCursor.clear();
+    BaseType::clear();
+    mDidSet.clear();
+    clearLocalChanges();
     mRawLists.clear();
     mRawDetailedLists.clear();
     mRawItemLists.clear();
@@ -123,7 +111,7 @@ int AuthorListModel::addAuthors(ATProto::AppBskyActor::ProfileViewDetailed::List
 
     for (const auto& author : authors)
     {
-        const ListEntry entry{Profile{author}};
+        const AuthorListEntry entry{Profile{author}};
         AuthorCache::instance().put(entry.mProfile);
         list.push_back(entry);
         mDidSet.insert(entry.mProfile.getDid());
@@ -151,7 +139,7 @@ int AuthorListModel::addAuthors(ATProto::AppBskyGraph::ListItemView::List listIt
 
     for (const auto& item : listItems)
     {
-        ListEntry entry(Profile(item->mSubject), item->mUri, item->mSubjectOptedOut);
+        AuthorListEntry entry(Profile(item->mSubject), item->mUri, item->mSubjectOptedOut);
         AuthorCache::instance().put(entry.mProfile);
         mList.push_back(entry);
         mDidSet.insert(entry.mProfile.getDid());
@@ -172,7 +160,7 @@ void AuthorListModel::prependAuthor(const Profile& author, const QString& listIt
     mDidSet.insert(author.getDid());
 
     beginInsertRows({}, 0, 0);
-    mList.push_front(ListEntry(author, listItemUri));
+    mList.push_front(AuthorListEntry(author, listItemUri));
     endInsertRows();
 
     qDebug() << "New list size:" << mList.size();
@@ -218,7 +206,7 @@ void AuthorListModel::deleteEntry(int index)
 
 void AuthorListModel::setCursor(const QString& cursor)
 {
-    mCursor = cursor;
+    BaseType::setCursor(cursor);
     setEndOfList();
 }
 
@@ -276,7 +264,7 @@ AuthorListModel::AuthorList AuthorListModel::filterAuthors(const ATProto::AppBsk
             continue;
         }
 
-        const ListEntry entry{Profile{author}};
+        const AuthorListEntry entry{Profile{author}};
         AuthorCache::instance().put(entry.mProfile);
         list.push_back(entry);
     }
@@ -290,15 +278,6 @@ void AuthorListModel::setCountDelta(int delta)
     {
         mCountDelta = delta;
         emit countDeltaChanged();
-    }
-}
-
-void AuthorListModel::setGetFeedInProgress(bool inProgress)
-{
-    if (inProgress != mGetFeedInProgress)
-    {
-        mGetFeedInProgress = inProgress;
-        emit getFeedInProgressChanged();
     }
 }
 

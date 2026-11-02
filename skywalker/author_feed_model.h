@@ -41,10 +41,9 @@ public:
     int addFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed);
     Q_INVOKABLE void setPinnedPost(const QString& uri) { mPinnedPostUri = uri; }
     Q_INVOKABLE void removePinnedPost() { mPinnedPostUri.clear(); }
-    void clear();
+    void clear() override;
 
     const BasicProfile& getAuthor() const { return mAuthor; }
-    const QString& getCursorNextPage() const { return mCursorNextPage; }
 
     Q_INVOKABLE void getFeed(IFeedPager* pager);
     Q_INVOKABLE void getFeedNextPage(IFeedPager* pager);
@@ -62,8 +61,6 @@ private:
     bool mustShowReplyContext() const;
 
     BasicProfile mAuthor;
-
-    QString mCursorNextPage;
     QEnums::AuthorFeedFilter mFilter = QEnums::AUTHOR_FEED_FILTER_POSTS;
     QString mPinnedPostUri;
 };

@@ -184,12 +184,12 @@ void PostFeedModel::setFeed(ATProto::AppBskyFeed::GetQuotesOutput::SharedPtr&& f
 
 int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed)
 {
-    qDebug() << "Prepend feed:" << feed->mFeed.size() << "current size:" << mFeed.size();
+    qDebug() << "Prepend feed:" << feed->mFeed.size() << "current size:" << mList.size();
 
     if (feed->mFeed.empty())
         return 0;
 
-    if (mFeed.empty())
+    if (mList.empty())
     {
         setFeed(std::forward<ATProto::AppBskyFeed::OutputFeed::SharedPtr>(feed));
         return 0;
@@ -201,7 +201,7 @@ int PostFeedModel::prependFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
 
 int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed, int gapId)
 {
-    qDebug() << "Fill gap:" << gapId << "feed:" << feed->mFeed.size() << "current size:" << mFeed.size();
+    qDebug() << "Fill gap:" << gapId << "feed:" << feed->mFeed.size() << "current size:" << mList.size();
 
     if (!mGapIdIndexMap.count(gapId))
     {
@@ -212,17 +212,17 @@ int PostFeedModel::gapFillFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& fee
     const int gapIndex = mGapIdIndexMap[gapId];
     mGapIdIndexMap.erase(gapId);
 
-    if (gapIndex > (int)mFeed.size() - 1)
+    if (gapIndex > (int)mList.size() - 1)
     {
-        qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
+        qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mList.size();
         return 0;
     }
 
-    Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
+    Q_ASSERT(mList[gapIndex].getGapId() == gapId);
 
     // Remove gap place holder
     beginRemoveRowsPhysical(gapIndex, gapIndex);
-    mFeed.erase(mFeed.begin() + gapIndex);
+    mList.erase(mList.begin() + gapIndex);
     addToIndices(-1, gapIndex);
     endRemoveRows();
 
@@ -236,12 +236,12 @@ void PostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertIt, const
 {
     if (fillGapId > 0)
         gapFillFilteredPostModels(page, pageSize, fillGapId);
-    else if (feedInsertIt == mFeed.begin())
+    else if (feedInsertIt == mList.begin())
         prependPageToFilteredPostModels(page, pageSize);
-    else if (feedInsertIt == mFeed.end())
+    else if (feedInsertIt == mList.end())
         addPageToFilteredPostModels(page, pageSize);
 
-    mFeed.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
+    mList.insert(feedInsertIt, page.mFeed.begin(), page.mFeed.begin() + pageSize);
 
     for (const auto& post : page.mFeed)
     {
@@ -274,14 +274,14 @@ void PostFeedModel::gapFillFilteredPostModels(const Page& page, int pageSize, in
 void PostFeedModel::removeHeadFromFilteredPostModels(size_t headSize)
 {
     for (auto& model : mFilteredPostFeedModels)
-        model->removeHeadPosts(mFeed, headSize);
+        model->removeHeadPosts(mList, headSize);
 }
 
 void PostFeedModel::removeTailFromFilteredPostModels(size_t tailSize)
 {
     for (auto& model : mFilteredPostFeedModels)
     {
-        model->removeTailPosts(mFeed, tailSize);
+        model->removeTailPosts(mList, tailSize);
     }
 }
 
@@ -351,7 +351,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         const size_t lastInsertIndex = insertIndex + page->mFeed.size() - 1;
 
         beginInsertRowsPhysical(insertIndex, lastInsertIndex);
-        insertPage(mFeed.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
+        insertPage(mList.begin() + insertIndex, *page, page->mFeed.size(), fillGapId);
         addToIndices(page->mFeed.size(), insertIndex);
 
         size_t indexOffset = 0;
@@ -368,7 +368,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
         endInsertRows();
 
         mLastInsertedRowIndex = (int)lastInsertIndex;
-        qDebug() << "Full feed inserted, new size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
+        qDebug() << "Full feed inserted, new size:" << mList.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
         logIndices();
         return gapId;
     }
@@ -389,7 +389,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     const auto overlapEnd = findOverlapEnd(*page, insertIndex);
 
     beginInsertRowsPhysical(insertIndex, insertIndex + *overlapStart - 1);
-    insertPage(mFeed.begin() + insertIndex, *page, *overlapStart, fillGapId);
+    insertPage(mList.begin() + insertIndex, *page, *overlapStart, fillGapId);
     addToIndices(*overlapStart, insertIndex);
 
     if (!page->mCursorNextPage.isEmpty() && overlapEnd)
@@ -398,7 +398,7 @@ int PostFeedModel::insertFeed(ATProto::AppBskyFeed::OutputFeed::SharedPtr&& feed
     endInsertRows();
 
     mLastInsertedRowIndex = insertIndex + *overlapStart - 1;
-    qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mFeed.size()<< "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
+    qDebug() << "Inserted" << *overlapStart << "posts, new size:" << mList.size()<< "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     logIndices();
     return 0;
 }
@@ -407,9 +407,9 @@ void PostFeedModel::clear()
 {
     clearFilteredPostModels();
 
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRowsPhysical(0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mList.size() - 1);
         clearFeed();
         mIndexCursorMap.clear();
         mGapIdIndexMap.clear();
@@ -503,14 +503,14 @@ void PostFeedModel::addPage(Page::Ptr page)
     if (!page->mFeed.empty())
     {
         chronoCheckAddPage(*page);
-        const size_t newRowCount = mFeed.size() + page->mFeed.size();
+        const size_t newRowCount = mList.size() + page->mFeed.size();
 
-        beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
-        insertPage(mFeed.end(), *page, page->mFeed.size());
+        beginInsertRowsPhysical(mList.size(), newRowCount - 1);
+        insertPage(mList.end(), *page, page->mFeed.size());
         endInsertRows();
 
         mLastInsertedRowIndex = newRowCount - 1;
-        qDebug() << "New feed size:" << mFeed.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
+        qDebug() << "New feed size:" << mList.size() << "checked:" << mContentFilterStats.checkedPosts() << "filtered:" << mContentFilterStats.total();
     }
     else
     {
@@ -523,18 +523,18 @@ void PostFeedModel::addPage(Page::Ptr page)
 
     if (!page->mCursorNextPage.isEmpty())
     {
-        mIndexCursorMap[mFeed.size() - 1] = page->mCursorNextPage;
+        mIndexCursorMap[mList.size() - 1] = page->mCursorNextPage;
     }
     else
     {
         setEndOfFeed(true);
         setEndOfFeedFilteredPostModels(true);
 
-        if (page->mFeed.empty() && !mFeed.empty())
+        if (page->mFeed.empty() && !mList.empty())
         {
             // Set end of feed indication on existing row.
-            mFeed.back().setEndOfFeed(true);
-            const auto index = createIndex(mFeed.size() - 1, 0);
+            mList.back().setEndOfFeed(true);
+            const auto index = createIndex(mList.size() - 1, 0);
             emit dataChanged(index, index, { int(Role::EndOfFeed) });
         }
     }
@@ -544,12 +544,12 @@ void PostFeedModel::addPage(Page::Ptr page)
 
 void PostFeedModel::removeTailPosts(int size)
 {
-    qDebug() << "Remove tail posts:" << size << "current size:" << mFeed.size();
+    qDebug() << "Remove tail posts:" << size << "current size:" << mList.size();
 
-    if (size <= 0 || size >= (int)mFeed.size())
+    if (size <= 0 || size >= (int)mList.size())
         return;
 
-    const auto removeIndexCursorIt = mIndexCursorMap.lower_bound(mFeed.size() - size - 1);
+    const auto removeIndexCursorIt = mIndexCursorMap.lower_bound(mList.size() - size - 1);
 
     if (removeIndexCursorIt == mIndexCursorMap.end())
     {
@@ -560,17 +560,17 @@ void PostFeedModel::removeTailPosts(int size)
 
     const size_t removeIndex = removeIndexCursorIt->first + 1;
 
-    if (removeIndex >= mFeed.size())
+    if (removeIndex >= mList.size())
     {
-        qDebug() << "Cannot remove beyond end, removeIndex:" << removeIndex << "size:" << mFeed.size();
+        qDebug() << "Cannot remove beyond end, removeIndex:" << removeIndex << "size:" << mList.size();
         logIndices();
         return;
     }
 
-    const size_t removeCount = mFeed.size() - removeIndex;
+    const size_t removeCount = mList.size() - removeIndex;
     removeTailFromFilteredPostModels(removeCount);
 
-    beginRemoveRowsPhysical(removeIndex, mFeed.size() - 1);
+    beginRemoveRowsPhysical(removeIndex, mList.size() - 1);
     removePosts(removeIndex, removeCount);
     mIndexCursorMap.erase(std::next(removeIndexCursorIt), mIndexCursorMap.end());
 
@@ -586,24 +586,24 @@ void PostFeedModel::removeTailPosts(int size)
     setEndOfFeedFilteredPostModels(false);
     endRemoveRows();
 
-    qDebug() << "Removed tail rows:" << size << "new size:" << mFeed.size();
+    qDebug() << "Removed tail rows:" << size << "new size:" << mList.size();
     logIndices();
 }
 
 void PostFeedModel::removeHeadPosts(int size)
 {
-    qDebug() << "Remove head posts:" << size << "current size:" << mFeed.size();
+    qDebug() << "Remove head posts:" << size << "current size:" << mList.size();
 
-    if (size <= 0 || size >= (int)mFeed.size())
+    if (size <= 0 || size >= (int)mList.size())
         return;
 
     size_t removeEndIndex = size - 1;
-    while (removeEndIndex < mFeed.size() - 1 && mFeed[removeEndIndex + 1].isGap())
+    while (removeEndIndex < mList.size() - 1 && mList[removeEndIndex + 1].isGap())
         ++removeEndIndex;
 
-    if (removeEndIndex >= mFeed.size() - 1)
+    if (removeEndIndex >= mList.size() - 1)
     {
-        qWarning() << "Cannot remove beyond end, removeIndex:" << removeEndIndex << "size:" << mFeed.size();
+        qWarning() << "Cannot remove beyond end, removeIndex:" << removeEndIndex << "size:" << mList.size();
         logIndices();
         return;
     }
@@ -614,7 +614,7 @@ void PostFeedModel::removeHeadPosts(int size)
 
     beginRemoveRowsPhysical(0, removeEndIndex);
     removePosts(0, removeSize);
-    Q_ASSERT(!mFeed.front().isGap());
+    Q_ASSERT(!mList.front().isGap());
     mIndexCursorMap.erase(mIndexCursorMap.begin(), removeEndIndexCursorIt);
 
     for (auto it = mGapIdIndexMap.begin(); it != mGapIdIndexMap.end(); )
@@ -628,18 +628,18 @@ void PostFeedModel::removeHeadPosts(int size)
     addToIndices(-removeSize, removeSize);
     endRemoveRows();
 
-    qDebug() << "Removed head rows, new size:" << mFeed.size();
+    qDebug() << "Removed head rows, new size:" << mList.size();
     logIndices();
 }
 
 void PostFeedModel::removePosts(int startIndex, int size)
 {
-    Q_ASSERT(startIndex >=0 && startIndex + size <= (int)mFeed.size());
+    Q_ASSERT(startIndex >=0 && startIndex + size <= (int)mList.size());
 
     for (int i = startIndex; i < startIndex + size; ++i)
-        removeStoredCid(mFeed[i].getCid());
+        removeStoredCid(mList[i].getCid());
 
-    mFeed.erase(mFeed.begin() + startIndex, mFeed.begin() + startIndex + size);
+    mList.erase(mList.begin() + startIndex, mList.begin() + startIndex + size);
 }
 
 QString PostFeedModel::getLastCursor() const
@@ -662,13 +662,13 @@ const Post* PostFeedModel::getGapPlaceHolder(int gapId) const
 
     const int gapIndex = it->second;
 
-    if (gapIndex > (int)mFeed.size())
+    if (gapIndex > (int)mList.size())
     {
-        qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
+        qWarning() << "Gap:" << gapId << "index:" << gapIndex << "beyond feed size" << mList.size();
         return nullptr;
     }
 
-    const auto* gap = &mFeed[gapIndex];
+    const auto* gap = &mList[gapIndex];
     Q_ASSERT(gap->getGapId() == gapId);
     return gap;
 }
@@ -827,7 +827,7 @@ FilteredPostFeedModel* PostFeedModel::addFilteredPostFeedModel(IPostFilter::Ptr 
     model->setModelId(mModelId);
     model->setReverseFeed(mReverseFeed);
     model->setChronological(isChronological());
-    model->setPosts(mFeed, mFeed.size(), isEndOfFeed());
+    model->setPosts(mList, mList.size(), isEndOfFeed());
     model->setEndOfFeed(isEndOfFeed());
     model->setGetFeedInProgress(isGetFeedInProgress());
     auto* retval = model.get();

@@ -44,9 +44,9 @@ QString FilteredPostFeedModel::getFeedName() const
 
 void FilteredPostFeedModel::clear()
 {
-    if (!mFeed.empty())
+    if (!mList.empty())
     {
-        beginRemoveRowsPhysical(0, mFeed.size() - 1);
+        beginRemoveRowsPhysical(0, mList.size() - 1);
         clearFeed();
         mGapIdIndexMap.clear();
         endRemoveRows();
@@ -109,18 +109,18 @@ void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, size_t numPosts, 
     const int gapIndex = mGapIdIndexMap[gapId];
     mGapIdIndexMap.erase(gapId);
 
-    if (gapIndex > (int)mFeed.size() - 1)
+    if (gapIndex > (int)mList.size() - 1)
     {
-        qWarning() << "Gap:" << getFeedName() << gapId << "index:" << gapIndex << "beyond feed size" << mFeed.size();
+        qWarning() << "Gap:" << getFeedName() << gapId << "index:" << gapIndex << "beyond feed size" << mList.size();
         return;
     }
 
-    qDebug() << "Gap id:" << gapId << "index:" << gapIndex << "post.gapId:" << mFeed[gapIndex].getGapId();
-    Q_ASSERT(mFeed[gapIndex].getGapId() == gapId);
+    qDebug() << "Gap id:" << gapId << "index:" << gapIndex << "post.gapId:" << mList[gapIndex].getGapId();
+    Q_ASSERT(mList[gapIndex].getGapId() == gapId);
 
     // Remove gap place holder
     beginRemoveRowsPhysical(gapIndex, gapIndex);
-    mFeed.erase(mFeed.begin() + gapIndex);
+    mList.erase(mList.begin() + gapIndex);
     addToIndices(-1, gapIndex);
     endRemoveRows();
 
@@ -134,7 +134,7 @@ void FilteredPostFeedModel::gapFill(const TimelineFeed& posts, size_t numPosts, 
     }
 
     beginInsertRowsPhysical(gapIndex, gapIndex + page->mFeed.size() - 1);
-    insertPage(mFeed.begin() + gapIndex, *page);
+    insertPage(mList.begin() + gapIndex, *page);
     endInsertRows();
 }
 
@@ -155,7 +155,7 @@ void FilteredPostFeedModel::removeTailPosts(const TimelineFeed& posts, size_t nu
     auto page = createPage(posts, posts.size() - numPosts, numPosts);
     const size_t removeCount = page->mFeed.size();
     qDebug() << "Remove filtered tail posts:" << getFeedName() << "num:" << removeCount;
-    removePosts(mFeed.size() - removeCount, removeCount);
+    removePosts(mList.size() - removeCount, removeCount);
     setNumPostsChecked(0);
 
     for (const auto& post : posts)
@@ -305,12 +305,12 @@ void FilteredPostFeedModel::insertPage(const TimelineFeed::iterator& feedInsertI
         return;
     }
 
-    if (feedInsertIt != mFeed.end())
-        addToIndices(page.mFeed.size(), feedInsertIt - mFeed.begin());
+    if (feedInsertIt != mList.end())
+        addToIndices(page.mFeed.size(), feedInsertIt - mList.begin());
 
     auto posts = page.mFeed | std::views::transform([](const Post* p){ return *p; });
-    const auto insertIt = mFeed.insert(feedInsertIt, posts.begin(), posts.end());
-    const int insertIndex = insertIt - mFeed.begin();
+    const auto insertIt = mList.insert(feedInsertIt, posts.begin(), posts.end());
+    const int insertIndex = insertIt - mList.begin();
 
     for (const auto& [gapId, gapIndex] : page.mGapIdIndexMap)
     {
@@ -328,13 +328,13 @@ void FilteredPostFeedModel::addPage(Page::Ptr page, bool isLast)
         return;
     }
 
-    const size_t newRowCount = mFeed.size() + page->mFeed.size();
+    const size_t newRowCount = mList.size() + page->mFeed.size();
 
-    beginInsertRowsPhysical(mFeed.size(), newRowCount - 1);
-    insertPage(mFeed.end(), *page);
+    beginInsertRowsPhysical(mList.size(), newRowCount - 1);
+    insertPage(mList.end(), *page);
     endInsertRows();
 
-    qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
+    qDebug() << "Added filtered posts:" << page->mFeed.size() << getFeedName() << mList.size();
 }
 
 void FilteredPostFeedModel::prependPage(Page::Ptr page)
@@ -346,16 +346,16 @@ void FilteredPostFeedModel::prependPage(Page::Ptr page)
     }
 
     beginInsertRowsPhysical(0, page->mFeed.size() - 1);
-    insertPage(mFeed.begin(), *page);
+    insertPage(mList.begin(), *page);
     endInsertRows();
 
-    qDebug() << "Prepended filtered posts:" << page->mFeed.size() << getFeedName() << mFeed.size();
+    qDebug() << "Prepended filtered posts:" << page->mFeed.size() << getFeedName() << mList.size();
 }
 
 void FilteredPostFeedModel::removePosts(size_t startIndex, size_t count)
 {
-    qDebug() << "Remove posts, start:" << startIndex << "count:" << count << "feedSize:" << mFeed.size();
-    Q_ASSERT(startIndex + count <= mFeed.size());
+    qDebug() << "Remove posts, start:" << startIndex << "count:" << count << "feedSize:" << mList.size();
+    Q_ASSERT(startIndex + count <= mList.size());
 
     if (count == 0)
     {
@@ -375,13 +375,13 @@ void FilteredPostFeedModel::removePosts(size_t startIndex, size_t count)
             ++it;
     }
 
-    if (endIndex < mFeed.size() - 1)
+    if (endIndex < mList.size() - 1)
         addToIndices(-count, endIndex + 1);
 
-    mFeed.erase(mFeed.begin() + startIndex, mFeed.begin() + startIndex + count);
+    mList.erase(mList.begin() + startIndex, mList.begin() + startIndex + count);
     endRemoveRows();
 
-    qDebug() << "Removed posts:" << count << getFeedName() << mFeed.size();
+    qDebug() << "Removed posts:" << count << getFeedName() << mList.size();
 }
 
 void FilteredPostFeedModel::addToIndices(int offset, size_t startAtIndex)

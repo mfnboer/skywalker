@@ -60,9 +60,9 @@ void FilteredPostBaseModel::setEndOfFeed(bool endOfFeed)
 {
     AbstractPostFeedModel::setEndOfFeed(endOfFeed);
 
-    for (int i = mFeed.size() - 1; i >= 0; --i)
+    for (int i = mList.size() - 1; i >= 0; --i)
     {
-        auto& post = mFeed[i];
+        auto& post = mList[i];
 
         // There can be place holders at the end for filling up a row in tile view
         if (!post.isPlaceHolder())
@@ -77,7 +77,7 @@ void FilteredPostBaseModel::setEndOfFeed(bool endOfFeed)
 
 QVariant FilteredPostBaseModel::data(const QModelIndex& index, int role) const
 {
-    if (index.row() < 0 || index.row() >= (int)mFeed.size())
+    if (index.row() < 0 || index.row() >= (int)mList.size())
         return {};
 
     // NOTE: when adding logic here using the index, you must convert to a physical index.

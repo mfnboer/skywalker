@@ -7,21 +7,17 @@
 #include "local_list_model_changes.h"
 #include "local_profile_changes.h"
 #include "user_settings.h"
-#include <QAbstractListModel>
-#include <deque>
 
 namespace Skywalker {
 
 class FavoriteFeeds;
 class Skywalker;
 
-class ListListModel : public QAbstractListModel,
-                      public BaseListModel,
+class ListListModel : public BaseListModel<ListView>,
                       public LocalListModelChanges,
                       public LocalProfileChanges
 {
     Q_OBJECT
-    Q_PROPERTY(bool getFeedInProgress READ isGetFeedInProgress NOTIFY getFeedInProgressChanged FINAL)
 
 public:
     enum class Role {
@@ -54,10 +50,9 @@ public:
     Q_INVOKABLE void setMemberCheckDid(const QString& did) { mMemberCheckDid = did; }
     Q_INVOKABLE void setExcludeInternalLists(bool exclude) { mExcludeInternalLists = exclude; }
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    Q_INVOKABLE void clear();
+    Q_INVOKABLE void clear() override;
 
     int addLists(ATProto::AppBskyGraph::ListView::List lists, const QString& cursor);
 
@@ -77,9 +72,7 @@ public:
     Q_INVOKABLE void deleteEntry(int index);
     Q_INVOKABLE ListView getEntry(int index) const;
 
-    const QString& getCursor() const { return mCursor; }
-    void setCursor(const QString& cursor);
-    bool isEndOfList() const { return mCursor.isEmpty(); }
+    void setCursor(const QString& cursor) override;
     void setEndOfList();
 
     Type getType() const { return mType; }
@@ -88,12 +81,6 @@ public:
     bool needsMembershipInfo() const { return !mMemberCheckDid.isEmpty(); }
     const QString& getMemberCheckDid() const { return mMemberCheckDid; }
     bool containsUri(const QString& listUri) const { return mListUriSet.contains(listUri); }
-
-    void setGetFeedInProgress(bool inProgress);
-    bool isGetFeedInProgress() const { return mGetFeedInProgress; }
-
-signals:
-    void getFeedInProgressChanged();
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
@@ -113,7 +100,7 @@ protected:
     virtual void locallyBlockedChanged() override {}
 
 private:
-    using ListList = std::deque<ListView>;
+    using ListList = EntityList;
 
     QEnums::TripleBool memberCheck(const QString& listUri) const;
     QString getMemberListItemUri(const QString& listUri) const;
@@ -126,17 +113,13 @@ private:
     Type mType;
     Purpose mPurpose;
     QString mAtId;
-    ListList mLists;
     std::unordered_set<QString> mListUriSet;
-    QString mCursor;
     const FavoriteFeeds& mFavoriteFeeds;
-    QString mUserDid;
     const ListStore& mTimelineHide;
     const UserSettings& mUserSettings;
     QString mMemberCheckDid;
     std::unordered_map<QString, QString> mMemberCheckResults; // listUri -> listItemUri
     bool mExcludeInternalLists = false;
-    bool mGetFeedInProgress = false;
 };
 
 }
