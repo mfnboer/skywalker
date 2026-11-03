@@ -68,6 +68,7 @@ Column {
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             Accessible.ignored: true
+            visible: author.handle
         }
     }
 

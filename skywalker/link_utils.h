@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "presence.h"
+#include "enums.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/at_uri.h>
 
@@ -22,6 +23,7 @@ public:
     Q_INVOKABLE static bool isValidService(const QString& service); // atproto-proxy header value
     Q_INVOKABLE static QString getLinkWithScheme(const QString& link);
     Q_INVOKABLE static bool equalLinks(const QString& link1, const QString& link2);
+    Q_INVOKABLE static QEnums::RefType getUriRefType(const QString& atUri);
 
     explicit LinkUtils(QObject* parent = nullptr);
 

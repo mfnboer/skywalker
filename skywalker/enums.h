@@ -733,6 +733,16 @@ public:
         OZONE_REPORT_STATUS_UNKNOWN = (int)ATProto::ToolsOzoneInbox::ReportStatusEnum::UNKNOWN
     };
     Q_ENUM(OzoneReportStatus)
+
+    enum RefType
+    {
+        REF_TYPE_POST,
+        REF_TYPE_LIST,
+        REF_TYPE_FEED,
+        REF_TYPE_STARTER_PACK,
+        REF_TYPE_UNKNOWN
+    };
+    Q_ENUM(RefType)
 };
 
 }

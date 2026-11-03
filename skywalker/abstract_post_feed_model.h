@@ -44,8 +44,6 @@ class AbstractPostFeedModel : public BaseListModel<Post>,
     Q_PROPERTY(QString error READ getFeedError NOTIFY feedErrorChanged FINAL)
     Q_PROPERTY(QString syncWarning READ getFeedSyncWarning WRITE setFeedSyncWarning NOTIFY feedSyncWarningChanged)
     Q_PROPERTY(bool chronological READ isChronological NOTIFY chronologicalChanged FINAL)
-    QML_ELEMENT
-    QML_UNCREATABLE("only subclasses can be created")
 
 public:
     static constexpr int MAX_TIMELINE_SIZE = 5000;
