@@ -5,8 +5,9 @@ artifacts. Build and packaging outputs here are ignored by the local
 `.gitignore`.
 
 Install the project's build dependencies, including a C++ compiler, CMake, and
-the Qt 6 development modules used by the project. Configure and build with
-limited parallelism if memory is constrained:
+the Qt 6 development modules used by the project. Linux builds also require
+the Qt 6 Keychain development package. Configure and build with limited
+parallelism if memory is constrained:
 
 ```sh
 cmake -S . -B appimage/build \
