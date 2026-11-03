@@ -9,8 +9,11 @@ Rectangle {
     required property bool endOfList
 
     id: view
+    height: content.height
+    color: report.isRead ? guiSettings.backgroundColor : guiSettings.postHighLightColor
 
     Column {
+        id: content
         x: 10
         width: parent.width
         spacing: 0
@@ -39,7 +42,7 @@ Rectangle {
             visible: report.reason
         }
 
-        AuthorNameAndStatus {
+        PostHeaderWithAvatar {
             x: 10
             topPadding: 10
             width: parent.width - 20
@@ -49,6 +52,7 @@ Rectangle {
 
         AccessibleText {
             x: 10
+            topPadding: 10
             width: parent.width - 20
             elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
@@ -97,7 +101,7 @@ Rectangle {
         case QEnums.OZONE_REPORT_SUBJECT_REPO_REF:
             return qsTr("Account")
         case QEnums.OZONE_REPORT_SUBJECT_STRONG_REF:
-            return qsTr("TODO")
+            return getRefType(report.subject)
         case QEnums.OZONE_REPORT_SUBJECT_CONVO_REF:
             return qsTr("Chat")
         case QEnums.OZONE_REPORT_SUBJECT_MESSAGE_REF:
@@ -105,6 +109,25 @@ Rectangle {
         }
 
         return "Unknown subject"
+    }
+
+    function getRefType(strongRef) {
+        const refType = root.getLinkUtils().getUriRefType(strongRef.uri)
+
+        switch (refType) {
+        case QEnums.REF_TYPE_POST:
+            return qsTr("Post")
+        case QEnums.REF_TYPE_LIST:
+            return qsTr("List")
+        case QEnums.REF_TYPE_FEED:
+            return qsTr("Feed")
+        case QEnums.REF_TYPE_STARTER_PACK:
+            return qsTr("Starter pack")
+        case QEnums.REF_TYPE_UNKNOWN:
+            break
+        }
+
+        return strongRef.uri
     }
 
     function getStatus() {

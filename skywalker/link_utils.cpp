@@ -88,6 +88,28 @@ bool LinkUtils::equalLinks(const QString& link1, const QString& link2)
     return lhs == rhs;
 }
 
+QEnums::RefType LinkUtils::getUriRefType(const QString& atUri)
+{
+    const ATProto::ATUri uri(atUri);
+
+    if (!uri.isValid())
+        return QEnums::REF_TYPE_UNKNOWN;
+
+    const QString& collection = uri.getCollection();
+
+    if (collection == ATProto::ATUri::COLLECTION_FEED_POST)
+        return QEnums::REF_TYPE_POST;
+    if (collection == ATProto::ATUri::COLLECTION_FEED_GENERATOR)
+        return QEnums::REF_TYPE_FEED;
+    if (collection == ATProto::ATUri::COLLECTION_GRAPH_LIST)
+        return QEnums::REF_TYPE_LIST;
+    if (collection == ATProto::ATUri::COLLECTION_GRAPH_STARTERPACK)
+        return QEnums::REF_TYPE_STARTER_PACK;
+
+    qWarning() << "Unknown ref:" << atUri;
+    return QEnums::REF_TYPE_UNKNOWN;
+}
+
 QString LinkUtils::toHttpsLink(const QString& atUri)
 {
     ATProto::ATUri uri(atUri);

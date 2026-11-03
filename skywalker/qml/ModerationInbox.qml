@@ -5,8 +5,8 @@ import skywalker
 SkyPage {
     property Skywalker skywalker: root.getSkywalker()
     required property int reportsModelId
-    readonly property string sideBarTitle: qsTr("Moderation Inbox")
-    readonly property SvgImage sideBarSvg: SvgOutline.list
+    readonly property string sideBarTitle: qsTr("Reports")
+    readonly property SvgImage sideBarSvg: SvgOutline.report
 
     signal closed
 
@@ -58,7 +58,7 @@ SkyPage {
 
             EmptyListIndication {
                 y: parent.headerItem ? parent.headerItem.height : 0
-                svg: SvgOutline.noPosts
+                svg: SvgOutline.reportOff
                 text: qsTr("No reports")
                 list: reportsView
             }
