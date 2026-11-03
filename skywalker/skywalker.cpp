@@ -463,7 +463,16 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    loginWithPassword(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
+    const QString host = mUserSettings.getHost(did);
+    mUserSettings.getPasswordAsync(did, [this, did, host](const QString& password, const QString& error) {
+        if (!error.isEmpty())
+        {
+            emit loginFailed("PasswordStorageError", error, false, host, did, {});
+            return;
+        }
+
+        loginWithPassword(host, did, password, true, {});
+    });
     return true;
 }
 

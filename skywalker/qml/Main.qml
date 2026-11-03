@@ -20,6 +20,7 @@ ApplicationWindow {
     property var didGraphUtilsMap: new Map()
     property var didFeedUtilsMap: new Map()
     property var didLinkUtilsMap: new Map()
+    property var pendingSavedPasswordLogin: null
 
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // property double frameIntervalStart: Date.now()
@@ -318,6 +319,11 @@ ApplicationWindow {
         favoritesTabBar.setCurrent(favorite)
     }
 
+    function requestSavedPasswordLogin(host, handle, did) {
+        pendingSavedPasswordLogin = { host: host, handle: handle, did: did }
+        skywalker.getUserSettings().requestPassword(did)
+    }
+
     Skywalker {
         id: skywalker
 
@@ -603,6 +609,30 @@ ApplicationWindow {
         function start() {
             setStartupStatus(qsTr("Loading user profile"))
             skywalker.getUserProfileAndFollows()
+        }
+    }
+
+    Connections {
+        target: skywalker.getUserSettings()
+
+        function onPasswordRetrieved(did, password, error) {
+            const pending = root.pendingSavedPasswordLogin
+            if (!pending || pending.did !== did)
+                return
+
+            root.pendingSavedPasswordLogin = null
+
+            if (error) {
+                loginUser(false, pending.host, pending.handle, did, error)
+                return
+            }
+
+            skywalkerLogin(false, pending.host, pending.handle, did, password, true,
+                           "", false, "", "", "", "")
+        }
+
+        function onPasswordStorageError(did, error) {
+            skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         }
     }
 
@@ -1458,8 +1488,7 @@ ApplicationWindow {
                 else {
                     if (userSettings.getRememberPassword(profile.did)) {
                         const host = userSettings.getHost(profile.did)
-                        const password = userSettings.getPassword(profile.did)
-                        skywalkerLogin(false, host, profile.handle, profile.did, password, true)
+                        requestSavedPasswordLogin(host, profile.handle, profile.did)
                     }
                     else {
                         const host = userSettings.getHost(profile.did)
