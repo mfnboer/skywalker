@@ -313,7 +313,6 @@ Pane {
 
                 AccessibleText {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
                     font.bold: searchActive
                     text: qsTr("Search")
 
@@ -342,7 +341,6 @@ Pane {
 
                 AccessibleText {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
                     font.bold: messagesActive
                     text: qsTr("Direct messages")
 
@@ -371,7 +369,6 @@ Pane {
 
                 AccessibleText {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
                     font.bold: notificationsActive
                     text: qsTr("Notifications")
 
@@ -424,7 +421,6 @@ Pane {
                     Layout.fillWidth: true
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: 10
-                    elide: Text.ElideRight
                     font.bold: followingEntry.active
                     text: (skywalker.favoriteFeeds.homeFeedUri === skywalker.favoriteFeeds.getHomeFeedKey() ? "🏠 " : "") + qsTr("Following", "timeline title")
 
@@ -478,7 +474,6 @@ Pane {
                         AccessibleText {
                             width: parent.width
                             rightPadding: 10
-                            elide: Text.ElideRight
                             font.bold: favoriteEntry.active
                             text: (skywalker.favoriteFeeds.homeFeedUri === modelData.key ? "🏠 " : "") + modelData.name
 
@@ -494,7 +489,6 @@ Pane {
                             rightPadding: 10
                             color: guiSettings.handleColor
                             font.pointSize: guiSettings.scaledFont(7/8)
-                            elide: Text.ElideRight
                             text: modelData.subTitle
                             visible: modelData.subTitle
 
@@ -532,7 +526,6 @@ Pane {
 
                 AccessibleText {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
                     font.bold: searchActive
                     text: qsTr("Sort favorites")
 

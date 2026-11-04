@@ -72,7 +72,6 @@ SkyPage {
                     width: parent.width
                     padding: 10
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     text: qsTr("Saved lists from other users")
                 }
             }
@@ -119,7 +118,6 @@ SkyPage {
                     width: parent.width
                     padding: 10
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     text: qsTr("You can find feeds on the search page")
                 }
             }

@@ -22,7 +22,6 @@ Row {
         id: replyToText
         width: parent.width - replyImg.width
         anchors.verticalCenter: parent.verticalCenter
-        elide: Text.ElideRight
         color: Material.color(Material.Grey)
         font.pointSize: guiSettings.scaledFont(7/8)
         text: row.text

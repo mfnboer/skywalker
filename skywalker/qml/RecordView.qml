@@ -179,7 +179,6 @@ Item {
                     topPadding: 5
                     bottomPadding: 5
                     width: parent.width
-                    elide: Text.ElideRight
                     text: guiSettings.getBlockTextForByBlockedAuthor(record.blockedAuthor)
                 }
 
@@ -236,7 +235,6 @@ Item {
                 width: parent.width
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 text: record.unsupportedType
 

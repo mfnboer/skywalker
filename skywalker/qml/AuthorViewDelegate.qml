@@ -89,7 +89,6 @@ Rectangle {
             }
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: `@${author.handle}`
@@ -220,7 +219,6 @@ Rectangle {
             sourceComponent: AccessibleText {
                 id: optedOutText
                 padding: 10
-                elide: Text.ElideRight
                 text: qsTr("⚠️ Opted out of this starter pack")
 
                 Rectangle {
@@ -245,7 +243,6 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             bottomPadding: 50
-            elide: Text.ElideRight
             text: qsTr("End of list")
             font.italic: true
             visible: endOfList

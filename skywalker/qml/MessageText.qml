@@ -20,7 +20,6 @@ SkyCleanedText {
     leftPadding: 10
     rightPadding: 10
     wrapMode: Text.Wrap
-    elide: Text.ElideRight
     textFormat: message.textMetaInfo.isSimpleText() ? Text.StyledText : Text.RichText
     font.italic: message.deleted
     plainText: getMessageDisplayText()

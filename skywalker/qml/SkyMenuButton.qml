@@ -33,7 +33,6 @@ Item {
         leftPadding: 10
         rightPadding: 10
         color: button.color
-        elide: Text.ElideRight
         text: button.text
     }
 

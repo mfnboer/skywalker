@@ -63,7 +63,6 @@ Rectangle {
         backgroundColor: "transparent"
         font.pointSize: guiSettings.linkButtonFontSize
         font.weight: Font.Medium
-        elide: Text.ElideRight
         text: getDisplayText()
     }
 

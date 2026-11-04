@@ -17,7 +17,6 @@ SkyDialog {
     AccessibleText {
         id: headerText
         width: parent.width
-        elide: Text.ElideRight
         font.bold: true
         text: (blockUser ? qsTr("Block") : qsTr("Mute")) + ":"
     }
@@ -60,7 +59,6 @@ SkyDialog {
             }
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: `@${author.handle}`

@@ -37,7 +37,6 @@ RowLayout {
         id: knownFollowersText
         Layout.fillWidth: true
         topPadding: 10
-        elide: Text.ElideRight
         wrapMode: Text.Wrap
         maximumLineCount: 3
         color: guiSettings.linkColor

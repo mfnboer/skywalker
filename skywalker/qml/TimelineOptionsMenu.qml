@@ -74,7 +74,6 @@ SkyMenu {
         width: parent.width
         leftPadding: 10
         rightPadding: 10
-        elide: Text.ElideRight
         font.bold: true
         text: qsTr("Posts order")
     }

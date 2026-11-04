@@ -43,7 +43,6 @@ Rectangle {
         AccessibleText {
             width: parent.width
             text: externalSource.title
-            elide: Text.ElideRight
             color: getForegroundColor()
             font.bold: true
             visible: !isCardLink
@@ -53,7 +52,6 @@ Rectangle {
             width: parent.width
             text: externalSource.description
             maximumLineCount: 1
-            elide: Text.ElideRight
             color: getForegroundColor()
             visible: !isCardLink && externalSource.description
         }
@@ -73,7 +71,6 @@ Rectangle {
             AccessibleText {
                 width: parent.width - icon.width - parent.spacing
                 color: getAccentColor()
-                elide: Text.ElideRight
                 text: externalSource.standardSitePublisher ?
                           qsTr(`Subscribe on ${externalSource.standardSitePublisher}`) :
                           guiSettings.stripHttpFromLink(externalSource.uri)

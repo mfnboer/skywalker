@@ -80,7 +80,6 @@ Rectangle {
             AccessibleText {
                 width: parent.width
                 bottomPadding: 5
-                elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.textColor
                 text: (skywalker.favoriteFeeds.homeFeedUri === feed.key ? "🏠 " : "") + feed.displayName
@@ -103,7 +102,6 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + feedCreator.handle
@@ -205,9 +203,7 @@ Rectangle {
             Layout.rightMargin: generatorView.margin
             wrapMode: Text.Wrap
             maximumLineCount: maxTextLines
-            elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
             text: feed.formattedDescription
             visible: showFeed
 
@@ -328,7 +324,6 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             topPadding: generatorView.margin
-            elide: Text.ElideRight
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfFeed

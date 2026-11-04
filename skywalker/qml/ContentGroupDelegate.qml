@@ -42,7 +42,6 @@ Rectangle {
                 Layout.rightMargin: contentGroupView.margin
                 Layout.fillWidth: true
                 font.bold: true
-                elide: Text.ElideRight
                 text: contentGroup.title
             }
             SvgButton {
@@ -70,7 +69,6 @@ Rectangle {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             maximumLineCount: 1000
-            elide: Text.ElideRight
             textFormat: Text.RichText
             text: contentGroup.formattedDescription
         }

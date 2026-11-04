@@ -78,7 +78,6 @@ SkyDrawer {
                 AccessibleText {
                     id: handleText
                     width: parent.width
-                    elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.handleColor
                     text: `@${user.handle}`

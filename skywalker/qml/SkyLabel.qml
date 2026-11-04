@@ -14,6 +14,7 @@ Label {
     background: Rectangle { color: backgroundColor; radius: 2; opacity: backgroundOpacity }
     font.pointSize: guiSettings.labelFontSize
     font.weight: Font.Light
+    elide: Text.ElideRight
     color: guiSettings.textColor
 
     Accessible.role: Accessible.StaticText

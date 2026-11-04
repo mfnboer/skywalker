@@ -69,7 +69,6 @@ SkyPage {
                 Layout.fillWidth: true
                 height: backgroundButton.height
                 verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
                 text: qsTr("Background")
             }
         }
@@ -89,7 +88,6 @@ SkyPage {
                 Layout.fillWidth: true
                 height: logoButton.height
                 verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
                 text: qsTr("Logo")
             }
         }
@@ -109,7 +107,6 @@ SkyPage {
                 Layout.fillWidth: true
                 height: ageButton.height
                 verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
                 text: qsTr("Number")
             }
         }

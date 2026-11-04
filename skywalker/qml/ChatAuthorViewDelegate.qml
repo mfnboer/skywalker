@@ -79,7 +79,6 @@ Rectangle {
             }
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: `@${author.handle}`
@@ -144,7 +143,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             width: parent.width
-            elide: Text.ElideRight
             font.italic: true
             font.pointSize: guiSettings.scaledFont(7/8)
             text: author.pronouns
@@ -159,7 +157,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.rightMargin: authorRect.margin
             width: parent.width
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             text: qsTr(`Added by ${addedBy.isNull() ? "invite link" : addedBy.basicProfile.name}`)
@@ -177,7 +174,6 @@ Rectangle {
 
                 AccessibleText {
                     width: parent.width
-                    elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
                     text: qsTr(`Requested to join: ${guiSettings.dateTimeIndication(joinRequestedAt)}`)
                 }
@@ -220,8 +216,6 @@ Rectangle {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             bottomPadding: 20
-            elide: Text.ElideRight
-            color: guiSettings.textColor
             text: qsTr("End of list")
             font.italic: true
             visible: endOfList

@@ -70,7 +70,6 @@ Rectangle {
                 AccessibleText {
                     id: nameText
                     width: parent.width - mutedImg.width - timeText.width - parent.spacing * (convo.muted ? 2 : 1)
-                    elide: Text.ElideRight
                     font.bold: true
                     text: convo.title
                 }
@@ -102,7 +101,6 @@ Rectangle {
 
                     AccessibleText {
                         width: parent.width
-                        elide: Text.ElideRight
                         color: guiSettings.handleColor
                         font.pointSize: guiSettings.scaledFont(7/8)
                         text: `@${firstMember.handle}`
@@ -167,13 +165,11 @@ Rectangle {
 
                             AccessibleText {
                                 width: parent.width
-                                elide: Text.ElideRight
                                 font.pointSize: guiSettings.scaledFont(7/8)
                                 text: qsTr(`Group chat ${convo.group.memberCount}/${convo.group.memberLimit} members`)
                             }
                             AccessibleText {
                                 width: parent.width
-                                elide: Text.ElideRight
                                 font.italic: true
                                 text: qsTr("You requested to join")
                             }
@@ -188,7 +184,6 @@ Rectangle {
                         id: lastMessage
                         width: parent.width
                         topPadding: 10
-                        elide: Text.ElideRight
                         wrapMode: Text.Wrap
                         maximumLineCount: 2
                         textFormat: convo.lastMessage.textMetaInfo.isSimpleText() ? Text.StyledText : Text.RichText
@@ -404,8 +399,6 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
         topPadding: 30
         bottomPadding: 100
-        elide: Text.ElideRight
-        color: guiSettings.textColor
         text: qsTr("End of chats")
         font.italic: true
         visible: endOfList

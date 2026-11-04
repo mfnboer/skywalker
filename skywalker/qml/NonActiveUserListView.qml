@@ -205,7 +205,6 @@ ListView {
                 bottomPadding: rowPadding
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: user.profile.handle ? `@${user.profile.handle}` : ""

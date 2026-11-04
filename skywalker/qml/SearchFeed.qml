@@ -43,7 +43,6 @@ SkyPage {
             topPadding: 10
             anchors.horizontalCenter: parent.horizontalCenter
             color: Material.color(Material.Grey)
-            elide: Text.ElideRight
             text: qsTr("No matching feed found")
             visible: typeaheadView.count === 0
         }

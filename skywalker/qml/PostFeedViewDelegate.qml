@@ -269,7 +269,6 @@ Rectangle {
                     sourceComponent: AccessibleText {
                         width: parent.width
                         height: parent.height
-                        elide: Text.ElideRight
                         color: guiSettings.linkColor
                         verticalAlignment: Text.AlignVCenter
                         text: qsTr("Read older...")
@@ -314,7 +313,6 @@ Rectangle {
                     leftPadding: contentLeftMargin
                     rightPadding: postEntry.margin
                     width: parent.width - threadColumnWidth
-                    elide: Text.ElideRight
                     text: qsTr("Pinned post")
                     color: Material.color(Material.Grey)
                     font.bold: true
@@ -350,7 +348,6 @@ Rectangle {
                     leftPadding: contentLeftMargin
                     rightPadding: postEntry.margin
                     width: parent.width - threadColumnWidth
-                    elide: Text.ElideRight
                     text: qsTr(`Reposted by ${postRepostedByAuthor.name}`)
                     color: Material.color(Material.Grey)
                     font.bold: true
@@ -637,7 +634,6 @@ Rectangle {
                                 width: parent.width - hideIcon.width
                                 rightPadding: 10
                                 anchors.verticalCenter: parent.verticalCenter
-                                elide: Text.ElideRight
                                 text: QEnums.hideReasonToString(filteredPostHideReason) + (filteredPostHideDetail ? `: ${filteredPostHideDetail}` : "")
                             }
                         }
@@ -911,7 +907,6 @@ Rectangle {
                         topPadding: 10
                         bottomPadding: 10
                         width: parent.width
-                        elide: Text.ElideRight
                         color: guiSettings.linkColor
                         text: qsTr("Read more...")
 
@@ -936,7 +931,6 @@ Rectangle {
                         topPadding: 10
                         bottomPadding: 10
                         width: parent.width
-                        elide: Text.ElideRight
                         color: guiSettings.linkColor
                         text: qsTr("Show more replies...")
 
@@ -961,7 +955,6 @@ Rectangle {
                     topPadding: 10
                     bottomPadding: 10
                     width: parent.width
-                    elide: Text.ElideRight
                     color: guiSettings.linkColor
                     text: qsTr("Unfold post thread")
 
@@ -1003,7 +996,6 @@ Rectangle {
                     AccessibleText {
                         bottomPadding: 5
                         width: parent.width
-                        elide: Text.ElideRight
                         text: guiSettings.getBlockTextForByBlockedAuthor(postBlockedAuthor)
                     }
 
@@ -1032,7 +1024,6 @@ Rectangle {
                 topPadding: 50
                 bottomPadding: 50
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
                 color: guiSettings.linkColor
                 text: qsTr("Show more posts")
 
@@ -1052,7 +1043,6 @@ Rectangle {
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
                 color: guiSettings.linkColor
                 text: qsTr("Show hidden replies")
 
@@ -1073,7 +1063,6 @@ Rectangle {
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
                 text: {
                     if (postNotFound)
                         return qsTr("🗑 Not found")
@@ -1097,7 +1086,6 @@ Rectangle {
             sourceComponent: AccessibleText {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
                 text: qsTr("🚫 Blocked")
             }
         }
@@ -1112,7 +1100,6 @@ Rectangle {
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
-                elide: Text.ElideRight
                 color: Material.color(Material.Grey)
                 font.pointSize: guiSettings.scaledFont(7/8)
                 text: postUnsupportedType
@@ -1195,7 +1182,6 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             bottomPadding: reverseFeed ? 10 : 50
-            elide: Text.ElideRight
             text: unrollThread ? qsTr("End of thread") : qsTr("End of feed")
             font.italic: true
         }

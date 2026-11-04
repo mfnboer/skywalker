@@ -45,11 +45,9 @@ SkyPage {
                 id: focusEntry
                 width: parent.width
                 padding: 10
-                elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 textFormat: Text.RichText
                 font.pointSize: guiSettings.scaledFont(9/8)
-                color: guiSettings.textColor
                 text: guiSettings.getFocusHashtagEntryText(modelData)
             }
 

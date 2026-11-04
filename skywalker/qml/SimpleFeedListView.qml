@@ -62,9 +62,7 @@ SkyListView {
                 Layout.fillWidth: true
                 width: parent.width
                 bottomPadding: 5
-                elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
                 text: feed.displayName
             }
 
@@ -76,7 +74,6 @@ SkyListView {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + feed.creator.handle

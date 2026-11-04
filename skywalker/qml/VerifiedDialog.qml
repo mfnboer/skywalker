@@ -30,7 +30,6 @@ SkyDialog {
         x: 10
         anchors.top: nameText.bottom
         width: parent.width - 20
-        elide: Text.ElideRight
         color: guiSettings.handleColor
         text: `@${author.handle}`
     }
@@ -99,7 +98,6 @@ SkyDialog {
 
                     AccessibleText {
                         width: parent.width
-                        elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(7/8)
                         color: guiSettings.handleColor
                         text: `@${issuer.handle}`
@@ -107,7 +105,6 @@ SkyDialog {
 
                     AccessibleText {
                         width: parent.width
-                        elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(7/8)
                         color: guiSettings.handleColor
                         text: modelData.createdAt.toLocaleDateString(Qt.locale(), Locale.ShortFormat)
@@ -169,7 +166,6 @@ SkyDialog {
         anchors.bottom: parent.bottom
         topPadding: 10
         horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
         textFormat: Text.RichText
         text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">View trusted verifiers</a>`)
         onLinkActivated: {

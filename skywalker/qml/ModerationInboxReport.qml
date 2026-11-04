@@ -34,7 +34,6 @@ SkyPage {
             rightPadding: margin
             font.bold: true
             font.pointSize: guiSettings.scaledFont(9/8)
-            elide: Text.ElideRight
             text: getResolutionText()
         }
 
@@ -42,7 +41,6 @@ SkyPage {
             width: parent.width
             leftPadding: margin
             rightPadding: margin
-            elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
             text: guiSettings.dateTimeIndication(report.updatedAt)
@@ -52,7 +50,6 @@ SkyPage {
             width: parent.width
             padding: margin
             font.bold: true
-            elide: Text.ElideRight
             text: qsTr("You reported")
         }
 
@@ -74,7 +71,6 @@ SkyPage {
                     padding: margin
                     width: parent.width
                     font.bold: true
-                    elide: Text.ElideRight
                     text: ozoneUtils.subjectTypeToString(report)
                 }
 
@@ -96,7 +92,6 @@ SkyPage {
             topPadding: margin
             leftPadding: margin
             rightPadding: margin
-            elide: Text.ElideRight
             font.bold: true
             text: qsTr("Reason:")
         }

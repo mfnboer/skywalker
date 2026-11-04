@@ -57,7 +57,6 @@ Rectangle {
                 width: parent.width
                 topPadding: 3
                 Layout.fillHeight: true
-                elide: Text.ElideRight
                 font.bold: true
                 color: guiSettings.headerTextColor
                 text: convo.title
@@ -68,7 +67,6 @@ Rectangle {
                 Layout.preferredHeight: visible ? implicitHeight : 0
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
-                elide: Text.ElideRight
                 text: `@${firstMember.handle}`
                 visible: convo.members.length <= 1
             }

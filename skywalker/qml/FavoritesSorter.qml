@@ -66,7 +66,6 @@ SkyPage {
                     AccessibleText {
                         anchors.verticalCenter: parent.verticalCenter
                         width: parent.width - avatar.width - dragIcon.width - parent.spacing * 2
-                        elide: Text.ElideRight
                         text: modelData.nameWithSubTitle
                     }
                 }

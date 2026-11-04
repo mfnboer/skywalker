@@ -37,9 +37,7 @@ Column {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
                 text: feed.displayName
 
                 Accessible.ignored: true
@@ -47,7 +45,6 @@ Column {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: qsTr(`feed by @${feed.creator.handle}`)
@@ -71,7 +68,6 @@ Column {
         width: parent.width - 20
         wrapMode: Text.Wrap
         maximumLineCount: 5
-        elide: Text.ElideRight
         text: feed.description
     }
 

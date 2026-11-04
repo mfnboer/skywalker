@@ -43,7 +43,6 @@ SvgButton {
                         id: homeText
                         width: Math.min(parent.width - homeBadge.width - homeAvatar.width - 5, implicitWidth)
                         verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
                         text: (skywalker.favoriteFeeds.homeFeedUri === skywalker.favoriteFeeds.getHomeFeedKey()  ? "🏠 " : "") + qsTr("Following", "timeline title")
                     }
 
@@ -94,7 +93,6 @@ SvgButton {
                             AccessibleText {
                                 id: nameText
                                 width: parent.width
-                                elide: Text.ElideRight
                                 text: (skywalker.favoriteFeeds.homeFeedUri === modelData.key ? "🏠 " : "") + modelData.name
                             }
                             Text {
@@ -152,7 +150,6 @@ SvgButton {
                 contentItem: AccessibleText {
                     verticalAlignment: Text.AlignVCenter
                     rightPadding: settingsIcon.width + 5
-                    elide: Text.ElideRight
                     text: qsTr("Sort favorites")
                 }
 

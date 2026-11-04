@@ -174,13 +174,11 @@ Column {
                 AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: postContentWarning
                 }
                 AccessibleText {
                     width: parent.width
-                    elide: Text.ElideRight
                     textFormat: Text.RichText
                     font.pointSize: guiSettings.scaledFont(7/8)
                     font.italic: true
@@ -191,7 +189,6 @@ Column {
                 AccessibleText {
                     topPadding: 20
                     width: parent.width
-                    elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: `<a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                     onLinkActivated: showWarnedPost = true
@@ -208,13 +205,11 @@ Column {
                 AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: getMuteText()
                 }
                 AccessibleText {
                     width: parent.width
-                    elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: `<a href=\"show\" style=\"color: ${guiSettings.linkColor};\">` + qsTr("Show post") + "</a>"
                     onLinkActivated: mutePost = false
@@ -230,14 +225,12 @@ Column {
                 AccessibleText {
                     width: parent.width
                     wrapMode: Text.Wrap
-                    elide: Text.ElideRight
                     textFormat: Text.RichText
                     text: postContentWarning
                 }
                 AccessibleText {
                     width: parent.width
                     textFormat: Text.RichText
-                    elide: Text.ElideRight
                     color: Material.color(Material.Grey)
                     font.pointSize: guiSettings.scaledFont(7/8)
                     font.italic: true

@@ -231,7 +231,6 @@ SkyPage {
 
                         AccessibleText {
                             Layout.fillWidth: true
-                            elide: Text.ElideRight
                             text: qsTr("Number prefix:")
                         }
                         AccessibleText {
@@ -275,8 +274,6 @@ SkyPage {
             anchors.rightMargin: page.margin
             font.italic: true
             horizontalAlignment: Text.AlignRight
-            elide: Text.ElideRight
-
             text: qsTr("document editor")
             visible: largeEditor
         }
@@ -748,7 +745,6 @@ SkyPage {
                         anchors.topMargin: 5
                         font.italic: true
                         text: qsTr(`${postItem.images.length} images (max ${maxImages})`)
-                        elide: Text.ElideRight
                         visible: imageScroller.visible && postItem.images.length > 1
                     }
 

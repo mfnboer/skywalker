@@ -52,7 +52,6 @@ Row {
             }
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 color: Material.color(Material.Grey)
                 font.pointSize: guiSettings.scaledFont(7/8)
                 font.italic: true
@@ -84,7 +83,6 @@ Row {
             }
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 color: Material.color(Material.Grey)
                 font.pointSize: guiSettings.scaledFont(7/8)
                 font.italic: true

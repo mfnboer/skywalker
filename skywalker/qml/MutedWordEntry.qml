@@ -15,7 +15,6 @@ ColumnLayout {
         Layout.fillWidth: true
         leftPadding: column.horizontalPadding
         rightPadding: column.horizontalPadding
-        elide: Text.ElideRight
         wrapMode: Text.Wrap
         font.pointSize: guiSettings.scaledFont(9/8)
         text: entry.value + (entry.isDomain ? " 🔗" : "")
@@ -24,7 +23,6 @@ ColumnLayout {
         Layout.fillWidth: true
         leftPadding: column.horizontalPadding
         rightPadding: column.horizontalPadding
-        elide: Text.ElideRight
         font.pointSize: guiSettings.scaledFont(7/8)
         color: Material.color(Material.Grey)
         text: getExpiresIndication(entry.expiresAt)
@@ -35,7 +33,6 @@ ColumnLayout {
         Layout.fillWidth: true
         leftPadding: column.horizontalPadding
         rightPadding: column.horizontalPadding
-        elide: Text.ElideRight
         font.pointSize: guiSettings.scaledFont(7/8)
         color: Material.color(Material.Grey)
         text: qsTr("Exclude users you follow")

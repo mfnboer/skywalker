@@ -97,7 +97,6 @@ Rectangle {
                 rightPadding: searchText.rightPadding
                 font.pointSize: searchText.font.pointSize
                 color: guiSettings.placeholderTextColor
-                elide: Text.ElideRight
                 text: headerRect.placeHolderText
                 visible: searchText.displayText.length === 0
 

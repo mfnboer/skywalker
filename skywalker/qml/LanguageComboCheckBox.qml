@@ -33,7 +33,6 @@ ComboBox {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
         color: languageComboBox.color
         text: checkedLangCodes.length > 0 ? checkedLangCodes.join(", ") : (noneCheckedMeansAll ? qsTr("all languages") : qsTr("none"))
     }
@@ -69,8 +68,6 @@ ComboBox {
             leftPadding: delegate.indicator.width + delegate.spacing
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-            color: guiSettings.textColor
             text: `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})`
         }
 

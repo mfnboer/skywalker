@@ -41,7 +41,6 @@ ListView {
             id: hashtagText
             width: parent.width
             padding: 10
-            elide: Text.ElideRight
             font.bold: true
             text: `#${hashtagEntry.hashtag}`
 

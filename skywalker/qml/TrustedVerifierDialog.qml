@@ -32,7 +32,6 @@ SkyDialog {
         x: 10
         anchors.top: nameText.bottom
         width: parent.width - 20
-        elide: Text.ElideRight
         color: guiSettings.handleColor
         text: `@${author.handle}`
     }
@@ -54,7 +53,6 @@ SkyDialog {
         anchors.top: verifiedByText.bottom
         anchors.topMargin: 10
         horizontalAlignment: Text.AlignHCenter
-        elide: Text.ElideRight
         textFormat: Text.RichText
         text: qsTr(`<a href="settings" style="color: ${guiSettings.linkColor}; text-decoration: none">View trusted verifiers</a>`)
         onLinkActivated: {

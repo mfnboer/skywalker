@@ -32,7 +32,6 @@ AccessibleTabButton {
             anchors.verticalCenter: parent.verticalCenter
             leftPadding: 5
             rightPadding: 5
-            elide: Text.ElideRight
             font: button.font
             color: button.checked ? guiSettings.accentColor : guiSettings.textColor
             text: name

@@ -185,7 +185,6 @@ RoundCornerMask {
             rightPadding: 5
             bottomPadding: 5
             text: card.uri ? new URL(card.uri).hostname : ""
-            elide: Text.ElideRight
             color: guiSettings.linkColor
             visible: externalSource.isNull()
         }

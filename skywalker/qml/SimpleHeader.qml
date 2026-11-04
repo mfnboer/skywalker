@@ -47,7 +47,6 @@ Rectangle {
                 font.bold: true
                 font.pointSize: (Boolean(subTitle) || isSideBar) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
-                elide: Text.ElideRight
                 text: headerRect.text
 
                 Accessible.role: Accessible.TitleBar
@@ -58,7 +57,6 @@ Rectangle {
                 width: parent.width
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
-                elide: Text.ElideRight
                 text: subTitle
                 visible: Boolean(subTitle)
             }

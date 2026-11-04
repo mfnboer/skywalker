@@ -278,7 +278,6 @@ GridView {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             bottomPadding: model.reverseFeed ? 10 : 50
-            elide: Text.ElideRight
             font.italic: true
             text: qsTr("End of feed")
             visible: mediaTilesView.count > 0

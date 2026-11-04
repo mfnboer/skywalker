@@ -61,7 +61,6 @@ RoundCornerMask {
 
                 AccessibleText {
                     width: parent.width
-                    elide: Text.ElideRight
                     font.bold: true
                     color: guiSettings.messageUserTextColor
                     text: joinLink.isNull() ? title : joinLink.name
@@ -70,7 +69,7 @@ RoundCornerMask {
                 AccessibleText {
                     width: parent.width
                     bottomPadding: 5
-                    elide: Text.ElideRight
+
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.messageUserTextColor
                     text: qsTr(`Group chat ${joinLink.memberCount}/${joinLink.memberLimit} members`)
@@ -94,7 +93,6 @@ RoundCornerMask {
 
                 AccessibleText {
                     width: parent.width
-                    elide: Text.ElideRight
                     text: "@" + owner.handle
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.messageUserTextColor
@@ -102,7 +100,6 @@ RoundCornerMask {
 
                 AccessibleText {
                     topPadding: 5
-                    elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.messageUserTextColor
                     text: qsTr(`Requested to join: ${guiSettings.dateTimeIndication(joinLink.requestedAt)}`)

@@ -101,7 +101,6 @@ ListView {
             AccessibleText {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: author.handle ? `@${author.handle}` : ""
@@ -116,7 +115,6 @@ ListView {
             AccessibleText {
                 Layout.columnSpan: 2
                 Layout.fillWidth: true
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 visible: showHost && author.did
