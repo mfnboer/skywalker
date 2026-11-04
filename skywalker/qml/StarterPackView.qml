@@ -160,7 +160,6 @@ SkyPage {
                 topPadding: 10
                 bottomPadding: 10
                 Layout.fillWidth: true
-                elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
@@ -211,7 +210,6 @@ SkyPage {
                 AccessibleText {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.handleColor
                     text: `@${starterPack.creator.handle}`
@@ -242,10 +240,8 @@ SkyPage {
             topPadding: 10
             width: parent.width
             wrapMode: Text.Wrap
-            elide: Text.ElideRight
             textFormat: Text.RichText
             maximumLineCount: 25
-            color: guiSettings.textColor
             plainText: starterPack.formattedDescription
             visible: starterPack.description
         }
@@ -253,7 +249,6 @@ SkyPage {
         AccessibleText {
             topPadding: 10
             width: parent.width
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             text: guiSettings.getMemberCountString(starterPack.listItemCount + authorListView.model.countDelta)
@@ -263,7 +258,6 @@ SkyPage {
         AccessibleText {
             padding: 10
             width: parent.width
-            elide: Text.ElideRight
             text: qsTr("⚠️ You opted out of this starter pack")
             visible: optOutUri
 

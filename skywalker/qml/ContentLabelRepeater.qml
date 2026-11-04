@@ -53,7 +53,6 @@ Repeater {
             backgroundColor: "transparent"
             font.pointSize: guiSettings.labelFontSize
             font.italic: true
-            elide: Text.ElideRight
             text: getDisplayText(modelData)
         }
 

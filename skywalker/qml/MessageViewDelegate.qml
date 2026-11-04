@@ -49,7 +49,6 @@ Rectangle {
                 topPadding: 10
                 horizontalAlignment: Text.AlignHCenter
                 font.italic: true
-                elide: Text.ElideRight
                 text: isGroupConvo ? qsTr("Start of group chat") : qsTr("Start of chat")
             }
 
@@ -103,7 +102,6 @@ Rectangle {
         sourceComponent: AccessibleText {
             topPadding: 10
             width: maxTextWidth
-            elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)
@@ -370,7 +368,6 @@ Rectangle {
                 id: systemText
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width
-                elide: Text.ElideRight
                 wrapMode: Text.Wrap
             }
 

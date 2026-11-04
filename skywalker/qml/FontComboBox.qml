@@ -53,7 +53,6 @@ ComboBox {
         contentItem: AccessibleText {
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
             color: delegate.index === fontComboBox.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
             text: delegate.modelData.font
         }

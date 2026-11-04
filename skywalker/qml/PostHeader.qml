@@ -43,7 +43,6 @@ Column {
     AccessibleText {
         width: parent.width
         bottomPadding: labelsToShow.length > 0 ? 0 : 5
-        elide: Text.ElideRight
         text: "@" + author.handle
         font.pointSize: guiSettings.scaledFont(7/8)
         color: guiSettings.handleColor

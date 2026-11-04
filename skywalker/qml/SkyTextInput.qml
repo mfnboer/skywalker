@@ -106,7 +106,6 @@ Rectangle {
             verticalAlignment: parent.verticalAlignment
             font.pointSize: parent.font.pointSize
             color: skyTextInput.valid ? guiSettings.placeholderTextColor : guiSettings.placeholderTextInvalidColor
-            elide: Text.ElideRight
             text: placeholderText
             visible: parent.displayText.length === 0
             Accessible.ignored: true

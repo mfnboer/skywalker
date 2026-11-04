@@ -124,7 +124,6 @@ SkyPage {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
@@ -135,7 +134,6 @@ SkyPage {
             AccessibleText {
                 width: parent.width
                 bottomPadding: 5
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
@@ -159,13 +157,11 @@ SkyPage {
             AccessibleText {
                 topPadding: 2
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + list.creator.handle
 
                 Accessible.role: Accessible.Link
-                Accessible.name: text
                 Accessible.onPressAction: skywalker.getDetailedProfile(list.creator.did)
 
                 SkyMouseArea {
@@ -232,7 +228,6 @@ SkyPage {
         AccessibleText {
             bottomPadding: 10
             width: parent.width
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             text: guiSettings.getMemberCountString(list.listItemCount + authorListView.model.countDelta)

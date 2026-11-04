@@ -50,7 +50,6 @@ SkyDialog {
             AccessibleText {
                 width: parent.width
                 bottomPadding: 10
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: Material.color(Material.Grey)
                 text: qsTr(`Created at ${joinLink.createdAt.toLocaleString(Qt.locale(), Locale.ShortFormat)}`)

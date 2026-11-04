@@ -266,7 +266,6 @@ SkyPage {
             leftPadding: 5
             rightPadding: 5
             maximumLineCount: 3
-            elide: Text.ElideRight
             wrapMode: Text.Wrap
             color: guiSettings.linkColor
             text: page.getSearchPostScopeText()
@@ -660,7 +659,6 @@ SkyPage {
                             anchors.right: parent.right
                             anchors.leftMargin: 10
                             anchors.rightMargin: page.margin
-                            elide: Text.ElideRight
                             font.bold: true
                             text: modelData.topic.topic + (modelData.topic.status === QEnums.TREND_STATUS_HOT ? " 🔥" : "")
                         }
@@ -672,7 +670,6 @@ SkyPage {
                             anchors.top: topicTitle.bottom
                             maximumLineCount: 3
                             wrapMode: Text.Wrap
-                            elide: Text.ElideRight
                             text: modelData.topic.description
                             visible: modelData.topic.description
                         }
@@ -686,7 +683,6 @@ SkyPage {
                             AccessibleText {
                                 topPadding: 5
                                 Layout.fillWidth: true
-                                elide: Text.ElideRight
                                 font.pointSize: guiSettings.scaledFont(7/8)
                                 font.italic: true
                                 text: modelData.topic.category
@@ -964,7 +960,6 @@ SkyPage {
                         id: profileName
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
-                        elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(6/8)
                         horizontalAlignment: Text.AlignHCenter
                         text: modelData.name
@@ -1004,7 +999,6 @@ SkyPage {
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.leftMargin: 10
                             anchors.rightMargin: page.margin
-                            elide: Text.ElideRight
                             text: modelData
                         }
 

@@ -149,12 +149,10 @@ SkyPage {
             AccessibleText {
                 width: parent.width
                 bottomPadding: 5
-                elide: Text.ElideRight
                 wrapMode: Text.Wrap
                 maximumLineCount: 2
                 font.bold: true
                 font.pointSize: guiSettings.scaledFont(12/8)
-                color: guiSettings.textColor
                 text: (skywalker.favoriteFeeds.homeFeedUri === feed.key ? "🏠 " : "") + feed.displayName
             }
 
@@ -176,7 +174,6 @@ SkyPage {
             AccessibleText {
                 topPadding: 2
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + feed.creator.handle
@@ -329,9 +326,7 @@ SkyPage {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             maximumLineCount: 1000
-            elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
             plainText: feed.formattedDescription
 
             LinkCatcher {

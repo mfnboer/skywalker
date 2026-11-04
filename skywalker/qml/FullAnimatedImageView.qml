@@ -61,7 +61,6 @@ SkyPage {
         anchors.bottomMargin: guiSettings.footerMargin
         padding: 10
         wrapMode: Text.Wrap
-        elide: Text.ElideRight
         color: "white"
         text: imageTitle
         visible: imageTitle

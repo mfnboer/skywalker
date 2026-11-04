@@ -64,7 +64,6 @@ SkyPopup {
                 anchors.rightMargin: 10
                 anchors.verticalCenter: parent.verticalCenter
                 font.bold: true
-                elide: Text.ElideRight
                 text: getTitle()
             }
         }

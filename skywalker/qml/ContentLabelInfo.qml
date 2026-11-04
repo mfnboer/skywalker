@@ -46,11 +46,9 @@ SkyDialog {
                 AccessibleText {
                     id: titleText
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
                     wrapMode: Text.Wrap
                     font.bold: true
                     font.pointSize: guiSettings.scaledFont(10/8)
-                    color: guiSettings.textColor
                     text: contentGroup.title
                 }
 
@@ -66,9 +64,7 @@ SkyDialog {
                 Layout.topMargin: 10
                 wrapMode: Text.Wrap
                 maximumLineCount: 1000
-                elide: Text.ElideRight
                 textFormat: Text.RichText
-                color: guiSettings.textColor
                 text: contentGroup.formattedDescription
             }
 
@@ -76,9 +72,7 @@ SkyDialog {
                 id: creatorHandle
                 Layout.fillWidth: true
                 font.pointSize: guiSettings.scaledFont(7/8)
-                elide: Text.ElideRight
                 textFormat: Text.RichText
-                color: guiSettings.textColor
                 text: `Set by ${labelerHandle}`
                 onLinkActivated: (link) => {
                     skywalker.getDetailedProfile(link)
@@ -91,14 +85,12 @@ SkyDialog {
 
                 AccessibleText {
                     Layout.fillWidth: true
-                    elide: Text.ElideRight
                     color: Material.color(Material.Grey)
                     font.pointSize: guiSettings.scaledFont(7/8)
                     text: label.createdAt.toLocaleString(Qt.locale(), Locale.ShortFormat)
                 }
 
                 AccessibleText {
-                    elide: Text.ElideRight
                     color: Material.color(Material.Grey)
                     font.pointSize: guiSettings.scaledFont(7/8)
                     text: !isNaN(label.expiresAt.getTime()) ?
@@ -112,9 +104,7 @@ SkyDialog {
                 Layout.fillWidth: true
                 Layout.topMargin: 10
                 wrapMode: Text.Wrap
-                elide: Text.ElideRight
                 font.italic: true
-                color: guiSettings.textColor
                 text: qsTr("You may appeal this label if you feel it was placed in error.")
                 visible: canAppeal()
             }

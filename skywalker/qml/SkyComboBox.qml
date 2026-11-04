@@ -26,9 +26,7 @@ ComboBox {
         leftPadding: 10
         rightPadding: 10
         verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
         font.pointSize: guiSettings.scaledFont(9/8)
-        color: control.textColor
         text: control.displayText ? control.displayText : ""
     }
 
@@ -43,7 +41,6 @@ ComboBox {
         contentItem: AccessibleText {
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
             color: delegate.index === control.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
             text: model[control.textRole]
         }

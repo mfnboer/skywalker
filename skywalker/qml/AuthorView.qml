@@ -654,7 +654,6 @@ SkyPage {
                 width: parent.width - (parent.leftPadding + parent.rightPadding)
                 topPadding: 10
                 textFormat: Text.RichText
-                elide: Text.ElideRight
                 text: qsTr(`🌐 ${guiSettings.toHtmlLink(authorWebsite)}`)
                 visible: contentVisible() && Boolean(authorWebsite) && !author.linksContainWebsite()
 

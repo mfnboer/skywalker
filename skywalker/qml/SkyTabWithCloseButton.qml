@@ -42,7 +42,6 @@ AccessibleTabButton {
             id: tabText
             width: Math.min(implicitWidth, 150)
             anchors.verticalCenter: parent.verticalCenter
-            elide: Text.ElideRight
             font: button.font
             color: button.checked ? guiSettings.accentColor : guiSettings.textColor
             text: button.text

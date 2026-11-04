@@ -65,7 +65,6 @@ SkyPage {
             width: parent.width
             leftPadding: page.margin
             rightPadding: page.margin
-            elide: Text.ElideRight
             wrapMode: Text.Wrap
             font.bold: true
             font.pointSize: guiSettings.scaledFont(10/8)

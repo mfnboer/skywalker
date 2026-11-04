@@ -38,7 +38,6 @@ SkyPage {
             width: parent.width
             padding: 10
             wrapMode: Text.Wrap
-            elide: Text.ElideRight
             color: "white"
             textFormat: Text.RichText
             text: qsTr("Explore <b>Bluesky</b> social media with Skywalker. To use Skywalker you must have an Atmosphere account (Bluesky, Eurosky, or any other). If you do not have an account yet, then create one using the official Bluesky app or on <a href=\"https://bsky.app/\" style=\"color: ivory; font-weight: bold;\">https://bsky.app</a>")

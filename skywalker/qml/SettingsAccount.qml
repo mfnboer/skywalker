@@ -33,7 +33,6 @@ Item {
             AccessibleText {
                 id: mailText
                 Layout.fillWidth: true
-                elide: Text.ElideRight
                 text: email
             }
             SvgPlainButton {
@@ -74,7 +73,6 @@ Item {
         }
         AccessibleText {
             Layout.fillWidth: true
-            elide: Text.ElideRight
             text: userPrefs.pds
         }
 
@@ -87,7 +85,6 @@ Item {
 
             AccessibleText {
                 Layout.fillWidth: true
-                elide: Text.ElideRight
                 text: userPrefs.did
             }
             SvgPlainButton {
@@ -105,7 +102,6 @@ Item {
         }
         AccessibleText {
             Layout.fillWidth: true
-            elide: Text.ElideRight
             text: userSettings.getHost(userPrefs.did)
         }
 
@@ -114,7 +110,6 @@ Item {
         }
         AccessibleText {
             Layout.fillWidth: true
-            elide: Text.ElideRight
             text: userSettings.getOAuthEnabled(userPrefs.did) ? "OAuth" : "password"
         }
 

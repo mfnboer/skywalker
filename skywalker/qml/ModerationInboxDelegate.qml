@@ -26,7 +26,6 @@ Rectangle {
             topPadding: 10
             width: parent.width - 20
             font.bold: true
-            elide: Text.ElideRight
             text: ozoneUtils.subjectTypeToString(report)
         }
 
@@ -59,7 +58,6 @@ Rectangle {
             x: 10
             topPadding: 10
             width: parent.width - 20
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             text: ozoneUtils.actionToDescription(report.lastActionTaken)
             visible: report.lastActionTaken
@@ -68,7 +66,6 @@ Rectangle {
         AccessibleText {
             x: 10
             width: parent.width - 20
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             text: getStatus()
         }
@@ -77,7 +74,6 @@ Rectangle {
             x: 10
             width: parent.width - 20
             bottomPadding: 10
-            elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
             text: guiSettings.dateTimeIndication(report.updatedAt)
@@ -94,7 +90,6 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             bottomPadding: 50
-            elide: Text.ElideRight
             text: qsTr("End of list")
             font.italic: true
             visible: endOfList

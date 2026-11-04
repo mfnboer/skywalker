@@ -130,7 +130,6 @@ Rectangle {
                 width: parent.width
                 leftPadding: avatarLeftSide.visible ? 0 : 10
                 rightPadding: showAsHome ? expandFeedsButton.width : 0
-                elide: Text.ElideRight
                 font.bold: true
                 font.pointSize: subTitle ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
                 color: guiSettings.headerTextColor
@@ -166,7 +165,6 @@ Rectangle {
                 leftPadding: avatarLeftSide.visible ? 0 : 10
                 color: guiSettings.handleColor
                 font.pointSize: guiSettings.scaledFont(7/8)
-                elide: Text.ElideRight
                 text: subTitle
                 visible: subTitle
             }

@@ -52,9 +52,7 @@ Rectangle {
             AccessibleText {
                 id: listNameText
                 width: parent.width
-                elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
                 text: list.name
 
                 Accessible.ignored: true
@@ -63,7 +61,6 @@ Rectangle {
             AccessibleText {
                 id: listTypeNameText
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
@@ -73,7 +70,6 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.getMemberCountString(list.listItemCount + memberCountDelta)

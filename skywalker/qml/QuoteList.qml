@@ -35,9 +35,7 @@ Column {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
                 text: list.name
 
                 Accessible.ignored: true
@@ -45,7 +43,6 @@ Column {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: qsTr(`${(guiSettings.listTypeName(list.purpose))} by @${list.creator.handle}`)
@@ -69,7 +66,6 @@ Column {
         width: parent.width - 20
         wrapMode: Text.Wrap
         maximumLineCount: 5
-        elide: Text.ElideRight
         text: list.description
     }
 

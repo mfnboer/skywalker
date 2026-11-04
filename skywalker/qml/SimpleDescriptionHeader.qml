@@ -51,7 +51,6 @@ Rectangle {
                         width: parent.width
                         font.bold: true
                         font.pointSize: (Boolean(subTitle) || isSideBar) ? guiSettings.scaledFont(1) : guiSettings.scaledFont(10/8)
-                        elide: Text.ElideRight
                         color: guiSettings.headerTextColor
                         text: title
 
@@ -63,7 +62,6 @@ Rectangle {
                         width: parent.width
                         color: guiSettings.handleColor
                         font.pointSize: guiSettings.scaledFont(7/8)
-                        elide: Text.ElideRight
                         text: subTitle
                         visible: Boolean(subTitle)
                     }
@@ -98,7 +96,6 @@ Rectangle {
                 width: parent.width
                 padding: 10
                 wrapMode: Text.Wrap
-                elide: Text.ElideRight
                 text: description
 
                 Accessible.ignored: true

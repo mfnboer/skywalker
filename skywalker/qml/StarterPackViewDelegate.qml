@@ -48,9 +48,7 @@ Item {
                 topPadding: 10
                 bottomPadding: 10
                 Layout.fillWidth: true
-                elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
                 text: starterPack.name
             }
 
@@ -93,7 +91,6 @@ Item {
 
                 AccessibleText {
                     width: parent.width
-                    elide: Text.ElideRight
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.handleColor
                     text: `@${starterPack.creator.handle}`
@@ -124,9 +121,7 @@ Item {
             topPadding: 10
             width: parent.width
             wrapMode: Text.Wrap
-            elide: Text.ElideRight
             maximumLineCount: maxTextLines
-            color: guiSettings.textColor
             text: starterPack.description
             visible: starterPack.description
         }
@@ -134,7 +129,6 @@ Item {
         AccessibleText {
             topPadding: 10
             width: parent.width
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             text: guiSettings.getMemberCountString(starterPack.listItemCount)
@@ -154,7 +148,6 @@ Item {
 
             sourceComponent: AccessibleText {
                 padding: 10
-                elide: Text.ElideRight
                 text: qsTr("⚠️ You opted out of this starter pack")
 
                 Rectangle {
@@ -184,7 +177,6 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             topPadding: view.margin
             bottomPadding: 50
-            elide: Text.ElideRight
             text: qsTr("End of feed")
             font.italic: true
             visible: endOfFeed

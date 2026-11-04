@@ -40,7 +40,6 @@ Rectangle {
         font.pointSize: guiSettings.scaledFont(10/8)
         color: Material.color(Material.Grey)
         wrapMode: Text.Wrap
-        elide: Text.ElideRight
         textFormat: Text.RichText
         text: Boolean(list.error) ? list.error : emptyListIndication.text
 
@@ -54,7 +53,6 @@ Rectangle {
         rightPadding: 10
         horizontalAlignment: Text.AlignHCenter
         textFormat: Text.RichText
-        elide: Text.ElideRight
         font.italic: true
         font.pointSize: guiSettings.scaledFont(7/8)
         text: qsTr(`<a href="link" style="color: ${guiSettings.linkColor}; text-decoration: none">@${labeler.handle}</a>`)

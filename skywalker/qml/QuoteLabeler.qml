@@ -37,7 +37,6 @@ Column {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: qsTr(`feed by @${labeler.creator.handle}`)
@@ -51,7 +50,6 @@ Column {
         width: parent.width - 20
         wrapMode: Text.Wrap
         maximumLineCount: 5
-        elide: Text.ElideRight
         text: labeler.creator.description
     }
 

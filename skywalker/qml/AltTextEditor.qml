@@ -79,7 +79,6 @@ SkyPage {
                     AccessibleText {
                         leftPadding: 10
                         width: parent.width
-                        elide: Text.ElideRight
                         font.bold: true
                         text: qsTr("Scripts")
                     }

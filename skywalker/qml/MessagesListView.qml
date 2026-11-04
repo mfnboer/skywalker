@@ -248,13 +248,11 @@ SkyPage {
 
                     AccessibleText {
                         width: parent.width
-                        elide: Text.ElideRight
                         color: guiSettings.messageNewTextColor
                         text: guiSettings.getChatLockedText(convo)
                     }
                     AccessibleText {
                         width: parent.width
-                        elide: Text.ElideRight
                         font.pointSize: guiSettings.scaledFont(7/8)
                         color: guiSettings.messageNewTextColor
                         text: qsTr("No one can send messages")
@@ -263,7 +261,6 @@ SkyPage {
 
                 AccessibleText {
                     Layout.alignment: Qt.AlignVCenter
-                    elide: Text.ElideRight
                     color: guiSettings.linkColor
                     text: qsTr("Unlock")
                     visible: userIsOwner && convo.group.lockStatus === QEnums.CONVO_LOCK_STATUS_LOCKED

@@ -35,9 +35,7 @@ Column {
         AccessibleText {
             Layout.fillWidth: true
             Layout.rightMargin: margin
-            elide: Text.ElideRight
             font.bold: true
-            color: guiSettings.textColor
             text: starterPack.name
         }
 
@@ -45,7 +43,6 @@ Column {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.rightMargin: margin
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             text: qsTr(`Starter pack by @${starterPack.creator.handle}`)
@@ -66,7 +63,6 @@ Column {
         topPadding: 10
         width: parent.width - 2 * margin
         wrapMode: Text.Wrap
-        elide: Text.ElideRight
         maximumLineCount: 5
         text: starterPack.description
         visible: starterPack.description
@@ -75,7 +71,6 @@ Column {
     AccessibleText {
         topPadding: 10
         width: parent.width - 2 * margin
-        elide: Text.ElideRight
         font.pointSize: guiSettings.scaledFont(7/8)
         color: guiSettings.handleColor
         text: guiSettings.getMemberCountString(starterPack.listItemCount)

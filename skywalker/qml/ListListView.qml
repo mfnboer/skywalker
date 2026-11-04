@@ -33,8 +33,6 @@ SkyListView {
                 Layout.fillWidth: true
                 padding: 10
                 wrapMode: Text.Wrap
-                elide: Text.ElideRight
-                color: guiSettings.textColor
                 text: view.description
             }
 

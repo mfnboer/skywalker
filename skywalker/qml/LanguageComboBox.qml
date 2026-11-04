@@ -69,7 +69,6 @@ ComboBox {
         contentItem: AccessibleText {
             width: delegate.width
             verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
             color: delegate.index === languageComboBox.currentIndex ? guiSettings.buttonColor : guiSettings.textColor
             text: delegate.modelData.shortCode ? `${delegate.modelData.nativeName} (${delegate.modelData.shortCode})` : qsTr("Any language")
         }

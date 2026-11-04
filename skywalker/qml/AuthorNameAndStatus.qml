@@ -23,7 +23,6 @@ Item {
     AccessibleText {
         id: nameText
         width: parent.width - verificationStatusWidth
-        elide: Text.ElideRight
         font.bold: true
         font.pointSize: nameRect.pointSize
         color: nameRect.textColor

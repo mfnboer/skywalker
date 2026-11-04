@@ -94,7 +94,6 @@ TextEdit {
         bottomPadding: parent.bottomPadding
         font.pointSize: placeholderPointSize
         color: guiSettings.placeholderTextColor
-        elide: Text.ElideRight
         text: placeholderText
         visible: skyTextEdit.length + skyTextEdit.preeditText.length === 0
     }

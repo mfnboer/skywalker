@@ -41,7 +41,6 @@ Rectangle {
             width: view.maxWidth
             leftPadding: 10
             rightPadding: 10
-            elide: Text.ElideRight
             color: Material.color(Material.Grey)
             font.bold: true
             font.pointSize: guiSettings.scaledFont(7/8)

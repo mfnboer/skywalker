@@ -43,7 +43,6 @@ Popup {
         anchors.verticalCenter: parent.verticalCenter
         wrapMode: Text.Wrap
         maximumLineCount: 8
-        elide: Text.ElideRight
         text: "Status"
     }
     SvgPlainButton {

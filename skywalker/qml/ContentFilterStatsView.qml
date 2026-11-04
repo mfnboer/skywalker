@@ -67,7 +67,6 @@ SkyPage {
             leftPadding: 10
             rightPadding: 10
             text: model[treeHeader.textRole]
-            elide: Text.ElideRight
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: column == 1 ? Text.AlignRight : Text.AlignLeft
             font.bold: true
@@ -125,7 +124,6 @@ SkyPage {
                     rightPadding: 10
                     text: typeof control.value != 'object' ? control.value : ""
                     color: control.column == 0 ? guiSettings.textColor : guiSettings.linkColor
-                    elide: Text.ElideRight
                     wrapMode: Text.Wrap
                     maximumLineCount: 2
                     horizontalAlignment: control.valueType === QEnums.VALUE_TYPE_INT ? Text.AlignRight : Text.AlignLeft

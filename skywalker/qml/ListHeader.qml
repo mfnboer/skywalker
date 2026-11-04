@@ -23,7 +23,6 @@ RowLayout {
     AccessibleText {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
-        elide: Text.ElideRight
         font.bold: true
         text: (skywalker.favoriteFeeds.homeFeedUri === list.key ? "🏠 " : "") + list.name
     }

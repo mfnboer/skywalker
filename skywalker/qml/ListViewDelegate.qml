@@ -94,16 +94,13 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.bold: true
-                color: guiSettings.textColor
                 text: (skywalker.favoriteFeeds.homeFeedUri === list.key ? "🏠 " : "") + list.name
             }
 
             AccessibleText {
                 width: parent.width
                 bottomPadding: 5
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: guiSettings.listTypeName(list.purpose)
@@ -126,7 +123,6 @@ Rectangle {
 
             AccessibleText {
                 width: parent.width
-                elide: Text.ElideRight
                 font.pointSize: guiSettings.scaledFont(7/8)
                 color: guiSettings.handleColor
                 text: "@" + listCreator.handle
@@ -202,9 +198,7 @@ Rectangle {
             Layout.rightMargin: view.margin
             wrapMode: Text.Wrap
             maximumLineCount: maxTextLines
-            elide: Text.ElideRight
             textFormat: Text.RichText
-            color: guiSettings.textColor
             text: list.formattedDescription
             visible: text && showList
 
@@ -220,7 +214,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.leftMargin: view.margin
             Layout.rightMargin: view.margin
-            elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             text: guiSettings.getMemberCountString(list.listItemCount)
@@ -247,7 +240,6 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
             bottomPadding: 50
-            elide: Text.ElideRight
             text: qsTr("End of list")
             font.italic: true
             visible: endOfList

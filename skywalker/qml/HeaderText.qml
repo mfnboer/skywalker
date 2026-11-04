@@ -7,6 +7,5 @@ AccessibleText {
     Layout.fillWidth: true
     font.pointSize: guiSettings.scaledFont(9/8)
     font.bold: true
-    elide: Text.ElideRight
 }
 
