@@ -28,7 +28,10 @@ Column {
             userDid: postHeader.userDid
             author: postHeader.author
 
-            onClicked: root.getSkywalker(userDid).getDetailedProfile(author.did)
+            onClicked: {
+                if (!author.isNull())
+                    root.getSkywalker(userDid).getDetailedProfile(author.did)
+            }
         }
 
         // Name eliding seems expensive. Background rendering helps to make the app
@@ -64,11 +67,10 @@ Column {
             Layout.fillWidth: true
             bottomPadding: labelsToShow.length > 0 ? 0 : 5
             elide: displayPronouns ? Text.ElideMiddle : Text.ElideRight
-            text: "@" + author.handle + (displayPronouns ? ` (${author.pronouns})` : "")
+            text: "@" + (!author.isNull() ? author.handle : "unknown") + (displayPronouns ? ` (${author.pronouns})` : "")
             font.pointSize: guiSettings.scaledFont(7/8)
             color: guiSettings.handleColor
             Accessible.ignored: true
-            visible: author.handle
         }
     }
 

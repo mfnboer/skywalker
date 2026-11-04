@@ -734,12 +734,22 @@ public:
     };
     Q_ENUM(OzoneReportStatus)
 
+    enum OzoneResolutionOutcome
+    {
+        OZONE_RESOLUTION_OUTCOME_ACTION_TAKEN = (int)ATProto::ToolsOzoneInbox::ResolutionOutcomeEnum::ACTION_TAKEN,
+        OZONE_RESOLUTION_OUTCOME_NO_ACTION = (int)ATProto::ToolsOzoneInbox::ResolutionOutcomeEnum::NO_ACTION,
+        OZONE_RESOLUTION_OUTCOME_OTHER = (int)ATProto::ToolsOzoneInbox::ResolutionOutcomeEnum::OTHER,
+        OZONE_RESOLUTION_OUTCOME_UNKNOWN = (int)ATProto::ToolsOzoneInbox::ResolutionOutcomeEnum::UNKNOWN
+    };
+    Q_ENUM(OzoneResolutionOutcome)
+
     enum RefType
     {
         REF_TYPE_POST,
         REF_TYPE_LIST,
         REF_TYPE_FEED,
         REF_TYPE_STARTER_PACK,
+        REF_TYPE_ACTOR_STATUS,
         REF_TYPE_UNKNOWN
     };
     Q_ENUM(RefType)

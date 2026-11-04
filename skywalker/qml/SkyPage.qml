@@ -1,3 +1,4 @@
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
@@ -5,6 +6,7 @@ Page {
     // Called when list gets covered by another page
     signal cover
 
+    Accessible.role: Accessible.Pane
     Material.background: guiSettings.backgroundColor
 
     function getHeaderHeight() {

@@ -105,6 +105,8 @@ QEnums::RefType LinkUtils::getUriRefType(const QString& atUri)
         return QEnums::REF_TYPE_LIST;
     if (collection == ATProto::ATUri::COLLECTION_GRAPH_STARTERPACK)
         return QEnums::REF_TYPE_STARTER_PACK;
+    if (collection == ATProto::ATUri::COLLECTION_ACTOR_STATUS)
+        return QEnums::REF_TYPE_ACTOR_STATUS;
 
     qWarning() << "Unknown ref:" << atUri;
     return QEnums::REF_TYPE_UNKNOWN;

@@ -12,12 +12,13 @@ class OzoneReportView
     Q_GADGET
     Q_PROPERTY(QString source READ getSource FINAL)
     Q_PROPERTY(int id READ getId FINAL)
-    Q_PROPERTY(bool isRead READ isRead FINAL)
+    Q_PROPERTY(bool isRead READ isRead FINAL) // only listReports
     Q_PROPERTY(QString reasonType READ getReasonType FINAL)
     Q_PROPERTY(QString reason READ getReason FINAL)
-    Q_PROPERTY(QString lastActionTaken READ getLastActionTaken FINAL)
+    Q_PROPERTY(QString lastActionTaken READ getLastActionTaken FINAL) // only listReports
     Q_PROPERTY(QEnums::OzoneReportSubjectType subjectType READ getSubjectType FINAL)
-    Q_PROPERTY(QVariant subject READ getSubjectType FINAL)
+    Q_PROPERTY(QVariant subject READ getSubject FINAL)
+    Q_PROPERTY(QString recordContent READ getRecordContent FINAL) // only getRecord
     Q_PROPERTY(QEnums::OzoneReportStatus status READ getStatus FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(QDateTime updatedAt READ getUpdatedAt FINAL)
@@ -33,9 +34,10 @@ public:
     bool isRead() const { return mReport ? mReport->mIsRead : false; }
     QString getReasonType() const { return mReport ? ATProto::ComATProtoModeration::reasonStringToTitle(mReport->mReasonType) : ""; }
     QString getReason() const { return mReport ? mReport->mReason.value_or("") : ""; }
-    QString getLastActionTaken() const;
+    QString getLastActionTaken() const { return mReport ? mReport->mLastActionTaken.value_or("") : ""; }
     QEnums::OzoneReportSubjectType getSubjectType() const;
     QVariant getSubject() const;
+    QString getRecordContent() const;
     QEnums::OzoneReportStatus getStatus() const { return mReport ? (QEnums::OzoneReportStatus)mReport->mStatus.value() : QEnums::OZONE_REPORT_STATUS_UNKNOWN; }
     QDateTime getCreatedAt() const { return mReport ? mReport->mCreatedAt : QDateTime{}; }
     QDateTime getUpdatedAt() const { return mReport ? mReport->mUpdatedAt : QDateTime{}; }

@@ -47,6 +47,9 @@ SkyPage {
 
             delegate: ModerationInboxDelegate {
                 width: page.width
+                ozoneUtils: getOzoneUtils()
+
+                onClicked: ozoneUtils.getReport(report.id, author)
             }
 
             FlickableRefresher {
@@ -73,6 +76,24 @@ SkyPage {
     OzoneUtils {
         id: ozoneUtils
         skywalker: page.skywalker
+
+        onReportOk: (report, resolution, profile) => viewReport(report, resolution, profile)
+        onReportFailed: (reportId, error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+    }
+
+    function getOzoneUtils() {
+        return ozoneUtils
+    }
+
+    function viewReport(report, resolution, profile) {
+        let component = guiSettings.createComponent("ModerationInboxReport.qml")
+        let view = component.createObject(page, {
+                report: report,
+                resolution: resolution,
+                author: profile
+        })
+        view.onClosed.connect(() => { root.popStack() })
+        root.pushStack(view)
     }
 
     Component.onDestruction: {

@@ -800,6 +800,9 @@ qt_add_qml_module(libskywalker
         SOURCES abstract_base_list_model.cpp
         QML_FILES qml/ModerationInbox.qml
         QML_FILES qml/ModerationInboxDelegate.qml
+        QML_FILES qml/ModerationInboxReport.qml
+        SOURCES ozone_resolution_view.h
+        SOURCES ozone_resolution_view.cpp
 )
 
 target_link_libraries(libskywalker
