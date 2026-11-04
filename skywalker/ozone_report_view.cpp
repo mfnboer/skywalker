@@ -66,6 +66,49 @@ QVariant OzoneReportView::getSubject() const
     return {};
 }
 
+QString OzoneReportView::getRecordContent() const
+{
+    if (!mReport || !mReport->mRecord)
+        return {};
+
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(*mReport->mRecord))
+    {
+        auto post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(*mReport->mRecord);
+        return post->mText;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::AppBskyGraph::List::SharedPtr>(*mReport->mRecord))
+    {
+        auto list = std::get<ATProto::AppBskyGraph::List::SharedPtr>(*mReport->mRecord);
+        return list->mName;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Generator::SharedPtr>(*mReport->mRecord))
+    {
+        auto feed = std::get<ATProto::AppBskyFeed::Generator::SharedPtr>(*mReport->mRecord);
+        return feed->mDisplayName;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::AppBskyGraph::StarterPack::SharedPtr>(*mReport->mRecord))
+    {
+        auto starterPack = std::get<ATProto::AppBskyGraph::StarterPack::SharedPtr>(*mReport->mRecord);
+        return starterPack->mName;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::AppBskyActor::Status::SharedPtr>(*mReport->mRecord))
+    {
+        auto status = std::get<ATProto::AppBskyActor::Status::SharedPtr>(*mReport->mRecord);
+
+        if (!status->mEmbed || !ATProto::holdsNonNull<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed))
+            return {};
+
+        auto external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed);
+        return external->mExternal->mTitle;
+    }
+
+    return {};
+}
+
 QString OzoneReportView::getSubjectDid() const
 {
     switch (getSubjectType())
@@ -97,44 +140,6 @@ QString OzoneReportView::getSubjectDid() const
 
     qWarning() << "Unknown subject type";
     return {};
-}
-
-QString OzoneReportView::getLastActionTaken() const
-{
-    if (!mReport)
-        return {};
-
-    if (!mReport->mLastActionTaken)
-        return {};
-
-    return actionToDescription(mReport->mLastActionTaken.value());
-}
-
-QString OzoneReportView::actionToDescription(const QString& action) const
-{
-    if (action == "contentRemoved")
-        return QObject::tr("Content removed");
-    if (action == "contentRestored")
-        return QObject::tr("Content restored");
-    if (action == "accountSuspended")
-        return QObject::tr("Account suspended");
-    if (action == "accountTakedown")
-        return QObject::tr("Account taken down");
-    if (action == "accountRestored")
-        return QObject::tr("Account restored");
-    if (action == "labelApplied")
-        return QObject::tr("Label applied");
-    if (action == "labelRemoved")
-        return QObject::tr("Label removed");
-    if (action == "communicationSent")
-        return QObject::tr("Communication sent");
-    if (action == "reportingRestricted")
-        return QObject::tr("Reporting restricted");
-    if (action == "credentialsRevoked")
-        return QObject::tr("Credentials revoked");
-
-    qWarning() << "Uknown action:" << action;
-    return action;
 }
 
 }

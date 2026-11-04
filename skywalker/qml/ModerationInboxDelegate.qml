@@ -4,9 +4,12 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
+    required property OzoneUtils ozoneUtils
     required property ozonereportview report
     required property basicprofile author
     required property bool endOfList
+
+    signal clicked
 
     id: view
     height: content.height
@@ -20,26 +23,11 @@ Rectangle {
 
         AccessibleText {
             x: 10
+            topPadding: 10
             width: parent.width - 20
             font.bold: true
             elide: Text.ElideRight
-            text: getSubjectType()
-        }
-
-        AccessibleText {
-            x: 10
-            width: parent.width - 20
-            text: report.reasonType
-            visible: report.reasonType
-        }
-
-        AccessibleText {
-            x: 10
-            width: parent.width - 20
-            topPadding: 10
-            wrapMode: Text.Wrap
-            text: report.reason
-            visible: report.reason
+            text: ozoneUtils.subjectTypeToString(report)
         }
 
         PostHeaderWithAvatar {
@@ -54,9 +42,26 @@ Rectangle {
             x: 10
             topPadding: 10
             width: parent.width - 20
+            text: report.reasonType
+            visible: report.reasonType
+        }
+
+        AccessibleText {
+            x: 10
+            width: parent.width - 20
+            topPadding: 10
+            wrapMode: Text.Wrap
+            text: report.reason
+            visible: report.reason
+        }
+
+        AccessibleText {
+            x: 10
+            topPadding: 10
+            width: parent.width - 20
             elide: Text.ElideRight
             font.pointSize: guiSettings.scaledFont(7/8)
-            text: report.lastActionTaken
+            text: ozoneUtils.actionToDescription(report.lastActionTaken)
             visible: report.lastActionTaken
         }
 
@@ -96,38 +101,9 @@ Rectangle {
         }
     }
 
-    function getSubjectType() {
-        switch (report.subjectType) {
-        case QEnums.OZONE_REPORT_SUBJECT_REPO_REF:
-            return qsTr("Account")
-        case QEnums.OZONE_REPORT_SUBJECT_STRONG_REF:
-            return getRefType(report.subject)
-        case QEnums.OZONE_REPORT_SUBJECT_CONVO_REF:
-            return qsTr("Chat")
-        case QEnums.OZONE_REPORT_SUBJECT_MESSAGE_REF:
-            return qsTr("Message")
-        }
-
-        return "Unknown subject"
-    }
-
-    function getRefType(strongRef) {
-        const refType = root.getLinkUtils().getUriRefType(strongRef.uri)
-
-        switch (refType) {
-        case QEnums.REF_TYPE_POST:
-            return qsTr("Post")
-        case QEnums.REF_TYPE_LIST:
-            return qsTr("List")
-        case QEnums.REF_TYPE_FEED:
-            return qsTr("Feed")
-        case QEnums.REF_TYPE_STARTER_PACK:
-            return qsTr("Starter pack")
-        case QEnums.REF_TYPE_UNKNOWN:
-            break
-        }
-
-        return strongRef.uri
+    MouseArea {
+        anchors.fill: parent
+        onClicked: view.clicked()
     }
 
     function getStatus() {

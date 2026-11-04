@@ -103,7 +103,7 @@ SkyPage {
         x: 10
         width: parent.width - 20
         height: calcHeight()
-        radius: 3
+        radius: guiSettings.radius
         color: guiSettings.postHighLightColor
         border.width: 1
         border.color: guiSettings.borderHighLightColor

@@ -9,11 +9,9 @@ SkyPage {
     readonly property string sideBarTitle: qsTr("Moderation lists")
     readonly property SvgImage sideBarSvg: SvgOutline.list
 
-    id: page
-
     signal closed
 
-    Accessible.role: Accessible.Pane
+    id: page
 
     header: SimpleHeader {
         text: sideBarTitle
