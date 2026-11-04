@@ -2931,12 +2931,12 @@ ApplicationWindow {
         return lu
     }
 
-    function chatOnStartConvoForMembersOk(convo, msg) {
+    function chatOnStartConvoForMembersOk(convo, msg, moveToMsgId) {
         let component = guiSettings.createComponent("MessagesListView.qml")
         let view = component.createObject(root, { chat: skywalker.chat, convo: convo })
         view.onClosed.connect((lastMessageId) => root.popStack())
 
-        skywalker.chat.getMessages(convo.id)
+        skywalker.chat.getMessages(convo.id, "", moveToMsgId)
         root.pushStack(view)
 
         if (msg)

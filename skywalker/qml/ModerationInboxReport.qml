@@ -180,6 +180,10 @@ SkyPage {
             skywalker.chat.startConvoForConvoId(convoRef.convoId)
             return
         }
+        else if (report.subjectType === QEnums.OZONE_REPORT_SUBJECT_MESSAGE_REF) {
+            const msgRef = report.subject
+            skywalker.chat.startConvoForConvoId(msgRef.convoId, msgRef.messageId)
+        }
 
         if (!report.subjectUri)
             return

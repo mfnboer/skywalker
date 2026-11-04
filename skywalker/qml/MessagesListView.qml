@@ -867,8 +867,10 @@ SkyPage {
         skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
-    function getMessagesOkHandler(cursor) {
-        if (!cursor)
+    function getMessagesOkHandler(cursor, messageId) {
+        if (messageId)
+            moveToMessageId(messageId)
+        else if (!cursor)
             messagesView.moveToEnd()
     }
 
@@ -908,6 +910,7 @@ SkyPage {
 
     function moveToMessageId(messageId) {
         const index = messagesView.model.getMessageIndexById(messageId)
+        console.debug("Go to message:", messageId, "index:", index)
 
         if (index >= 0) {
             moveToMessage(index, ListView.Contain)
