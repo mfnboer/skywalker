@@ -48,7 +48,7 @@ Rectangle {
         AccessibleText {
             x: 10
             width: parent.width - 20
-            topPadding: 10
+            topPadding: report.reasonType ? 0 : 10
             wrapMode: Text.Wrap
             text: report.reason
             visible: report.reason
@@ -65,6 +65,7 @@ Rectangle {
 
         AccessibleText {
             x: 10
+            topPadding: report.lastActionTaken ? 0 : 10
             width: parent.width - 20
             font.pointSize: guiSettings.scaledFont(7/8)
             text: getStatus()

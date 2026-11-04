@@ -42,18 +42,18 @@ QString OzoneUtils::actionToDescription(const QString& action)
     return action;
 }
 
-QString OzoneUtils::subjectTypeToString(const OzoneReportView& report)
+QString OzoneUtils::subjectTypeToString(const OzoneReportView& report, bool adverb)
 {
     switch (report.getSubjectType())
     {
     case QEnums::OZONE_REPORT_SUBJECT_REPO_REF:
-        return QObject::tr("Account");
+        return adverb ? QObject::tr("Account") : QObject::tr("account");
     case QEnums::OZONE_REPORT_SUBJECT_STRONG_REF:
-        return subjectToString(report);
+        return subjectToString(report, adverb);
     case QEnums::OZONE_REPORT_SUBJECT_CONVO_REF:
-        return QObject::tr("Chat with");
+        return adverb ? QObject::tr("Chat with") : QObject::tr("chat");
     case QEnums::OZONE_REPORT_SUBJECT_MESSAGE_REF:
-        return QObject::tr("Chat message from");
+        return adverb ? QObject::tr("Chat message from") : QObject::tr("chat message");
     case QEnums::OZONE_REPORT_SUBJECT_UNKNOWN:
         break;
     }
@@ -61,7 +61,7 @@ QString OzoneUtils::subjectTypeToString(const OzoneReportView& report)
     return QObject::tr("Content");
 }
 
-QString OzoneUtils::subjectToString(const OzoneReportView& report)
+QString OzoneUtils::subjectToString(const OzoneReportView& report, bool adverb)
 {
     const QVariant subject = report.getSubject();
 
@@ -73,20 +73,34 @@ QString OzoneUtils::subjectToString(const OzoneReportView& report)
 
     switch (refType) {
     case QEnums::REF_TYPE_POST:
-        return QObject::tr("Post by");
+        return adverb ? QObject::tr("Post by") : QObject::tr("post");
     case QEnums::REF_TYPE_LIST:
-        return QObject::tr("List by");
+        return adverb ? QObject::tr("List by") : QObject::tr("list");
     case QEnums::REF_TYPE_FEED:
-        return QObject::tr("Feed by");
+        return adverb ? QObject::tr("Feed by") : QObject::tr("feed");
     case QEnums::REF_TYPE_STARTER_PACK:
-        return QObject::tr("Starter pack by");
+        return adverb ? QObject::tr("Starter pack by") : QObject::tr("starter pack");
     case QEnums::REF_TYPE_ACTOR_STATUS:
-        return QObject::tr("Livestream by");
+        return adverb ? QObject::tr("Livestream by") : QObject::tr("livestream");
+    case QEnums::REF_TYPE_ACTOR_LINK:
+        return adverb ? QObject::tr("Profile link from") : QObject::tr("profile link");
     case QEnums::REF_TYPE_UNKNOWN:
         break;
     }
 
     return strongRef.getUri();
+}
+
+QEnums::RefType OzoneUtils::subjectToRefType(const OzoneReportView& report)
+{
+    const QVariant subject = report.getSubject();
+
+    if (!subject.canConvert<StrongRef>())
+        return QEnums::REF_TYPE_UNKNOWN;
+
+    const auto& strongRef = subject.value<StrongRef>();
+    const auto refType = LinkUtils::getUriRefType(strongRef.getUri());
+    return refType;
 }
 
 void OzoneUtils::getReportList(int modelId, int limit, int maxPages, int minEntries,  const QString& cursor)

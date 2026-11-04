@@ -107,6 +107,8 @@ QEnums::RefType LinkUtils::getUriRefType(const QString& atUri)
         return QEnums::REF_TYPE_STARTER_PACK;
     if (collection == ATProto::ATUri::COLLECTION_ACTOR_STATUS)
         return QEnums::REF_TYPE_ACTOR_STATUS;
+    if (collection == ATProto::ATUri::COLLECTION_ACTOR_LINK)
+        return QEnums::REF_TYPE_ACTOR_LINK;
 
     qWarning() << "Unknown ref:" << atUri;
     return QEnums::REF_TYPE_UNKNOWN;
@@ -120,7 +122,6 @@ QString LinkUtils::toHttpsLink(const QString& atUri)
         return {};
 
     const QString httpsLink = uri.toHttpsUri();
-    Q_ASSERT(!httpsLink.isEmpty());
     return httpsLink;
 }
 

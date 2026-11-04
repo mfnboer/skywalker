@@ -38,7 +38,7 @@ TextEdit {
 
     id: editText
     width: parentPage.width
-    height: graphemeLength === 0 ? placeholderTextField.height : implicitHeight
+    height: graphemeLength === 0 ? placeholderTextField.implicitHeight : implicitHeight
     leftPadding: 10
     rightPadding: 10
     activeFocusOnTab: true

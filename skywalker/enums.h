@@ -750,6 +750,7 @@ public:
         REF_TYPE_FEED,
         REF_TYPE_STARTER_PACK,
         REF_TYPE_ACTOR_STATUS,
+        REF_TYPE_ACTOR_LINK,
         REF_TYPE_UNKNOWN
     };
     Q_ENUM(RefType)

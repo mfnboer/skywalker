@@ -1306,7 +1306,7 @@ ApplicationWindow {
         switchUserLoader.show()
     }
 
-    function openLink(link, containingText, openByDid = "", warning = "") {
+    function openLink(link, containingText = "", openByDid = "", warning = "") {
         if (link.startsWith("@")) {
             console.debug("@-MENTION:", link)
             getSkywalker(openByDid).getDetailedProfile(link.slice(1))

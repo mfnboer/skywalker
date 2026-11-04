@@ -13,6 +13,26 @@ OzoneReportView::OzoneReportView(const ATProto::ToolsOzoneInbox::ReportView::Sha
 {
 }
 
+QString OzoneReportView::getSubjectUri() const
+{
+    if (!mReport)
+        return {};
+
+    if (ATProto::holdsNonNull<ATProto::ComATProtoAdmin::RepoRef::SharedPtr>(mReport->mSubject))
+    {
+        auto repoRef = std::get<ATProto::ComATProtoAdmin::RepoRef::SharedPtr>(mReport->mSubject);
+        return repoRef->mDid;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::ComATProtoRepo::StrongRef::SharedPtr>(mReport->mSubject))
+    {
+        auto strongRef = std::get<ATProto::ComATProtoRepo::StrongRef::SharedPtr>(mReport->mSubject);
+        return strongRef->mUri;
+    }
+
+    return {};
+}
+
 QEnums::OzoneReportSubjectType OzoneReportView::getSubjectType() const
 {
     if (!mReport)
@@ -49,9 +69,9 @@ QVariant OzoneReportView::getSubject() const
         return QVariant::fromValue(StrongRef(strongRef));
     }
     case QEnums::OZONE_REPORT_SUBJECT_CONVO_REF:
-    {    auto convoRef = std::get<ATProto::ChatBskyConvo::ConvoRef::SharedPtr>(mReport->mSubject);
+    {
+        auto convoRef = std::get<ATProto::ChatBskyConvo::ConvoRef::SharedPtr>(mReport->mSubject);
         return QVariant::fromValue(ConvoRef(convoRef));
-
     }
     case QEnums::OZONE_REPORT_SUBJECT_MESSAGE_REF:
     {
@@ -103,7 +123,23 @@ QString OzoneReportView::getRecordContent() const
             return {};
 
         auto external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed);
-        return external->mExternal->mTitle;
+        return external->mExternal->mTitle + "\n" + external->mExternal->mUri;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::AppBskyActor::Link::SharedPtr>(*mReport->mRecord))
+    {
+        auto link = std::get<ATProto::AppBskyActor::Link::SharedPtr>(*mReport->mRecord);
+
+        if (link->mTitle)
+            return *link->mTitle + "\n" + link->mUrl;
+
+        return link->mUrl;
+    }
+
+    if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(*mReport->mRecord))
+    {
+        auto unknown = std::get<ATProto::UnknownVariant::SharedPtr>(*mReport->mRecord);
+        return unknown->mType;
     }
 
     return {};

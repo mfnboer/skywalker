@@ -43,7 +43,7 @@ SkyPage {
             rightPadding: margin
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
-            text: guiSettings.dateTimeIndication(report.updatedAt)
+            text: guiSettings.dateTimeIndication(resolution ? resolution.resolvedAt : report.updatedAt)
         }
 
         AccessibleText {
@@ -76,14 +76,35 @@ SkyPage {
 
                 PostHeaderWithAvatar {
                     x: margin
-                    topPadding: margin
                     bottomPadding: margin
                     width: parent.width - 2 * margin
                     userDid: skywalker.getUserDid()
                     author: page.author
                 }
 
-                // TODO record content
+                AccessibleText {
+                    x: margin
+                    bottomPadding: margin
+                    width: parent.width - 2 * margin
+                    wrapMode: Text.Wrap
+                    text: report.recordContent
+                    visible: report.recordContent
+                }
+
+                AccessibleText {
+                    x: margin
+                    bottomPadding: margin
+                    width: parent.width - 2 * margin
+                    color: guiSettings.linkColor
+                    text: qsTr(`View ${ozoneUtils.subjectTypeToString(report, false)}`)
+                    visible: mustShowViewLink()
+
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: openSubject()
+                    }
+                }
             }
         }
 
@@ -106,7 +127,7 @@ SkyPage {
         AccessibleText {
             x: margin
             width: parent.width - 2 * margin
-            topPadding: margin
+            topPadding: report.reasonType ? 0 : margin
             wrapMode: Text.Wrap
             text: report.reason
             visible: report.reason
@@ -124,6 +145,54 @@ SkyPage {
         skywalker: page.skywalker
 
         onBasicProfileOk: (profile) => sideBarSubTitle = profile.name
+    }
+
+    function mustShowViewLink() {
+        if (report.subjectType === QEnums.OZONE_REPORT_SUBJECT_UNKNOWN)
+            return false
+
+        if (report.subjectType !== QEnums.OZONE_REPORT_SUBJECT_STRONG_REF)
+            return true
+
+        return ![QEnums.REF_TYPE_ACTOR_STATUS,
+                 QEnums.REF_TYPE_ACTOR_LINK,
+                 QEnums.REF_TYPE_UNKNOWN].includes(ozoneUtils.subjectToRefType(report))
+    }
+
+    function openSubject() {
+        console.debug("Open subject type:", report.subjectType, "subject:", report.subject, "subject uri:", report.subjectUri)
+
+        if (report.subjectType === QEnums.OZONE_REPORT_SUBJECT_STRONG_REF) {
+            const refType = ozoneUtils.subjectToRefType(report)
+
+            if (refType === QEnums.REF_TYPE_LIST) {
+                root.viewListByUri(report.subjectUri, false)
+                return
+            }
+
+            if (refType === QEnums.REF_TYPE_FEED) {
+                skywalker.getFeedGenerator(report.subjectUri, false)
+                return
+            }
+        }
+        else if (report.subjectType === QEnums.OZONE_REPORT_SUBJECT_CONVO_REF) {
+            const convoRef = report.subject
+            skywalker.chat.startConvoForConvoId(convoRef.convoId)
+            return
+        }
+
+        if (!report.subjectUri)
+            return
+
+        if (report.subjectUri.startsWith("did:")) {
+            root.openLink(report.subjectUri)
+            return
+        }
+
+        const httpsUrl = root.getLinkUtils().toHttpsLink(report.subjectUri)
+
+        if (httpsUrl)
+            root.openLink(httpsUrl)
     }
 
     function getResolutionText() {

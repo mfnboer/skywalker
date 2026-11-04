@@ -18,8 +18,9 @@ public:
     explicit OzoneUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE static QString actionToDescription(const QString& action);
-    Q_INVOKABLE static QString subjectTypeToString(const OzoneReportView& report);
-    Q_INVOKABLE static QString subjectToString(const OzoneReportView& report);
+    Q_INVOKABLE static QString subjectTypeToString(const OzoneReportView& report, bool adverb = true);
+    Q_INVOKABLE static QString subjectToString(const OzoneReportView& report, bool adverb = true);
+    Q_INVOKABLE static QEnums::RefType subjectToRefType(const OzoneReportView& report);
 
     Q_INVOKABLE void getReportList(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0,  const QString& cursor = {});
     Q_INVOKABLE void getReportListNextPage(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0);
