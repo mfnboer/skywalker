@@ -16,6 +16,7 @@ class OzoneReportView
     Q_PROPERTY(QString reasonType READ getReasonType FINAL)
     Q_PROPERTY(QString reason READ getReason FINAL)
     Q_PROPERTY(QString lastActionTaken READ getLastActionTaken FINAL) // only listReports
+    Q_PROPERTY(QString subjectUri READ getSubjectUri FINAL)
     Q_PROPERTY(QEnums::OzoneReportSubjectType subjectType READ getSubjectType FINAL)
     Q_PROPERTY(QVariant subject READ getSubject FINAL)
     Q_PROPERTY(QString recordContent READ getRecordContent FINAL) // only getRecord
@@ -35,6 +36,7 @@ public:
     QString getReasonType() const { return mReport ? ATProto::ComATProtoModeration::reasonStringToTitle(mReport->mReasonType) : ""; }
     QString getReason() const { return mReport ? mReport->mReason.value_or("") : ""; }
     QString getLastActionTaken() const { return mReport ? mReport->mLastActionTaken.value_or("") : ""; }
+    QString getSubjectUri() const;
     QEnums::OzoneReportSubjectType getSubjectType() const;
     QVariant getSubject() const;
     QString getRecordContent() const;

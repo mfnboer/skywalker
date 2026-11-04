@@ -404,6 +404,48 @@ void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
         });
 }
 
+void Chat::startConvoForConvoId(const QString& convoId)
+{
+    Q_ASSERT(mBsky);
+    qDebug() << "Start convo:" << convoId;
+
+    if (mStartConvoInProgress)
+    {
+        qDebug() << "Start convo still in progress";
+        return;
+    }
+
+    setStartConvoInProgress(true);
+
+    mBsky->getConvo(convoId,
+        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            setStartConvoInProgress(false);
+            ConvoView convo(*output->mConvo, mUserDid);
+            convo.setStatus(QEnums::CONVO_STATUS_ACCEPTED);
+            auto* model = getConvoListModel(convo.getStatus());
+
+            if (model)
+                model->insertConvo(convo);
+
+            emit startConvoForMembersOk(convo, {});
+        },
+        [this, presence=*mPresence](const QString& error, const QString& errorMsg){
+            if (!presence)
+                return;
+
+            setStartConvoInProgress(false);
+            qDebug() << "startConvoForConvoID FAILED:" << error << " - " << errorMsg;
+
+            if (error == ATProto::ATProtoErrorMsg::INVALID_TOKEN)
+                emit startConvoForMembersFailed(DM_ACCESS_ERROR);
+            else
+                emit startConvoForMembersFailed(errorMsg);
+        });
+}
+
 void Chat::startConvoForMember(const QString& did, const QString& msg)
 {
     QStringList dids(did);

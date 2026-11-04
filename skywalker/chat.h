@@ -46,6 +46,7 @@ public:
     Q_INVOKABLE void getConvosNextPage(QEnums::ConvoStatus status);
     void getConvosUnreadCounts();
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
+    Q_INVOKABLE void startConvoForConvoId(const QString& convoId);
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
     Q_INVOKABLE void startConvoIfNotPresent(ConvoView convo);
     Q_INVOKABLE void acceptConvo(const ConvoView& convo);

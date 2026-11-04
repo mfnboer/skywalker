@@ -973,6 +973,7 @@ SkyPage {
     Component.onCompleted: {
         const inputTextHeight = newMessageText.height - newMessageText.padding - newMessageText.bottomPadding
         maxInputTextHeight = 5 * inputTextHeight
+        console.debug("Max input text height:", maxInputTextHeight)
         moveToMessage(-1)
         initHandlers()
         sendButton.forceActiveFocus()
