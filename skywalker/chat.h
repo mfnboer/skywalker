@@ -46,7 +46,7 @@ public:
     Q_INVOKABLE void getConvosNextPage(QEnums::ConvoStatus status);
     void getConvosUnreadCounts();
     Q_INVOKABLE void startConvoForMembers(const QStringList& dids, const QString& msg = {});
-    Q_INVOKABLE void startConvoForConvoId(const QString& convoId);
+    Q_INVOKABLE void startConvoForConvoId(const QString& convoId, const QString& messageId = {});
     Q_INVOKABLE void startConvoForMember(const QString& did, const QString& msg = {});
     Q_INVOKABLE void startConvoIfNotPresent(ConvoView convo);
     Q_INVOKABLE void acceptConvo(const ConvoView& convo);
@@ -74,7 +74,7 @@ public:
     Q_INVOKABLE void removeMessageListModel(const QString& convoId);
     Q_INVOKABLE bool messageConvoOpen() const { return !mMessageListModels.empty(); }
 
-    Q_INVOKABLE void getMessages(const QString& convoId, const QString& cursor = "");
+    Q_INVOKABLE void getMessages(const QString& convoId, const QString& cursor = {}, const QString& messageId = {});
     Q_INVOKABLE void getMessagesNextPage(const QString& convoId);
     Q_INVOKABLE void updateMessages(const QString& convoId);
     Q_INVOKABLE void updateRead(const QString& convoId);
@@ -127,7 +127,7 @@ public:
 
 signals:
     void unreadCountChanged();
-    void startConvoForMembersOk(ConvoView convo, QString msg);
+    void startConvoForMembersOk(ConvoView convo, QString msg, QString moveToMsgId);
     void startConvoForMembersFailed(QString error);
     void startConvoInProgressChanged();
     void acceptConvoInProgressChanged();
@@ -147,7 +147,7 @@ signals:
     void withdrawJoinRequestFailed(QString code, QString error);
     void getMessagesInProgressChanged();
     void getMessagesFailed(QString error);
-    void getMessagesOk(QString cursor);
+    void getMessagesOk(QString cursor, QString messageId);
     void sendMessageProgress();
     void sendMessageFailed(QString error);
     void sendMessageOk();

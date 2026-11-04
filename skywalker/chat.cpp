@@ -388,7 +388,7 @@ void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
             if (model)
                 model->insertConvo(convo);
 
-            emit startConvoForMembersOk(convo, msg);
+            emit startConvoForMembersOk(convo, msg, {});
         },
         [this, presence=*mPresence](const QString& error, const QString& errorMsg){
             if (!presence)
@@ -404,7 +404,7 @@ void Chat::startConvoForMembers(const QStringList& dids, const QString& msg)
         });
 }
 
-void Chat::startConvoForConvoId(const QString& convoId)
+void Chat::startConvoForConvoId(const QString& convoId, const QString& messageId)
 {
     Q_ASSERT(mBsky);
     qDebug() << "Start convo:" << convoId;
@@ -418,7 +418,7 @@ void Chat::startConvoForConvoId(const QString& convoId)
     setStartConvoInProgress(true);
 
     mBsky->getConvo(convoId,
-        [this, presence=*mPresence](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
+        [this, presence=*mPresence, messageId](ATProto::ChatBskyConvo::ConvoOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -430,7 +430,7 @@ void Chat::startConvoForConvoId(const QString& convoId)
             if (model)
                 model->insertConvo(convo);
 
-            emit startConvoForMembersOk(convo, {});
+            emit startConvoForMembersOk(convo, {}, messageId);
         },
         [this, presence=*mPresence](const QString& error, const QString& errorMsg){
             if (!presence)
@@ -1608,10 +1608,10 @@ void Chat::removeMessageListModel(const QString& convoId)
         stopMessagesUpdateTimer();
 }
 
-void Chat::getMessages(const QString& convoId, const QString& cursor)
+void Chat::getMessages(const QString& convoId, const QString& cursor, const QString& messageId)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get messages, convoId:" << convoId << "cursor:" << cursor;
+    qDebug() << "Get messages, convoId:" << convoId << "cursor:" << cursor << "messageId:" << messageId;
 
     if (mGetMessagesInProgress)
     {
@@ -1620,8 +1620,13 @@ void Chat::getMessages(const QString& convoId, const QString& cursor)
     }
 
     setMessagesInProgress(true);
-    mBsky->getMessages(convoId, {}, Utils::makeOptionalString(cursor),
-        [this, presence=*mPresence, convoId, cursor](ATProto::ChatBskyConvo::GetMessagesOutput::SharedPtr output){
+
+    // Get as many messages as possible to increase the chance the messageId is loaded.
+    // If needed we could fetch multiple pages (up to a max) until messageId is loaded.
+    const int limit = messageId.isEmpty() ? 50 : 100;
+
+    mBsky->getMessages(convoId, limit, Utils::makeOptionalString(cursor),
+        [this, presence=*mPresence, convoId, cursor, messageId](ATProto::ChatBskyConvo::GetMessagesOutput::SharedPtr output){
             if (!presence)
                 return;
 
@@ -1640,7 +1645,7 @@ void Chat::getMessages(const QString& convoId, const QString& cursor)
             }
 
             setMessagesInProgress(false);
-            emit getMessagesOk(cursor);
+            emit getMessagesOk(cursor, messageId);
         },
         [this, presence=*mPresence](const QString& error, const QString& msg){
             if (!presence)
