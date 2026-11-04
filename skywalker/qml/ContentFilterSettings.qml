@@ -121,6 +121,8 @@ SkyPage {
         // All content
         Flickable {
             id: allContentItem
+            leftMargin: 10
+            rightMargin: 10
             clip: true
             contentHeight: labelerListView.y + labelerListView.height
             flickableDirection: Flickable.VerticalFlick
