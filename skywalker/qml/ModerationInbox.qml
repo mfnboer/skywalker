@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import skywalker
+import atproto.lib
 
 SkyPage {
     property Skywalker skywalker: root.getSkywalker()
@@ -32,6 +33,7 @@ SkyPage {
     }
 
     SwipeView {
+        id: inboxSwipeView
         anchors.top: tabBar.bottom
         anchors.bottom: parent.bottom
         width: parent.width
@@ -45,6 +47,11 @@ SkyPage {
             model: skywalker.getOzoneReportListModel(reportsModelId)
             preloadNextPageFunc: () => ozoneUtils.getReportListNextPage(reportsModelId)
 
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
+                    updateSeen()
+            }
+
             delegate: ModerationInboxDelegate {
                 width: page.width
                 ozoneUtils: getOzoneUtils()
@@ -54,7 +61,10 @@ SkyPage {
 
             FlickableRefresher {
                 inProgress: Boolean(reportsView.model?.getFeedInProgress)
-                topOvershootFun: () => ozoneUtils.getReportList(reportsModelId)
+                topOvershootFun: () => {
+                                     updateSeen()
+                                     ozoneUtils.getReportList(reportsModelId)
+                                 }
                 bottomOvershootFun: () => ozoneUtils.getReportListNextPage(reportsModelId)
                 topText: qsTr("Refresh lists")
             }
@@ -69,6 +79,11 @@ SkyPage {
             BusyIndicator {
                 anchors.centerIn: parent
                 running: Boolean(reportsView.model?.getFeedInProgress)
+            }
+
+            function updateSeen() {
+                if (count > 0)
+                    ozoneUtils.updateSeen(OzoneInboxSection.REPORTS, model.getLatestUpdatedAt())
             }
         }
     }
@@ -97,6 +112,7 @@ SkyPage {
     }
 
     Component.onDestruction: {
+        inboxSwipeView.currentItem.updateSeen()
         skywalker.removeOzoneReportListModel(reportsModelId)
     }
 

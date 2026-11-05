@@ -2,6 +2,7 @@
 // License: GPLv3
 #pragma once
 #include "enums.h"
+#include "record_content.h"
 #include <atproto/lib/lexicon/com_atproto_moderation.h>
 #include <atproto/lib/lexicon/tools_ozone_inbox.h>
 
@@ -19,7 +20,7 @@ class OzoneReportView
     Q_PROPERTY(QString subjectUri READ getSubjectUri FINAL)
     Q_PROPERTY(QEnums::OzoneReportSubjectType subjectType READ getSubjectType FINAL)
     Q_PROPERTY(QVariant subject READ getSubject FINAL)
-    Q_PROPERTY(QString recordContent READ getRecordContent FINAL) // only getRecord
+    Q_PROPERTY(RecordContent recordContent READ getRecordContent FINAL) // only getRecord
     Q_PROPERTY(QEnums::OzoneReportStatus status READ getStatus FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(QDateTime updatedAt READ getUpdatedAt FINAL)
@@ -39,7 +40,7 @@ public:
     QString getSubjectUri() const;
     QEnums::OzoneReportSubjectType getSubjectType() const;
     QVariant getSubject() const;
-    QString getRecordContent() const;
+    RecordContent getRecordContent() const;
     QEnums::OzoneReportStatus getStatus() const { return mReport ? (QEnums::OzoneReportStatus)mReport->mStatus.value() : QEnums::OZONE_REPORT_STATUS_UNKNOWN; }
     QDateTime getCreatedAt() const { return mReport ? mReport->mCreatedAt : QDateTime{}; }
     QDateTime getUpdatedAt() const { return mReport ? mReport->mUpdatedAt : QDateTime{}; }

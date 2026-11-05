@@ -25,11 +25,15 @@ public:
     Q_INVOKABLE void getReportList(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0,  const QString& cursor = {});
     Q_INVOKABLE void getReportListNextPage(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0);
     Q_INVOKABLE void getReport(int reportId, const BasicProfile& profile);
+    Q_INVOKABLE void updateSeen(const QString& section, QDateTime seenAt);
 
 signals:
     // resolution can be null
     void reportOk(OzoneReportView report, OzoneResolutionView resolution, BasicProfile profile);
     void reportFailed(int reportId, QString error);
+
+private:
+    std::unordered_map<QString, QDateTime> mSeenAt;
 };
 
 }

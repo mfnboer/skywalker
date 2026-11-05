@@ -43,7 +43,7 @@ SkyPage {
             rightPadding: margin
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
-            text: guiSettings.dateTimeIndication(resolution ? resolution.resolvedAt : report.updatedAt)
+            text: guiSettings.dateTimeIndication(!resolution.isNull() ? resolution.resolvedAt : report.updatedAt)
         }
 
         AccessibleText {
@@ -84,11 +84,21 @@ SkyPage {
 
                 AccessibleText {
                     x: margin
-                    bottomPadding: margin
                     width: parent.width - 2 * margin
                     wrapMode: Text.Wrap
-                    text: report.recordContent
-                    visible: report.recordContent
+                    text: report.recordContent.text
+                    visible: !report.recordContent.isNull()
+                }
+
+                AccessibleText {
+                    width: parent.width
+                    leftPadding: margin
+                    rightPadding: margin
+                    bottomPadding: margin
+                    color: Material.color(Material.Grey)
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: guiSettings.dateTimeIndication(report.recordContent.createdAt)
+                    visible: !report.recordContent.isNull()
                 }
 
                 AccessibleText {
