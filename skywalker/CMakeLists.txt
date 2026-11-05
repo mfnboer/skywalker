@@ -799,6 +799,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ModerationInboxReport.qml
         SOURCES ozone_resolution_view.h
         SOURCES ozone_resolution_view.cpp
+        SOURCES record_content.h
+        SOURCES record_content.cpp
 )
 
 target_link_libraries(libskywalker

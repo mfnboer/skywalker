@@ -22,6 +22,7 @@ public:
     OzoneReportListModel(const QString& filter, const QString& userDid, QObject* parent = nullptr);
 
     const QString& getReportsFilter() const { return mReportsFilter; }
+    Q_INVOKABLE QDateTime getLatestUpdatedAt() const;
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

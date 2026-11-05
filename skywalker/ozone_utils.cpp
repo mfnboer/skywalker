@@ -218,4 +218,29 @@ void OzoneUtils::getReport(int reportId, const BasicProfile& profile)
         });
 }
 
+void OzoneUtils::updateSeen(const QString& section, QDateTime seenAt)
+{
+    qDebug() << "Update seen:" << section << seenAt;
+
+    const auto lastSeen = mSeenAt[section];
+
+    if (lastSeen.isValid() && seenAt <= lastSeen)
+    {
+        qDebug() << "Already updated:" << lastSeen;
+        return;
+    }
+
+    if (!bskyClient())
+        return;
+
+    bskyClient()->ozoneInboxUpdateSeen({section}, seenAt,
+        [this, presence=getPresence(), section, seenAt]{
+            if (!presence)
+                return;
+
+            mSeenAt[section] = seenAt;
+        },
+        {});
+}
+
 }

@@ -14,6 +14,14 @@ OzoneReportListModel::OzoneReportListModel(const QString& filter, const QString&
         Qt::QueuedConnection);
 }
 
+QDateTime OzoneReportListModel::getLatestUpdatedAt() const
+{
+    if (mList.empty())
+        return {};
+
+    return mList.front().getUpdatedAt();
+}
+
 QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
 {
     if (index.row() < 0 || index.row() >= (int)mList.size())
