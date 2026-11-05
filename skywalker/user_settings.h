@@ -9,6 +9,7 @@
 #include "uri_with_expiry.h"
 #include <QObject>
 #include <QSettings>
+#include <functional>
 
 namespace Skywalker {
 
@@ -150,7 +151,9 @@ public:
     Q_INVOKABLE bool getRememberPassword(const QString& did) const;
 
     Q_INVOKABLE void savePassword(const QString& did, const QString& password);
-    Q_INVOKABLE QString getPassword(const QString& did) const;
+    using PasswordCallback = std::function<void(const QString& password, const QString& error)>;
+    void getPasswordAsync(const QString& did, PasswordCallback callback);
+    Q_INVOKABLE void requestPassword(const QString& did);
 
     Q_INVOKABLE void setOAuthEnabled(const QString& did, bool enable);
     Q_INVOKABLE bool getOAuthEnabled(const QString& did) const;
@@ -661,6 +664,8 @@ signals:
     void syncSearchFeedChanged(const QString& did, const QString& searchKey);
     void rewindToLastSeenPostChanged(const QString& did);
     void homeFeedUriChanged(const QString& did);
+    void passwordRetrieved(const QString& did, const QString& password, const QString& error);
+    void passwordStorageError(const QString& did, const QString& error);
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;
@@ -673,6 +678,8 @@ private:
     QString labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
                            const QString& labelId) const;
     void cleanup();
+    void deletePassword(const QString& did);
+    void readPassword(const QString& did, PasswordCallback callback);
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;
     QStringList getSearchFeedViewSearchKeys(const QString& did, const QString& feedKey) const;

@@ -5,6 +5,10 @@ set(CMAKE_AUTORCC ON)
 include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    find_package(Qt6Keychain REQUIRED)
+endif()
+
 if (NOT ANDROID)
     find_package(Qt6 REQUIRED COMPONENTS HttpServer)
 endif()
@@ -810,6 +814,12 @@ target_link_libraries(libskywalker
     PRIVATE Qt6::QuickControls2
     PRIVATE Qt6::Svg
 )
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_link_libraries(libskywalker
+        PRIVATE Qt6Keychain::Qt6Keychain
+    )
+endif()
 
 if (NOT ANDROID)
     if (ENABLE_TEST_COVERAGE)

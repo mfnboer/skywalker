@@ -11,6 +11,10 @@
 #include <atproto/lib/client.h>
 #include <QUuid>
 
+#ifdef Q_OS_LINUX
+#include <qt6keychain/keychain.h>
+#endif
+
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
 // This will break OffLineMessageChecker. This runs in an Android background process.
 // For some reason these types are not available in such a process.
@@ -19,7 +23,10 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
+#ifndef Q_OS_LINUX
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
+#endif
+static constexpr char const* KEYCHAIN_SERVICE = "Skywalker";
 static constexpr double DEFAULT_FONT_SCALE = 1.0;
 
 static constexpr char const* VALUE_TYPE_NULL = "Null";
@@ -49,7 +56,9 @@ UserSettings::UserSettings(QObject* parent) :
 {
     qDebug() << "Settings:" << mSettings.fileName();
     mSettings.setObjectName("UserSettings");
+#ifndef Q_OS_LINUX
     mEncryption.init(KEY_ALIAS_PASSWORD);
+#endif
     cleanup();
 }
 
@@ -59,7 +68,9 @@ UserSettings::UserSettings(const QString& fileName, QObject* parent) :
 {
     qDebug() << "Settings:" << mSettings.fileName();
     mSettings.setObjectName("UserSettings");
+#ifndef Q_OS_LINUX
     mEncryption.init(KEY_ALIAS_PASSWORD);
+#endif
     cleanup();
 }
 
@@ -477,7 +488,12 @@ void UserSettings::setRememberPassword(const QString& did, bool enable)
     mSettings.setValue(key(did, "rememberPassword"), enable);
 
     if (!enable)
+    {
         mSettings.remove(key(did, "password"));
+#ifdef Q_OS_LINUX
+        deletePassword(did);
+#endif
+    }
 
     sync();
 }
@@ -495,24 +511,117 @@ void UserSettings::savePassword(const QString& did, const QString& password)
         return;
     }
 
+#ifdef Q_OS_LINUX
+    mSettings.remove(key(did, "password"));
+    auto* job = new QKeychain::WritePasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(did);
+    job->setTextData(password);
+    connect(job, &QKeychain::Job::finished, this, [this, did](QKeychain::Job* finishedJob) {
+        if (finishedJob->error() != QKeychain::NoError)
+        {
+            const QString error = tr("Could not save password to the system keyring: %1")
+                .arg(finishedJob->errorString());
+            qWarning() << error;
+            emit passwordStorageError(did, error);
+        }
+        else if (!getRememberPassword(did))
+        {
+            deletePassword(did);
+        }
+    });
+    job->start();
+#else
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
     mSettings.setValue(key(did, "password"), encryptedPassword);
+#endif
 }
 
-QString UserSettings::getPassword(const QString& did) const
+void UserSettings::getPasswordAsync(const QString& did, PasswordCallback callback)
 {
     if (!getRememberPassword(did))
     {
         qWarning() << "Password saving is not enabled";
-        return {};
+        callback({}, tr("Password saving is not enabled"));
+        return;
     }
 
+#ifdef Q_OS_LINUX
+    readPassword(did, std::move(callback));
+#else
     const QByteArray encryptedPassword = mSettings.value(key(did, "password")).toByteArray();
 
     if (encryptedPassword.isEmpty())
-        return {};
+    {
+        callback({}, tr("No saved password is available"));
+        return;
+    }
 
-    return mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD);
+    callback(mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD), {});
+#endif
+}
+
+void UserSettings::requestPassword(const QString& did)
+{
+    getPasswordAsync(did, [this, did](const QString& password, const QString& error) {
+        emit passwordRetrieved(did, password, error);
+    });
+}
+
+void UserSettings::deletePassword(const QString& did)
+{
+#ifdef Q_OS_LINUX
+    auto* job = new QKeychain::DeletePasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(did);
+    connect(job, &QKeychain::Job::finished, this, [this, did](QKeychain::Job* finishedJob) {
+        if (finishedJob->error() != QKeychain::NoError &&
+            finishedJob->error() != QKeychain::EntryNotFound)
+        {
+            const QString error = tr("Could not remove password from the system keyring: %1")
+                .arg(finishedJob->errorString());
+            qWarning() << error;
+            emit passwordStorageError(did, error);
+        }
+    });
+    job->start();
+#else
+    Q_UNUSED(did);
+#endif
+}
+
+void UserSettings::readPassword(const QString& did, PasswordCallback callback)
+{
+#ifdef Q_OS_LINUX
+    mSettings.remove(key(did, "password"));
+    auto* job = new QKeychain::ReadPasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(did);
+    connect(job, &QKeychain::Job::finished, this,
+            [this, did, callback=std::move(callback)](QKeychain::Job* finishedJob) {
+        if (!getRememberPassword(did))
+        {
+            callback({}, tr("Password saving is not enabled"));
+            return;
+        }
+
+        if (finishedJob->error() == QKeychain::NoError)
+        {
+            callback(static_cast<QKeychain::ReadPasswordJob*>(finishedJob)->textData(), {});
+        }
+        else
+        {
+            const QString error = finishedJob->error() == QKeychain::EntryNotFound
+                ? tr("No saved password is available")
+                : tr("Could not read password from the system keyring: %1")
+                    .arg(finishedJob->errorString());
+            if (finishedJob->error() != QKeychain::EntryNotFound)
+                qWarning() << error;
+            callback({}, error);
+        }
+    });
+    job->start();
+#else
+    Q_UNUSED(did);
+    callback({}, tr("Password keyring is unavailable"));
+#endif
 }
 
 void UserSettings::setOAuthEnabled(const QString& did, bool enable)
