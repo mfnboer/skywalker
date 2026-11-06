@@ -91,8 +91,12 @@ static QUrl cleanLink(const QString& link)
 {
     QString cleanedLink = link.startsWith("http") ? link : "https://" + link;
 
-    if (cleanedLink.endsWith("/"))
-        cleanedLink = cleanedLink.sliced(0, cleanedLink.size() - 1);
+    // 2026-11-06 I don't know why I stripped the trailing / off.
+    // It cause an error with: https://ryancheley.com/2026/08/17/what-if-maintainer-burnout-isn-t-burnout/
+    // Stripping off the / cuases an erroneuous redirect to http (instead of https). That is a
+    // server error. But still why would we strip off the /
+    // if (cleanedLink.endsWith("/"))
+    //     cleanedLink = cleanedLink.sliced(0, cleanedLink.size() - 1);
 
     return QUrl(cleanedLink);
 }
@@ -345,6 +349,7 @@ void LinkCardReader::extractLinkCard(QNetworkReply* reply)
     };
 
     setInProgress(nullptr);
+    qDebug() << "Reply:" << reply->error();
 
     if (reply->error() != QNetworkReply::NoError)
     {
