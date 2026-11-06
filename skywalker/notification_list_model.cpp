@@ -45,6 +45,7 @@ void NotificationListModel::clear()
     mInviteCodeUsedNotifications.clear();
     mNewLabelsNotifications.clear();
     mNotificationsSeen = false;
+    mCursor.clear();
 }
 
 void NotificationListModel::clearLocalState()
@@ -57,7 +58,12 @@ void NotificationListModel::clearLocalState()
 
 void NotificationListModel::clearRows()
 {
-    BaseType::clear();
+    if (!mList.empty())
+    {
+        beginRemoveRows({}, 0, mList.size() - 1);
+        mList.clear();
+        endRemoveRows();
+    }
 }
 
 void NotificationListModel::addInviteCodeUsageNotificationRows()
