@@ -743,6 +743,60 @@ public:
     };
     Q_ENUM(OzoneResolutionOutcome)
 
+    enum OzoneEnforcementState
+    {
+        OZONE_ENFORCEMENT_STATE_NONE = (int)ATProto::ToolsOzoneInbox::EnforcementStateEnum::NONE,
+        OZONE_ENFORCEMENT_STATE_LABELED = (int)ATProto::ToolsOzoneInbox::EnforcementStateEnum::LABELED,
+        OZONE_ENFORCEMENT_STATE_REMOVED = (int)ATProto::ToolsOzoneInbox::EnforcementStateEnum::REMOVED,
+        OZONE_ENFORCEMENT_STATE_SUSPENDED = (int)ATProto::ToolsOzoneInbox::EnforcementStateEnum::SUSPENDED,
+        OZONE_ENFORCEMENT_STATE_TAKENDOWN = (int)ATProto::ToolsOzoneInbox::EnforcementStateEnum::TAKENDOWN,
+        OZONE_ENFORCEMENT_STATE_UNKNOWN = (int)ATProto::ToolsOzoneInbox::EnforcementStateEnum::UNKNOWN,
+    };
+    Q_ENUM(OzoneEnforcementState)
+
+    enum OzoneAppealState
+    {
+        OZONE_APPEAL_STATE_NONE = (int)ATProto::ToolsOzoneInbox::AppealStateEnum::NONE,
+        OZONE_APPEAL_STATE_PENDING = (int)ATProto::ToolsOzoneInbox::AppealStateEnum::PENDING,
+        OZONE_APPEAL_STATE_RESOLVED = (int)ATProto::ToolsOzoneInbox::AppealStateEnum::RESOLVED,
+        OZONE_APPEAL_STATE_SUPERSEDED = (int)ATProto::ToolsOzoneInbox::AppealStateEnum::SUPERSEDED,
+        OZONE_APPEAL_STATE_EXPIRED = (int)ATProto::ToolsOzoneInbox::AppealStateEnum::EXPIRED,
+        OZONE_APPEAL_STATE_UNKNOWN = (int)ATProto::ToolsOzoneInbox::AppealStateEnum::UNKNOWN
+    };
+    Q_ENUM(OzoneAppealState)
+
+    enum OzoneAppealOutcome
+    {
+        OZONE_APPEAL_OUTCOME_APPROVED = (int)ATProto::ToolsOzoneInbox::AppealOutcomeEnum::APPROVED,
+        OZONE_APPEAL_OUTCOME_DENIED = (int)ATProto::ToolsOzoneInbox::AppealOutcomeEnum::DENIED,
+        OZONE_APPEAL_OUTCOME_UNKNOWN = (int)ATProto::ToolsOzoneInbox::AppealOutcomeEnum::UNKNOWN
+    };
+    Q_ENUM(OzoneAppealOutcome)
+
+    enum OzoneSubjectAction
+    {
+        OZONE_SUBJECT_ACTION_APPEAL = (int)ATProto::ToolsOzoneInbox::SubjectActionEnum::APPEAL,
+        OZONE_SUBJECT_ACTION_UNKNOWN = (int)ATProto::ToolsOzoneInbox::SubjectActionEnum::UNKNOWN
+    };
+    Q_ENUM(OzoneSubjectAction)
+
+    enum OzoneAction
+    {
+        OZONE_ACTION_CONTENT_REMOVED,
+        OZONE_ACTION_CONTENT_RESTORED,
+        OZONE_ACTION_ACCOUNT_SUSPENDED,
+        OZONE_ACTION_ACCOUNT_TAKEDOWN,
+        OZONE_ACTION_ACCOUNT_RESTORED,
+        OZONE_ACTION_LABEL_APPLIED,
+        OZONE_ACTION_LABEL_REMOVED,
+        OZONE_ACTION_COMMUNICATION_SENT,
+        OZONE_ACTION_REPORTING_RESTRICTED,
+        OZONE_ACTION_CREDENTIALS_REVOKED,
+        OZONE_ACTION_UNKNOWN
+    };
+    Q_ENUM(OzoneAction)
+    static OzoneAction labelToOzoneAction(const QString& str);
+
     enum RefType
     {
         REF_TYPE_POST,
@@ -754,6 +808,7 @@ public:
         REF_TYPE_UNKNOWN
     };
     Q_ENUM(RefType)
+    static QString refTypeToString(RefType ref);
 };
 
 }

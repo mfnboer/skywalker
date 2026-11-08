@@ -134,4 +134,37 @@ QEnums::ContentMode QEnums::contentModeToFilterMode(ContentMode contentMode)
     }
 }
 
+// TODO: where defined in atproto??
+QEnums::OzoneAction QEnums::labelToOzoneAction(const QString& str)
+{
+    static const std::unordered_map<QString, OzoneAction> mapping = {
+        { "contentRemoved", OZONE_ACTION_CONTENT_REMOVED },
+        { "contentRestored", OZONE_ACTION_CONTENT_RESTORED },
+        { "accountSuspended", OZONE_ACTION_ACCOUNT_SUSPENDED },
+        { "accountTakedown", OZONE_ACTION_ACCOUNT_TAKEDOWN },
+        { "accountRestored", OZONE_ACTION_ACCOUNT_RESTORED },
+        { "labelApplied", OZONE_ACTION_LABEL_APPLIED },
+        { "labelRemoved", OZONE_ACTION_LABEL_REMOVED },
+        { "communicationSent", OZONE_ACTION_COMMUNICATION_SENT },
+        { "reportingRestricted", OZONE_ACTION_REPORTING_RESTRICTED },
+        { "credentialsRevoked", OZONE_ACTION_CREDENTIALS_REVOKED }
+    };
+
+    return ATProto::stringToEnum(str, mapping, OZONE_ACTION_UNKNOWN);
+}
+
+QString QEnums::refTypeToString(RefType ref)
+{
+    static const std::unordered_map<RefType, QString> mapping = {
+        { REF_TYPE_POST, tr("post") },
+        { REF_TYPE_LIST, tr("list") },
+        { REF_TYPE_FEED, tr("feed") },
+        { REF_TYPE_STARTER_PACK, tr("starter pack") },
+        { REF_TYPE_ACTOR_STATUS, tr("livestream") },
+        { REF_TYPE_ACTOR_LINK, tr("profile link") }
+    };
+
+    return ATProto::enumToString(ref, mapping, tr("content"));
+}
+
 }

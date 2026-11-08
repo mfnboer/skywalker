@@ -124,8 +124,8 @@ SkyDrawer {
                         onClicked: contentFiltering()
                     }
                     SkyMenuButton {
-                        text: qsTr("Reports")
-                        svg: SvgOutline.report
+                        text: qsTr("Moderation Inbox")
+                        svg: SvgOutline.inbox
                         popup: moderationMenu
                         onClicked: moderationInbox()
                     }

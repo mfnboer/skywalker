@@ -2492,10 +2492,13 @@ ApplicationWindow {
     }
 
     function viewModerationInbox() {
-        const modelId = skywalker.createOzoneReportListModel(ReportsFilter.ALL)
+        const reportModelId = skywalker.createOzoneReportListModel(OzoneInboxFilter.ALL)
+        const subjectModelId = skywalker.createOzoneSubjectListModel(OzoneInboxFilter.ALLs)
+
         let component = guiSettings.createComponent("ModerationInbox.qml")
         let page = component.createObject(root, {
-                reportsModelId: modelId
+                reportModelId: reportModelId,
+                subjectModelId: subjectModelId
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)

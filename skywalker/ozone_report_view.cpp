@@ -3,6 +3,7 @@
 #include "ozone_report_view.h"
 #include "convo_ref.h"
 #include "convo_message_ref.h"
+#include "ozone_utils.h"
 #include "strong_ref.h"
 #include <atproto/lib/at_uri.h>
 
@@ -18,19 +19,7 @@ QString OzoneReportView::getSubjectUri() const
     if (!mReport)
         return {};
 
-    if (ATProto::holdsNonNull<ATProto::ComATProtoAdmin::RepoRef::SharedPtr>(mReport->mSubject))
-    {
-        auto repoRef = std::get<ATProto::ComATProtoAdmin::RepoRef::SharedPtr>(mReport->mSubject);
-        return repoRef->mDid;
-    }
-
-    if (ATProto::holdsNonNull<ATProto::ComATProtoRepo::StrongRef::SharedPtr>(mReport->mSubject))
-    {
-        auto strongRef = std::get<ATProto::ComATProtoRepo::StrongRef::SharedPtr>(mReport->mSubject);
-        return strongRef->mUri;
-    }
-
-    return {};
+    return OzoneUtils::getSubjectUri(mReport->mSubject);
 }
 
 QEnums::OzoneReportSubjectType OzoneReportView::getSubjectType() const
@@ -91,58 +80,7 @@ RecordContent OzoneReportView::getRecordContent() const
     if (!mReport || !mReport->mRecord)
         return {};
 
-    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Record::Post::SharedPtr>(*mReport->mRecord))
-    {
-        auto post = std::get<ATProto::AppBskyFeed::Record::Post::SharedPtr>(*mReport->mRecord);
-        return RecordContent{post->mText, post->mCreatedAt};
-    }
-
-    if (ATProto::holdsNonNull<ATProto::AppBskyGraph::List::SharedPtr>(*mReport->mRecord))
-    {
-        auto list = std::get<ATProto::AppBskyGraph::List::SharedPtr>(*mReport->mRecord);
-        return RecordContent{list->mName, list->mCreatedAt};
-    }
-
-    if (ATProto::holdsNonNull<ATProto::AppBskyFeed::Generator::SharedPtr>(*mReport->mRecord))
-    {
-        auto feed = std::get<ATProto::AppBskyFeed::Generator::SharedPtr>(*mReport->mRecord);
-        return RecordContent{feed->mDisplayName, feed->mCreatedAt};
-    }
-
-    if (ATProto::holdsNonNull<ATProto::AppBskyGraph::StarterPack::SharedPtr>(*mReport->mRecord))
-    {
-        auto starterPack = std::get<ATProto::AppBskyGraph::StarterPack::SharedPtr>(*mReport->mRecord);
-        return RecordContent{starterPack->mName, starterPack->mCreatedAt};
-    }
-
-    if (ATProto::holdsNonNull<ATProto::AppBskyActor::Status::SharedPtr>(*mReport->mRecord))
-    {
-        auto status = std::get<ATProto::AppBskyActor::Status::SharedPtr>(*mReport->mRecord);
-
-        if (!status->mEmbed || !ATProto::holdsNonNull<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed))
-            return {};
-
-        auto external = std::get<ATProto::AppBskyEmbed::External::SharedPtr>(*status->mEmbed);
-        return RecordContent{external->mExternal->mTitle + "\n" + external->mExternal->mUri, status->mCreatedAt};
-    }
-
-    if (ATProto::holdsNonNull<ATProto::AppBskyActor::Link::SharedPtr>(*mReport->mRecord))
-    {
-        auto link = std::get<ATProto::AppBskyActor::Link::SharedPtr>(*mReport->mRecord);
-
-        if (link->mTitle)
-            return RecordContent{*link->mTitle + "\n" + link->mUrl, link->mCreatedAt};
-
-        return RecordContent{link->mUrl, link->mCreatedAt};
-    }
-
-    if (ATProto::holdsNonNull<ATProto::UnknownVariant::SharedPtr>(*mReport->mRecord))
-    {
-        auto unknown = std::get<ATProto::UnknownVariant::SharedPtr>(*mReport->mRecord);
-        return RecordContent{unknown->mType, {}};
-    }
-
-    return {};
+    return OzoneUtils::getRecordContent(*mReport->mRecord);
 }
 
 QString OzoneReportView::getSubjectDid() const

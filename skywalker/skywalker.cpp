@@ -23,6 +23,7 @@
 #include "oauth_controller.h"
 #include "offline_message_checker.h"
 #include "ozone_report_list_model.h"
+#include "ozone_subject_list_model.h"
 #include "photo_picker.h"
 #include "post_language_cache.h"
 #include "post_thread_cache.h"
@@ -245,6 +246,7 @@ Skywalker::~Skywalker()
     Q_ASSERT(mContentGroupListModels.empty());
     Q_ASSERT(mNotificationListModels.empty());
     Q_ASSERT(mOzoneReportListModels.empty());
+    Q_ASSERT(mOzoneSubjectListModels.empty());
 }
 
 Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent)
@@ -3860,6 +3862,28 @@ void Skywalker::removeOzoneReportListModel(int id)
     mOzoneReportListModels.remove(id);
 }
 
+int Skywalker::createOzoneSubjectListModel(const QString& filter)
+{
+    qDebug() << "Create ozone subject list model";
+    auto model = std::make_unique<OzoneSubjectListModel>(filter, mUserDid, this);
+    const int id = mOzoneSubjectListModels.put(std::move(model));
+    return id;
+}
+
+OzoneSubjectListModel* Skywalker::getOzoneSubjectListModel(int id)
+{
+    qDebug() << "Get ozone subject list model:" << id;
+    auto* model = mOzoneSubjectListModels.get(id);
+    return model ? model->get() : nullptr;
+}
+
+
+void Skywalker::removeOzoneSubjectListModel(int id)
+{
+    qDebug() << "Remove ozone subject list model:" << id;
+    mOzoneSubjectListModels.remove(id);
+}
+
 template<typename ModelType>
 int Skywalker::addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store)
 {
@@ -5782,6 +5806,7 @@ void Skywalker::signOut()
     mPostFeedModels.clear();
     mContentGroupListModels.clear();
     mOzoneReportListModels.clear();
+    mOzoneSubjectListModels.clear();
     mNotificationListModel.clear();
     mMentionListModel.clear();
     mChat->reset();

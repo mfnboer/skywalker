@@ -1,9 +1,15 @@
 // Copyright (C) 2023 Michel de Boer
 // License: GPLv3
 #include "report_utils.h"
+#include "skywalker.h"
 #include "utils.h"
 
 namespace Skywalker {
+
+QString ReportUtils::getModToolName()
+{
+    return QString("%1/%2").arg(Skywalker::APP_NAME, Skywalker::VERSION);
+}
 
 ReportUtils::ReportUtils(QObject* parent) :
     WrappedSkywalker(parent)
@@ -16,7 +22,7 @@ void ReportUtils::reportAuthor(const QString& did, QEnums::ReportReasonType reas
     qDebug() << "Report author:" << did << reasonType << details;
 
     bskyClient()->reportAuthor(did, ATProto::ComATProtoModeration::ReasonType(reasonType),
-        details, Utils::makeOptionalString(labelerDid),
+        details, Utils::makeOptionalString(labelerDid), getModToolName(),
         [this, presence=getPresence()]{
             if (!presence)
                 return;
@@ -39,7 +45,7 @@ void ReportUtils::reportPostOrFeed(const QString& uri, const QString& cid, QEnum
     qDebug() << "Report post or feed:" << uri << cid << reasonType << details;
     
     bskyClient()->reportPostOrFeed(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType),
-        details, Utils::makeOptionalString(labelerDid),
+        details, Utils::makeOptionalString(labelerDid), getModToolName(),
         [this, presence=getPresence()]{
             if (!presence)
                 return;
@@ -62,7 +68,7 @@ void ReportUtils::reportDirectMessage(const QString& did, const QString& convoId
     qDebug() << "Report direct message:" << did << convoId << messageId << reasonType << details;
 
     bskyClient()->reportDirectMessage(did, convoId, messageId,
-        ATProto::ComATProtoModeration::ReasonType(reasonType), details,
+        ATProto::ComATProtoModeration::ReasonType(reasonType), details, getModToolName(),
         [this, presence=getPresence()]{
             if (!presence)
                 return;
