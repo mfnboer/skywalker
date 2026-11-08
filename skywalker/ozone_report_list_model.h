@@ -23,6 +23,7 @@ public:
 
     const QString& getReportsFilter() const { return mReportsFilter; }
     Q_INVOKABLE QDateTime getLatestUpdatedAt() const;
+    Q_INVOKABLE bool hasUnread() const;
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 

@@ -18,6 +18,8 @@ class ContentLabel {
     QML_VALUE_TYPE(contentlabel)
 
 public:
+    using List = QList<ContentLabel>;
+
     ContentLabel() : mPrivate{std::make_shared<PrivateData>()} {}
     ContentLabel(const QString& did, const QString& uri, const QString& cid,
                  const QString& labelId, const QDateTime& createdAt, const QDateTime& expiresAt) :
@@ -30,6 +32,7 @@ public:
             expiresAt)}
     {}
 
+    Q_INVOKABLE bool isNull() const { return mPrivate->mLabelId.isEmpty(); }
     const QString& getDid() const { return mPrivate->mDid; }
     const QString& getUri() const { return mPrivate->mUri; }
     const QString& getCid() const { return mPrivate->mCid; }
@@ -55,7 +58,7 @@ private:
     std::shared_ptr<PrivateData> mPrivate;
 };
 
-using ContentLabelList = QList<ContentLabel>;
+using ContentLabelList = ContentLabel::List;
 
 }
 

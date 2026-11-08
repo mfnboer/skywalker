@@ -32,6 +32,9 @@ public:
 signals:
     void reportOk();
     void reportFailed(QString error);
+
+private:
+    static QString getModToolName();
 };
 
 }

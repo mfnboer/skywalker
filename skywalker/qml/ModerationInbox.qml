@@ -5,9 +5,10 @@ import atproto.lib
 
 SkyPage {
     property Skywalker skywalker: root.getSkywalker()
-    required property int reportsModelId
-    readonly property string sideBarTitle: qsTr("Reports")
-    readonly property SvgImage sideBarSvg: SvgOutline.report
+    required property int reportModelId
+    required property int subjectModelId
+    readonly property string sideBarTitle: qsTr("Moderation inbox")
+    readonly property SvgImage sideBarSvg: SvgOutline.inbox
 
     signal closed
 
@@ -44,15 +45,15 @@ SkyPage {
         SkyListView {
             id: reportsView
             clip: true
-            model: skywalker.getOzoneReportListModel(reportsModelId)
-            preloadNextPageFunc: () => ozoneUtils.getReportListNextPage(reportsModelId)
+            model: skywalker.getOzoneReportListModel(reportModelId)
+            preloadNextPageFunc: () => ozoneUtils.getReportListNextPage(reportModelId)
 
             SwipeView.onIsCurrentItemChanged: {
                 if (!SwipeView.isCurrentItem)
                     updateSeen()
             }
 
-            delegate: ModerationInboxDelegate {
+            delegate: ModerationInboxReportDelegate {
                 width: page.width
                 ozoneUtils: getOzoneUtils()
 
@@ -63,10 +64,10 @@ SkyPage {
                 inProgress: Boolean(reportsView.model?.getFeedInProgress)
                 topOvershootFun: () => {
                                      updateSeen()
-                                     ozoneUtils.getReportList(reportsModelId)
+                                     ozoneUtils.getReportList(reportModelId)
                                  }
-                bottomOvershootFun: () => ozoneUtils.getReportListNextPage(reportsModelId)
-                topText: qsTr("Refresh lists")
+                bottomOvershootFun: () => ozoneUtils.getReportListNextPage(reportModelId)
+                topText: qsTr("Refresh reports")
             }
 
             EmptyListIndication {
@@ -82,8 +83,54 @@ SkyPage {
             }
 
             function updateSeen() {
-                if (count > 0)
+                if (model.hasUnread())
                     ozoneUtils.updateSeen(OzoneInboxSection.REPORTS, model.getLatestUpdatedAt())
+            }
+        }
+
+        SkyListView {
+            id: subjectsView
+            clip: true
+            model: skywalker.getOzoneSubjectListModel(subjectModelId)
+            preloadNextPageFunc: () => ozoneUtils.getSubjectListNextPage(subjectModelId)
+
+            SwipeView.onIsCurrentItemChanged: {
+                if (!SwipeView.isCurrentItem)
+                    updateSeen()
+            }
+
+            delegate: ModerationInboxSubjectDelegate {
+                width: page.width
+                ozoneUtils: getOzoneUtils()
+
+                onClicked: ozoneUtils.getSubject(subject.subjectUri)
+            }
+
+            FlickableRefresher {
+                inProgress: Boolean(subjectsView.model?.getFeedInProgress)
+                topOvershootFun: () => {
+                                     updateSeen()
+                                     ozoneUtils.getSubjectList(subjectModelId)
+                                 }
+                bottomOvershootFun: () => ozoneUtils.getSubjectListNextPage(subjectModelId)
+                topText: qsTr("Refresh")
+            }
+
+            EmptyListIndication {
+                y: parent.headerItem ? parent.headerItem.height : 0
+                svg: SvgOutline.reportOff
+                text: qsTr("No actions")
+                list: subjectsView
+            }
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: Boolean(subjectsView.model?.getFeedInProgress)
+            }
+
+            function updateSeen() {
+                if (model.hasUnread())
+                    ozoneUtils.updateSeen(OzoneInboxSection.SUBJECTS, model.getLatestUpdatedAt())
             }
         }
     }
@@ -94,6 +141,8 @@ SkyPage {
 
         onReportOk: (report, resolution, profile) => viewReport(report, resolution, profile)
         onReportFailed: (reportId, error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
+        onSubjectOk: (subject) => viewSubject(subject)
+        onSubjectFailed: (subject, error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
     }
 
     function getOzoneUtils() {
@@ -111,12 +160,23 @@ SkyPage {
         root.pushStack(view)
     }
 
+    function viewSubject(subject) {
+        let component = guiSettings.createComponent("ModerationInboxSubject.qml")
+        let view = component.createObject(page, {
+                subject: subject
+        })
+        view.onClosed.connect(() => { root.popStack() })
+        root.pushStack(view)
+    }
+
     Component.onDestruction: {
         inboxSwipeView.currentItem.updateSeen()
-        skywalker.removeOzoneReportListModel(reportsModelId)
+        skywalker.removeOzoneReportListModel(reportModelId)
+        skywalker.removeOzoneSubjectListModel(subjectModelId)
     }
 
     Component.onCompleted: {
-        ozoneUtils.getReportList(reportsModelId)
+        ozoneUtils.getReportList(reportModelId)
+        ozoneUtils.getSubjectList(subjectModelId)
     }
 }

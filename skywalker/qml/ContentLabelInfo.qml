@@ -125,7 +125,7 @@ SkyDialog {
     function canAppeal() {
         // You can appeal to labels on your own content placed by a moderator
         return contentAuthorDid === skywalker.getUserDid() && label.did !== contentAuthorDid &&
-                !label.isSystemLabel()
+                !label.isSystemLabel() && label.uri
     }
 
     Component.onCompleted: {

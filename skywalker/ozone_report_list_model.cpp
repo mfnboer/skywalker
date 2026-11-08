@@ -22,6 +22,14 @@ QDateTime OzoneReportListModel::getLatestUpdatedAt() const
     return mList.front().getUpdatedAt();
 }
 
+bool OzoneReportListModel::hasUnread() const
+{
+    if (mList.empty())
+        return false;
+
+    return !mList.front().isRead();
+}
+
 QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
 {
     if (index.row() < 0 || index.row() >= (int)mList.size())
@@ -83,7 +91,7 @@ int OzoneReportListModel::addReports(ATProto::ToolsOzoneInbox::ReportView::List 
 
 void OzoneReportListModel::setCursor(const QString& cursor)
 {
-    BaseListModel<OzoneReportView>::setCursor(cursor);
+    BaseType::setCursor(cursor);
     setEndOfList();
 }
 

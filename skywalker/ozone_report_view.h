@@ -20,7 +20,7 @@ class OzoneReportView
     Q_PROPERTY(QString subjectUri READ getSubjectUri FINAL)
     Q_PROPERTY(QEnums::OzoneReportSubjectType subjectType READ getSubjectType FINAL)
     Q_PROPERTY(QVariant subject READ getSubject FINAL)
-    Q_PROPERTY(RecordContent recordContent READ getRecordContent FINAL) // only getRecord
+    Q_PROPERTY(RecordContent recordContent READ getRecordContent FINAL) // only getReport
     Q_PROPERTY(QEnums::OzoneReportStatus status READ getStatus FINAL)
     Q_PROPERTY(QDateTime createdAt READ getCreatedAt FINAL)
     Q_PROPERTY(QDateTime updatedAt READ getUpdatedAt FINAL)
@@ -48,8 +48,6 @@ public:
     QString getSubjectDid() const;
 
 private:
-    QString actionToDescription(const QString& action) const;
-
     ATProto::ToolsOzoneInbox::ReportView::SharedPtr mReport;
 };
 

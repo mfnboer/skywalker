@@ -288,7 +288,7 @@ SkyListView {
         const postReplyRootUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootUri)
         const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
         const postMentionDids = model.getData(postEntryIndex, AbstractPostFeedModel.PostMentionDids)
-        const postLanguages = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguages)
+        const postLUNanguages = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguages)
 
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,

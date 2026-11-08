@@ -1,5 +1,6 @@
 next
 ====
+* Moderation inbox
 * Bug fixes
 
 4.48

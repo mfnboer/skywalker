@@ -43,6 +43,7 @@ class FocusHashtags;
 class ForYou;
 class OAuthController;
 class OzoneReportListModel;
+class OzoneSubjectListModel;
 class PostThreadModel;
 class SearchPostFeedModel;
 class ShareUtils;
@@ -203,6 +204,9 @@ public:
     Q_INVOKABLE int createOzoneReportListModel(const QString& filter);
     Q_INVOKABLE OzoneReportListModel* getOzoneReportListModel(int id);
     Q_INVOKABLE void removeOzoneReportListModel(int id);
+    Q_INVOKABLE int createOzoneSubjectListModel(const QString& filter);
+    Q_INVOKABLE OzoneSubjectListModel* getOzoneSubjectListModel(int id);
+    Q_INVOKABLE void removeOzoneSubjectListModel(int id);
     Q_INVOKABLE int createPostFeedModel(const GeneratorView& generatorView);
     Q_INVOKABLE int createPostFeedModel(const ListViewBasic& listView);
     Q_INVOKABLE int createQuotePostFeedModel(const QString& quoteUri, const QString& sortOrder);
@@ -504,6 +508,7 @@ private:
     ItemStore<PostFeedModel::Ptr> mPostFeedModels;
     ItemStore<std::unique_ptr<ContentGroupListModel>> mContentGroupListModels;
     ItemStore<std::unique_ptr<OzoneReportListModel>> mOzoneReportListModels;
+    ItemStore<std::unique_ptr<OzoneSubjectListModel>> mOzoneSubjectListModels;
     ItemStore<NotificationListModel::Ptr> mNotificationListModels;
     NotificationListModel mNotificationListModel; // All notifications
     NotificationListModel mMentionListModel; // Mentions only

@@ -293,8 +293,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/DraftPostsView.qml
         QML_FILES qml/DraftPostViewDelegate.qml
         SOURCES draft_post_data.h
-        SOURCES
-        SOURCES
         SOURCES hashtag_index.h
         SOURCES hashtag_index.cpp
         QML_FILES qml/HashtagTypeaheadView.qml
@@ -704,14 +702,12 @@ qt_add_qml_module(libskywalker
         SOURCES external_source_theme.cpp
         SOURCES external_source.h
         SOURCES external_source.cpp
-        QML_FILES
         QML_FILES qml/LinkCardSource.qml
         SOURCES strong_ref.h
         SOURCES strong_ref.cpp
         SOURCES image_view.cpp
         QML_FILES qml/ImageCarouselPreview.qml
         QML_FILES qml/LoaderImageCarouselPreview.qml
-        QML_FILES
         QML_FILES qml/ImagePreviewInCarousel.qml
         SOURCES group_convo.h
         SOURCES group_convo.cpp
@@ -772,7 +768,6 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ListList.qml
         QML_FILES qml/StarterPackList.qml
         SOURCES video_view.cpp
-        QML_FILES
         QML_FILES qml/GifAttribution.qml
         QML_FILES qml/ProfileLinks.qml
         SOURCES network_holder.h
@@ -795,12 +790,41 @@ qt_add_qml_module(libskywalker
         SOURCES abstract_base_list_model.h
         SOURCES abstract_base_list_model.cpp
         QML_FILES qml/ModerationInbox.qml
-        QML_FILES qml/ModerationInboxDelegate.qml
+        QML_FILES qml/ModerationInboxReportDelegate.qml
         QML_FILES qml/ModerationInboxReport.qml
         SOURCES ozone_resolution_view.h
         SOURCES ozone_resolution_view.cpp
         SOURCES record_content.h
         SOURCES record_content.cpp
+        SOURCES ozone_subject_view.h
+        SOURCES ozone_enforcement_view.h
+        SOURCES ozone_enforcement_view.cpp
+        SOURCES ozone_appeal_view.h
+        SOURCES ozone_appeal_view.cpp
+        SOURCES ozone_policy_view.h
+        SOURCES ozone_policy_view.cpp
+        SOURCES ozone_action_view.h
+        SOURCES ozone_action_view.cpp
+        SOURCES ozone_subject_view.cpp
+        SOURCES ozone_account_preview.h
+        SOURCES ozone_account_preview.cpp
+        SOURCES ozone_reports_summary.h
+        SOURCES ozone_reports_summary.cpp
+        SOURCES ozone_subject_view_detail.cpp
+        SOURCES ozone_subject_view_detail.h
+        SOURCES ozone_subject_list_model.h
+        SOURCES ozone_subject_list_model.cpp
+        QML_FILES qml/ModerationInboxSubjectDelegate.qml
+        SOURCES ozone_action_summary.h
+        SOURCES ozone_action_summary.cpp
+        QML_FILES qml/ModerationInboxSubject.qml
+        SOURCES ozone_subject_view_interface.h
+        QML_FILES qml/SkyHighlightRectangle.qml
+        QML_FILES qml/ModerationRecord.qml
+        SOURCES ozone_policy_summary.h
+        SOURCES ozone_policy_summary.cpp
+        QML_FILES qml/ModerationPolicySummaryList.qml
+        SOURCES ozone_subject_view_interface.cpp
 )
 
 target_link_libraries(libskywalker
