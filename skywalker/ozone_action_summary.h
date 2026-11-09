@@ -18,6 +18,7 @@ public:
     OzoneActionSummary() = default;
     explicit OzoneActionSummary(const QString& subject, const OzonePolicySummary::List& policies = {}, const ContentLabel::List& labels = {});
 
+    Q_INVOKABLE bool isNull() const { return mSubject.isEmpty(); }
     const QString& getSubject() const { return mSubject; }
     const OzonePolicySummary::List& getPolicies() const { return mPolicies; }
     const ContentLabel::List& getLabels() const { return mLabels; }

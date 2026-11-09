@@ -49,6 +49,7 @@ void OzoneSubjectListModel::clear()
 {
     qDebug() << "Clear subjects";
     BaseType::clear();
+    mSubjectUriIndexMap.clear();
 }
 
 int OzoneSubjectListModel::addSubjects(ATProto::ToolsOzoneInbox::SubjectView::List subjects, const QString& cursor)
@@ -61,11 +62,38 @@ int OzoneSubjectListModel::addSubjects(ATProto::ToolsOzoneInbox::SubjectView::Li
     beginInsertRows({}, mList.size(), newRowCount - 1);
 
     for (const auto& subject : subjects)
-        mList.emplace_back(subject);
+    {
+        const OzoneSubjectView subjectView(subject);
+        mList.emplace_back(subjectView);
+        mSubjectUriIndexMap[subjectView.getSubjectUri()] = mList.size() - 1;
+    }
 
     endInsertRows();
 
     return subjects.size();
+}
+
+void OzoneSubjectListModel::updateSubject(const OzoneSubjectView& subject)
+{
+    const auto it = mSubjectUriIndexMap.find(subject.getSubjectUri());
+
+    if (it == mSubjectUriIndexMap.end())
+    {
+        qWarning() << "Cannot find subject:" << subject.getSubjectUri();
+        return;
+    }
+
+    const int index = it->second;
+
+    if (index < 0 || index >= (int)mList.size())
+    {
+        qWarning() << "Index:" << index << "out of range:" << mList.size() << "subject:" << subject.getSubjectUri();
+        return;
+    }
+
+    mList[index] = subject;
+    const auto modelIndex = createIndex(index, 0);
+    emit dataChanged(modelIndex, modelIndex, { int(Role::Subject) });
 }
 
 void OzoneSubjectListModel::setCursor(const QString& cursor)

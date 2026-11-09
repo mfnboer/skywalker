@@ -16,6 +16,7 @@ namespace Skywalker {
 class OzoneUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
+    Q_PROPERTY(bool appealInProgress READ getAppealInProgress NOTIFY appealInProgressChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -33,6 +34,8 @@ public:
     Q_INVOKABLE static QEnums::RefType subjectToRefType(const OzoneSubjectViewDetail& subject);
     Q_INVOKABLE OzoneActionSummary getLatestActionSummary(const OzoneSubjectView& subject);
     Q_INVOKABLE OzoneActionSummary getLatestActionSummary(const OzoneSubjectViewDetail& subject);
+    Q_INVOKABLE OzoneActionSummary getActionSummary(const OzoneSubjectViewDetail& subject, int actionIndex);
+    Q_INVOKABLE static QString getAppealStatus(const OzoneAppealView& appeal);
 
     Q_INVOKABLE void getReportList(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0,  const QString& cursor = {});
     Q_INVOKABLE void getReportListNextPage(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0);
@@ -41,6 +44,9 @@ public:
     Q_INVOKABLE void getReport(int reportId, const BasicProfile& profile);
     Q_INVOKABLE void getSubject(const QString& subject, const QString& cursor = {});
     Q_INVOKABLE void updateSeen(const QString& section, QDateTime seenAt);
+    Q_INVOKABLE void appeal(const OzoneSubjectViewDetail& subject, const QString& reason);
+
+    bool getAppealInProgress() const { return mAppealInProgress; }
 
 signals:
     // resolution can be null
@@ -48,12 +54,18 @@ signals:
     void reportFailed(int reportId, QString error);
     void subjectOk(OzoneSubjectViewDetail subject);
     void subjectFailed(QString subject, QString error);
+    void appealOk(OzoneSubjectView subject);
+    void appealFailed(QString error);
+    void appealInProgressChanged();
 
 private:
-    OzoneActionSummary getLatestActionSummaryImpl(const IOzoneSubjectView& subject);
+    OzoneActionSummary getActionSummaryImpl(const IOzoneSubjectView& subject, const OzoneActionView& action);
+    OzoneActionSummary getEnforcementSummaryImpl(const IOzoneSubjectView& subject);
     static QEnums::RefType subjectVariantToRefType(const QVariant& subject);
+    void setAppealInProgress(bool inProgress);
 
     std::unordered_map<QString, QDateTime> mSeenAt;
+    bool mAppealInProgress = false;
 };
 
 template<class SubjectType>

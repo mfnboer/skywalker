@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE void clear() override;
 
     int addSubjects(ATProto::ToolsOzoneInbox::SubjectView::List subjects, const QString& cursor);
+    Q_INVOKABLE void updateSubject(const OzoneSubjectView& subject);
 
     void setCursor(const QString& cursor) override;
     void setEndOfList();
@@ -38,6 +39,7 @@ protected:
 
 private:
     QString mReportsFilter;
+    std::unordered_map<QString, int> mSubjectUriIndexMap; // subjectUri -> index
 };
 
 }

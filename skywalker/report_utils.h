@@ -15,7 +15,8 @@ class ReportUtils : public WrappedSkywalker, public Presence
     QML_ELEMENT
 
 public:
-    static constexpr int REPORT_DETAILS_SIZE = 300;
+    static constexpr int REPORT_DETAILS_SIZE = 2000;
+    static QString getModToolName();
 
     explicit ReportUtils(QObject* parent = nullptr);
 
@@ -32,9 +33,6 @@ public:
 signals:
     void reportOk();
     void reportFailed(QString error);
-
-private:
-    static QString getModToolName();
 };
 
 }

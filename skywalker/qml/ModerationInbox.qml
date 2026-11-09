@@ -63,7 +63,7 @@ SkyPage {
             FlickableRefresher {
                 inProgress: Boolean(reportsView.model?.getFeedInProgress)
                 topOvershootFun: () => {
-                                     updateSeen()
+                                     reportsView.updateSeen()
                                      ozoneUtils.getReportList(reportModelId)
                                  }
                 bottomOvershootFun: () => ozoneUtils.getReportListNextPage(reportModelId)
@@ -109,7 +109,7 @@ SkyPage {
             FlickableRefresher {
                 inProgress: Boolean(subjectsView.model?.getFeedInProgress)
                 topOvershootFun: () => {
-                                     updateSeen()
+                                     subjectsView.updateSeen()
                                      ozoneUtils.getSubjectList(subjectModelId)
                                  }
                 bottomOvershootFun: () => ozoneUtils.getSubjectListNextPage(subjectModelId)
@@ -164,6 +164,10 @@ SkyPage {
         let component = guiSettings.createComponent("ModerationInboxSubject.qml")
         let view = component.createObject(page, {
                 subject: subject
+        })
+        view.onAppealed.connect((newSubject) => {
+                subjectsView.model.updateSubject(newSubject)
+                root.popStack()
         })
         view.onClosed.connect(() => { root.popStack() })
         root.pushStack(view)

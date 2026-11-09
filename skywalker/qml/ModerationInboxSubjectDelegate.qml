@@ -30,10 +30,10 @@ Rectangle {
         AccessibleText {
             x: 10
             topPadding: 10
-            width: parent.width - 20
+            width: parent.width - 50
             font.bold: true
             text: actionSummary.subject
-            visible: !subject.latestAction.isNull()
+            visible: !actionSummary.isNull()
         }
 
         ContentLabels {
@@ -45,13 +45,21 @@ Rectangle {
 
         ModerationPolicySummaryList {
             x: 10
-            width: parent.width - 20
+            width: parent.width - 50
             summary: actionSummary.policies
         }
 
         AccessibleText {
             x: 10
-            width: parent.width - 20
+            width: parent.width - 50
+            topPadding: 10
+            text: ozoneUtils.getAppealStatus(subject.appeal)
+            visible: text
+        }
+
+        AccessibleText {
+            x: 10
+            width: parent.width - 50
             topPadding: 10
             bottomPadding: 10
             color: Material.color(Material.Grey)
@@ -66,6 +74,7 @@ Rectangle {
         }
 
         AccessibleText {
+            id: endOfListText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
@@ -74,5 +83,15 @@ Rectangle {
             font.italic: true
             visible: endOfList
         }
+    }
+
+    SkySvg {
+        height: 40
+        width: height
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: (svg.offsetByHeight ? height : 0) - (endOfListText.visible ? endOfListText.height / 2 : 0)
+        svg: SvgOutline.navigateNext
+        color: guiSettings.textColor
     }
 }

@@ -825,6 +825,7 @@ qt_add_qml_module(libskywalker
         SOURCES ozone_policy_summary.cpp
         QML_FILES qml/ModerationPolicySummaryList.qml
         SOURCES ozone_subject_view_interface.cpp
+        QML_FILES qml/ModerationAppeal.qml
 )
 
 target_link_libraries(libskywalker

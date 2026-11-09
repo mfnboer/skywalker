@@ -6,6 +6,7 @@
 #include "ozone_report_list_model.h"
 #include "ozone_subject_list_model.h"
 #include "ozone_policy_view.h"
+#include "report_utils.h"
 #include "utils.h"
 
 namespace Skywalker {
@@ -189,12 +190,22 @@ QEnums::RefType OzoneUtils::subjectToRefType(const OzoneSubjectViewDetail& subje
 
 OzoneActionSummary OzoneUtils::getLatestActionSummary(const OzoneSubjectView& subject)
 {
-    return getLatestActionSummaryImpl(subject);
+    return getActionSummaryImpl(subject, subject.getLatestAction());
 }
 
 OzoneActionSummary OzoneUtils::getLatestActionSummary(const OzoneSubjectViewDetail& subject)
 {
-    return getLatestActionSummaryImpl(subject);
+    return getActionSummaryImpl(subject, subject.getLatestAction());
+}
+
+OzoneActionSummary OzoneUtils::getActionSummary(const OzoneSubjectViewDetail& subject, int actionIndex)
+{
+    const auto actions = subject.getActions();
+
+    if (actions.size() <= actionIndex)
+        return {};
+
+    return getActionSummaryImpl(subject, actions.at(actionIndex));
 }
 
 static OzonePolicySummary toPolicySummary(const OzonePolicyView& policyView, const QString& templateText)
@@ -214,23 +225,19 @@ static OzonePolicySummary::List toPolicySummaryList(const OzonePolicyView::List&
     return summaryList;
 }
 
-OzoneActionSummary OzoneUtils::getLatestActionSummaryImpl(const IOzoneSubjectView& subject)
+OzoneActionSummary OzoneUtils::getActionSummaryImpl(const IOzoneSubjectView& subject, const OzoneActionView& action)
 {
-    const OzoneActionView action = subject.getLatestAction();
-
-    if (action.isNull())
-        return {};
-
     const auto subjectType = subject.getSubjectType();
 
     if (subjectType != QEnums::OZONE_REPORT_SUBJECT_REPO_REF && subjectType != QEnums::OZONE_REPORT_SUBJECT_STRONG_REF)
         return {};
 
+    if (action.isNull())
+        return getEnforcementSummaryImpl(subject);
+
     const bool isAccount = subjectType == QEnums::OZONE_REPORT_SUBJECT_CONVO_REF;
     const QEnums::RefType refType = subjectVariantToRefType(subject.getSubject());
     const QString contentName = isAccount ? tr("account") : QEnums::refTypeToString(refType);
-
-    // TODO: where defined?
     const auto actionType = QEnums::labelToOzoneAction(action.getType());
 
     switch (actionType)
@@ -329,6 +336,89 @@ OzoneActionSummary OzoneUtils::getLatestActionSummaryImpl(const IOzoneSubjectVie
     return OzoneActionSummary{
         "UKNOWN"
     };
+}
+
+OzoneActionSummary OzoneUtils::getEnforcementSummaryImpl(const IOzoneSubjectView& subject)
+{
+    const auto subjectType = subject.getSubjectType();
+
+    if (subjectType != QEnums::OZONE_REPORT_SUBJECT_REPO_REF && subjectType != QEnums::OZONE_REPORT_SUBJECT_STRONG_REF)
+        return {};
+
+    const bool isAccount = subjectType == QEnums::OZONE_REPORT_SUBJECT_CONVO_REF;
+    const QEnums::RefType refType = subjectVariantToRefType(subject.getSubject());
+    const QString contentName = isAccount ? tr("account") : QEnums::refTypeToString(refType);
+    const OzoneEnforcementView enforcement = subject.getEnforcment();
+
+    switch (enforcement.getState())
+    {
+    case QEnums::OZONE_ENFORCEMENT_STATE_LABELED:
+    {
+        const auto labels = enforcement.getLabels();
+        const auto expiresAt = enforcement.getExpiresAt();
+
+        ContentLabel::List contentLabels;
+
+        for (const auto& label : labels)
+            contentLabels.push_back(ContentLabel(subject.getSource(), {}, {}, label, subject.getCreatedAt(), expiresAt));
+
+        return OzoneActionSummary{
+            tr("A label was added to your %1").arg(contentName), {}, contentLabels
+        };
+    }
+    case QEnums::OZONE_ENFORCEMENT_STATE_SUSPENDED:
+    case QEnums::OZONE_ENFORCEMENT_STATE_TAKENDOWN:
+        return OzoneActionSummary{ tr("Your account was suspended") };
+    default:
+        break;
+    }
+
+    return {};
+}
+
+QString OzoneUtils::getAppealStatus(const OzoneAppealView& appeal)
+{
+    if (appeal.isNull())
+        return {};
+
+    const QDateTime resolvedAt = appeal.getResolvedAt();
+    const QString resolvedAtText = resolvedAt.isValid() ? resolvedAt.toString(" dd-MM-yyyy") : "";
+
+    switch (appeal.getOutcome())
+    {
+    case QEnums::OZONE_APPEAL_OUTCOME_APPROVED:
+        return QObject::tr("Appeal approved%1").arg(resolvedAtText);
+    case QEnums::OZONE_APPEAL_OUTCOME_DENIED:
+        return QObject::tr("Appeal denied%1").arg(resolvedAtText);
+    case QEnums::OZONE_APPEAL_OUTCOME_UNKNOWN:
+        break;
+    }
+
+    switch (appeal.getState())
+    {
+    case QEnums::OZONE_APPEAL_STATE_PENDING:
+    {
+        const QDateTime appealedAt = appeal.getAppealedAt();
+        const QString appealedAtText = appealedAt.isValid() ? appealedAt.toString(" dd-MM-yyyy") : "";
+        return QObject::tr("Appeal pending%1").arg(appealedAtText);
+    }
+    case QEnums::OZONE_APPEAL_STATE_RESOLVED:
+        qWarning() << "Appeal was resolved but outcome was unknown";
+        return QObject::tr("Appeal resolved%1").arg(resolvedAtText);
+    case QEnums::OZONE_APPEAL_STATE_SUPERSEDED:
+        return QObject::tr("Appeal superseded%1").arg(resolvedAtText); // What does this mean?
+    case QEnums::OZONE_APPEAL_STATE_EXPIRED:
+    {
+        const QDateTime appealableUntil = appeal.getAppealableUntil();
+        const QString appealableUntilText = appealableUntil.isValid() ? appealableUntil.toString(" dd-MM-yyyy") : "";
+        return QObject::tr("Possibility to appeal expired%1").arg(appealableUntilText);
+    }
+    case QEnums::OZONE_APPEAL_STATE_NONE:
+    case QEnums::OZONE_APPEAL_STATE_UNKNOWN:
+        break;
+    }
+
+    return {};
 }
 
 void OzoneUtils::getReportList(int modelId, int limit, int maxPages, int minEntries,  const QString& cursor)
@@ -582,6 +672,113 @@ void OzoneUtils::updateSeen(const QString& section, QDateTime seenAt)
             mSeenAt[section] = seenAt;
         },
         {});
+}
+
+void OzoneUtils::appeal(const OzoneSubjectViewDetail& subject, const QString& reason)
+{
+    qDebug() << "Appeal:" << subject.getSubjectUri() << "reason:" << reason;
+
+    if (mAppealInProgress)
+    {
+        qDebug() << "Appeal still in progress";
+        return;
+    }
+
+    if (!bskyClient())
+        return;
+
+    auto atprotoSubject = subject.getAtprotoPtr();
+    ATProto::ToolsOzoneInbox::AppealSubjectType subjectParam;
+
+    if (ATProto::holdsNonNull<ATProto::ComATProtoAdmin::RepoRef::SharedPtr>(atprotoSubject->mSubject))
+    {
+        subjectParam = *std::get<ATProto::ComATProtoAdmin::RepoRef::SharedPtr>(atprotoSubject->mSubject);
+    }
+    else if (ATProto::holdsNonNull<ATProto::ComATProtoRepo::StrongRef::SharedPtr>(atprotoSubject->mSubject))
+    {
+        subjectParam = *std::get<ATProto::ComATProtoRepo::StrongRef::SharedPtr>(atprotoSubject->mSubject);
+    }
+    else
+    {
+        qWarning() << "Invalid subject:" << subject.getSubjectUri();
+        return;
+    }
+
+    ATProto::ToolsOzoneInbox::AppealActionType actionParam;
+
+    const OzoneActionView action = subject.getLatestAction();
+
+    if (!action.isNull())
+    {
+        ATProto::ToolsOzoneInbox::AppealActionRef actionRef;
+        actionRef.mId = action.getId();
+        actionParam = actionRef;
+    }
+    else
+    {
+        const OzoneEnforcementView enforcement = subject.getEnforcment();
+
+        switch (enforcement.getState())
+        {
+        case QEnums::OZONE_ENFORCEMENT_STATE_LABELED:
+        {
+            const auto labels = enforcement.getLabels();
+
+            if (!labels.empty())
+            {
+                ATProto::ToolsOzoneInbox::AppealLabelRef labelRef;
+                labelRef.mVal = labels.front();
+                actionParam = labelRef;
+            }
+            else
+            {
+                qWarning() << "Label missing:" << subject.getSubjectUri();
+                return;
+            }
+
+            break;
+        }
+        case QEnums::OZONE_ENFORCEMENT_STATE_TAKENDOWN:
+        case QEnums::OZONE_ENFORCEMENT_STATE_SUSPENDED:
+        {
+            ATProto::ToolsOzoneInbox::AppealTakedownRef takedownRef;
+            actionParam = takedownRef;
+            break;
+        }
+        default:
+            qWarning() << "No state to appeal:" << enforcement.getState() << "subjectUri:" << subject.getSubjectUri();
+            return;
+        }
+    }
+
+    setAppealInProgress(true);
+
+    bskyClient()->ozoneInboxAppealActionedSubject(
+        subjectParam, actionParam, Utils::makeOptionalString(reason), ReportUtils::getModToolName(),
+        [this, presence=getPresence()](ATProto::ToolsOzoneInbox::SubjectView::SharedPtr subjectView){
+            if (!presence)
+                return;
+
+            setAppealInProgress(false);
+            emit appealOk(OzoneSubjectView{subjectView});
+        },
+        [this, presence=getPresence(), subject](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "appealLatestAction failed:" << error << " - " << msg;
+            setAppealInProgress(false);
+            emit appealFailed(msg);
+        });
+}
+
+void OzoneUtils::setAppealInProgress(bool inProgress)
+{
+    if (mAppealInProgress != inProgress)
+    {
+        mAppealInProgress = inProgress;
+        emit appealInProgressChanged();
+    }
 }
 
 }

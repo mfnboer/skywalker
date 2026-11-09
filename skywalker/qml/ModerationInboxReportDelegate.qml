@@ -24,7 +24,7 @@ Rectangle {
         AccessibleText {
             x: 10
             topPadding: 10
-            width: parent.width - 20
+            width: parent.width - 50
             font.bold: true
             text: ozoneUtils.subjectTypeToString(report)
         }
@@ -32,7 +32,7 @@ Rectangle {
         PostHeaderWithAvatar {
             x: 10
             topPadding: 10
-            width: parent.width - 20
+            width: parent.width - 50
             userDid: skywalker.getUserDid()
             author: view.author
         }
@@ -40,14 +40,14 @@ Rectangle {
         AccessibleText {
             x: 10
             topPadding: 10
-            width: parent.width - 20
+            width: parent.width - 50
             text: report.reasonType
             visible: report.reasonType
         }
 
         AccessibleText {
             x: 10
-            width: parent.width - 20
+            width: parent.width - 50
             topPadding: report.reasonType ? 0 : 10
             wrapMode: Text.Wrap
             text: report.reason
@@ -57,7 +57,7 @@ Rectangle {
         AccessibleText {
             x: 10
             topPadding: 10
-            width: parent.width - 20
+            width: parent.width - 50
             font.pointSize: guiSettings.scaledFont(7/8)
             text: ozoneUtils.actionToDescription(report.lastActionTaken)
             visible: report.lastActionTaken
@@ -66,14 +66,14 @@ Rectangle {
         AccessibleText {
             x: 10
             topPadding: report.lastActionTaken ? 0 : 10
-            width: parent.width - 20
+            width: parent.width - 50
             font.pointSize: guiSettings.scaledFont(7/8)
             text: getStatus()
         }
 
         AccessibleText {
             x: 10
-            width: parent.width - 20
+            width: parent.width - 50
             bottomPadding: 10
             color: Material.color(Material.Grey)
             font.pointSize: guiSettings.scaledFont(7/8)
@@ -87,6 +87,7 @@ Rectangle {
         }
 
         AccessibleText {
+            id: endOfListText
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             topPadding: 10
@@ -95,6 +96,16 @@ Rectangle {
             font.italic: true
             visible: endOfList
         }
+    }
+
+    SkySvg {
+        height: 40
+        width: height
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.verticalCenterOffset: (svg.offsetByHeight ? height : 0) - (endOfListText.visible ? endOfListText.height / 2 : 0)
+        svg: SvgOutline.navigateNext
+        color: guiSettings.textColor
     }
 
     MouseArea {

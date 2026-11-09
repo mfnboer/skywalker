@@ -48,6 +48,8 @@ public:
     QDateTime getUpdatedAt() const override { return mSubject ? mSubject->mUpdatedAt : QDateTime{}; }
     bool isRead() const override { return mSubject ? mSubject->mIsRead : false; }
 
+    ATProto::ToolsOzoneInbox::SubjectViewDetail::SharedPtr getAtprotoPtr() const { return mSubject; }
+
     Q_INVOKABLE bool canAppeal() const;
 
 private:
