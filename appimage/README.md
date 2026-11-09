@@ -6,7 +6,7 @@ artifacts. Build and packaging outputs here are ignored by the local
 
 Install the project's build dependencies, including a C++ compiler, CMake, and
 the Qt 6 development modules used by the project. Linux builds also require
-the Qt 6 Keychain development package.
+the Qt 6 DBus and Qt 6 Keychain development packages.
 
 Download the x86_64 `linuxdeploy` and `linuxdeploy-plugin-qt` AppImages into
 this directory and make them executable. The upstream Qt plugin bundles

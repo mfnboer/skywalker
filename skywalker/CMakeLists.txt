@@ -6,6 +6,7 @@ include(FetchContent)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    find_package(Qt6 REQUIRED COMPONENTS DBus)
     find_package(Qt6Keychain REQUIRED)
 endif()
 
@@ -841,6 +842,7 @@ target_link_libraries(libskywalker
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libskywalker
+        PRIVATE Qt6::DBus
         PRIVATE Qt6Keychain::Qt6Keychain
     )
 endif()
