@@ -797,6 +797,16 @@ public:
     Q_ENUM(OzoneAction)
     static OzoneAction labelToOzoneAction(const QString& str);
 
+    enum OzoneAccountStanding
+    {
+        OZONE_ACCOUNT_STANDING_GOOD = (int)ATProto::ToolsOzoneInbox::AccountStandingEnum::GOOD,
+        OZONE_ACCOUNT_STANDING_WARNING = (int)ATProto::ToolsOzoneInbox::AccountStandingEnum::WARNING,
+        OZONE_ACCOUNT_STANDING_AT_RISK = (int)ATProto::ToolsOzoneInbox::AccountStandingEnum::AT_RISK,
+        OZONE_ACCOUNT_STANDING_UNKNOWN = (int)ATProto::ToolsOzoneInbox::AccountStandingEnum::UNKNOWN
+    };
+    Q_ENUM(OzoneAccountStanding)
+    Q_INVOKABLE static QString ozoneAccountStandingToString(OzoneAccountStanding standing, const QString& unknown = {});
+
     enum RefType
     {
         REF_TYPE_POST,

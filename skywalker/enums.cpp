@@ -153,6 +153,18 @@ QEnums::OzoneAction QEnums::labelToOzoneAction(const QString& str)
     return ATProto::stringToEnum(str, mapping, OZONE_ACTION_UNKNOWN);
 }
 
+QString QEnums::ozoneAccountStandingToString(OzoneAccountStanding standing, const QString& unknown)
+{
+    static const std::unordered_map<OzoneAccountStanding, QString> mapping = {
+        { OZONE_ACCOUNT_STANDING_GOOD, tr("good") },
+        { OZONE_ACCOUNT_STANDING_WARNING, tr("warning") },
+        { OZONE_ACCOUNT_STANDING_AT_RISK, tr("at risk") }
+    };
+
+    return ATProto::enumToString(standing, mapping, unknown);
+}
+
+
 QString QEnums::refTypeToString(RefType ref)
 {
     static const std::unordered_map<RefType, QString> mapping = {

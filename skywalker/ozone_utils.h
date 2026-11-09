@@ -3,6 +3,7 @@
 #pragma once
 #include "presence.h"
 #include "profile.h"
+#include "ozone_account_status.h"
 #include "ozone_action_summary.h"
 #include "ozone_report_view.h"
 #include "ozone_resolution_view.h"
@@ -45,6 +46,7 @@ public:
     Q_INVOKABLE void getSubject(const QString& subject, const QString& cursor = {});
     Q_INVOKABLE void updateSeen(const QString& section, QDateTime seenAt);
     Q_INVOKABLE void appeal(const OzoneSubjectViewDetail& subject, const QString& reason);
+    Q_INVOKABLE void getAccountStatus();
 
     bool getAppealInProgress() const { return mAppealInProgress; }
 
@@ -57,6 +59,7 @@ signals:
     void appealOk(OzoneSubjectView subject);
     void appealFailed(QString error);
     void appealInProgressChanged();
+    void accountStatus(OzoneAccountStatus status);
 
 private:
     OzoneActionSummary getActionSummaryImpl(const IOzoneSubjectView& subject, const OzoneActionView& action);

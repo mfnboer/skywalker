@@ -772,6 +772,22 @@ void OzoneUtils::appeal(const OzoneSubjectViewDetail& subject, const QString& re
         });
 }
 
+void OzoneUtils::getAccountStatus()
+{
+    if (!bskyClient())
+        return;
+
+    bskyClient()->ozoneInboxGetAccountStatus(
+        [this, presence=getPresence()](ATProto::ToolsOzoneInbox::GetAccountStatusOutput::SharedPtr output){
+            if (!presence)
+                return;
+
+            const OzoneAccountStatus status(output);
+            emit accountStatus(status);
+        },
+        {});
+}
+
 void OzoneUtils::setAppealInProgress(bool inProgress)
 {
     if (mAppealInProgress != inProgress)
