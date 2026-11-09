@@ -26,7 +26,7 @@ class FreedesktopNotificationBackend final : public NotificationBackend
 public:
     FreedesktopNotificationBackend(QObject* parent) : NotificationBackend(parent)
     {
-        const auto sessionBus = QDBusConnection::sessionBus();
+        auto sessionBus = QDBusConnection::sessionBus();
 
         if (!sessionBus.isConnected())
         {
