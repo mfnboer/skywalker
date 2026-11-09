@@ -165,6 +165,8 @@ const QStringList SCOPE = {
 
     "rpc:com.atproto.repo.uploadBlob?aud=*",
 
+    "rpc:tools.ozone.inbox.appealActionedSubject?aud=*",
+    "rpc:tools.ozone.inbox.getAccountStatus?aud=*",
     "rpc:tools.ozone.inbox.getActionedSubject?aud=*",
     "rpc:tools.ozone.inbox.getReport?aud=*",
     "rpc:tools.ozone.inbox.listActionedSubjects?aud=*",
@@ -185,7 +187,7 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "rpc:tools.ozone.inbox.getReport?aud=*",
+        "rpc:tools.ozone.inbox.getAccountStatus?aud=*",
         "Please login again to get the latest features."
     }};
 }

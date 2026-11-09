@@ -71,7 +71,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                y: parent.headerItem ? parent.headerItem.height : 0
+                y: 50
                 svg: SvgOutline.reportOff
                 text: qsTr("No reports")
                 list: reportsView
@@ -117,7 +117,7 @@ SkyPage {
             }
 
             EmptyListIndication {
-                y: parent.headerItem ? parent.headerItem.height : 0
+                y: 50
                 svg: SvgOutline.reportOff
                 text: qsTr("No actions")
                 list: subjectsView
