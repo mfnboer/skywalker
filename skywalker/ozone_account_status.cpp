@@ -12,20 +12,7 @@ OzoneAccountStatus::OzoneAccountStatus(const ATProto::ToolsOzoneInbox::GetAccoun
 QString OzoneAccountStatus::getStandingSymbol() const
 {
     const auto standing = getStanding();
-
-    switch(standing)
-    {
-    case QEnums::OZONE_ACCOUNT_STANDING_GOOD:
-        return "";
-    case QEnums::OZONE_ACCOUNT_STANDING_WARNING:
-        return "⚠️";
-    case QEnums::OZONE_ACCOUNT_STANDING_AT_RISK:
-        return "🛑";
-    case QEnums::OZONE_ACCOUNT_STANDING_UNKNOWN:
-        break;
-    }
-
-    return "❓";
+    return QEnums::ozoneAccountStandingToSymbol(standing);
 }
 
 }

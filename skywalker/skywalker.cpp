@@ -640,6 +640,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetaile
     emit userChanged();
     emit getUserProfileOK();
     setAnniversaryDate();
+    updateUserStanding();
 }
 
 void Skywalker::getUserPreferences()
@@ -5229,6 +5230,24 @@ void Skywalker::updateUser(const QString& did, const QString& host)
     mUserSettings.setActiveUserDid(did);
 }
 
+void Skywalker::updateUserStanding()
+{
+    mBsky->ozoneInboxGetAccountStatus(
+        [this](ATProto::ToolsOzoneInbox::GetAccountStatusOutput::SharedPtr output){
+            const OzoneAccountStatus status(output);
+            setUserAccountStatus(status);
+        },
+        [](const QString& error, const QString& msg){
+            qWarning() << "Failed to get user standing:" << error << " - " << msg;
+        });
+}
+
+void Skywalker::setUserAccountStatus(const OzoneAccountStatus& status)
+{
+    mUserAccountStatus = status;
+    emit userAccountStatusChanged();
+}
+
 std::optional<ATProto::ComATProtoServer::Session> Skywalker::getSavedSession() const
 {
     const QString did = mUserSettings.getActiveUserDid();
@@ -5809,6 +5828,7 @@ void Skywalker::signOut()
     mTimelineModel.reset();
     mUserDid.clear();
     mUserProfile = {};
+    setUserAccountStatus({});
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
     mFollowsActivityStore.clear();

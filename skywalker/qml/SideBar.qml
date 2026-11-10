@@ -39,7 +39,7 @@ Pane {
         width: parent.width
         layoutDirection: userSettings.sideBarPosition === QEnums.SIDE_BAR_POSITION_LEFT ? Qt.LeftToRight : Qt.RightToLeft
 
-        Avatar {
+        AvatarWithStanding {
             Layout.leftMargin: 10
             Layout.rightMargin: 10
             Layout.topMargin: 10

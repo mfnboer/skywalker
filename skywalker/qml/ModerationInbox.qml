@@ -8,6 +8,7 @@ SkyPage {
     required property int reportModelId
     required property int subjectModelId
     property ozoneaccountstatus accountStatus
+    property basicprofile moderationProfile
     readonly property string sideBarTitle: qsTr("Moderation inbox")
     readonly property SvgImage sideBarSvg: SvgOutline.inbox
 
@@ -128,6 +129,12 @@ SkyPage {
                         x: 10
                         width: parent.width - 20
                         bottomPadding: 5
+                        text: moderationProfile.name
+                    }
+                    AccessibleText {
+                        x: 10
+                        width: parent.width - 20
+                        bottomPadding: 5
                         font.bold: true
                         text: qsTr("Your account has strikes against it")
                         visible: accountStatus.hasActiveStrikes
@@ -196,7 +203,18 @@ SkyPage {
         onReportFailed: (reportId, error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
         onSubjectOk: (subject) => viewSubject(subject)
         onSubjectFailed: (subject, error) => skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR)
-        onAccountStatus: (status) => page.accountStatus = status
+
+        onAccountStatus: (status) => {
+                page.accountStatus = status
+                profileUtils.getBasicProfile(page.accountStatus.source)
+        }
+    }
+
+    ProfileUtils {
+        id: profileUtils
+        skywalker: page.skywalker
+
+        onBasicProfileOk: (profile) => moderationProfile = profile
     }
 
     function getOzoneUtils() {
@@ -225,6 +243,10 @@ SkyPage {
         })
         view.onClosed.connect(() => { root.popStack() })
         root.pushStack(view)
+    }
+
+    function showAccountTab() {
+        tabBar.setCurrentIndex(1)
     }
 
     Component.onDestruction: {

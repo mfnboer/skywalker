@@ -6,13 +6,15 @@ SkyDrawer {
     property basicprofile user
     property int inviteCodeCount: 0
     property Skywalker skywalker: root.getSkywalker()
-    property UserSettings userSettings: skywalker.getUserSettings();
+    property UserSettings userSettings: skywalker.getUserSettings()
+    property basicprofile moderationProfile
     readonly property int iconSize: 30
     readonly property real menuFontSize: guiSettings.scaledFont(10/8)
 
     signal profile()
     signal contentFiltering()
     signal moderationInbox()
+    signal userStandingClicked()
     signal blockedAccounts()
     signal mutedAccounts()
     signal modLists()
@@ -58,7 +60,7 @@ SkyDrawer {
                 Accessible.role: Accessible.StaticText
                 Accessible.name: `${user.name} @${user.handle}`
 
-                Avatar {
+                AvatarWithStanding {
                     id: avatar
                     width: 60
                     author: user
@@ -83,6 +85,32 @@ SkyDrawer {
                     text: `@${user.handle}`
 
                     Accessible.ignored: true
+                }
+
+                AccessibleText {
+                    width: parent.width
+                    topPadding: 5
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    text: moderationProfile.name
+                    visible: !skywalker.userAccountStatus.isNull() && skywalker.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: userStandingClicked()
+                    }
+                }
+
+                AccessibleText {
+                    width: parent.width
+                    font.pointSize: guiSettings.scaledFont(7/8)
+                    color: guiSettings.linkColor
+                    text: qsTr(`${skywalker.userAccountStatus.standingSymbol} ${QEnums.ozoneAccountStandingToString(skywalker.userAccountStatus.standing, skywalker.userAccountStatus.rawStanding)}`)
+                    visible: !skywalker.userAccountStatus.isNull() && skywalker.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: userStandingClicked()
+                    }
                 }
             }
 
@@ -279,5 +307,16 @@ SkyDrawer {
                 }
             }
         }
+    }
+
+    ProfileUtils {
+        id: profileUtils
+        skywalker: drawer.skywalker
+
+        onBasicProfileOk: (profile) => moderationProfile = profile
+    }
+
+    Component.onCompleted: {
+        profileUtils.getBasicProfile(skywalker.userAccountStatus.source)
     }
 }

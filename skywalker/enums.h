@@ -806,6 +806,7 @@ public:
     };
     Q_ENUM(OzoneAccountStanding)
     Q_INVOKABLE static QString ozoneAccountStandingToString(OzoneAccountStanding standing, const QString& unknown = {});
+    Q_INVOKABLE static QString ozoneAccountStandingToSymbol(OzoneAccountStanding standing);
 
     enum RefType
     {

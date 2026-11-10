@@ -942,6 +942,11 @@ ApplicationWindow {
                 close()
             }
 
+            onUserStandingClicked: {
+                viewModerationInbox(true)
+                close()
+            }
+
             onActiveFollows: {
                 let userSettings = skywalker.getUserSettings()
                 const interval = userSettings.getActiveOnlineIntervalMins()
@@ -2462,7 +2467,7 @@ ApplicationWindow {
         skywalker.getStarterPackList(starterPacksModelId)
     }
 
-    function viewModerationInbox() {
+    function viewModerationInbox(showSubjects = false) {
         const reportModelId = skywalker.createOzoneReportListModel(OzoneInboxFilter.ALL)
         const subjectModelId = skywalker.createOzoneSubjectListModel(OzoneInboxFilter.ALLs)
 
@@ -2473,6 +2478,9 @@ ApplicationWindow {
         })
         page.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
         pushStack(page)
+
+        if (showSubjects)
+            page.showAccountTab()
     }
 
     function viewModerationLists(modelId) {

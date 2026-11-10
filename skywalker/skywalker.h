@@ -17,6 +17,7 @@
 #include "list_store.h"
 #include "muted_words.h"
 #include "notification_list_model.h"
+#include "ozone_account_status.h"
 #include "post_feed_model.h"
 #include "profile_store.h"
 #include "session_manager.h"
@@ -75,6 +76,7 @@ class Skywalker : public IFeedPager
     Q_PROPERTY(bool getPostThreadInProgress READ isGetPostThreadInProgress NOTIFY getPostThreadInProgressChanged FINAL)
     Q_PROPERTY(bool getDetailedProfileInProgress READ isGetDetailedProfileInProgress NOTIFY getDetailedProfileInProgressChanged FINAL)
     Q_PROPERTY(BasicProfile user READ getUser NOTIFY userChanged FINAL)
+    Q_PROPERTY(OzoneAccountStatus userAccountStatus READ getUserAccountStatus NOTIFY userAccountStatusChanged FINAL)
     Q_PROPERTY(int unreadNotificationCount READ getUnreadNotificationCount WRITE setUnreadNotificationCount NOTIFY unreadNotificationCountChanged FINAL)
     Q_PROPERTY(FavoriteFeeds* favoriteFeeds READ getFavoriteFeeds CONSTANT FINAL)
     Q_PROPERTY(bool hideVerificationBadges READ getHideVerificationBadges NOTIFY hideVerificationBadgesChanged FINAL)
@@ -228,6 +230,7 @@ public:
     Q_INVOKABLE QString getUserDid() const { return mUserDid; }
     Q_INVOKABLE Profile getUserProfile() const { return mUserProfile; }
     Q_INVOKABLE BasicProfile getUser() const;
+    OzoneAccountStatus getUserAccountStatus() const { return mUserAccountStatus; }
     Q_INVOKABLE ContentGroup getContentGroup(const QString& did, const QString& labelId) const;
     Q_INVOKABLE QEnums::ContentVisibility getContentVisibility(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
     Q_INVOKABLE QString getContentWarning(const ContentLabelList& contentLabels, const BasicProfile& author = {}) const;
@@ -347,6 +350,7 @@ signals:
     void statusClear();
     void postThreadOk(QString did, int id, int postEntryIndex);
     void userChanged();
+    void userAccountStatusChanged();
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);
     void getDetailedProfileOK(QString userDid, DetailedProfile profile, QString labelPrefsListUri);
@@ -406,6 +410,8 @@ private:
     void startRefreshTimers();
     void stopRefreshTimers();
     void updateUser(const QString& did, const QString& host);
+    void updateUserStanding();
+    void setUserAccountStatus(const OzoneAccountStatus& status);
     ATProto::ProfileMaster& getProfileMaster();
     std::optional<ATProto::ComATProtoServer::Session> getSavedSession() const;
     void saveLoggedOutvisibility();
@@ -466,6 +472,7 @@ private:
 
     QString mUserDid;
     Profile mUserProfile;
+    OzoneAccountStatus mUserAccountStatus;
     bool mIsActiveUser = true;
 
     bool mLoggedOutVisibility = true;

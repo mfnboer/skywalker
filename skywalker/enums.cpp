@@ -164,6 +164,17 @@ QString QEnums::ozoneAccountStandingToString(OzoneAccountStanding standing, cons
     return ATProto::enumToString(standing, mapping, unknown);
 }
 
+QString QEnums::ozoneAccountStandingToSymbol(OzoneAccountStanding standing)
+{
+    static const std::unordered_map<OzoneAccountStanding, QString> mapping = {
+        { OZONE_ACCOUNT_STANDING_GOOD, "" },
+        { OZONE_ACCOUNT_STANDING_WARNING, "⚠️" },
+        { OZONE_ACCOUNT_STANDING_AT_RISK, "🛑" }
+    };
+
+    return ATProto::enumToString(standing, mapping, "❓");
+}
+
 
 QString QEnums::refTypeToString(RefType ref)
 {

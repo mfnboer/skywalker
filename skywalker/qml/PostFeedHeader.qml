@@ -235,10 +235,11 @@ Rectangle {
             visible: showAsHome
             Accessible.role: Accessible.Pane
 
-            Avatar {
+            AvatarWithStanding {
                 id: avatar
                 width: parent.width
                 author: skywalker.user
+
                 onClicked: root.showSettingsDrawer()
                 onPressAndHold: root.showSwitchUserDrawer()
 
