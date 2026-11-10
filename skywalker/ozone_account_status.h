@@ -24,7 +24,7 @@ public:
     Q_INVOKABLE bool isNull() const { return mStatus == nullptr; }
     QString getSource() const { return mStatus ? mStatus->mSrc : ""; }
     QEnums::OzoneAccountStanding getStanding() const { return mStatus ? (QEnums::OzoneAccountStanding)mStatus->mStanding.value() : QEnums::OZONE_ACCOUNT_STANDING_UNKNOWN; }
-    QString getRawStanding() const { return mStatus ? mStatus->mStanding.toString() : QObject::tr("unknown"); }
+    QString getRawStanding() const;
     QString getStandingSymbol() const;
     bool hasActiveStrikes() const { return mStatus ? mStatus->mHasActiveStrikes : false; }
     QDateTime getUpdatedAt() const { return mStatus ? mStatus->mUpdatedAt : QDateTime{}; }

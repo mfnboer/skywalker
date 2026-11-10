@@ -9,6 +9,10 @@ OzoneAccountStatus::OzoneAccountStatus(const ATProto::ToolsOzoneInbox::GetAccoun
 {
 }
 
+QString OzoneAccountStatus::getRawStanding() const {
+    return mStatus ? mStatus->mStanding.toString() : QObject::tr("unknown");
+}
+
 QString OzoneAccountStatus::getStandingSymbol() const
 {
     const auto standing = getStanding();

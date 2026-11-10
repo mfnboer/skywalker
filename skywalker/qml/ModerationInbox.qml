@@ -112,7 +112,7 @@ SkyPage {
             header: Rectangle {
                 z: guiSettings.headerZLevel
                 width: page.width
-                height: headerContent.height
+                height: visible ? headerContent.height : 0
                 color: guiSettings.backgroundColor
                 visible: accountStatus.hasActiveStrikes || accountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
 
