@@ -22,6 +22,7 @@
 #include "network_holder.h"
 #include "oauth_controller.h"
 #include "offline_message_checker.h"
+#include "ozone_inbox.h"
 #include "ozone_report_list_model.h"
 #include "ozone_subject_list_model.h"
 #include "photo_picker.h"
@@ -65,6 +66,7 @@ static constexpr int SEEN_HASHTAG_INDEX_SIZE = 500;
 
 Skywalker::Skywalker(QObject* parent) :
     IFeedPager(parent),
+    mOzoneInbox(new OzoneInbox(this)),
     mFollowing(this),
     mFollowsActivityStore(mFollowing, this),
     mTimelineHide(this),
@@ -91,6 +93,8 @@ Skywalker::Skywalker(QObject* parent) :
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_PRIMARY_HOST,
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_SECONDARY_HOST,
                                                     this);
+
+    mOzoneInbox->setSkywalker(this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mContentFilterPolicies.setSkywalker(this);
@@ -179,6 +183,7 @@ Skywalker::Skywalker(QObject* parent) :
 Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObject* parent) :
     IFeedPager(parent),
     mBsky(bsky),
+    mOzoneInbox(new OzoneInbox(this)),
     mUserDid(did),
     mIsActiveUser(false),
     mFollowsActivityStore(mFollowing, this),
@@ -206,6 +211,8 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_PRIMARY_HOST,
                                                     ATProto::PlcDirectoryClient::PLC_DIRECTORY_SECONDARY_HOST,
                                                     this);
+
+    mOzoneInbox->setSkywalker(this);
     mGraphUtils.setSkywalker(this);
     mTimelineHide.setSkywalker(this);
     mContentFilterPolicies.setSkywalker(this);
@@ -640,7 +647,7 @@ void Skywalker::signalGetUserProfileOk(ATProto::AppBskyActor::ProfileViewDetaile
     emit userChanged();
     emit getUserProfileOK();
     setAnniversaryDate();
-    updateUserStanding();
+    mOzoneInbox->updateUserAccountStatus();
 }
 
 void Skywalker::getUserPreferences()
@@ -5230,24 +5237,6 @@ void Skywalker::updateUser(const QString& did, const QString& host)
     mUserSettings.setActiveUserDid(did);
 }
 
-void Skywalker::updateUserStanding()
-{
-    mBsky->ozoneInboxGetAccountStatus(
-        [this](ATProto::ToolsOzoneInbox::GetAccountStatusOutput::SharedPtr output){
-            const OzoneAccountStatus status(output);
-            setUserAccountStatus(status);
-        },
-        [](const QString& error, const QString& msg){
-            qWarning() << "Failed to get user standing:" << error << " - " << msg;
-        });
-}
-
-void Skywalker::setUserAccountStatus(const OzoneAccountStatus& status)
-{
-    mUserAccountStatus = status;
-    emit userAccountStatusChanged();
-}
-
 std::optional<ATProto::ComATProtoServer::Session> Skywalker::getSavedSession() const
 {
     const QString did = mUserSettings.getActiveUserDid();
@@ -5828,7 +5817,7 @@ void Skywalker::signOut()
     mTimelineModel.reset();
     mUserDid.clear();
     mUserProfile = {};
-    setUserAccountStatus({});
+    mOzoneInbox.reset();
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
     mFollowsActivityStore.clear();

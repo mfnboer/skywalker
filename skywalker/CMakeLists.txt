@@ -829,6 +829,8 @@ qt_add_qml_module(libskywalker
         SOURCES ozone_account_status.h
         SOURCES ozone_account_status.cpp
         QML_FILES qml/AvatarWithStanding.qml
+        SOURCES ozone_inbox.h
+        SOURCES ozone_inbox.cpp
 )
 
 target_link_libraries(libskywalker

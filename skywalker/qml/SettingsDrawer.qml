@@ -7,6 +7,7 @@ SkyDrawer {
     property int inviteCodeCount: 0
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
+    readonly property OzoneInbox ozoneInbox: skywalker.ozoneInbox
     property basicprofile moderationProfile
     readonly property int iconSize: 30
     readonly property real menuFontSize: guiSettings.scaledFont(10/8)
@@ -92,7 +93,7 @@ SkyDrawer {
                     topPadding: 5
                     font.pointSize: guiSettings.scaledFont(7/8)
                     text: moderationProfile.name
-                    visible: !skywalker.userAccountStatus.isNull() && skywalker.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
+                    visible: !ozoneInbox.userAccountStatus.isNull() && ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
 
                     MouseArea {
                         anchors.fill: parent
@@ -104,8 +105,8 @@ SkyDrawer {
                     width: parent.width
                     font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.linkColor
-                    text: qsTr(`${skywalker.userAccountStatus.standingSymbol} ${QEnums.ozoneAccountStandingToString(skywalker.userAccountStatus.standing, skywalker.userAccountStatus.rawStanding)}`)
-                    visible: !skywalker.userAccountStatus.isNull() && skywalker.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
+                    text: qsTr(`${ozoneInbox.userAccountStatus.standingSymbol} ${QEnums.ozoneAccountStandingToString(ozoneInbox.userAccountStatus.standing, ozoneInbox.userAccountStatus.rawStanding)}`)
+                    visible: !ozoneInbox.userAccountStatus.isNull() && ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
 
                     MouseArea {
                         anchors.fill: parent
@@ -317,6 +318,6 @@ SkyDrawer {
     }
 
     Component.onCompleted: {
-        profileUtils.getBasicProfile(skywalker.userAccountStatus.source)
+        profileUtils.getBasicProfile(ozoneInbox.userAccountStatus.source)
     }
 }
