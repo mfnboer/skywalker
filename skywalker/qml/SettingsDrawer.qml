@@ -91,8 +91,20 @@ SkyDrawer {
                 AccessibleText {
                     width: parent.width
                     topPadding: 5
-                    font.pointSize: guiSettings.scaledFont(7/8)
                     text: moderationProfile.name
+                    visible: !ozoneInbox.userAccountStatus.isNull() &&
+                             (ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD || ozoneInbox.unreadReports + ozoneInbox.unreadSubjects > 0)
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: userStandingClicked()
+                    }
+                }
+
+                AccessibleText {
+                    width: parent.width
+                    color: guiSettings.linkColor
+                    text: qsTr(`${ozoneInbox.userAccountStatus.standingSymbol} ${QEnums.ozoneAccountStandingToString(ozoneInbox.userAccountStatus.standing, ozoneInbox.userAccountStatus.rawStanding)}`)
                     visible: !ozoneInbox.userAccountStatus.isNull() && ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
 
                     MouseArea {
@@ -103,14 +115,13 @@ SkyDrawer {
 
                 AccessibleText {
                     width: parent.width
-                    font.pointSize: guiSettings.scaledFont(7/8)
                     color: guiSettings.linkColor
-                    text: qsTr(`${ozoneInbox.userAccountStatus.standingSymbol} ${QEnums.ozoneAccountStandingToString(ozoneInbox.userAccountStatus.standing, ozoneInbox.userAccountStatus.rawStanding)}`)
-                    visible: !ozoneInbox.userAccountStatus.isNull() && ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
+                    text: qsTr(`${ozoneInbox.unreadReports + ozoneInbox.unreadSubjects} unread items`)
+                    visible: ozoneInbox.unreadReports + ozoneInbox.unreadSubjects > 0
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: userStandingClicked()
+                        onClicked: moderationInbox()
                     }
                 }
             }
@@ -147,18 +158,17 @@ SkyDrawer {
                     id: moderationMenu
 
                     SkyMenuButton {
-                        text: qsTr("Content Filtering")
-                        svg: SvgOutline.visibility
-                        popup: moderationMenu
-                        onClicked: contentFiltering()
-                    }
-                    SkyMenuButton {
                         text: qsTr("Moderation Inbox")
                         svg: SvgOutline.inbox
                         popup: moderationMenu
                         onClicked: moderationInbox()
                     }
-
+                    SkyMenuButton {
+                        text: qsTr("Content Filtering")
+                        svg: SvgOutline.visibility
+                        popup: moderationMenu
+                        onClicked: contentFiltering()
+                    }
                     SkyMenuButton {
                         text: qsTr("Blocked Accounts")
                         svg: SvgOutline.block

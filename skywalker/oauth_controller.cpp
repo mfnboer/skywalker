@@ -168,9 +168,12 @@ const QStringList SCOPE = {
     "rpc:tools.ozone.inbox.appealActionedSubject?aud=*",
     "rpc:tools.ozone.inbox.getAccountStatus?aud=*",
     "rpc:tools.ozone.inbox.getActionedSubject?aud=*",
+    "rpc:tools.ozone.inbox.getNotificationPreferences?aud=*",
     "rpc:tools.ozone.inbox.getReport?aud=*",
+    "rpc:tools.ozone.inbox.getUnreadCount?aud=*",
     "rpc:tools.ozone.inbox.listActionedSubjects?aud=*",
     "rpc:tools.ozone.inbox.listReports?aud=*",
+    "rpc:tools.ozone.inbox.putNotificationPreferences?aud=*",
     "rpc:tools.ozone.inbox.updateSeen?aud=*"
 };
 
@@ -187,7 +190,7 @@ QStringList OAuthController::getScope()
 std::optional<ATProto::OAuth::ScopeCheck> OAuthController::getScopeToCheckOnResume()
 {
     return {{
-        "rpc:tools.ozone.inbox.getAccountStatus?aud=*",
+        "rpc:tools.ozone.inbox.getUnreadCount?aud=*",
         "Please login again to get the latest features."
     }};
 }

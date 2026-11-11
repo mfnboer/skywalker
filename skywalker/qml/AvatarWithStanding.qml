@@ -11,4 +11,9 @@ Avatar {
         text: ozoneInbox.userAccountStatus.standingSymbol
         visible: !ozoneInbox.userAccountStatus.isNull() && ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD
     }
+
+    BadgeCounter {
+        y: 0
+        counter: ozoneInbox.unreadReports + ozoneInbox.unreadSubjects
+    }
 }

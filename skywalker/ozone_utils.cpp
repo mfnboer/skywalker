@@ -3,6 +3,7 @@
 #include "ozone_utils.h"
 #include "link_utils.h"
 #include "skywalker.h"
+#include "ozone_inbox.h"
 #include "ozone_report_list_model.h"
 #include "ozone_subject_list_model.h"
 #include "ozone_policy_view.h"
@@ -652,7 +653,7 @@ void OzoneUtils::getSubject(const QString& subject, const QString& cursor)
 void OzoneUtils::updateSeen(const QString& section, QDateTime seenAt)
 {
     qDebug() << "Update seen:" << section << seenAt;
-
+    clearUnreadCounters(section);
     const auto lastSeen = mSeenAt[section];
 
     if (lastSeen.isValid() && seenAt <= lastSeen)
@@ -672,6 +673,16 @@ void OzoneUtils::updateSeen(const QString& section, QDateTime seenAt)
             mSeenAt[section] = seenAt;
         },
         {});
+}
+
+void OzoneUtils::clearUnreadCounters(const QString& section)
+{
+    OzoneInbox* inbox = mSkywalker->getOzoneInbox();
+
+    if (section == ATProto::ToolsOzoneInbox::OzoneInboxSection::REPORTS)
+        inbox->setUnreadReports(0);
+    else if (section == ATProto::ToolsOzoneInbox::OzoneInboxSection::SUBJECTS)
+        inbox->setUnreadSubjects(0);
 }
 
 void OzoneUtils::appeal(const OzoneSubjectViewDetail& subject, const QString& reason)

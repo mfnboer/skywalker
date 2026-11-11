@@ -5,6 +5,7 @@ import atproto.lib
 
 SkyPage {
     property Skywalker skywalker: root.getSkywalker()
+    readonly property OzoneInbox ozoneInbox: skywalker.ozoneInbox
     required property int reportModelId
     required property int subjectModelId
     property ozoneaccountstatus accountStatus
@@ -27,10 +28,12 @@ SkyPage {
     SkyTabBar {
         id: tabBar
 
-        AccessibleTabButton {
+        SkyTabCounterButton {
+            counter: ozoneInbox.unreadReports
             text: qsTr("Your reports")
         }
-        AccessibleTabButton {
+        SkyTabCounterButton {
+            counter: ozoneInbox.unreadSubjects
             text: qsTr(`${accountStatus.standingSymbol} Your account`).trim()
         }
     }
@@ -93,7 +96,7 @@ SkyPage {
             }
 
             function updateSeen() {
-                if (model.hasUnread())
+                if (model.hasUnread() || ozoneInbox.unreadReports !== 0)
                     ozoneUtils.updateSeen(OzoneInboxSection.REPORTS, model.getLatestUpdatedAt())
             }
         }
@@ -189,7 +192,7 @@ SkyPage {
             }
 
             function updateSeen() {
-                if (model.hasUnread())
+                if (model.hasUnread() || ozoneInbox.unreadSubjects !== 0)
                     ozoneUtils.updateSeen(OzoneInboxSection.SUBJECTS, model.getLatestUpdatedAt())
             }
         }

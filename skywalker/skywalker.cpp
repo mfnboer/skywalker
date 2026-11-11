@@ -588,6 +588,7 @@ void Skywalker::startRefreshTimers()
     Q_ASSERT(mBsky);
     mSessionManager.startRefreshTimers();
     mGraphUtils.startExpiryCheckTimer();
+    mOzoneInbox->startRefreshTimers();
 }
 
 void Skywalker::stopRefreshTimers()
@@ -595,6 +596,7 @@ void Skywalker::stopRefreshTimers()
     qDebug() << "Refresh timers stopped";
     mSessionManager.stopRefreshTimers();
     mGraphUtils.stopExpiryCheckTimer();
+    mOzoneInbox->stopRefreshTimers();
 }
 
 void Skywalker::initUserProfile()
@@ -5817,7 +5819,7 @@ void Skywalker::signOut()
     mTimelineModel.reset();
     mUserDid.clear();
     mUserProfile = {};
-    mOzoneInbox.reset();
+    mOzoneInbox->clear();
     mAnniversary.setFirstAppearance({});
     mLoggedOutVisibility = true;
     mFollowsActivityStore.clear();

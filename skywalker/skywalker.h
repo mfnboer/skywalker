@@ -287,6 +287,8 @@ public:
     Q_INVOKABLE Bookmarks* getBookmarks();
     MutedWords* getMutedWords() { return &mMutedWords; }
     FocusHashtags* getFocusHashtags() { return mFocusHashtags.get(); }
+    OzoneInbox* getOzoneInbox() { return mOzoneInbox.get(); };
+
     void setAutoUpdateTimelineInProgress(bool inProgress);
     bool isAutoUpdateTimelineInProgress() const { return mAutoUpdateTimelineInProgress; }
     void setGetTimelineInProgress(bool inProgress);
@@ -455,7 +457,6 @@ private:
     ForYou* getForYou();
     Constellation* getConstellation();
     Backlinks* getBacklinks();
-    OzoneInbox* getOzoneInbox() { return mOzoneInbox.get(); };
 
     template<typename ModelType>
     int addModelToStore(ModelType::Ptr model, ItemStore<typename ModelType::Ptr>& store);

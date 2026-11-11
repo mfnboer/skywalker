@@ -62,6 +62,7 @@ signals:
     void accountStatus(OzoneAccountStatus status);
 
 private:
+    void clearUnreadCounters(const QString& section);
     OzoneActionSummary getActionSummaryImpl(const IOzoneSubjectView& subject, const OzoneActionView& action);
     OzoneActionSummary getEnforcementSummaryImpl(const IOzoneSubjectView& subject);
     static QEnums::RefType subjectVariantToRefType(const QVariant& subject);
