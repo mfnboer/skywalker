@@ -75,7 +75,10 @@ VerificationView::List VerificationState::getValidVerifications() const
 
 ActorStatusView::ActorStatusView(const ATProto::AppBskyActor::StatusView& statusView) :
     mSet(true),
+    mUri(statusView.mUri.value_or("")),
+    mCid(statusView.mCid.value_or("")),
     mActorStatus(QEnums::ActorStatus((int)statusView.mStatus)),
+    mContentLabels(ContentFilter::getContentLabels(statusView.mLabels)),
     mExpiresAt(statusView.mExpiresAt.value_or(QDateTime{})),
     mIsActive(statusView.mIsActive.value_or(true))
 {

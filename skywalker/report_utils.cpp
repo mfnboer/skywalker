@@ -39,25 +39,25 @@ void ReportUtils::reportAuthor(const QString& did, QEnums::ReportReasonType reas
         });
 }
 
-void ReportUtils::reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
-                                   const QString& details, const QString& labelerDid)
+void ReportUtils::reportRecord(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
+                               const QString& details, const QString& labelerDid)
 {
-    qDebug() << "Report post or feed:" << uri << cid << reasonType << details;
+    qDebug() << "Report record:" << uri << cid << reasonType << details;
     
-    bskyClient()->reportPostOrFeed(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType),
+    bskyClient()->reportRecord(uri, cid, ATProto::ComATProtoModeration::ReasonType(reasonType),
         details, Utils::makeOptionalString(labelerDid), getModToolName(),
         [this, presence=getPresence()]{
             if (!presence)
                 return;
 
-            qDebug() << "Report post or feed succeeded";
+            qDebug() << "Report record succeeded";
             emit reportOk();
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
                 return;
 
-            qWarning() << "Report post failed:" << error << " - " << msg;
+            qWarning() << "Report record failed:" << error << " - " << msg;
             emit reportFailed(msg);
         });
 }

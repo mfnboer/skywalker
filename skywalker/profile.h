@@ -82,8 +82,11 @@ private:
 class ActorStatusView
 {
     Q_GADGET
+    Q_PROPERTY(QString uri READ getUri FINAL)
+    Q_PROPERTY(QString cid READ getCid FINAL)
     Q_PROPERTY(QEnums::ActorStatus actorStatus READ getActorStatus FINAL)
     Q_PROPERTY(ExternalView externalView READ getExternalView FINAL)
+    Q_PROPERTY(ContentLabelList labels READ getContentLabels FINAL)
     Q_PROPERTY(QDateTime expiresAt READ getExpiresAt FINAL)
     Q_PROPERTY(bool isActive READ isActive FINAL)
     QML_VALUE_TYPE(actorstatusview)
@@ -93,15 +96,21 @@ public:
     explicit ActorStatusView(const ATProto::AppBskyActor::StatusView& statusView);
 
     Q_INVOKABLE bool isNull() const { return !mSet; }
+    const QString& getUri() const { return mUri; }
+    const QString& getCid() const { return mCid; }
     QEnums::ActorStatus getActorStatus() const { return mActorStatus; }
     const ExternalView& getExternalView() const { return mExternalView; }
+    ContentLabelList getContentLabels() const { return mContentLabels; }
     QDateTime getExpiresAt() const { return mExpiresAt; }
     bool isActive() const;
 
 private:
     bool mSet = false;
+    QString mUri;
+    QString mCid;
     QEnums::ActorStatus mActorStatus;
     ExternalView mExternalView; // may be null
+    ContentLabelList mContentLabels;
     QDateTime mExpiresAt; // may be null
     bool mIsActive = false;
 };

@@ -106,32 +106,26 @@ SkyDialog {
     }
 
     LinkCardReader {
-        property bool inProgress: false
-
         id: linkCardReader
         skywalker: dialog.skywalker
 
         onLinkCard: (card) => {
-            inProgress = false
             console.debug("Got card:", card.link, card.title, card.thumb)
             console.debug(card.description)
             linkCard.show(card)
         }
 
         onLinkGif: (gif) => {
-            inProgress = false
             console.warn("GIF not supported:", gif.url)
             linkCard.hide()
         }
 
         onLinkCardFailed: {
-            inProgress= false
             console.debug("Failed to get link card")
             linkCard.hide()
         }
 
         function getCard(link) {
-            inProgress = true
             getLinkCard(link)
         }
     }

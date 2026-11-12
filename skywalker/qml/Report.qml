@@ -14,6 +14,8 @@ SkyPage {
     property generatorview feed
     property listview list
     property starterpackview starterPack
+    property actorstatusview authorStatus
+    property basicprofile authorStatusAuthor
     property string convoId
     property messageview message
     property int categoryType: QEnums.REPORT_CATEGORY_TYPE_NULL // QEnums.CategoryType
@@ -126,6 +128,9 @@ SkyPage {
 
             if (quoteStarterPack.visible)
                 return quoteStarterPack.height
+
+            if (quoteAuthorStatus.visible)
+                return quoteAuthorStatus.height
         }
 
         RowLayout {
@@ -211,6 +216,15 @@ SkyPage {
             starterPack: page.starterPack
             visible: !page.starterPack.isNull()
         }
+
+        QuoteActorStatus {
+            id: quoteAuthorStatus
+            width: parent.width
+            userDid: page.userDid
+            author: page.authorStatusAuthor
+            authorStatus: page.authorStatus
+            visible: !page.authorStatus.isNull()
+        }
     }
 
     Flickable {
@@ -220,7 +234,7 @@ SkyPage {
         anchors.bottom: parent.bottom
         clip: true
         width: parent.width
-        contentHeight: contentItem.childrenRect.height
+        contentHeight: detailsRect.y + detailsRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
         ScrollBar.vertical: SkyScrollBarVertical {}
@@ -420,6 +434,7 @@ SkyPage {
         }
 
         Rectangle {
+            id: detailsRect
             anchors.top: detailsHeader.bottom
             x: 10
             width: parent.width - 20
@@ -466,7 +481,7 @@ SkyPage {
             labelerDid = labelerComboBox.currentValue.did
 
         if (postUri) {
-            reportUtils.reportPostOrFeed(postUri, postCid, reasonType, details, labelerDid)
+            reportUtils.reportRecord(postUri, postCid, reasonType, details, labelerDid)
         }
         else if (!message.isNull()) {
             reportUtils.reportDirectMessage(message.senderDid, convoId, message.id, reasonType, details)
@@ -475,29 +490,34 @@ SkyPage {
             reportUtils.reportAuthor(author.did, reasonType, details, labelerDid)
         }
         else if (!feed.isNull()) {
-            reportUtils.reportPostOrFeed(feed.uri, feed.cid, reasonType, details, labelerDid)
+            reportUtils.reportRecord(feed.uri, feed.cid, reasonType, details, labelerDid)
         }
         else if (!list.isNull()) {
-            reportUtils.reportPostOrFeed(list.uri, list.cid, reasonType, details, labelerDid)
+            reportUtils.reportRecord(list.uri, list.cid, reasonType, details, labelerDid)
         }
         else if (!starterPack.isNull()) {
-            reportUtils.reportPostOrFeed(starterPack.uri, starterPack.cid, reasonType, details, labelerDid)
+            reportUtils.reportRecord(starterPack.uri, starterPack.cid, reasonType, details, labelerDid)
+        }
+        else if (!authorStatus.isNull()) {
+            reportUtils.reportRecord(authorStatus.uri, authorStatus.cid, reasonType, details, labelerDid)
         }
     }
 
     function getReportTitle() {
         if (postUri)
-            return "Report post"
+            return qsTr("Report post")
         if (!message.isNull())
-            return "Report message"
+            return qsTr("Report message")
         if (!author.isNull())
-            return "Report account"
+            return qsTr("Report account")
         if (!feed.isNull())
-            return "Report feed"
+            return qsTr("Report feed")
         if (!list.isNull())
-            return "Report list"
+            return qsTr("Report list")
         if (!starterPack.isNull())
-            return "Report starter pack"
+            return qsTr("Report starter pack")
+        if (!authorStatus.isNull())
+            return qsTr("Livestream")
 
         console.warn("UKNOWN REPORT")
         return "Report"
@@ -509,7 +529,5 @@ SkyPage {
 
     Component.onCompleted: {
         skywalker.getAuthorList(labelerAuthorListModelId)
-        console.debug("POST:", page.postText)
-        console.debug("MSG:", page.message.formattedText)
     }
 }

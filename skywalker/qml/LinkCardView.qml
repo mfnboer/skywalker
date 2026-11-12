@@ -44,14 +44,6 @@ RoundCornerMask {
         spacing: 3
         visible: !uriIsChatJoinLink
 
-        FilteredImageWarning {
-            id: filter
-            width: parent.width
-            contentVisibility: card.contentVisibility
-            contentWarning: card.contentWarning
-            contentLabeler: card.contentLabeler
-            imageUrl: card.thumbUrl
-        }
         Item {
             width: parent.width
             height: visible ? 30 : 0
@@ -214,6 +206,18 @@ RoundCornerMask {
                 onClicked: root.openLink(card.uri, "", userDid)
             }
         }
+    }
+
+    FilteredImageWarning {
+        id: filter
+        width: externalColumn.width - 10
+        anchors.top: externalColumn.top
+        anchors.topMargin: (imgLoader.height - height) / 2
+        anchors.horizontalCenter: externalColumn.horizontalCenter
+        contentVisibility: card.contentVisibility
+        contentWarning: card.contentWarning
+        contentLabeler: card.contentLabeler
+        imageUrl: card.thumbUrl
     }
 
     Rectangle {

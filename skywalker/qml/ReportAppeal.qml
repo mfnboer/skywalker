@@ -129,8 +129,8 @@ SkyPage {
                                      detailsText.text, label.did)
         }
         else {
-            reportUtils.reportPostOrFeed(label.uri, label.cid, QEnums.REPORT_REASON_TYPE_OZONE_APPEAL,
-                                         detailsText.text, label.did)
+            reportUtils.reportRecord(label.uri, label.cid, QEnums.REPORT_REASON_TYPE_OZONE_APPEAL,
+                                     detailsText.text, label.did)
         }
     }
 

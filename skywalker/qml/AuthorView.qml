@@ -572,28 +572,43 @@ SkyPage {
                 }
             }
 
-            // Live status
-            Rectangle {
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                height: visible ? liveView.y + liveView.height : 0
-                color: "transparent"
+            Item {
+                width: viewHeader.width - (viewHeader.leftPadding + viewHeader.rightPadding)
+                height: visible ? liveViewCol.y + liveViewCol.height : 0
                 visible: authorStatus.isActive && !authorStatus.externalView.isNull() && contentVisible()
 
-                LiveCardView {
-                    id: liveView
+                Column {
+                    id: liveViewCol
                     y: 10
                     width: parent.width
-                    uri: authorStatus.externalView.uri
-                    title: authorStatus.externalView.title
-                    description: authorStatus.externalView.description
-                    thumbUrl: authorStatus.externalView.thumbUrl
-                    contentVisibility: QEnums.CONTENT_VISIBILITY_SHOW
-                    contentWarning: ""
-                    contentLabeler: accessibilityUtils.nullAuthor
-                    liveExpiresAt: authorStatus.expiresAt
+                    spacing: 5
 
-                    onClose: deleteLiveStatus()
-                    onEdit: profileUtils.retrieveStatus()
+                    LiveCardView {
+                        id: liveView
+                        width: parent.width
+                        userDid: page.userDid
+                        author: page.author
+                        authorStatus: page.authorStatus
+                        canEdit: isUser(page.author)
+
+                        onClose: deleteLiveStatus()
+                        onEdit: profileUtils.retrieveStatus()
+                        onReport: root.reportLivestream(page.authorStatus, page.author, userDid)
+                    }
+
+                    Rectangle {
+                        width: parent.width - (parent.leftPadding + parent.rightPadding)
+                        height: liveStatusLabels.height
+                        color: "transparent"
+
+                        ContentLabels {
+                            id: liveStatusLabels
+                            alignRight: true
+                            userDid: page.userDid
+                            contentLabels: authorStatus.labels
+                            contentAuthor: author
+                        }
+                    }
                 }
             }
 

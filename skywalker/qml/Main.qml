@@ -2605,6 +2605,13 @@ ApplicationWindow {
         pushStack(form)
     }
 
+    function reportLivestream(authorStatus, author, reportByDid = "") {
+        let component = guiSettings.createComponent("Report.qml")
+        let form = component.createObject(root, { userDid: reportByDid, authorStatus: authorStatus, authorStatusAuthor: author })
+        form.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
+        pushStack(form)
+    }
+
     function newList(listModel, purpose = QEnums.LIST_PURPOSE_UNKNOWN, userDid = "", doneCb = () => {}) {
         const sw = getSkywalker(userDid)
         let component = guiSettings.createComponent("EditList.qml")

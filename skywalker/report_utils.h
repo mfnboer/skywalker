@@ -22,8 +22,8 @@ public:
 
     Q_INVOKABLE void reportAuthor(const QString& did, QEnums::ReportReasonType reasonType,
                                   const QString& details, const QString& labelerDid = "");
-    Q_INVOKABLE void reportPostOrFeed(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
-                                      const QString& details, const QString& labelerDid = "");
+    Q_INVOKABLE void reportRecord(const QString& uri, const QString& cid, QEnums::ReportReasonType reasonType,
+                                  const QString& details, const QString& labelerDid = "");
     Q_INVOKABLE void reportDirectMessage(const QString& did, const QString& convoId, const QString& messageId,
                                          QEnums::ReportReasonType reasonType, const QString& details);
 
