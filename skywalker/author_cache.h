@@ -32,7 +32,13 @@ public:
 
     void clear();
     void put(const BasicProfile& author);
-    void putProfile(const QString& did, const AddedCb& addedCb = {});
+
+    // Returns error if fetching profile failed permanently
+    QString putProfile(const QString& did, const AddedCb& addedCb = {});
+
+    // Returns error if fetching profile failed permanently
+    QString getProfileError(const QString& did) const;
+
     const BasicProfile* get(const QString& did) const;
     bool contains(const QString& did) const;
 
@@ -41,6 +47,7 @@ public:
 
 signals:
     void profileAdded(const QString& did);
+    void profileFailed(const QString& did);
 
 private:
     explicit AuthorCache(QObject* parent = nullptr);
@@ -51,8 +58,8 @@ private:
     std::unordered_set<const IProfileStore*> mProfileStores;
     BasicProfile mUser;
     std::unordered_map<QString, std::vector<AddedCb>> mFetchingDids;
-    std::unordered_set<QString> mFailedDids;
-    std::unordered_set<QString> mPermanentlyFailedDids;
+    std::unordered_map<QString, QString> mFailedDids; // did -> error
+    std::unordered_map<QString, QString> mPermanentlyFailedDids; // did -> error
 
     static std::unique_ptr<AuthorCache> sInstance;
 };

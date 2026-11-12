@@ -820,6 +820,8 @@ public:
     };
     Q_ENUM(RefType)
     static QString refTypeToString(RefType ref);
+
+    static QString atprotoErrorToDescription(const QString& error);
 };
 
 }

@@ -6,6 +6,7 @@ SkyHighlightRectangle {
     property Skywalker skywalker: root.getSkywalker()
     required property var ozoneEntity // reportView or subjectViewDetail
     required property basicprofile author
+    property string authorError
     property bool showSubjectType: false
     readonly property int margin: 10
 
@@ -32,6 +33,17 @@ SkyHighlightRectangle {
             width: parent.width - 2 * margin
             userDid: skywalker.getUserDid()
             author: record.author
+            visible: !record.author.isNull()
+        }
+
+        AccessibleText {
+            x: margin
+            bottomPadding: margin
+            topPadding: showSubjectType ? 0 : margin
+            width: parent.width - 2 * margin
+            font.bold: true
+            text: record.authorError
+            visible: record.author.isNull()
         }
 
         AccessibleText {

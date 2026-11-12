@@ -14,6 +14,7 @@ public:
     enum class Role {
         Report = Qt::UserRole + 1,
         Author,
+        AuthorError,
         EndOfList
     };
 
@@ -39,6 +40,7 @@ protected:
 
 private:
     void authorAdded(const QString& did);
+    void authorFailed(const QString& did);
 
     QString mReportsFilter;
 };

@@ -43,7 +43,7 @@ public:
     Q_INVOKABLE void getReportListNextPage(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0);
     Q_INVOKABLE void getSubjectList(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0,  const QString& cursor = {});
     Q_INVOKABLE void getSubjectListNextPage(int modelId, int limit = 25, int maxPages = 1, int minEntries = 0);
-    Q_INVOKABLE void getReport(int reportId, const BasicProfile& profile);
+    Q_INVOKABLE void getReport(int reportId, const BasicProfile& profile, const QString& profileError = {});
     Q_INVOKABLE void getSubject(const QString& subject, const QString& cursor = {});
     Q_INVOKABLE void updateSeen(const QString& section, QDateTime seenAt);
     Q_INVOKABLE void appeal(const OzoneSubjectViewDetail& subject, const QString& reason);
@@ -56,7 +56,7 @@ public:
 
 signals:
     // resolution can be null
-    void reportOk(OzoneReportView report, OzoneResolutionView resolution, BasicProfile profile);
+    void reportOk(OzoneReportView report, OzoneResolutionView resolution, BasicProfile profile, QString profileError);
     void reportFailed(int reportId, QString error);
     void subjectOk(OzoneSubjectViewDetail subject);
     void subjectFailed(QString subject, QString error);

@@ -602,7 +602,7 @@ void OzoneUtils::getSubjectListNextPage(int modelId, int limit, int maxPages, in
     getSubjectList(modelId, limit, maxPages, minEntries, cursor);
 }
 
-void OzoneUtils::getReport(int reportId, const BasicProfile& profile)
+void OzoneUtils::getReport(int reportId, const BasicProfile& profile, const QString& profileError)
 {
     qDebug() << "Get report:" << reportId;
 
@@ -610,13 +610,13 @@ void OzoneUtils::getReport(int reportId, const BasicProfile& profile)
         return;
 
     bskyClient()->ozoneInboxGetReport(reportId,
-        [this, presence=getPresence(), profile](ATProto::ToolsOzoneInbox::GetReportOutput::SharedPtr output){
+        [this, presence=getPresence(), profile, profileError](ATProto::ToolsOzoneInbox::GetReportOutput::SharedPtr output){
             if (!presence)
                 return;
 
             emit reportOk(OzoneReportView(output->mReport),
                           OzoneResolutionView(output->mResolution),
-                          profile);
+                          profile, profileError);
         },
         [this, presence=getPresence(), reportId](const QString& error, const QString& msg){
             if (!presence)

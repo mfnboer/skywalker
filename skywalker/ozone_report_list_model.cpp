@@ -12,6 +12,10 @@ OzoneReportListModel::OzoneReportListModel(const QString& filter, const QString&
     connect(&AuthorCache::instance(), &AuthorCache::profileAdded, this,
         [this](const QString& did) { authorAdded(did); },
         Qt::QueuedConnection);
+
+    connect(&AuthorCache::instance(), &AuthorCache::profileFailed, this,
+            [this](const QString& did) { authorFailed(did); },
+            Qt::QueuedConnection);
 }
 
 QDateTime OzoneReportListModel::getLatestUpdatedAt() const
@@ -57,6 +61,16 @@ QVariant OzoneReportListModel::data(const QModelIndex& index, int role) const
         }
 
         return QVariant::fromValue(*author);
+    }
+    case Role::AuthorError:
+    {
+        const QString did = report.getSubjectDid();
+
+        if (did.isEmpty())
+            return {};
+
+        const QString error = AuthorCache::instance().getProfileError(did);
+        return QEnums::atprotoErrorToDescription(error);
     }
     case Role::EndOfList:
         return isEndOfList() && index.row() == (int)mList.size() - 1;
@@ -109,6 +123,7 @@ QHash<int, QByteArray> OzoneReportListModel::roleNames() const
     static const QHash<int, QByteArray> roles{
         { int(Role::Report), "report" },
         { int(Role::Author), "author" },
+        { int(Role::AuthorError), "authorError" },
         { int(Role::EndOfList), "endOfList" }
     };
 
@@ -122,7 +137,18 @@ void OzoneReportListModel::authorAdded(const QString& did)
         const auto& report = mList[i];
 
         if (report.getSubjectDid() == did)
-            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::Author) });
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::Author), int(Role::AuthorError) });
+    }
+}
+
+void OzoneReportListModel::authorFailed(const QString& did)
+{
+    for (int i = 0; i < (int)mList.size(); ++i)
+    {
+        const auto& report = mList[i];
+
+        if (report.getSubjectDid() == did)
+            emit dataChanged(createIndex(i, 0), createIndex(i, 0), { int(Role::AuthorError) });
     }
 }
 

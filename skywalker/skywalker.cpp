@@ -2774,7 +2774,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
             if (postEntryIndex < 0)
             {
                 qDebug() << "No thread posts";
-                emit statusMessage(mUserDid, "Could not create post thread", QEnums::STATUS_LEVEL_ERROR);
+                emit statusMessage(mUserDid, "Could not open post", QEnums::STATUS_LEVEL_ERROR);
                 return;
             }
 

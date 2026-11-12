@@ -190,4 +190,12 @@ QString QEnums::refTypeToString(RefType ref)
     return ATProto::enumToString(ref, mapping, tr("content"));
 }
 
+QString QEnums::atprotoErrorToDescription(const QString& error)
+{
+    if (error == ATProto::ATProtoErrorMsg::ACCOUNT_TAKEDOWN)
+        return QObject::tr("Account taken down");
+
+    return error;
+}
+
 }

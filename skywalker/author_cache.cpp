@@ -42,27 +42,27 @@ void AuthorCache::put(const BasicProfile& author)
     mCache.insert(did, entry);
 }
 
-void AuthorCache::putProfile(const QString& did, const AddedCb& addedCb)
+QString AuthorCache::putProfile(const QString& did, const AddedCb& addedCb)
 {
     if (contains(did))
     {
         qDebug() << "Profile already in cache:" << did;
-        return;
+        return {};
     }
 
     if (mPermanentlyFailedDids.contains(did))
-        return;
+        return mPermanentlyFailedDids[did];
 
     if (mFetchingDids.contains(did))
     {
         if (addedCb)
             mFetchingDids[did].push_back(addedCb);
 
-        return;
+        return {};
     }
 
     if (!bskyClient())
-        return;
+        return {};
 
     if (addedCb)
         mFetchingDids.insert({did, {addedCb}});
@@ -89,18 +89,33 @@ void AuthorCache::putProfile(const QString& did, const AddedCb& addedCb)
             if (!mFailedDids.contains(did))
             {
                 mFetchingDids.erase(did);
-                mFailedDids.insert(did);
+                mFailedDids.insert({did, error});
             }
             else
             {
                 qWarning() << "Failed to get DID for the second time:" << did << error << " - " << msg;
                 mFetchingDids.erase(did);
-                mPermanentlyFailedDids.insert(did);
+                mPermanentlyFailedDids.insert({did, error});
             }
+
+            emit profileFailed(did);
 
             for (const auto& cb : callbacks)
                 cb();
         });
+
+    return {};
+}
+
+QString AuthorCache::getProfileError(const QString& did) const
+{
+    if (mPermanentlyFailedDids.contains(did))
+        return mPermanentlyFailedDids.at(did);
+
+    if (mFailedDids.contains(did))
+        return mFailedDids.at(did);
+
+    return {};
 }
 
 const BasicProfile* AuthorCache::get(const QString& did) const

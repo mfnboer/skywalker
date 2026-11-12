@@ -7,6 +7,7 @@ Rectangle {
     required property OzoneUtils ozoneUtils
     required property ozonereportview report
     required property basicprofile author
+    required property string authorError
     required property bool endOfList
 
     signal clicked
@@ -35,6 +36,16 @@ Rectangle {
             width: parent.width - 50
             userDid: skywalker.getUserDid()
             author: view.author
+            visible: !author.isNull()
+        }
+
+        AccessibleText {
+            x: 10
+            topPadding: 10
+            width: parent.width - 50
+            font.bold: true
+            text: authorError
+            visible: author.isNull()
         }
 
         AccessibleText {

@@ -7,6 +7,7 @@ SkyPage {
     required property ozonereportview report
     required property ozoneresolutionview resolution
     required property basicprofile author
+    required property string authorError
     readonly property string sideBarTitle: qsTr("Your report")
     property string sideBarSubTitle
     readonly property SvgImage sideBarSvg: SvgOutline.report
@@ -58,6 +59,7 @@ SkyPage {
             width: parent.width - 20
             ozoneEntity: report
             author: page.author
+            authorError: page.authorError
             showSubjectType: true
         }
 
