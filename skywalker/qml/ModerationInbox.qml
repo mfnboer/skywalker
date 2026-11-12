@@ -198,6 +198,28 @@ SkyPage {
         }
     }
 
+    SvgPlainButton {
+        id: moreOptions
+        parent: page.header.visible ? page.header : page
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.rightMargin: page.margin
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("moderation inbox options")
+        onClicked: moreMenu.open()
+
+        SkyMenu {
+            id: moreMenu
+
+            SkyMenuButton {
+                text: qsTr("Settings")
+                svg: SvgOutline.settings
+                popup: moreMenu
+                onClicked: editSettings()
+            }
+        }
+    }
+
     OzoneUtils {
         id: ozoneUtils
         skywalker: page.skywalker
@@ -244,6 +266,13 @@ SkyPage {
                 subjectsView.model.updateSubject(newSubject)
                 root.popStack()
         })
+        view.onClosed.connect(() => { root.popStack() })
+        root.pushStack(view)
+    }
+
+    function editSettings() {
+        let component = guiSettings.createComponent("SettingsModerationInbox.qml")
+        let view = component.createObject(page, {})
         view.onClosed.connect(() => { root.popStack() })
         root.pushStack(view)
     }

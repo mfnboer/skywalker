@@ -799,12 +799,86 @@ void OzoneUtils::getAccountStatus()
         {});
 }
 
+void OzoneUtils::getNotificationPreferences()
+{
+    if (!bskyClient())
+        return;
+
+    if (mNotificationPreferencesInProgress)
+    {
+        qDebug() << "Notification preferences still in progress";
+        return;
+    }
+
+    setNotificationPreferencesInProgress(true);
+
+    bskyClient()->ozoneInboxGetNotificationPreferences(
+        [this, presence=getPresence()](ATProto::ToolsOzoneInbox::NotificationPreferences::SharedPtr prefs){
+            if (!presence)
+                return;
+
+            setNotificationPreferencesInProgress(false);
+            qDebug() << "Got preferences reports:" << prefs->mReports << "account:" << prefs->mAccount << "labels:" << prefs->mLabels;
+            emit getNotificationPreferencesOk(prefs->mReports, prefs->mAccount, prefs->mLabels);
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "getNotificationPreferences failed:" << error << " - " << msg;
+            setNotificationPreferencesInProgress(false);
+            emit getNotificationPreferencesFailed(msg);
+        });
+}
+
+void OzoneUtils::putNotificationPreferences(bool reports, bool account, bool labels)
+{
+    qDebug() << "Put preferences reports:" << reports << "account:" << account << "labels:" << labels;
+
+    if (!bskyClient())
+        return;
+
+    if (mNotificationPreferencesInProgress)
+    {
+        qDebug() << "Notification preferences still in progress";
+        return;
+    }
+
+    setNotificationPreferencesInProgress(true);
+
+    bskyClient()->ozoneInboxPutNotificationPreferences(reports, account, labels,
+        [this, presence=getPresence()](ATProto::ToolsOzoneInbox::NotificationPreferences::SharedPtr){
+            if (!presence)
+                return;
+
+            setNotificationPreferencesInProgress(false);
+            emit putNotificationPreferencesOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "putNotificationPreferences failed:" << error << " - " << msg;
+            setNotificationPreferencesInProgress(false);
+            emit putNotificationPreferencesFailed(msg);
+        });
+}
+
 void OzoneUtils::setAppealInProgress(bool inProgress)
 {
     if (mAppealInProgress != inProgress)
     {
         mAppealInProgress = inProgress;
         emit appealInProgressChanged();
+    }
+}
+
+void OzoneUtils::setNotificationPreferencesInProgress(bool inProgress)
+{
+    if (mNotificationPreferencesInProgress != inProgress)
+    {
+        mNotificationPreferencesInProgress = inProgress;
+        emit notificationPreferencesInProgressChanged();
     }
 }
 

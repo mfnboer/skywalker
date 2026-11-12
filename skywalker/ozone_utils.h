@@ -18,6 +18,7 @@ class OzoneUtils : public WrappedSkywalker, public Presence
 {
     Q_OBJECT
     Q_PROPERTY(bool appealInProgress READ getAppealInProgress NOTIFY appealInProgressChanged FINAL)
+    Q_PROPERTY(bool notificationPreferencesInProgress READ getNotificationPreferencesInProgress NOTIFY notificationPreferencesInProgressChanged FINAL)
     QML_ELEMENT
 
 public:
@@ -47,8 +48,11 @@ public:
     Q_INVOKABLE void updateSeen(const QString& section, QDateTime seenAt);
     Q_INVOKABLE void appeal(const OzoneSubjectViewDetail& subject, const QString& reason);
     Q_INVOKABLE void getAccountStatus();
+    Q_INVOKABLE void getNotificationPreferences();
+    Q_INVOKABLE void putNotificationPreferences(bool reports, bool account, bool labels);
 
     bool getAppealInProgress() const { return mAppealInProgress; }
+    bool getNotificationPreferencesInProgress() const { return mNotificationPreferencesInProgress; }
 
 signals:
     // resolution can be null
@@ -60,6 +64,11 @@ signals:
     void appealFailed(QString error);
     void appealInProgressChanged();
     void accountStatus(OzoneAccountStatus status);
+    void getNotificationPreferencesOk(bool reports, bool account, bool labels);
+    void getNotificationPreferencesFailed(QString error);
+    void putNotificationPreferencesOk();
+    void putNotificationPreferencesFailed(QString error);
+    void notificationPreferencesInProgressChanged();
 
 private:
     void clearUnreadCounters(const QString& section);
@@ -67,9 +76,11 @@ private:
     OzoneActionSummary getEnforcementSummaryImpl(const IOzoneSubjectView& subject);
     static QEnums::RefType subjectVariantToRefType(const QVariant& subject);
     void setAppealInProgress(bool inProgress);
+    void setNotificationPreferencesInProgress(bool inProgress);
 
     std::unordered_map<QString, QDateTime> mSeenAt;
     bool mAppealInProgress = false;
+    bool mNotificationPreferencesInProgress = false;
 };
 
 template<class SubjectType>
