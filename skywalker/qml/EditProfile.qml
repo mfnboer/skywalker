@@ -9,7 +9,6 @@ SkyPage {
     required property string authorName
     required property string authorPronouns
     required property string authorDescription
-    required property string authorWebsite
     required property string authorAvatar
     required property string authorBanner
     required property bool authorVerified
@@ -25,7 +24,7 @@ SkyPage {
 
     signal closed
     signal profileUpdated(string name, string description, string avatar, string banner,
-                          string pronouns, string website, list<profilelinkview> links,
+                          string pronouns, list<profilelinkview> links,
                           bool partial)
 
     id: editProfilePage
@@ -67,7 +66,7 @@ SkyPage {
         height: guiSettings.footerHeight + (keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0)
         z: guiSettings.footerZLevel
         color: guiSettings.footerColor
-        visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus || websiteField.textInput.activeFocus
+        visible: nameField.activeFocus || descriptionField.activeFocus || pronounsField.activeFocus
 
         TextLengthBar {
             textField: nameField
@@ -123,7 +122,6 @@ SkyPage {
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
-        //contentHeight: pageColumn.y + websiteField.y + websiteField.height
         contentHeight: contentItem.childrenRect.height
         flickableDirection: Flickable.VerticalFlick
         boundsBehavior: Flickable.StopAtBounds
@@ -340,25 +338,6 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
-                text: qsTr("Website")
-                visible: authorWebsite
-            }
-
-            // Deprecated. Allow users to clear the field.
-            SkyWebLinkInput {
-                id: websiteField
-                Layout.fillWidth: true
-                parentFlick: flick
-                padding: 5
-                initialText: authorWebsite
-                placeholderText: qsTr("Your website")
-                visible: authorWebsite
-            }
-
-            AccessibleText {
-                Layout.fillWidth: true
-                topPadding: 10
-                font.bold: true
                 text: qsTr("Link buttons")
             }
 
@@ -513,7 +492,7 @@ SkyPage {
         profileUtils.updateProfile(authorDid, nameField.text.trim(), descriptionField.text.trim(),
                                    avatar.avatarUrl, avatar.isUpdated,
                                    banner.source, banner.isUpdated,
-                                   pronounsField.text.trim(), websiteField.getLink())
+                                   pronounsField.text.trim())
     }
 
     function updateProfileOk() {
@@ -538,7 +517,7 @@ SkyPage {
 
         editProfilePage.profileUpdated(nameField.text.trim(), descriptionField.text.trim(),
                                        avatar.avatarUrl, banner.source,
-                                       pronounsField.text.trim(), websiteField.getLink(),
+                                       pronounsField.text.trim(),
                                        updatedLinks, partial)
     }
 
@@ -672,8 +651,7 @@ SkyPage {
                 authorDescription !== descriptionField.text.trim() ||
                 authorAvatar !== avatar.avatarUrl ||
                 authorBanner !== banner.source.toString() ||
-                authorPronouns !== pronounsField.text.trim() ||
-                authorWebsite !== websiteField.getLink()
+                authorPronouns !== pronounsField.text.trim()
     }
 
     function checkLinkChangesMade() {
@@ -701,8 +679,7 @@ SkyPage {
     function allFieldsValid() {
         return !nameField.maxGraphemeLengthExceeded() &&
                 !descriptionField.maxGraphemeLengthExceeded() &&
-                !pronounsField.maxGraphemeLengthExceeded() &&
-                websiteField.isValid()
+                !pronounsField.maxGraphemeLengthExceeded()
     }
 
     function cancel() {

@@ -457,7 +457,6 @@ using ProfileList = QList<Profile>;
 class DetailedProfile : public Profile
 {
     Q_GADGET
-    Q_PROPERTY(QString website READ getWebsite FINAL)
     Q_PROPERTY(QString banner READ getBanner FINAL)
     Q_PROPERTY(ImageView bannerView READ getBannerView FINAL)
     Q_PROPERTY(int followersCount READ getFollowersCount FINAL)
@@ -471,7 +470,6 @@ public:
     DetailedProfile() = default;
     explicit DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr& profile);
 
-    QString getWebsite() const;
     QString getBanner() const;
     ImageView getBannerView() const;
     int getFollowersCount() const;
@@ -479,8 +477,6 @@ public:
     int getPostsCount() const;
     QString getPinnedPostUri() const;
     ProfileLinkView::List getLinks() const;
-
-    Q_INVOKABLE bool linksContainWebsite() const;
 };
 
 class BlockedAuthor

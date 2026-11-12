@@ -34,7 +34,7 @@ public:
     Q_INVOKABLE void updateProfile(const QString& did, const QString& name, const QString& description,
                                    const QString& avatarImgSource, bool updateAvatar,
                                    const QString& bannerImgSource, bool updateBanner,
-                                   const QString& pronouns, const QString& website);
+                                   const QString& pronouns);
 
     Q_INVOKABLE void updateProfileLinks(const QString& did, const ProfileLinkView::List& links);
 
@@ -88,11 +88,11 @@ private:
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
                                const QString& bannerImgSource, bool updateBanner,
-                               const QString& pronouns, const QString& website);
+                               const QString& pronouns);
     void continueUpdateProfile(const QString& did, const QString& name, const QString& description,
                                ATProto::Blob::SharedPtr avatarBlob, bool updateAvatar,
                                ATProto::Blob::SharedPtr bannerBlob, bool updateBanner,
-                               const QString& pronouns, const QString& website);
+                               const QString& pronouns);
     void continueUpdateProfileLinks(const QString& did, const ProfileLinkView::List& links,
                                     std::unordered_map<QString, QString> uploadLinkUrlIconMap,
                                     std::unordered_map<QString, ATProto::Blob::SharedPtr> linkUrlIconBlobMap = {});

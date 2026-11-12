@@ -20,7 +20,6 @@ SkyPage {
     property string authorName
     property string authorPronouns
     property string authorDescription
-    property string authorWebsite
     property string authorAvatar
     property string authorBanner
     property list<profilelinkview> authorLinks: author.links
@@ -647,17 +646,6 @@ SkyPage {
                     userDid: page.userDid
                     author: page.author
                 }
-            }
-
-            AccessibleText {
-                id: websiteText
-                width: parent.width - (parent.leftPadding + parent.rightPadding)
-                topPadding: 10
-                textFormat: Text.RichText
-                text: qsTr(`🌐 ${guiSettings.toHtmlLink(authorWebsite)}`)
-                visible: contentVisible() && Boolean(authorWebsite) && !author.linksContainWebsite()
-
-                onLinkActivated: (link) => root.openLink(link, "", page.userDid)
             }
 
             ProfileLinks {
@@ -1867,17 +1855,15 @@ SkyPage {
                 authorName: authorName,
                 authorPronouns: authorPronouns,
                 authorDescription: authorDescription,
-                authorWebsite: authorWebsite,
                 authorAvatar: authorAvatar,
                 authorBanner: authorBanner,
                 authorVerified: authorVerified,
                 links: authorLinks
             })
-        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, website, links, partial) => {
+        editPage.onProfileUpdated.connect((name, description, avatar, banner, pronouns, links, partial) => {
             authorName = name
             authorPronouns = pronouns
             authorDescription = description
-            authorWebsite = website
             authorAvatar = avatar
             setAuthorBanner(banner)
             authorLinks = links
@@ -2187,7 +2173,6 @@ SkyPage {
         authorName = author.name
         authorPronouns = author.pronouns
         authorDescription = author.description
-        authorWebsite = author.website
         authorAvatar = author.avatarUrl
         authorBanner = author.banner
         authorHideFromTimeline = skywalker.getTimelineHide().contains(author.did)

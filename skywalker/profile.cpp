@@ -967,11 +967,6 @@ DetailedProfile::DetailedProfile(const ATProto::AppBskyActor::ProfileViewDetaile
 {
 }
 
-QString DetailedProfile::getWebsite() const
-{
-    return mProfileDetailedView ? mProfileDetailedView->mWebsite.value_or("") : "";
-}
-
 QString DetailedProfile::getBanner() const
 {
     return mProfileDetailedView ? mProfileDetailedView->mBanner.value_or("") : "";
@@ -1013,24 +1008,6 @@ ProfileLinkView::List DetailedProfile::getLinks() const
         links.push_back(ProfileLinkView(link));
 
     return links;
-}
-
-bool DetailedProfile::linksContainWebsite() const
-{
-    const QString website = getWebsite();
-
-    if (website.isEmpty())
-        return false;
-
-    const auto links = getLinks();
-
-    for (const auto& link : links)
-    {
-        if (LinkUtils::equalLinks(website, link.getUrl()))
-            return true;
-    }
-
-    return false;
 }
 
 

@@ -1,6 +1,7 @@
 next
 ====
 * Moderation inbox
+* Removed website field from profile (deprecated in favor of profile links)
 * Bug fixes
 
 4.48
