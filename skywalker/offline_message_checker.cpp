@@ -401,6 +401,7 @@ void OffLineMessageChecker::resumeSession(const QString& did, bool retry)
     mBsky->setServiceChat(mUserSettings.getServiceChat(did));
     mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
     mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+    mBsky->setServiceModeration(mUserSettings.getServiceModeration(did));
 
     if (useOAuth)
     {

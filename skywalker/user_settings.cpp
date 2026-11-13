@@ -705,6 +705,29 @@ QString UserSettings::getDefaultServiceVideoDid() const
     return ATProto::Client::SERVICE_VIDEO_DID;
 }
 
+void UserSettings::setServiceModeration(const QString& did, const QString& service)
+{
+    if (service != getServiceModeration(did))
+    {
+        if (service == ATProto::Client::SERVICE_MODERATION)
+            mSettings.remove(key(did, "serviceModeration"));
+        else
+            mSettings.setValue(key(did, "serviceModeration"), service);
+
+        emit serviceModerationChanged(did);
+    }
+}
+
+QString UserSettings::getServiceModeration(const QString& did) const
+{
+    return mSettings.value(key(did, "serviceModeration"), ATProto::Client::SERVICE_MODERATION).toString();
+}
+
+QString UserSettings::getDefaultServiceModeration() const
+{
+    return ATProto::Client::SERVICE_MODERATION;
+}
+
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     qDebug() << "Save session:" << session.mHandle;

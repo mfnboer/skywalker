@@ -14,7 +14,7 @@ SkyPage {
     padding: 10
 
     signal closed()
-    signal settings(string serviceAppView, string serviceChat, string serviceVideoHost, string serviceVideoHost)
+    signal settings(string serviceAppView, string serviceChat, string serviceVideoHost, string serviceVideoHost, string moderationChat)
 
     Accessible.role: Accessible.Pane
 
@@ -145,6 +145,34 @@ SkyPage {
                 Layout.fillWidth: true
                 topPadding: 10
                 font.bold: true
+                text: "Moderation inbox service"
+            }
+
+            SkyTextInput {
+                id: moderationField
+                Layout.fillWidth: true
+                parentFlick: flick
+                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
+                initialText: newUser ? userSettings.getDefaultServiceModeration() : userSettings.getServiceModeration(userDid)
+                validator: RegularExpressionValidator { regularExpression: /[^ ]*/ }
+                valid: !displayText || linkUtils.isValidService(displayText)
+            }
+
+            SvgPlainButton {
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: height
+                Layout.preferredHeight: moderationField.height - 10
+                imageMargin: 0
+                svg: SvgOutline.undo
+                accessibleName: qsTr("reset to default")
+                onClicked: moderationField.text = userSettings.getDefaultServiceModeration()
+            }
+
+            AccessibleText {
+                Layout.columnSpan: 2
+                Layout.fillWidth: true
+                topPadding: 10
+                font.bold: true
                 text: "Video upload host"
             }
 
@@ -220,12 +248,14 @@ SkyPage {
         if (newUser) {
             return appViewField.fieldValue !== userSettings.getDefaultServiceAppView() ||
                     chatField.displayText !== userSettings.getDefaultServiceChat() ||
+                    moderationField.displayText !== userSettings.getDefaultServiceModeration() ||
                     videoHostField.displayText !== userSettings.getDefaultServiceVideoHost() ||
                     videoDidField.displayText !== userSettings.getDefaultServiceVideoDid()
         }
 
         return appViewField.fieldValue !== userSettings.getServiceAppView(userDid) ||
                 chatField.displayText !== userSettings.getServiceChat(userDid) ||
+                moderationField.displayText !== userSettings.getServiceModeration(userDid) ||
                 videoHostField.displayText !== userSettings.getServiceVideoHost(userDid) ||
                 videoDidField.displayText !== userSettings.getServiceVideoDid(userDid)
     }
@@ -233,13 +263,14 @@ SkyPage {
     function allFieldsValid() {
         return appViewField.valid &&
                 chatField.valid &&
+                moderationField.valid &&
                 videoHostField.valid &&
                 videoDidField.valid
     }
 
     function saveSettings() {
         if (newUser) {
-            settings(appViewField.fieldValue, chatField.displayText, videoHostField.displayText, videoDidField.displayText)
+            settings(appViewField.fieldValue, chatField.displayText, videoHostField.displayText, videoDidField.displayText, moderationField.displayText)
             return
         }
 
@@ -247,6 +278,7 @@ SkyPage {
         userSettings.setServiceChat(userDid, chatField.displayText)
         userSettings.setServiceVideoHost(userDid, videoHostField.displayText)
         userSettings.setServiceVideoDid(userDid, videoDidField.displayText)
+        userSettings.setServiceModeration(userDid, moderationField.displayText)
     }
 
     function cancel() {

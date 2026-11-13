@@ -103,6 +103,7 @@ bool SessionManager::resumeAndRefreshSession(const QString& did)
     rawBsky->setServiceChat(mUserSettings->getServiceChat(did));
     rawBsky->setServiceHostVideo(mUserSettings->getServiceVideoHost(did));
     rawBsky->setServiceDidVideo(mUserSettings->getServiceVideoDid(did));
+    rawBsky->setServiceModeration(mUserSettings->getServiceModeration(did));
     auto* bsky = rawBsky.get();
     Session::Ptr managedSession = createSession(did, std::move(rawBsky), bsky);
     insertSession(did, std::move(managedSession));

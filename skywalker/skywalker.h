@@ -107,16 +107,17 @@ public:
                            bool rememberPassword, const QString authFactorToken,
                            bool setAdvancedSettings = false, const QString serviceAppView = "",
                            const QString serviceChat = "", const QString serviceVideoHost = "",
-                           const QString serviceVideoDid = "");
+                           const QString serviceVideoDid = "", const QString serviceModeration = "");
     Q_INVOKABLE void loginWithOAuth(const QString host, const QString handle, const QString& did,
                                     bool setAdvancedSettings = false, const QString serviceAppView = "",
                                     const QString serviceChat = "", const QString serviceVideoHost = "",
-                                    const QString serviceVideoDid = "");
+                                    const QString serviceVideoDid = "", const QString serviceModeration = "");
     Q_INVOKABLE void loginWithOAuthFailed(const QString code, const QString error, const QString host, const QString user);
     void loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
                                  bool setAdvancedSettings, const QString serviceAppView,
                                  const QString serviceChat, const QString serviceVideoHost,
-                                 const QString serviceVideoDid, const QString& dpopKeyAlias);
+                                 const QString serviceVideoDid, const QString serviceModeration,
+                                const QString& dpopKeyAlias);
     Q_INVOKABLE bool autoLogin();
     Q_INVOKABLE bool resumeAndRefreshSession();
     Q_INVOKABLE void deleteSession();
@@ -446,10 +447,11 @@ private:
     void updateServiceChat(const QString& did);
     void updateServiceVideoHost(const QString& did);
     void updateServiceVideoDid(const QString& did);
+    void updateServiceModeration(const QString& did);
     void updateAdvancedSettings(const QString& did,
                                 bool setAdvancedSettings, const QString& serviceAppView,
                                 const QString& serviceChat, const QString& serviceVideoHost,
-                                const QString& serviceVideoDid);
+                                const QString& serviceVideoDid, const QString& serviceModeration);
     void updateGlobalFeedOrder();
     void updateContentFilterStats();
     void handleShowLink(const QString& url);

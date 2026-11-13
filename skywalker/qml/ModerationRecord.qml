@@ -90,6 +90,9 @@ SkyHighlightRectangle {
         if (ozoneEntity.subjectType === QEnums.OZONE_REPORT_SUBJECT_UNKNOWN)
             return false
 
+        if (ozoneEntity.subjectType === QEnums.OZONE_REPORT_SUBJECT_REPO_REF && author.isNull())
+            return false
+
         if (ozoneEntity.subjectType !== QEnums.OZONE_REPORT_SUBJECT_STRONG_REF)
             return true
 

@@ -17,6 +17,7 @@ SkyPage {
     property string serviceChat
     property string serviceVideoHost
     property string serviceVideoDid
+    property string serviceModeration
     property Skywalker skywalker: root.getSkywalker()
     property UserSettings userSettings: skywalker.getUserSettings()
     readonly property string sideBarTitle: isNewAccount() ? qsTr("Add Account") : qsTr("Login")
@@ -32,7 +33,8 @@ SkyPage {
                     string serviceAppView,
                     string serviceChat,
                     string serviceVideoHost,
-                    string serviceVideoDid)
+                    string serviceVideoDid,
+                    string serviceModeration)
     signal canceled
 
     id: loginPage
@@ -282,7 +284,8 @@ SkyPage {
                                        loginPage.serviceAppView,
                                        loginPage.serviceChat,
                                        loginPage.serviceVideoHost,
-                                       loginPage.serviceVideoDid)
+                                       loginPage.serviceVideoDid,
+                                       loginPage.serviceModeration)
                 }
             }
         }
@@ -441,7 +444,8 @@ SkyPage {
                                        loginPage.serviceAppView,
                                        loginPage.serviceChat,
                                        loginPage.serviceVideoHost,
-                                       loginPage.serviceVideoDid)
+                                       loginPage.serviceVideoDid,
+                                       loginPage.serviceModeration)
                 }
             }
 
@@ -516,11 +520,12 @@ SkyPage {
     function editAdvancedSettings() {
         let component = guiSettings.createComponent("AdvancedSettingsForm.qml")
         let form = component.createObject(loginPage, { newUser: isNewAccount(), userDid: did })
-        form.onSettings.connect((serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid) => {
+        form.onSettings.connect((serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid, serviceModeration) => {
                 loginPage.serviceAppView = serviceAppView
                 loginPage.serviceChat = serviceChat
                 loginPage.serviceVideoHost = serviceVideoHost
                 loginPage.serviceVideoDid = serviceVideoDid
+                loginPage.serviceModeration = serviceModeration
                 loginPage.setAdvancedSettings = true
         })
         form.onClosed.connect(() => { popStack() })

@@ -176,7 +176,6 @@ public:
     Q_INVOKABLE void setServiceAppView(const QString& did, const QString& service);
     Q_INVOKABLE QString getServiceAppView(const QString& did) const;
     Q_INVOKABLE QString getDefaultServiceAppView() const;
-
     Q_INVOKABLE QList<ATProto::ServiceInfo> getServiceAppViewList() const;
 
     Q_INVOKABLE void setServiceChat(const QString& did, const QString& service);
@@ -190,6 +189,10 @@ public:
     Q_INVOKABLE void setServiceVideoDid(const QString& did, const QString& serviceDid);
     Q_INVOKABLE QString getServiceVideoDid(const QString& did) const;
     Q_INVOKABLE QString getDefaultServiceVideoDid() const;
+
+    Q_INVOKABLE void setServiceModeration(const QString& did, const QString& service);
+    Q_INVOKABLE QString getServiceModeration(const QString& did) const;
+    Q_INVOKABLE QString getDefaultServiceModeration() const;
 
     void saveSession(const ATProto::ComATProtoServer::Session& session);
     ATProto::ComATProtoServer::Session getSession(const QString& did) const;
@@ -612,6 +615,7 @@ signals:
     void serviceChatChanged(QString did);
     void serviceVideoHostChanged(QString did);
     void serviceVideoDidChanged(QString did);
+    void serviceModerationChanged(QString did);
     void feedHideRepliesChanged(QString did, QString feedUri);
     void feedHideFollowingChanged(QString did, QString feedUri);
 

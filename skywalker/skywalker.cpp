@@ -115,6 +115,7 @@ Skywalker::Skywalker(QObject* parent) :
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
+    connect(&mUserSettings, &UserSettings::serviceModerationChanged, this, &Skywalker::updateServiceModeration);
     connect(&mUserSettings, &UserSettings::globalFeedOrderChanged, this, &Skywalker::updateGlobalFeedOrder);
     connect(&mUserSettings, &UserSettings::contentFilterStatsEnabledChanged, this, & Skywalker::updateContentFilterStats);
 
@@ -221,6 +222,7 @@ Skywalker::Skywalker(const QString& did, ATProto::Client::SharedPtr bsky, QObjec
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
     connect(&mUserSettings, &UserSettings::serviceVideoHostChanged, this, &Skywalker::updateServiceVideoHost);
     connect(&mUserSettings, &UserSettings::serviceVideoDidChanged, this, &Skywalker::updateServiceVideoDid);
+    connect(&mUserSettings, &UserSettings::serviceModerationChanged, this, &Skywalker::updateServiceModeration);
     connect(&mUserSettings, &UserSettings::globalFeedOrderChanged, this, &Skywalker::updateGlobalFeedOrder);
     connect(&mUserSettings, &UserSettings::contentFilterStatsEnabledChanged, this, & Skywalker::updateContentFilterStats);
 
@@ -291,7 +293,7 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
                                   bool rememberPassword, const QString authFactorToken,
                                   bool setAdvancedSettings, const QString serviceAppView,
                                   const QString serviceChat, const QString serviceVideoHost,
-                                  const QString serviceVideoDid)
+                                  const QString serviceVideoDid, const QString serviceModeration)
 {
     qDebug() << "Login with password:" << user << "host:" << host;
     auto xrpc = std::make_unique<Xrpc::Client>(NetworkHolder::network(), host);
@@ -300,13 +302,13 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
 
     mBsky->createSession(user, password, Utils::makeOptionalString(authFactorToken),
         [this, host, user, password, rememberPassword, setAdvancedSettings,
-         serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid]{
+         serviceAppView, serviceChat, serviceVideoHost, serviceVideoDid, serviceModeration]{
             qDebug() << "Login" << user << "succeeded";
             const auto* session = mBsky->getSession();
             const QString& did = session->mDid;
             updateUser(did, host);
             updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
-                                   serviceVideoHost, serviceVideoDid);
+                                   serviceVideoHost, serviceVideoDid, serviceModeration);
 
             mUserSettings.setOAuthEnabled(did, false);
             mUserSettings.saveSession(*session);
@@ -331,7 +333,7 @@ void Skywalker::loginWithPassword(const QString host, const QString user, QStrin
 void Skywalker::loginWithOAuth(const QString host, QString handle, const QString& did,
                                bool setAdvancedSettings, const QString serviceAppView,
                                const QString serviceChat, const QString serviceVideoHost,
-                               const QString serviceVideoDid)
+                               const QString serviceVideoDid, const QString serviceModeration)
 {
     qDebug() << "Login with OAuth:" << handle << "did:" << did << "host:" << host;
     const QString user = did.isEmpty() ? handle : did;
@@ -341,17 +343,18 @@ void Skywalker::loginWithOAuth(const QString host, QString handle, const QString
 
     mBsky->oauthLogin(handle, did, OAuthController::getClientId(), OAuthController::REDIRECT_URL, OAuthController::getScope(),
         [this, host, user, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
-         serviceVideoDid](QUrl redirectUrl, QString dpopKeyAlias)
+         serviceVideoDid, serviceModeration](QUrl redirectUrl, QString dpopKeyAlias)
         {
             qDebug() << "Login" << user << "succeeded, redirectUrl:" << redirectUrl;
             mOAuthController = std::make_unique<OAuthController>();
 
             const bool started = mOAuthController->start(
                 [this, host, user, setAdvancedSettings, serviceAppView, serviceChat,
-                 serviceVideoHost, serviceVideoDid, dpopKeyAlias](QUrl url)
+                 serviceVideoHost, serviceVideoDid, serviceModeration, dpopKeyAlias](QUrl url)
                 {
                     loginWithOAuthContinue(url, host, user, setAdvancedSettings, serviceAppView,
-                                           serviceChat, serviceVideoHost, serviceVideoDid, dpopKeyAlias);
+                                           serviceChat, serviceVideoHost, serviceVideoDid,
+                                           serviceModeration, dpopKeyAlias);
                 });
 
             if (!started)
@@ -382,20 +385,21 @@ void Skywalker::loginWithOAuthFailed(const QString code, const QString error, co
 void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, const QString user,
                                         bool setAdvancedSettings, const QString serviceAppView,
                                         const QString serviceChat, const QString serviceVideoHost,
-                                        const QString serviceVideoDid, const QString& dpopKeyAlias)
+                                        const QString serviceVideoDid, const QString serviceModeration,
+                                       const QString& dpopKeyAlias)
 {
     qDebug() << "Continue login:" << url << "host:" << host << "user:" << user;
     emit loginOAuthContinue();
 
     mBsky->oauthLoginContinue(url,
         [this, host, setAdvancedSettings, serviceAppView, serviceChat, serviceVideoHost,
-         serviceVideoDid, dpopKeyAlias](QString did, QString scope, QString accessToken, QString refreshToken){
+         serviceVideoDid, serviceModeration, dpopKeyAlias](QString did, QString scope, QString accessToken, QString refreshToken){
             qDebug() << "Got tokens, did:" << did << "scope:" << scope << "access:" << accessToken << "refresh:" << refreshToken;
             mOAuthController.reset();
             const auto* session = mBsky->getSession();
             updateUser(did, host);
             updateAdvancedSettings(did, setAdvancedSettings, serviceAppView, serviceChat,
-                                   serviceVideoHost, serviceVideoDid);
+                                   serviceVideoHost, serviceVideoDid, serviceModeration);
 
             mUserSettings.setOAuthEnabled(did, true);
             mUserSettings.saveSession(*session);
@@ -431,7 +435,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
 void Skywalker::updateAdvancedSettings(const QString& did,
                                        bool setAdvancedSettings, const QString& serviceAppView,
                                        const QString& serviceChat, const QString& serviceVideoHost,
-                                       const QString& serviceVideoDid)
+                                       const QString& serviceVideoDid, const QString& serviceModeration)
 {
     if (setAdvancedSettings)
     {
@@ -440,6 +444,7 @@ void Skywalker::updateAdvancedSettings(const QString& did,
         mUserSettings.setServiceChat(did, serviceChat);
         mUserSettings.setServiceVideoHost(did, serviceVideoHost);
         mUserSettings.setServiceVideoDid(did, serviceVideoDid);
+        mUserSettings.setServiceModeration(did, serviceModeration);
     }
     else
     {
@@ -447,6 +452,7 @@ void Skywalker::updateAdvancedSettings(const QString& did,
         mBsky->setServiceChat(mUserSettings.getServiceChat(did));
         mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(did));
         mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+        mBsky->setServiceModeration(mUserSettings.getServiceModeration(did));
     }
 }
 
@@ -513,6 +519,7 @@ bool Skywalker::resumeAndRefreshSession()
     mBsky->setServiceChat(mUserSettings.getServiceChat(session->mDid));
     mBsky->setServiceHostVideo(mUserSettings.getServiceVideoHost(session->mDid));
     mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(session->mDid));
+    mBsky->setServiceModeration(mUserSettings.getServiceModeration(session->mDid));
 
     // User DID must be set before inserting sessions in the session manager
     mUserDid = session->mDid;
@@ -5658,6 +5665,12 @@ void Skywalker::updateServiceVideoDid(const QString& did)
 {
     if (mBsky && mBsky->getSessionDid() == did)
         mBsky->setServiceDidVideo(mUserSettings.getServiceVideoDid(did));
+}
+
+void Skywalker::updateServiceModeration(const QString& did)
+{
+    if (mBsky && mBsky->getSessionDid() == did)
+        mBsky->setServiceModeration(mUserSettings.getServiceModeration(did));
 }
 
 void Skywalker::updateGlobalFeedOrder()
