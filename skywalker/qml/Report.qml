@@ -18,6 +18,7 @@ SkyPage {
     property basicprofile authorStatusAuthor
     property string convoId
     property messageview message
+    property convoview convo
     property int categoryType: QEnums.REPORT_CATEGORY_TYPE_NULL // QEnums.CategoryType
     property int reasonType: QEnums.REPORT_REASON_TYPE_NULL // QEnums.ReasonType
     readonly property string details: detailsText.text
@@ -131,6 +132,9 @@ SkyPage {
 
             if (quoteAuthorStatus.visible)
                 return quoteAuthorStatus.height
+
+            if (quoteConvo.visible)
+                return quoteConvo.height
         }
 
         RowLayout {
@@ -224,6 +228,14 @@ SkyPage {
             author: page.authorStatusAuthor
             authorStatus: page.authorStatus
             visible: !page.authorStatus.isNull()
+        }
+
+        QuoteConvo {
+            id: quoteConvo
+            width: parent.width
+            userDid: page.userDid
+            convo: page.convo
+            visible: !page.convo.isNull()
         }
     }
 
@@ -501,6 +513,9 @@ SkyPage {
         else if (!authorStatus.isNull()) {
             reportUtils.reportRecord(authorStatus.uri, authorStatus.cid, reasonType, details, labelerDid)
         }
+        else if (!convo.isNull()) {
+            reportUtils.reportConvo(convo.getOwner().basicProfile.did, convo.id, reasonType, details)
+        }
     }
 
     function getReportTitle() {
@@ -517,7 +532,9 @@ SkyPage {
         if (!starterPack.isNull())
             return qsTr("Report starter pack")
         if (!authorStatus.isNull())
-            return qsTr("Livestream")
+            return qsTr("Report livestream")
+        if (!convo.isNull())
+            return qsTr("Report chat")
 
         console.warn("UKNOWN REPORT")
         return "Report"

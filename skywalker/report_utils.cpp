@@ -85,6 +85,29 @@ void ReportUtils::reportDirectMessage(const QString& did, const QString& convoId
         });
 }
 
+void ReportUtils::reportConvo(const QString& did, const QString& convoId,
+                              QEnums::ReportReasonType reasonType, const QString& details)
+{
+    qDebug() << "Report convo:" << did << convoId << reasonType << details;
+
+    bskyClient()->reportChatConvo(did, convoId,
+        ATProto::ComATProtoModeration::ReasonType(reasonType), details, getModToolName(),
+        [this, presence=getPresence()]{
+            if (!presence)
+                return;
+
+            qDebug() << "Report convo succeeded";
+            emit reportOk();
+        },
+        [this, presence=getPresence()](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qWarning() << "Report convo failed:" << error << " - " << msg;
+            emit reportFailed(msg);
+        });
+}
+
 ReportCategory::List ReportUtils::getReportCategories()
 {
     ReportCategory::List categories;

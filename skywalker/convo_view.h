@@ -61,7 +61,7 @@ public:
     bool isRequestToJoin() const { return mIsRequestToJoin; }
     QDateTime getJoinRequestedAt() const;
 
-    // Returns null profile for direct convo
+    // Returns member for direct convo
     Q_INVOKABLE ChatBasicProfile getOwner() const;
 
     Q_INVOKABLE ChatBasicProfile getMember(const QString& did) const;

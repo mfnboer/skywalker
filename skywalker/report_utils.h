@@ -26,6 +26,8 @@ public:
                                   const QString& details, const QString& labelerDid = "");
     Q_INVOKABLE void reportDirectMessage(const QString& did, const QString& convoId, const QString& messageId,
                                          QEnums::ReportReasonType reasonType, const QString& details);
+    Q_INVOKABLE void reportConvo(const QString& did, const QString& convoId,
+                                 QEnums::ReportReasonType reasonType, const QString& details);
 
     Q_INVOKABLE static ReportCategory::List getReportCategories();
     Q_INVOKABLE static ReportReason::List getReportReasons(QEnums::ReportCategoryType category);

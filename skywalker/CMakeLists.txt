@@ -833,6 +833,7 @@ qt_add_qml_module(libskywalker
         SOURCES ozone_inbox.cpp
         QML_FILES qml/SettingsModerationInbox.qml
         QML_FILES qml/QuoteActorStatus.qml
+        QML_FILES qml/QuoteConvo.qml
 )
 
 target_link_libraries(libskywalker

@@ -97,6 +97,7 @@ SkyPage {
                 onUnmuteConvo: (convo) => chat.unmuteConvo(convo.id)
                 onBlockAuthor: (author) => root.blockAuthor(author)
                 onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
+                onReportConvo: (convo) => page.reportConvo(convo)
             }
 
             FlickableRefresher {
@@ -274,6 +275,15 @@ SkyPage {
                     chat.leaveConvo(convo.id)
                     yesCb()
                 })
+    }
+
+    function reportConvo(convo) {
+        let component = guiSettings.createComponent("Report.qml")
+        let form = component.createObject(page, {
+                userDid: skywalker.getUserDid(),
+                convo: convo })
+        form.onClosed.connect(() => { root.popStack() })
+        root.pushStack(form)
     }
 
     function viewMessages(convo, insertIfNotPresent = false) {

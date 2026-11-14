@@ -61,7 +61,12 @@ ConvoView::ConvoView(const ATProto::ChatBskyGroup::JoinRequestConvoView& joinReq
 ChatBasicProfile ConvoView::getOwner() const
 {
     if (mKind != QEnums::CONVO_KIND_GROUP)
-        return {};
+    {
+        if (mMembers.empty())
+            return {};
+
+        return mMembers.front();
+    }
 
     for (const auto& member : mMembers)
     {

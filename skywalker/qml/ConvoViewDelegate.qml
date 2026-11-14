@@ -24,6 +24,7 @@ Rectangle {
     signal unblockAuthor(basicprofile author)
     signal acceptConvo(convoview convo)
     signal blockAndDeleteConvo(convoview convo, basicprofile author)
+    signal reportConvo(convoview convo)
 
     id: convoRect
     height: convoRow.height + (endOfFeedText.visible ? endOfFeedText.height : 0)
@@ -365,6 +366,13 @@ Rectangle {
                             popup: moreMenu
                             visible: convo.isRequestToJoin
                             onClicked: root.cancelJoinRequest(convo)
+                        }
+                        SkyMenuButton {
+                            text: qsTr("Report chat")
+                            svg: SvgOutline.report
+                            popup: moreMenu
+                            visible: !convo.getOwner().isNull()
+                            onClicked: reportConvo(convo)
                         }
                     }
                 }

@@ -13,7 +13,7 @@ Column {
 
     PostHeaderWithAvatar {
         width: parent.width - 20
-        userDid:quoteColumn.userDid
+        userDid: quoteColumn.userDid
         author: quoteColumn.author
         showPronouns: true
     }
