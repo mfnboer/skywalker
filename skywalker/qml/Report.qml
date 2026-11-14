@@ -16,6 +16,8 @@ SkyPage {
     property starterpackview starterPack
     property actorstatusview authorStatus
     property basicprofile authorStatusAuthor
+    property profilelinkview profileLink
+    property basicprofile profileLinkAuthor
     property string convoId
     property messageview message
     property convoview convo
@@ -135,6 +137,9 @@ SkyPage {
 
             if (quoteConvo.visible)
                 return quoteConvo.height
+
+            if (quoteProfileLink.visible)
+                return quoteProfileLink.height
         }
 
         RowLayout {
@@ -237,6 +242,16 @@ SkyPage {
             convo: page.convo
             visible: !page.convo.isNull()
         }
+
+        QuoteProfileLink {
+            id: quoteProfileLink
+            width: parent.width
+            userDid: page.userDid
+            link: page.profileLink
+            author: page.profileLinkAuthor
+            backgroundColor: parent.color.toString()
+            visible: !page.profileLink.isEmpty()
+        }
     }
 
     Flickable {
@@ -269,7 +284,7 @@ SkyPage {
             width: parent.width - 20
             height: visible ? implicitHeight : 0
             model: skywalker.getAuthorListModel(page.labelerAuthorListModelId)
-            enabled: count > 1 && message.isNull()
+            enabled: count > 1 && message.isNull() && convo.isNull()
         }
 
         AccessibleText {
@@ -516,6 +531,9 @@ SkyPage {
         else if (!convo.isNull()) {
             reportUtils.reportConvo(convo.getOwner().basicProfile.did, convo.id, reasonType, details)
         }
+        else if( !profileLink.isEmpty()) {
+            reportUtils.reportRecord(profileLink.uri, profileLink.cid, reasonType, details, labelerDid)
+        }
     }
 
     function getReportTitle() {
@@ -535,6 +553,8 @@ SkyPage {
             return qsTr("Report livestream")
         if (!convo.isNull())
             return qsTr("Report chat")
+        if (!profileLink.isEmpty())
+            return qsTr("Report profile link")
 
         console.warn("UKNOWN REPORT")
         return "Report"

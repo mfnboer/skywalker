@@ -1,6 +1,7 @@
 next
 ====
 * Moderation inbox
+* Options to report livestreams, profile links, chats
 * Removed website field from profile (deprecated in favor of profile links)
 * Bug fixes
 

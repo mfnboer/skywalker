@@ -834,6 +834,9 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/SettingsModerationInbox.qml
         QML_FILES qml/QuoteActorStatus.qml
         QML_FILES qml/QuoteConvo.qml
+        QML_FILES qml/ProfileLinkList.qml
+        QML_FILES qml/QuoteProfileLink.qml
+        QML_FILES qml/ProfileLinkRow.qml
 )
 
 target_link_libraries(libskywalker

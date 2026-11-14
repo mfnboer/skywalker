@@ -57,6 +57,7 @@ class SvgOutline : public QObject
     Q_PROPERTY(SvgImage* focusHashtag MEMBER sSunny CONSTANT FINAL)
     Q_PROPERTY(SvgImage* following MEMBER sPatientList CONSTANT FINAL)
     Q_PROPERTY(SvgImage* gallery MEMBER sGalleryThumbnail CONSTANT FINAL)
+    Q_PROPERTY(SvgImage* globe MEMBER sPublic CONSTANT FINAL)
     Q_PROPERTY(SvgImage* googleTranslate MEMBER sGTranslate CONSTANT FINAL)
     Q_PROPERTY(SvgImage* group MEMBER sGroup CONSTANT FINAL)
     Q_PROPERTY(SvgImage* hashtag MEMBER sTag CONSTANT FINAL)

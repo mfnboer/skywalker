@@ -393,6 +393,13 @@ SkyPage {
                                 onClicked: root.reportAuthor(author, userDid)
                             }
                             SkyMenuButton {
+                                text: qsTr("Report a link")
+                                svg: SvgOutline.report
+                                popup: moreMenu
+                                visible: !page.isUser(author) && authorLinks.length > 0
+                                onClicked: page.reportLink()
+                            }
+                            SkyMenuButton {
                                 text: qsTr("Emoji names")
                                 svg: SvgOutline.emojiLanguage
                                 popup: moreMenu
@@ -2122,6 +2129,28 @@ SkyPage {
             profileUtils.undoLikeLabeler(likeUri)
         else
             profileUtils.likeLabeler(uri, cid)
+    }
+
+    function reportProfileLink(link) {
+        let component = guiSettings.createComponent("Report.qml")
+        let form = component.createObject(page, {
+            userDid: page.userDid,
+            profileLink: link,
+            profileLinkAuthor: page.author
+        })
+        form.onClosed.connect(() => { root.popStack() })
+        root.pushStack(form)
+    }
+
+    function reportLink() {
+        let component = guiSettings.createComponent("ProfileLinkList.qml")
+        let form = component.createObject(page, { links: authorLinks })
+        form.onClicked.connect((link) => {
+            root.popStack()
+            reportProfileLink(link)
+        })
+        form.onClosed.connect(() => { root.popStack() })
+        root.pushStack(form)
     }
 
     function isUserDid(did) {
