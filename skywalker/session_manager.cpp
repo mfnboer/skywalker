@@ -343,6 +343,9 @@ void SessionManager::deleteSession(const QString& did)
     mExpiredUsers.push_back(std::move(nonActiveUser));
 
     qDebug() << "Session expired:" << did;
+    mNonActiveUsers.erase(
+        std::remove_if(mNonActiveUsers.begin(), mNonActiveUsers.end(), [did](NonActiveUser* user){ return user->getProfile().getDid() == did; })
+    );
 
     if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
         emit nonActiveNotificationsChanged();

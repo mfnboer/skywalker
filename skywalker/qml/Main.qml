@@ -1485,7 +1485,7 @@ ApplicationWindow {
                     if (profile.did === skywalker.getUserDid())
                         signOutCurrentUser()
                     else
-                        skywalker.getSessionManageer().deleteSession(profile.did)
+                        skywalker.getSessionManager().deleteSession(profile.did)
 
                     let userSettings = skywalker.getUserSettings()
                     userSettings.removeUser(profile.did)
