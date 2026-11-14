@@ -282,5 +282,7 @@ SkyPage {
 
         if (allVisible || onlyChatVisible)
             chatNotificationUtils.getChatNotificationPrefs()
+
+        flick.forceActiveFocus()
     }
 }
