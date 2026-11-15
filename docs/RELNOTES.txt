@@ -1,9 +1,10 @@
-next
+4.49
 ====
 * Moderation inbox
 * Options to report livestreams, profile links, chats
 * Moved avatar on profile page to the left
 * Removed website field from profile (deprecated in favor of profile links)
+* Revert to Qt6.11.2
 * Bug fixes
 
 4.48
