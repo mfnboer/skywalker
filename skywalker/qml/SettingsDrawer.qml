@@ -97,7 +97,12 @@ SkyDrawer {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: userStandingClicked()
+                        onClicked: {
+                            if (ozoneInbox.userAccountStatus.standing !== QEnums.OZONE_ACCOUNT_STANDING_GOOD)
+                                userStandingClicked()
+                            else
+                                moderationInbox()
+                        }
                     }
                 }
 
