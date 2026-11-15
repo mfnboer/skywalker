@@ -57,6 +57,9 @@ TextEdit {
     Accessible.multiLine: true
 
     onCursorRectangleChanged: {
+        if (!activeFocus)
+            return
+
         let editMentionY = facetUtils.editMentionCursorY
         let editTagY = facetUtils.editTagCursorY
         let editCashtagY = facetUtils.editCashtagCursorY

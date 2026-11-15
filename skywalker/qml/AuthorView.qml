@@ -207,7 +207,7 @@ SkyPage {
 
                 Rectangle {
                     id: avatar
-                    x: parent.width - width - 10
+                    x: 10
                     y: parent.height - height / 2
                     width: 104
                     height: width
@@ -240,6 +240,8 @@ SkyPage {
             }
 
             RowLayout {
+                anchors.right: parent.right
+                anchors.rightMargin: 10
                 height: 50
                 spacing: 0
 
@@ -250,6 +252,64 @@ SkyPage {
                     onClicked: editAuthor(author)
                     accessibleName: qsTr("edit your profile")
                     visible: page.isUser(author)
+                }
+
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    text: qsTr("Follow")
+                    visible: !following && !page.isUser(author) && contentVisible() && !isLabeler
+                    onClicked: graphUtils.follow(author)
+                    Accessible.name: qsTr(`press to follow ${author.name}`)
+                }
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    flat: true
+                    text: qsTr("Following")
+                    visible: following && !page.isUser(author) && contentVisible() && !isLabeler
+                    onClicked: graphUtils.unfollow(author.did, following)
+                    Accessible.name: qsTr(`press to unfollow ${author.name}`)
+                }
+
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    text: qsTr("Subscribe")
+                    visible: !isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
+                    onClicked: contentGroupListModel.fixedLabelerEnabled = true
+                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
+                }
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    flat: true
+                    text: qsTr("Unsubscribe")
+                    visible: isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
+                    onClicked: contentGroupListModel.fixedLabelerEnabled = false
+                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
+                }
+
+                SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
+                    svg: SvgOutline.notificationsAdd
+                    visible: !page.isUser(author) && !activitySubscription.isSubscribed && author.allowsActivitySubscriptions()
+                    onClicked: subscribeActivity()
+                    Accessible.name: qsTr(`press to subscribe to posts from ${author.name}`)
+                }
+                SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
+                    svg: SvgFilled.notificationsActive
+                    visible: !page.isUser(author) && activitySubscription.isSubscribed
+                    onClicked: subscribeActivity()
+                    Accessible.name: qsTr(`press to modify post subscription from ${author.name}`)
+                }
+
+                SvgButton {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: width
+                    svg: SvgOutline.directMessage
+                    accessibleName: qsTr(`direct message ${author.name}`)
+                    onClicked: skywalker.chat.startConvoForMember(author.did)
+                    visible: author.canSendDirectMessage() && !page.isUser(author) && skywalker.chat && !skywalker.chat.messageConvoOpen()
                 }
 
                 SvgButton {
@@ -415,80 +475,6 @@ SkyPage {
                             }
                         }
                     }
-                }
-
-                SvgButton {
-                    Layout.preferredWidth: 40
-                    Layout.preferredHeight: width
-                    svg: SvgOutline.notificationsAdd
-                    visible: !page.isUser(author) && !activitySubscription.isSubscribed && author.allowsActivitySubscriptions()
-                    onClicked: subscribeActivity()
-                    Accessible.name: qsTr(`press to subscribe to posts from ${author.name}`)
-                }
-                SvgButton {
-                    Layout.preferredWidth: 40
-                    Layout.preferredHeight: width
-                    svg: SvgFilled.notificationsActive
-                    visible: !page.isUser(author) && activitySubscription.isSubscribed
-                    onClicked: subscribeActivity()
-                    Accessible.name: qsTr(`press to modify post subscription from ${author.name}`)
-                }
-
-                SvgButton {
-                    Layout.preferredWidth: 40
-                    Layout.preferredHeight: width
-                    svg: SvgOutline.directMessage
-                    accessibleName: qsTr(`direct message ${author.name}`)
-                    onClicked: skywalker.chat.startConvoForMember(author.did)
-                    visible: author.canSendDirectMessage() && !page.isUser(author) && skywalker.chat && !skywalker.chat.messageConvoOpen()
-                }
-
-                SkyButton {
-                    Layout.preferredHeight: 40
-                    text: qsTr("Follow")
-                    visible: !following && !page.isUser(author) && contentVisible() && !isLabeler
-                    onClicked: graphUtils.follow(author)
-                    Accessible.name: qsTr(`press to follow ${author.name}`)
-                }
-                SkyButton {
-                    Layout.preferredHeight: 40
-                    flat: true
-                    text: qsTr("Following")
-                    visible: following && !page.isUser(author) && contentVisible() && !isLabeler
-                    onClicked: graphUtils.unfollow(author.did, following)
-                    Accessible.name: qsTr(`press to unfollow ${author.name}`)
-                }
-
-                SkyButton {
-                    Layout.preferredHeight: 40
-                    text: qsTr("Subscribe")
-                    visible: !isSubscribed && isLabeler && !author.isFixedLabeler()
-                    onClicked: contentGroupListModel.subscribed = true
-                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
-                }
-                SkyButton {
-                    Layout.preferredHeight: 40
-                    flat: true
-                    text: qsTr("Unsubscribe")
-                    visible: isSubscribed && isLabeler && !author.isFixedLabeler() && !showLabelPrefsForListUri
-                    onClicked: contentGroupListModel.subscribed = false
-                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
-                }
-
-                SkyButton {
-                    Layout.preferredHeight: 40
-                    text: qsTr("Subscribe")
-                    visible: !isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
-                    onClicked: contentGroupListModel.fixedLabelerEnabled = true
-                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
-                }
-                SkyButton {
-                    Layout.preferredHeight: 40
-                    flat: true
-                    text: qsTr("Unsubscribe")
-                    visible: isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
-                    onClicked: contentGroupListModel.fixedLabelerEnabled = false
-                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
                 }
             }
 

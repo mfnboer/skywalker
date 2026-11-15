@@ -68,7 +68,8 @@ Rectangle {
         onEditingFinished: skyTextInput.editingFinished()
 
         onCursorRectangleChanged: {
-            ensureVisible(cursorRectangle)
+            if (activeFocus)
+                ensureVisible(cursorRectangle)
         }
 
         onFocusChanged: {

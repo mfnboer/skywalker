@@ -190,7 +190,7 @@ SkyPage {
 
                     Rectangle {
                         id: avatarRect
-                        x: parent.width - width - 10
+                        x: 10
                         y: parent.height - height / 2
                         width: 104
                         height: width
@@ -254,7 +254,7 @@ SkyPage {
                     width: parent.width
                     topPadding: 10
                     bottomPadding: 10
-                    focus: true
+                    focus: false
                     parentFlick: flick
                     initialText: authorName
                     placeholderText: qsTr("Your name")
@@ -293,7 +293,7 @@ SkyPage {
                     width: parent.width
                     topPadding: 10
                     bottomPadding: 10
-                    focus: true
+                    focus: false
                     parentFlick: flick
                     initialText: authorPronouns
                     placeholderText: qsTr("Your pronouns")
@@ -715,6 +715,5 @@ SkyPage {
 
     Component.onCompleted: {
         checkLinkChangesMade()
-        nameField.forceActiveFocus()
     }
 }

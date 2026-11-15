@@ -979,6 +979,7 @@ SkyPage {
         console.debug("Max input text height:", maxInputTextHeight)
         moveToMessage(-1)
         initHandlers()
+        newMessageText.ensureVisible(newMessageText.cursorRectangle)
         sendButton.forceActiveFocus()
     }
 }
