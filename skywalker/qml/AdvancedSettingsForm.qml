@@ -39,6 +39,11 @@ SkyPage {
         }
     }
 
+    footer: Item {
+        width: page.width
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0
+    }
+
     Flickable {
         id: flick
         anchors.fill: parent

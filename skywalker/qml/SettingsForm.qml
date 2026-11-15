@@ -33,7 +33,7 @@ SkyPage {
                 return
 
             const dh = height - prevHeight
-            flick.contentY += dh
+            flickSettings.contentY += dh
             prevHeight = height
         }
 
@@ -42,8 +42,13 @@ SkyPage {
         }
     }
 
+    footer: Item {
+        width: page.width
+        height: keyboardHandler.keyboardVisible ? keyboardHandler.keyboardHeight : 0
+    }
+
     Flickable {
-        id: flick
+        id: flickSettings
         anchors.fill: parent
         clip: true
         contentWidth: parent.width
@@ -55,6 +60,7 @@ SkyPage {
             width: parent.width
 
             SettingsAccount {
+                id: settingsAccount
                 Layout.leftMargin: 10
                 Layout.rightMargin: 10
                 Layout.fillWidth: true
@@ -169,7 +175,7 @@ SkyPage {
                 userPrefs: page.userPrefs
                 visible: allVisible
 
-                onOffsetY: (dy) => flick.contentY += dy
+                onOffsetY: (dy) => flickSettings.contentY += dy
                 onFontScaleChanged: page.header.initPrevHeight()
             }
 
@@ -258,6 +264,10 @@ SkyPage {
         }
     }
 
+    VirtualKeyboardHandler {
+        id: keyboardHandler
+    }
+
     function saveAndClose() {
         console.debug("Save settings")
         skywalker.saveUserPreferences()
@@ -282,7 +292,5 @@ SkyPage {
 
         if (allVisible || onlyChatVisible)
             chatNotificationUtils.getChatNotificationPrefs()
-
-        flick.forceActiveFocus()
     }
 }

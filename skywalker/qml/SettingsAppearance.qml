@@ -472,6 +472,7 @@ ColumnLayout {
                 width: parent.width
                 topPadding: 10
                 bottomPadding: 10
+                parentFlick: flickSettings // in SettingsForm.qml
                 maxLength: 5
                 font.pointSize: guiSettings.scaledFont(1)
                 strictMax: true
@@ -479,6 +480,7 @@ ColumnLayout {
                 inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
                 placeholderText: qsTr("<none>")
                 initialText: userSettings.threadPrefix
+                focus: false
 
                 onTextChanged: userSettings.threadPrefix = text
             }

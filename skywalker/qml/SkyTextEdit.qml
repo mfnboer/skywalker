@@ -60,7 +60,8 @@ TextEdit {
     }
 
     onCursorRectangleChanged: {
-        ensureVisible(cursorRectangle)
+        if (activeFocus)
+            ensureVisible(cursorRectangle)
     }
 
     onFocusChanged: {
@@ -169,6 +170,7 @@ TextEdit {
 
         if (parentFlick) {
             parentFlick.onHeightChanged.connect(() => {
+
                 if (skyTextEdit.activeFocus)
                     skyTextEdit.ensureVisible(skyTextEdit.cursorRectangle)
             })
