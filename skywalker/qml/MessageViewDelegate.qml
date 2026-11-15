@@ -307,24 +307,23 @@ Rectangle {
             radius: height / 2
             color: guiSettings.backgroundColor
 
-            Row {
-                property var uniqueReactions: message.getUniqueReactions(5)
+            AccessibleText {
+                property list<reactionview> uniqueReactions: message.getUniqueReactions(5)
 
                 id: reactionsRow
                 anchors.centerIn: parent
+                text: getReactionString()
 
-                Repeater {
-                    model: parent.uniqueReactions
+                function getReactionString() {
+                    let s = ""
 
-                    AccessibleText {
-                        font.family: UnicodeFonts.getEmojiFontFamily()
-                        text: modelData.emoji
-                    }
-                }
+                    for (let reaction of uniqueReactions)
+                        s += reaction.emoji
 
-                AccessibleText {
-                    text: ` ${message.reactions.length} `
-                    visible: parent.uniqueReactions.length < message.reactions.length
+                    if (uniqueReactions.length < message.reactions.length)
+                        s += ` ${message.reactions.length} `
+
+                    return s
                 }
             }
 
