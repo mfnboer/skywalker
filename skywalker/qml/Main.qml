@@ -3033,12 +3033,6 @@ ApplicationWindow {
         })
         homePageStack.push(homePage)
         favoritesTabBar.favoritesSwipeView = homePage
-
-        // let chatComponent = guiSettings.createComponent("ConvoListView.qml")
-        // let chatView = chatComponent.createObject(root, { chat: skywalker.chat })
-        // chatView.onClosed.connect(() => { rootContent.currentIndex = rootContent.homePageIndex })
-        // chatStack.push(chatView)
-
         favoritesTabBar.update()
 
         initHandlers()

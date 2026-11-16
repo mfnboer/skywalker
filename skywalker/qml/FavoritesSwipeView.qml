@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import skywalker
 
-SwipeView {
+SkyMultiColumnView {
     required property Skywalker skywalker
     property bool trackLastViewedFeed: false
     property UserSettings userSettings: skywalker.getUserSettings()
@@ -15,13 +15,15 @@ SwipeView {
     interactive: userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
     TimelinePage {
+        readonly property int pageIndex: ObjectModel.index
+        readonly property bool isVisiblePage: view.isVisibleIndex(pageIndex)
         property bool rewindEnabled: userSettings.getRewindToLastSeenPost(skywalker.getUserDid())
 
         id: timelinePage
         skywalker: view.skywalker
 
-        SwipeView.onIsCurrentItemChanged: {
-            if (SwipeView.isCurrentItem) {
+        onIsVisiblePageChanged: {
+            if (isVisiblePage) {
                 console.debug("Current favorite: timeline")
                 unhide()
 
@@ -71,6 +73,8 @@ SwipeView {
                    skywalker.favoriteFeeds.userOrderedPinnedFeeds : []
 
         Loader {
+            readonly property int pageIndex: ObjectModel.index
+            readonly property bool isVisiblePage: view.isVisibleIndex(pageIndex)
             required property int index
             required property var modelData
             property int unreadPosts: 0
@@ -80,8 +84,8 @@ SwipeView {
             sourceComponent: getComponent(modelData)
             active: mustSyncFeed(modelData) // activate at startup if sync is enabled
 
-            SwipeView.onIsCurrentItemChanged: {
-                if (SwipeView.isCurrentItem) {
+            onIsVisiblePageChanged: {
+                if (isVisiblePage) {
                     console.debug("Current favorite:", modelData.name)
 
                     if (active) {

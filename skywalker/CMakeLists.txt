@@ -837,6 +837,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ProfileLinkList.qml
         QML_FILES qml/QuoteProfileLink.qml
         QML_FILES qml/ProfileLinkRow.qml
+        QML_FILES qml/SkyMultiColumnView.qml
 )
 
 target_link_libraries(libskywalker
