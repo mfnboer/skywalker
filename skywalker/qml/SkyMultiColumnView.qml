@@ -5,11 +5,16 @@ Container {
     id: view
 
     property real minPageWidth: 360
+    property int maxColumns: 10
     property bool interactive: true
-    readonly property int columns: Math.max(1, Math.floor(width / minPageWidth))
+    readonly property int columns: Math.min(maxColumns, Math.max(1, Math.floor(width / minPageWidth)))
     readonly property real pageWidth: width / columns
     readonly property int firstVisibleIndex: currentIndex
     readonly property int lastVisibleIndex: currentIndex + columns - 1
+
+    background: Rectangle {
+        color: guiSettings.separatorColor
+    }
 
     contentItem: ListView {
         model: view.contentModel
@@ -22,7 +27,6 @@ Container {
         highlightRangeMode: ListView.StrictlyEnforceRange
         preferredHighlightBegin: 0
         preferredHighlightEnd: 0
-        //highlightMoveDuration: 250
         clip: true
 
         onCurrentIndexChanged: view.setCurrentIndex(currentIndex)

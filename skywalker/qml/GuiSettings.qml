@@ -636,6 +636,29 @@ Item {
         return count === 1 ? qsTr("1 member") : qsTr(`${count} members`)
     }
 
+    function getFeedColumnParent(item) {
+        let p = item.parent
+
+        while (p) {
+            if (p instanceof PostListView)
+                return p
+
+            p = p.parent
+        }
+
+        return null
+    }
+
+    function getFeedColumnIndex(item) {
+        const p = getFeedColumnParent(item)
+        return p ? p.feedColumnIndex : -1
+    }
+
+    function getContentParent(item) {
+        const p = getFeedColumnParent(item)
+        return p ? p : rootContent
+    }
+
     Component.onCompleted: {
         console.debug("Font scale factor:", fontScaleFactor)
         console.debug("Font line spacing:", fontMetrics.lineSpacing)

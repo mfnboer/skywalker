@@ -161,7 +161,7 @@ public:
     Q_INVOKABLE void getQuoteChainNextPage(int modelId);
     Q_INVOKABLE void getAlsoLikedFeed(int modelId, const QString& cursor = {});
     Q_INVOKABLE void getAlsoLikedFeedNextPage(int modelId);
-    Q_INVOKABLE void getPostThread(const QString& uri, QEnums::PostThreadType postThreadType = QEnums::POST_THREAD_NORMAL);
+    Q_INVOKABLE void getPostThread(const QString& uri, QEnums::PostThreadType postThreadType = QEnums::POST_THREAD_NORMAL, int feedColumn = -1);
     Q_INVOKABLE void addPostThread(const QString& uri, int modelId, int maxPages = 20);
     Q_INVOKABLE void addOlderPostThread(int modelId);
     int createPostThreadModel(const QString& uri, QEnums::PostThreadType type);
@@ -351,7 +351,7 @@ signals:
     void getAuthorFeedFailed(int modelId, QString error, QString msg);
     void statusMessage(QString userDid, QString msg, QEnums::StatusLevel level = QEnums::STATUS_LEVEL_INFO, int seconds = 0);
     void statusClear();
-    void postThreadOk(QString did, int id, int postEntryIndex);
+    void postThreadOk(QString did, int id, int postEntryIndex, int feedColumn);
     void userChanged();
     void unreadNotificationCountChanged();
     void unreadNotificationsLoaded(bool mentionsOnly, int indexOldestUnread);

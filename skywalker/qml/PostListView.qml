@@ -11,6 +11,7 @@ SkyListView {
     property int newLastVisibleOffsetY: 0
     property bool showAsHome: false
     property bool acceptsInteractions: false
+    property int feedColumnIndex: -1
     property string feedDid
     property string feedUri
     property string feedKey
@@ -61,7 +62,7 @@ SkyListView {
             // HACK: grid view does not have a pullback header
             Loader {
                 id: headerLoader
-                y: headerY
+                y: postListView.headerPositioning === ListView.PullBackHeader ? headerY : 0
                 width: parent.width
                 sourceComponent: postListView.header
             }

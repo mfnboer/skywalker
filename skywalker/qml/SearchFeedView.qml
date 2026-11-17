@@ -29,6 +29,7 @@ PostListView {
     Accessible.name: searchFeed.name
 
     header: PostFeedHeader {
+        unreadPosts: feedView.unreadPosts
         feedName: searchFeed.name
         feedKey: feedView.feedKey
         subTitle: searchFeed.searchOptions.getDescription()
@@ -41,13 +42,14 @@ PostListView {
         showPostWithMissingLanguage: false
         showViewOptions: true
         showFavoritesPlaceHolder: userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
-        visible: !root.showSideBar
+        visible: !root.showSideBar || root.showMultiColumns
 
         onClosed: feedView.closed()
+        onHomeClicked: feedView.moveToHome()
         onFeedAvatarClicked: (clickPoint) => showFeedOptions(clickPoint, headerItem)
         onViewChanged: (contentMode) => changeView(contentMode)
     }
-    headerPositioning: ListView.PullBackHeader
+    headerPositioning: root.showMultiColumns ? ListView.OverlayHeader : ListView.PullBackHeader
 
     delegate: PostFeedViewDelegate {
         width: Math.min(feedView.width, root.getMaxContentWidth())

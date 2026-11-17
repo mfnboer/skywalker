@@ -10,6 +10,7 @@ SkyPage {
     readonly property var currentViewItem: viewStack.currentIndex >= 0 ? viewStack.children[viewStack.currentIndex] : null
     readonly property int unreadPosts: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.unreadPosts : 0
     readonly property bool reverseFeed: (currentViewItem && currentViewItem instanceof TimelineView) ? currentViewItem.reverseFeed : false
+    property int feedColumnIndex: -1
     readonly property string syncWarning: timelineView.syncWarning
     property int margin: 10
     property var userSettings: skywalker.getUserSettings()
@@ -39,6 +40,7 @@ SkyPage {
             id: timelineView
             Layout.preferredWidth: viewStack.width
             Layout.preferredHeight: viewStack.height
+            feedColumnIndex: page.feedColumnIndex
             headerMargin: viewBar.visible && viewBar.position == TabBar.Header ? viewBar.height : 0
             footerMargin: viewBar.visible && viewBar.position == TabBar.Footer ? viewBar.height : 0
             hidden: page.hidden
@@ -59,6 +61,7 @@ SkyPage {
 
                 Layout.preferredWidth: viewStack.width
                 Layout.preferredHeight: viewStack.height
+                feedColumnIndex: page.feedColumnIndex
                 headerMargin: viewBar.position == TabBar.Header ? viewBar.height : 0
                 footerMargin: viewBar.position == TabBar.Footer ? viewBar.height : 0
                 hidden: page.hidden

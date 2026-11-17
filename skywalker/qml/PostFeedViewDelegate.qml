@@ -1205,8 +1205,11 @@ Rectangle {
     function openPostThread() {
         if (!(postThreadType & QEnums.THREAD_ENTRY) && !unrollThread)
         {
-            if (!postIsPlaceHolder && postUri)
-                skywalker.getPostThread(postUri)
+            if (!postIsPlaceHolder && postUri) {
+                const feedCol = guiSettings.getFeedColumnIndex(postEntry)
+                console.debug("Feed column:", feedCol)
+                skywalker.getPostThread(postUri, QEnums.POST_THREAD_NORMAL, feedCol)
+            }
         }
     }
 

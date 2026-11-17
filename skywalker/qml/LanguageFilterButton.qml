@@ -5,6 +5,7 @@ SvgPlainButton {
     property list<language> filteredLanguages
     property bool showPostWithMissingLanguage: true
 
+    id: button
     svg: SvgOutline.language
     iconColor: guiSettings.headerTextColor
     accessibleName: qsTr("language filter active")
@@ -31,6 +32,7 @@ SvgPlainButton {
         else
             msg += qsTr("Posts without language tags will be shown.")
 
-        guiSettings.notice(rootContent, msg)
+        const contentParent = guiSettings.getContentParent(button)
+        guiSettings.notice(contentParent, msg)
     }
 }

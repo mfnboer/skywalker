@@ -265,7 +265,7 @@ Skywalker::Ptr Skywalker::createSkywalker(const QString& did, ATProto::Client::S
     connect(skywalker.get(), &Skywalker::deleted, this, [this, did]{ emit skywalkerDestroyed(did); });
     connect(skywalker.get(), &Skywalker::statusMessage, this, [this](auto did, auto msg, auto level, auto seconds){ emit statusMessage(did, msg, level, seconds); });
     connect(skywalker.get(), &Skywalker::statusClear, this, [this]{ emit statusClear(); });
-    connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex){ emit postThreadOk(did, id, entryIndex); });
+    connect(skywalker.get(), &Skywalker::postThreadOk, this, [this](auto did, int id, int entryIndex, int feedColumn){ emit postThreadOk(did, id, entryIndex, feedColumn); });
     connect(skywalker.get(), &Skywalker::getDetailedProfileOK, this, [this](auto did, auto profile, auto labelPrefsListUri){ emit getDetailedProfileOK(did, profile, labelPrefsListUri); });
     connect(skywalker.get(), &Skywalker::getFeedGeneratorOK, this, [this](auto did, auto generatorView, bool viewPosts){ emit getFeedGeneratorOK(did, generatorView, viewPosts); });
     connect(skywalker.get(), &Skywalker::getStarterPackViewOk, this, [this](auto did, auto starterPack){ emit getStarterPackViewOk(did, starterPack); });
@@ -2749,10 +2749,10 @@ void Skywalker::searchFeedMovementEnded(int modelId, const QString& searchKey, Q
     }
 }
 
-void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThreadType)
+void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThreadType, int feedColumn)
 {
     Q_ASSERT(mBsky);
-    qDebug() << "Get post thread:" << uri << "type:" << (int)postThreadType;
+    qDebug() << "Get post thread:" << uri << "type:" << (int)postThreadType << "feedColumn:" << feedColumn;
 
     if (mGetPostThreadInProgress)
     {
@@ -2767,7 +2767,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
 
     setGetPostThreadInProgress(true);
     mBsky->getPostThread(uri, {}, parentHeight,
-        [this, uri, postThreadType](auto thread){
+        [this, uri, postThreadType, feedColumn](auto thread){
             setGetPostThreadInProgress(false);
 
             auto model = std::make_unique<PostThreadModel>(uri, postThreadType,
@@ -2808,7 +2808,7 @@ void Skywalker::getPostThread(const QString& uri, QEnums::PostThreadType postThr
                 }
             }
 
-            emit postThreadOk(mUserDid, id, postEntryIndex);
+            emit postThreadOk(mUserDid, id, postEntryIndex, feedColumn);
         },
         [this](const QString& error, const QString& msg){
             setGetPostThreadInProgress(false);

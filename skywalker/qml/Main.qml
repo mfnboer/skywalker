@@ -14,6 +14,7 @@ ApplicationWindow {
     property double postButtonRelativeX: 1.0
     readonly property bool isPortrait: width < height
     readonly property bool showSideBar: mustShowSideBar()
+    readonly property bool showMultiColumns: showSideBar ? getFavoritesSwipeView().columns > 1 : false
     property var didSkywalkerMap: new Map()
     property var didPostUtilsMap: new Map()
     property var didProfileUtilsMap: new Map()
@@ -420,7 +421,7 @@ ApplicationWindow {
 
         onStatusClear: statusPopup.clear()
 
-        onPostThreadOk: (did, modelId, postEntryIndex) => viewPostThread(did, modelId, postEntryIndex)
+        onPostThreadOk: (did, modelId, postEntryIndex, feedColumnIndex) => viewPostThread(did, modelId, postEntryIndex, feedColumnIndex)
 
         onGetUserProfileOK: () => skywalker.getUserPreferences()
 
@@ -2035,10 +2036,11 @@ ApplicationWindow {
         showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt), blockByDid)
     }
 
-    function viewPostThread(did, modelId, postEntryIndex) {
-        console.debug("View post thread:", did)
+    function viewPostThread(did, modelId, postEntryIndex, feedColumnIndex) {
+        console.debug("View post thread:", did, "feedColumn:", feedColumnIndex)
+        const feedParent = feedColumnIndex >= 0 ? getFavoritesSwipeView().itemAt(feedColumnIndex) : root
         let component = guiSettings.createComponent("PostThreadView.qml")
-        let view = component.createObject(root, {
+        let view = component.createObject(feedParent, {
                 userDid: did,
                 modelId: modelId,
                 postEntryIndex: postEntryIndex })

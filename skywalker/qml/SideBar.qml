@@ -64,7 +64,7 @@ Pane {
         LanguageFilterButton {
             filteredLanguages: activeFeedView ? activeFeedView.headerItem.filteredLanguages : []
             showPostWithMissingLanguage: activeFeedView ? activeFeedView.headerItem.showPostWithMissingLanguage : true
-            visible: activeFeedView && activeFeedView.headerItem.showLanguageFilter
+            visible: activeFeedView && activeFeedView.headerItem.showLanguageFilter && !root.showMultiColumns
         }
 
         // View mode
@@ -72,7 +72,7 @@ Pane {
             svg: activeFeedView ? guiSettings.getContentModeSvg(activeFeedView.headerItem.contentMode) : SvgOutline.chat
             iconColor: guiSettings.headerTextColor
             accessibleName: qsTr("view mode")
-            visible: Boolean(activeFeedView)
+            visible: Boolean(activeFeedView) && !root.showMultiColumns
 
             onClicked: feedViewMenu.open()
 
@@ -99,7 +99,7 @@ Pane {
             counterBorderColor: guiSettings.sideBarColor
             counterTextColor: guiSettings.textColor
             Accessible.name: getHomeSpeech()
-            visible: isBasePage
+            visible: isBasePage && !root.showMultiColumns
             onClicked: homeClicked()
         }
     }

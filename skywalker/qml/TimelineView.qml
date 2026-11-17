@@ -19,6 +19,7 @@ PostListView {
 
     header: PostFeedHeader {
         reverseFeed: skywalker.timelineModel.reverseFeed
+        unreadPosts: timelineView.unreadPosts
         feedName: skywalker.timelineModel.feedName
         feedKey: skywalker.favoriteFeeds.getHomeFeedKey()
         showAsHome: true
@@ -26,8 +27,9 @@ PostListView {
         showMoreOptions: true
         showFavoritesPlaceHolder: root.isFavoritesTabBarVisible() && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
         bottomMargin: headerMargin
-        visible: !root.showSideBar
+        visible: !root.showSideBar || root.showMultiColumns
 
+        onHomeClicked: timelineView.moveToHome()
         onAddUserView: page.addUserView()
         onAddHashtagView: page.addHashtagView()
         onAddFocusHashtagView: page.addFocusHashtagView()
@@ -37,7 +39,7 @@ PostListView {
 
         onNewReverseFeed: (reverse) => timelineView.setReverseFeed(reverse)
     }
-    headerPositioning: ListView.PullBackHeader
+    headerPositioning: root.showMultiColumns ? ListView.OverlayHeader : ListView.PullBackHeader
 
     footer: Item {
         height: footerMargin

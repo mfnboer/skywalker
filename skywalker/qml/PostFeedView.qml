@@ -28,6 +28,7 @@ PostListView {
     header: PostFeedHeader {
         userDid: postFeedView.userDid
         reverseFeed: underlyingModel ? underlyingModel.reverseFeed : false
+        unreadPosts: postFeedView.unreadPosts
         feedName: postFeedView.feedName
         feedKey: postFeedView.feedKey
         feedAvatar: postFeedView.getFeedAvatar()
@@ -40,13 +41,14 @@ PostListView {
         showPostWithMissingLanguage: underlyingModel ? underlyingModel.showPostWithMissingLanguage :true
         showViewOptions: true
         showFavoritesPlaceHolder: showFavorites && userSettings.favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_TOP
-        visible: !root.showSideBar
+        visible: !root.showSideBar || root.showMultiColumns
 
         onClosed: postFeedView.closed()
+        onHomeClicked: postFeedView.moveToHome()
         onFeedAvatarClicked: (clickPoint) => showFeedOptions(clickPoint, headerItem)
         onViewChanged: (contentMode) => changeView(contentMode)
     }
-    headerPositioning: ListView.PullBackHeader
+    headerPositioning: root.showMultiColumns ? ListView.OverlayHeader : ListView.PullBackHeader
 
     delegate: PostFeedViewDelegate {
         width: Math.min(postFeedView.width, root.getMaxContentWidth())

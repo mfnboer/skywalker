@@ -8,6 +8,7 @@ Rectangle {
     property Skywalker skywalker: root.getSkywalker(userDid)
     property UserSettings userSettings: skywalker.getUserSettings()
     property bool reverseFeed: false
+    property int unreadPosts: 0
     required property string feedName
     property string feedKey
     property string subTitle
@@ -27,6 +28,7 @@ Rectangle {
     readonly property int favoritesY: headerRow.height
 
     signal closed
+    signal homeClicked
     signal feedAvatarClicked(point clickPoint)
     signal feedAvatarPressAndHold
     signal addUserView
@@ -45,6 +47,11 @@ Rectangle {
     color: guiSettings.headerColor
 
     Accessible.role: Accessible.Pane
+
+    // Avoid mouse clicks in the header to fall through to items below the header
+    SkyMouseArea {
+        anchors.fill: parent
+    }
 
     RowLayout {
         id: headerRow
@@ -146,12 +153,13 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     skywalker: header.skywalker
                     Layout.alignment: Qt.AlignLeft
-                    visible: showAsHome
+                    visible: showAsHome && !root.showMultiColumns
                 }
 
                 SkyMouseArea {
                     anchors.fill: parent
                     onClicked: parent.expandFeeds()
+                    enabled: expandFeedsButton.visible
                 }
 
                 function expandFeeds() {
@@ -188,6 +196,20 @@ Rectangle {
                 id: viewMenuLoader
                 sourceComponent: viewMenuComponent
             }
+        }
+
+        SkyFooterButton {
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: 44
+            Layout.preferredWidth: Layout.preferredHeight
+            svg: reverseFeed ? SvgFilled.homeUnderlined : SvgFilled.home
+            counter: unreadPosts
+            counterBackgroundColor: header.color
+            counterBorderColor: header.color
+            counterTextColor: guiSettings.textColor
+            visible: showAsHome && root.showMultiColumns
+
+            onClicked: homeClicked()
         }
 
         FeedAvatar {
@@ -232,7 +254,7 @@ Rectangle {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
             Layout.preferredHeight: parent.height - 10
             Layout.preferredWidth: Layout.preferredHeight
-            visible: showAsHome
+            visible: showAsHome && !root.showMultiColumns
             Accessible.role: Accessible.Pane
 
             AvatarWithStanding {

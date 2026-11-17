@@ -12,15 +12,18 @@ SkyMultiColumnView {
 
     id: view
     spacing: 1
+    maxColumns: !root.showSideBar ? 1 : 10
     interactive: userSettings.favoritesBarPosition !== QEnums.FAVORITES_BAR_POSITION_NONE
 
     TimelinePage {
         readonly property int pageIndex: ObjectModel.index
         readonly property bool isVisiblePage: view.isVisibleIndex(pageIndex)
+        readonly property bool isFirstVisiblePage: pageIndex === view.firstVisibleIndex
         property bool rewindEnabled: userSettings.getRewindToLastSeenPost(skywalker.getUserDid())
 
         id: timelinePage
         skywalker: view.skywalker
+        feedColumnIndex: pageIndex
 
         onIsVisiblePageChanged: {
             if (isVisiblePage) {
@@ -33,8 +36,7 @@ SkyMultiColumnView {
                     clearSyncWarning()
                 }
 
-                if (trackLastViewedFeed)
-                    skywalker.saveLastViewedFeed(skywalker.favoriteFeeds.getHomeFeedKey())
+
             }
             else {
                 cover()
@@ -42,6 +44,13 @@ SkyMultiColumnView {
             }
 
             resetHeaderPosition()
+        }
+
+        onIsFirstVisiblePageChanged: {
+            if (isFirstVisiblePage) {
+                if (trackLastViewedFeed)
+                    skywalker.saveLastViewedFeed(skywalker.favoriteFeeds.getHomeFeedKey())
+            }
         }
 
         onSyncWarningChanged: {
@@ -75,6 +84,7 @@ SkyMultiColumnView {
         Loader {
             readonly property int pageIndex: ObjectModel.index
             readonly property bool isVisiblePage: view.isVisibleIndex(pageIndex)
+            readonly property bool isFirstVisiblePage: pageIndex === view.firstVisibleIndex
             required property int index
             required property var modelData
             property int unreadPosts: 0
@@ -102,9 +112,6 @@ SkyMultiColumnView {
                         active = true
                     }
 
-                    if (item && trackLastViewedFeed)
-                        item.saveAsLastViewedFeed()
-
                     if (item) {
                         item.unhide()
                         item.forceActiveFocus()
@@ -119,6 +126,13 @@ SkyMultiColumnView {
 
                 if (item)
                     item.resetHeaderPosition()
+            }
+
+            onIsFirstVisiblePageChanged: {
+                if (isFirstVisiblePage) {
+                    if (item && trackLastViewedFeed)
+                        item.saveAsLastViewedFeed()
+                }
             }
 
             function getHeaderHeight() {
@@ -192,6 +206,7 @@ SkyMultiColumnView {
             id: postFeedView
             skywalker: view.skywalker
             modelId: skywalker.createPostFeedModel(modelData.generatorView)
+            feedColumnIndex: pageIndex
             showAsHome: true
             showFavorites: true
             footer: null
@@ -219,6 +234,7 @@ SkyMultiColumnView {
             id: postFeedView
             skywalker: view.skywalker
             modelId: skywalker.createPostFeedModel(modelData.listView)
+            feedColumnIndex: pageIndex
             showAsHome: true
             showFavorites: true
             footer: null
@@ -244,6 +260,7 @@ SkyMultiColumnView {
 
         SearchFeedView {
             id: searchFeedView
+            feedColumnIndex: pageIndex
             searchFeed: modelData.searchFeed
             showAsHome: true
 
