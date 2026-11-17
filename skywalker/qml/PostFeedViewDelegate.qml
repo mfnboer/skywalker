@@ -866,8 +866,10 @@ Rectangle {
                         }
 
                         onViewThread: {
-                            if (!postIsPlaceHolder && postUri)
-                                skywalker.getPostThread(postUri)
+                            if (!postIsPlaceHolder && postUri) {
+                                const feedCol = guiSettings.getFeedColumnIndex(postEntry)
+                                skywalker.getPostThread(postUri, QEnums.POST_THREAD_NORMAL, feedCol)
+                            }
                         }
 
                         onUnrollThread: unrollPostThread()
@@ -1214,8 +1216,10 @@ Rectangle {
     }
 
     function unrollPostThread() {
-        if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri)
-            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED)
+        if (!postEntry.unrollThread && !postEntry.postIsPlaceHolder && postEntry.postUri) {
+            const feedCol = guiSettings.getFeedColumnIndex(postEntry)
+            skywalker.getPostThread(postUri, QEnums.POST_THREAD_UNROLLED, feedCol)
+        }
     }
 
     function unwrapQuoteChain() {

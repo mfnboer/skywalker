@@ -7,6 +7,7 @@ SkyListView {
     required property int modelId
     required property int postEntryIndex
     property int syncToIndex: postEntryIndex
+    property int feedColumnIndex: -1
     property Skywalker skywalker: root.getSkywalker(userDid)
     readonly property bool isUnrolledThread: model?.unrollThread
     readonly property string sideBarTitle: isUnrolledThread ? qsTr("Unrolled thread") : qsTr("Post thread")
@@ -18,15 +19,22 @@ SkyListView {
 
     id: view
     width: parent.width
+    height: parent.height
     model: skywalker.getPostThreadModel(modelId)
     cacheBuffer: Screen.height * 3
     boundsBehavior: Flickable.StopAtBounds
+
+    Rectangle {
+        anchors.fill: parent
+        z: parent.z - 1
+        color: guiSettings.backgroundColor
+    }
 
     header: SimpleHeader {
         height: (headerVisible ? guiSettings.headerHeight : 0) + (restrictionRow.visible ? restrictionRow.height : 0)
         text: sideBarTitle
         userDid: view.userDid
-        headerVisible: !root.showSideBar
+        headerVisible: !root.showSideBar || root.showMultiColumns
         onBack: view.closed()
 
         SvgPlainButton {
@@ -38,7 +46,7 @@ SkyListView {
             iconColor: guiSettings.headerTextColor
             svg: sideBarButtonSvg
             accessibleName: sideBarButtonName
-            visible: !root.showSideBar
+            visible: !root.showSideBar || root.showMultiColumns
             onClicked: sideBarButtonClicked(view.headerItem, Qt.point(x, y))
         }
 
@@ -159,7 +167,7 @@ SkyListView {
             y: -height - 10
             svg: SvgOutline.reply
             overrideOnClicked: () => reply()
-            visible: !root.showSideBar && !isUnrolledThread
+            visible: (!root.showSideBar || root.showMultiColumns) && !isUnrolledThread
 
             Accessible.role: Accessible.Button
             Accessible.name: qsTr(`reply to ${(getReplyToAuthor()?.name)}`)
@@ -288,7 +296,7 @@ SkyListView {
         const postReplyRootUri = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootUri)
         const postReplyRootCid = model.getData(postEntryIndex, AbstractPostFeedModel.PostReplyRootCid)
         const postMentionDids = model.getData(postEntryIndex, AbstractPostFeedModel.PostMentionDids)
-        const postLUNanguages = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguages)
+        const postLanguages = model.getData(postEntryIndex, AbstractPostFeedModel.PostLanguages)
 
         const lang = postLanguages.length > 0 ? postLanguages[0].shortCode : ""
         root.composeReply(postUri, postCid, postText, postIndexedDateTime,

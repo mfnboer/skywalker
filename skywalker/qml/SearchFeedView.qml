@@ -29,6 +29,7 @@ PostListView {
     Accessible.name: searchFeed.name
 
     header: PostFeedHeader {
+        reverseFeed: feedView.reverseFeed
         unreadPosts: feedView.unreadPosts
         feedName: searchFeed.name
         feedKey: feedView.feedKey

@@ -637,10 +637,14 @@ Item {
     }
 
     function getFeedColumnParent(item) {
+        // TODO: this will make the single column behave like it always was
+        // if (!root.showMultiColumns)
+        //     return null
+
         let p = item.parent
 
         while (p) {
-            if (p instanceof PostListView)
+            if (typeof p.feedColumnIndex == 'number')
                 return p
 
             p = p.parent

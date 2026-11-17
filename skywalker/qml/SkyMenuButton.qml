@@ -18,7 +18,7 @@ Item {
     SkySvg {
         id: icon
         x: 10
-        y: (svg.offsetByHeight ? height : 0) + 5
+        y: ((svg && svg.offsetByHeight) ? height : 0) + 5
         height: label.height + 10
         width: height
         svg: button.svg

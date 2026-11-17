@@ -200,7 +200,7 @@ ApplicationWindow {
         width: parent.width - x - guiSettings.rightMargin - (sideBarRight.active ? sideBarRight.width : 0)
         position: skywalker.getUserSettings().favoritesBarPosition === QEnums.FAVORITES_BAR_POSITION_BOTTOM ? TabBar.Footer : TabBar.Header
         favoriteFeeds: skywalker.favoriteFeeds
-        visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0
+        visible: show && favoriteFeeds.userOrderedPinnedFeeds.length > 0 && favoritesSwipeView.currentView
 
         onCurrentIndexChanged: {
             if (currentIndex < 0)
@@ -239,8 +239,14 @@ ApplicationWindow {
         }
 
         function calcY() {
-            if (position == TabBar.Header)
-                return guiSettings.headerMargin + ((favoritesSwipeView && favoritesSwipeView.currentView) ? favoritesSwipeView.currentView.favoritesY : 0)
+            if (position == TabBar.Header) {
+                if (!favoritesSwipeView)
+                    return guiSettings.headerMargin
+
+                const view = favoritesSwipeView.currentView
+                const y = guiSettings.headerMargin + (view ? view.favoritesY : 0)
+                return y
+            }
 
             return parent.height - height - footer.height
         }
@@ -2043,9 +2049,10 @@ ApplicationWindow {
         let view = component.createObject(feedParent, {
                 userDid: did,
                 modelId: modelId,
-                postEntryIndex: postEntryIndex })
-        view.onClosed.connect(() => { popStack() }) // qmllint disable missing-property
-        pushStack(view)
+                postEntryIndex: postEntryIndex,
+                feedColumnIndex: feedColumnIndex })
+        view.onClosed.connect(() => { popColumnStack(feedColumnIndex) }) // qmllint disable missing-property
+        pushColumnStack(feedColumnIndex, view)
     }
 
     function savePhoto(sourceUrl) {
@@ -2711,7 +2718,7 @@ ApplicationWindow {
     }
 
     function getTimelineView() {
-        return getFavoritesSwipeView().itemAt(0)
+        return getFavoritesSwipeView().viewAt(0)
     }
 
     function getSearchView() {
@@ -2776,6 +2783,13 @@ ApplicationWindow {
         favoritesTabBar.update()
     }
 
+    function popColumnStack(columnIndex, operation = StackView.PopTransition) {
+        if (columnIndex < 0)
+            popStack(null, operation)
+        else
+            getFavoritesSwipeView().popStack(columnIndex, operation)
+    }
+
     function pushStack(item, operation = StackView.PushTransition) {
         let current = currentStackItem()
 
@@ -2789,6 +2803,13 @@ ApplicationWindow {
         currentStackItem().forceActiveFocus()
 
         favoritesTabBar.update()
+    }
+
+    function pushColumnStack(columnIndex, item, operation = StackView.PushTransition) {
+        if (columnIndex < 0)
+            pushStack(item, operation)
+        else
+            getFavoritesSwipeView().pushStack(columnIndex, item, operation)
     }
 
     function unwindStack(stack = null) {

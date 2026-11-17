@@ -85,8 +85,10 @@ Item {
                 moving: recordView.moving
 
                 onUnrollThread: {
-                    if (record.postUri)
-                        skywalker.getPostThread(record.postUri, QEnums.POST_THREAD_UNROLLED)
+                    if (record.postUri) {
+                        const feedCol = guiSettings.getFeedColumnIndex(recordView)
+                        skywalker.getPostThread(record.postUri, QEnums.POST_THREAD_UNROLLED, feedCol)
+                    }
                 }
             }
         }
@@ -223,7 +225,10 @@ Item {
 
                 Accessible.ignored: true
 
-                onLinkActivated: skywalker.getPostThread(record.detachedPostUri)
+                onLinkActivated: {
+                    const feedCol = guiSettings.getFeedColumnIndex(recordView)
+                    skywalker.getPostThread(record.detachedPostUri, QEnums.POST_THREAD_NORMAL, feedCol)
+                }
             }
         }
 
@@ -253,9 +258,10 @@ Item {
     }
 
     function showRecord() {
-        if (record.postUri)
-            skywalker.getPostThread(record.postUri)
-        else if (record.feedAvailable)
+        if (record.postUri) {
+            const feedCol = guiSettings.getFeedColumnIndex(recordView)
+            skywalker.getPostThread(record.postUri, QEnums.POST_THREAD_NORMAL, feedCol)
+        } else if (record.feedAvailable)
             root.viewPostFeed(record.feed, recordView.userDid)
         else if (record.listAvailable)
             root.viewList(record.list, recordView.userDid)
