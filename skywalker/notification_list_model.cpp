@@ -52,7 +52,8 @@ void NotificationListModel::clearLocalState()
 {
     mCursor.clear();
     mPostCache.clear();
-    clearLocalChanges();
+    LocalPostModelChanges::clearLocalChanges();
+    LocalAuthorModelChanges::clearLocalChanges();
     clearLocalProfileChanges();
 }
 
@@ -719,13 +720,36 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto& notification = mList[index.row()];
-    const auto* change = getLocalChange(notification.getCid());
-    const auto* reasonChange = getLocalChange(notification.getReasonPost(mReasonPostCache).getCid());
+    const auto* change = LocalPostModelChanges::getLocalChange(notification.getCid());
+    const auto* reasonChange = LocalPostModelChanges::getLocalChange(notification.getReasonPost(mReasonPostCache).getCid());
 
     switch (Role(role))
     {
     case Role::NotificationAuthor:
-        return QVariant::fromValue(notification.getAuthor());
+    {
+        auto author = notification.getAuthor();
+        const BasicProfile* profileChange = getProfileChange(author.getDid());
+
+        if (profileChange)
+            author = *profileChange;
+
+        const auto* authorChange = LocalAuthorModelChanges::getLocalChange(author.getDid());
+
+        if (authorChange) {
+            ProfileViewerState& viewer = author.getViewer();
+
+            if (authorChange->mBlockingUri)
+                viewer.setBlocking(*authorChange->mBlockingUri);
+
+            if (authorChange->mFollowingUri)
+                viewer.setFollowing(*authorChange->mFollowingUri);
+
+            if (authorChange->mMuted)
+                viewer.setMuted(*authorChange->mMuted);
+        }
+
+        return QVariant::fromValue(author);
+    }
     case Role::NotificationOtherAuthors:
         return QVariant::fromValue(notification.getOtherAuthors());
     case Role::NotificationAllAuthors:
@@ -1033,7 +1057,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mThreadgateUri ? *rootChange->mThreadgateUri : post.getThreadgateUri();
     }
     case Role::NotificationPostReplyRestriction:
@@ -1044,7 +1068,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? rootChange->mReplyRestriction : post.getReplyRestriction();
     }
     case Role::NotificationPostReplyRestrictionLists:
@@ -1055,7 +1079,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists());
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
     }
     case Role::NotificationPostHiddenReplies:
@@ -1066,7 +1090,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return change && change->mHiddenReplies ? *change->mHiddenReplies : post.getHiddenReplies();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mHiddenReplies ? *rootChange->mHiddenReplies : post.getHiddenReplies();
     }
     case Role::NotificationPostIsHiddenReply:
@@ -1077,7 +1101,7 @@ QVariant NotificationListModel::data(const QModelIndex& index, int role) const
             return change && change->mHiddenReplies ? change->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mHiddenReplies ? rootChange->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
     }
     case Role::NotificationPostRepostCount:
@@ -1388,6 +1412,21 @@ void NotificationListModel::postDeletedChanged()
 void NotificationListModel::locallyBlockedChanged()
 {
     changeData({ int(Role::NotificationPostBlocked) });
+}
+
+void NotificationListModel::blockingUriChanged()
+{
+    changeData({ int(Role::NotificationAuthor) });
+}
+
+void NotificationListModel::followingUriChanged()
+{
+    changeData({ int(Role::NotificationAuthor) });
+}
+
+void NotificationListModel::mutedChanged()
+{
+    changeData({ int(Role::NotificationAuthor) });
 }
 
 void NotificationListModel::bookmarkedChanged()

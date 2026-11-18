@@ -248,6 +248,12 @@ void SearchPostFeedModel::makeLocalFilteredModelChange(const std::function<void(
         update(model.get());
 }
 
+void SearchPostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalAuthorModelChanges*)>& update)
+{
+    for (auto& model : mFilteredPostFeedModels)
+        update(model.get());
+}
+
 void SearchPostFeedModel::makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update)
 {
     for (auto& model : mFilteredPostFeedModels)

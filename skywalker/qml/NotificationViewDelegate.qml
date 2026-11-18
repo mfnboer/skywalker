@@ -92,6 +92,7 @@ Rectangle {
     required property string notificationInviteCode
     required property basicprofile notificationInviteCodeUsedBy
     required property bool endOfList
+    property bool origFollowingAuthor: false
     property bool onScreen: false
 
     id: notification
@@ -427,10 +428,14 @@ Rectangle {
                         replyRootUri: notificationPostReplyRootUri
                         visible: !notificationPostNotFound && !notificationPostBlocked
                         authorIsUser: false
+                        isFollowingAuthor: notificationPostAuthor.viewer.following
+                        isMutedAuthor: notificationPostAuthor.viewer.muted
+                        isBlockingAuthor: notificationPostAuthor.viewer.blocking
                         isBookmarked: notificationPostBookmarked
                         bookmarkTransient: notificationPostBookmarkTransient
                         isThread: false
                         isQuotePost: Boolean(notificationPostRecord) || Boolean(notificationPostRecordWithMedia)
+                        showFollowOption: !origFollowingAuthor
                         record: notificationPostRecord
                         recordWithMedia: notificationPostRecordWithMedia
                         indexedSecondsAgo: notificationSecondsAgo
@@ -538,8 +543,12 @@ Rectangle {
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, notificationPostUri, notificationCid, detach, owner.did)
                         onPin: root.pinPost(notificationPostUri, notificationCid, owner.did)
                         onUnpin: root.unpinPost(notificationCid, owner.did)
+                        onFollowAuthor: root.followAuthor(notificationPostAuthor, "", "", "", owner.did)
+                        onUnfollowAuthor: root.unfollowAuthor(notificationPostAuthor.did, notificationPostAuthor.viewer.following, "", "", owner.did)
                         onMuteAuthor: root.muteAuthor(notificationPostAuthor, owner.did)
+                        onUnmuteAuthor: root.unmuteAuthor(notificationPostAuthor.did, owner.did)
                         onBlockAuthor: root.blockAuthor(notificationPostAuthor, owner.did)
+                        onUnblockAuthor: root.unblockAuthor(notificationPostAuthor.did, notificationPostAuthor.viewer.blocking, owner.did)
                         onShowEmojiNames: root.showEmojiNamesList(notificationPostPlainText)
                         onViewAlsoLiked: root.viewAlsoLikedPostFeed(notificationPostUri, owner.did)
                     }
@@ -984,6 +993,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        origFollowingAuthor = Boolean(notificationAuthor.viewer.following)
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()
     }

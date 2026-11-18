@@ -1593,9 +1593,15 @@ SkyPage {
         id: graphUtils
         skywalker: page.skywalker
 
-        onFollowOk: (uri) => { following = uri }
+        onFollowOk: (uri, profile) => {
+                        following = uri
+                        skywalker.showStatusMessage(qsTr(`You now follow ${profile.name}`), QEnums.STATUS_LEVEL_INFO)
+                    }
         onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
-        onUnfollowOk: following = ""
+        onUnfollowOk: {
+            following = ""
+            skywalker.showStatusMessage(qsTr("Unfollowed"), QEnums.STATUS_LEVEL_INFO, 2)
+        }
         onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
         onBlockOk: (uri, expiresAt) => {

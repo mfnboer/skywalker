@@ -28,8 +28,10 @@ public:
 
     explicit GraphUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void follow(const BasicProfile& profile);
-    Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri);
+    Q_INVOKABLE void follow(const BasicProfile& profile, const QString& feedPostUri = {},
+                            const QString& feedDid = {}, const QString& feedContext = {});
+    Q_INVOKABLE void unfollow(const QString& did, const QString& followingUri,
+                              const QString& feedPostUri = {}, const QString& feedDid = {});
     Q_INVOKABLE void followAll(const std::vector<QString> dids, const std::optional<StrongRef>& via);
     void followAll(const std::vector<QString> dids, const std::optional<StrongRef>& via,
                    const FollowAllSuccessCb& successCb, const ErrorCb& errorCb);
@@ -111,7 +113,7 @@ public:
     ATProto::GraphMaster* graphMaster();
 
 signals:
-    void followOk(QString uri);
+    void followOk(QString uri, BasicProfile profile);
     void followFailed(QString error);
     void unfollowOk();
     void unfollowFailed(QString error);

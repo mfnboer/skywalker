@@ -102,6 +102,7 @@ Rectangle {
     property int extraFooterHeight: 0
     property bool threadBarVisible: !swipeMode
     property bool showBlockDetails: false
+    property bool origFollowingAuthor: false
     readonly property bool postBlockedByUser: postBlocked && postBlockedAuthor.viewer.valid && !postBlockedAuthor.viewer.blockedBy &&
                                                (postBlockedAuthor.viewer.blocking || !postBlockedAuthor.viewer.blockingByList.isNull())
     readonly property bool noPostRendering: postNotFound || postNotSupported || postLocallyDeleted || postBlocked || postBlockedByUser || postHiddenPosts || postFoldedType === QEnums.FOLDED_POST_FIRST
@@ -775,6 +776,9 @@ Rectangle {
                         replyRootAuthorDid: postReplyRootAuthorDid
                         replyRootUri: postReplyRootUri
                         authorIsUser: author.did === userDid
+                        isFollowingAuthor: author.viewer.following
+                        isMutedAuthor: author.viewer.muted
+                        isBlockingAuthor: author.viewer.blocking
                         isBookmarked: postBookmarked
                         bookmarkTransient: postBookmarkTransient
                         feedback: postFeedback
@@ -783,6 +787,7 @@ Rectangle {
                         isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
                         isUnrolledThread: postEntry.unrollThread
                         showViewThread: swipeMode
+                        showFollowOption: !origFollowingAuthor
                         record: postRecord
                         recordWithMedia: postRecordWithMedia
                         feedAcceptsInteractions: postEntry.feedAcceptsInteractions
@@ -872,7 +877,7 @@ Rectangle {
 
                         onUnrollThread: unrollPostThread()
                         onQuoteChain: unwrapQuoteChain()
-                        onShare: skywalker.getShareUtils().sharePost(postUri)
+                        onShare: skywalker.getShareUtils().sharePost(postUri, feedDid, postFeedContext)
                         onMuteThread: root.muteThread(postIsReply ? postReplyRootUri : postUri, postThreadMuted, userDid)
                         onThreadgate: root.gateRestrictions(postThreadgateUri, postIsReply ? postReplyRootUri : postUri, postIsReply ? postReplyRootCid : postCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
                         onHideReply: root.hidePostReply(postThreadgateUri, postReplyRootUri, postReplyRootCid, postUri, postReplyRestriction, postReplyRestrictionLists, postHiddenReplies, userDid)
@@ -885,8 +890,12 @@ Rectangle {
                         onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
                         onPin: root.pinPost(postUri, postCid, userDid)
                         onUnpin: root.unpinPost(postCid, userDid)
+                        onFollowAuthor: root.followAuthor(author, postUri, feedDid, postFeedContext, userDid)
+                        onUnfollowAuthor: root.unfollowAuthor(author.did, author.viewer.following, postUri, feedDid, userDid)
                         onMuteAuthor: root.muteAuthor(author, userDid)
+                        onUnmuteAuthor: root.unmuteAuthor(author.did, userDid)
                         onBlockAuthor: root.blockAuthor(author, userDid)
+                        onUnblockAuthor: root.unblockAuthor(author.did, author.viewer.blocking, userDid)
                         onShowEmojiNames: root.showEmojiNamesList(postEntry.unrollThread ? postThreadModel?.getFullThreadPlainText() : postPlainText)
                         onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
                         onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
@@ -1297,6 +1306,7 @@ Rectangle {
 
     Component.onCompleted: {
         console.debug("Post created:", index, "height:", height)
+        origFollowingAuthor = Boolean(author.viewer.following)
 
         ListView.view.enableOnScreenCheck = true
         checkOnScreen()

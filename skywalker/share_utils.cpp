@@ -23,7 +23,7 @@ void ShareUtils::copyUriToClipboard(const QString& uri)
     copyToClipboard(shareUri);
 }
 
-void ShareUtils::sharePost(const QString& postUri)
+void ShareUtils::sharePost(const QString& postUri, const QString& feedDid, const QString& feedContext)
 {
     qDebug() << "Share post:" << postUri;
     ATProto::ATUri atUri(postUri);
@@ -48,6 +48,11 @@ void ShareUtils::sharePost(const QString& postUri)
     clipboard->setText(shareUri);
     mSkywalker->showStatusMessage(tr("Post link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
 #endif
+
+    mSkywalker->addFeedInteraction(
+        feedDid,
+        ATProto::AppBskyFeed::Interaction::EventType::InteractionShare,
+        postUri, feedContext);
 }
 
 void ShareUtils::shareFeed(const GeneratorView& feed)

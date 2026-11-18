@@ -1106,7 +1106,7 @@ void PostUtils::like(const QString& uri, const QString& cid,
                 return;
 
             mSkywalker->makeLocalModelChange(
-                [uri, cid, feedDid, feedContext, likeUri](LocalPostModelChanges* model){
+                [uri, cid, likeUri](LocalPostModelChanges* model){
                     model->updateLikeCountDelta(cid, 1);
                     model->updateLikeUri(cid, likeUri);
                     model->updateLikeTransient(cid, false);

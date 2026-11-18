@@ -15,7 +15,7 @@ class ShareUtils : public WrappedSkywalker
 public:
     explicit ShareUtils(QObject* parent = nullptr);
 
-    Q_INVOKABLE void sharePost(const QString& postUri);
+    Q_INVOKABLE void sharePost(const QString& postUri, const QString& feedDid = {}, const QString& feedContext = {});
     Q_INVOKABLE void shareFeed(const GeneratorView& feed);
     Q_INVOKABLE void shareList(const ListView& list);
     Q_INVOKABLE void shareListUri(const QString& listUri);

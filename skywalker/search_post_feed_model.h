@@ -64,6 +64,7 @@ public:
     void refreshAllData() override;
     void refreshAllFilteredModels();
     void makeLocalFilteredModelChange(const std::function<void(LocalProfileChanges*)>& update);
+    void makeLocalFilteredModelChange(const std::function<void(LocalAuthorModelChanges*)>& update);
     void makeLocalFilteredModelChange(const std::function<void(LocalPostModelChanges*)>& update);
 
 signals:

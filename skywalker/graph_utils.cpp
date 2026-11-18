@@ -63,13 +63,13 @@ ATProto::GraphMaster* GraphUtils::graphMaster()
     return mGraphMaster.get();
 }
 
-void GraphUtils::follow(const BasicProfile& profile)
+void GraphUtils::follow(const BasicProfile& profile, const QString& feedPostUri, const QString& feedDid, const QString& feedContext)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->follow(profile.getDid(),
-        [this, presence=getPresence(), profile](const auto& followingUri, const auto&){
+        [this, presence=getPresence(), profile, feedPostUri, feedDid, feedContext](const auto& followingUri, const auto&){
             if (!presence)
                 return;
 
@@ -78,9 +78,14 @@ void GraphUtils::follow(const BasicProfile& profile)
                     model->updateFollowingUri(did, followingUri);
                 });
 
+            mSkywalker->addFeedInteraction(
+                feedDid,
+                ATProto::AppBskyFeed::Interaction::EventType::InteractionFollow,
+                feedPostUri, feedContext);
+
             mSkywalker->getFollowing()->follow(profile.getDid());
 
-            emit followOk(followingUri);
+            emit followOk(followingUri, profile);
         },
         [this, presence=getPresence()](const QString& error, const QString& msg){
             if (!presence)
@@ -91,13 +96,14 @@ void GraphUtils::follow(const BasicProfile& profile)
         });
 }
 
-void GraphUtils::unfollow(const QString& did, const QString& followingUri)
+void GraphUtils::unfollow(const QString& did, const QString& followingUri,
+                          const QString& feedPostUri, const QString& feedDid)
 {
     if (!graphMaster())
         return;
 
     graphMaster()->undo(followingUri,
-        [this, presence=getPresence(), did]{
+        [this, presence=getPresence(), did, feedPostUri, feedDid]{
             if (!presence)
                 return;
 
@@ -105,6 +111,11 @@ void GraphUtils::unfollow(const QString& did, const QString& followingUri)
                 [did](LocalAuthorModelChanges* model){
                     model->updateFollowingUri(did, "");
                 });
+
+            mSkywalker->removeFeedInteraction(
+                feedDid,
+                ATProto::AppBskyFeed::Interaction::EventType::InteractionFollow,
+                feedPostUri);
 
             mSkywalker->getFollowing()->unfollow(did);
 

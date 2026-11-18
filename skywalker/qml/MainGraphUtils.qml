@@ -21,6 +21,15 @@ GraphUtils {
 
     onBlockFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
+    onUnblockOk: skywalker.showStatusMessage(qsTr("Unblocked"), QEnums.STATUS_LEVEL_INFO, 2)
+    onUnblockFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+
+    onFollowOk: (uri, profile) => { skywalker.showStatusMessage(qsTr(`You now follow ${profile.name}`), QEnums.STATUS_LEVEL_INFO) }
+    onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+
+    onUnfollowOk: skywalker.showStatusMessage(qsTr("Unfollowed"), QEnums.STATUS_LEVEL_INFO, 2)
+    onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+
     onMuteOk: (expiresAt) => {
         if (isNaN(expiresAt.getTime()))
             skywalker.showStatusMessage(qsTr("Muted"), QEnums.STATUS_LEVEL_INFO, 2)
@@ -29,6 +38,9 @@ GraphUtils {
     }
 
     onMuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+
+    onUnmuteOk: skywalker.showStatusMessage(qsTr("Unmuted"), QEnums.STATUS_LEVEL_INFO, 2)
+    onUnmuteFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
 
     onReferenceListOptOutOk: (uri) => {
         skywalker.showStatusMessage(qsTr("Opted out"), QEnums.STATUS_LEVEL_INFO)

@@ -3073,6 +3073,37 @@ void Skywalker::makeLocalModelChange(const std::function<void(LocalAuthorModelCh
 
     if (mChat)
         mChat->makeLocalModelChange(update);
+
+
+    // Post feed models
+    update(&mTimelineModel);
+    mTimelineModel.makeLocalFilteredModelChange(update);
+    update(&mNotificationListModel);
+    update(&mMentionListModel);
+
+    for (auto& [_, model] : mPostThreadModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mAuthorFeedModels.items())
+        update(model.get());
+
+    for (auto& [_, model] : mSearchPostFeedModels.items())
+    {
+        update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
+
+    for (auto& [_, model] : mPostFeedModels.items())
+    {
+        update(model.get());
+        model->makeLocalFilteredModelChange(update);
+    }
+
+    if (mBookmarksModel)
+        update(mBookmarksModel.get());
+
+    for (auto& [_, model] : mNotificationListModels.items())
+        update(model.get());
 }
 
 void Skywalker::makeLocalModelChange(const std::function<void(LocalFeedModelChanges*)>& update)

@@ -323,7 +323,7 @@ QEnums::ReplyRestriction PostThreadModel::getReplyRestriction() const
         return QEnums::REPLY_RESTRICTION_NONE;
 
     const auto& post = mList[0];
-    const auto* change = getLocalChange(post.getCid());
+    const auto* change = LocalPostModelChanges::getLocalChange(post.getCid());
     const auto restriction = change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
     if (post.isReplyDisabled() && restriction == QEnums::REPLY_RESTRICTION_NONE)
@@ -338,7 +338,7 @@ BasicProfile PostThreadModel::getReplyRestrictionAuthor() const
         return {};
 
     const auto& post = mList[0];
-    const auto* change = getLocalChange(post.getCid());
+    const auto* change = LocalPostModelChanges::getLocalChange(post.getCid());
     const auto restriction = change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
     if (restriction == QEnums::REPLY_RESTRICTION_NONE)
@@ -353,7 +353,7 @@ ListViewBasicList PostThreadModel::getReplyRestrictionLists() const
         return {};
 
     const auto& post = mList[0];
-    const auto* change = getLocalChange(post.getCid());
+    const auto* change = LocalPostModelChanges::getLocalChange(post.getCid());
     return change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists();
 }
 

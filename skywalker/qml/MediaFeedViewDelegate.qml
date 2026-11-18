@@ -84,6 +84,7 @@ Rectangle {
     property bool feedAcceptsInteractions: false
     property string feedDid: ""
     property string feedUri: ""
+    property bool origFollowingAuthor
     property int headerHeight: 0
     property int footerHeight: 0
     property int leftMarginWidth: 0
@@ -462,6 +463,9 @@ Rectangle {
                 replyRootAuthorDid: postReplyRootAuthorDid
                 replyRootUri: postReplyRootUri
                 authorIsUser: author.did === userDid
+                isFollowingAuthor: author.viewer.following
+                isMutedAuthor: author.viewer.muted
+                isBlockingAuthor: author.viewer.blocking
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
                 feedback: postFeedback
@@ -469,6 +473,7 @@ Rectangle {
                 isThread: postIsThread || postIsThreadReply
                 isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
                 showViewThread: true
+                showFollowOption: !origFollowingAuthor
                 record: postRecord
                 recordWithMedia: postRecordWithMedia
                 feedAcceptsInteractions: videoPage.feedAcceptsInteractions
@@ -544,7 +549,7 @@ Rectangle {
                         root.bookmarkByNonActiveUser(mouseEvent, postStats, videoPage.ListView.view, postUri)
                 }
 
-                onShare: skywalker.getShareUtils().sharePost(postUri)
+                onShare: skywalker.getShareUtils().sharePost(postUri, feedDid, postFeedContext)
 
                 onViewThread: {
                     if (!postIsPlaceHolder && postUri)
@@ -573,8 +578,12 @@ Rectangle {
                 onDetachQuote: (uri, detach) => root.detachQuote(uri, postUri, postCid, detach, userDid)
                 onPin: root.pinPost(postUri, postCid, userDid)
                 onUnpin: root.unpinPost(postCid, userDid)
+                onFollowAuthor: root.followAuthor(author, postUri, feedDid, postFeedContext, userDid)
+                onUnfollowAuthor: root.unfollowAuthor(author.did, author.viewer.following, postUri, feedDid, userDid)
                 onMuteAuthor: root.muteAuthor(author, userDid)
+                onUnmuteAuthor: root.unmuteAuthor(author.did, userDid)
                 onBlockAuthor: root.blockAuthor(author, userDid)
+                onUnblockAuthor: root.unblockAuthor(author.did, author.viewer.blocking, userDid)
                 onShowEmojiNames: root.showEmojiNamesList(postPlainText)
                 onShowMoreLikeThis: root.showMoreLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
                 onShowLessLikeThis: root.showLessLikeThis(feedUri, feedDid, postUri, postCid, postFeedContext, userDid)
@@ -646,6 +655,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        origFollowingAuthor = Boolean(author.viewer.following)
         ListView.view.enableOnScreenCheck = true
     }
 }

@@ -1167,7 +1167,9 @@ SkyPage {
         id: graphUtils
         skywalker: page.skywalker // qmllint disable missing-type
 
+        onFollowOk: (uri, profile) => { skywalker.showStatusMessage(qsTr(`You now follow ${profile.name}`), QEnums.STATUS_LEVEL_INFO) }
         onFollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
+        onUnfollowOk: skywalker.showStatusMessage(qsTr("Unfollowed"), QEnums.STATUS_LEVEL_INFO, 2)
         onUnfollowFailed: (error) => { skywalker.showStatusMessage(error, QEnums.STATUS_LEVEL_ERROR) }
     }
 

@@ -5,6 +5,7 @@
 #include "content_filter.h"
 #include "content_filter_stats.h"
 #include "hashtag_index.h"
+#include "local_author_model_changes.h"
 #include "local_post_model_changes.h"
 #include "local_profile_changes.h"
 #include "muted_words.h"
@@ -32,7 +33,8 @@ class IListStore;
 
 class AbstractPostFeedModel : public BaseListModel<Post>,
                               public LocalPostModelChanges,
-                              public LocalProfileChanges
+                              public LocalProfileChanges,
+                              public LocalAuthorModelChanges
 {
     Q_MOC_INCLUDE("content_filter_stats_model.h")
 
@@ -297,6 +299,15 @@ protected:
     // LocalProfileChanges
     virtual void profileChanged() override;
     virtual void locallyBlockedChanged() override;
+
+    // LocalAuthorModelChanges
+    virtual void blockingUriChanged() override;
+    virtual void followingUriChanged() override;
+    virtual void activitySubscriptionChanged() override {}
+    virtual void mutedChanged() override;
+    virtual void mutedRepostsChanged() override {}
+    virtual void listItemOptedOutChanged() override {}
+    virtual void hideFromTimelineChanged() override {}
 
     TimelineFeed mBackupFeed;
     bool mReverseFeed = false;

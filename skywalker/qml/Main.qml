@@ -2029,10 +2029,30 @@ ApplicationWindow {
         showBlockMuteDialog(false, author, (expiresAt) => gu.mute(authorToMute, expiresAt), muteByDid)
     }
 
+    function unmuteAuthor(authorDid, muteByDid = "") {
+        let gu = getGraphUtils(muteByDid)
+        gu.unmute(authorDid)
+    }
+
     function blockAuthor(author, blockByDid = "") {
         let gu = getGraphUtils(blockByDid)
         let did = author.did
         showBlockMuteDialog(true, author, (expiresAt) => gu.block(did, expiresAt), blockByDid)
+    }
+
+    function unblockAuthor(authorDid, blockingUri, blockByDid = "") {
+        let gu = getGraphUtils(blockByDid)
+        gu.unblock(authorDid, blockingUri)
+    }
+
+    function followAuthor(author, feedPostUri = "", feedDid = "", feedContext = "", followByDid = "") {
+        let gu = getGraphUtils(followByDid)
+        gu.follow(author, feedPostUri, feedDid, feedContext)
+    }
+
+    function unfollowAuthor(authorDid, followingUri, feedPostUri = "", feedDid = "", followByDid = "") {
+        let gu = getGraphUtils(followByDid)
+        gu.unfollow(authorDid, followingUri)
     }
 
     function viewPostThread(did, modelId, postEntryIndex) {

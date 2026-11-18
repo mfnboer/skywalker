@@ -1,3 +1,8 @@
+next
+====
+* Follow option in post menu
+* Bug fixes
+
 4.49
 ====
 * Moderation inbox

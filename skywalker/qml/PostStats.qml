@@ -20,6 +20,9 @@ Item {
     required property string replyRootAuthorDid
     required property string replyRootUri
     required property bool authorIsUser
+    required property bool isFollowingAuthor
+    required property bool isMutedAuthor
+    required property bool isBlockingAuthor
     required property bool isBookmarked
     required property bool bookmarkTransient
     required property bool isThread
@@ -30,6 +33,7 @@ Item {
     property int feedbackTransient: QEnums.FEEDBACK_NONE
     property bool isUnrolledThread: false
     property bool showViewThread: false
+    property bool showFollowOption: true
     property var record: null // recordview
     property var recordWithMedia: null // record_with_media_view
     property bool feedAcceptsInteractions: false
@@ -61,8 +65,12 @@ Item {
     signal detachQuote(string uri, bool detach)
     signal pin()
     signal unpin()
+    signal followAuthor()
+    signal unfollowAuthor()
     signal muteAuthor()
+    signal unmuteAuthor()
     signal blockAuthor()
+    signal unblockAuthor()
     signal showEmojiNames()
     signal showMoreLikeThis()
     signal showLessLikeThis()
@@ -293,18 +301,40 @@ Item {
                     onClicked: reportPost()
                 }
                 SkyMenuButton {
-                    text: qsTr("Mute author")
-                    svg: SvgOutline.mute
+                    text: isFollowingAuthor ? qsTr("Unfollow author") : qsTr("Follow author")
+                    svg: isFollowingAuthor ? SvgOutline.removeUser : SvgOutline.addUser
                     popup: moreMenu
-                    visible: !authorIsUser
-                    onClicked: muteAuthor()
+                    visible: !authorIsUser && showFollowOption
+                    onClicked: {
+                        if (isFollowingAuthor)
+                            unfollowAuthor()
+                        else
+                            followAuthor()
+                    }
                 }
                 SkyMenuButton {
-                    text: qsTr("Block author")
-                    svg: SvgOutline.block
+                    text: isMutedAuthor ? qsTr("Unmute author") : qsTr("Mute author")
+                    svg: isMutedAuthor ? SvgOutline.unmute : SvgOutline.mute
                     popup: moreMenu
                     visible: !authorIsUser
-                    onClicked: blockAuthor()
+                    onClicked: {
+                        if (isMutedAuthor)
+                            unmuteAuthor()
+                        else
+                            muteAuthor()
+                    }
+                }
+                SkyMenuButton {
+                    text: isBlockingAuthor ? qsTr("Unblock author") : qsTr("Block author")
+                    svg: isBlockingAuthor ? SvgOutline.unblock : SvgOutline.block
+                    popup: moreMenu
+                    visible: !authorIsUser
+                    onClicked: {
+                        if (isBlockingAuthor)
+                            unblockAuthor()
+                        else
+                            blockAuthor()
+                    }
                 }
                 SkyMenuButton {
                     text: qsTr("Emoji names")

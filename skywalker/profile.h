@@ -196,6 +196,8 @@ public:
     ATProto::AppBskyActor::ViewerState::SharedPtr getViewerState() const;
 
     void setBlocking(const QString& blocking);
+    void setFollowing(const QString& following);
+    void setMuted(bool muted);
 
 private:
     struct PrivateData

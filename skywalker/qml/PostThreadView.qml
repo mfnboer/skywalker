@@ -317,7 +317,7 @@ SkyListView {
         let firstVisibleIndex = getFirstVisibleIndex()
         let lastVisibleIndex = getLastVisibleIndex()
         console.debug("Move to:", index, "first:", firstVisibleIndex, "last:", lastVisibleIndex, "count:", count, "content:", contentHeight)
-        positionViewAtIndex(index, ListView.Center)
+        positionViewAtIndex(index, ListView.Beginning)
         return (firstVisibleIndex <= index && lastVisibleIndex >= index)
     }
 

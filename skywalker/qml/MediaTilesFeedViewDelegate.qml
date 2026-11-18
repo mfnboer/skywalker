@@ -264,6 +264,9 @@ Item {
                 replyRootAuthorDid: postReplyRootAuthorDid
                 replyRootUri: postReplyRootUri
                 authorIsUser: author.did === userDid
+                isFollowingAuthor: author.viewer.following
+                isMutedAuthor: author.viewer.muted
+                isBlockingAuthor: author.viewer.blocking
                 isBookmarked: postBookmarked
                 bookmarkTransient: postBookmarkTransient
                 feedback: postFeedback
@@ -272,6 +275,7 @@ Item {
                 isQuotePost: Boolean(postRecord) || Boolean(postRecordWithMedia)
                 indexedSecondsAgo: postIndexedSecondsAgo
                 showViewThread: true
+                showFollowOption: false
                 record: postRecord
                 recordWithMedia: postRecordWithMedia
                 feedAcceptsInteractions: page.feedAcceptsInteractions

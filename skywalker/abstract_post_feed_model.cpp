@@ -119,7 +119,8 @@ void AbstractPostFeedModel::clearFeed()
     mCursor.clear();
     setEndOfFeed(false);
     setChronological(true);
-    clearLocalChanges();
+    LocalPostModelChanges::clearLocalChanges();
+    LocalAuthorModelChanges::clearLocalChanges();
     clearLocalProfileChanges();
 }
 
@@ -545,7 +546,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
 
     const int physicalIndex = toPhysicalIndex(index.row());
     const auto& post = mList[physicalIndex];
-    const auto* change = getLocalChange(post.getCid());
+    const auto* change = LocalPostModelChanges::getLocalChange(post.getCid());
 
     switch (Role(role))
     {
@@ -553,9 +554,28 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
         return mUserDid;
     case Role::Author:
     {
-        const auto author = !post.isBlocked() ? post.getAuthor() : post.getBlockedAuthor().getAuthor();
+        auto author = !post.isBlocked() ? post.getAuthor() : post.getBlockedAuthor().getAuthor();
         const BasicProfile* profileChange = getProfileChange(author.getDid());
-        return QVariant::fromValue(profileChange ? *profileChange : author);
+
+        if (profileChange)
+            author = *profileChange;
+
+        const auto* authorChange = LocalAuthorModelChanges::getLocalChange(author.getDid());
+
+        if (authorChange) {
+            ProfileViewerState& viewer = author.getViewer();
+
+            if (authorChange->mBlockingUri)
+                viewer.setBlocking(*authorChange->mBlockingUri);
+
+            if (authorChange->mFollowingUri)
+                viewer.setFollowing(*authorChange->mFollowingUri);
+
+            if (authorChange->mMuted)
+                viewer.setMuted(*authorChange->mMuted);
+        }
+
+        return QVariant::fromValue(author);
     }
     case Role::PostText:
         return post.getFormattedText(mFocusHashtags.getNormalizedMatchHashtags(post), mOverrideLinkColor);
@@ -811,7 +831,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return change && change->mThreadgateUri ? *change->mThreadgateUri : post.getThreadgateUri();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mThreadgateUri ? *rootChange->mThreadgateUri : post.getThreadgateUri();
     }
     case Role::PostReplyRestriction:
@@ -820,7 +840,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return change && change->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? change->mReplyRestriction : post.getReplyRestriction();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mReplyRestriction != QEnums::REPLY_RESTRICTION_UNKNOWN ? rootChange->mReplyRestriction : post.getReplyRestriction();
     }
     case Role::PostReplyRestrictionLists:
@@ -829,7 +849,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return QVariant::fromValue(change && change->mReplyRestrictionLists ? *change->mReplyRestrictionLists : post.getReplyRestrictionLists());
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return QVariant::fromValue(rootChange && rootChange->mReplyRestrictionLists ? *rootChange->mReplyRestrictionLists : post.getReplyRestrictionLists());
     }
     case Role::PostHiddenReplies:
@@ -838,7 +858,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return change && change->mHiddenReplies ? *change->mHiddenReplies : post.getHiddenReplies();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mHiddenReplies ? *rootChange->mHiddenReplies : post.getHiddenReplies();
     }
     case Role::PostIsHiddenReply:
@@ -847,7 +867,7 @@ QVariant AbstractPostFeedModel::data(const QModelIndex& index, int role) const
             return change && change->mHiddenReplies ? change->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
 
         const QString rootCid = post.getReplyRootCid();
-        const auto* rootChange = !rootCid.isEmpty() ? getLocalChange(rootCid) : nullptr;
+        const auto* rootChange = !rootCid.isEmpty() ? LocalPostModelChanges::getLocalChange(rootCid) : nullptr;
         return rootChange && rootChange->mHiddenReplies ? rootChange->mHiddenReplies->contains(post.getUri()) : post.isHiddenReply();
     }
     case Role::PostBookmarked:
@@ -1181,6 +1201,21 @@ void AbstractPostFeedModel::profileChanged()
 void AbstractPostFeedModel::locallyBlockedChanged()
 {
     changeData({ int(Role::PostBlocked), int(Role::PostLocallyDeleted) });
+}
+
+void AbstractPostFeedModel::blockingUriChanged()
+{
+    changeData({ int(Role::Author) });
+}
+
+void AbstractPostFeedModel::followingUriChanged()
+{
+    changeData({ int(Role::Author) });
+}
+
+void AbstractPostFeedModel::mutedChanged()
+{
+    changeData({ int(Role::Author) });
 }
 
 void AbstractPostFeedModel::bookmarkedChanged()

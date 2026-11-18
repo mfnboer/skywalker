@@ -196,6 +196,29 @@ void ProfileViewerState::setBlocking(const QString& blocking)
     }
 }
 
+void ProfileViewerState::setFollowing(const QString& following)
+{
+    if (mPrivate && mPrivate->mViewerState)
+    {
+        if (following.isEmpty())
+            mPrivate->mViewerState->mFollowing = {};
+        else
+            mPrivate->mViewerState->mFollowing = following;
+    }
+    else
+    {
+        qWarning() << "No viewer state to set following:" << following;
+    }
+}
+
+void ProfileViewerState::setMuted(bool muted)
+{
+    if (mPrivate && mPrivate->mViewerState)
+        mPrivate->mViewerState->mMuted = muted;
+    else
+        qWarning() << "No viewer state to set muted:" << muted;
+}
+
 const QString& ProfileViewerState::getFollowing() const
 {
     return mPrivate && mPrivate->mViewerState && mPrivate->mViewerState->mFollowing ? *mPrivate->mViewerState->mFollowing : NULL_STRING;
