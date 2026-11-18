@@ -356,6 +356,12 @@ SkyPage {
                                 onClicked: skywalker.getShareUtils().copyAuthorLinkToClipboard(author)
                             }
                             SkyMenuButton {
+                                text: qsTr("Copy username")
+                                svg: SvgOutline.atSign
+                                popup: moreMenu
+                                onClicked: skywalker.getShareUtils().copyToClipboard(author.handle)
+                            }
+                            SkyMenuButton {
                                 text: following ? qsTr("Unfollow") : qsTr("Follow")
                                 svg: following ? SvgOutline.noUsers : SvgOutline.addUser
                                 popup: moreMenu
