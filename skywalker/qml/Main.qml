@@ -20,6 +20,7 @@ ApplicationWindow {
     property var didGraphUtilsMap: new Map()
     property var didFeedUtilsMap: new Map()
     property var didLinkUtilsMap: new Map()
+    property var popup: null
 
     // Monitor FPS. Qt6.9 brings QFrameTimer
     // property double frameIntervalStart: Date.now()
@@ -111,7 +112,11 @@ ApplicationWindow {
 
         // This catches the back-button on Android
 
-        if (utils.isEmojiPickerShown()) {
+        if (root.popup) {
+            destroyPopup()
+            event.accepted = false
+        }
+        else if (utils.isEmojiPickerShown()) {
             utils.dismissEmojiPicker()
             event.accepted = false
         }
@@ -1793,29 +1798,36 @@ ApplicationWindow {
 
         const mousePoint = mouseView.mapToItem(parentView, 0, mouseEvent ? mouseEvent.y : 0)
         let component = guiSettings.createComponent("NonActiveUsersPopup.qml")
-        let popup = component.createObject(parentView, {
+        root.popup = component.createObject(parentView, {
                 mouseY: mousePoint.y,
                 postUri: postUri,
                 did: did,
                 action: actionType
             })
-        popup.onUserClicked.connect((user) => {
+        root.popup.onUserClicked.connect((user) => {
                 if (actionType === QEnums.NON_ACTIVE_USER_REPLY)
-                    popup.destroy()
+                    destroyPopup()
 
                 actionCb(user)
             })
-        popup.onRepostClicked.connect((user) => {
+        root.popup.onRepostClicked.connect((user) => {
                 actionCb(user)
             })
-        popup.onQuoteClicked.connect((user) => {
-                popup.destroy()
+        root.popup.onQuoteClicked.connect((user) => {
+                destroyPopup()
                 secondActionCb(user)
             })
-        popup.onClosed.connect(() => { popup.destroy() })
-        popup.open()
+        root.popup.onClosed.connect(() => {
+                destroyPopup()
+            })
+        root.popup.open()
 
         return true
+    }
+
+    function destroyPopup() {
+        root.popup.destroy()
+        root.popup = null
     }
 
     function isActiveUser(did) {
