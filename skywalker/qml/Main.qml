@@ -1728,14 +1728,20 @@ ApplicationWindow {
             fu.like(uri, cid)
     }
 
+    function followByNonActiveUser(mouseEvent, mouseView, parentView, did) {
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, "", did,
+                              QEnums.NON_ACTIVE_USER_FOLLOW,
+                              (user) => { user.follow() })
+    }
+
     function likeByNonActiveUser(mouseEvent, mouseView, parentView, postUri, viaUri, viaCid) {
-        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, "",
                               QEnums.NON_ACTIVE_USER_LIKE,
                               (user) => { user.like(viaUri, viaCid) })
     }
 
     function bookmarkByNonActiveUser(mouseEvent, mouseView, parentView, postUri) {
-        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri,
+        return actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, "",
                               QEnums.NON_ACTIVE_USER_BOOKMARK,
                               (user) => { user.bookmark() })
     }
@@ -1744,7 +1750,7 @@ ApplicationWindow {
                                   replyToUri, replyToCid, replyToText, replyToDateTime, replyToAuthor,
                                   replyRootUri, replyRootCid, replyToLanguage, replyToMentionDids) {
         return actionByNonActiveUser(
-                    mouseEvent, mouseView, parentView, replyToUri,
+                    mouseEvent, mouseView, parentView, replyToUri, "",
                     QEnums.NON_ACTIVE_USER_REPLY,
                     (user) => {
                         if (user.postView.replyDisabled) {
@@ -1761,7 +1767,7 @@ ApplicationWindow {
     function repostByNonActiveUser(mouseEvent, mouseView, parentView, postUri, postCid,
                                    text, dateTime, author, embeddingDisabled, viaUri = "", viaCid = "") {
         return actionByNonActiveUser(
-                    mouseEvent, mouseView, parentView, postUri,
+                    mouseEvent, mouseView, parentView, postUri, "",
                     QEnums.NON_ACTIVE_USER_REPOST,
                     (user) => { // fist action: repost
                         user.repost(viaUri, viaCid)
@@ -1777,17 +1783,20 @@ ApplicationWindow {
                     })
     }
 
-    function actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, actionType, actionCb, secondActionCb) {
+    function actionByNonActiveUser(mouseEvent, mouseView, parentView, postUri, did, actionType, actionCb, secondActionCb) {
+        console.debug("Action:", actionType, "postUri:", postUri, "did:", did)
+
         if (!skywalker.getSessionManager().hasNonActiveUsers()) {
             console.debug("No non-active users")
             return false
         }
 
-        const mousePoint = mouseView.mapToItem(parentView, 0, mouseEvent.y)
+        const mousePoint = mouseView.mapToItem(parentView, 0, mouseEvent ? mouseEvent.y : 0)
         let component = guiSettings.createComponent("NonActiveUsersPopup.qml")
         let popup = component.createObject(parentView, {
                 mouseY: mousePoint.y,
                 postUri: postUri,
+                did: did,
                 action: actionType
             })
         popup.onUserClicked.connect((user) => {

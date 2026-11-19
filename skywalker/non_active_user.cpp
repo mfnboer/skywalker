@@ -219,6 +219,32 @@ void NonActiveUser::clearPostView()
     }
 }
 
+BasicProfileView* NonActiveUser::getProfileForAction() const
+{
+    return mProfileForAction ? mProfileForAction.get() : nullptr;
+}
+
+void NonActiveUser::setProfileForAction(BasicProfileView::Ptr profile)
+{
+    mProfileForAction = std::move(profile);
+    emit profileForActionChanged();
+}
+
+void NonActiveUser::clearProfileForAction()
+{
+    if (mProfileForAction)
+    {
+        mProfileForAction = nullptr;
+        emit profileForActionChanged();
+    }
+}
+
+void NonActiveUser::clearObjectsForAction()
+{
+    clearPostView();
+    clearProfileForAction();
+}
+
 void NonActiveUser::getPost(const QString& uri)
 {
     qDebug() << "Get post:" << uri << "handle:" << mProfile.getHandle();
@@ -230,20 +256,20 @@ void NonActiveUser::getPost(const QString& uri)
         return;
     }
 
-    if (mGetPostInProgress)
+    if (mGetActionObjectInProgress)
     {
-        qDebug() << "Get post still in progress";
+        qDebug() << "Get still in progress";
         return;
     }
 
-    setPostInProgress(true);
+    setActionObjectInProgress(true);
 
     mBsky->getPosts({uri},
         [this, presence=getPresence(), uri](ATProto::AppBskyFeed::PostView::List posts){
             if (!presence)
                 return;
 
-            setPostInProgress(false);
+            setActionObjectInProgress(false);
 
             // If a post is blocked or deleted we simply do not receive the post
             if (posts.empty())
@@ -265,9 +291,51 @@ void NonActiveUser::getPost(const QString& uri)
                 return;
 
             qDebug() << "Get post failed:" << error << "-" << msg << "handle:" << mProfile.getHandle();
-            setPostInProgress(false);
+            setActionObjectInProgress(false);
             auto errorView = std::make_unique<PostView>(uri, msg);
             setPostView(std::move(errorView));
+        });
+}
+
+
+void NonActiveUser::getProfileForAction(const QString& did)
+{
+    qDebug() << "Get profile:" << did << "handle:" << mProfile.getHandle();
+    Q_ASSERT(mBsky);
+
+    if (!mBsky)
+    {
+        qWarning() << "No atproto client:" << mProfile.getHandle();
+        return;
+    }
+
+    if (mGetActionObjectInProgress)
+    {
+        qDebug() << "Get still in progress";
+        return;
+    }
+
+    setActionObjectInProgress(true);
+
+    mBsky->getProfile(did,
+        [this, presence=getPresence(), did](ATProto::AppBskyActor::ProfileViewDetailed::SharedPtr profile){
+            if (!presence)
+                return;
+
+            setActionObjectInProgress(false);
+            BasicProfile basicProfile(std::move(profile));
+            auto view = std::make_unique<BasicProfileView>(basicProfile);
+            qDebug() << "Profile for action:" << view->getDid() << "following:" << view->getFollowingUri();
+            setProfileForAction(std::move(view));
+        },
+        [this, presence=getPresence(), did](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Get profile failed:" << error << "-" << msg << "handle:" << mProfile.getHandle();
+            setActionObjectInProgress(false);
+            auto errorView = std::make_unique<BasicProfileView>(did, msg);
+            setProfileForAction(std::move(errorView));
         });
 }
 
@@ -482,7 +550,7 @@ void NonActiveUser::bookmark()
 
     if (!mPostView || !mPostView->isGood())
     {
-        qWarning() << "No post to bookmar:" << mProfile.getHandle();
+        qWarning() << "No post to bookmark:" << mProfile.getHandle();
         return;
     }
 
@@ -499,6 +567,37 @@ void NonActiveUser::bookmark()
         addBookmark();
     else
         removeBookmark();
+}
+
+void NonActiveUser::follow()
+{
+    qDebug() << "Follow by:" << mProfile.getHandle();
+
+    if (!mProfileForAction || !mProfileForAction->isGood())
+    {
+        qWarning() << "No profile to follow:" << mProfile.getHandle();
+        return;
+    }
+
+    if (mProfileForAction->getDid() == mProfile.getDid())
+    {
+        qWarning() << "Do not follow yourself:" << mProfile.getDid();
+        return;
+    }
+
+    if (!graphMaster())
+        return;
+
+    if (isActionInProgress())
+    {
+        qDebug() << "Action still in progress";
+        return;
+    }
+
+    if (mProfileForAction->getFollowingUri().isEmpty())
+        doFollow();
+    else
+        undoFollow();
 }
 
 void NonActiveUser::addBookmark()
@@ -561,12 +660,76 @@ void NonActiveUser::removeBookmark()
         });
 }
 
-void NonActiveUser::setPostInProgress(bool inProgress)
+void NonActiveUser::doFollow()
 {
-    if (inProgress != mGetPostInProgress)
+    const auto did = mProfileForAction->getDid();
+    setActionInProgress(true);
+
+    graphMaster()->follow(did,
+        [this, presence=getPresence(), did](const auto& followingUri, const auto&){
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+            qDebug() << "Follow succeeded:" << did << "following:" << followingUri << "handle:" << mProfile.getHandle();
+
+            mSessionManager->getSkywalker()->makeLocalModelChange(
+                [did, followingUri](LocalAuthorModelChanges* model){
+                    model->updateFollowingUri(did, followingUri);
+                });
+
+            if (mProfileForAction)
+                mProfileForAction->setFollowingUri(followingUri);
+        },
+        [this, presence=getPresence(), did](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Follow failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void NonActiveUser::undoFollow()
+{
+    const auto did = mProfileForAction->getDid();
+    const auto followingUri = mProfileForAction->getFollowingUri();
+
+    setActionInProgress(true);
+
+    graphMaster()->undo(followingUri,
+        [this, presence=getPresence(), did]{
+            if (!presence)
+                return;
+
+            setActionInProgress(false);
+            qDebug() << "Undo follw succeeded:" << did << "handle:" << mProfile.getHandle();
+
+            mSessionManager->getSkywalker()->makeLocalModelChange(
+                [did](LocalAuthorModelChanges* model){
+                    model->updateFollowingUri(did, "");
+                });
+
+            if (mProfileForAction)
+                mProfileForAction->setFollowingUri("");
+        },
+        [this, presence=getPresence(), did](const QString& error, const QString& msg){
+            if (!presence)
+                return;
+
+            qDebug() << "Undo follow failed:" << error << " - " << msg << "handle:" << mProfile.getHandle();
+            setActionInProgress(false);
+            mSessionManager->getSkywalker()->showStatusMessage(msg, QEnums::STATUS_LEVEL_ERROR);
+        });
+}
+
+void NonActiveUser::setActionObjectInProgress(bool inProgress)
+{
+    if (inProgress != mGetActionObjectInProgress)
     {
-        mGetPostInProgress = inProgress;
-        emit getPostInProgressChanged();
+        mGetActionObjectInProgress = inProgress;
+        emit getActionObjectInProgressChanged();
     }
 }
 
@@ -592,6 +755,21 @@ ATProto::PostMaster* NonActiveUser::postMaster()
     }
 
     return mPostMaster.get();
+}
+
+ATProto::GraphMaster* NonActiveUser::graphMaster()
+{
+    if (!mGraphMaster)
+    {
+        Q_ASSERT(mBsky);
+
+        if (mBsky)
+            mGraphMaster = std::make_unique<ATProto::GraphMaster>(*mBsky);
+        else
+            qWarning() << "Bsky client missing";
+    }
+
+    return mGraphMaster.get();
 }
 
 }

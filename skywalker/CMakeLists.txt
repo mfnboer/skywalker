@@ -837,6 +837,8 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ProfileLinkList.qml
         QML_FILES qml/QuoteProfileLink.qml
         QML_FILES qml/ProfileLinkRow.qml
+        SOURCES basic_profile_view.h
+        SOURCES basic_profile_view.cpp
 )
 
 target_link_libraries(libskywalker

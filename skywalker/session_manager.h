@@ -56,8 +56,8 @@ public:
     ATProto::Client::SharedPtr getBskyClientFor(const QString& did) const;
     Skywalker* getSkywalker();
 
-    Q_INVOKABLE void startPostCacheTimeout();
-    Q_INVOKABLE void stopPostCacheTimeout();
+    Q_INVOKABLE void startCacheTimeout();
+    Q_INVOKABLE void stopCacheTimeout();
 
     void pause();
     void resume();
@@ -99,10 +99,10 @@ private:
     void startNotificationRefreshTimers(const QString& did, int initialDelayCount);
     void stopNotificationRefreshTimers(const QString& did);
     void enableNotificationsNonActiveUsers();
-    void disableNotificatiosNonActiveUsers();
+    void disableNotificationsNonActiveUsers();
     void refreshNotificationCount(const QString& did);
     void updateTokens();
-    void clearPostCache();
+    void clearCache();
 
     void resumeAndRefreshSessionSuccess(
         const QString& did, int refreshDelayCount,
@@ -115,7 +115,7 @@ private:
 
     // Container to keep alive expired non-active users
     std::vector<NonActiveUser::Ptr> mExpiredUsers;
-    QTimer mPostCacheTimer;
+    QTimer mCacheTimer;
 };
 
 }

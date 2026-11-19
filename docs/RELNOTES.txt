@@ -1,6 +1,7 @@
 next
 ====
 * Follow option in post menu
+* Long press on follow button to follow with any account
 * Copy username option on profile
 * Bug fixes
 

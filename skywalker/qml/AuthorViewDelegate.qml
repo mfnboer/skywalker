@@ -132,18 +132,34 @@ Rectangle {
             Layout.rightMargin: authorRect.margin
 
             SkyButton {
+                id: followButton
                 height: 40
                 text: qsTr("Follow")
                 visible: !followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: follow(author)
+
+                onPressAndHold: {
+                    console.debug("MICHEL")
+                    if (root.isActiveUser(userDid))
+                        root.followByNonActiveUser(null, followButton, authorRect.ListView.view, author.did)
+                }
+
                 Accessible.name: qsTr(`press to follow ${author.name}`)
             }
             SkyButton {
+                id: unfollowButton
                 height: 40
                 flat: true
                 text: qsTr("Following")
                 visible: followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: unfollow(author.did, followingUri)
+
+                onPressAndHold: {
+                    console.debug("MICHEL")
+                    if (root.isActiveUser(userDid))
+                        root.followByNonActiveUser(null, unfollowButton, authorRect.ListView.view, author.did)
+                }
+
                 Accessible.name: qsTr(`press to unfollow ${author.name}`)
             }
             SvgButton {

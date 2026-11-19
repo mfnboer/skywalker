@@ -13,7 +13,7 @@ static constexpr auto SESSION_REFRESH_DELAY = 11s;
 static constexpr auto NOTIFICATION_REFRESH_DELAY = 5s;
 static constexpr auto NOTIFICATION_REFRESH_INTERVAL = 61s;
 static constexpr auto NOTIFICATION_REFRESH_ACTIVE_USER_INTERVAL = 29s;
-static constexpr auto POST_CACHE_TIMEOUT = 30s;
+static constexpr auto CACHE_TIMEOUT = 30s;
 
 SessionManager::SessionManager(QObject* parent) :
     QObject(parent)
@@ -27,15 +27,15 @@ SessionManager::SessionManager(Skywalker* skywalker, QObject* parent) :
 {
     Q_ASSERT(skywalker);
 
-    mPostCacheTimer.setSingleShot(true);
+    mCacheTimer.setSingleShot(true);
 
-    connect(&mPostCacheTimer, &QTimer::timeout, this, [this]{ clearPostCache(); });
+    connect(&mCacheTimer, &QTimer::timeout, this, [this]{ clearCache(); });
 
     connect(mUserSettings, &UserSettings::notificationsForAllAccountsChanged, this, [this]{
         if (mUserSettings->getNotificationsForAllAccounts(mSkywalker->getUserDid()))
             enableNotificationsNonActiveUsers();
         else
-            disableNotificatiosNonActiveUsers();
+            disableNotificationsNonActiveUsers();
 
         emit nonActiveNotificationsChanged();
     });
@@ -259,14 +259,14 @@ void SessionManager::updateTokens()
     }
 }
 
-void SessionManager::clearPostCache()
+void SessionManager::clearCache()
 {
-    qDebug() << "Clear post cache";
+    qDebug() << "Clear cache";
 
     for (const auto& [_, session] : mDidSessionMap)
     {
         if (session->mNonActiveUser)
-            session->mNonActiveUser->clearPostView();
+            session->mNonActiveUser->clearObjectsForAction();
     }
 }
 
@@ -481,7 +481,7 @@ void SessionManager::enableNotificationsNonActiveUsers()
     }
 }
 
-void SessionManager::disableNotificatiosNonActiveUsers()
+void SessionManager::disableNotificationsNonActiveUsers()
 {
     for (const auto& [did, session] : mDidSessionMap)
     {
@@ -489,9 +489,6 @@ void SessionManager::disableNotificatiosNonActiveUsers()
         {
             stopNotificationRefreshTimers(did);
             setUnreadNotificationCount(did, 0);
-
-            if (session->mNonActiveUser)
-                session->mNonActiveUser->clearPostView();
         }
     }
 }
@@ -622,16 +619,16 @@ Skywalker* SessionManager::getSkywalker()
     return mSkywalker;
 }
 
-void SessionManager::startPostCacheTimeout()
+void SessionManager::startCacheTimeout()
 {
-    qDebug() << "Start post cache time out";
-    mPostCacheTimer.start(POST_CACHE_TIMEOUT);
+    qDebug() << "Start cache time out";
+    mCacheTimer.start(CACHE_TIMEOUT);
 }
 
-void SessionManager::stopPostCacheTimeout()
+void SessionManager::stopCacheTimeout()
 {
-    qDebug() << "Stop post cache time out";
-    mPostCacheTimer.stop();
+    qDebug() << "Stop cache time out";
+    mCacheTimer.stop();
 }
 
 void SessionManager::pause()

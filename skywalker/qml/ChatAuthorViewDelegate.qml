@@ -121,12 +121,20 @@ Rectangle {
             Layout.rightMargin: authorRect.margin
 
             SkyButton {
+                id: followButton
                 height: 40
                 text: qsTr("Follow")
                 visible: !followingUri && author.did !== skywalker.getUserDid() && showAuthor && showFollow && !author.associated.isLabeler
                 onClicked: follow(author)
+
+                onPressAndHold: {
+                    if (root.isActiveUser(userDid))
+                        root.followByNonActiveUser(null, followButton, authorRect.ListView.view, author.did)
+                }
+
                 Accessible.name: qsTr(`press to follow ${author.name}`)
             }
+
             SvgButton {
                 width: 40
                 height: width
@@ -134,6 +142,8 @@ Rectangle {
                 accessibleName: qsTr(`press to remove ${author.name}`)
                 visible: allowDeleteItem && chatAuthor.groupMember.role !== QEnums.CONVO_MEMBER_ROLE_OWNER
                 onClicked: confirmDelete()
+
+
             }
         }
 

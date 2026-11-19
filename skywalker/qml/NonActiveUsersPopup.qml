@@ -4,7 +4,11 @@ import skywalker
 
 SkyPopup {
     required property int mouseY // in parent coordinates
-    required property string postUri
+
+    // One of these must be passed depending on the action
+    property string postUri
+    property string did
+
     required property int action // QEnums::NonActiveUserAction
     property Skywalker skywalker: root.getSkywalker()
     property SessionManager sessionManager: skywalker.getSessionManager()
@@ -26,8 +30,9 @@ SkyPopup {
     NonActiveUserListView {
         id: view
         anchors.fill: parent
-        model: sessionManager.nonActiveNotifications
+        model: sessionManager.nonActiveUsers
         postUri: popup.postUri
+        did: popup.did
         action: popup.action
 
         onContentHeightChanged: {
@@ -35,18 +40,33 @@ SkyPopup {
         }
 
         onUserClicked: (user) => {
-            if (user.sessionExpired)
+            if (user.sessionExpired) {
                 skywalker.showStatusMessage(qsTr(`@${user.profile.handle} not logged in`), QEnums.STATUS_LEVEL_INFO)
-            else if (!Boolean(user.postView))
-                console.debug("No post view available")
-            else if (user.postView.uri !== postUri)
-                console.debug("Post not loaded:", postUri)
-            else if (user.postView.hasError())
-                skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: ${user.postView.error}`), QEnums.STATUS_LEVEL_ERROR)
-            else if (user.postView.notFound)
-                skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: post not available`), QEnums.STATUS_LEVEL_INFO)
-            else
-                popup.userClicked(user)
+            }
+            else if (requiresPost()) {
+                if (!Boolean(user.postView))
+                    console.debug("No post view available")
+                else if (user.postView.uri !== postUri)
+                    console.debug("Post not loaded:", postUri)
+                else if (user.postView.hasError())
+                    skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: ${user.postView.error}`), QEnums.STATUS_LEVEL_ERROR)
+                else if (user.postView.notFound)
+                    skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: post not available`), QEnums.STATUS_LEVEL_INFO)
+                else
+                    popup.userClicked(user)
+            }
+            else {
+                if (!Boolean(user.profileForAction))
+                    console.debug("No profile available")
+                else if (user.profileForAction.did !== popup.did)
+                    console.debug("Profile not loaded:", popup.did)
+                else if (user.profileForAction.did === user.profile.did)
+                    console.debug("Do not follow yourself")
+                else if (user.profileForAction.hasError())
+                    skywalker.showStatusMessage(qsTr(`@${user.profile.handle}: ${user.profileForAction.error}`), QEnums.STATUS_LEVEL_ERROR)
+                else
+                    popup.userClicked(user)
+            }
         }
 
         onRepostClicked: (user) => popup.repostClicked(user)
@@ -79,9 +99,26 @@ SkyPopup {
             return qsTr("Reply with")
         case QEnums.NON_ACTIVE_USER_REPOST:
             return qsTr("Repost or quote with")
+        case QEnums.NON_ACTIVE_USER_FOLLOW:
+            return qsTr("Follow with")
         }
 
         return ""
+    }
+
+    function requiresPost() {
+        switch (action) {
+        case QEnums.NON_ACTIVE_USER_LIKE:
+        case QEnums.NON_ACTIVE_USER_BOOKMARK:
+        case QEnums.NON_ACTIVE_USER_REPLY:
+        case QEnums.NON_ACTIVE_USER_REPOST:
+            return true
+        case QEnums.NON_ACTIVE_USER_FOLLOW:
+            return false
+        }
+
+        console.warn("Unknown action:", action)
+        return true
     }
 
     function setPosition() {
@@ -99,11 +136,11 @@ SkyPopup {
     }
 
     Component.onDestruction: {
-        sessionManager.startPostCacheTimeout()
+        sessionManager.startCacheTimeout()
     }
 
     Component.onCompleted: {
         setPosition()
-        sessionManager.stopPostCacheTimeout()
+        sessionManager.stopCacheTimeout()
     }
 }

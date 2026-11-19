@@ -5,7 +5,8 @@ import skywalker
 
 ListView {
     required model
-    required property string postUri
+    property string postUri
+    property string did
     required property int action // QEnums::NonActiveUserAction
     property int rowPadding: 2
 
@@ -87,25 +88,21 @@ ListView {
                 id: notFoundIcon
                 svg: SvgOutline.block
                 iconColor: guiSettings.disabledColor
-                visible: !user.sessionExpired && Boolean(user.postView) &&
-                         user.postView.uri === postUri && user.postView.notFound
+                visible: !user.sessionExpired && actionObjectNotFound()
             }
 
             NonActiveUserActionIcon {
                 id: errorIcon
                 svg: SvgOutline.error
                 iconColor: guiSettings.errorColor
-                visible: !user.sessionExpired && Boolean(user.postView) &&
-                         user.postView.uri === postUri && user.postView.hasError()
+                visible: !user.sessionExpired && actionObjectHasError()
             }
 
             NonActiveUserActionIcon {
                 id: actionIcon
                 svg: actionSvg()
                 iconColor: actionIconColor()
-                visible: actionVisible() && !user.sessionExpired &&
-                         Boolean(user.postView) && user.postView.uri === postUri &&
-                         user.postView.isGood()
+                visible: actionVisible() && !user.sessionExpired && actionObjectIsGood()
 
                 BlinkingOpacity {
                     target: actionIcon
@@ -117,6 +114,7 @@ ListView {
                     case QEnums.NON_ACTIVE_USER_LIKE:
                     case QEnums.NON_ACTIVE_USER_BOOKMARK:
                     case QEnums.NON_ACTIVE_USER_REPLY:
+                    case QEnums.NON_ACTIVE_USER_FOLLOW:
                         return true
                     }
 
@@ -131,6 +129,8 @@ ListView {
                         return user.postView?.bookmarked ? SvgFilled.bookmark : SvgOutline.bookmark
                     case QEnums.NON_ACTIVE_USER_REPLY:
                         return SvgOutline.reply
+                    case QEnums.NON_ACTIVE_USER_FOLLOW:
+                        return user.profileForAction?.followingUri ? SvgFilled.user : SvgOutline.user
                     }
 
                     return SvgOutline.error
@@ -144,6 +144,8 @@ ListView {
                         return user.postView?.bookmarked ?  guiSettings.buttonColor : guiSettings.statsColor
                     case QEnums.NON_ACTIVE_USER_REPLY:
                         return user.postView?.replyDisabled ? guiSettings.disabledColor : guiSettings.statsColor
+                    case QEnums.NON_ACTIVE_USER_FOLLOW:
+                        return user.profileForAction?.followingUri ?  guiSettings.buttonColor : guiSettings.statsColor
                     }
 
                     return guiSettings.errorColor
@@ -189,7 +191,7 @@ ListView {
                 Layout.preferredWidth: 44
                 Layout.preferredHeight: Layout.preferredWidth
                 Layout.rowSpan: 2
-                running: user.getPostInProgress
+                running: user.getActionObjectInProgress
                 visible: running
             }
 
@@ -243,11 +245,42 @@ ListView {
             onClicked: userClicked(user)
         }
 
+        function actionObjectNotFound() {
+            if (postUri)
+                return Boolean(user.postView) && user.postView.uri === postUri && user.postView.notFound
+            else
+                return false
+        }
+
+        function actionObjectHasError() {
+            if (postUri)
+                return Boolean(user.postView) && user.postView.uri === postUri && user.postView.hasError()
+            else
+                return Boolean(user.profileForAction) && user.profileForAction.did === listView.did && user.profileForAction.hasError()
+        }
+
+        function actionObjectIsGood() {
+            if (postUri)
+                return Boolean(user.postView) && user.postView.uri === postUri && user.postView.isGood()
+            else if (listView.did === user.profile.did) // you should not follow yourself
+                return false
+            else
+                return Boolean(user.profileForAction) && user.profileForAction.did === listView.did && user.profileForAction.isGood()
+        }
+
         Component.onCompleted: {
-            if (!user.sessionExpired && (!Boolean(user.postView) || user.postView.uri !== postUri ||
-                                         !user.postView.isGood()))
-            {
-                user.getPost(postUri)
+            if (!user.sessionExpired) {
+                if (postUri) {
+                    if (!Boolean(user.postView) || user.postView.uri !== postUri || !user.postView.isGood())
+                        user.getPost(postUri)
+                }
+                else if (did) {
+                    if (!Boolean(user.profileForAction) || user.profileForAction.did !== did || !user.profileForAction.isGood())
+                        user.getProfileForAction(did)
+                }
+                else {
+                    console.warn("Post URI or DID missing")
+                }
             }
         }
     }

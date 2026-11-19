@@ -255,18 +255,32 @@ SkyPage {
                 }
 
                 SkyButton {
+                    id: followButton
                     Layout.preferredHeight: 40
                     text: qsTr("Follow")
                     visible: !following && !page.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.follow(author)
+
+                    onPressAndHold: {
+                        if (root.isActiveUser(userDid))
+                            root.followByNonActiveUser(null, followButton, page, author.did)
+                    }
+
                     Accessible.name: qsTr(`press to follow ${author.name}`)
                 }
                 SkyButton {
+                    id: unfollowButton
                     Layout.preferredHeight: 40
                     flat: true
                     text: qsTr("Following")
                     visible: following && !page.isUser(author) && contentVisible() && !isLabeler
                     onClicked: graphUtils.unfollow(author.did, following)
+
+                    onPressAndHold: {
+                        if (root.isActiveUser(userDid))
+                            root.followByNonActiveUser(null, unfollowButton, page, author.did)
+                    }
+
                     Accessible.name: qsTr(`press to unfollow ${author.name}`)
                 }
 

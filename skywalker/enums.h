@@ -596,7 +596,8 @@ public:
         NON_ACTIVE_USER_LIKE,
         NON_ACTIVE_USER_BOOKMARK,
         NON_ACTIVE_USER_REPLY,
-        NON_ACTIVE_USER_REPOST
+        NON_ACTIVE_USER_REPOST,
+        NON_ACTIVE_USER_FOLLOW
     };
     Q_ENUM(NonActiveUserAction)
 
