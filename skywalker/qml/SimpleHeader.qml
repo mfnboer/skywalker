@@ -76,4 +76,7 @@ Rectangle {
         }
     }
 
+    function forceFocus() {
+        backButton.forceActiveFocus()
+    }
 }

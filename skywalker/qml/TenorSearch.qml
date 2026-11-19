@@ -20,7 +20,6 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SearchHeader {
-        minSearchTextLength: 2
         placeHolderText: useKlipy ? qsTr("Search KLIPY") : qsTr("Search Tenor")
         showBackButton: !root.showSideBar
 

@@ -16,7 +16,6 @@ SkyPage {
     Accessible.role: Accessible.Pane
 
     header: SearchHeader {
-        minSearchTextLength: 2
         placeHolderText: qsTr("Search Giphy")
         showBackButton: !root.showSideBar
 

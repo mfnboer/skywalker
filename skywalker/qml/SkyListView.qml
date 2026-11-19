@@ -84,7 +84,7 @@ ListView {
 
         const lastVisibleIndex = getLastVisibleIndex()
 
-        if (count - lastVisibleIndex < preloadThreshold && !model.getFeedInProgress) {
+        if (count - lastVisibleIndex < preloadThreshold && !Boolean(model?.getFeedInProgress)) {
             console.debug("Preload next page")
             preloadNextPageFunc()
         }

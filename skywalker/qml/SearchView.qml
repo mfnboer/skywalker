@@ -33,6 +33,8 @@ SkyPage {
     property bool currentCursorWordIsHashtag: false
     property bool currentCursorWordIsCashtag: false
     property bool firstSearch: true
+    readonly property string sideBarTitle: qsTr("Search")
+    readonly property SvgImage sideBarSvg: SvgOutline.search
     readonly property int margin: 10
     property date nullDate
 
@@ -48,66 +50,10 @@ SkyPage {
         postsViewLatest.cover()
     }
 
-    header: SearchHeader {
-        minSearchTextLength: 0
-        placeHolderText: qsTr("Search posts, users or feeds")
-        showBackButton: !root.showSideBar
+    header: SimpleHeader {
+        text: sideBarTitle
+        visible: !root.showSideBar
         onBack: page.closed()
-
-        onSearchTextChanged: (text) => {
-            page.isTyping = true
-            currentText = text.trim()
-
-            if (currentText.length > 0) {
-                if (UnicodeFonts.isHashtag(currentText)) {
-                    page.isHashtagSearch = true
-                    page.isCashtagSearch = false
-                } else if (UnicodeFonts.isCashtag(currentText)) {
-                    page.isHashtagSearch = false
-                    page.isCashtagSearch = true
-                } else {
-                    page.isHashtagSearch = false
-                    page.isCashtagSearch = false
-                }
-            } else {
-                authorTypeaheadSearchTimer.stop()
-                hashtagTypeaheadSearchTimer.stop()
-                searchUtils.authorTypeaheadList = []
-                searchUtils.hashtagTypeaheadList = []
-                page.isHashtagSearch = false
-                page.isCashtagSearch = false
-                page.header.forceFocus()
-            }
-        }
-
-        onCursorWordChanged: {
-            currentCursorWord = cursorWord
-
-            if (cursorWord.length > 0) {
-                if (UnicodeFonts.isHashtag(cursorWord)) {
-                    page.currentCursorWordIsHashtag = true
-                    page.currentCursorWordIsCashtag = false
-                    hashtagTypeaheadSearchTimer.start()
-                } else if (UnicodeFonts.isCashtag(cursorWord)) {
-                    page.currentCursorWordIsHashtag = false
-                    page.currentCursorWordIsCashtag = true
-                } else {
-                    page.currentCursorWordIsHashtag = false
-                    page.currentCursorWordIsCashtag = false
-                    authorTypeaheadSearchTimer.start()
-                }
-            } else {
-                page.currentCursorWordIsHashtag = false
-                page.currentCursorWordIsCashtag = false
-            }
-        }
-
-        onSearch: (text) => { searchUtils.search(text) }
-        onCleared: {
-            page.isTyping = false
-            currentText = ""
-            unfocus()
-        }
     }
 
     // Place footer explicitly on the bottom instead of using Page.footer
@@ -121,7 +67,7 @@ SkyPage {
         searchView: page
         activePage: QEnums.UI_PAGE_SEARCH
         onHomeClicked: root.viewHomePage()
-        onSearchClicked: page.header.forceFocus()
+        onSearchClicked: searchInput.forceFocus()
         onNotificationsClicked: root.viewNotifications()
         onMessagesClicked: root.viewChat()
         footerVisible: !root.showSideBar
@@ -153,13 +99,80 @@ SkyPage {
 
         onHashtagClicked: (tag) => {
             const fullTag = `#${tag}`
-            page.header.setCursorWord(fullTag) // qmllint disable missing-property
+            searchInput.setCursorWord(fullTag) // qmllint disable missing-property
             searchUtils.search(fullTag)
+        }
+    }
+
+    SearchInput {
+        id: searchInput
+        anchors.top: parent.top
+        anchors.topMargin: root.showSideBar ? 15 : 0
+        anchors.left: parent.left
+        anchors.leftMargin: 10
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+        placeHolderText: qsTr("Search posts, users or feeds")
+
+        onSearchTextChanged: (text) => {
+            page.isTyping = true
+            currentText = text.trim()
+
+            if (currentText.length > 0) {
+                if (UnicodeFonts.isHashtag(currentText)) {
+                    page.isHashtagSearch = true
+                    page.isCashtagSearch = false
+                } else if (UnicodeFonts.isCashtag(currentText)) {
+                    page.isHashtagSearch = false
+                    page.isCashtagSearch = true
+                } else {
+                    page.isHashtagSearch = false
+                    page.isCashtagSearch = false
+                }
+            } else {
+                authorTypeaheadSearchTimer.stop()
+                hashtagTypeaheadSearchTimer.stop()
+                searchUtils.authorTypeaheadList = []
+                searchUtils.hashtagTypeaheadList = []
+                page.isHashtagSearch = false
+                page.isCashtagSearch = false
+                searchInput.forceFocus()
+            }
+        }
+
+        onCursorWordChanged: {
+            currentCursorWord = cursorWord
+
+            if (cursorWord.length > 0) {
+                if (UnicodeFonts.isHashtag(cursorWord)) {
+                    page.currentCursorWordIsHashtag = true
+                    page.currentCursorWordIsCashtag = false
+                    hashtagTypeaheadSearchTimer.start()
+                } else if (UnicodeFonts.isCashtag(cursorWord)) {
+                    page.currentCursorWordIsHashtag = false
+                    page.currentCursorWordIsCashtag = true
+                } else {
+                    page.currentCursorWordIsHashtag = false
+                    page.currentCursorWordIsCashtag = false
+                    authorTypeaheadSearchTimer.start()
+                }
+            } else {
+                page.currentCursorWordIsHashtag = false
+                page.currentCursorWordIsCashtag = false
+            }
+        }
+
+        onSearch: (text) => { searchUtils.search(text) }
+        onCleared: {
+            page.isTyping = false
+            currentText = ""
+            header.forceFocus()
         }
     }
 
     SkyTabBar {
         id: searchBar
+        anchors.top: searchInput.bottom
         width: parent.width - (moreButton.visible ? moreButton.width : 0)
         Material.background: guiSettings.backgroundColor
         leftPadding: page.margin
@@ -205,6 +218,7 @@ SkyPage {
 
     Rectangle {
         id: moreButton
+        anchors.top: searchInput.bottom
         anchors.right: parent.right
         width: height
         height: searchBar.height
@@ -544,7 +558,7 @@ SkyPage {
         anchors.top: searchModeSeparator.bottom
         anchors.bottom: pageFooter.top
         width: parent.width
-        currentIndex: (page.header.hasFocus() || recentSearchesView.keepFocus ||
+        currentIndex: (searchInput.hasFocus() || recentSearchesView.keepFocus ||
                        (!userSettings.showTrendingTopics && !userSettings.showSuggestedUsers && !userSettings.showSuggestedFeeds && !userSettings.showSuggestedStarterPacks)) ?
                 recentSearchesView.StackLayout.index :
                 suggestionsView.StackLayout.index
@@ -898,7 +912,7 @@ SkyPage {
                     accessibleName: qsTr("clear recent searches")
                     onPressed: {
                         recentSearchesView.keepFocus = true
-                        page.header.forceFocus()
+                        searchInput.forceFocus()
                         clearRecentSearches()
                     }
                 }
@@ -950,7 +964,7 @@ SkyPage {
                             svg: SvgOutline.close
                             accessibleName: qsTr(`remove ${modelData.name}`)
                             onPressed: {
-                                page.header.forceFocus()
+                                searchInput.forceFocus()
                                 searchUtils.removeLastSearchedProfile(modelData.did)
                             }
                         }
@@ -1005,7 +1019,7 @@ SkyPage {
                         SkyMouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                header.setSearchText(recentSearchText.text)
+                                searchInput.setSearchText(recentSearchText.text)
                                 searchUtils.search(recentSearchText.text)
                             }
                         }
@@ -1019,7 +1033,7 @@ SkyPage {
                             svg: SvgOutline.close
                             accessibleName: qsTr(`remove ${recentSearchText.text}`)
                             onPressed: {
-                                page.header.forceFocus()
+                                searchInput.forceFocus()
                                 searchUtils.removeLastSearch(recentSearchText.text)
                                 recentSearchesRepeater.model = searchUtils.getLastSearches()
                             }
@@ -1273,7 +1287,7 @@ SkyPage {
     }
 
     function getSearchText() {
-        return page.header.displayText.trim()
+        return searchInput.displayText.trim()
     }
 
     function getAuthorListText(authors) {
@@ -1324,11 +1338,11 @@ SkyPage {
                         searchUtils.clearLastSearches()
                         recentSearchesRepeater.model = []
                         recentSearchesView.keepFocus = false
-                        page.header.forceFocus()
+                        searchInput.forceFocus()
                     },
                     () =>  {
                         recentSearchesView.keepFocus = false
-                        page.header.forceFocus()
+                        searchInput.forceFocus()
                     })
     }
 
@@ -1355,13 +1369,13 @@ SkyPage {
     }
 
     function hide() {
-        page.header.unfocus() // qmllint disable missing-property
+        header.forceFocus()
     }
 
     function showSearchFeed(searchFeed) {
         freeMemoryTimer.stop()
         adultContent = skywalker.getContentFilter().getAdultContent()
-        page.header.forceFocus()
+        searchInput.forceFocus()
         searchBar.setLatestPosts()
         exactPhrase = searchFeed.searchOptions.exactPhrase
         following = searchFeed.searchOptions.following
@@ -1375,7 +1389,7 @@ SkyPage {
         postFilter = searchFeed.searchOptions.postFilter
         mediaPostFilter = searchFeed.searchOptions.mediaPostFilter
         postExcludeWords = searchFeed.searchOptions.excludeWords
-        header.setSearchText(searchFeed.searchQuery)
+        searchInput.setSearchText(searchFeed.searchQuery)
         searchUtils.search(searchFeed.searchQuery)
     }
 
@@ -1384,14 +1398,14 @@ SkyPage {
         adultContent = skywalker.getContentFilter().getAdultContent()
 
         if (searchText)
-            page.header.forceFocus()
+            searchInput.forceFocus()
         else
-            page.header.unfocus()
+            header.forceFocus()
 
         if (searchText || searchScope) {
             searchBar.setTopPosts()
             postAuthorUsers = searchScope ? [searchScope] : []
-            header.setSearchText(searchText)
+            searchInput.setSearchText(searchText)
 
             if (searchText)
                 searchUtils.search(searchText)
@@ -1425,6 +1439,6 @@ SkyPage {
         userSettings.onShowSuggestedFeedsChanged.connect(() => { if (userSettings.showSuggestedFeeds) firstSearch = true })
         userSettings.onShowSuggestedStarterPacksChanged.connect(() => { if (userSettings.showSuggestedStarterPacks) firstSearch = true })
         searchUtils.initLastSearchedProfiles()
-        header.unfocus()
+        header.forceFocus()
     }
 }

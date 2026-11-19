@@ -16,7 +16,6 @@ SkyPage {
 
     header: SearchHeader {
         placeHolderText: qsTr("Search user")
-        showSearchButton: false
 
         onBack: page.closed()
 

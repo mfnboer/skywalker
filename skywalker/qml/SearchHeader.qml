@@ -4,17 +4,13 @@ import QtQuick.Layouts
 import skywalker
 
 Rectangle {
-    property int minSearchTextLength: 1
     property string placeHolderText: qsTr("Search")
-    property bool showSearchButton: true
     property bool showBackButton: true
-    property string prevDisplayText
-    readonly property alias displayText: searchText.displayText
-    readonly property alias cursorWord: searchText.cursorWord
+    readonly property alias displayText: searchInput.displayText
+    readonly property alias cursorWord: searchInput.cursorWord
 
     signal back
     signal searchTextChanged(string text)
-    signal keyRelease(var event)
     signal search(string text)
     signal cleared()
 
@@ -37,89 +33,33 @@ Rectangle {
             onClicked: headerRect.back()
         }
 
-        Rectangle {
-            radius: guiSettings.radius
+        SearchInput {
+            id: searchInput
             Layout.fillWidth: true
             Layout.rightMargin: 10
-            Layout.preferredHeight: searchText.height
-            color: guiSettings.textInputBackgroundColor
-            border.width: searchText.activeFocus ? 1 : 0
-            border.color: guiSettings.buttonColor
+            placeHolderText: headerRect.placeHolderText
 
-            WordsInput {
-                id: searchText
-                EnterKey.type: Qt.EnterKeySearch // works since Qt6.8
-                width: parent.width
-                clip: true
-                padding: 5
-                rightPadding: clearButton.width
-                font.pointSize: guiSettings.scaledFont(9/8)
-                color: guiSettings.textColor
-                inputMethodHints: Qt.ImhNoAutoUppercase | Qt.ImhNoPredictiveText
-                maximumLength: 2048
-                focus: true
-
-                onDisplayTextChanged: {
-                    if (displayText !== prevDisplayText) {
-                        prevDisplayText = displayText
-                        headerRect.searchTextChanged(displayText)
-                    }
-                }
-
-                Keys.onReturnPressed: headerRect.search(searchText.displayText)
-
-                Accessible.role: Accessible.EditableText
-                Accessible.name: placeHolder.visible ? placeHolderText : text
-                Accessible.editable: true
-                Accessible.searchEdit: true
-
-                SvgPlainButton {
-                    id: clearButton
-                    anchors.right: parent.right
-                    imageMargin: 8
-                    y: parent.y - parent.padding
-                    width: height
-                    height: parent.height + 10
-                    svg: SvgOutline.close
-                    Material.background: guiSettings.backgroundColor
-                    accessibleName: qsTr("clear search text")
-                    onClicked: {
-                        searchText.clear()
-                        cleared()
-                    }
-                }
-            }
-
-            AccessibleText {
-                id: placeHolder
-                width: searchText.width
-                padding: searchText.padding
-                rightPadding: searchText.rightPadding
-                font.pointSize: searchText.font.pointSize
-                color: guiSettings.placeholderTextColor
-                text: headerRect.placeHolderText
-                visible: searchText.displayText.length === 0
-
-                Accessible.ignored: true
-            }
+            onSearchTextChanged: (text) => headerRect.searchTextChanged(text)
+            onSearch: (text) => headerRect.search(text)
+            onCleared: headerRect.cleared()
         }
     }
 
 
     function setSearchText(text) {
-        searchText.text = text
+        searchInput.setSearchText(text)
     }
 
     function setCursorWord(word) {
-        searchText.replaceCursorWord(word)
+        searchInput.setCursorWord(word)
     }
 
     function hasFocus() {
-        return searchText.activeFocus
+        return searchInput.hasFocus()
     }
 
     function forceFocus() {
-        searchText.forceActiveFocus()
+        searchInput.forceFocus()
     }
 
     function unfocus() {

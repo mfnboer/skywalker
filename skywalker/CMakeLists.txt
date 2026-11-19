@@ -839,6 +839,7 @@ qt_add_qml_module(libskywalker
         QML_FILES qml/ProfileLinkRow.qml
         SOURCES basic_profile_view.h
         SOURCES basic_profile_view.cpp
+        QML_FILES qml/SearchInput.qml
 )
 
 target_link_libraries(libskywalker
