@@ -11,6 +11,13 @@
 #include <atproto/lib/client.h>
 #include <QUuid>
 
+#ifdef Q_OS_LINUX
+#include <qt6keychain/keychain.h>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QTimer>
+#endif
+
 // NOTE: do not store user defined types (Q_DECLARE_METATYPE) in settings.
 // This will break OffLineMessageChecker. This runs in an Android background process.
 // For some reason these types are not available in such a process.
@@ -19,7 +26,17 @@ namespace Skywalker {
 
 using namespace std::chrono_literals;
 
+#ifndef Q_OS_LINUX
 static constexpr char const* KEY_ALIAS_PASSWORD = "SkywalkerPass";
+#endif
+static constexpr char const* KEYCHAIN_SERVICE = "Skywalker";
+
+#ifdef Q_OS_LINUX
+static QString tokensKeychainKey(const QString& did)
+{
+    return did + "/tokens";
+}
+#endif
 static constexpr double DEFAULT_FONT_SCALE = 1.0;
 
 static constexpr char const* VALUE_TYPE_NULL = "Null";
@@ -49,7 +66,9 @@ UserSettings::UserSettings(QObject* parent) :
 {
     qDebug() << "Settings:" << mSettings.fileName();
     mSettings.setObjectName("UserSettings");
+#ifndef Q_OS_LINUX
     mEncryption.init(KEY_ALIAS_PASSWORD);
+#endif
     cleanup();
 }
 
@@ -59,14 +78,22 @@ UserSettings::UserSettings(const QString& fileName, QObject* parent) :
 {
     qDebug() << "Settings:" << mSettings.fileName();
     mSettings.setObjectName("UserSettings");
+#ifndef Q_OS_LINUX
     mEncryption.init(KEY_ALIAS_PASSWORD);
+#endif
     cleanup();
 }
 
 std::function<void(const QString& access, const QString& refresh)> UserSettings::getTokenSetter(const QString& did)
 {
     return [this, did](const QString& access, const QString& refresh) {
+#ifdef Q_OS_LINUX
+        // Called from the network thread. The keyring jobs and token cache must be used
+        // from the thread that owns this object.
+        QMetaObject::invokeMethod(this, [this, did, access, refresh]{ saveTokens(did, access, refresh); });
+#else
         saveTokens(did, access, refresh);
+#endif
     };
 }
 
@@ -477,7 +504,12 @@ void UserSettings::setRememberPassword(const QString& did, bool enable)
     mSettings.setValue(key(did, "rememberPassword"), enable);
 
     if (!enable)
+    {
         mSettings.remove(key(did, "password"));
+#ifdef Q_OS_LINUX
+        deletePassword(did);
+#endif
+    }
 
     sync();
 }
@@ -495,24 +527,117 @@ void UserSettings::savePassword(const QString& did, const QString& password)
         return;
     }
 
+#ifdef Q_OS_LINUX
+    mSettings.remove(key(did, "password"));
+    auto* job = new QKeychain::WritePasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(did);
+    job->setTextData(password);
+    connect(job, &QKeychain::Job::finished, this, [this, did](QKeychain::Job* finishedJob) {
+        if (finishedJob->error() != QKeychain::NoError)
+        {
+            const QString error = tr("Could not save password to the system keyring: %1")
+                .arg(finishedJob->errorString());
+            qWarning() << error;
+            emit passwordStorageError(did, error);
+        }
+        else if (!getRememberPassword(did))
+        {
+            deletePassword(did);
+        }
+    });
+    job->start();
+#else
     const QByteArray encryptedPassword = mEncryption.encrypt(password, KEY_ALIAS_PASSWORD);
     mSettings.setValue(key(did, "password"), encryptedPassword);
+#endif
 }
 
-QString UserSettings::getPassword(const QString& did) const
+void UserSettings::getPasswordAsync(const QString& did, PasswordCallback callback)
 {
     if (!getRememberPassword(did))
     {
         qWarning() << "Password saving is not enabled";
-        return {};
+        callback({}, tr("Password saving is not enabled"));
+        return;
     }
 
+#ifdef Q_OS_LINUX
+    readPassword(did, std::move(callback));
+#else
     const QByteArray encryptedPassword = mSettings.value(key(did, "password")).toByteArray();
 
     if (encryptedPassword.isEmpty())
-        return {};
+    {
+        callback({}, tr("No saved password is available"));
+        return;
+    }
 
-    return mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD);
+    callback(mEncryption.decrypt(encryptedPassword, KEY_ALIAS_PASSWORD), {});
+#endif
+}
+
+void UserSettings::requestPassword(const QString& did)
+{
+    getPasswordAsync(did, [this, did](const QString& password, const QString& error) {
+        emit passwordRetrieved(did, password, error);
+    });
+}
+
+void UserSettings::deletePassword(const QString& did)
+{
+#ifdef Q_OS_LINUX
+    auto* job = new QKeychain::DeletePasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(did);
+    connect(job, &QKeychain::Job::finished, this, [this, did](QKeychain::Job* finishedJob) {
+        if (finishedJob->error() != QKeychain::NoError &&
+            finishedJob->error() != QKeychain::EntryNotFound)
+        {
+            const QString error = tr("Could not remove password from the system keyring: %1")
+                .arg(finishedJob->errorString());
+            qWarning() << error;
+            emit passwordStorageError(did, error);
+        }
+    });
+    job->start();
+#else
+    Q_UNUSED(did);
+#endif
+}
+
+void UserSettings::readPassword(const QString& did, PasswordCallback callback)
+{
+#ifdef Q_OS_LINUX
+    mSettings.remove(key(did, "password"));
+    auto* job = new QKeychain::ReadPasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(did);
+    connect(job, &QKeychain::Job::finished, this,
+            [this, did, callback=std::move(callback)](QKeychain::Job* finishedJob) {
+        if (!getRememberPassword(did))
+        {
+            callback({}, tr("Password saving is not enabled"));
+            return;
+        }
+
+        if (finishedJob->error() == QKeychain::NoError)
+        {
+            callback(static_cast<QKeychain::ReadPasswordJob*>(finishedJob)->textData(), {});
+        }
+        else
+        {
+            const QString error = finishedJob->error() == QKeychain::EntryNotFound
+                ? tr("No saved password is available")
+                : tr("Could not read password from the system keyring: %1")
+                    .arg(finishedJob->errorString());
+            if (finishedJob->error() != QKeychain::EntryNotFound)
+                qWarning() << error;
+            callback({}, error);
+        }
+    });
+    job->start();
+#else
+    Q_UNUSED(did);
+    callback({}, tr("Password keyring is unavailable"));
+#endif
 }
 
 void UserSettings::setOAuthEnabled(const QString& did, bool enable)
@@ -728,12 +853,201 @@ QString UserSettings::getDefaultServiceModeration() const
     return ATProto::Client::SERVICE_MODERATION;
 }
 
+UserSettings::Tokens UserSettings::getTokens(const QString& did) const
+{
+#ifdef Q_OS_LINUX
+    // Loading may migrate tokens, which modifies the settings.
+    return const_cast<UserSettings*>(this)->loadTokens(did);
+#else
+    return { mSettings.value(key(did, "access")).toString(),
+             mSettings.value(key(did, "refresh")).toString() };
+#endif
+}
+
+void UserSettings::setTokens(const QString& did, const QString& access, const QString& refresh)
+{
+#ifdef Q_OS_LINUX
+    mTokenCache[did] = { access, refresh };
+
+    if (mKeyringTokensUnavailable)
+    {
+        moveTokensToSettings(did);
+        return;
+    }
+
+    if (mTokenWritesInFlight.contains(did))
+        mTokenWritesDirty.insert(did);
+    else
+        writeTokensToKeyring(did);
+#else
+    mSettings.setValue(key(did, "access"), access);
+    mSettings.setValue(key(did, "refresh"), refresh);
+#endif
+}
+
+void UserSettings::removeTokens(const QString& did)
+{
+    mSettings.remove(key(did, "access"));
+    mSettings.remove(key(did, "refresh"));
+
+#ifdef Q_OS_LINUX
+    mTokenCache[did] = {};
+    mTokenWritesDirty.erase(did);
+
+    auto* job = new QKeychain::DeletePasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(tokensKeychainKey(did));
+    connect(job, &QKeychain::Job::finished, this, [did](QKeychain::Job* finishedJob) {
+        if (finishedJob->error() != QKeychain::NoError &&
+            finishedJob->error() != QKeychain::EntryNotFound)
+        {
+            qWarning() << "Could not remove tokens from the system keyring:" << did
+                       << finishedJob->errorString();
+        }
+    });
+    job->start();
+#endif
+}
+
+#ifdef Q_OS_LINUX
+UserSettings::Tokens UserSettings::loadTokens(const QString& did)
+{
+    if (const auto it = mTokenCache.find(did); it != mTokenCache.end())
+        return it->second;
+
+    const Tokens settingsTokens{ mSettings.value(key(did, "access")).toString(),
+                                 mSettings.value(key(did, "refresh")).toString() };
+
+    if (mKeyringTokensUnavailable)
+    {
+        mTokenCache[did] = settingsTokens;
+        return settingsTokens;
+    }
+
+    // Tokens are needed synchronously. Wait for the keyring at most once per account.
+    // The job must live on the heap: the keychain job executor still uses it after
+    // the finished signal and the job deletes itself afterwards.
+    auto* job = new QKeychain::ReadPasswordJob(KEYCHAIN_SERVICE);
+    job->setKey(tokensKeychainKey(did));
+    QEventLoop loop;
+    QKeychain::Error error = QKeychain::NoError;
+    QString errorString;
+    QString text;
+    connect(job, &QKeychain::Job::finished, &loop, [&](QKeychain::Job* finishedJob) {
+        error = finishedJob->error();
+        errorString = finishedJob->errorString();
+        text = static_cast<QKeychain::ReadPasswordJob*>(finishedJob)->textData();
+        loop.quit();
+    });
+    job->start();
+    loop.exec();
+
+    if (error == QKeychain::NoError)
+    {
+        const auto json = QJsonDocument::fromJson(text.toUtf8()).object();
+        Tokens tokens{ json["access"].toString(), json["refresh"].toString() };
+        mTokenCache[did] = tokens;
+        mSettings.remove(key(did, "access"));
+        mSettings.remove(key(did, "refresh"));
+        return tokens;
+    }
+
+    if (error != QKeychain::EntryNotFound)
+    {
+        qWarning() << "System keyring unavailable for tokens, using settings file:" << errorString;
+        mKeyringTokensUnavailable = true;
+        mTokenCache[did] = settingsTokens;
+        return settingsTokens;
+    }
+
+    mTokenCache[did] = settingsTokens;
+
+    // Migrate tokens from the settings file to the keyring
+    if (!settingsTokens.mAccess.isEmpty() || !settingsTokens.mRefresh.isEmpty())
+        writeTokensToKeyring(did);
+
+    return settingsTokens;
+}
+
+void UserSettings::writeTokensToKeyring(const QString& did)
+{
+    const Tokens& tokens = mTokenCache[did];
+    QJsonObject json;
+    json["access"] = tokens.mAccess;
+    json["refresh"] = tokens.mRefresh;
+
+    mTokenWritesInFlight.insert(did);
+    auto* job = new QKeychain::WritePasswordJob(KEYCHAIN_SERVICE, this);
+    job->setKey(tokensKeychainKey(did));
+    job->setTextData(QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Compact)));
+    connect(job, &QKeychain::Job::finished, this, [this, did](QKeychain::Job* finishedJob) {
+        mTokenWritesInFlight.erase(did);
+
+        if (finishedJob->error() != QKeychain::NoError)
+        {
+            // Do not lose the session. Keep tokens in the settings file.
+            qWarning() << "Could not save tokens to the system keyring:" << finishedJob->errorString();
+            mKeyringTokensUnavailable = true;
+            moveTokensToSettings(did);
+        }
+        else if (mTokenWritesDirty.erase(did))
+        {
+            writeTokensToKeyring(did);
+            return;
+        }
+        else
+        {
+            const Tokens& tokens = mTokenCache[did];
+
+            // Tokens were cleared while writing
+            if (tokens.mAccess.isEmpty() && tokens.mRefresh.isEmpty())
+                removeTokens(did);
+
+            mSettings.remove(key(did, "access"));
+            mSettings.remove(key(did, "refresh"));
+            sync();
+        }
+
+        if (mTokenWritesInFlight.empty() && mFlushLoop)
+            mFlushLoop->quit();
+    });
+    job->start();
+}
+
+void UserSettings::moveTokensToSettings(const QString& did)
+{
+    const Tokens& tokens = mTokenCache[did];
+    mSettings.setValue(key(did, "access"), tokens.mAccess);
+    mSettings.setValue(key(did, "refresh"), tokens.mRefresh);
+}
+
+void UserSettings::flushTokenWrites()
+{
+    if (mTokenWritesInFlight.empty())
+        return;
+
+    QEventLoop loop;
+    QTimer timer;
+    timer.setSingleShot(true);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(5s);
+    mFlushLoop = &loop;
+    loop.exec();
+    mFlushLoop = nullptr;
+}
+#endif
+
+UserSettings::~UserSettings()
+{
+#ifdef Q_OS_LINUX
+    flushTokenWrites();
+#endif
+}
+
 void UserSettings::saveSession(const ATProto::ComATProtoServer::Session& session)
 {
     qDebug() << "Save session:" << session.mHandle;
     mSettings.setValue(key(session.mDid, "handle"), session.mHandle);
-    mSettings.setValue(key(session.mDid, "access"), session.mAccessJwt);
-    mSettings.setValue(key(session.mDid, "refresh"), session.mRefreshJwt);
+    setTokens(session.mDid, session.mAccessJwt, session.mRefreshJwt);
     mSettings.setValue(key(session.mDid, "2FA"), session.mEmailAuthFactor);
     qDebug() << "Session saved:" << session.mHandle << "access:" << session.mAccessJwt << "refresh:" << session.mRefreshJwt;
 }
@@ -743,8 +1057,9 @@ ATProto::ComATProtoServer::Session UserSettings::getSession(const QString& did) 
     ATProto::ComATProtoServer::Session session;
     session.mDid = did;
     session.mHandle = mSettings.value(key(did, "handle")).toString();
-    session.mAccessJwt = mSettings.value(key(did, "access")).toString();
-    session.mRefreshJwt = mSettings.value(key(did, "refresh")).toString();
+    const Tokens tokens = getTokens(did);
+    session.mAccessJwt = tokens.mAccess;
+    session.mRefreshJwt = tokens.mRefresh;
     session.mEmailAuthFactor = mSettings.value(key(did, "2FA"), false).toBool();
     return session;
 }
@@ -772,16 +1087,14 @@ std::optional<ATProto::ComATProtoServer::Session> UserSettings::getSavedSession(
 void UserSettings::saveTokens(const QString& did, const QString& accessJwt, const QString& refreshJwt)
 {
     qDebug() << "Set tokens:" << did << "access:" << accessJwt << "refresh:" << refreshJwt;
-    mSettings.setValue(key(did, "access"), accessJwt);
-    mSettings.setValue(key(did, "refresh"), refreshJwt);
+    setTokens(did, accessJwt, refreshJwt);
     sync();
 }
 
 void UserSettings::clearTokens(const QString& did)
 {
     qDebug() << "Clear tokens:" << did;
-    mSettings.remove(key(did, "access"));
-    mSettings.remove(key(did, "refresh"));
+    removeTokens(did);
     mSettings.remove(key(did, "pdsDpopNonce"));
     mSettings.remove(key(did, "authDpopNonce"));
     sync();
