@@ -23,7 +23,7 @@ public class Translate {
     private static final String DEEPL_TRANSLATE_PACKAGE_NAME = "com.deepl.mobiletranslator";
 
     public static boolean translateGoogle(String text) {
-        Intent intent = createIntent(text);
+        Intent intent = createProcessTextIntent(text);
         ActivityInfo googleTranslate = getGoogleTranslate(intent);
 
         // It seems the Google Translate pacakge is not always visible. In that case
@@ -46,28 +46,49 @@ public class Translate {
     }
 
     public static boolean translateDeepL(String text) {
-        Intent intent = createIntent(text);
+        Intent intent = createProcessTextIntent(text);
+        intent.setPackage(DEEPL_TRANSLATE_PACKAGE_NAME);
+
+        if (startTranslateActivity(intent))
+            return true;
+
+        // ACTION_PROCESS_TEXT may not be supported on all device, e.g. tablets
+        intent = createSendIntent(text);
         intent.setPackage(DEEPL_TRANSLATE_PACKAGE_NAME);
         return startTranslateActivity(intent);
     }
 
     public static boolean translateOther(String text) {
-        Intent intent = createIntent(text);
+        Intent intent = createProcessTextIntent(text);
         SkywalkerActivity activity = SkywalkerActivity.getInstance();
         PackageManager pm = activity.getPackageManager();
 
         if (intent.resolveActivity(pm) != null)
             return startTranslateActivity(intent);
 
-        return true;
+        intent = createSendIntent(text);
+
+        if (intent.resolveActivity(pm) != null)
+            return startTranslateActivity(intent);
+
+        return false;
     }
 
-    private static Intent createIntent(String text) {
+    private static Intent createProcessTextIntent(String text) {
         Intent intent = new Intent()
             .setAction(Intent.ACTION_PROCESS_TEXT)
             .setType("text/plain")
             .putExtra(Intent.EXTRA_PROCESS_TEXT, text)
             .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
+
+        return intent;
+    }
+
+    private static Intent createSendIntent(String text) {
+        Intent intent = new Intent()
+            .setAction(Intent.ACTION_SEND)
+            .setType("text/plain")
+            .putExtra(Intent.EXTRA_PROCESS_TEXT, text);
 
         return intent;
     }
