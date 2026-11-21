@@ -7,9 +7,6 @@
 #include "sky_application.h"
 #include "skywalker.h"
 #include "temp_file_holder.h"
-#ifdef Q_OS_LINUX
-#include "wheel_smoother.h"
-#endif
 #include <QFont>
 #include <QGuiApplication>
 #include <QImageReader>
@@ -66,9 +63,6 @@ int main(int argc, char *argv[])
     // The Qt default of 3 lines per wheel notch is slow. SKYWALKER_WHEEL_LINES overrides it.
     app.styleHints()->setWheelScrollLines(qEnvironmentVariableIntValue("SKYWALKER_WHEEL_LINES", nullptr) > 0 ?
         qEnvironmentVariableIntValue("SKYWALKER_WHEEL_LINES") : 50);
-
-    Skywalker::WheelSmoother wheelSmoother;
-    app.installEventFilter(&wheelSmoother);
 #endif
 
     app.setOrganizationName(Skywalker::Skywalker::APP_NAME);

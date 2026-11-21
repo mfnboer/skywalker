@@ -864,8 +864,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(libskywalker PRIVATE
         desktop_notifier.h
         desktop_notifier.cpp
-        wheel_smoother.h
-        wheel_smoother.cpp
     )
 endif()
 
