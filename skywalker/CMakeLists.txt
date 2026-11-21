@@ -314,8 +314,6 @@ qt_add_qml_module(libskywalker
         SOURCES jni_utils.cpp
         SOURCES offline_message_checker.h
         SOURCES offline_message_checker.cpp
-        SOURCES desktop_notifier.h
-        SOURCES desktop_notifier.cpp
         QML_FILES qml/FontComboBox.qml
         QML_FILES qml/AddGifButton.qml
         QML_FILES qml/ImageScroller.qml
@@ -861,6 +859,13 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libskywalker
         PRIVATE Qt6Keychain::Qt6Keychain
         PRIVATE Qt6::DBus
+    )
+
+    target_sources(libskywalker PRIVATE
+        desktop_notifier.h
+        desktop_notifier.cpp
+        wheel_smoother.h
+        wheel_smoother.cpp
     )
 endif()
 
