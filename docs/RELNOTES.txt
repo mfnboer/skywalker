@@ -1,5 +1,5 @@
-next
-====
+4.49.1
+======
 * Set Bluesky as default for AppView
 * Follow option in post menu
 * Long press on follow button to follow with any account
