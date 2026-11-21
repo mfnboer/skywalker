@@ -7,6 +7,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Quick QuickControls2 Svg)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Qt6Keychain REQUIRED)
+    find_package(Qt6 REQUIRED COMPONENTS DBus)
 endif()
 
 if (NOT ANDROID)
@@ -313,6 +314,8 @@ qt_add_qml_module(libskywalker
         SOURCES jni_utils.cpp
         SOURCES offline_message_checker.h
         SOURCES offline_message_checker.cpp
+        SOURCES desktop_notifier.h
+        SOURCES desktop_notifier.cpp
         QML_FILES qml/FontComboBox.qml
         QML_FILES qml/AddGifButton.qml
         QML_FILES qml/ImageScroller.qml
@@ -857,6 +860,7 @@ target_link_libraries(libskywalker
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries(libskywalker
         PRIVATE Qt6Keychain::Qt6Keychain
+        PRIVATE Qt6::DBus
     )
 endif()
 

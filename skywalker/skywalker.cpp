@@ -110,6 +110,15 @@ Skywalker::Skywalker(QObject* parent) :
         });
     connect(&mSessionManager, &SessionManager::totalUnreadNotificationCountChanged, this,
         [this](int unread){ setUnreadNotificationCount(unread); });
+#ifdef Q_OS_LINUX
+    connect(&mSessionManager, &SessionManager::newNotificationsReceived, this,
+        [this](const QString& did, int count){
+            mDesktopNotifier.notifyNew(
+                mSessionManager.getBskyClientRaw(did),
+                mUserSettings.getHandle(did),
+                count);
+        });
+#endif
 
     connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);

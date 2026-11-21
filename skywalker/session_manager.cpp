@@ -530,6 +530,12 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
     if (!session)
         return;
 
+#ifdef Q_OS_LINUX
+    // Do not notify for notifications that were already there when starting.
+    const int previousUnread = session->mUnreadNotificationCount - session->mUnreadExtraCount;
+    const bool notify = session->mHasUnreadCount && unread > previousUnread;
+    session->mHasUnreadCount = true;
+#endif
     session->mUnreadNotificationCount = unread + session->mUnreadExtraCount;
 
     if (session->mNonActiveUser)
@@ -539,6 +545,11 @@ void SessionManager::setUnreadNotificationCount(const QString& did, int unread)
 
     const int totalUnread = getTotalUnreadNotificationCount();
     emit totalUnreadNotificationCountChanged(totalUnread);
+
+#ifdef Q_OS_LINUX
+    if (notify)
+        emit newNotificationsReceived(did, unread - previousUnread);
+#endif
 }
 
 int SessionManager::getUnreadNotificationCount(const QString& did) const
@@ -612,6 +623,12 @@ ATProto::Client::SharedPtr SessionManager::getBskyClientFor(const QString& did) 
 {
     auto* session = getSession(did);
     return session ? session->mSharedBsky : nullptr;
+}
+
+ATProto::Client* SessionManager::getBskyClientRaw(const QString& did) const
+{
+    auto* session = getSession(did);
+    return session ? session->mBsky : nullptr;
 }
 
 Skywalker* SessionManager::getSkywalker()
