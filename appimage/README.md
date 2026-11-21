@@ -4,6 +4,23 @@ This directory contains Linux AppImage build configuration and generated
 artifacts. Build and packaging outputs here are ignored by the local
 `.gitignore`.
 
+## Quick start
+
+A Makefile wraps the steps below. Run it from the repository root or from this
+directory:
+
+```sh
+make -C appimage tools     # once: download linuxdeploy and the Qt plugin
+make -C appimage debug     # build/ -> Skywalker-x86_64-debug.AppImage
+make -C appimage release   # build-release/ -> Skywalker-x86_64.AppImage
+```
+
+Use `build-debug`, `build-release`, `package-debug` and `package-release` to
+run only one step, and `make -C appimage help` for all targets. Override the
+defaults with e.g. `JOBS=4`, `QMAKE=/path/to/qmake`.
+
+### Manual steps
+
 Install the project's build dependencies, including a C++ compiler, CMake, and
 the Qt 6 development modules used by the project. Linux builds also require
 the Qt 6 DBus and Qt 6 Keychain development packages.
