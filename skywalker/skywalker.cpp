@@ -115,7 +115,6 @@ Skywalker::Skywalker(QObject* parent) :
         [this](const QString& did, int count){
             mDesktopNotifier.notifyNew(
                 mSessionManager.getBskyClientRaw(did),
-                mUserSettings.getHandle(did),
                 count);
         });
 #endif

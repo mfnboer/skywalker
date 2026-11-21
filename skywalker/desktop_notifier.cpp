@@ -3,6 +3,7 @@
 #include "desktop_notifier.h"
 #include "notification.h"
 #include <QDebug>
+#include <algorithm>
 
 #ifdef Q_OS_LINUX
 #include <QCoreApplication>
@@ -58,42 +59,83 @@ static QString getBody(const Notification& notification)
     }
 }
 
-void DesktopNotifier::notifyNew(ATProto::Client* bsky, const QString& accountHandle, int count)
+static bool isPushEnabled(const ATProto::AppBskyNotification::Preferences& prefs,
+                          ATProto::AppBskyNotification::NotificationReason reason)
 {
-    const auto countOnly = [this, accountHandle, count]{
-        notify(accountHandle, tr("%n new notification(s)", "", count));
-    };
+    using Reason = ATProto::AppBskyNotification::NotificationReason;
+    const auto enabled = [](const auto& pref){ return pref && pref->mPush; };
 
-    if (!bsky)
+    switch (reason)
     {
-        countOnly();
-        return;
+    case Reason::LIKE: return enabled(prefs.mLike);
+    case Reason::LIKE_VIA_REPOST: return enabled(prefs.mLikeViaRepost);
+    case Reason::REPOST: return enabled(prefs.mRepost);
+    case Reason::REPOST_VIA_REPOST: return enabled(prefs.mRepostViaRepost);
+    case Reason::FOLLOW: return enabled(prefs.mFollow);
+    case Reason::MENTION: return enabled(prefs.mMention);
+    case Reason::REPLY: return enabled(prefs.mReply);
+    case Reason::QUOTE: return enabled(prefs.mQuote);
+    case Reason::SUBSCRIBED_POST: return enabled(prefs.mSubscribedPost);
+    case Reason::VERIFIED: return enabled(prefs.mVerified);
+    case Reason::UNVERIFIED: return enabled(prefs.mUnverified);
+    default: return false;
     }
+}
 
-    bsky->listNotifications(std::min(count, MAX_SHOWN), {}, {}, {},
-        [this, countOnly, count](auto output){
+// Only notification types for which push notifications are enabled in the
+// account's notification preferences are shown.
+void DesktopNotifier::notifyNew(ATProto::Client* bsky, int count)
+{
+    if (!bsky)
+        return;
+
+    bsky->getNotificationPreferences(
+        [this, bsky, count](auto prefsOutput){
+            if (!prefsOutput || !prefsOutput->mPreferences)
+                return;
+
+            const auto prefs = prefsOutput->mPreferences;
+            showNew(bsky, prefs, count);
+        },
+        [](const QString& error, const QString& msg){
+            qWarning() << "Failed to get notification preferences:" << error << "-" << msg;
+        });
+}
+
+void DesktopNotifier::showNew(ATProto::Client* bsky, ATProto::AppBskyNotification::Preferences::SharedPtr prefs, int count)
+{
+    const int limit = std::clamp(count, 1, 100);
+
+    bsky->listNotifications(limit, {}, {}, {},
+        [this, prefs](auto output){
+            int total = 0;
             int shown = 0;
 
             for (const auto& raw : output->mNotifications)
             {
+                if (!isPushEnabled(*prefs, raw->mReason))
+                    continue;
+
                 const Notification notification(raw);
                 const QString body = getBody(notification);
 
                 if (body.isEmpty())
                     continue;
 
-                notify(notification.getAuthor().getName(), body);
-                ++shown;
+                ++total;
+
+                if (shown < MAX_SHOWN)
+                {
+                    notify(notification.getAuthor().getName(), body);
+                    ++shown;
+                }
             }
 
-            if (shown == 0)
-                countOnly();
-            else if (count > shown)
-                notify(tr("Skywalker"), tr("and %n more notification(s)", "", count - shown));
+            if (total > shown)
+                notify(tr("Skywalker"), tr("and %n more notification(s)", "", total - shown));
         },
-        [countOnly](const QString& error, const QString& msg){
+        [](const QString& error, const QString& msg){
             qWarning() << "Failed to get notifications:" << error << "-" << msg;
-            countOnly();
         });
 }
 

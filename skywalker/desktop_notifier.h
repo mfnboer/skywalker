@@ -18,9 +18,12 @@ public:
 
     void notify(const QString& title, const QString& body);
 
-    // Fetch the newest notifications and show their content. Falls back to a
-    // notification with only the count if the notifications cannot be retrieved.
-    void notifyNew(ATProto::Client* bsky, const QString& accountHandle, int count);
+    // Fetch the newest notifications and show the ones that are enabled for push
+    // notifications in the account's notification preferences.
+    void notifyNew(ATProto::Client* bsky, int count);
+
+private:
+    void showNew(ATProto::Client* bsky, ATProto::AppBskyNotification::Preferences::SharedPtr prefs, int count);
 };
 
 }
