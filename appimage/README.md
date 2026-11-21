@@ -49,6 +49,10 @@ mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/lib"
 cp "$BUILD_DIR/appskywalker" "$APPDIR/usr/bin/"
 cp "$BUILD_DIR/skywalker/liblibskywalker.so" "$APPDIR/usr/lib/"
 cp "$BUILD_DIR/atproto/lib/liblibatproto.so" "$APPDIR/usr/lib/"
+
+# AppStream metadata (developer, license, description, releases, ...)
+mkdir -p "$APPDIR/usr/share/metainfo"
+cp "$APPIMAGE_DIR/eu.thereforeiam.skywalker.metainfo.xml" "$APPDIR/usr/share/metainfo/"
 ```
 
 Deploy Qt, QML, and system-library dependencies:
@@ -71,3 +75,14 @@ Set `QMAKE` to the Qt 6 `qmake` executable installed on your system; this is
 important if multiple Qt versions are installed. `NO_STRIP=1` disables binary
 stripping, which can avoid incompatibilities with some toolchains.
 `AppRun` sets the bundled Qt plugin and QML import paths and defaults to XCB.
+
+## Package metadata
+
+The AppImage's metadata comes from two files in this directory:
+
+- `skywalker.desktop` is the desktop entry (name, icon, categories).
+- `eu.thereforeiam.skywalker.metainfo.xml` is the AppStream metainfo with the
+  developer (author), license, description, URLs, screenshots and release
+  notes. It is copied to `AppDir/usr/share/metainfo/` when staging. Fill in the
+  `TODO` entries before publishing, and bump the `<release>` entry for each
+  release. If `appstreamcli` is installed, the AppImage plugin validates the file.

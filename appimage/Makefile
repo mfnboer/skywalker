@@ -14,6 +14,7 @@ RELEASE_BUILD_DIR := $(HERE)/build-release
 DEBUG_IMAGE := Skywalker-x86_64-debug.AppImage
 RELEASE_IMAGE := Skywalker-x86_64.AppImage
 
+METAINFO := eu.thereforeiam.skywalker.metainfo.xml
 LINUXDEPLOY := linuxdeploy-x86_64.AppImage
 QT_PLUGIN := linuxdeploy-plugin-qt-x86_64.AppImage
 LINUXDEPLOY_URL := https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/$(LINUXDEPLOY)
@@ -35,6 +36,8 @@ define package
 	cp $(1)/appskywalker $(APPDIR)/usr/bin/
 	cp $(1)/skywalker/liblibskywalker.so $(APPDIR)/usr/lib/
 	cp $(1)/atproto/lib/liblibatproto.so $(APPDIR)/usr/lib/
+	mkdir -p $(APPDIR)/usr/share/metainfo
+	cp $(HERE)/$(METAINFO) $(APPDIR)/usr/share/metainfo/
 	cd $(HERE) && NO_STRIP=$(NO_STRIP) QMAKE=$(QMAKE) \
 		QML_SOURCES_PATHS=$(ROOT)/skywalker/qml LDAI_OUTPUT=$(2) \
 		./$(LINUXDEPLOY) \
