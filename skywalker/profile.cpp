@@ -344,6 +344,12 @@ QEnums::AllowActivitySubscriptionsType ProfileAssociatedActivitySubscription::ge
 }
 
 
+ProfileAssociatedGerm::ProfileAssociatedGerm(const ATProto::AppBskyActor::ProfileAssociatedGerm::SharedPtr& associated) :
+    mAssociated(associated)
+{
+}
+
+
 ProfileAssociated::ProfileAssociated(const ATProto::AppBskyActor::ProfileAssociated::SharedPtr& associated) :
     mAssociated(associated)
 {

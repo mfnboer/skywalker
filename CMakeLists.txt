@@ -84,6 +84,7 @@ qt_add_qml_module(appskywalker
         images/pb_klipy_light.svg
         images/PB_tenor_logo_blue_horizontal.svg
         images/via_tenor_logo_blue.svg
+        images/germ_dm_logo.png
         images/giphy_logo.png
         images/pb_giphy_dark.png
         images/buycoffee.png

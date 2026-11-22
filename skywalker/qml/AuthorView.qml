@@ -61,6 +61,8 @@ SkyPage {
     property string firstAppearanceDate: "unknown"
     property string pds: "unknown pds"
     property bool feedInitialized: false
+    property bool showGermDmButton: germUtils.mustShowButton(author)
+    property string germDmUrl: germUtils.getMessageUrl(author)
 
     signal closed
 
@@ -674,6 +676,28 @@ SkyPage {
                     userDid: page.userDid
                     author: page.author
                 }
+            }
+
+            Item {
+                width: parent.width
+                height: showGermDmButton ? 4 : 0
+            }
+
+            RoundButton {
+                x: -6
+                height: 40
+                Material.background: "#7ee459"
+                Material.foreground: "black"
+                flat: true
+                icon.source: "/images/germ_dm_logo.png"
+                icon.height: 16
+                icon.width: 16
+                icon.color: "transparent"
+                font.pointSize: guiSettings.scaledFont(7/8)
+                font.weight: Font.Medium
+                text: "Germ DM  "
+                visible: showGermDmButton
+                onClicked: root.openLink(germDmUrl, "", userDid)
             }
 
             ProfileLinks {
@@ -1778,6 +1802,11 @@ SkyPage {
             retrievingStatus = true
             getStatus(author.did)
         }
+    }
+
+    GermUtils {
+        id: germUtils
+        skywalker: page.skywalker
     }
 
     BusyIndicator {

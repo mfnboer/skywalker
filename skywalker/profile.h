@@ -189,6 +189,7 @@ public:
     const QString& getFollowing() const;
     bool isFollowing() const { return !getFollowing().isEmpty(); }
     const QString& getFollowedBy() const;
+    bool isFollowedBy() const { return !getFollowedBy().isEmpty(); }
     const ListViewBasic& getMutedByList() const;
     const ListViewBasic& getBlockingByList() const;
     const KnownFollowers& getKnownFollowers() const;
@@ -243,6 +244,25 @@ private:
     ATProto::AppBskyActor::ProfileAssociatedActivitySubscription::SharedPtr mAssociated;
 };
 
+class ProfileAssociatedGerm
+{
+    Q_GADGET
+    Q_PROPERTY(QString messageMeUrl READ getMessageMeUrl FINAL)
+    Q_PROPERTY(QEnums::ShowButtonToType showButtonTo READ getShowButtonTo FINAL)
+    QML_VALUE_TYPE(profileassociatedgerm)
+
+public:
+    ProfileAssociatedGerm() = default;
+    explicit ProfileAssociatedGerm(const ATProto::AppBskyActor::ProfileAssociatedGerm::SharedPtr& associated);
+
+    Q_INVOKABLE bool isNull() const { return mAssociated == nullptr; }
+    QString getMessageMeUrl() const { return mAssociated ? mAssociated->mMessageMeUrl : QString{}; }
+    QEnums::ShowButtonToType getShowButtonTo() const { return mAssociated ? (QEnums::ShowButtonToType)mAssociated->mShowButtonTo.value() : QEnums::SHOW_BUTTON_TO_UNKNOWN; }
+
+private:
+    ATProto::AppBskyActor::ProfileAssociatedGerm::SharedPtr mAssociated;
+};
+
 class ProfileAssociated
 {
     Q_GADGET
@@ -252,6 +272,7 @@ class ProfileAssociated
     Q_PROPERTY(int isLabeler READ isLabeler FINAL)
     Q_PROPERTY(ProfileAssociatedChat chat READ getChat FINAL)
     Q_PROPERTY(ProfileAssociatedActivitySubscription activitySubscription READ getActivitySubscription FINAL)
+    Q_PROPERTY(ProfileAssociatedGerm germ READ getGerm FINAL)
     QML_VALUE_TYPE(profileassociated)
 
 public:
@@ -264,6 +285,7 @@ public:
     bool isLabeler() const { return mAssociated ? mAssociated->mLabeler : false; }
     ProfileAssociatedChat getChat() const { return mAssociated ? ProfileAssociatedChat(mAssociated->mChat) : ProfileAssociatedChat{}; }
     ProfileAssociatedActivitySubscription getActivitySubscription() const { return mAssociated ? ProfileAssociatedActivitySubscription(mAssociated->mActivitySubscription) : ProfileAssociatedActivitySubscription{}; }
+    ProfileAssociatedGerm getGerm() const { return mAssociated ? ProfileAssociatedGerm(mAssociated->mGerm) : ProfileAssociatedGerm{}; }
     ATProto::AppBskyActor::ProfileAssociated::SharedPtr getAssociated() const { return mAssociated; }
 
 private:

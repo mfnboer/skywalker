@@ -840,6 +840,8 @@ qt_add_qml_module(libskywalker
         SOURCES basic_profile_view.h
         SOURCES basic_profile_view.cpp
         QML_FILES qml/SearchInput.qml
+        SOURCES germ_utils.h
+        SOURCES germ_utils.cpp
 )
 
 target_link_libraries(libskywalker

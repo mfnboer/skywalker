@@ -158,6 +158,14 @@ public:
     };
     Q_ENUM(AllowActivitySubscriptionsType)
 
+    enum ShowButtonToType
+    {
+        SHOW_BUTTON_TO_USERS_I_FOLLOW = int(ATProto::AppBskyActor::ShowButtonToEnum::USERS_I_FOLLOW),
+        SHOW_BUTTON_TO_EVERYONE = int(ATProto::AppBskyActor::ShowButtonToEnum::EVERYONE),
+        SHOW_BUTTON_TO_UNKNOWN = int(ATProto::AppBskyActor::ShowButtonToEnum::UNKNOWN)
+    };
+    Q_ENUM(ShowButtonToType)
+
     enum AuthorListType
     {
         AUTHOR_LIST_FOLLOWS = 0,

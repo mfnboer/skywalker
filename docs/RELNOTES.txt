@@ -1,3 +1,7 @@
+next
+====
+* Germ DM button on profile
+
 4.49.1
 ======
 * Set Bluesky as default for AppView
