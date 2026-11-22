@@ -48,6 +48,7 @@ SkyPage {
     onCover: {
         postsViewTop.cover()
         postsViewLatest.cover()
+        header.forceFocus()
     }
 
     header: SimpleHeader {
@@ -162,7 +163,11 @@ SkyPage {
             }
         }
 
-        onSearch: (text) => { searchUtils.search(text) }
+        onSearch: (text) => {
+            searchUtils.search(text)
+            header.forceFocus()
+        }
+
         onCleared: {
             page.isTyping = false
             currentText = ""
