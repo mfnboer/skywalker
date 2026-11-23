@@ -229,7 +229,13 @@ bool OAuthController::start(const RedirectCb& redirectCb)
         [redirectCb](const QHttpServerRequest& request, QHttpServerResponder& responder){
             qDebug() << "oauth callback:" << request.url();
             redirectCb(request.url());
-            responder.write(QHttpServerResponder::StatusCode::NoContent);
+
+            // Answer with a page. An empty response can make a browser start a download.
+            static const QByteArray PAGE =
+                "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Skywalker</title></head>"
+                "<body style=\"font-family:sans-serif;text-align:center;margin-top:20vh\">"
+                "<h2>Sign-in complete</h2><p>You can close this tab and return to Skywalker.</p></body></html>";
+            responder.write(PAGE, "text/html; charset=utf-8", QHttpServerResponder::StatusCode::Ok);
         });
 
     if (!tcpServer->listen(QHostAddress::LocalHost, LISTEN_PORT) || !mHttpServer.bind(tcpServer))
