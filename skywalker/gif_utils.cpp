@@ -114,7 +114,9 @@ QString GifUtils::getGifVideoUrl(const QString& link) const
     const QUrl linkUrl(link);
     const QUrlQuery query(linkUrl.query());
 
-    for (const auto& format : {"webm", "mp4"})
+    // webm files are generally smaller than mp4, but the webm play
+    // sometimes gets stuck in Qt6.11.2
+    for (const auto& format : {"mp4", "webm"})
     {
         const auto& formatId = query.queryItemValue(format);
 

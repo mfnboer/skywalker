@@ -1,6 +1,7 @@
 next
 ====
 * Germ DM button on profile
+* Bug fixes
 
 4.49.1
 ======
