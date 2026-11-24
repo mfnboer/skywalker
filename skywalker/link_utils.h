@@ -3,6 +3,7 @@
 #pragma once
 #include "presence.h"
 #include "enums.h"
+#include "search_feed.h"
 #include "wrapped_skywalker.h"
 #include <atproto/lib/at_uri.h>
 
@@ -28,12 +29,14 @@ public:
     explicit LinkUtils(QObject* parent = nullptr);
 
     Q_INVOKABLE QString toHttpsLink(const QString& atUri);
+    Q_INVOKABLE static QString createSearchLink(const QString& searchText, const SearchOptions& searchOptions, const QString& meHandle);
     Q_INVOKABLE void openLink(const QString& link, const QString& containingText = {}, const QString& warning = {});
     Q_INVOKABLE void openInAppBrowser(const QString& link);
 
 signals:
     void webLink(QString uri, QString containingText, bool hostInContainingText, QString warning);
     void authorLink(QString handleOrDid);
+    void searchLink(SearchFeed searchFeed);
     void postLink(QString atUri);
     void feedLink(QString atUri);
     void listLink(QString atUri);
@@ -46,6 +49,7 @@ private:
     void openListLink(const ATProto::ATUri& atUri);
     void openStarterPackLink(const ATProto::ATUri& atUri);
     static QString isAuthorLink(const QString& link);
+    static SearchFeed isSearchLink(const QString& link);
     static ATProto::ATUri getPostUri(const QString& link);
     static ATProto::ATUri getFeedUri(const QString& link);
     static ATProto::ATUri getListUri(const QString& link);

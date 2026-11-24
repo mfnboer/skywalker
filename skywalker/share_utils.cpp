@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Michel de Boer
 // License: GPLv3
 #include "share_utils.h"
+#include "link_utils.h"
 #include "skywalker.h"
 #include <QClipboard>
 
@@ -33,21 +34,7 @@ void ShareUtils::sharePost(const QString& postUri, const QString& feedDid, const
 
     const QString shareUri = atUri.toHttpsUri();
     Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("post");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    mSkywalker->showStatusMessage(tr("Post link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
-#endif
+    share(shareUri, "Post link");
 
     mSkywalker->addFeedInteraction(
         feedDid,
@@ -65,21 +52,7 @@ void ShareUtils::shareFeed(const GeneratorView& feed)
 
     const QString shareUri = atUri.toHttpsUri();
     Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("feed");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    mSkywalker->showStatusMessage(tr("Feed link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
-#endif
+    share(shareUri, "Feed link");
 }
 
 void ShareUtils::shareList(const ListView& list)
@@ -97,21 +70,7 @@ void ShareUtils::shareListUri(const QString& listUri)
 
     const QString shareUri = atUri.toHttpsUri();
     Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("list");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    mSkywalker->showStatusMessage(tr("List link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
-#endif
+    share(shareUri, "List link");
 }
 
 void ShareUtils::shareStarterPack(const StarterPackViewBasic& starterPack)
@@ -124,62 +83,26 @@ void ShareUtils::shareStarterPack(const StarterPackViewBasic& starterPack)
 
     const QString shareUri = atUri.toHttpsUri();
     Q_ASSERT(!shareUri.isEmpty());
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("starter pack");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    mSkywalker->showStatusMessage(tr("Starter pack link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
-#endif
+    share(shareUri, "Starter pack link");
 }
 
 void ShareUtils::shareAuthor(const BasicProfile& author)
 {
     const QString& authorId = author.getDid();
     const QString shareUri = QString("https://bsky.app/profile/%1").arg(authorId);
-
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("author profile");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    mSkywalker->showStatusMessage(tr("Author link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
-#endif
+    share(shareUri, "Author link");
 }
 
 void ShareUtils::shareConvo(const ConvoView& convo)
 {
     const QString shareUri = convo.getInviteLinkUrl();
+    share(shareUri, "Invite link");
+}
 
-#ifdef Q_OS_ANDROID
-    QJniObject jShareUri = QJniObject::fromString(shareUri);
-    QJniObject jSubject = QJniObject::fromString("invite link");
-
-    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
-                                       "shareLink",
-                                       "(Ljava/lang/String;Ljava/lang/String;)V",
-                                       jShareUri.object<jstring>(),
-                                       jSubject.object<jstring>());
-#else
-    QClipboard *clipboard = QGuiApplication::clipboard();
-    clipboard->setText(shareUri);
-    mSkywalker->showStatusMessage(tr("Invite link copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
-#endif
+void ShareUtils::shareSearch(const QString& searchText, const SearchOptions& searchOptions)
+{
+    const QString shareUri = LinkUtils::createSearchLink(searchText, searchOptions, mSkywalker->getUser().getHandle());
+    share(shareUri, "Search link");
 }
 
 void ShareUtils::copyAuthorLinkToClipboard(const BasicProfile& author)
@@ -222,6 +145,24 @@ void ShareUtils::copyToClipboard(const QString& text)
     QClipboard *clipboard = QGuiApplication::clipboard();
     clipboard->setText(text);
     mSkywalker->showStatusMessage(tr("Copied to clipboard"), QEnums::STATUS_LEVEL_INFO);
+}
+
+void ShareUtils::share(const QString& uri, const QString& subject)
+{
+#ifdef Q_OS_ANDROID
+    QJniObject jShareUri = QJniObject::fromString(uri);
+    QJniObject jSubject = QJniObject::fromString(subject);
+
+    QJniObject::callStaticMethod<void>("com/gmail/mfnboer/ShareUtils",
+                                       "shareLink",
+                                       "(Ljava/lang/String;Ljava/lang/String;)V",
+                                       jShareUri.object<jstring>(),
+                                       jSubject.object<jstring>());
+#else
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(uri);
+    mSkywalker->showStatusMessage(tr("%1 copied to clipboard").arg(subject), QEnums::STATUS_LEVEL_INFO);
+#endif
 }
 
 }

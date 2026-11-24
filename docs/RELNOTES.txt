@@ -1,6 +1,9 @@
 next
 ====
 * Germ DM button on profile
+* Share search links
+* Open search links in posts inside Skywalker
+* Possiblity to intercept blacksky.community and northsky.app links
 * Bug fixes
 
 4.49.1

@@ -125,6 +125,16 @@ QString LinkUtils::toHttpsLink(const QString& atUri)
     return httpsLink;
 }
 
+QString LinkUtils::createSearchLink(const QString& searchText, const SearchOptions& searchOptions, const QString& meHandle)
+{
+    qDebug() << "Create search link:" << searchText << "options:" << searchOptions.getDescription();
+    QUrlQuery query = searchOptions.toUrlQuery(searchText, meHandle);
+    QUrl url("https://bsky.app/search");
+    url.setQuery(query);
+    qDebug() << url;
+    return url.toString();
+}
+
 void LinkUtils::openLink(const QString& link, const QString& containingText, const QString& warning)
 {
     const auto atUri = getPostUri(link);
@@ -166,6 +176,14 @@ void LinkUtils::openLink(const QString& link, const QString& containingText, con
     if (!handleOrDid.isEmpty())
     {
         emit authorLink(handleOrDid);
+        return;
+    }
+
+    const SearchFeed searchFeed = isSearchLink(link);
+
+    if (!searchFeed.isNull())
+    {
+        emit searchLink(searchFeed);
         return;
     }
 
@@ -268,6 +286,45 @@ QString LinkUtils::isAuthorLink(const QString& link)
         return match.captured("did");
 
     return {};
+}
+
+SearchFeed LinkUtils::isSearchLink(const QString& link)
+{
+    static const QRegularExpression searchRE(
+            QString(R"(^https:\/\/(?<domain>%1)\/search\?.*$)").arg(
+                ATProto::ATRegex::DOMAIN.pattern()));
+
+    auto match = searchRE.match(link);
+
+    if (!match.hasMatch() || !isWebAppDomain(match.captured("domain")))
+        return {};
+
+    const QUrl url(link);
+
+    if (!url.isValid())
+    {
+        qWarning() << "Invalid link:" << link;
+        return {};
+    }
+
+    const QString queryString = url.query();
+
+    if (queryString.isEmpty())
+    {
+        qWarning() << "Missing query:" << link;
+        return {};
+    }
+
+    const QUrlQuery query(queryString);
+    const auto [q, options] = SearchOptions::fromUrlQuery(query);
+
+    if (q.isEmpty())
+    {
+        qWarning() << "q-param missing:" << link;
+        return {};
+    }
+
+    return SearchFeed(q, options);
 }
 
 ATProto::ATUri LinkUtils::getPostUri(const QString& link)

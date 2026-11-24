@@ -38,4 +38,5 @@ LinkUtils {
     onListLink: (atUri) => root.viewListByUri(atUri, true)
     onStarterPackLink: (atUri) => skywalker.getStarterPackView(atUri)
     onAuthorLink: (handle) => skywalker.getDetailedProfile(handle)
+    onSearchLink: (searchFeed) => root.viewSearchViewFeed(searchFeed)
 }

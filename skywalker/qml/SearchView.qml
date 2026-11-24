@@ -105,14 +105,49 @@ SkyPage {
         }
     }
 
+    SvgPlainButton {
+        id: searchOptionsButton
+        parent: page.header.visible ? page.header : page
+        anchors.top: parent.top
+        anchors.topMargin: page.header.visible ? 0 : 5
+        anchors.right: parent.right
+        anchors.rightMargin: page.margin
+        svg: SvgOutline.moreVert
+        accessibleName: qsTr("search options")
+        onClicked: searchOptionsMenu.open()
+
+        SkyMenu {
+            id: searchOptionsMenu
+
+            SkyMenuButton {
+                text: qsTr("Copy search link")
+                svg: SvgOutline.copy
+                popup: searchOptionsMenu
+                enabled: page.getSearchText()
+                onClicked: {
+                    const link = root.getLinkUtils().createSearchLink(page.getSearchText(), searchUtils.getSearchOptions(SearchSortOrder.RECENT), skywalker.user.handle)
+                    skywalker.getShareUtils().copyToClipboard(link)
+                }
+            }
+
+            SkyMenuButton {
+                text: qsTr("Share")
+                svg: SvgOutline.share
+                popup: searchOptionsMenu
+                enabled: page.getSearchText()
+                onClicked: skywalker.getShareUtils().shareSearch(page.getSearchText(), searchUtils.getSearchOptions(SearchSortOrder.RECENT))
+            }
+        }
+    }
+
     SearchInput {
         id: searchInput
         anchors.top: parent.top
         anchors.topMargin: root.showSideBar ? 15 : 0
         anchors.left: parent.left
-        anchors.leftMargin: 10
+        anchors.leftMargin: page.margin
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: page.header.visible ? page.margin : page.margin * 2 + searchOptionsButton.width
         placeHolderText: qsTr("Search posts, users or feeds")
 
         onSearchTextChanged: (text) => {

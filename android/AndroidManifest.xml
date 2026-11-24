@@ -66,8 +66,11 @@
                 <data android:scheme="https"/>
                 <data android:host="bsky.app"/>
                 <data android:host="mu.social"/>
+                <data android:host="blacksky.community"/>
+                <data android:host="northsky.app"/>
                 <data android:pathPrefix="/profile/"/>
                 <data android:pathPrefix="/starter-pack/"/>
+                <data android:path="/search"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
