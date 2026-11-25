@@ -123,6 +123,9 @@ ColumnLayout {
             Layout.preferredWidth: 100
             model: ListModel {
                 Component.onCompleted: {
+                    for (let i = 1; i < 5; ++i) {
+                        append({ "value": i * 2, "text": `${i * 2}` })
+                    }
                     for (let i = 1; i < 11; ++i) {
                         append({ "value": i * 10, "text": `${i * 10}` })
                     }
