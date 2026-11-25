@@ -4,7 +4,10 @@ import skywalker
 Item {
     property string userDid
     required property basicprofile author
-    property string authorName: !author.isNull() ? author.name : "Unknown user"
+
+    // HACK: A null profile with display name is used in UserSettings::getUserListWithAddAccount()
+    property string authorName: (!author.isNull() || author.displayName) ? author.name : "Unknown user"
+
     property double pointSize: guiSettings.scaledFont(1)
     property string textColor: guiSettings.textColor
     property bool authorVerified: author.verificationState.verifiedStatus === QEnums.VERIFIED_STATUS_VALID
