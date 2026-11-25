@@ -287,10 +287,18 @@ double ImageUtils::getPreferredLinkCardAspectRatio(const QString& link) const
     if (host.endsWith("tiktok.com"))
         return 1000.0 / 690.0;
 
-    if (host.endsWith("youtube.com") && path.startsWith("/shorts"))
-        return 16.0 / 9.0;
+    if (host.endsWith("play.google.com"))
+        return 1.0;
 
-    return 720.0 / 1280.0;
+    if (host.endsWith("youtube.com"))
+    {
+        if (path.startsWith("/shorts"))
+            return 16.0 / 9.0;
+        else
+            return 9.0 / 16.0;
+    }
+
+    return 630.0 / 1200.0;
 }
 
 Q_INVOKABLE QString ImageUtils::transformImage(const QString& imgSource, bool horMirror, bool vertMirror, int rotationAngle, const QRect& cutRect) const

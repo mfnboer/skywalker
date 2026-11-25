@@ -166,33 +166,33 @@ std::tuple<QString, QString> determineImageFormat(const QImage& img, const QStri
     QString format = "jpg";
     QString mimeType = "image/jpeg";
 
-    if (name.isEmpty() || name.startsWith("image://"))
+    if (!name.isEmpty() && !name.startsWith("image://"))
     {
-        if (img.hasAlphaChannel())
+        for (const auto& f : extraFormats)
         {
-            if (extraFormats.contains("webp") && QImageWriter::supportedImageFormats().contains("webp"))
+            if (name.endsWith(QString(".%1").arg(f), Qt::CaseInsensitive) && QImageWriter::supportedImageFormats().contains(f))
             {
-                format = "webp";
-                mimeType = "image/webp";
+                format = f;
+                mimeType = QString("image/%1").arg(f);
+                return { format, mimeType };
             }
-            else if (extraFormats.contains("png"))
-            {
-                format = "png";
-                mimeType = "image/png";
-            }
-
-            return { format, mimeType };
         }
     }
 
-    for (const auto& f : extraFormats)
+    if (img.hasAlphaChannel())
     {
-        if (name.endsWith(QString(".%1").arg(f), Qt::CaseInsensitive) && QImageWriter::supportedImageFormats().contains(f))
+        if (extraFormats.contains("webp") && QImageWriter::supportedImageFormats().contains("webp"))
         {
-            format = f;
-            mimeType = QString("image/%1").arg(f);
-            break;
+            format = "webp";
+            mimeType = "image/webp";
         }
+        else if (extraFormats.contains("png"))
+        {
+            format = "png";
+            mimeType = "image/png";
+        }
+
+        return { format, mimeType };
     }
 
     return { format, mimeType };
