@@ -139,6 +139,7 @@ SkyPage {
                 onUnblockAuthor: (author) => graphUtils.unblock(author.did, author.viewer.blocking)
                 onAcceptConvo: (convo) => chat.acceptConvo(convo)
                 onBlockAndDeleteConvo: (convo, author) => page.blockAndDeleteConvo(convo, author)
+                onReportConvo: (convo) => page.reportConvo(convo)
             }
 
             FlickableRefresher {
