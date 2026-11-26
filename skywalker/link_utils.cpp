@@ -214,12 +214,12 @@ void LinkUtils::openLink(const ATProto::ATUri& atUri, const std::function<void(c
     }
 
     bskyClient()->resolveHandle(atUri.getAuthority(),
-        [presence=getPresence(), atUri, openFun](const QString& did){
+        [presence=getPresence(), atUri, openFun](auto output){
             if (!presence)
                 return;
 
             auto postAtUri = atUri;
-            postAtUri.setAuthority(did);
+            postAtUri.setAuthority(output->mDid);
             postAtUri.setAuthorityIsHandle(false);
             openFun(postAtUri.toString());
         },

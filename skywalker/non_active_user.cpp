@@ -265,14 +265,14 @@ void NonActiveUser::getPost(const QString& uri)
     setActionObjectInProgress(true);
 
     mBsky->getPosts({uri},
-        [this, presence=getPresence(), uri](ATProto::AppBskyFeed::PostView::List posts){
+        [this, presence=getPresence(), uri](ATProto::AppBskyFeed::GetPostsOutput::SharedPtr output){
             if (!presence)
                 return;
 
             setActionObjectInProgress(false);
 
             // If a post is blocked or deleted we simply do not receive the post
-            if (posts.empty())
+            if (output->mPosts.empty())
             {
                 qWarning() << "Got no posts for:" << uri << "handle:" << mProfile.getHandle();
                 auto notFound = std::make_unique<Post>(Post::createNotFound(uri));
@@ -281,7 +281,7 @@ void NonActiveUser::getPost(const QString& uri)
                 return;
             }
 
-            auto post = std::make_unique<Post>(posts.front());
+            auto post = std::make_unique<Post>(output->mPosts.front());
             auto postView = std::make_unique<PostView>(std::move(post));
             qDebug() << "Post view:" << postView->getUri() << postView->isGood();
             setPostView(std::move(postView));

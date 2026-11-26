@@ -160,7 +160,7 @@ void Backlinks::getProfiles(const std::vector<QString>& dids, const QString& cur
     }
 
     bskyClient()->getProfiles(dids,
-        [this, presence=getPresence(), cursor, modelId](auto profileDetailedList){
+        [this, presence=getPresence(), cursor, modelId](auto output){
             if (!presence)
                 return;
 
@@ -169,7 +169,7 @@ void Backlinks::getProfiles(const std::vector<QString>& dids, const QString& cur
             if (model)
             {
                 model->setGetFeedInProgress(false);
-                model->addAuthors(std::move(profileDetailedList), cursor);
+                model->addAuthors(std::move(output->mProfiles), cursor);
             }
         },
         [this, presence=getPresence(), modelId](const QString& error, const QString& msg){
@@ -397,7 +397,7 @@ void Backlinks::getStarterPacks(const std::vector<QString>& starterPackUris, int
     for (const auto& uri : starterPackUris)
     {
         bskyClient()->getStarterPack(uri,
-            [this, presence=getPresence(), todo, starterPacks, maxPages, minEntries, cursor, modelId](ATProto::AppBskyGraph::StarterPackView::SharedPtr starterPackView){
+            [this, presence=getPresence(), todo, starterPacks, maxPages, minEntries, cursor, modelId](ATProto::AppBskyGraph::GetStarterPackOutput::SharedPtr output){
                 if (!presence)
                     return;
 
@@ -406,7 +406,7 @@ void Backlinks::getStarterPacks(const std::vector<QString>& starterPackUris, int
                 if (!model)
                     return;
 
-                starterPacks->push_back(starterPackView);
+                starterPacks->push_back(output->mStarterPack);
 
                 if (--*todo > 0)
                     return;

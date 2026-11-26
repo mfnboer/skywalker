@@ -1312,11 +1312,11 @@ void SearchUtils::initLastSearchedProfiles(bool resolveDids)
         return;
 
     bskyClient()->getProfiles(unresolvedDids,
-        [this, presence=getPresence()](auto profilesViewDetailedList){
+        [this, presence=getPresence()](auto output){
             if (!presence)
                 return;
 
-            for (const auto& profileViewDetailed : profilesViewDetailedList)
+            for (const auto& profileViewDetailed : output->mProfiles)
             {
                 BasicProfile profile(profileViewDetailed);
                 AuthorCache::instance().put(profile);

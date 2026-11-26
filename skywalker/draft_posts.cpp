@@ -2819,14 +2819,14 @@ void DraftPosts::getPostRecordPost(const Post& post, int index, const QString& p
     qDebug() << "Get post record:" << post.getUri() << "index:" << index << "post:" << postUri;
 
     bskyClient()->getPosts({ postUri },
-        [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::PostView::List posts){
+        [this, presence=getPresence(), post, index](ATProto::AppBskyFeed::GetPostsOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            if (posts.empty())
+            if (output->mPosts.empty())
                 return;
 
-            const auto& recordPost = posts.front();
+            const auto& recordPost = output->mPosts.front();
             auto quotePost = std::make_shared<Draft::QuotePost>();
             quotePost->mAuthor = recordPost->mAuthor;
 
@@ -2909,11 +2909,11 @@ void DraftPosts::getPostRecordStarterPack(const Post& post, int index, const QSt
     qDebug() << "Get post record:" << post.getUri() << "index:" << index << "starterPack:" << starterPackUri;
 
     bskyClient()->getStarterPack(starterPackUri,
-        [this, presence=getPresence(), post, index](ATProto::AppBskyGraph::StarterPackView::SharedPtr output){
+        [this, presence=getPresence(), post, index](ATProto::AppBskyGraph::GetStarterPackOutput::SharedPtr output){
             if (!presence)
                 return;
 
-            auto starterPackViewBasic = ATProto::GraphMaster::createStarterPackViewBasic(output);
+            auto starterPackViewBasic = ATProto::GraphMaster::createStarterPackViewBasic(output->mStarterPack);
             auto quote = std::make_shared<Draft::Quote>();
             quote->mRecordType = Draft::Quote::RecordType::QUOTE_STARTER_PACK;
             quote->mRecord = starterPackViewBasic;

@@ -2514,8 +2514,8 @@ void Skywalker::getQuoteChain(int modelId, const QString& nextPostUri, std::dequ
     }
 
     mBsky->getPosts({ nextPostUri },
-        [this, modelId, quoteChain](auto postViewList){
-            if (postViewList.empty())
+        [this, modelId, quoteChain](auto output){
+            if (output->mPosts.empty())
             {
                 qWarning() << "Failed to get posts";
 
@@ -2530,7 +2530,7 @@ void Skywalker::getQuoteChain(int modelId, const QString& nextPostUri, std::dequ
                 return;
             }
 
-            const Post post(postViewList.front());
+            const Post post(output->mPosts.front());
             auto chain = std::move(quoteChain);
             chain.push_back(post);
 
@@ -3291,8 +3291,8 @@ void Skywalker::getStarterPackView(const QString& starterPackUri)
     qDebug() << "Get starter pack view:" << starterPackUri;
 
     mBsky->getStarterPack(starterPackUri,
-        [this](auto starterPackView){
-            emit getStarterPackViewOk(mUserDid, StarterPackView(starterPackView));
+        [this](auto output){
+            emit getStarterPackViewOk(mUserDid, StarterPackView(output->mStarterPack));
         },
         [this](const QString& error, const QString& msg){
             qDebug() << "getStarterPackView failed:" << error << " - " << msg;
@@ -4102,11 +4102,12 @@ void Skywalker::getLabelersAuthorList(int modelId)
         (*model)->setGetFeedInProgress(true);
 
     mBsky->getProfiles(labelers,
-        [this, modelId](auto profileDetailedList){
+        [this, modelId](auto output){
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
             {
+                auto profileDetailedList = output->mProfiles;
                 (*model)->setGetFeedInProgress(false);
                 (*model)->clear();
                 std::sort(profileDetailedList.begin(), profileDetailedList.end(),
@@ -4159,13 +4160,13 @@ void Skywalker::getActiveFollowsAuthorList(int modelId, const QString& cursor)
 
     (*model)->setGetFeedInProgress(true);
     mBsky->getProfiles(dids,
-        [this, modelId, nextCursor](auto profileDetailedList){
+        [this, modelId, nextCursor](auto output){
             const auto* model = mAuthorListModels.get(modelId);
 
             if (model)
             {
                 (*model)->setGetFeedInProgress(false);
-                (*model)->addAuthors(std::move(profileDetailedList), nextCursor);
+                (*model)->addAuthors(std::move(output->mProfiles), nextCursor);
             }
         },
         [this, modelId](const QString& error, const QString& msg){

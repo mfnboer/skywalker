@@ -15,11 +15,11 @@ class ForYou : public WrappedSkywalker, public WebServiceBase
     QML_ELEMENT
 
 public:
-    using AlsoLikedSuccessCb = ATProto::Client::GetFeedSuccessCb;
+    using AlsoLikedSuccessCb = ATProto::ClientCallbacks::GetFeedSuccessCb;
     using ErrorCb = ATProto::Client::ErrorCb;
 
     explicit ForYou(QObject* parent = nullptr);
-    explicit ForYou(QNetworkAccessManager* network, QObject* parent = nullptr);
+    explicit ForYou(QNetworkAccessManager* netwsork, QObject* parent = nullptr);
 
     // The post with postUri will be returned as first post of the first page.
     void alsoLiked(const QString& postUri, const std::optional<QString>& cursor,

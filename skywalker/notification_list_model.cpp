@@ -560,9 +560,9 @@ void NotificationListModel::getPosts(ATProto::Client& bsky, std::unordered_set<Q
     }
 
     bsky.getPosts(uriList,
-        [this, &bsky, uris, cb](auto postViewList)
+        [this, &bsky, uris, cb](auto output)
         {
-            for (auto& postView : postViewList)
+            for (auto& postView : output->mPosts)
             {
                 // Store post view in both caches. The post cache will be cleared
                 // on refresh.

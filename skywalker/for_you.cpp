@@ -77,14 +77,14 @@ void ForYou::continueAlsoLiked(QNetworkReply* reply, const QString& postUri, con
     }
 
     bskyClient()->getPosts(uris,
-        [presence=getPresence(), feed, successCb](ATProto::AppBskyFeed::PostView::List posts){
+        [presence=getPresence(), feed, successCb](ATProto::AppBskyFeed::GetPostsOutput::SharedPtr postsOutput){
             if (!presence)
                 return;
 
             auto output = std::make_shared<ATProto::AppBskyFeed::OutputFeed>();
             output->mCursor = feed->mCursor;
 
-            for (const auto& post : posts)
+            for (const auto& post : postsOutput->mPosts)
             {
                 auto feedViewPost = std::make_shared<ATProto::AppBskyFeed::FeedViewPost>();
                 feedViewPost->mPost = post;

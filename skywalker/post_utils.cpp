@@ -476,18 +476,18 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
         return;
 
     bskyClient()->getPosts({embeddingUri},
-        [this, presence=getPresence(), embeddingUri, retries](auto postViewList){
+        [this, presence=getPresence(), embeddingUri, retries](auto output){
             if (!presence)
                 return;
 
-            if (postViewList.size() != 1)
+            if (output->mPosts.size() != 1)
             {
-                qWarning() << "Wrong list size:" << postViewList.size() << "for uri:" << embeddingUri;
+                qWarning() << "Wrong list size:" << output->mPosts.size() << "for uri:" << embeddingUri;
                 emit detachQuoteFailed("Could not load quote.");
                 return;
             }
 
-            const std::optional<ATProto::AppBskyEmbed::EmbedViewUnion>& embed = postViewList[0]->mEmbed;
+            const std::optional<ATProto::AppBskyEmbed::EmbedViewUnion>& embed = output->mPosts[0]->mEmbed;
 
             if (!embed)
             {
@@ -531,7 +531,7 @@ void PostUtils::continueReAttachQuote(const QString& embeddingUri, int retries)
             }
 
             mSkywalker->makeLocalModelChange(
-                [cid=postViewList[0]->mCid, recordView](LocalPostModelChanges* model){
+                [cid=output->mPosts[0]->mCid, recordView](LocalPostModelChanges* model){
                     model->updateReAttachedRecord(cid, recordView);
                 });
 
