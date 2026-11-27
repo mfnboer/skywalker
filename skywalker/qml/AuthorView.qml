@@ -289,6 +289,22 @@ SkyPage {
                 SkyButton {
                     Layout.preferredHeight: 40
                     text: qsTr("Subscribe")
+                    visible: !isSubscribed && isLabeler && !author.isFixedLabeler()
+                    onClicked: contentGroupListModel.subscribed = true
+                    Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
+                }
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    flat: true
+                    text: qsTr("Unsubscribe")
+                    visible: isSubscribed && isLabeler && !author.isFixedLabeler() && !showLabelPrefsForListUri
+                    onClicked: contentGroupListModel.subscribed = false
+                    Accessible.name: qsTr(`press to unsubscribe from labeler ${author.name}`)
+                }
+
+                SkyButton {
+                    Layout.preferredHeight: 40
+                    text: qsTr("Subscribe")
                     visible: !isFixedLabelerEnabled && isLabeler && author.isFixedLabeler()
                     onClicked: contentGroupListModel.fixedLabelerEnabled = true
                     Accessible.name: qsTr(`press to subscribe to labeler ${author.name}`)
