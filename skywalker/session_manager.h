@@ -54,6 +54,7 @@ public:
 
     ATProto::Client* getActiveUserBskyClient() const;
     ATProto::Client::SharedPtr getBskyClientFor(const QString& did) const;
+    ATProto::Client* getBskyClientRaw(const QString& did) const;
     Skywalker* getSkywalker();
 
     Q_INVOKABLE void startCacheTimeout();
@@ -65,6 +66,9 @@ public:
 signals:
     void activeSessionExpired(const QString& msg);
     void totalUnreadNotificationCountChanged(int count);
+#ifdef Q_OS_LINUX
+    void newNotificationsReceived(const QString& did, int count);
+#endif
     void activeUserUnreadNotificationCountChanged();
     void nonActiveUsersChanged();
     void nonActiveNotificationsChanged();
@@ -84,6 +88,9 @@ private:
 
         int mUnreadNotificationCount = 0;
         int mUnreadExtraCount = 0;
+#ifdef Q_OS_LINUX
+        bool mHasUnreadCount = false;
+#endif
         QTimer mRefreshNotificationInitialDelayTimer;
         QTimer mRefreshNotificationTimer;
         NonActiveUser::Ptr mNonActiveUser;

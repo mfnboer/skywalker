@@ -110,6 +110,14 @@ Skywalker::Skywalker(QObject* parent) :
         });
     connect(&mSessionManager, &SessionManager::totalUnreadNotificationCountChanged, this,
         [this](int unread){ setUnreadNotificationCount(unread); });
+#ifdef Q_OS_LINUX
+    connect(&mSessionManager, &SessionManager::newNotificationsReceived, this,
+        [this](const QString& did, int count){
+            mDesktopNotifier.notifyNew(
+                mSessionManager.getBskyClientRaw(did),
+                count);
+        });
+#endif
 
     connect(&mUserSettings, &UserSettings::serviceAppViewChanged, this, &Skywalker::updateServiceAppView);
     connect(&mUserSettings, &UserSettings::serviceChatChanged, this, &Skywalker::updateServiceChat);
@@ -411,7 +419,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
 #else
             Q_UNUSED(dpopKeyAlias);
             const QString path = OAuthController::getKeyStorageFilename(did);
-            mBsky->oauthSaveDpopKey(path, OAuthController::getTestPassPhrase());
+            mBsky->oauthSaveDpopKey(path, OAuthController::getDpopKeyPassPhrase());
 #endif
             connect(mBsky->getXrpcClient(), &Xrpc::Client::pdsDpopNonceChanged, this,
                 [this, did](const QString nonce){ mUserSettings.setPdsDpopNonce(did, std::move(nonce)); });
@@ -487,7 +495,16 @@ bool Skywalker::autoLogin()
         return false;
     }
 
-    loginWithPassword(mUserSettings.getHost(did), did, mUserSettings.getPassword(did), true, {});
+    const QString host = mUserSettings.getHost(did);
+    mUserSettings.getPasswordAsync(did, [this, did, host](const QString& password, const QString& error) {
+        if (!error.isEmpty())
+        {
+            emit loginFailed("PasswordStorageError", error, false, host, did, {});
+            return;
+        }
+
+        loginWithPassword(host, did, password, true, {});
+    });
     return true;
 }
 

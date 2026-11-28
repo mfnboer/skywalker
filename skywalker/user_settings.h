@@ -7,8 +7,12 @@
 #include "profile.h"
 #include "search_feed.h"
 #include "uri_with_expiry.h"
+#include <QEventLoop>
 #include <QObject>
 #include <QSettings>
+#include <functional>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace Skywalker {
 
@@ -126,6 +130,7 @@ public:
 
     explicit UserSettings(QObject* parent = nullptr);
     explicit UserSettings(const QString& fileName, QObject* parent = nullptr);
+    ~UserSettings() override;
 
     std::function<void(const QString& access, const QString& refresh)> getTokenSetter(const QString& did);
 
@@ -150,7 +155,9 @@ public:
     Q_INVOKABLE bool getRememberPassword(const QString& did) const;
 
     Q_INVOKABLE void savePassword(const QString& did, const QString& password);
-    Q_INVOKABLE QString getPassword(const QString& did) const;
+    using PasswordCallback = std::function<void(const QString& password, const QString& error)>;
+    void getPasswordAsync(const QString& did, PasswordCallback callback);
+    Q_INVOKABLE void requestPassword(const QString& did);
 
     Q_INVOKABLE void setOAuthEnabled(const QString& did, bool enable);
     Q_INVOKABLE bool getOAuthEnabled(const QString& did) const;
@@ -665,6 +672,8 @@ signals:
     void syncSearchFeedChanged(const QString& did, const QString& searchKey);
     void rewindToLastSeenPostChanged(const QString& did);
     void homeFeedUriChanged(const QString& did);
+    void passwordRetrieved(const QString& did, const QString& password, const QString& error);
+    void passwordStorageError(const QString& did, const QString& error);
 
 private:
     bool isValidKeyPart(const QString& keyPart) const;
@@ -677,12 +686,39 @@ private:
     QString labelPolicyKey(const QString& did, QString listUri, const QString& labelerDid,
                            const QString& labelId) const;
     void cleanup();
+    void deletePassword(const QString& did);
+    void readPassword(const QString& did, PasswordCallback callback);
+
+    // Access and refresh tokens. On Linux these are stored in the system keyring.
+    struct Tokens
+    {
+        QString mAccess;
+        QString mRefresh;
+    };
+
+    Tokens getTokens(const QString& did) const;
+    void setTokens(const QString& did, const QString& access, const QString& refresh);
+    void removeTokens(const QString& did);
 
     QStringList getFeedViewUris(const QString& did, const QString& feedKey) const;
     QStringList getSearchFeedViewSearchKeys(const QString& did, const QString& feedKey) const;
 
     QSettings mSettings;
     PasswordEncryption mEncryption;
+
+#ifdef Q_OS_LINUX
+    Tokens loadTokens(const QString& did);
+    void writeTokensToKeyring(const QString& did);
+    void moveTokensToSettings(const QString& did);
+    void flushTokenWrites();
+
+    std::unordered_map<QString, Tokens> mTokenCache;
+    std::unordered_set<QString> mTokenWritesInFlight;
+    std::unordered_set<QString> mTokenWritesDirty;
+    bool mKeyringTokensUnavailable = false;
+    QEventLoop* mFlushLoop = nullptr;
+#endif
+
     std::optional<std::unordered_set<QString>> mSyncFeeds;
     std::optional<std::unordered_set<QString>> mSyncSearchFeeds;
     std::unique_ptr<UriWithExpirySet> mBlocksWithExpiry;

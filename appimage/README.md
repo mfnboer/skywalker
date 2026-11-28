@@ -1,0 +1,88 @@
+# Linux AppImage build
+
+This directory contains Linux AppImage build configuration and generated
+artifacts. Build and packaging outputs here are ignored by the local
+`.gitignore`.
+
+## Quick start
+
+A Makefile wraps the steps below. Run it from the repository root or from this
+directory:
+
+```sh
+make -C appimage tools     # once: download linuxdeploy and the Qt plugin
+make -C appimage debug     # build/ -> Skywalker-x86_64-debug.AppImage
+make -C appimage release   # build-release/ -> Skywalker-x86_64.AppImage
+```
+
+Use `build-debug`, `build-release`, `package-debug` and `package-release` to
+run only one step, and `make -C appimage help` for all targets. Override the
+defaults with e.g. `JOBS=4`, `QMAKE=/path/to/qmake`.
+
+### Manual steps
+
+Install the project's build dependencies, including a C++ compiler, CMake, and
+the Qt 6 development modules used by the project. Linux builds also require
+the Qt 6 DBus and Qt 6 Keychain development packages.
+
+Download the x86_64 `linuxdeploy` and `linuxdeploy-plugin-qt` AppImages into
+this directory and make them executable. The upstream Qt plugin bundles
+patchelf 0.15.0, which corrupts the GNU build-ID note when patching
+`libleancrypto.so.1.9` in this environment. Rebuild the plugin AppImage with
+linuxdeploy's patchelf 0.19.1:
+
+```sh
+./rebuild-linuxdeploy-plugin-qt.sh
+```
+
+Stage the application and its project libraries in the AppDir:
+
+```sh
+APPIMAGE_DIR="$PWD/appimage"
+APPDIR="$APPIMAGE_DIR/AppDir"
+BUILD_DIR="$APPIMAGE_DIR/build"
+
+# AppDir is generated output. Remove it before staging so dependencies from a
+# previous build cannot survive when they are no longer deployed.
+rm -rf "$APPDIR"
+mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/lib"
+cp "$BUILD_DIR/appskywalker" "$APPDIR/usr/bin/"
+cp "$BUILD_DIR/skywalker/liblibskywalker.so" "$APPDIR/usr/lib/"
+cp "$BUILD_DIR/atproto/lib/liblibatproto.so" "$APPDIR/usr/lib/"
+
+# AppStream metadata (developer, license, description, releases, ...)
+mkdir -p "$APPDIR/usr/share/metainfo"
+cp "$APPIMAGE_DIR/eu.thereforeiam.skywalker.metainfo.xml" "$APPDIR/usr/share/metainfo/"
+```
+
+Deploy Qt, QML, and system-library dependencies:
+
+```sh
+cd "$APPIMAGE_DIR"
+NO_STRIP=1 QMAKE=/path/to/Qt/6/bin/qmake \
+  QML_SOURCES_PATHS="$PWD/../skywalker/qml" \
+  ./linuxdeploy-x86_64.AppImage \
+    --appdir AppDir \
+    --executable AppDir/usr/bin/appskywalker \
+    --custom-apprun AppRun \
+    --desktop-file skywalker.desktop \
+    --icon-file ../images/skywalker.png \
+    --plugin qt \
+    --output appimage
+```
+
+Set `QMAKE` to the Qt 6 `qmake` executable installed on your system; this is
+important if multiple Qt versions are installed. `NO_STRIP=1` disables binary
+stripping, which can avoid incompatibilities with some toolchains.
+`AppRun` sets the bundled Qt plugin and QML import paths and defaults to XCB.
+
+## Package metadata
+
+The AppImage's metadata comes from two files in this directory:
+
+- `skywalker.desktop` is the desktop entry (name, icon, categories).
+- `eu.thereforeiam.skywalker.metainfo.xml` is the AppStream metainfo with the
+  developer (author), license, description, URLs, screenshots and release
+  notes. It is copied to `AppDir/usr/share/metainfo/` when staging. Fill in the
+  `TODO` entries before publishing, and bump the `<release>` entry for each
+  release. If `appstreamcli` is installed, the AppImage plugin validates the file.

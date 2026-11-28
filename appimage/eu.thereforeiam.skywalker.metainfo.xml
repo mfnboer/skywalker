@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>eu.thereforeiam.skywalker</id>
+
+  <name>Skywalker</name>
+  <summary>Bluesky Client</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+
+  <developer id="eu.thereforeiam">
+    <name>The Skywalker Team and Contributors</name>
+  </developer>
+
+  <description>
+    <p>A fast, alternative client for the Bluesky social media network.</p>
+  </description>
+
+  <launchable type="desktop-id">skywalker.desktop</launchable>
+
+  <url type="homepage">https://bsky.app/profile/skywalkerapp.bsky.social</url>
+  <url type="bugtracker">https://github.com/mfnboer/skywalker/issues</url>
+
+  <categories>
+    <category>Network</category>
+  </categories>
+
+  <provides>
+    <binary>appskywalker</binary>
+  </provides>
+
+  <releases>
+    <release version="4.49.1" date="2026-01-01">
+      <description>
+        <p>
+            4.49.1
+            ======
+            * Set Bluesky as default for AppView
+            * Follow option in post menu
+            * Long press on follow button to follow with any account
+            * Copy username option on profile
+            * Bug fixes
+        </p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+</component>

@@ -19,6 +19,9 @@
 #include "notification_list_model.h"
 #include "post_feed_model.h"
 #include "profile_store.h"
+#ifdef Q_OS_LINUX
+#include "desktop_notifier.h"
+#endif
 #include "session_manager.h"
 #include "starter_pack_list_model.h"
 #include "user_settings.h"
@@ -486,6 +489,9 @@ private:
     std::unique_ptr<EditUserPreferences> mEditUserPreferences;
     UserSettings mUserSettings;
     SessionManager mSessionManager;
+#ifdef Q_OS_LINUX
+    DesktopNotifier mDesktopNotifier;
+#endif
     ListStore mContentFilterPolicies;
     ContentFilter mContentFilter;
     ContentFilterShowAll mContentFilterShowAll;
