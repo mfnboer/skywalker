@@ -9,6 +9,12 @@
 #include <atproto/lib/oauth.h>
 #include <QTcpServer>
 
+#ifdef Q_OS_LINUX
+#include <QEventLoop>
+#include <QRandomGenerator>
+#include <qt6keychain/keychain.h>
+#endif
+
 namespace Skywalker {
 
 static constexpr char const* CLIENT_ID = "https://thereforeiam.eu/skywalker/oauth/client-metadata.json";
@@ -213,9 +219,110 @@ QString OAuthController::getKeyStorageFilename(const QString& did)
     return QString("%1/dpop.pem").arg(FileUtils::getAppDataPath(did));
 }
 
-QString OAuthController::getTestPassPhrase()
+static constexpr char const* LEGACY_PASS_PHRASE = "Rage! Rage! Against the dying of the light.";
+
+#ifdef Q_OS_LINUX
+static constexpr char const* KEYCHAIN_SERVICE = "Skywalker";
+static constexpr char const* DPOP_PASS_PHRASE_KEY = "dpop-key-passphrase";
+
+// Runs a keychain job and waits for it. The job is deleted by the keychain after finishing.
+static QKeychain::Error runKeychainJob(QKeychain::Job* job, QString* text = nullptr, QString* errorString = nullptr)
 {
-    return "Rage! Rage! Against the dying of the light.";
+    QEventLoop loop;
+    QKeychain::Error error = QKeychain::NoError;
+    QObject::connect(job, &QKeychain::Job::finished, &loop, [&](QKeychain::Job* finishedJob) {
+        error = finishedJob->error();
+
+        if (errorString)
+            *errorString = finishedJob->errorString();
+
+        if (text)
+            *text = static_cast<QKeychain::ReadPasswordJob*>(finishedJob)->textData();
+
+        loop.quit();
+    });
+    job->start();
+    loop.exec();
+    return error;
+}
+
+static QString createDpopKeyPassPhrase()
+{
+    QByteArray random(32, 0);
+    QRandomGenerator::system()->fillRange(reinterpret_cast<quint32*>(random.data()), random.size() / sizeof(quint32));
+    return QString::fromLatin1(random.toBase64());
+}
+#endif
+
+QString OAuthController::getDpopKeyPassPhrase()
+{
+#ifdef Q_OS_LINUX
+    static QString passPhrase;
+    static bool keyringUnavailable = false;
+
+    if (!passPhrase.isEmpty())
+        return passPhrase;
+
+    if (keyringUnavailable)
+        return LEGACY_PASS_PHRASE;
+
+    auto* readJob = new QKeychain::ReadPasswordJob(KEYCHAIN_SERVICE);
+    readJob->setKey(DPOP_PASS_PHRASE_KEY);
+    QString text, errorString;
+    QKeychain::Error error = runKeychainJob(readJob, &text, &errorString);
+
+    if (error == QKeychain::NoError && !text.isEmpty())
+    {
+        passPhrase = text;
+        return passPhrase;
+    }
+
+    if (error == QKeychain::NoError || error == QKeychain::EntryNotFound)
+    {
+        const QString newPassPhrase = createDpopKeyPassPhrase();
+        auto* writeJob = new QKeychain::WritePasswordJob(KEYCHAIN_SERVICE);
+        writeJob->setKey(DPOP_PASS_PHRASE_KEY);
+        writeJob->setTextData(newPassPhrase);
+        error = runKeychainJob(writeJob, nullptr, &errorString);
+
+        if (error == QKeychain::NoError)
+        {
+            passPhrase = newPassPhrase;
+            return passPhrase;
+        }
+    }
+
+    // Do not store the key under a passphrase that cannot be found again.
+    qWarning() << "System keyring unavailable for DPoP key passphrase:" << errorString;
+    keyringUnavailable = true;
+    return LEGACY_PASS_PHRASE;
+#else
+    return LEGACY_PASS_PHRASE;
+#endif
+}
+
+void OAuthController::migrateDpopKeyFile(const QString& path)
+{
+    const QString passPhrase = getDpopKeyPassPhrase();
+
+    if (passPhrase == LEGACY_PASS_PHRASE || !QFile::exists(path))
+        return;
+
+    if (!ATProto::JsonWebKey::load(path, passPhrase).isNull())
+        return;
+
+    auto key = ATProto::JsonWebKey::load(path, LEGACY_PASS_PHRASE);
+
+    if (key.isNull())
+    {
+        qWarning() << "Cannot decrypt DPoP key file:" << path;
+        return;
+    }
+
+    qDebug() << "Re-encrypt DPoP key file";
+
+    if (!key.save(path, passPhrase))
+        qWarning() << "Failed to save DPoP key file:" << path;
 }
 #endif
 

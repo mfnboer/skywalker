@@ -32,7 +32,13 @@ public:
 
 #ifndef Q_OS_ANDROID
     static QString getKeyStorageFilename(const QString& did);
-    static QString getTestPassPhrase() ;
+
+    // Passphrase to encrypt the DPoP key files. On Linux it is a random passphrase
+    // stored in the system keyring. Call from the thread that runs the event loop.
+    static QString getDpopKeyPassPhrase();
+
+    // Re-encrypt a key file that was saved with the old hard coded passphrase.
+    static void migrateDpopKeyFile(const QString& path);
 #endif
 
     bool start(const RedirectCb& redirectCb);

@@ -419,7 +419,7 @@ void Skywalker::loginWithOAuthContinue(const QUrl& url, const QString host, cons
 #else
             Q_UNUSED(dpopKeyAlias);
             const QString path = OAuthController::getKeyStorageFilename(did);
-            mBsky->oauthSaveDpopKey(path, OAuthController::getTestPassPhrase());
+            mBsky->oauthSaveDpopKey(path, OAuthController::getDpopKeyPassPhrase());
 #endif
             connect(mBsky->getXrpcClient(), &Xrpc::Client::pdsDpopNonceChanged, this,
                 [this, did](const QString nonce){ mUserSettings.setPdsDpopNonce(did, std::move(nonce)); });

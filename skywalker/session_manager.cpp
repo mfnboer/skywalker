@@ -126,7 +126,8 @@ void SessionManager::resumeAndRefreshSession(ATProto::Client* client, const ATPr
         client->oauthSetDpopKeyAlias(alias);
 #else
         const QString path = OAuthController::getKeyStorageFilename(did);
-        client->oauthLoadDpopKey(path, OAuthController::getTestPassPhrase());
+        OAuthController::migrateDpopKeyFile(path);
+        client->oauthLoadDpopKey(path, OAuthController::getDpopKeyPassPhrase());
 #endif
         const auto authDpopNonce = mUserSettings->getAuthDpopNonce(did);
 
